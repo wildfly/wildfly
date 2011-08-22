@@ -33,7 +33,6 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
     /**
      * {@inheritDoc}
      */
-    @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
@@ -53,29 +52,18 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             if (sessionData.hasDefined(ModelKeys.DEBUG)) {
                 writer.writeAttribute(Attribute.DEBUG.getLocalName(), sessionData.get(ModelKeys.DEBUG).asString());
             }
-            writer.writeEmptyElement(Element.LOGIN.getLocalName());
-            writer.writeAttribute(Attribute.USERNAME.getLocalName(), sessionData.get(ModelKeys.USERNAME).asString());
-            writer.writeAttribute(Attribute.PASSWORD.getLocalName(), sessionData.get(ModelKeys.PASSWORD).asString());
-            //writer.writeEndElement();
+
 
             if (sessionData.hasDefined(ModelKeys.SMTP_SERVER)) {
-                ModelNode server = sessionData.get(ModelKeys.SMTP_SERVER);
-                writer.writeEmptyElement(Element.SMTP_SERVER.getLocalName());
-                writer.writeAttribute(Attribute.SERVER_ADDRESS.getLocalName(), server.get(ModelKeys.SERVER_ADDRESS).asString());
-                writer.writeAttribute(Attribute.SERVER_PORT.getLocalName(), server.get(ModelKeys.SERVER_PORT).asString());
+                writeServerModel(writer, sessionData, ModelKeys.SMTP_SERVER);
+
             }
             if (sessionData.hasDefined(ModelKeys.POP3_SERVER)) {
-                ModelNode server = sessionData.get(ModelKeys.POP3_SERVER);
-                writer.writeEmptyElement(Element.POP3_SERVER.getLocalName());
-                writer.writeAttribute(Attribute.SERVER_ADDRESS.getLocalName(), server.get(ModelKeys.SERVER_ADDRESS).asString());
-                writer.writeAttribute(Attribute.SERVER_PORT.getLocalName(), server.get(ModelKeys.SERVER_PORT).asString());
+                writeServerModel(writer, sessionData, ModelKeys.POP3_SERVER);
             }
 
             if (sessionData.hasDefined(ModelKeys.IMAP_SERVER)) {
-                ModelNode server = sessionData.get(ModelKeys.IMAP_SERVER);
-                writer.writeEmptyElement(Element.IMAP_SERVER.getLocalName());
-                writer.writeAttribute(Attribute.SERVER_ADDRESS.getLocalName(), server.get(ModelKeys.SERVER_ADDRESS).asString());
-                writer.writeAttribute(Attribute.SERVER_PORT.getLocalName(), server.get(ModelKeys.SERVER_PORT).asString());
+                writeServerModel(writer, sessionData, ModelKeys.IMAP_SERVER);
             }
 
 
@@ -88,10 +76,29 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
     }
 
+    private void writeServerModel(XMLExtendedStreamWriter writer, ModelNode sessionData, final String name) throws XMLStreamException {
+        ModelNode server = sessionData.get(name);
+        boolean credentials = server.hasDefined(ModelKeys.CREDENTIALS);
+        if (credentials) {
+            writer.writeStartElement(Element.forName(name).getLocalName());
+        } else {
+            writer.writeEmptyElement(Element.forName(name).getLocalName());
+        }
+        writer.writeAttribute(Attribute.SERVER_ADDRESS.getLocalName(), server.get(ModelKeys.SERVER_ADDRESS).asString());
+        writer.writeAttribute(Attribute.SERVER_PORT.getLocalName(), server.get(ModelKeys.SERVER_PORT).asString());
+        if (credentials) {
+            writer.writeEmptyElement(Element.LOGIN.getLocalName());
+            writer.writeAttribute(Attribute.USERNAME.getLocalName(), server.get(ModelKeys.CREDENTIALS).get(ModelKeys.USERNAME).asString());
+            writer.writeAttribute(Attribute.PASSWORD.getLocalName(), server.get(ModelKeys.CREDENTIALS).get(ModelKeys.PASSWORD).asString());
+            writer.writeEndElement();
+        }
+    }
+
+
     /**
      * {@inheritDoc}
      */
-    @Override
+
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
 
         final ModelNode address = new ModelNode();
@@ -106,12 +113,6 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
 
         List<MailSessionConfig> sessionConfigList = new LinkedList<MailSessionConfig>();
-        /*
-       <mail-session jndi-name="java:/Mail">
-           <login name="nobody" password="pass"/>
-           <smtp-server address="localhost" port="9999"/>
-      </mail-session>
-        */
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -177,38 +178,19 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case MAIL_1_0: {
-
-
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
-                        case LOGIN: {
-                            for (int i = 0; i < reader.getAttributeCount(); i++) {
-                                String att = reader.getAttributeLocalName(i);
-                                if (att.equals(Attribute.USERNAME.getLocalName())) {
-                                    cfg.setUsername(reader.getAttributeValue(i));
-                                } else if (att.equals(Attribute.PASSWORD.getLocalName())) {
-                                    cfg.setPassword(reader.getAttributeValue(i));
-                                }
-                            }
-                            ParseUtils.requireNoContent(reader);
-                            break;
-                        }
                         case SMTP_SERVER: {
-                            String[] attributes = ParseUtils.requireAttributes(reader, Attribute.SERVER_ADDRESS.getLocalName(), Attribute.SERVER_PORT.getLocalName());
-                            cfg.setSmtpServer(new MailSessionServer(attributes[0], attributes[1]));
-                            ParseUtils.requireNoContent(reader);
+                            cfg.setSmtpServer(parseServerConfig(reader));
                             break;
                         }
                         case POP3_SERVER: {
-                            String[] attributes = ParseUtils.requireAttributes(reader, Attribute.SERVER_ADDRESS.getLocalName(), Attribute.SERVER_PORT.getLocalName());
-                            cfg.setPop3Server(new MailSessionServer(attributes[0], attributes[1]));
-                            ParseUtils.requireNoContent(reader);
+                            cfg.setPop3Server(parseServerConfig(reader));
+
                             break;
                         }
                         case IMAP_SERVER: {
-                            String[] attributes = ParseUtils.requireAttributes(reader, Attribute.SERVER_ADDRESS.getLocalName(), Attribute.SERVER_PORT.getLocalName());
-                            cfg.setImapServer(new MailSessionServer(attributes[0], attributes[1]));
-                            ParseUtils.requireNoContent(reader);
+                            cfg.setImapServer(parseServerConfig(reader));
                             break;
                         }
                         default: {
@@ -226,4 +208,29 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         return cfg;
     }
 
+    private MailSessionServer parseServerConfig(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        String[] attributes = ParseUtils.requireAttributes(reader, Attribute.SERVER_ADDRESS.getLocalName(), Attribute.SERVER_PORT.getLocalName());
+        String username = null;
+        String password = null;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case LOGIN: {
+                    for (int i = 0; i < reader.getAttributeCount(); i++) {
+                        String att = reader.getAttributeLocalName(i);
+                        if (att.equals(Attribute.USERNAME.getLocalName())) {
+                            username = reader.getAttributeValue(i);
+                        } else if (att.equals(Attribute.PASSWORD.getLocalName())) {
+                            password = reader.getAttributeValue(i);
+                        }
+                    }
+                    ParseUtils.requireNoContent(reader);
+                    break;
+                }
+            }
+
+
+        }
+        return new MailSessionServer(attributes[0], Integer.parseInt(attributes[1]), username, password);
+    }
 }

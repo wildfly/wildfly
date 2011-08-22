@@ -7,7 +7,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+import javax.mail.URLName;
 import java.util.Properties;
 
 /**
@@ -17,21 +19,22 @@ import java.util.Properties;
 public class MailSessionService implements Service<Session> {
     private static final Logger log = Logger.getLogger(MailSessionService.class);
     private volatile Session session;
-    private final MailSessionConfig sessionConfig;
+    private final MailSessionConfig config;
 
-    public MailSessionService(MailSessionConfig sessionConfig) {
-        log.trace("service constructed with config: " + sessionConfig);
-        this.sessionConfig = sessionConfig;
+    public MailSessionService(MailSessionConfig config) {
+        log.trace("service constructed with config: " + config);
+        this.config = config;
     }
 
-    @Override
+
     public void start(StartContext startContext) throws StartException {
         log.trace("start...");
         session = Session.getDefaultInstance(getProperties());
+        setAuthentication();
         log.trace("session is: " + session);
     }
 
-    @Override
+
     public void stop(StopContext stopContext) {
         log.trace("stop...");
     }
@@ -52,30 +55,45 @@ public class MailSessionService implements Service<Session> {
      */
     private Properties getProperties() {
         Properties props = new Properties();
-        props.put("mail.transport.protocol", "smtp");
-        if (sessionConfig.getSmtpServer() != null) {
-            props.put("mail.smtp.host", sessionConfig.getSmtpServer().getAddress());
-            props.put("mail.smtp.port", sessionConfig.getSmtpServer().getPort());
+
+        if (config.getSmtpServer() != null) {
+            props.put("mail.transport.protocol", "smtp");
+            props.put("mail.smtp.host", config.getSmtpServer().getAddress());
+            props.put("mail.smtp.port", config.getSmtpServer().getPort());
         }
-        if (sessionConfig.getImapServer() != null) {
-            props.put("mail.imap.host", sessionConfig.getImapServer().getAddress());
-            props.put("mail.imap.port", sessionConfig.getImapServer().getPort());
+        if (config.getImapServer() != null) {
+            props.put("mail.imap.host", config.getImapServer().getAddress());
+            props.put("mail.imap.port", config.getImapServer().getPort());
         }
-        if (sessionConfig.getPop3Server() != null) {
-            props.put("mail.pop3.host", sessionConfig.getPop3Server().getAddress());
-            props.put("mail.pop3.port", sessionConfig.getPop3Server().getPort());
+        if (config.getPop3Server() != null) {
+            props.put("mail.pop3.host", config.getPop3Server().getAddress());
+            props.put("mail.pop3.port", config.getPop3Server().getPort());
         }
 
-        props.put("mail.user", sessionConfig.getUsername());
-        props.put("mail.debug", sessionConfig.isDebug());
+        props.put("mail.debug", config.isDebug());
         //todo maybe add mail.from
 
         log.trace("props: " + props);
         return props;
     }
 
+    private void setAuthentication() {
+        setAuthForServer(config.getSmtpServer(), "smtp");
+        setAuthForServer(config.getPop3Server(), "pop3");
+        setAuthForServer(config.getImapServer(), "imap");
+    }
 
-    @Override
+    private void setAuthForServer(final MailSessionServer server, final String protocol) {
+        if (server != null) {
+            Credentials c = server.getCredentials();
+            URLName urlName = new URLName(protocol, server.getAddress(), server.getPort(), "", c != null ? c.getUsername() : null, c != null ? c.getPassword() : null);
+            if (c != null) {
+                session.setPasswordAuthentication(urlName, new PasswordAuthentication(c.getUsername(), c.getPassword()));
+            }
+        }
+    }
+
+
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
         return session;
 

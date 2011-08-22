@@ -23,18 +23,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  */
 public class SubsystemParsingTestCase extends AbstractParsingTest {
     private String SUBSYSTEM_XML =
-            "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "<mail-session jndi-name=\"java:/Mail\" >\n" +
-                "   <login name=\"nobody\" password=\"pass\"/>\n" +
-                "   <smtp-server address=\"localhost\" port=\"9999\"/>\n" +
-                "   <pop3-server address=\"example.com\" port=\"1234\"/>\n" +
-                "   <imap-server address=\"example.com\" port=\"432\"/>" +
-                "</mail-session>\n" +
-                "<mail-session jndi-name=\"foo/MyMailServer1\" debug=\"true\">\n" +
-                "   <login name=\"user\" password=\"pass\"/>\n" +
-                "   <smtp-server address=\"remote\" port=\"25\"/>\n" +
-                "</mail-session>"+
-            "</subsystem>";
+            " <subsystem xmlns=\"urn:jboss:domain:mail:1.0\">\n" +
+                    "            <mail-session jndi-name=\"java:/Mail\" >\n" +
+                    "                <smtp-server address=\"localhost\" port=\"9999\">\n" +
+                    "                       <login name=\"nobody\" password=\"pass\"/>\n" +
+                    "                </smtp-server>\n" +
+                    "                <pop3-server address=\"example.com\" port=\"1234\"/>\n" +
+                    "                <imap-server address=\"example.com\" port=\"432\">\n" +
+                    "                    <login name=\"nobody\" password=\"pass\"/>\n" +
+                    "                </imap-server>\n" +
+                    "           </mail-session>\n" +
+                    "            <mail-session jndi-name=\"java:jboss/mail/Default\" >\n" +
+                    "                <smtp-server address=\"localhost\" port=\"25\"/>\n" +
+                    "            </mail-session>\n" +
+                    "        </subsystem>";
     private static final Logger log = Logger.getLogger(SubsystemParsingTestCase.class);
 
     /**
