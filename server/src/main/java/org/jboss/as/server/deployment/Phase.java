@@ -304,6 +304,16 @@ public enum Phase {
     public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0505;
     public static final int POST_MODULE_EJB_TIMER_METADATA_MERGE        = 0x0506;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
+    public static final int POST_MODULE_EJB_TIMER_SERVICE               = 0x0601;
+    public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x0602;
+    public static final int POST_MODULE_EJB_TX_ATTR_MERGE               = 0x0603;
+    public static final int POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_MERGE= 0x0604;
+    public static final int POST_MODULE_EJB_CONCURRENCY_MERGE           = 0x0605;
+    public static final int POST_MODULE_EJB_RUN_AS_MERGE                = 0x0606;
+    public static final int POST_MODULE_EJB_RESOURCE_ADAPTER_MERGE      = 0x0607;
+    public static final int POST_MODULE_EJB_REMOVE_METHOD               = 0x0608;
+    public static final int POST_MODULE_EJB_STARTUP_MERGE               = 0x0609;
+    public static final int POST_MODULE_EJB_SECURITY_DOMAIN             = 0x060A;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;
@@ -323,15 +333,6 @@ public enum Phase {
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
-    public static final int POST_MODULE_EJB_TIMER_SERVICE               = 0x1D00;
-    public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x1F00;
-    public static final int POST_MODULE_EJB_TX_ATTR_MERGE               = 0x1F01;
-    public static final int POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_MERGE= 0x2000;
-    public static final int POST_MODULE_EJB_CONCURRENCY_MERGE           = 0x2100;
-    public static final int POST_MODULE_EJB_RUN_AS_MERGE                = 0x2200;
-    public static final int POST_MODULE_EJB_RESOURCE_ADAPTER_MERGE      = 0x2300;
-    public static final int POST_MODULE_EJB_REMOVE_METHOD               = 0x2400;
-    public static final int POST_MODULE_EJB_STARTUP_MERGE               = 0x2500;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
