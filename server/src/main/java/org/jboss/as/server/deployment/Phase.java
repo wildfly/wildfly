@@ -231,7 +231,6 @@ public enum Phase {
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_REMOVE_METHOD_ANNOTAION               = 0x1902;
     public static final int PARSE_EJB_DECLARE_ROLES_ANNOTATION          = 0x1903;
-    public static final int PARSE_EJB_RUN_AS_ANNOTATION                 = 0x1904;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
     public static final int PARSE_EJB_SESSION_SYNCHRONIZATION           = 0x1C50;
@@ -261,7 +260,6 @@ public enum Phase {
     public static final int PARSE_TIMEOUT_ANNOTATION                    = 0x3401;
     public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3500;
     public static final int PARSE_EJB_SECURITY_ROLE_REF_DD              = 0x3501;
-    public static final int PARSE_EJB_SECURITY_IDENTITY_DD              = 0x3502;
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
 
     // should be after all components are known
@@ -331,6 +329,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x1F00;
     public static final int POST_MODULE_EJB_LOCK_MERGE                  = 0x2000;
     public static final int POST_MODULE_EJB_TX_ATTR_MERGE               = 0x2100;
+    public static final int POST_MODULE_EJB_RUN_AS_MERGE                = 0x2200;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
