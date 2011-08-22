@@ -250,7 +250,7 @@ public enum Phase {
     public static final int PARSE_RA_DEPLOYMENT                         = 0x2100;
     public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x2200;
     public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x2300;
-    public static final int PARSE_MC_BEAN_DEPLOYMENT                    = 0x2400;
+    public static final int PARSE_POJO_DEPLOYMENT                       = 0x2400;
     public static final int PARSE_IRON_JACAMAR_DEPLOYMENT               = 0x2500;
     public static final int PARSE_RESOURCE_ADAPTERS                     = 0x2600;
     public static final int PARSE_DATA_SOURCES                          = 0x2700;
@@ -362,7 +362,7 @@ public enum Phase {
     // so consider INSTALL 0x0710 - 0x07FF reserved for WS subsystem!
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0800;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
-    public static final int INSTALL_MC_BEAN_DEPLOYMENT                  = 0x0A00;
+    public static final int INSTALL_POJO_DEPLOYMENT                     = 0x0A00;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;
     public static final int INSTALL_EE_COMP_LAZY_BINDING_SOURCE_HANDLER = 0x0C00;
     public static final int INSTALL_WS_LAZY_BINDING_SOURCE_HANDLER      = 0x0D00;
