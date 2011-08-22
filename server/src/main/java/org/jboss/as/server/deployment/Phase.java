@@ -297,7 +297,6 @@ public enum Phase {
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0401;
-    public static final int POST_MODULE_EJB_DD_REMOVE_METHOD            = 0x0500;
     public static final int POST_MODULE_EJB_DENY_ALL_ANNOTATION         = 0x0501;
     public static final int POST_MODULE_EJB_ROLES_ALLOWED_ANNOTATION    = 0x0502;
     public static final int POST_MODULE_EJB_PERMIT_ALL_ANNOTATION       = 0x0503;
@@ -330,6 +329,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_TX_ATTR_MERGE               = 0x2100;
     public static final int POST_MODULE_EJB_RUN_AS_MERGE                = 0x2200;
     public static final int POST_MODULE_EJB_RESOURCE_ADAPTER_MERGE      = 0x2300;
+    public static final int POST_MODULE_EJB_REMOVE_METHOD               = 0x2400;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
