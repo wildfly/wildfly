@@ -31,6 +31,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
+import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
@@ -109,7 +110,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                         final DeploymentReflectionIndex deploymentReflectionIndex = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
                         final EEApplicationClasses applicationClasses = phaseContext.getDeploymentUnit().getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
-                        final Map<Method, List<AutoTimer>> scheduleAnnotationData = MethodAnnotationAggregator.runtimeAnnotationInformation(configuration.getComponentClass(), applicationClasses, deploymentReflectionIndex, Schedule.class);
+                        final RuntimeAnnotationInformation<AutoTimer> scheduleAnnotationData = MethodAnnotationAggregator.runtimeAnnotationInformation(configuration.getComponentClass(), applicationClasses, deploymentReflectionIndex, Schedule.class);
                         final Set<Method> timerAnnotationData = MethodAnnotationAggregator.runtimeAnnotationPresent(configuration.getComponentClass(), applicationClasses, deploymentReflectionIndex, Timeout.class);
                         final Method timeoutMethod;
                         if(timerAnnotationData.size() > 1) {
@@ -140,7 +141,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                             c = c.getSuperclass();
                         }
                         //now for the schedule methods
-                        for (Map.Entry<Method, List<AutoTimer>> entry : scheduleAnnotationData.entrySet()) {
+                        for (Map.Entry<Method, List<AutoTimer>> entry : scheduleAnnotationData.getMethodAnnotations().entrySet()) {
 
                             for (AutoTimer timer : entry.getValue()) {
                                 ejbComponentDescription.addScheduleMethod(entry.getKey(), timer);

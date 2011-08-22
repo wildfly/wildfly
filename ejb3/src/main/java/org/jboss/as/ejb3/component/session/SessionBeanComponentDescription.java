@@ -41,6 +41,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.AccessTimeout;
@@ -60,13 +61,12 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Jaikiran Pai
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public abstract class SessionBeanComponentDescription extends EJBComponentDescription {
+public abstract class SessionBeanComponentDescription extends EJBComponentDescription<SessionBeanMetaData> {
 
     private static final Logger logger = Logger.getLogger(SessionBeanComponentDescription.class);
 
@@ -93,12 +93,12 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     /**
      * The {@link LockType} applicable for a specific bean methods.
      */
-    private Map<MethodIdentifier, LockType> methodLockTypes = new ConcurrentHashMap<MethodIdentifier, LockType>();
+    private Map<MethodIdentifier, LockType> methodLockTypes = new HashMap<MethodIdentifier, LockType>();
 
     /**
      * The {@link AccessTimeout} applicable for a specific bean methods.
      */
-    private Map<MethodIdentifier, AccessTimeout> methodAccessTimeouts = new ConcurrentHashMap<MethodIdentifier, AccessTimeout>();
+    private Map<MethodIdentifier, AccessTimeout> methodAccessTimeouts = new HashMap<MethodIdentifier, AccessTimeout>();
 
     /**
      * Methods on the component marked as @Asynchronous

@@ -56,7 +56,6 @@ import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 
 import javax.ejb.AccessTimeout;
 import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.LockType;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import javax.interceptor.InvocationContext;
@@ -237,12 +236,9 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
 
     private void processSingletonBean(SessionBean31MetaData singletonBeanMetaData, SingletonComponentDescription singletonComponentDescription) {
         Boolean initOnStartup = singletonBeanMetaData.isInitOnStartup();
-        if (initOnStartup != null && initOnStartup.booleanValue() == true) {
+        if (initOnStartup != null && initOnStartup) {
             singletonComponentDescription.initOnStartup();
         }
-        // bean level lock-type
-        LockType lockType = singletonBeanMetaData.getLockType();
-        singletonComponentDescription.setBeanLevelLockType(singletonComponentDescription.getEJBClassName(), lockType);
 
         // concurrency management type
         ConcurrencyManagementType concurrencyManagementType = singletonBeanMetaData.getConcurrencyManagementType();

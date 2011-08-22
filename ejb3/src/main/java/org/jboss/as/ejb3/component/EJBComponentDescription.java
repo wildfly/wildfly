@@ -43,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -63,7 +64,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponentDescription extends ComponentDescription {
+public abstract class EJBComponentDescription<DD extends EnterpriseBeanMetaData> extends ComponentDescription {
     /**
      * EJB 3.1 FR 13.3.7, the default transaction attribute is <i>REQUIRED</i>.
      */
@@ -74,6 +75,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private TransactionManagementType transactionManagementType = TransactionManagementType.CONTAINER;
 
     private final Map<MethodIntf, TransactionAttributeType> txPerViewStyle1 = new HashMap<MethodIntf, TransactionAttributeType>();
+
+    /**
+     * The deployment descriptor information for this bean, if any
+     */
+    private DD descriptorData;
 
     /**
      * The security-domain, if any, for this bean
@@ -747,6 +753,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setTimerService(final TimerService timerService) {
         this.timerService = timerService;
+    }
+
+    public DD getDescriptorData() {
+        return descriptorData;
+    }
+
+    public void setDescriptorData(final DD descriptorData) {
+        this.descriptorData = descriptorData;
     }
 
     @Override

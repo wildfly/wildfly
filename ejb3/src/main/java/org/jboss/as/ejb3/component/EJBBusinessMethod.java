@@ -31,13 +31,13 @@ import java.util.Arrays;
  */
 public class EJBBusinessMethod implements Serializable {
 
-    private String methodName;
+    private final String methodName;
 
-    private Class<?>[] methodParamTypes;
+    private final Class<?>[] methodParamTypes;
 
-    private MethodIntf viewType;
+    private final MethodIntf viewType;
 
-    private int hashCode;
+    private final int hashCode;
 
 
     public EJBBusinessMethod(Method method) {
