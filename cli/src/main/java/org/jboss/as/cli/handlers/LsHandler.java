@@ -50,7 +50,7 @@ public class LsHandler extends CommandHandlerWithHelp {
     public LsHandler(String command) {
         super(command, true);
         l = new ArgumentWithoutValue(this, "-l");
-        nodePath = new ArgumentWithValue(this, OperationRequestCompleter.INSTANCE, 0, "--node-path");
+        nodePath = new ArgumentWithValue(this, OperationRequestCompleter.ARG_VALUE_COMPLETER, 0, "--node-path");
     }
 
     @Override
