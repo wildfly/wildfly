@@ -25,9 +25,9 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -48,11 +48,15 @@ import java.util.Map;
 /**
  * @author Stuart Douglas
  */
-public class TransactionAttributeMergingProcessor extends AbstractMergingProcessor {
+public class TransactionAttributeMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
+
+    public TransactionAttributeMergingProcessor() {
+        super(EJBComponentDescription.class);
+    }
 
     @Override
-    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         processTransactionAttributeAnnotation(applicationClasses, deploymentReflectionIndex, componentClass, null, componentConfiguration);
         for (ViewDescription view : componentConfiguration.getViews()) {
@@ -68,7 +72,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
         }
     }
 
-    private void processTransactionAttributeAnnotation(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, MethodIntf methodIntf, final SessionBeanComponentDescription componentConfiguration) {
+    private void processTransactionAttributeAnnotation(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, MethodIntf methodIntf, final EJBComponentDescription componentConfiguration) {
         final RuntimeAnnotationInformation<TransactionAttributeType> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, TransactionAttribute.class);
         for (Map.Entry<String, List<TransactionAttributeType>> entry : data.getClassAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
@@ -87,7 +91,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
     }
 
     @Override
-    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         // CMT Tx attributes
         if (componentConfiguration.getDescriptorData() != null) {
             ContainerTransactionsMetaData containerTransactions = componentConfiguration.getDescriptorData().getContainerTransactions();

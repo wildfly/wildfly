@@ -24,47 +24,43 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import org.jboss.ejb3.annotation.ResourceAdapter;
 
 /**
- * @author Stuart Douglas
+ * Handles the {@link org.jboss.ejb3.annotation.ResourceAdapter} annotation merging
+ *
+ * @author Stuart DouglasrunAs
  */
-public class TransactionManagementMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
+public class ResourceAdaptorMergingProcessor extends AbstractMergingProcessor<MessageDrivenComponentDescription> {
 
-    public TransactionManagementMergingProcessor() {
-        super(EJBComponentDescription.class);
+    public ResourceAdaptorMergingProcessor() {
+        super(MessageDrivenComponentDescription.class);
     }
 
     @Override
-    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final MessageDrivenComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+
         final EEModuleClassDescription clazz = applicationClasses.getClassByName(componentClass.getName());
+
         //we only care about annotations on the bean class itself
         if (clazz == null) {
             return;
         }
-        ClassAnnotationInformation<TransactionManagement, TransactionManagementType> management = clazz.getAnnotationInformation(TransactionManagement.class);
-        if (management == null) {
+        final ClassAnnotationInformation<ResourceAdapter, String> resourceAdaptor = clazz.getAnnotationInformation(ResourceAdapter.class);
+        if (resourceAdaptor == null) {
             return;
         }
-        if (!management.getClassLevelAnnotations().isEmpty()) {
-            componentConfiguration.setTransactionManagementType(management.getClassLevelAnnotations().get(0));
+        if (!resourceAdaptor.getClassLevelAnnotations().isEmpty()) {
+            componentConfiguration.setResourceAdapterName(resourceAdaptor.getClassLevelAnnotations().get(0));
         }
     }
 
     @Override
-    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
-        if(componentConfiguration.getDescriptorData() == null) {
-            return;
-        }
-        final TransactionManagementType type = componentConfiguration.getDescriptorData().getTransactionType();
-        if(type != null) {
-            componentConfiguration.setTransactionManagementType(type);
-        }
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final MessageDrivenComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+       //not applicable
     }
 }

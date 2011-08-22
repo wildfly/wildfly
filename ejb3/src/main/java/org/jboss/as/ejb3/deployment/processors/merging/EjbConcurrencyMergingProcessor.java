@@ -52,9 +52,12 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Stuart Douglas
  */
-public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor {
+public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<SessionBeanComponentDescription> {
 
 
+    public EjbConcurrencyMergingProcessor() {
+        super(SessionBeanComponentDescription.class);
+    }
 
     protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) {
 
