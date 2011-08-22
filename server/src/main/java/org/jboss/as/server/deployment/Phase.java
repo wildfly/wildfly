@@ -302,7 +302,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_PERMIT_ALL_ANNOTATION       = 0x0503;
     public static final int POST_MODULE_EJB_EXCLUDE_LIST_DD             = 0x0504;
     public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0505;
-    public static final int POST_MODULE_EJB_TIMER_METADATA_MERGE = 0x0506;
+    public static final int POST_MODULE_EJB_TIMER_METADATA_MERGE        = 0x0506;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
@@ -331,6 +331,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_RUN_AS_MERGE                = 0x2200;
     public static final int POST_MODULE_EJB_RESOURCE_ADAPTER_MERGE      = 0x2300;
     public static final int POST_MODULE_EJB_REMOVE_METHOD               = 0x2400;
+    public static final int POST_MODULE_EJB_STARTUP_MERGE               = 0x2500;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;

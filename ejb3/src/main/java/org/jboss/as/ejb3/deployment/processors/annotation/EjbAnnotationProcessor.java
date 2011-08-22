@@ -46,6 +46,7 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         factories.add(new TransactionAttributeAnnotationInformationFactory());
         factories.add(new TransactionManagementAnnotationInformationFactory());
         factories.add(new RemoveAnnotationInformationFactory());
+        factories.add(new StartupAnnotationInformationFactory());
 
         factories.add(new ResourceAdaptorAnnotationInformationFactory());
 
