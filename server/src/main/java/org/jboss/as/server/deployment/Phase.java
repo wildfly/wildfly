@@ -325,8 +325,9 @@ public enum Phase {
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
     public static final int POST_MODULE_EJB_TIMER_SERVICE               = 0x1D00;
     public static final int POST_MODULE_EJB_TRANSACTION_MANAGEMENT      = 0x1F00;
-    public static final int POST_MODULE_EJB_LOCK_MERGE                  = 0x2000;
-    public static final int POST_MODULE_EJB_TX_ATTR_MERGE               = 0x2100;
+    public static final int POST_MODULE_EJB_TX_ATTR_MERGE               = 0x1F01;
+    public static final int POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_MERGE= 0x2000;
+    public static final int POST_MODULE_EJB_CONCURRENCY_MERGE           = 0x2100;
     public static final int POST_MODULE_EJB_RUN_AS_MERGE                = 0x2200;
     public static final int POST_MODULE_EJB_RESOURCE_ADAPTER_MERGE      = 0x2300;
     public static final int POST_MODULE_EJB_REMOVE_METHOD               = 0x2400;

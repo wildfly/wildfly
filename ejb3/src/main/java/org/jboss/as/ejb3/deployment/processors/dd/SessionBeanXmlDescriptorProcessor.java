@@ -49,7 +49,6 @@ import org.jboss.metadata.ejb.spec.StatefulTimeoutMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 
 import javax.ejb.AccessTimeout;
-import javax.ejb.ConcurrencyManagementType;
 import javax.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.util.concurrent.TimeUnit;
@@ -203,14 +202,6 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         Boolean initOnStartup = singletonBeanMetaData.isInitOnStartup();
         if (initOnStartup != null && initOnStartup) {
             singletonComponentDescription.initOnStartup();
-        }
-
-        // concurrency management type
-        ConcurrencyManagementType concurrencyManagementType = singletonBeanMetaData.getConcurrencyManagementType();
-        if (concurrencyManagementType == ConcurrencyManagementType.BEAN) {
-            singletonComponentDescription.beanManagedConcurrency();
-        } else {
-            singletonComponentDescription.containerManagedConcurrency();
         }
 
         // bean level access timeout

@@ -53,29 +53,33 @@ public class RemoveMethodMergingProcessor extends AbstractMergingProcessor<State
 
     protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final StatefulComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         EEModuleClassDescription clazz = applicationClasses.getClassByName(componentClass.getName());
-        ClassAnnotationInformation<Remove, Boolean> annotations = clazz.getAnnotationInformation(Remove.class);
-        if(annotations.getMethodLevelAnnotations().size() > 1) {
-            throw new DeploymentUnitProcessingException("More than one @Remove method found on class " + componentClass);
-        } else if(!annotations.getMethodLevelAnnotations().isEmpty()) {
-            final Map.Entry<MethodIdentifier, List<Boolean>> entry = annotations.getMethodLevelAnnotations().entrySet().iterator().next();
-            final Boolean retainIfException = entry.getValue().get(0);
-            componentConfiguration.addRemoveMethod(entry.getKey(), retainIfException);
+        if (clazz != null) {
+            ClassAnnotationInformation<Remove, Boolean> annotations = clazz.getAnnotationInformation(Remove.class);
+            if (annotations != null) {
+                if (annotations.getMethodLevelAnnotations().size() > 1) {
+                    throw new DeploymentUnitProcessingException("More than one @Remove method found on class " + componentClass);
+                } else if (!annotations.getMethodLevelAnnotations().isEmpty()) {
+                    final Map.Entry<MethodIdentifier, List<Boolean>> entry = annotations.getMethodLevelAnnotations().entrySet().iterator().next();
+                    final Boolean retainIfException = entry.getValue().get(0);
+                    componentConfiguration.addRemoveMethod(entry.getKey(), retainIfException);
+                }
+            }
         }
 
     }
 
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final StatefulComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
         SessionBeanMetaData beanMetaData = componentConfiguration.getDescriptorData();
-        if(beanMetaData == null) {
+        if (beanMetaData == null) {
             return;
         }
-        if(beanMetaData.getRemoveMethods() == null || beanMetaData.getRemoveMethods().isEmpty()){
+        if (beanMetaData.getRemoveMethods() == null || beanMetaData.getRemoveMethods().isEmpty()) {
             return;
         }
 
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
-        for(final RemoveMethodMetaData removeMethod : beanMetaData.getRemoveMethods()) {
+        for (final RemoveMethodMetaData removeMethod : beanMetaData.getRemoveMethods()) {
             final NamedMethodMetaData methodData = removeMethod.getBeanMethod();
             final Method method = MethodResolutionUtils.resolveMethod(methodData, componentClass, reflectionIndex);
             componentConfiguration.addRemoveMethod(MethodIdentifier.getIdentifierForMethod(method), removeMethod.isRetainIfException());
