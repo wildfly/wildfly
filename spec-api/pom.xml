@@ -149,5 +149,10 @@
       <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
     </dependency>
   </dependencies>
+  
+  <!-- Modules -->
+  <modules>
+    <module>test</module>
+  </modules>
 
 </project>
