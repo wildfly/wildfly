@@ -39,6 +39,8 @@ import java.util.Set;
 /**
  * Class which can turn a pre-runtime description of annotations into a runtime description.
  *
+ * This correctly handles overriden methods, so the annotations on overriden methods will not show up in the result
+ *
  * @author Stuart Douglas
  */
 public class MethodAnnotationAggregator {
