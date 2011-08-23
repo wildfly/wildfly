@@ -21,34 +21,33 @@
  */
 package org.jboss.as.cli.parsing;
 
-
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
-
+import org.jboss.as.cli.CommandFormatException;
 
 /**
- *
- * @author Alexey Loubyansky
- */
-public class InitialState extends DefaultParsingState {
+*
+* @author Alexey Loubyansky
+*/
+public final class EscapeCharacterState extends BaseParsingState {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
+/*    private static final CharacterHandler EOC = GlobalCharacterHandlers.newErrorCharacterHandler(
+    "Error parsing escaped character: the character after '\' is missing.");
+*/
 
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
+    public static final EscapeCharacterState INSTANCE = new EscapeCharacterState();
+
+    EscapeCharacterState() {
+        super("ESCAPED_CHARACTER");
     }
 
-    InitialState(OperationRequestState opState, CommandState cmdState) {
-        super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
+    @Override
+    public CharacterHandler getHandler(char ch) {
+        return new CharacterHandler() {
+            @Override
+            public void handle(ParsingContext ctx)
+                    throws CommandFormatException {
+                ctx.getCallbackHandler().character(ctx);
+                ctx.leaveState();
+            }
+        };
     }
 }

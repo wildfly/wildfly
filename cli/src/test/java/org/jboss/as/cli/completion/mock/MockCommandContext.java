@@ -32,10 +32,10 @@ import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.PrefixFormatter;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
@@ -49,12 +49,12 @@ import org.jboss.as.controller.client.ModelControllerClient;
 public class MockCommandContext implements CommandContext {
 
     private ModelControllerClient mcc;
-    private OperationRequestParser operationParser;
+    private CommandLineParser operationParser;
     private OperationRequestAddress prefix;
     private PrefixFormatter prefixFormatter;
     private OperationCandidatesProvider operationCandidatesProvider;
 
-    private DefaultOperationCallbackHandler parsedCmd = new DefaultOperationCallbackHandler();
+    private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
 
     public void parseCommandLine(String buffer) throws CommandFormatException {
         try {
@@ -132,11 +132,8 @@ public class MockCommandContext implements CommandContext {
      * @see org.jboss.as.cli.CommandContext#getOperationRequestParser()
      */
     @Override
-    public OperationRequestParser getOperationRequestParser() {
-        if(operationParser == null) {
-            operationParser = new DefaultOperationRequestParser();
-        }
-        return operationParser;
+    public CommandLineParser getCommandLineParser() {
+        return DefaultOperationRequestParser.INSTANCE;
     }
 
     /* (non-Javadoc)

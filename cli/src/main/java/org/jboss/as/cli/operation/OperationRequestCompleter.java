@@ -30,7 +30,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.EscapeSelector;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 
 
 /**
@@ -42,7 +42,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
     public static final OperationRequestCompleter INSTANCE = new OperationRequestCompleter();
 
     public static final CommandLineCompleter ARG_VALUE_COMPLETER = new CommandLineCompleter(){
-        final DefaultOperationCallbackHandler parsedOp = new DefaultOperationCallbackHandler();
+        final DefaultCallbackHandler parsedOp = new DefaultCallbackHandler();
         @Override
         public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
             try {

@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.junit.Test;
 
 /**
@@ -41,7 +41,7 @@ public class CommandTestCase {
     @Test
     public void testCommandOnly() throws Exception {
 
-        DefaultOperationCallbackHandler cmd = parse("some-command");
+        DefaultCallbackHandler cmd = parse("some-command");
         assertEquals("some-command", cmd.getOperationName());
         assertFalse(cmd.hasProperties());
         assertNull(cmd.getOutputTarget());
@@ -50,7 +50,7 @@ public class CommandTestCase {
     @Test
     public void testCommandWithArgsAndOutputTarget() throws Exception {
 
-        DefaultOperationCallbackHandler cmd = parse(" some-command --name=value --name1 value1 > command.log");
+        DefaultCallbackHandler cmd = parse(" some-command --name=value --name1 value1 > command.log");
         assertEquals("some-command", cmd.getOperationName());
         assertTrue(cmd.hasProperties());
         assertTrue(cmd.hasProperty("--name"));
@@ -65,8 +65,8 @@ public class CommandTestCase {
         assertEquals("command.log", cmd.getOutputTarget());
     }
 
-    protected DefaultOperationCallbackHandler parse(String line) {
-        DefaultOperationCallbackHandler args = new DefaultOperationCallbackHandler();
+    protected DefaultCallbackHandler parse(String line) {
+        DefaultCallbackHandler args = new DefaultCallbackHandler();
         try {
             args.parse(null, line);
         } catch (CommandFormatException e) {

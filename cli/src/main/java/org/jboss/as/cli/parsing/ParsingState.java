@@ -21,34 +21,21 @@
  */
 package org.jboss.as.cli.parsing;
 
-
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
-
-
 /**
  *
  * @author Alexey Loubyansky
  */
-public class InitialState extends DefaultParsingState {
+public interface ParsingState {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
+    String getId();
 
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
-    }
+    CharacterHandler getEnterHandler();
 
-    InitialState(OperationRequestState opState, CommandState cmdState) {
-        super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
-    }
+    CharacterHandler getLeaveHandler();
+
+    CharacterHandler getHandler(char ch);
+
+    CharacterHandler getReturnHandler();
+
+    CharacterHandler getEndContentHandler();
 }

@@ -25,6 +25,7 @@ package org.jboss.as.cli.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
@@ -185,7 +186,32 @@ public class ArgumentWithoutValue implements CommandArgument {
 
         ParsedCommandLine args = ctx.getParsedCommandLine();
         if (exclusive) {
-            return !args.hasProperties();
+            final Set<String> propertyNames = args.getPropertyNames();
+            if(propertyNames.isEmpty()) {
+                final List<String> values = args.getOtherProperties();
+                if(values.isEmpty()) {
+                    return true;
+                }
+                if(index == -1) {
+                    return false;
+                }
+                return !(index == 0 && values.size() == 1);
+            }
+
+            if(propertyNames.size() != 1) {
+                return false;
+            }
+
+            if(args.getLastParsedPropertyName() == null) {
+                return false;
+            }
+
+            final List<String> values = args.getOtherProperties();
+            if(!values.isEmpty()) {
+                return false;
+            }
+
+            return fullName.startsWith(args.getLastParsedPropertyName()) || (shortName != null && shortName.startsWith(args.getLastParsedPropertyName()));
         }
 
         if (isPresent(args)) {

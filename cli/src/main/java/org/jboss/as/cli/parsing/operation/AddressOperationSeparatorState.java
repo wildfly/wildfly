@@ -19,36 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing;
+package org.jboss.as.cli.parsing.operation;
 
-
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
-
+import org.jboss.as.cli.parsing.DefaultParsingState;
+import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class InitialState extends DefaultParsingState {
+public class AddressOperationSeparatorState extends DefaultParsingState {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
+    public static final AddressOperationSeparatorState INSTANCE = new AddressOperationSeparatorState();
 
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
+    public AddressOperationSeparatorState() {
+        this(OperationNameState.INSTANCE);
     }
 
-    InitialState(OperationRequestState opState, CommandState cmdState) {
-        super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
+    public AddressOperationSeparatorState(final OperationNameState opName) {
+        super("ADDR_OP_SEP");
+        setDefaultHandler(new EnterStateCharacterHandler(opName));
+        setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
+
 }
