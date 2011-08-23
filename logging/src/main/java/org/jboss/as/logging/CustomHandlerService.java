@@ -86,13 +86,13 @@ public final class CustomHandlerService implements Service<Handler> {
                 throw new StartException(String.format("%s %s is not a valid %s.", CUSTOM_HANDLER, className, Handler.class.getName()));
             }
         } catch (ClassNotFoundException e) {
-            throw new StartException(e);
+            throw new StartException(String.format("Class %s could not be found.", className), e);
         } catch (ModuleLoadException e) {
-            throw new StartException(String.format("%s %s is not a valid %s.", CUSTOM_HANDLER, className, Handler.class.getName()), e);
+            throw new StartException(String.format("Could not load module %s.", moduleName), e);
         } catch (InstantiationException e) {
-            throw new StartException(String.format("%s %s is not a valid %s.", CUSTOM_HANDLER, className, Handler.class.getName()), e);
+            throw new StartException(String.format("Could not instantiate %s.", className), e);
         } catch (IllegalAccessException e) {
-            throw new StartException(String.format("%s %s is not a valid %s.", CUSTOM_HANDLER, className, Handler.class.getName()), e);
+            throw new StartException(String.format("Could not access %s.", className), e);
         }
         formatterSpec.apply(handler);
         if (level != null) handler.setLevel(level);
