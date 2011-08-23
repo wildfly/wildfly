@@ -315,6 +315,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_STARTUP_MERGE               = 0x0609;
     public static final int POST_MODULE_EJB_SECURITY_DOMAIN             = 0x060A;
     public static final int POST_MODULE_EJB_ROLES                       = 0x060B;
+    public static final int POST_MODULE_METHOD_PERMISSIONS              = 0x060C;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;

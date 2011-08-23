@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,16 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.ejb3.deployment.processors.merging;
 
-package org.jboss.as.ejb3.deployment.processors;
-
-import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
+import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.deployment.processors.dd.AbstractEjbXmlDescriptorProcessor;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -43,51 +41,63 @@ import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.MethodPermissionMetaData;
 import org.jboss.metadata.ejb.spec.MethodPermissionsMetaData;
 import org.jboss.metadata.ejb.spec.MethodsMetaData;
-import org.jboss.modules.Module;
 
+import javax.annotation.security.RolesAllowed;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * Processes the &lt;method-permission&gt; elements of a EJB and sets up appropriate security permissions on the EJB.
+ * Handles the {@link javax.annotation.security.RolesAllowed} annotation
+ * <p/>
+ * Also rocesses the &lt;method-permission&gt; elements of a EJB and sets up appropriate security permissions on the EJB.
  * <p/>
  * This processor should be run *after* all the views of the EJB have been identified and set in the {@link EJBComponentDescription}
- * Author: Jaikiran Pai
+ *
+ * @author Stuart Douglas
  */
-public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcessor<EnterpriseBeanMetaData> {
+public class RolesAllowedMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
-    private static final Logger logger = Logger.getLogger(MethodPermissionDDProcessor.class);
+    private static final Logger logger = Logger.getLogger(RolesAllowedMergingProcessor.class);
 
-    @Override
-    protected Class<EnterpriseBeanMetaData> getMetaDataType() {
-        return EnterpriseBeanMetaData.class;
+    public RolesAllowedMergingProcessor() {
+        super(EJBComponentDescription.class);
     }
 
     @Override
-    protected void processBeanMetaData(EnterpriseBeanMetaData beanMetaData, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final String ejbName = beanMetaData.getEjbName();
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
+        final RuntimeAnnotationInformation<String[]> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, RolesAllowed.class);
+
+        for (Map.Entry<String, List<String[]>> entry : data.getClassAnnotations().entrySet()) {
+            description.setRolesAllowedOnAllViewsForClass(entry.getKey(), new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0))));
+        }
+
+        for (Map.Entry<Method, List<String[]>> entry : data.getMethodAnnotations().entrySet()) {
+            EJBMethodIdentifier identifier = EJBMethodIdentifier.fromMethod(entry.getKey());
+            description.setRolesAllowedOnAllViewsForMethod(identifier, new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0))));
+        }
+    }
+
+    @Override
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
+        final EnterpriseBeanMetaData beanMetaData = description.getDescriptorData();
+        if (beanMetaData == null) {
+            return;
+        }
         final AssemblyDescriptorMetaData assemblyDescriptor = beanMetaData.getAssemblyDescriptor();
         if (assemblyDescriptor == null) {
             return;
         }
-        final MethodPermissionsMetaData methodPermissions = assemblyDescriptor.getMethodPermissionsByEjbName(ejbName);
+        final MethodPermissionsMetaData methodPermissions = assemblyDescriptor.getMethodPermissionsByEjbName(description.getEJBName());
         if (methodPermissions == null || methodPermissions.isEmpty()) {
             return;
         }
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) moduleDescription.getComponentByName(ejbName);
-        final Class<?> ejbClass;
-        try {
-            ejbClass = module.getClassLoader().loadClass(beanMetaData.getEjbClass());
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load EJB class " + beanMetaData.getEjbClass());
-        }
-        final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(ejbClass);
+
+        final ClassReflectionIndex<?> classReflectionIndex = deploymentReflectionIndex.getClassIndex(componentClass);
 
         for (final MethodPermissionMetaData methodPermission : methodPermissions) {
             final MethodsMetaData methods = methodPermission.getMethods();
@@ -101,7 +111,7 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
             final Set<String> securityRoles = methodPermission.getRoles();
             for (final MethodMetaData method : methods) {
                 final String methodName = method.getMethodName();
-                final MethodIntf methodIntf = this.getMethodIntf(method);
+                final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
                 // style 1
                 //            <method>
                 //                <ejb-name>EJBNAME</ejb-name>
@@ -111,9 +121,9 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
                     // if method name is * then it means all methods, which actually implies a class level @RolesAllowed
                     // now check if it specifies the optional method-inf. If it doesn't then it applies to all views
                     if (methodIntf == null) {
-                        ejbComponentDescription.setRolesAllowedForAllMethodsOfAllViews(securityRoles);
+                        description.setRolesAllowedForAllMethodsOfAllViews(securityRoles);
                     } else {
-                        ejbComponentDescription.setRolesAllowedForAllMethodsOnViewType(methodIntf, securityRoles);
+                        description.setRolesAllowedForAllMethodsOnViewType(methodIntf, securityRoles);
                     }
                 } else {
                     final MethodParametersMetaData methodParams = method.getMethodParams();
@@ -126,11 +136,11 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
                         final Collection<Method> applicableMethods = ClassReflectionIndexUtil.findAllMethodsByName(deploymentReflectionIndex, classReflectionIndex, methodName);
                         // just log a WARN message and proceed, in case there was no method by that name
                         if (applicableMethods.isEmpty()) {
-                            logger.warn("No method named: " + methodName + " found on EJB: " + ejbName + " while processing method-permission element in ejb-jar.xml");
+                            logger.warn("No method named: " + methodName + " found on EJB: " + description.getEJBName() + " while processing method-permission element in ejb-jar.xml");
                             continue;
                         }
                         // apply the @RolesAllowed/method-permission
-                        this.setRolesAllowed(ejbComponentDescription, methodIntf, applicableMethods, securityRoles);
+                        this.setRolesAllowed(description, methodIntf, applicableMethods, securityRoles);
 
                     } else {
                         // style 3
@@ -148,41 +158,17 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
                         final Collection<Method> applicableMethods = ClassReflectionIndexUtil.findMethods(deploymentReflectionIndex, classReflectionIndex, methodName, paramTypes);
                         // just log a WARN message and proceed, in case there was no method by that name and param types
                         if (applicableMethods.isEmpty()) {
-                            logger.warn("No method named: " + methodName + " with param types: " + paramTypes + " found on EJB: " + ejbName + " while processing method-permission element in ejb-jar.xml");
+                            logger.warn("No method named: " + methodName + " with param types: " + paramTypes + " found on EJB: " + description.getEJBName() + " while processing method-permission element in ejb-jar.xml");
                             continue;
                         }
                         // apply the @RolesAllowed/method-permission
-                        this.setRolesAllowed(ejbComponentDescription, methodIntf, applicableMethods, securityRoles);
+                        this.setRolesAllowed(description, methodIntf, applicableMethods, securityRoles);
                     }
                 }
             }
         }
     }
 
-    private MethodIntf getMethodIntf(final MethodMetaData method) {
-        final MethodInterfaceType methodInterfaceType = method.getMethodIntf();
-        if (methodInterfaceType == null) {
-            return null;
-        }
-        switch (methodInterfaceType) {
-            case Local:
-                return MethodIntf.LOCAL;
-            case Remote:
-                return MethodIntf.REMOTE;
-            case Home:
-                return MethodIntf.HOME;
-            case LocalHome:
-                return MethodIntf.LOCAL_HOME;
-            case ServiceEndpoint:
-                return MethodIntf.SERVICE_ENDPOINT;
-            case MessageEndpoint:
-                return MethodIntf.MESSAGE_ENDPOINT;
-            case Timer:
-                return MethodIntf.TIMER;
-            default:
-                throw new RuntimeException("Unknown method-intf " + methodInterfaceType + " on method " + method);
-        }
-    }
 
     private void setRolesAllowed(final EJBComponentDescription ejbComponentDescription, final MethodIntf viewType, final Collection<Method> rolesAllowedApplicableMethods, Collection<String> roles) {
         for (final Method denyAllApplicableMethod : rolesAllowedApplicableMethods) {
@@ -193,5 +179,12 @@ public class MethodPermissionDDProcessor extends AbstractEjbXmlDescriptorProcess
                 ejbComponentDescription.setRolesAllowedForMethodOnViewType(viewType, ejbMethodIdentifier, new HashSet(roles));
             }
         }
+    }
+
+    protected MethodIntf getMethodIntf(MethodInterfaceType viewType) {
+        if (viewType == null) {
+            return null;
+        }
+        return super.getMethodIntf(viewType);
     }
 }
