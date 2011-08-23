@@ -225,12 +225,7 @@ public enum Phase {
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_WS_EJB_INTEGRATION                    = 0x1701;
-    public static final int PARSE_EJB_STARTUP_ANNOTATION                = 0x1800;
-    public static final int PARSE_EJB_SECURITY_DOMAIN_ANNOTATION        = 0x1801;
-    public static final int PARSE_EJB_CONCURRENCY_MANAGEMENT_ANNOTATION = 0x1900;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
-    public static final int PARSE_REMOVE_METHOD_ANNOTAION               = 0x1902;
-    public static final int PARSE_EJB_DECLARE_ROLES_ANNOTATION          = 0x1903;
     // should be after ConcurrencyManagement annotation processor
     public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
     public static final int PARSE_EJB_SESSION_SYNCHRONIZATION           = 0x1C50;
@@ -297,11 +292,6 @@ public enum Phase {
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0401;
-    public static final int POST_MODULE_EJB_DENY_ALL_ANNOTATION         = 0x0501;
-    public static final int POST_MODULE_EJB_ROLES_ALLOWED_ANNOTATION    = 0x0502;
-    public static final int POST_MODULE_EJB_PERMIT_ALL_ANNOTATION       = 0x0503;
-    public static final int POST_MODULE_EJB_EXCLUDE_LIST_DD             = 0x0504;
-    public static final int POST_MODULE_EJB_METHOD_PERMISSION_DD        = 0x0505;
     public static final int POST_MODULE_EJB_TIMER_METADATA_MERGE        = 0x0506;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
     public static final int POST_MODULE_EJB_TIMER_SERVICE               = 0x0601;
