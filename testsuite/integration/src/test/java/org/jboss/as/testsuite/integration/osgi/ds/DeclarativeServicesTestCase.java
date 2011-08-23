@@ -46,13 +46,13 @@ import org.osgi.service.startlevel.StartLevel;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
- * Example for Dynamic Services
+ * Example for Declarative Services
  *
  * @author thomas.diesler@jboss.com
  * @since 06-Jul-2011
  */
 @RunWith(Arquillian.class)
-public class DynamicServicesTestCase extends OSGiTestSupport {
+public class DeclarativeServicesTestCase extends OSGiTestSupport {
 
     @Inject
     public BundleContext context;
