@@ -91,7 +91,7 @@ public class MethodAnnotationAggregator {
 
     public static <A extends Annotation, T> Set<Method> runtimeAnnotationPresent(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {
         RuntimeAnnotationInformation<Object> result = runtimeAnnotationInformation(componentClass, applicationClasses, index, annotationType);
-        return new HashSet<Method>(result.getMethodAnnotations().keySet());
+        return result.getMethodAnnotations().keySet();
     }
 
 
