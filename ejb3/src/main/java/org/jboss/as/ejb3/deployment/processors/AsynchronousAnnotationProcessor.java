@@ -22,9 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import java.util.List;
-import java.util.Map;
-import javax.ejb.Asynchronous;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -34,6 +31,10 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
+
+import javax.ejb.Asynchronous;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Deployment processor responsible for detecting @Asynchronous annotations on session bean components.

@@ -31,7 +31,6 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -45,7 +44,6 @@ import org.jboss.metadata.ejb.spec.BusinessLocalsMetaData;
 import org.jboss.metadata.ejb.spec.BusinessRemotesMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-import org.jboss.metadata.ejb.spec.StatefulTimeoutMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 
 import javax.ejb.AccessTimeout;
@@ -180,22 +178,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         if (sessionBean31MetaData.isSingleton() && sessionBeanComponentDescription instanceof SingletonComponentDescription) {
             this.processSingletonBean(sessionBean31MetaData, (SingletonComponentDescription) sessionBeanComponentDescription);
         }
-        if(sessionBean31MetaData.isStateful() && sessionBeanComponentDescription instanceof StatefulComponentDescription) {
-            processStatefulBean(sessionBean31MetaData, (StatefulComponentDescription)sessionBeanComponentDescription);
-        }
-
         processSessionSynchronization(sessionBean31MetaData, sessionBeanComponentDescription);
-    }
-
-    private void processStatefulBean(final SessionBean31MetaData sessionBean31MetaData, final StatefulComponentDescription sessionBeanComponentDescription) {
-        final StatefulTimeoutMetaData statefulTimeout = sessionBean31MetaData.getStatefulTimeout();
-        if(statefulTimeout != null) {
-            TimeUnit unit = TimeUnit.MINUTES;
-            if(statefulTimeout.getUnit()!=null) {
-                unit = statefulTimeout.getUnit();
-            }
-            sessionBeanComponentDescription.setStatefulTimeout(new StatefulTimeoutInfo(statefulTimeout.getTimeout(), unit));
-        }
     }
 
     private void processSingletonBean(SessionBean31MetaData singletonBeanMetaData, SingletonComponentDescription singletonComponentDescription) {
