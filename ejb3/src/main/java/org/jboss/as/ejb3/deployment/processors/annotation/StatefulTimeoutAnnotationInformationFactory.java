@@ -21,8 +21,33 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
+import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
+import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
+
+import javax.ejb.StatefulTimeout;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Stuart Douglas
  */
-public class StatefulTimeoutAnnotationInformationFactory {
+public class StatefulTimeoutAnnotationInformationFactory extends ClassAnnotationInformationFactory<StatefulTimeout, StatefulTimeoutInfo> {
+
+    protected StatefulTimeoutAnnotationInformationFactory() {
+        super(StatefulTimeout.class, null);
+    }
+
+    @Override
+    protected StatefulTimeoutInfo fromAnnotation(final AnnotationInstance annotationInstance) {
+        final long value = annotationInstance.value().asLong();
+        final AnnotationValue unitValue = annotationInstance.value("unit");
+        final TimeUnit unit;
+        if (unitValue != null) {
+            unit = TimeUnit.valueOf(unitValue.asEnum());
+        } else {
+            unit = TimeUnit.MINUTES;
+        }
+        return new StatefulTimeoutInfo(value, unit);
+    }
 }

@@ -226,8 +226,6 @@ public enum Phase {
     // create and attach the component description out of EJB annotations
     public static final int PARSE_WS_EJB_INTEGRATION                    = 0x1701;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
-    // should be after ConcurrencyManagement annotation processor
-    public static final int PARSE_EJB_STATEFUL_TIMEOUT_ANNOTATION       = 0x1A01;
     public static final int PARSE_EJB_SESSION_SYNCHRONIZATION           = 0x1C50;
     public static final int PARSE_EJB_ASYNCHRONOUS_ANNOTATION           = 0x1E00;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
@@ -306,6 +304,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_SECURITY_DOMAIN             = 0x060A;
     public static final int POST_MODULE_EJB_ROLES                       = 0x060B;
     public static final int POST_MODULE_METHOD_PERMISSIONS              = 0x060C;
+    public static final int POST_MODULE_STATEFUL_TIMEOUT                = 0x060D;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;
