@@ -24,12 +24,11 @@ package org.jboss.as.ejb3.deployment.processors;
 
 
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-
 import org.jboss.as.ee.component.EEModuleDescription;
-
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
+import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -151,6 +150,12 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
                 if (ejbJar31MetaData.getModuleName() != null) {
                     eeModuleDescription.setModuleName(ejbJar31MetaData.getModuleName());
                 }
+                if (ejbJar31MetaData.isMetadataComplete()) {
+                    MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
+                }
+            } else if (!ejbJarMetaData.isEJB3x()) {
+                //EJB spec 20.5.1, we do not process annotations for older deployments
+                MetadataCompleteMarker.setMetadataComplete(deploymentUnit, true);
             }
 
         } catch (XMLStreamException xmlse) {
