@@ -645,10 +645,6 @@
             <maven-resource group="org.jboss.ejb3.context" artifact="jboss-ejb3-context-base"/>
             <maven-resource group="org.jboss.ejb3.context" artifact="jboss-ejb3-context-spi"/>
 
-            <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-api"/>
-            <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-common"/>
-            <maven-resource group="org.jboss.ejb3.effigy" artifact="jboss-ejb3-effigy-int2"/>
-
             <maven-resource group="org.jboss.ejb3.concurrency" artifact="jboss-ejb3-concurrency-spi"/>
             <maven-resource group="org.jboss.ejb3.concurrency" artifact="jboss-ejb3-concurrency-impl"/>
 

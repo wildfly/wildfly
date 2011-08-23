@@ -3148,24 +3148,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.ejb3.effigy</groupId>
-                <artifactId>jboss-ejb3-effigy-api</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.effigy</groupId>
-                <artifactId>jboss-ejb3-effigy-common</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.effigy</groupId>
-                <artifactId>jboss-ejb3-effigy-int2</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.ejb3.timerservice</groupId>
                 <artifactId>ejb31-calendar-expr-parser</artifactId>
                 <version>${version.org.jboss.ejb3.timerservice}</version>
