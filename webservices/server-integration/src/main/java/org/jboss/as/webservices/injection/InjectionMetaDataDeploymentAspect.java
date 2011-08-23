@@ -30,13 +30,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-//import org.jboss.ejb3.ejbref.resolver.spi.EjbReferenceResolver; TODO: replace
 import org.jboss.metadata.javaee.spec.EnvironmentEntriesMetaData;
 import org.jboss.metadata.javaee.spec.EnvironmentEntryMetaData;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
@@ -61,37 +61,12 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
     /** Resolver handling @Resource injections. */
     private static final ReferenceResolver RESOURCE_RESOLVER = new ResourceReferenceResolver();
 
-    /** EJB 3 reference resolver. */
-    // private EjbReferenceResolver ejbReferenceResolver; // TODO: replace
-
     /**
      * Constructor.
      */
     public InjectionMetaDataDeploymentAspect() {
         super();
     }
-
-    /**
-     * Sets ejb reference resolver. This method is invoked by MC.
-     *
-     * @param resolver ejb reference resolver
-     */
-    /*
-     * TODO: uncomment public void setEjbReferenceResolver(final EjbReferenceResolver resolver) { this.ejbReferenceResolver =
-     * resolver; }
-     */
-
-    /**
-     * Gets ejb reference resolver.
-     *
-     * @return ejb reference resolver
-     */
-    /*
-     * TODO: uncomment public EjbReferenceResolver getEjbReferenceResolver() { if (this.ejbReferenceResolver == null) { throw
-     * new IllegalStateException(BundleUtils.getMessage(bundle, "NO_EJBREFERENCERESOLVER_SET_BY_MC")); }
-     *
-     * return this.ejbReferenceResolver; }
-     */
 
     /**
      * Builds injection meta data for all endpoints in deployment.
@@ -147,8 +122,8 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
     private Map<Class<? extends Annotation>, ReferenceResolver> getResolvers(final DeploymentUnit unit) {
         final Map<Class<? extends Annotation>, ReferenceResolver> resolvers = new HashMap<Class<? extends Annotation>, ReferenceResolver>();
 
-        resolvers.put(Resource.class, InjectionMetaDataDeploymentAspect.RESOURCE_RESOLVER);
-        // resolvers.put(EJB.class, new EJBBeanReferenceResolver(unit, this.getEjbReferenceResolver())); TODO: uncomment
+        resolvers.put(Resource.class, RESOURCE_RESOLVER);
+        resolvers.put(EJB.class, new EJBResourceReferenceResolver(unit));
 
         return resolvers;
     }
