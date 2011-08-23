@@ -36,7 +36,6 @@ import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
-import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
