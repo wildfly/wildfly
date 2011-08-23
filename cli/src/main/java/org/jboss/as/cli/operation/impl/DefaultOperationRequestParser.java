@@ -23,8 +23,8 @@ package org.jboss.as.cli.operation.impl;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.parsing.TheParser;
+import org.jboss.as.cli.operation.CommandLineParser;
+import org.jboss.as.cli.parsing.ParserUtil;
 
 /**
  * Default implementation of CommandParser which expects the following command format:
@@ -44,11 +44,11 @@ import org.jboss.as.cli.parsing.TheParser;
  *
  * @author Alexey Loubyansky
  */
-public class DefaultOperationRequestParser implements OperationRequestParser {
+public class DefaultOperationRequestParser implements CommandLineParser {
 
-    public static final OperationRequestParser INSTANCE = new DefaultOperationRequestParser();
+    public static final CommandLineParser INSTANCE = new DefaultOperationRequestParser();
 
-    public static final String FORMAT = "[node-type=node-name (, node-type=node-name)*] : operation-name [ '(' name=value (, name=value)* ')' ]";
+/*    public static final String FORMAT = "[node-type=node-name (, node-type=node-name)*] : operation-name [ '(' name=value (, name=value)* ')' ]";
     public static final char NODE_TYPE_NAME_SEPARATOR = '=';
     public static final char NODE_SEPARATOR = '/';
     public static final char ADDRESS_OPERATION_NAME_SEPARATOR = ':';
@@ -59,7 +59,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
     public static final String ROOT_NODE = "/";
     public static final String PARENT_NODE = "..";
     public static final String NODE_TYPE = ".type";
-
+*/
     @Override
     public void parse(String operationRequest, final CallbackHandler handler) throws OperationFormatException {
 
@@ -68,7 +68,7 @@ public class DefaultOperationRequestParser implements OperationRequestParser {
         }
 
         try {
-            TheParser.parseOperationRequest(operationRequest, handler);
+            ParserUtil.parseOperationRequest(operationRequest, handler);
         } catch (CommandFormatException e) {
             throw new OperationFormatException(e);
         }

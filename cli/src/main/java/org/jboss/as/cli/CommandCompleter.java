@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.operation.OperationRequestCompleter;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 
 import jline.Completor;
 
@@ -74,7 +74,7 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
             return cmdFirstIndex;
         }
 
-        final DefaultOperationCallbackHandler parsedCmd = (DefaultOperationCallbackHandler) ctx.getParsedCommandLine();
+        final DefaultCallbackHandler parsedCmd = (DefaultCallbackHandler) ctx.getParsedCommandLine();
         try {
             parsedCmd.parse(ctx.getPrefix(), buffer);
         } catch(CommandFormatException e) {

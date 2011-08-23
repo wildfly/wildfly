@@ -23,9 +23,10 @@ package org.jboss.as.cli.parsing.test;
 
 import java.util.Iterator;
 
+import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.junit.Test;
@@ -38,11 +39,11 @@ import junit.framework.TestCase;
  */
 public class AddressOnlyParsingTestCase extends TestCase {
 
-    private DefaultOperationRequestParser parser = new DefaultOperationRequestParser();
+    private CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
 
     @Test
     public void testNodeTypeOnly() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parser.parse("subsystem", handler);
 
@@ -70,7 +71,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
     @Test
     public void testNodeTypeNameSeparator() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parser.parse("subsystem=", handler);
 
@@ -100,7 +101,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     public void testNodeTypeOnlyWithPrefixNode() throws Exception {
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNode("a", "b");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("subsystem", handler);
 
@@ -135,7 +136,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     public void testChildNodeTypeOnlyWithPrefixNode() throws Exception {
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNode("a", "b");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("./subsystem", handler);
 
@@ -170,7 +171,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     public void testRootNodeTypeOnlyWithPrefixNode() throws Exception {
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNode("a", "b");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("/subsystem", handler);
 
@@ -200,7 +201,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     public void testNodeNameOnly() throws Exception {
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNodeType("a");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("b", handler);
 
@@ -230,7 +231,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     public void testNodeNameOnlyWithNodeSeparator() throws Exception {
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNodeType("a");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("b/", handler);
 
@@ -258,7 +259,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
     @Test
     public void testOneNode() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parser.parse("subsystem=logging", handler);
 
@@ -286,7 +287,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
     @Test
     public void testColonAndSlashInTheNodeName() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parser.parse("data-source=\"java:/H2DS\"", handler);
 
@@ -314,7 +315,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
     @Test
     public void testOneNodeWithNodeSeparator() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parser.parse("subsystem=logging/", handler);
 
@@ -342,7 +343,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
     @Test
     public void testEndsOnType() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parser.parse("a=b/c", handler);
 
@@ -377,7 +378,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     public void testNodeWithPrefix() throws Exception {
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNode("a", "b");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("c=d", handler);
 
@@ -413,7 +414,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNode("a", "b");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("/", handler);
 
@@ -440,7 +441,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNode("a", "b");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         //parser.parse("c=d,~,e=f", handler);
         parser.parse("/e=f", handler);
@@ -472,7 +473,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNode("a", "b");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("..", handler);
 
@@ -496,7 +497,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     @Test
     public void testParentInCombination() throws Exception {
 
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parser.parse("c=d/../e=f", handler);
 
@@ -527,7 +528,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNode("a", "b");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse(".type", handler);
 
@@ -557,7 +558,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
 
         OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         prefix.toNodeType("a");
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler(prefix);
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(prefix);
 
         parser.parse("b/.type/c", handler);
 
@@ -585,7 +586,7 @@ public class AddressOnlyParsingTestCase extends TestCase {
     @Test
     public void testTest() throws Exception {
 
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parser.parse("/subsystem=datasources/data-source=java\\:\\/H2DS", handler);
 

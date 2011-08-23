@@ -27,8 +27,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
+import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.junit.Test;
 
@@ -39,11 +40,11 @@ import org.junit.Test;
  */
 public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
-    private DefaultOperationRequestParser parser = new DefaultOperationRequestParser();
+    private CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
 
     @Test
     public void testOperationNameOnly() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource", handler);
 
@@ -63,7 +64,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testArgListStart() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource(", handler);
 
@@ -84,7 +85,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testEmptyArgList() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource()", handler);
 
@@ -104,7 +105,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testArgNameOnly() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource(recursive", handler);
 
@@ -128,7 +129,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testNameAndValueSeparator() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource(recursive=", handler);
 
@@ -152,7 +153,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testNameValue() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource(recursive=true", handler);
 
@@ -177,7 +178,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testNameValueAndSeparator() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource(recursive=true,", handler);
 
@@ -202,7 +203,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testNameValueSeparatorAndName() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource(recursive=true,other", handler);
 
@@ -228,7 +229,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testNameValueSeparatorNameAndValueSeparator() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource(recursive=true,other=", handler);
 
@@ -254,7 +255,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
 
     @Test
     public void testComplete() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":read-resource(recursive=true,other=done)", handler);
 
@@ -279,7 +280,7 @@ public class OperationOnlyParsingTestCase extends BaseStateParserTest {
         assertEquals("done", handler.getPropertyValue("other"));
     }
 
-    protected void parseOperation(String operation, DefaultOperationCallbackHandler handler)
+    protected void parseOperation(String operation, DefaultCallbackHandler handler)
             throws OperationFormatException {
         parser.parse(operation, handler);
         //ParsingUtil.parseOperation(operation, 0, handler);

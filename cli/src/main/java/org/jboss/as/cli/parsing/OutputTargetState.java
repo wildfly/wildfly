@@ -22,33 +22,18 @@
 package org.jboss.as.cli.parsing;
 
 
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
-
-
 /**
  *
  * @author Alexey Loubyansky
  */
-public class InitialState extends DefaultParsingState {
+public class OutputTargetState extends DefaultParsingState {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
+    public static final String ID = "OUT_REDIRECT";
+    public static final OutputTargetState INSTANCE = new OutputTargetState();
+    public static final char OUTPUT_REDIRECT_CHAR = '>';
 
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
-    }
-
-    InitialState(OperationRequestState opState, CommandState cmdState) {
+    public OutputTargetState() {
         super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
+        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
     }
 }

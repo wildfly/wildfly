@@ -21,34 +21,22 @@
  */
 package org.jboss.as.cli.parsing;
 
-
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
-
-
 /**
  *
  * @author Alexey Loubyansky
  */
-public class InitialState extends DefaultParsingState {
+public class BracketsState extends DefaultParsingState {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
+    static final BracketsState QUOTES_EXCLUDED = new BracketsState(false);
+    static final BracketsState QUOTES_INCLUDED = new BracketsState(true);
 
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
+    public BracketsState(boolean quotesInContent) {
+        super("BRACKETS", quotesInContent);
+
+        this.setEndContentHandler(new ErrorCharacterHandler("The closing ']' is missing."));
+        this.putHandler(']', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        this.enterState('\\', EscapeCharacterState.INSTANCE);
+        this.setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
     }
 
-    InitialState(OperationRequestState opState, CommandState cmdState) {
-        super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
-    }
 }

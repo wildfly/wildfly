@@ -26,8 +26,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
+import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.junit.Test;
 
@@ -38,11 +39,11 @@ import org.junit.Test;
  */
 public class OperationOutputRedirectionParsingTestCase extends BaseStateParserTest {
 
-    private DefaultOperationRequestParser parser = new DefaultOperationRequestParser();
+    private CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
 
     @Test
     public void testOperationNameOnly() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":  read-resource > cli.log", handler);
 
@@ -63,7 +64,7 @@ public class OperationOutputRedirectionParsingTestCase extends BaseStateParserTe
 
     @Test
     public void testOperationWithProps() throws Exception {
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
         parseOperation(":  read-resource (recursive=true) > cli.log", handler);
 
@@ -82,7 +83,7 @@ public class OperationOutputRedirectionParsingTestCase extends BaseStateParserTe
         assertEquals("cli.log", handler.getOutputTarget());
     }
 
-    protected void parseOperation(String operation, DefaultOperationCallbackHandler handler)
+    protected void parseOperation(String operation, DefaultCallbackHandler handler)
             throws OperationFormatException {
         parser.parse(operation, handler);
         //ParsingUtil.parseOperation(operation, 0, handler);

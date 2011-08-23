@@ -38,8 +38,8 @@ import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
-import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
+import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -147,9 +147,9 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                       return Collections.emptyList();
                    }
 
-                   DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+                   DefaultCallbackHandler handler = new DefaultCallbackHandler();
                    try {
-                       DefaultOperationRequestParser.INSTANCE.parse(thePath, handler);
+                       ParserUtil.parseOperationRequest(thePath, handler);
                    } catch (CommandFormatException e) {
                        return Collections.emptyList();
                    }
@@ -284,9 +284,9 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         }
 
         final String type = nodePath.getValue(ctx.getParsedCommandLine());
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
         try {
-            DefaultOperationRequestParser.INSTANCE.parse(type, handler);
+            ParserUtil.parseOperationRequest(type, handler);
         } catch (CommandFormatException e) {
             throw new IllegalArgumentException("Failed to parse nodeType: " + e.getMessage());
         }
@@ -313,9 +313,9 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             address.add("profile", profileName);
         }
 
-        DefaultOperationCallbackHandler handler = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
         try {
-            DefaultOperationRequestParser.INSTANCE.parse(typePath, handler);
+            ParserUtil.parseOperationRequest(typePath, handler);
         } catch (CommandFormatException e) {
             ctx.printLine("Failed to validate input: " + e.getLocalizedMessage());
             return false;

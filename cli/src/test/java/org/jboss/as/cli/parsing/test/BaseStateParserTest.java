@@ -27,10 +27,10 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.parsing.BasicInitialParsingState;
-import org.jboss.as.cli.operation.parsing.ParsingContext;
-import org.jboss.as.cli.operation.parsing.ParsingStateCallbackHandler;
-import org.jboss.as.cli.operation.parsing.StateParser;
+import org.jboss.as.cli.parsing.BasicInitialParsingState;
+import org.jboss.as.cli.parsing.ParsingContext;
+import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
+import org.jboss.as.cli.parsing.StateParser;
 import org.junit.Before;
 
 /**
