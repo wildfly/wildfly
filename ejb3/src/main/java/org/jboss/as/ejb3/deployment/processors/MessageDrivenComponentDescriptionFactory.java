@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.deployment.processors;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -64,6 +65,10 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
 
     @Override
     protected void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
+        if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
+            return;
+        }
+
         processMessageBeans(deploymentUnit, compositeIndex.getAnnotations(MESSAGE_DRIVEN_ANNOTATION_NAME));
     }
 
@@ -187,9 +192,9 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         final String beanName = mdb.getName();
         // the important bit is to skip already processed EJBs via annotations
         if (ejbJarDescription.hasComponent(beanName)) {
-           final ComponentDescription description = eeModuleDescription.getComponentByName(beanName);
-            if(description instanceof MessageDrivenComponentDescription) {
-                ((MessageDrivenComponentDescription)description).setDescriptorData(mdb);
+            final ComponentDescription description = eeModuleDescription.getComponentByName(beanName);
+            if (description instanceof MessageDrivenComponentDescription) {
+                ((MessageDrivenComponentDescription) description).setDescriptorData(mdb);
             } else {
                 throw new DeploymentUnitProcessingException("MDB with name " + beanName + " referenced in ejb-jar.xml could not be created, as existing non MDB component with same name already exists: " + description);
             }
