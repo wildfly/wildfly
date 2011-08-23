@@ -42,12 +42,13 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
+import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -95,9 +96,9 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         };
 
         nodePath = new DefaultOperationRequestAddress();
-        OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(nodePath);
+        CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(nodePath);
         try {
-            DefaultOperationRequestParser.INSTANCE.parse(nodeType, handler);
+            ParserUtil.parseOperationRequest(nodeType, handler);
         } catch (CommandFormatException e) {
             throw new IllegalArgumentException("Failed to parse nodeType: " + e.getMessage());
         }

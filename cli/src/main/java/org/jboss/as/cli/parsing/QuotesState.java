@@ -21,34 +21,28 @@
  */
 package org.jboss.as.cli.parsing;
 
-
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
-
-
 /**
  *
  * @author Alexey Loubyansky
  */
-public class InitialState extends DefaultParsingState {
+public class QuotesState extends DefaultParsingState {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
+    public static final QuotesState QUOTES_EXCLUDED = new QuotesState(false);
+    public static final QuotesState QUOTES_INCLUDED = new QuotesState(true);
 
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
+    public QuotesState(boolean quotesInContent) {
+        this(quotesInContent, true);
     }
 
-    InitialState(OperationRequestState opState, CommandState cmdState) {
-        super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
+    public QuotesState(boolean quotesInContent, boolean escapeEnabled) {
+        super("QUOTES", quotesInContent);
+
+        this.setEndContentHandler(new ErrorCharacterHandler("The closing '\"' is missing."));
+        this.putHandler('"', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        if(escapeEnabled) {
+            this.enterState('\\', EscapeCharacterState.INSTANCE);
+        }
+        this.setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
     }
+
 }

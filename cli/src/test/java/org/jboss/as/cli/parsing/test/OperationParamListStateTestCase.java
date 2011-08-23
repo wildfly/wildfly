@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.operation.parsing.PropertyListState;
-import org.jboss.as.cli.operation.parsing.StateParser;
+import org.jboss.as.cli.parsing.StateParser;
+import org.jboss.as.cli.parsing.operation.PropertyListState;
 import org.junit.Assert;
 import org.junit.Test;
 

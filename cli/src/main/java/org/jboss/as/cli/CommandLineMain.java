@@ -95,10 +95,10 @@ import org.jboss.as.cli.handlers.jms.JmsTopicRemoveHandler;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.OperationRequestParser;
+import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.PrefixFormatter;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationCandidatesProvider;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
@@ -551,7 +551,7 @@ public class CommandLineMain {
         /** current command line */
         private String cmdLine;
         /** parsed command arguments */
-        private DefaultOperationCallbackHandler parsedCmd = new DefaultOperationCallbackHandler();
+        private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
 
         /** domain or standalone mode*/
         private boolean domainMode;
@@ -567,8 +567,6 @@ public class CommandLineMain {
         private int controllerPort = -1;
         /** various key/value pairs */
         private Map<String, Object> map = new HashMap<String, Object>();
-        /** operation request parser */
-        private final OperationRequestParser parser = new DefaultOperationRequestParser();
         /** operation request address prefix */
         private final OperationRequestAddress prefix = new DefaultOperationRequestAddress();
         /** the prefix formatter */
@@ -705,8 +703,8 @@ public class CommandLineMain {
         }
 
         @Override
-        public OperationRequestParser getOperationRequestParser() {
-            return parser;
+        public CommandLineParser getCommandLineParser() {
+            return DefaultOperationRequestParser.INSTANCE;
         }
 
         @Override
@@ -883,10 +881,10 @@ public class CommandLineMain {
                 throw new IllegalArgumentException("Null command line.");
             }
 
-            final DefaultOperationCallbackHandler originalParsedArguments = this.parsedCmd;
+            final DefaultCallbackHandler originalParsedArguments = this.parsedCmd;
             if(isOperation(line)) {
                 try {
-                    this.parsedCmd = new DefaultOperationCallbackHandler();
+                    this.parsedCmd = new DefaultCallbackHandler();
                     resetArgs(line);
                     ModelNode request = this.parsedCmd.toOperationRequest();
                     StringBuilder op = new StringBuilder();
@@ -918,7 +916,7 @@ public class CommandLineMain {
             }
 
             try {
-                this.parsedCmd = new DefaultOperationCallbackHandler();
+                this.parsedCmd = new DefaultCallbackHandler();
                 resetArgs(cmdArgs);
                 ModelNode request = ((OperationCommand)handler).buildRequest(this);
                 return new DefaultBatchedCommand(line, request);
