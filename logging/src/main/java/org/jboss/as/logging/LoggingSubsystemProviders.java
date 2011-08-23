@@ -66,7 +66,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -808,9 +807,9 @@ class LoggingSubsystemProviders {
             node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.LIST);
             node.get(ATTRIBUTES, PROPERTIES, DESCRIPTION).set(bundle.getString("handler.properties"));
             node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("handler.properties.name"));
-            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, NAME, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("handler.properties.value"));
-            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, VALUE, TYPE).set(ModelType.STRING);
 
             return node;
         }
@@ -838,10 +837,10 @@ class LoggingSubsystemProviders {
             node.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("handler.properties"));
             node.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
             node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("handler.properties.name"));
-            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, REQUIRED).set(true);
             node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("handler.properties.value"));
-            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, TYPE).set(ModelType.STRING);
             node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, REQUIRED).set(true);
 
             return node;
