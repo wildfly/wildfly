@@ -64,7 +64,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponentDescription<DD extends EnterpriseBeanMetaData> extends ComponentDescription {
+public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * EJB 3.1 FR 13.3.7, the default transaction attribute is <i>REQUIRED</i>.
      */
@@ -79,7 +79,7 @@ public abstract class EJBComponentDescription<DD extends EnterpriseBeanMetaData>
     /**
      * The deployment descriptor information for this bean, if any
      */
-    private DD descriptorData;
+    private EnterpriseBeanMetaData descriptorData;
 
     /**
      * The security-domain, if any, for this bean
@@ -755,11 +755,11 @@ public abstract class EJBComponentDescription<DD extends EnterpriseBeanMetaData>
         this.timerService = timerService;
     }
 
-    public DD getDescriptorData() {
+    public EnterpriseBeanMetaData getDescriptorData() {
         return descriptorData;
     }
 
-    public void setDescriptorData(final DD descriptorData) {
+    public void setDescriptorData(final EnterpriseBeanMetaData descriptorData) {
         this.descriptorData = descriptorData;
     }
 

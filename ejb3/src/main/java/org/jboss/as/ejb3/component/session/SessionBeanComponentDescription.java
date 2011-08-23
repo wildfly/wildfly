@@ -41,6 +41,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceName;
 
@@ -66,7 +67,7 @@ import java.util.Set;
  * @author Jaikiran Pai
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public abstract class SessionBeanComponentDescription extends EJBComponentDescription<SessionBeanMetaData> {
+public abstract class SessionBeanComponentDescription extends EJBComponentDescription {
 
     private static final Logger logger = Logger.getLogger(SessionBeanComponentDescription.class);
 
@@ -443,6 +444,12 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             scheduleMethods.put(method, schedules = new ArrayList<AutoTimer>(1));
         }
         schedules.add(timer);
+    }
+
+
+    @Override
+    public SessionBeanMetaData getDescriptorData() {
+        return (SessionBeanMetaData) super.getDescriptorData();
     }
 
 }
