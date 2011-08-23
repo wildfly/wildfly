@@ -49,7 +49,7 @@ import java.util.Properties;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class MessageDrivenComponentDescription extends EJBComponentDescription<MessageDrivenBeanMetaData> {
+public class MessageDrivenComponentDescription extends EJBComponentDescription {
     private final Properties activationProps;
     private String resourceAdapterName;
 
@@ -195,4 +195,9 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription<M
         }
     }
 
+
+    @Override
+    public MessageDrivenBeanMetaData getDescriptorData() {
+        return (MessageDrivenBeanMetaData) super.getDescriptorData();
+    }
 }
