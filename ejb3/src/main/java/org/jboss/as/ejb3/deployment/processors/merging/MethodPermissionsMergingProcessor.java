@@ -35,6 +35,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
+import org.jboss.metadata.ejb.spec.ExcludeListMetaData;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
@@ -42,6 +43,8 @@ import org.jboss.metadata.ejb.spec.MethodPermissionMetaData;
 import org.jboss.metadata.ejb.spec.MethodPermissionsMetaData;
 import org.jboss.metadata.ejb.spec.MethodsMetaData;
 
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -52,7 +55,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Handles the {@link javax.annotation.security.RolesAllowed} annotation
+ * Handles the {@link javax.annotation.security.RolesAllowed} {@link DenyAll} {@link javax.annotation.security.PermitAll} annotations
  * <p/>
  * Also rocesses the &lt;method-permission&gt; elements of a EJB and sets up appropriate security permissions on the EJB.
  * <p/>
@@ -60,11 +63,11 @@ import java.util.Set;
  *
  * @author Stuart Douglas
  */
-public class RolesAllowedMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
+public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
-    private static final Logger logger = Logger.getLogger(RolesAllowedMergingProcessor.class);
+    private static final Logger logger = Logger.getLogger(MethodPermissionsMergingProcessor.class);
 
-    public RolesAllowedMergingProcessor() {
+    public MethodPermissionsMergingProcessor() {
         super(EJBComponentDescription.class);
     }
 
@@ -80,6 +83,29 @@ public class RolesAllowedMergingProcessor extends AbstractMergingProcessor<EJBCo
             EJBMethodIdentifier identifier = EJBMethodIdentifier.fromMethod(entry.getKey());
             description.setRolesAllowedOnAllViewsForMethod(identifier, new HashSet<String>(Arrays.<String>asList(entry.getValue().get(0))));
         }
+
+        final RuntimeAnnotationInformation<Boolean> denyData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, DenyAll.class);
+
+        for (Map.Entry<String, List<Boolean>> entry : denyData.getClassAnnotations().entrySet()) {
+            description.applyDenyAllOnAllViewsForClass(entry.getKey());
+        }
+
+        for (Map.Entry<Method, List<Boolean>> entry : denyData.getMethodAnnotations().entrySet()) {
+            EJBMethodIdentifier identifier = EJBMethodIdentifier.fromMethod(entry.getKey());
+            description.applyDenyAllOnAllViewsForMethod(identifier);
+        }
+
+        final RuntimeAnnotationInformation<Boolean> permitData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, PermitAll.class);
+
+        for (Map.Entry<String, List<Boolean>> entry : permitData.getClassAnnotations().entrySet()) {
+            description.applyPermitAllOnAllViewsForClass(entry.getKey());
+        }
+
+        for (Map.Entry<Method, List<Boolean>> entry : permitData.getMethodAnnotations().entrySet()) {
+            EJBMethodIdentifier identifier = EJBMethodIdentifier.fromMethod(entry.getKey());
+            description.applyPermitAllOnAllViewsForMethod(identifier);
+        }
+
     }
 
     @Override
@@ -92,12 +118,95 @@ public class RolesAllowedMergingProcessor extends AbstractMergingProcessor<EJBCo
         if (assemblyDescriptor == null) {
             return;
         }
+
+        final ClassReflectionIndex<?> classReflectionIndex = deploymentReflectionIndex.getClassIndex(componentClass);
+
+        handleMethodPermissions(deploymentReflectionIndex, description, assemblyDescriptor, classReflectionIndex);
+        handleExcludeList(deploymentReflectionIndex, description, assemblyDescriptor, classReflectionIndex);
+    }
+
+    /**
+     * Merges the &lt;exclude-list&gt; element from the deployment descriptor
+     */
+    private void handleExcludeList(final DeploymentReflectionIndex deploymentReflectionIndex, final EJBComponentDescription description, AssemblyDescriptorMetaData assemblyDescriptor, final ClassReflectionIndex<?> classReflectionIndex) {
+
+        final ExcludeListMetaData excludeList = assemblyDescriptor.getExcludeListByEjbName(description.getEJBName());
+        if (excludeList == null) {
+            return;
+        }
+        final MethodsMetaData methods = excludeList.getMethods();
+        if (methods == null || methods.isEmpty()) {
+            return;
+        }
+
+        for (final MethodMetaData denyAllMethod : methods) {
+            final String methodName = denyAllMethod.getMethodName();
+            final MethodIntf methodIntf = this.getMethodIntf(denyAllMethod.getMethodIntf());
+            // style 1
+            //            <method>
+            //                <ejb-name>EJBNAME</ejb-name>
+            //                <method-name>*</method-name>
+            //            </method>
+            if (methodName.equals("*")) {
+                // if method name is * then it means all methods, which actually implies a class level @DenyAll (a.k.a exclude-list)
+                // now check if it specifies the optional method-inf. If it doesn't then it applies to all views
+                if (methodIntf == null) {
+                    description.applyDenyAllOnAllMethodsOfAllViews();
+                } else {
+                    description.applyDenyAllOnAllMethodsOfViewType(methodIntf);
+                }
+            } else {
+                final MethodParametersMetaData methodParams = denyAllMethod.getMethodParams();
+                // style 2
+                //            <method>
+                //                <ejb-name>EJBNAME</ejb-name>
+                //                <method-name>METHOD</method-name>
+                //              </method>
+                if (methodParams == null || methodParams.isEmpty()) {
+                    final Collection<Method> denyAllApplicableMethods = ClassReflectionIndexUtil.findAllMethodsByName(deploymentReflectionIndex, classReflectionIndex, methodName);
+                    // just log a WARN message and proceed, in case there was no method by that name
+                    if (denyAllApplicableMethods.isEmpty()) {
+                        logger.warn("No method named: " + methodName + " found on EJB: " + description.getEJBName() + " while processing exclude-list element in ejb-jar.xml");
+                        continue;
+                    }
+                    // apply the @DenyAll/exclude-list
+                    this.applyDenyAll(description, methodIntf, denyAllApplicableMethods);
+
+                } else {
+                    // style 3
+                    //            <method>
+                    //                <ejb-name>EJBNAME</ejb-name>
+                    //                <method-name>METHOD</method-name>
+                    //                <method-params>
+                    //                <method-param>PARAMETER_1</method-param>
+                    //                ...
+                    //                <method-param>PARAMETER_N</method-param>
+                    //                </method-params>
+                    //
+                    //              </method>
+                    final String[] paramTypes = methodParams.toArray(new String[methodParams.size()]);
+                    final Collection<Method> denyAllApplicableMethods = ClassReflectionIndexUtil.findMethods(deploymentReflectionIndex, classReflectionIndex, methodName, paramTypes);
+                    // just log a WARN message and proceed, in case there was no method by that name and param types
+                    if (denyAllApplicableMethods.isEmpty()) {
+                        logger.warn("No method named: " + methodName + " with param types: " + paramTypes + " found on EJB: " + description.getEJBName() + " while processing exclude-list element in ejb-jar.xml");
+                        continue;
+                    }
+                    // apply the @DenyAll/exclude-list
+                    this.applyDenyAll(description, methodIntf, denyAllApplicableMethods);
+                }
+            }
+
+        }
+
+    }
+
+
+    private void handleMethodPermissions(final DeploymentReflectionIndex deploymentReflectionIndex, final EJBComponentDescription description, AssemblyDescriptorMetaData assemblyDescriptor, final ClassReflectionIndex<?> classReflectionIndex) {
         final MethodPermissionsMetaData methodPermissions = assemblyDescriptor.getMethodPermissionsByEjbName(description.getEJBName());
         if (methodPermissions == null || methodPermissions.isEmpty()) {
             return;
         }
 
-        final ClassReflectionIndex<?> classReflectionIndex = deploymentReflectionIndex.getClassIndex(componentClass);
 
         for (final MethodPermissionMetaData methodPermission : methodPermissions) {
             final MethodsMetaData methods = methodPermission.getMethods();
@@ -177,6 +286,18 @@ public class RolesAllowedMergingProcessor extends AbstractMergingProcessor<EJBCo
                 ejbComponentDescription.setRolesAllowedOnAllViewsForMethod(ejbMethodIdentifier, new HashSet(roles));
             } else {
                 ejbComponentDescription.setRolesAllowedForMethodOnViewType(viewType, ejbMethodIdentifier, new HashSet(roles));
+            }
+        }
+    }
+
+
+    private void applyDenyAll(final EJBComponentDescription ejbComponentDescription, final MethodIntf viewType, final Collection<Method> denyAllApplicableMethods) {
+        for (final Method denyAllApplicableMethod : denyAllApplicableMethods) {
+            final EJBMethodIdentifier ejbMethodIdentifier = EJBMethodIdentifier.fromMethod(denyAllApplicableMethod);
+            if (viewType == null) {
+                ejbComponentDescription.applyDenyAllOnAllViewsForMethod(ejbMethodIdentifier);
+            } else {
+                ejbComponentDescription.applyDenyAllOnViewTypeForMethod(viewType, ejbMethodIdentifier);
             }
         }
     }
