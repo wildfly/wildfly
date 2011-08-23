@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 
 import java.lang.reflect.Method;
@@ -34,23 +35,28 @@ import java.util.Collection;
  */
 public class MethodResolutionUtils {
 
+
     public static Method resolveMethod(final NamedMethodMetaData methodData, final Class<?> componentClass, final DeploymentReflectionIndex reflectionIndex) throws DeploymentUnitProcessingException {
+        return resolveMethod(methodData.getMethodName(), methodData.getMethodParams(), componentClass, reflectionIndex);
+    }
+
+    public static Method resolveMethod(final String methodName, final MethodParametersMetaData parameters, final Class<?> componentClass, final DeploymentReflectionIndex reflectionIndex) throws DeploymentUnitProcessingException {
         Class<?> clazz = componentClass;
         while (clazz != Object.class && clazz != null) {
             final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(clazz);
-            if (methodData.getMethodParams() == null) {
-                final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());
+            if (parameters == null) {
+                final Collection<Method> methods = classIndex.getAllMethods(methodName);
                 if (methods.size() > 1) {
-                    throw new DeploymentUnitProcessingException("More than one method " + methodData.getMethodName() + "found on class" + componentClass.getName() + " referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity");
+                    throw new DeploymentUnitProcessingException("More than one method " + methodName + "found on class" + componentClass.getName() + " referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity");
                 } else if (methods.size() == 1) {
                     return methods.iterator().next();
                 }
             } else {
-                final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName(), methodData.getMethodParams().size());
+                final Collection<Method> methods = classIndex.getAllMethods(methodName, parameters.size());
                 for (final Method method : methods) {
                     boolean match = true;
                     for (int i = 0; i < method.getParameterTypes().length; ++i) {
-                        if (!method.getParameterTypes()[i].getName().equals(methodData.getMethodParams().get(i))) {
+                        if (!method.getParameterTypes()[i].getName().equals(parameters.get(i))) {
                             match = false;
                             break;
                         }
@@ -62,7 +68,7 @@ public class MethodResolutionUtils {
             }
             clazz = clazz.getSuperclass();
         }
-        throw new DeploymentUnitProcessingException("Could not find method" + componentClass.getName() + "." + methodData.getMethodName() + " referenced in ejb-jar.xml");
+        throw new DeploymentUnitProcessingException("Could not find method" + componentClass.getName() + "." + methodName + " referenced in ejb-jar.xml");
 
     }
 }

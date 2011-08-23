@@ -227,7 +227,6 @@ public enum Phase {
     public static final int PARSE_WS_EJB_INTEGRATION                    = 0x1701;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_EJB_SESSION_SYNCHRONIZATION           = 0x1C50;
-    public static final int PARSE_EJB_ASYNCHRONOUS_ANNOTATION           = 0x1E00;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x2100;
@@ -304,7 +303,8 @@ public enum Phase {
     public static final int POST_MODULE_EJB_SECURITY_DOMAIN             = 0x060A;
     public static final int POST_MODULE_EJB_ROLES                       = 0x060B;
     public static final int POST_MODULE_METHOD_PERMISSIONS              = 0x060C;
-    public static final int POST_MODULE_STATEFUL_TIMEOUT                = 0x060D;
+    public static final int POST_MODULE_EJB_STATEFUL_TIMEOUT            = 0x060D;
+    public static final int POST_MODULE_EJB_ASYNCHRONOUS_MERGE          = 0x060E;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;
