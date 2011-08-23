@@ -31,6 +31,7 @@ interface Constants {
     String ALIAS = "alias";
     String CA_CERTIFICATE_FILE = "ca-certificate-file";
     String CA_REVOCATION_URL = "ca-revocation-url";
+    String CACHE_CONTAINER = "cache-container";
     String CERTIFICATE_FILE = "certificate-file";
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CHECK_INTERVAL = "check-interval";
@@ -44,6 +45,7 @@ interface Constants {
     String DIRECTORY = "directory";
     String DISABLED = "disabled";
     String DISPLAY_SOURCE_FRAGMENT = "display-source-fragment";
+    String DOMAIN = "domain";
     String DUMP_SMAP = "dump-smap";
     String ENABLED = "enabled";
     String ENABLE_LOOKUPS = "enable-lookups";
@@ -75,6 +77,7 @@ interface Constants {
     String PROTOCOL = "protocol";
     String PROXY_NAME = "proxy-name";
     String PROXY_PORT = "proxy-port";
+    String REAUTHENTICATE = "reauthenticate";
     String READ_ONLY = "read-only";
     String RECOMPILE_ON_FAIL = "recompile-on-fail";
     String REDIRECT_PORT = "redirect-port";
@@ -93,6 +96,7 @@ interface Constants {
     String SOCKET_BINDING = "socket-binding";
     String SOURCE_VM = "source-vm";
     String SSL = "ssl";
+    String SSO = "sso";
     String STATIC_RESOURCES = "static-resources";
     String SUBSTITUTION = "substitution";
     String SUBSYSTEM = "subsystem";
