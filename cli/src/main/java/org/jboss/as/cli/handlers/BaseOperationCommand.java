@@ -33,10 +33,11 @@ import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.RequestParameterArgument;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.OperationRequestParser;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.CommandLineParser;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
+import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -70,9 +71,9 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             throw new IllegalStateException("Only one required address is allowed, atm.");
         }
         requiredAddress = new DefaultOperationRequestAddress();
-        OperationRequestParser.CallbackHandler handler = new DefaultOperationCallbackHandler(requiredAddress);
+        CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(requiredAddress);
         try {
-            DefaultOperationRequestParser.INSTANCE.parse(requiredPath, handler);
+            ParserUtil.parseOperationRequest(requiredPath, handler);
         } catch (CommandFormatException e) {
             throw new IllegalArgumentException("Failed to parse nodeType: " + e.getMessage());
         }

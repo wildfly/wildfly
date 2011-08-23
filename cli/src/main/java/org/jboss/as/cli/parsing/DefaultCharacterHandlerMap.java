@@ -21,34 +21,34 @@
  */
 package org.jboss.as.cli.parsing;
 
-
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
-
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class InitialState extends DefaultParsingState {
+public class DefaultCharacterHandlerMap implements CharacterHandlerMap {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
+    private Map<Character, CharacterHandler> handlers = Collections.emptyMap();
 
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
+    @Override
+    public CharacterHandler getHandler(char ch) {
+        return handlers.get(ch);
     }
 
-    InitialState(OperationRequestState opState, CommandState cmdState) {
-        super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
+    @Override
+    public void putHandler(char ch, CharacterHandler handler) {
+        if(handlers.isEmpty()) {
+            handlers = new HashMap<Character, CharacterHandler>();
+        }
+        handlers.put(ch, handler);
     }
+
+    @Override
+    public void removeHandler(char ch) {
+        handlers.remove(ch);
+    }
+
 }

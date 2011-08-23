@@ -21,34 +21,13 @@
  */
 package org.jboss.as.cli.parsing;
 
-
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
-
+import org.jboss.as.cli.CommandFormatException;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class InitialState extends DefaultParsingState {
+public interface CharacterHandler {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
-
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
-    }
-
-    InitialState(OperationRequestState opState, CommandState cmdState) {
-        super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
-    }
+    void handle(ParsingContext ctx) throws CommandFormatException;
 }

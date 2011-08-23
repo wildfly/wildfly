@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.cli.operation.impl.DefaultOperationCallbackHandler;
+import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.junit.Test;
 
 /**
@@ -73,7 +73,7 @@ public class CommandLineArgumentsTestCase {
     }
 
     protected ParsedCommandLine parse(String line) {
-        DefaultOperationCallbackHandler args = new DefaultOperationCallbackHandler();
+        DefaultCallbackHandler args = new DefaultCallbackHandler();
         try {
             args.parse(null, line);
         } catch (CommandFormatException e) {

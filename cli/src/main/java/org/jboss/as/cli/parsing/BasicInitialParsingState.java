@@ -21,34 +21,32 @@
  */
 package org.jboss.as.cli.parsing;
 
-
-import org.jboss.as.cli.parsing.command.CommandState;
-import org.jboss.as.cli.parsing.operation.OperationRequestState;
+import org.jboss.as.cli.CommandFormatException;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class InitialState extends DefaultParsingState {
+public class BasicInitialParsingState extends DefaultParsingState {
 
-    public static final InitialState INSTANCE;
-    static {
-        OperationRequestState opState = new OperationRequestState();
-        opState.setHandleEntrance(true);
-        INSTANCE = new InitialState(opState, CommandState.INSTANCE);
-    }
-    public static final String ID = "INITIAL";
+    public static final BasicInitialParsingState INSTANCE = new BasicInitialParsingState("DEFAULT");
 
-    InitialState() {
-        this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
-    }
+    private static final ParsingState DEFAULT_STATE = new DefaultParsingState("STRING", false, GlobalCharacterHandlers.GLOBAL_ENTER_STATE_HANDLERS){
+        {
+            this.setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+            this.setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        }
+    };
 
-    InitialState(OperationRequestState opState, CommandState cmdState) {
-        super(ID);
-        enterState('.', opState);
-        enterState(':', opState);
-        enterState('/', opState);
-        setDefaultHandler(new EnterStateCharacterHandler(cmdState));
+    BasicInitialParsingState(String id) {
+        super(id, false, GlobalCharacterHandlers.GLOBAL_ENTER_STATE_HANDLERS);
+        setDefaultHandler(new CharacterHandler() {
+            @Override
+            public void handle(ParsingContext ctx)
+                    throws CommandFormatException {
+                ctx.enterState(DEFAULT_STATE);
+            }
+        });
     }
 }
