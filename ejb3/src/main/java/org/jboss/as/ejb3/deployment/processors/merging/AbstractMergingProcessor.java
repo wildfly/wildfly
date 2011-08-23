@@ -74,18 +74,19 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
         }
     }
 
-    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final T componentConfiguration) throws DeploymentUnitProcessingException {
+    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final T description) throws DeploymentUnitProcessingException {
 
         final Class<?> componentClass;
         try {
-            componentClass = module.getClassLoader().loadClass(componentConfiguration.getEJBClassName());
+            componentClass = module.getClassLoader().loadClass(description.getEJBClassName());
         } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load EJB class " + componentConfiguration.getEJBClassName(), e);
+            throw new DeploymentUnitProcessingException("Could not load EJB class " + description.getEJBClassName(), e);
         }
+
         if (!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
-            handleAnnotations(deploymentUnit, applicationClasses, deploymentReflectionIndex, componentClass, componentConfiguration);
+            handleAnnotations(deploymentUnit, applicationClasses, deploymentReflectionIndex, componentClass, description);
         }
-        handleDeploymentDescriptor(deploymentUnit, deploymentReflectionIndex, componentClass, componentConfiguration);
+        handleDeploymentDescriptor(deploymentUnit, deploymentReflectionIndex, componentClass, description);
     }
 
     /**

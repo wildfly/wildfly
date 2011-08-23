@@ -52,6 +52,12 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
 
         factories.add(new ResourceAdaptorAnnotationInformationFactory());
 
+        //session synchronization
+        factories.add(new AfterBeginAnnotationInformationFactory());
+        factories.add(new BeforeCompletionAnnotationInformationFactory());
+        factories.add(new AfterCompletionAnnotationInformationFactory());
+
+
         //security annotations
         factories.add(new RunAsAnnotationInformationFactory());
         factories.add(new SecurityDomainAnnotationInformationFactory());
