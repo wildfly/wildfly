@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
@@ -47,11 +46,12 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
-import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+
 
 /**
  *
@@ -132,27 +132,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         operation = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
                 @Override
                 public List<String> getAllCandidates(CommandContext ctx) {
-
-                    final boolean writeAttribute;
-                    try {
-                        writeAttribute = name.isPresent(ctx.getParsedCommandLine());
-                    } catch (CommandFormatException e) {
-                        return Collections.emptyList();
-                    }
-
-                    if(writeAttribute) {
-                        Set<String> specified = ctx.getParsedCommandLine().getPropertyNames();
-                        final List<String> theProps = new ArrayList<String>();
-                        for(Property prop : getNodeProperties(ctx)) {
-                            final String propName = "--" + prop.getName();
-                            if(!specified.contains(propName) && prop.getValue().has("access-type") &&
-                                    prop.getValue().get("access-type").asString().contains("write")) {
-                                theProps.add(propName + "=");
-                            }
-                        }
-                        return theProps;
-                    }
-
                     DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
                     if(ctx.isDomainMode()) {
                         final String profileName = profile.getValue(ctx.getParsedCommandLine());
@@ -264,7 +243,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         for(Property prop : getNodeProperties(ctx)) {
                             final ModelNode propDescr = prop.getValue();
                             if(propDescr.has("access-type") && "read-write".equals(propDescr.get("access-type").asString())) {
-                                nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                                if(propDescr.has("type") && ModelType.BOOLEAN == propDescr.get("type").asType()) {
+                                    nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, SimpleTabCompleter.BOOLEAN,"--" + prop.getName()));
+                                } else {
+                                    nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                                }
                             }
                         }
                     }
@@ -288,7 +271,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         } else {
                             opProps = new ArrayList<CommandArgument>();
                             for (Property prop : descr.get("request-properties").asPropertyList()) {
-                                opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                                final ModelNode propDescr = prop.getValue();
+                                if(propDescr.has("type") && ModelType.BOOLEAN == propDescr.get("type").asType()) {
+                                    opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, SimpleTabCompleter.BOOLEAN, "--" + prop.getName()));
+                                } else {
+                                    opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                                }
                             }
                         }
                         propsByOp.put(op, opProps);
