@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.ejb3.cache.Cache;
+import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.junit.Test;

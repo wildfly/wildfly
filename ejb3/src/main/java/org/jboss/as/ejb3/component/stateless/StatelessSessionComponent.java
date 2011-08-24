@@ -26,11 +26,9 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.ejb3.pool.Pool;
-import org.jboss.ejb3.pool.StatelessObjectFactory;
-import org.jboss.ejb3.pool.strictmax.StrictMaxPool;
+import org.jboss.as.ejb3.pool.Pool;
+import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -40,7 +38,6 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**

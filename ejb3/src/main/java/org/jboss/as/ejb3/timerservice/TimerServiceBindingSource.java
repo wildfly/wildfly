@@ -27,9 +27,9 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.ejb3.context.CurrentInvocationContext;
-import org.jboss.ejb3.context.spi.EJBComponent;
-import org.jboss.ejb3.context.spi.InvocationContext;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.context.spi.EJBComponent;
+import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 

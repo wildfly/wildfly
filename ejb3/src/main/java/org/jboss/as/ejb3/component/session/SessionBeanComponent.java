@@ -26,7 +26,7 @@ import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
 import org.jboss.as.ejb3.component.AsyncVoidInterceptor;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.threads.ThreadsServices;
-import org.jboss.ejb3.context.spi.SessionContext;
+import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.logging.Logger;
@@ -49,7 +49,7 @@ import static java.util.Collections.emptyMap;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class SessionBeanComponent extends EJBComponent implements org.jboss.ejb3.context.spi.SessionBeanComponent {
+public abstract class SessionBeanComponent extends EJBComponent implements org.jboss.as.ejb3.context.spi.SessionBeanComponent {
 
     private static final Logger logger = Logger.getLogger(SessionBeanComponent.class);
 

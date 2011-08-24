@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.component.messagedriven;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.ejb3.context.base.BaseMessageDrivenContext;
-import org.jboss.ejb3.context.spi.MessageDrivenContext;
+import org.jboss.as.ejb3.context.base.BaseMessageDrivenContext;
+import org.jboss.as.ejb3.context.spi.MessageDrivenContext;
 import org.jboss.invocation.Interceptor;
 
 import java.lang.reflect.Method;

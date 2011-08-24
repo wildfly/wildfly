@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.concurrency;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
-import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;

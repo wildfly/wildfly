@@ -21,11 +21,6 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.ejb3.context.spi.InvocationContext;
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -37,17 +32,12 @@ import javax.transaction.TransactionManager;
  *
  * @author Stuart Douglas
  */
-public class TimerCMTTxInterceptor extends org.jboss.ejb3.tx2.impl.CMTTxInterceptor implements Interceptor {
+public class TimerCMTTxInterceptor extends CMTTxInterceptor {
 
     /**
      * This is a hack to make sure that the transaction interceptor does not swallow the underlying exception
      */
     private static final ThreadLocal<Throwable> EXCEPTION = new ThreadLocal<Throwable>();
-
-    @Override
-    public Object processInvocation(InterceptorContext invocation) throws Exception {
-        return super.invoke((TransactionalInvocationContext) invocation.getPrivateData(InvocationContext.class));
-    }
 
     @Override
     public void handleExceptionInOurTx(final TransactionalInvocationContext invocation, final Throwable t, final Transaction tx) throws Exception {
@@ -74,9 +64,4 @@ public class TimerCMTTxInterceptor extends org.jboss.ejb3.tx2.impl.CMTTxIntercep
             EXCEPTION.remove();
         }
     }
-
-    private Object processInvocation(TransactionalInvocationContext invocation) throws Exception {
-        return requiresNew(invocation);
-    }
-
 }

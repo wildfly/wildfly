@@ -48,7 +48,7 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.TransactionSynchronizationRegistryService;
-import org.jboss.ejb3.timerservice.spi.TimerServiceFactory;
+import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
