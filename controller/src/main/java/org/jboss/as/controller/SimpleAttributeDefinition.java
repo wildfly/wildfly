@@ -153,7 +153,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * Marshalls the value from the given {@code resourceModel} as an xml attribute, if it
      * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
      * <p>
-     * Invoking this method is the same as calling {@code marshallAsAttribute(resourceModel, false, writer)}
+     * Invoking this method is the same as calling {@code marshallAsAttribute(resourceModel, true, writer)}
      * </p>
      *
      * @param resourceModel the model, a non-null node of {@link org.jboss.dmr.ModelType#OBJECT}.
@@ -161,7 +161,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
      * @throws javax.xml.stream.XMLStreamException
      */
     public void marshallAsAttribute(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
-        marshallAsAttribute(resourceModel, false, writer);
+        marshallAsAttribute(resourceModel, true, writer);
     }
 
     /**
@@ -180,11 +180,11 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
 
     /**
      * {@inheritDoc}
-     * Invoking this method is the same as calling {@code marshallAsElementText(resourceModel, false, writer)}
+     * Invoking this method is the same as calling {@code marshallAsElementText(resourceModel, true, writer)}
      */
     @Override
     public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
-        marshallAsElement(resourceModel, false, writer);
+        marshallAsElement(resourceModel, true, writer);
     }
 
     /**

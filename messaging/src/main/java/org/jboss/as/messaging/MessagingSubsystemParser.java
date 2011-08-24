@@ -1388,7 +1388,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     if (CommonAttributes.FILTER == attribute) {
                         writeFilter(writer, property.getValue());
                     } else if (attribute == CommonAttributes.DISCOVERY_GROUP_NAME) {
-                        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(bridge, false)) {
+                        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(bridge)) {
                             writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
                             CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(bridge, writer);
                             writer.writeEndElement();
@@ -1417,18 +1417,18 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         continue;
                     }
                     if (attribute == ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS) {
-                        if (ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.isMarshallable(cluster, false)) {
+                        if (ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.isMarshallable(cluster)) {
                             writer.writeStartElement(Element.STATIC_CONNECTORS.getLocalName());
                             CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
                             ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.marshallAsElement(cluster, writer);
                             writer.writeEndElement();
-                        } else if (CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.isMarshallable(cluster, false)) {
+                        } else if (CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.isMarshallable(cluster)) {
                             writer.writeEmptyElement(Element.STATIC_CONNECTORS.getLocalName());
                             CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
                         }
                     }
                     else if (attribute == CommonAttributes.DISCOVERY_GROUP_NAME) {
-                        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(cluster, false)) {
+                        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(cluster)) {
                             writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
                             CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(cluster, writer);
                             writer.writeEndElement();
@@ -1778,7 +1778,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     private void writeConnectionFactory(XMLExtendedStreamWriter writer, ModelNode node, String name, ModelNode factory) throws XMLStreamException
     {
-        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(node, false)) {
+        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(node)) {
             writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
             CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(node, writer);
             writer.writeEndElement();
@@ -1845,8 +1845,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.marshallAsElement(node, writer);
         CommonAttributes.LOAD_BALANCING_CLASS_NAME.marshallAsElement(node, writer);
         CommonAttributes.USE_GLOBAL_POOLS.marshallAsElement(node, writer);
-        CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.marshallAsElement(factory, false, writer);
-        CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE.marshallAsElement(factory, false, writer);
+        CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.marshallAsElement(factory, writer);
+        CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE.marshallAsElement(factory, writer);
         CommonAttributes.GROUP_ID.marshallAsElement(node, writer);
 
         writer.writeEndElement();

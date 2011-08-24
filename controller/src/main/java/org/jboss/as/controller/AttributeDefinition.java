@@ -100,6 +100,20 @@ public abstract class AttributeDefinition {
 
     /**
      * Gets whether the given {@code resourceModel} has a value for this attribute that should be marshalled to XML.
+     * <p>
+     * This is the same as {@code isMarshallable(resourceModel, true)}.
+     * </p>
+     *
+     * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
+     *
+     * @return {@true} if the given {@code resourceModel} has a defined value under this attribute's {@link #getName()} () name}.
+     */
+    public boolean isMarshallable(final ModelNode resourceModel) {
+        return isMarshallable(resourceModel, true);
+    }
+
+    /**
+     * Gets whether the given {@code resourceModel} has a value for this attribute that should be marshalled to XML.
      *
      * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
      * @param marshallDefault {@code true} if the value should be marshalled even if it matches the default value
@@ -108,13 +122,7 @@ public abstract class AttributeDefinition {
      * and {@code marshallDefault} is {@code true} or that value differs from this attribute's {@link #getDefaultValue() default value}.
      */
     public boolean isMarshallable(final ModelNode resourceModel, final boolean marshallDefault) {
-         if (resourceModel.hasDefined(name)) {
-            ModelNode node = resourceModel.get(name);
-            if (marshallDefault || !node.equals(defaultValue)) {
-                return true;
-            }
-        }
-        return false;
+        return resourceModel.hasDefined(name) && (marshallDefault || !resourceModel.get(name).equals(defaultValue));
     }
 
     /**
@@ -126,48 +134,48 @@ public abstract class AttributeDefinition {
      * @return the value
      * @throws OperationFailedException if the value is not valid
      */
-    public ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
+    public final ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
 
         ModelNode node = new ModelNode();
         if (operationObject.has(name)) {
             node.set(operationObject.get(name)) ;
         }
         if (!node.isDefined() && defaultValue.isDefined()) {
-            node.set(defaultValue);
+            validator.validateParameter(name, defaultValue);
+        } else {
+            validator.validateParameter(name, node);
         }
-        validator.validateParameter(name, node);
 
         return node;
     }
 
     /**
      * Finds a value in the given {@code operationObject} whose key matches this attribute's {@link #getName() name},
-     * validates it using this attribute's {@link #getValidator() validator}, and, if
-     * {@link org.jboss.dmr.ModelNode#isDefined() defined} stores under this attribute's name in the given {@code model}.
+     * validates it using this attribute's {@link #getValidator() validator}, and, stores it under this attribute's name in the given {@code model}.
      *
      * @param operationObject model node of type {@link ModelType#OBJECT}, typically representing an operation request
      * @parm model model node in which the value should be stored
      *
      * @throws OperationFailedException if the value is not valid
      */
-    public void validateAndSet(final ModelNode operationObject, final ModelNode model) throws OperationFailedException {
+    public final void validateAndSet(final ModelNode operationObject, final ModelNode model) throws OperationFailedException {
 
         ModelNode node = validateOperation(operationObject);
-        if (node.isDefined()) {
-            model.get(name).set(node);
-        }
+        model.get(name).set(node);
     }
 
     /**
      * Finds a value in the given {@code operationObject} whose key matches this attribute's {@link #getName() name},
-     * resolves it and validates it using this attribute's {@link #getValidator() validator}.
+     * resolves it and validates it using this attribute's {@link #getValidator() validator}. If the value is
+     * undefined and a {@link #getDefaultValue() default value} is available, the default value is used.
      *
      * @param operationObject model node of type {@link ModelType#OBJECT}, typically representing an operation request
      *
-     * @return the resolved value
+     * @return the resolved value, possibly the default value if the operation does not have a defined value matching
+     *              this attribute's name
      * @throws OperationFailedException if the value is not valid
      */
-    public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
+    public final ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
         ModelNode node = new ModelNode();
         if (operationObject.has(name)) {
             node.set(operationObject.get(name)) ;
@@ -175,9 +183,10 @@ public abstract class AttributeDefinition {
         if (!node.isDefined() && defaultValue.isDefined()) {
             node.set(defaultValue);
         }
-        validator.validateParameter(name, node);
+        final ModelNode resolved = node.resolve();
+        validator.validateParameter(name, resolved);
 
-        return node.resolve();
+        return resolved;
     }
 
     /**
