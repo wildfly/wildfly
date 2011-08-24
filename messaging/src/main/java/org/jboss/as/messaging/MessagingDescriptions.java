@@ -771,7 +771,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("acceptor"));
-        for (AttributeDefinition attr : TransportConfigOperations.GENERIC) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
         return root;
@@ -783,7 +783,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
-        for (AttributeDefinition attr : TransportConfigOperations.GENERIC) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REPLY_PROPERTIES).setEmptyObject();
@@ -841,7 +841,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("acceptor.remote"));
-        for (AttributeDefinition attr : TransportConfigOperations.REMOTE) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
         return root;
@@ -853,7 +853,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
-        for (AttributeDefinition attr : TransportConfigOperations.REMOTE) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REPLY_PROPERTIES).setEmptyObject();
@@ -865,7 +865,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("acceptor.in-vm"));
-        for (AttributeDefinition attr : TransportConfigOperations.IN_VM) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
         return root;
@@ -877,7 +877,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
-        for (AttributeDefinition attr : TransportConfigOperations.IN_VM) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REPLY_PROPERTIES).setEmptyObject();
@@ -889,7 +889,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("connector"));
-        for (AttributeDefinition attr : TransportConfigOperations.GENERIC) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
         return root;
@@ -901,7 +901,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : TransportConfigOperations.GENERIC) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REPLY_PROPERTIES).setEmptyObject();
@@ -924,7 +924,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("connector.remote"));
-        for (AttributeDefinition attr : TransportConfigOperations.REMOTE) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
         return root;
@@ -936,7 +936,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : TransportConfigOperations.REMOTE) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REPLY_PROPERTIES).setEmptyObject();
@@ -948,7 +948,7 @@ public class MessagingDescriptions {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("connector.in-vm"));
-        for (AttributeDefinition attr : TransportConfigOperations.IN_VM) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
         return root;
@@ -960,7 +960,7 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : TransportConfigOperations.IN_VM) {
+        for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REPLY_PROPERTIES).setEmptyObject();

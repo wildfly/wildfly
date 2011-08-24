@@ -515,7 +515,6 @@ public interface CommonAttributes {
     };
 
     String[] COMPLEX_ROOT_RESOURCE_ATTRIBUTES =  {
-        /* TODO remove */ CONNECTOR, /* TODO remove */ ACCEPTOR,
         /* TODO remove */ PAGING_DIRECTORY, /* TODO remove */ BINDINGS_DIRECTORY,
         /* TODO remove */ JOURNAL_DIRECTORY, /* TODO remove */ LARGE_MESSAGES_DIRECTORY,
         /* TODO remove */ SECURITY_SETTING,

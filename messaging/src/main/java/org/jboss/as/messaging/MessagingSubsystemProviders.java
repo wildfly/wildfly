@@ -44,8 +44,8 @@ import java.util.Locale;
  */
 class MessagingSubsystemProviders {
 
-    static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] { CommonAttributes.ACCEPTOR,
-        CONNECTION_FACTORY, BINDINGS_DIRECTORY, CommonAttributes.CONNECTOR,
+    static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] {
+        CONNECTION_FACTORY, BINDINGS_DIRECTORY,
         GROUPING_HANDLER, JMS_QUEUE, JMS_TOPIC, JOURNAL_DIRECTORY, LARGE_MESSAGES_DIRECTORY,
         PAGING_DIRECTORY, POOLED_CONNECTION_FACTORY, QUEUE, SECURITY_SETTING };
 

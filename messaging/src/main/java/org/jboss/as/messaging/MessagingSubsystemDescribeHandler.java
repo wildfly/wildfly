@@ -74,18 +74,15 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
         final ModelNode result = context.getResult();
         result.add(subsystemAdd);
 
-        /**
-        // TODO make acceptors/connectors resource for 7.1
         for(final String transport : TRANSPORT) {
             if(subModel.hasDefined(transport)) {
                 for(final Property property : subModel.get(transport).asPropertyList()) {
                     final ModelNode address = rootAddress.toModelNode();
                     address.add(transport, property.getName());
-                    result.add(TransportConfigOperations.createAddOperation(address, property.getValue()));
+                    result.add(TransportConfigOperationHandlers.createAddOperation(address, property.getValue()));
                 }
             }
         }
-        */
 
         if(subModel.hasDefined(CommonAttributes.ADDRESS_SETTING)) {
             for(final Property property : subModel.get(CommonAttributes.ADDRESS_SETTING).asPropertyList()) {

@@ -22,18 +22,10 @@
 
 package org.jboss.as.messaging;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import org.jboss.as.controller.registry.Resource;
-import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
@@ -44,17 +36,13 @@ import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONSUME_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
@@ -76,54 +64,41 @@ import static org.jboss.as.messaging.CommonAttributes.JOURNAL_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOG_JOURNAL_WRITE_RATE;
-import static org.jboss.as.messaging.CommonAttributes.LVQ;
 import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
-import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.MEMORY_MEASURE_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.MEMORY_WARNING_THRESHOLD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_ENABLED;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
 import static org.jboss.as.messaging.CommonAttributes.NAME_OPTIONAL;
-import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_ID_CACHE;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.RUN_SYNC_SPEED_TEST;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_INVALIDATION_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
-import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_DUMP_INTERVAL;
-import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE;
-import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 
 import javax.management.MBeanServer;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
@@ -132,7 +107,6 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -141,7 +115,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JMSService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
@@ -239,12 +212,8 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
 
                 // Process acceptors and connectors
                 final Set<String> socketBindings = new HashSet<String>();
-                // TODO make acceptor/connector resources
-                // TransportConfigOperations.processAcceptors(configuration, model, socketBindings);
-                // TransportConfigOperations.processConnectors(configuration, model, socketBindings);
-                processAcceptors(configuration, model, socketBindings);
-                processConnectors(configuration, model, socketBindings);
-
+                TransportConfigOperationHandlers.processAcceptors(configuration, model, socketBindings);
+                TransportConfigOperationHandlers.processConnectors(configuration, model, socketBindings);
 
                 for (final String socketBinding : socketBindings) {
                     final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
@@ -255,7 +224,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
 
                 // Install the HornetQ Service
                 newControllers.add(serviceBuilder.install());
-
                 newControllers.add(JMSService.addService(serviceTarget, verificationHandler));
 
                 context.completeStep();
@@ -384,92 +352,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 final AddressSettings settings = AddressSettingAdd.createSettings(config);
                 configuration.getAddressesSettings().put(match, settings);
             }
-        }
-    }
-
-    // replace with TransportConfigOperations.processAcceptors(configuration, model, socketBindings);
-    static void processAcceptors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
-        if (params.hasDefined(ACCEPTOR)) {
-            final Map<String, TransportConfiguration> acceptors = new HashMap<String, TransportConfiguration>();
-            for (final Property property : params.get(ACCEPTOR).asPropertyList()) {
-                final String acceptorName = property.getName();
-                final ModelNode config = property.getValue();
-                final Map<String, Object> parameters = new HashMap<String, Object>();
-                if (config.get(PARAM).isDefined()) {
-                    for (final Property parameter : config.get(PARAM).asPropertyList()) {
-                        parameters.put(parameter.getName(), parameter.getValue().asString());
-                    }
-                }
-                final MessagingServices.TransportConfigType type = MessagingServices.TransportConfigType.valueOf(config.get(TYPE).asString());
-                final String clazz;
-                switch (type) {
-                    case Remote: {
-                        clazz = NettyAcceptorFactory.class.getName();
-                        final String binding = config.get(SOCKET_BINDING.getName()).asString();
-                        parameters.put(SOCKET_BINDING.getName(), binding);
-                        bindings.add(binding);
-                        break;
-                    }
-                    case InVM: {
-                        clazz = InVMAcceptorFactory.class.getName();
-                        parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
-                        break;
-                    }
-                    case Generic: {
-                        clazz = config.get(FACTORY_CLASS.getName()).asString();
-                        break;
-                    }
-                    default: {
-                        clazz = null;
-                        break;
-                    }
-                }
-                acceptors.put(acceptorName, new TransportConfiguration(clazz, parameters, acceptorName));
-            }
-            configuration.setAcceptorConfigurations(new HashSet<TransportConfiguration>(acceptors.values()));
-        }
-    }
-
-    // replace with TransportConfigOperations.processConnectors(configuration, model, socketBindings);
-    static void processConnectors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
-        if (params.hasDefined(CONNECTOR)) {
-            final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-            for (final Property property : params.get(CONNECTOR).asPropertyList()) {
-                final String connectorName = property.getName();
-                final ModelNode config = property.getValue();
-                final Map<String, Object> parameters = new HashMap<String, Object>();
-                if (config.get(PARAM).isDefined()) {
-                    for (final Property parameter : config.get(PARAM).asPropertyList()) {
-                        parameters.put(parameter.getName(), parameter.getValue().asString());
-                    }
-                }
-                final MessagingServices.TransportConfigType type = MessagingServices.TransportConfigType.valueOf(config.get(TYPE).asString());
-                final String clazz;
-                switch (type) {
-                    case Remote: {
-                        clazz = NettyConnectorFactory.class.getName();
-                        final String binding = config.get(SOCKET_BINDING.getName()).asString();
-                        parameters.put(SOCKET_BINDING.getName(), binding);
-                        bindings.add(binding);
-                        break;
-                    }
-                    case InVM: {
-                        clazz = InVMConnectorFactory.class.getName();
-                        parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
-                        break;
-                    }
-                    case Generic: {
-                        clazz = config.get(FACTORY_CLASS.getName()).asString();
-                        break;
-                    }
-                    default: {
-                        clazz = null;
-                        break;
-                    }
-                }
-                connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
-            }
-            configuration.setConnectorConfigurations(connectors);
         }
     }
 
