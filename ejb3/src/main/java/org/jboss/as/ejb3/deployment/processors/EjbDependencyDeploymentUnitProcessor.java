@@ -50,8 +50,9 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
     /**
      * Needed for timer handle persistence
+     * TODO: restrict visibility
      */
-    private static ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.ejb3.timerservice");
+    private static ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.as.ejb3");
 
 
     /**

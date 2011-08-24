@@ -82,7 +82,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
     private final EJBUtilities utilities;
     private final boolean isBeanManagedTransaction;
-    private static volatile boolean youHaveBeenWarnedEJBTHREE2120 = false;
     private final Map<Class<?>, ApplicationException> applicationExceptions;
     private final EJBSecurityMetaData securityMetaData;
     private final Map<String, ServiceName> viewServices;
