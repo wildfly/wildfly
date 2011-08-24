@@ -23,11 +23,11 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.ejb3.context.CurrentInvocationContext;
-import org.jboss.ejb3.context.base.BaseInvocationContext;
-import org.jboss.ejb3.context.spi.InvocationContext;
-import org.jboss.ejb3.context.spi.MessageDrivenContext;
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.context.base.BaseInvocationContext;
+import org.jboss.as.ejb3.context.spi.InvocationContext;
+import org.jboss.as.ejb3.context.spi.MessageDrivenContext;
+import org.jboss.as.ejb3.tx.TransactionalInvocationContext;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;

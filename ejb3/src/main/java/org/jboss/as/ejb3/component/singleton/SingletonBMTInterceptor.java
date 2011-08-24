@@ -22,9 +22,9 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
-import org.jboss.ejb3.context.spi.InvocationContext;
-import org.jboss.ejb3.tx2.impl.StatelessBMTInterceptor;
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
+import org.jboss.as.ejb3.context.spi.InvocationContext;
+import org.jboss.as.ejb3.tx.StatelessBMTInterceptor;
+import org.jboss.as.ejb3.tx.TransactionalInvocationContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 

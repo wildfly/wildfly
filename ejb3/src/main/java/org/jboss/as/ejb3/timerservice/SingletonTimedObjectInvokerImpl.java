@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
-import org.jboss.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
+import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 
 import javax.ejb.Timer;
 import java.io.Serializable;

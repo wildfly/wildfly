@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentInstance;
-import org.jboss.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
+import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 
 import javax.ejb.Timer;
 import java.io.Serializable;

@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.ejb3.cache.Cache;
-import org.jboss.ejb3.cache.Identifiable;
-import org.jboss.ejb3.cache.StatefulObjectFactory;
+import org.jboss.as.ejb3.cache.Cache;
+import org.jboss.as.ejb3.cache.Identifiable;
+import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.logging.Logger;
 
 import javax.ejb.NoSuchEJBException;

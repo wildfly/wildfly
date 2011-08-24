@@ -22,14 +22,33 @@
 
 package org.jboss.as.ejb3.concurrency;
 
-import org.jboss.ejb3.concurrency.spi.LockableComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
+
+import javax.ejb.AccessTimeout;
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.LockType;
+import javax.interceptor.InvocationContext;
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * @author Jaikiran Pai
  */
-public class ContainerManagedConcurrencyInterceptor extends org.jboss.ejb3.concurrency.ContainerManagedConcurrencyInterceptor implements Interceptor {
+public class ContainerManagedConcurrencyInterceptor implements Interceptor {
+
+    /**
+     * Logger
+     */
+    private static final Logger logger = Logger.getLogger(ContainerManagedConcurrencyInterceptor.class);
+
+    /**
+     * A spec compliant {@link org.jboss.as.ejb3.concurrency.EJBReadWriteLock}
+     */
+    private final ReadWriteLock readWriteLock = new EJBReadWriteLock();
 
     private final LockableComponent lockableComponent;
 
@@ -40,13 +59,64 @@ public class ContainerManagedConcurrencyInterceptor extends org.jboss.ejb3.concu
         this.lockableComponent = component;
     }
 
-    @Override
     protected LockableComponent getLockableComponent() {
         return this.lockableComponent;
     }
 
     @Override
-    public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-        return super.invoke(interceptorContext.getInvocationContext());
+    public Object processInvocation(final InterceptorContext context) throws Exception {
+        final InvocationContext invocationContext = context.getInvocationContext();
+        LockableComponent lockableComponent = this.getLockableComponent();
+        // get the invoked method
+        Method invokedMethod = invocationContext.getMethod();
+        if (invokedMethod == null) {
+            throw new IllegalArgumentException("Invocation context: " + invocationContext + " cannot be processed because it's not applicable for a method invocation");
+        }
+        // get the Lock applicable for this method
+        Lock lock = getLock(lockableComponent, invokedMethod);
+        // the default access timeout (will be used in the absence of any explicit access timeout value for the invoked method)
+        AccessTimeout defaultAccessTimeout = lockableComponent.getDefaultAccessTimeout();
+        // set to the default values
+        long time = defaultAccessTimeout.value();
+        TimeUnit unit = defaultAccessTimeout.unit();
+
+        AccessTimeout accessTimeoutOnMethod = lockableComponent.getAccessTimeout(invokedMethod);
+        if (accessTimeoutOnMethod != null) {
+            if (accessTimeoutOnMethod.value() < 0) {
+                // for any negative value of timeout, we just default to max timeout val and max timeout unit.
+                // violation of spec! But we don't want to wait indefinitely.
+                logger.debug("Ignoring a negative @AccessTimeout value: " + accessTimeoutOnMethod.value() + " and timeout unit: "
+                        + accessTimeoutOnMethod.unit().name() + ". Will default to timeout value: " + defaultAccessTimeout.value()
+                        + " and timeout unit: " + defaultAccessTimeout.unit().name());
+            } else {
+                // use the explicit access timeout values specified on the method
+                time = accessTimeoutOnMethod.value();
+                unit = accessTimeoutOnMethod.unit();
+            }
+        }
+        // try getting the lock
+        boolean success = lock.tryLock(time, unit);
+        if (!success) {
+            throw new ConcurrentAccessTimeoutException("EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on " + invocationContext
+                    + " - could not obtain lock within " + time + unit.name());
+        }
+        try {
+            // lock obtained. now proceed!
+            return invocationContext.proceed();
+        } finally {
+            lock.unlock();
+        }
     }
+
+    private Lock getLock(LockableComponent lockableComponent, Method method) {
+        LockType lockType = lockableComponent.getLockType(method);
+        switch (lockType) {
+            case READ:
+                return readWriteLock.readLock();
+            case WRITE:
+                return readWriteLock.writeLock();
+        }
+        throw new IllegalStateException("Illegal lock type " + lockType + " on " + method + " for component " + lockableComponent);
+    }
+
 }

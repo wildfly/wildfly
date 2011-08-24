@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.component.session;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.ejb3.context.base.BaseSessionContext;
-import org.jboss.ejb3.context.spi.SessionContext;
+import org.jboss.as.ejb3.context.base.BaseSessionContext;
+import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.invocation.Interceptor;
 
 import java.io.Serializable;
