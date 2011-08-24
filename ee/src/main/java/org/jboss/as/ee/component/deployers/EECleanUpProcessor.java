@@ -38,7 +38,7 @@ public class EECleanUpProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         deploymentUnit.removeAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        // deploymentUnit.removeAttachment(Attachments.EE_APPLICATION_DESCRIPTION); Used in org.jboss.as.ejb3.injection.EjbResourceResolver at runtime
+        deploymentUnit.removeAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
         deploymentUnit.removeAttachment(Attachments.EE_MODULE_CONFIGURATION);
         deploymentUnit.removeAttachment(Attachments.EE_MODULE_DESCRIPTION);
         deploymentUnit.removeAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);

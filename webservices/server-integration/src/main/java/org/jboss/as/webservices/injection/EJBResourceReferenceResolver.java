@@ -26,8 +26,6 @@ import java.lang.reflect.Method;
 
 import javax.ejb.EJB;
 
-import org.jboss.as.ejb3.injection.EjbResourceResolver;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.ws.common.injection.resolvers.AbstractReferenceResolver;
 
 /**
@@ -38,18 +36,12 @@ import org.jboss.ws.common.injection.resolvers.AbstractReferenceResolver;
 final class EJBResourceReferenceResolver extends AbstractReferenceResolver<EJB> {
 
    /**
-    * Deployment unit used for resolving process.
-    */
-   private final DeploymentUnit unit;
-
-   /**
     * Constructor.
     *
     * @param unit deployment unit
     */
-   EJBResourceReferenceResolver(final DeploymentUnit unit) {
+   EJBResourceReferenceResolver() {
       super(EJB.class);
-      this.unit = unit;
    }
 
    /**
@@ -60,7 +52,7 @@ final class EJBResourceReferenceResolver extends AbstractReferenceResolver<EJB> 
     */
    @Override
    protected String resolveField(final Field field) {
-       return EjbResourceResolver.getInstance().resolve(unit, field);
+       throw new UnsupportedOperationException(); // TODO: implement
    }
 
    /**
@@ -71,7 +63,7 @@ final class EJBResourceReferenceResolver extends AbstractReferenceResolver<EJB> 
     */
    @Override
    protected String resolveMethod(final Method method) {
-      return EjbResourceResolver.getInstance().resolve(unit, method);
+       throw new UnsupportedOperationException(); // TODO: implement
    }
 
 }

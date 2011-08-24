@@ -58,8 +58,13 @@ import org.jboss.wsf.spi.metadata.injection.ReferenceResolver;
  */
 public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentAspect {
 
-    /** Resolver handling @Resource injections. */
-    private static final ReferenceResolver RESOURCE_RESOLVER = new ResourceReferenceResolver();
+    private static final Map<Class<? extends Annotation>, ReferenceResolver> resolvers;
+
+    static {
+        resolvers = new HashMap<Class<? extends Annotation>, ReferenceResolver>();
+        resolvers.put(Resource.class, new ResourceReferenceResolver());
+        resolvers.put(EJB.class, new EJBResourceReferenceResolver());
+    }
 
     /**
      * Constructor.
@@ -77,22 +82,21 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
     public void start(final Deployment dep) {
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
         final JBossWebMetaData jbossWebMD = WSHelper.getRequiredAttachment(dep, JBossWebMetaData.class);
-        final Map<Class<? extends Annotation>, ReferenceResolver> resolvers = this.getResolvers(unit);
 
         if (WSHelper.isJaxwsJseDeployment(dep)) {
-            this.log.debug("Building injection meta data for JAXWS JSE webservice deployment: " + dep.getSimpleName());
+            log.debug("Building injection meta data for JAXWS JSE webservice deployment: " + dep.getSimpleName());
             final EnvironmentEntriesMetaData envEntriesMD = jbossWebMD.getEnvironmentEntries();
 
             // iterate through all POJO endpoints
             for (Endpoint endpoint : dep.getService().getEndpoints()) {
                 // build POJO injections meta data
-                final InjectionsMetaData injectionsMD = this.buildInjectionsMetaData(envEntriesMD, resolvers);
+                final InjectionsMetaData injectionsMD = buildInjectionsMetaData(envEntriesMD);
 
                 // associate injections meta data with POJO endpoint
                 endpoint.addAttachment(InjectionsMetaData.class, injectionsMD);
             }
         } else if (WSHelper.isJaxwsEjbDeployment(dep)) {
-            this.log.debug("Building injection meta data for JAXWS EJB3 webservice deployment: " + dep.getSimpleName());
+            log.debug("Building injection meta data for JAXWS EJB3 webservice deployment: " + dep.getSimpleName());
             final WebServiceDeployment webServiceDeployment = ASHelper.getRequiredAttachment(unit,
                     WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
             final Service service = dep.getService();
@@ -104,7 +108,7 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
                 if (endpoint != null) {
                    // build EJB 3 injections meta data
                    final EnvironmentEntriesMetaData ejbEnvEntries = container.getEnvironmentEntriesMetaData();
-                   final InjectionsMetaData injectionsMD = this.buildInjectionsMetaData(ejbEnvEntries, resolvers);
+                   final InjectionsMetaData injectionsMD = buildInjectionsMetaData(ejbEnvEntries);
 
                    // associate injections meta data with EJB 3 endpoint
                    endpoint.addAttachment(InjectionsMetaData.class, injectionsMD);
@@ -114,32 +118,15 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
     }
 
     /**
-     * Returns reference resolvers container.
-     *
-     * @param unit deployment unit
-     * @return reference resolvers
-     */
-    private Map<Class<? extends Annotation>, ReferenceResolver> getResolvers(final DeploymentUnit unit) {
-        final Map<Class<? extends Annotation>, ReferenceResolver> resolvers = new HashMap<Class<? extends Annotation>, ReferenceResolver>();
-
-        resolvers.put(Resource.class, RESOURCE_RESOLVER);
-        resolvers.put(EJB.class, new EJBResourceReferenceResolver(unit));
-
-        return resolvers;
-    }
-
-    /**
      * Builds JBossWS specific injections meta data.
      *
      * @param envEntriesMD environment entries meta data
      * @param resolvers known annotation resolvers
      * @param jndiContext JNDI context to be propagated
      */
-    private InjectionsMetaData buildInjectionsMetaData(final EnvironmentEntriesMetaData envEntriesMD,
-            final Map<Class<? extends Annotation>, ReferenceResolver> resolvers) {
+    private InjectionsMetaData buildInjectionsMetaData(final EnvironmentEntriesMetaData envEntriesMD) {
         final List<InjectionMetaData> injectionMD = new LinkedList<InjectionMetaData>();
-        injectionMD.addAll(this.buildInjectionMetaData(envEntriesMD));
-
+        injectionMD.addAll(buildInjectionMetaData(envEntriesMD));
         return new InjectionsMetaData(injectionMD, resolvers);
     }
 
@@ -184,7 +171,7 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
                     // build injection meta data for injection target
                     final InjectionMetaData injectionMD = new InjectionMetaData(targetClass, targetName, envEntryValueClass,
                             envEntryName, envEntryValue != null);
-                    this.log.debug(injectionMD);
+                    log.debug(injectionMD);
                     retVal.add(injectionMD);
                 }
             }
