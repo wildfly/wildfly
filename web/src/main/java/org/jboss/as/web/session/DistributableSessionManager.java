@@ -618,14 +618,6 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
 
             if (sessionId == null) {
                 sessionId = this.generateSessionId(random);
-
-                String jvmRoute = this.getJvmRoute();
-                // We are using mod_jk for load balancing. Append the JvmRoute if it exists.
-                if (getUseJK() && jvmRoute != null) {
-                    log.tracef("createSession(): useJK is true. Will append JvmRoute: %s", jvmRoute);
-
-                    sessionId += "." + jvmRoute;
-                }
             } else {
                 clearInvalidated = sessionId;
             }
@@ -651,6 +643,11 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         }
 
         return session;
+    }
+
+    @Override
+    protected boolean appendJVMRoute() {
+        return this.getUseJK();
     }
 
     @Override
