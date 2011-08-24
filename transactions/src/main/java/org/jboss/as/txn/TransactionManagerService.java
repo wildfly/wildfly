@@ -57,11 +57,6 @@ public class TransactionManagerService extends AbstractService<TransactionManage
 
     @Override
     public TransactionManager getValue() throws IllegalStateException {
-        ClassLoader tccl = SecurityActions.setContextLoader(getClass().getClassLoader());
-        try {
-            return injectedArjunaTM.getValue().getTransactionManager();
-        } finally {
-            SecurityActions.setContextLoader(tccl);
-        }
+        return injectedArjunaTM.getValue().getTransactionManager();
     }
 }

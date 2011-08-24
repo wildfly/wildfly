@@ -22,8 +22,6 @@
 
 package org.jboss.as.txn;
 
-import static org.jboss.as.txn.SecurityActions.setContextLoader;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,7 +47,7 @@ import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
 
 /**
- * A service for the propriatary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
+ * A service for the proprietary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Thomas.Diesler@jboss.com
@@ -80,82 +78,76 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
     @Override
     public synchronized void start(final StartContext context) throws StartException {
 
-        // JTS expects the TCCL to be set to something that can find the log factory class.
-        setContextLoader(ArjunaTransactionManagerService.class.getClassLoader());
+        final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
+        jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(LastResource.class.getName());
+        jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList("1"));
+        jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName()));
+        jtaEnvironmentBean.setXAResourceRecordWrappingPlugin(new com.arjuna.ats.internal.jbossatx.jta.XAResourceRecordWrappingPluginImpl());
 
-        try {
+        final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
+        coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
+        coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
+        coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
 
-            final JTAEnvironmentBean jtaEnvironmentBean = jtaPropertyManager.getJTAEnvironmentBean();
-            jtaEnvironmentBean.setLastResourceOptimisationInterfaceClassName(LastResource.class.getName());
-            jtaEnvironmentBean.setXaRecoveryNodes(Collections.singletonList("1"));
-            jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName()));
-
-            final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
-            coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
-            coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
-            coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
-
-            // Object Store Browser bean
-            Map<String, String> objStoreBrowserTypes = new HashMap<String, String> ();
-               objStoreBrowser = new ObjStoreBrowser();
-            objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
+        // Object Store Browser bean
+        Map<String, String> objStoreBrowserTypes = new HashMap<String, String> ();
+        objStoreBrowser = new ObjStoreBrowser();
+        objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
                 "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.JTAActionBean");
 
-            final ORB orb = orbInjector.getOptionalValue();
+        final ORB orb = orbInjector.getOptionalValue();
 
-            if (orb == null) {
-                // No IIOP, stick with JTA mode.
-                jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
-                jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple.class.getName());
-                jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple.class.getName());
+        if (orb == null) {
+            // No IIOP, stick with JTA mode.
+            jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jta.TransactionManagerDelegate.class.getName());
+            jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple.class.getName());
+            jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple.class.getName());
 
-                final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
-                service.setJbossXATerminator(xaTerminatorInjector.getValue());
-                service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple());
-
-                try {
-                    service.create();
-                } catch (Exception e) {
-                    throw new StartException("Transaction manager create failed", e);
-                }
-                service.start();
-                value = service;
-            } else {
-                // IIOP is enabled, so fire up JTS mode.
-                jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
-                jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple.class.getName());
-                jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple.class.getName());
-
-                final com.arjuna.ats.jbossatx.jts.TransactionManagerService service = new com.arjuna.ats.jbossatx.jts.TransactionManagerService();
-                service.setJbossXATerminator(xaTerminatorInjector.getValue());
-                service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple());
-
-                objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple",
-                    "com.arjuna.ats.arjuna.tools.osb.mbean.ActionBean");
-
-                try {
-                    service.create();
-                } catch (Exception e) {
-                    throw new StartException("Create failed", e);
-                }
-                try {
-                    service.start(orb);
-                } catch (Exception e) {
-                    throw new StartException("Start failed", e);
-                }
-                value = service;
-            }
+            final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
+            service.setJbossXATerminator(xaTerminatorInjector.getValue());
+            service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple());
 
             try {
-                objStoreBrowser.setTypes(objStoreBrowserTypes);
-                objStoreBrowser.start();
+                service.create();
             } catch (Exception e) {
-                throw new StartException("Failed to configure object store browser bean", e);
+                throw new StartException("Transaction manager create failed", e);
             }
-            // todo: JNDI bindings
-        } finally {
-            setContextLoader(null);
+            service.start();
+            value = service;
+        } else {
+            // IIOP is enabled, so fire up JTS mode.
+            jtaEnvironmentBean.setTransactionManagerClassName(com.arjuna.ats.jbossatx.jts.TransactionManagerDelegate.class.getName());
+            jtaEnvironmentBean.setUserTransactionClassName(com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple.class.getName());
+            jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple.class.getName());
+
+            final com.arjuna.ats.jbossatx.jts.TransactionManagerService service = new com.arjuna.ats.jbossatx.jts.TransactionManagerService();
+            service.setJbossXATerminator(xaTerminatorInjector.getValue());
+            service.setTransactionSynchronizationRegistry(new com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple());
+
+            objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple",
+                    "com.arjuna.ats.arjuna.tools.osb.mbean.ActionBean");
+
+            try {
+                service.create();
+            } catch (Exception e) {
+                throw new StartException("Create failed", e);
+            }
+            try {
+                service.start(orb);
+            } catch (Exception e) {
+                throw new StartException("Start failed", e);
+            }
+            value = service;
         }
+
+        try {
+            objStoreBrowser.setTypes(objStoreBrowserTypes);
+            objStoreBrowser.start();
+        } catch (Exception e) {
+            throw new StartException("Failed to configure object store browser bean", e);
+        }
+        // todo: JNDI bindings
+
     }
 
     @Override
@@ -168,12 +160,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
 
     @Override
     public synchronized com.arjuna.ats.jbossatx.jta.TransactionManagerService getValue() throws IllegalStateException {
-        setContextLoader(ArjunaTransactionManagerService.class.getClassLoader());
-        try {
-            return TxnServices.notNull(value);
-        } finally {
-            setContextLoader(null);
-        }
+        return TxnServices.notNull(value);
     }
 
     Injector<JBossXATerminator> getXaTerminatorInjector() {

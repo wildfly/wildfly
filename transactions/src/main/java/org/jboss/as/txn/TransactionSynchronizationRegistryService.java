@@ -51,11 +51,6 @@ public class TransactionSynchronizationRegistryService extends AbstractService<T
 
     @Override
     public TransactionSynchronizationRegistry getValue() throws IllegalStateException {
-        ClassLoader tccl = SecurityActions.setContextLoader(getClass().getClassLoader());
-        try {
-            return injectedArjunaTM.getValue().getTransactionSynchronizationRegistry();
-        } finally {
-            SecurityActions.setContextLoader(tccl);
-        }
+        return injectedArjunaTM.getValue().getTransactionSynchronizationRegistry();
     }
 }
