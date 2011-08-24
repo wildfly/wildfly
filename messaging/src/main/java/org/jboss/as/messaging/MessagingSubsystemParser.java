@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
@@ -167,12 +168,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case ADDRESS_SETTINGS:
                     processAddressSettings(reader, address, list);
                     break;
-                case BINDINGS_DIRECTORY: {
-                    final ModelNode directory = parseDirectory(reader);
-                    // TODO this should be a resource
-                    operation.get(BINDINGS_DIRECTORY).set(directory);
+                case BINDINGS_DIRECTORY:
+                    parseDirectory(reader, CommonAttributes.BINDINGS_DIRECTORY, address, list);
                     break;
-                }
                 case BRIDGES:
                     processBridges(reader, address, list);
                     break;
@@ -201,29 +199,21 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case GROUPING_HANDLER:
                     processGroupingHandler(reader, address, list);
                     break;
-                case JOURNAL_DIRECTORY: {
-                    final ModelNode directory = parseDirectory(reader);
-                    // TODO this should be a resource
-                    operation.get(JOURNAL_DIRECTORY).set(directory);
+                case JOURNAL_DIRECTORY:
+                    parseDirectory(reader, CommonAttributes.JOURNAL_DIRECTORY, address, list);
                     break;
-                }
-                case LARGE_MESSAGES_DIRECTORY: {
-                    final ModelNode dir = parseDirectory(reader);
-                    operation.get(LARGE_MESSAGES_DIRECTORY).set(dir);
+                case LARGE_MESSAGES_DIRECTORY:
+                    parseDirectory(reader, CommonAttributes.LARGE_MESSAGES_DIRECTORY, address, list);
                     break;
-                }
                 case LIVE_CONNECTOR_REF: {
                     Location location = reader.getLocation();
                     String string = readStringAttributeElement(reader, CommonAttributes.CONNECTOR_NAME);
                     LIVE_CONNECTOR_REF.parseAndSetParameter(string, operation, location);
                     break;
                 }
-                case PAGING_DIRECTORY: {
-                    final ModelNode directory = parseDirectory(reader);
-                    // TODO this should be a resource
-                    operation.get(PAGING_DIRECTORY).set(directory);
+                case PAGING_DIRECTORY:
+                    parseDirectory(reader, CommonAttributes.PAGING_DIRECTORY, address, list);
                     break;
-                }
                 case REMOTING_INTERCEPTORS:
                     processRemotingInterceptors(reader, operation);
                     break;
@@ -1116,27 +1106,37 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         transportConfig.get(PARAM).set(params);
     }
 
-    static ModelNode parseDirectory(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode directory = new ModelNode();
+    static void parseDirectory(final XMLExtendedStreamReader reader, final String name, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+        String path = null;
+        String relativeTo = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-
             requireNoNamespaceAttribute(reader, i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             final String value = reader.getAttributeValue(i);
             switch (attribute) {
                 case RELATIVE_TO:
-                    directory.get(RELATIVE_TO).set(value);
+                    relativeTo = value;
                     break;
                 case PATH:
-                    directory.get(PATH).set(value);
+                    path = value;
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
+        if(path == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PATH));
+        }
         requireNoContent(reader);
-        return directory;
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        operation.get(OP_ADDR).set(address);
+        operation.get(OP_ADDR).add(ModelDescriptionConstants.PATH, name);
+        operation.get(ModelDescriptionConstants.PATH).set(path);
+        if(relativeTo != null) operation.get(ModelDescriptionConstants.RELATIVE_TO).set(relativeTo);
+
+        updates.add(operation);
     }
 
     private static void parseDiverts(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
@@ -1287,18 +1287,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             simpleAttribute.marshallAsElement(node, writer);
         }
 
-        if (has(node, ACCEPTOR)) {
-            writeAcceptors(writer, node.get(ACCEPTOR));
-        }
+        writeAcceptors(writer, node);
         if (has(node, ADDRESS_SETTING)) {
             writeAddressSettings(writer, node.get(ADDRESS_SETTING));
         }
-        if (has(node, BINDINGS_DIRECTORY)) {
-            writeDirectory(writer, Element.BINDINGS_DIRECTORY, node);
+        if (has(node.get(ModelDescriptionConstants.PATH), BINDINGS_DIRECTORY)) {
+            writeDirectory(writer, Element.BINDINGS_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
         }
-        if (has(node, CONNECTOR)) {
-            writeConnectors(writer, node.get(CONNECTOR));
-        }
+        writeConnectors(writer, node);
         if (node.hasDefined(BROADCAST_GROUP)) {
             writeBroadcastGroups(writer, node.get(BROADCAST_GROUP));
         }
@@ -1317,14 +1313,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         if (node.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
             writeGroupingHandler(writer, node.get(GROUPING_HANDLER));
         }
-        if (has(node, CommonAttributes.JOURNAL_DIRECTORY)) {
-            writeDirectory(writer, Element.JOURNAL_DIRECTORY, node);
+        if (has(node.get(ModelDescriptionConstants.PATH), CommonAttributes.JOURNAL_DIRECTORY)) {
+            writeDirectory(writer, Element.JOURNAL_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
         }
-        if (has(node, CommonAttributes.LARGE_MESSAGES_DIRECTORY)) {
-            writeDirectory(writer, Element.LARGE_MESSAGES_DIRECTORY, node);
+        if (has(node.get(ModelDescriptionConstants.PATH), CommonAttributes.LARGE_MESSAGES_DIRECTORY)) {
+            writeDirectory(writer, Element.LARGE_MESSAGES_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
         }
-        if (has(node, CommonAttributes.PAGING_DIRECTORY)) {
-            writeDirectory(writer, Element.PAGING_DIRECTORY, node);
+        if (has(node.get(ModelDescriptionConstants.PATH), CommonAttributes.PAGING_DIRECTORY)) {
+            writeDirectory(writer, Element.PAGING_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
         }
         if (has(node, CommonAttributes.SECURITY_SETTING)) {
             writeSecuritySettings(writer, node.get(CommonAttributes.SECURITY_SETTING));
@@ -1468,64 +1464,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-
-    private void writeAcceptors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        writer.writeStartElement(Element.ACCEPTORS.getLocalName());
-        for(final Property property : node.asPropertyList()) {
-            final ModelNode value = property.getValue();
-            if (!has(value, TYPE)) {
-                continue;
-            }
-            switch( Enum.valueOf(TransportConfigType.class, value.get(TYPE).asString())) {
-                case Generic:
-                    writer.writeStartElement(Element.ACCEPTOR.getLocalName());
-                    break;
-                case Remote:
-                    writer.writeStartElement(Element.NETTY_ACCEPTOR.getLocalName());
-                    break;
-                case InVM:
-                    writer.writeStartElement(Element.IN_VM_ACCEPTOR.getLocalName());
-                    break;
-            }
-
-            writeAcceptorAndConnectorContent(writer, property);
-
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-    }
-
-    private void writeConnectors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        writer.writeStartElement(Element.CONNECTORS.getLocalName());
-        for(final Property property : node.asPropertyList()) {
-            final ModelNode value = property.getValue();
-            if (!has(value, TYPE)) {
-                continue;
-            }
-            switch( Enum.valueOf(TransportConfigType.class, value.get(TYPE).asString())) {
-                case Generic:
-                    writer.writeStartElement(Element.CONNECTOR.getLocalName());
-                    break;
-                case Remote:
-                    writer.writeStartElement(Element.NETTY_CONNECTOR.getLocalName());
-                    break;
-                case InVM:
-                    writer.writeStartElement(Element.IN_VM_CONNECTOR.getLocalName());
-                    break;
-            }
-            writeAcceptorAndConnectorContent(writer, property);
-
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-    }
-
-    /** TODO acceptors/connectors
     static void writeAcceptors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         writer.writeStartElement(Element.ACCEPTORS.getLocalName());
         if(node.hasDefined(ACCEPTOR)) {
             for(final Property property : node.get(ACCEPTOR).asPropertyList()) {
-                final ModelNode value = property.getValue();
                 writer.writeStartElement(Element.ACCEPTOR.getLocalName());
                 writeAcceptorAndConnectorContent(writer, property);
                 writer.writeEndElement();
@@ -1533,7 +1475,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         if(node.hasDefined(REMOTE_ACCEPTOR)) {
             for(final Property property : node.get(REMOTE_ACCEPTOR).asPropertyList()) {
-                final ModelNode value = property.getValue();
                 writer.writeStartElement(Element.NETTY_ACCEPTOR.getLocalName());
                 writeAcceptorAndConnectorContent(writer, property);
                 writer.writeEndElement();
@@ -1541,7 +1482,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         if(node.hasDefined(IN_VM_ACCEPTOR)) {
             for(final Property property : node.get(IN_VM_ACCEPTOR).asPropertyList()) {
-                final ModelNode value = property.getValue();
                 writer.writeStartElement(Element.IN_VM_ACCEPTOR.getLocalName());
                 writeAcceptorAndConnectorContent(writer, property);
                 writer.writeEndElement();
@@ -1554,7 +1494,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         writer.writeStartElement(Element.CONNECTORS.getLocalName());
         if(node.hasDefined(CONNECTOR)) {
             for(final Property property : node.get(CONNECTOR).asPropertyList()) {
-                final ModelNode value = property.getValue();
                 writer.writeStartElement(Element.CONNECTOR.getLocalName());
                 writeAcceptorAndConnectorContent(writer, property);
                 writer.writeEndElement();
@@ -1562,7 +1501,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         if(node.hasDefined(REMOTE_CONNECTOR)) {
             for(final Property property : node.get(REMOTE_CONNECTOR).asPropertyList()) {
-                final ModelNode value = property.getValue();
                 writer.writeStartElement(Element.NETTY_CONNECTOR.getLocalName());
                 writeAcceptorAndConnectorContent(writer, property);
                 writer.writeEndElement();
@@ -1570,7 +1508,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         if(node.hasDefined(IN_VM_CONNECTOR)) {
             for(final Property property : node.get(IN_VM_CONNECTOR).asPropertyList()) {
-                final ModelNode value = property.getValue();
                 writer.writeStartElement(Element.IN_VM_CONNECTOR.getLocalName());
                 writeAcceptorAndConnectorContent(writer, property);
                 writer.writeEndElement();
@@ -1578,9 +1515,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         writer.writeEndElement();
     }
-     */
 
-    private void writeAcceptorAndConnectorContent(final XMLExtendedStreamWriter writer, final Property property) throws XMLStreamException {
+    static void writeAcceptorAndConnectorContent(final XMLExtendedStreamWriter writer, final Property property) throws XMLStreamException {
         writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
         final ModelNode value = property.getValue();
 
@@ -1598,7 +1534,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property parameter : value.get(PARAM).asPropertyList()) {
                 writer.writeStartElement(Element.PARAM.getLocalName());
                 writer.writeAttribute(Attribute.KEY.getLocalName(), parameter.getName());
-                writeAttribute(writer, Attribute.VALUE, parameter.getValue());
+                writeAttribute(writer, Attribute.VALUE, parameter.getValue().get(VALUE));
                 writer.writeEndElement();
             }
         }
@@ -1787,12 +1723,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     static void writeDirectory(final XMLExtendedStreamWriter writer, final Element element, final ModelNode node) throws XMLStreamException {
         final String localName = element.getLocalName();
         if(node.has(localName)) {
-            final String path = node.get(localName).has(PATH) ? node.get(localName, PATH).asString() : null;
-            final String relativeTo = node.get(localName).has(RELATIVE_TO) ? node.get(localName, RELATIVE_TO).asString() : null;
+            final String path = node.get(localName).has(PATH.getName()) ? node.get(localName, PATH.getName()).asString() : null;
+            final String relativeTo = node.get(localName).has(RELATIVE_TO.getName()) ? node.get(localName, RELATIVE_TO.getName()).asString() : null;
             if(path != null || relativeTo != null) {
                 writer.writeEmptyElement(localName);
-                if(path != null) writer.writeAttribute(PATH, path);
-                if(relativeTo != null) writer.writeAttribute(RELATIVE_TO, relativeTo);
+                if(path != null) writer.writeAttribute(PATH.getName(), path);
+                if(relativeTo != null) writer.writeAttribute(RELATIVE_TO.getName(), relativeTo);
             }
         }
     }
@@ -1938,11 +1874,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
         writer.writeAttribute(attr.getLocalName(), txSupport);
     }
-    private boolean has(ModelNode node, String name) {
+
+    static boolean has(ModelNode node, String name) {
         return node.has(name) && node.get(name).isDefined();
     }
 
-    private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
+    static void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
         writer.writeAttribute(attr.getLocalName(), value.asString());
     }
 

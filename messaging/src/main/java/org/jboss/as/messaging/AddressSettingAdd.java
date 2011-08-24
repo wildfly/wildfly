@@ -36,13 +36,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.LVQ;
@@ -55,12 +49,10 @@ import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  * @author Emanuel Muckenhuber
@@ -119,21 +111,20 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
      * @param config the detyped config
      * @return the address settings
      */
-    static AddressSettings createSettings(final ModelNode config) {
+    static AddressSettings createSettings(final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
-        final AddressFullMessagePolicy addressPolicy = config.hasDefined(ADDRESS_FULL_MESSAGE_POLICY.getName()) ?
-                AddressFullMessagePolicy.valueOf(config.get(ADDRESS_FULL_MESSAGE_POLICY.getName()).asString()) : AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
+        final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(ADDRESS_FULL_MESSAGE_POLICY.validateResolvedOperation(config).asString());
         settings.setAddressFullMessagePolicy(addressPolicy);
-        settings.setDeadLetterAddress(asSimpleString(config.get(DEAD_LETTER_ADDRESS.getName()), null));
-        settings.setLastValueQueue(config.get(LVQ.getName()).asBoolean(AddressSettings.DEFAULT_LAST_VALUE_QUEUE));
-        settings.setMaxDeliveryAttempts(config.get(MAX_DELIVERY_ATTEMPTS.getName()).asInt(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS));
-        settings.setMaxSizeBytes(config.get(MAX_SIZE_BYTES_NODE_NAME.getName()).asInt((int) AddressSettings.DEFAULT_MAX_SIZE_BYTES));
-        settings.setMessageCounterHistoryDayLimit(config.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()).asInt(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT));
+        settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.validateResolvedOperation(config), null));
+        settings.setLastValueQueue(LVQ.validateResolvedOperation(config).asBoolean());
+        settings.setMaxDeliveryAttempts(MAX_DELIVERY_ATTEMPTS.validateResolvedOperation(config).asInt());
+        settings.setMaxSizeBytes(MAX_SIZE_BYTES_NODE_NAME.validateResolvedOperation(config).asInt());
+        settings.setMessageCounterHistoryDayLimit(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.validateResolvedOperation(config).asInt());
         settings.setExpiryAddress(asSimpleString(config.get(EXPIRY_ADDRESS.getName()), null));
-        settings.setRedeliveryDelay(config.get(REDELIVERY_DELAY.getName()).asInt((int) AddressSettings.DEFAULT_REDELIVER_DELAY));
-        settings.setRedistributionDelay(config.get(REDISTRIBUTION_DELAY.getName()).asInt((int) AddressSettings.DEFAULT_REDISTRIBUTION_DELAY));
-        settings.setPageSizeBytes(config.get(PAGE_SIZE_BYTES_NODE_NAME.getName()).asInt((int) AddressSettings.DEFAULT_PAGE_SIZE));
-        settings.setSendToDLAOnNoRoute(config.get(SEND_TO_DLA_ON_NO_ROUTE.getName()).asBoolean(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE));
+        settings.setRedeliveryDelay(REDELIVERY_DELAY.validateResolvedOperation(config).asInt());
+        settings.setRedistributionDelay(REDISTRIBUTION_DELAY.validateResolvedOperation(config).asLong());
+        settings.setPageSizeBytes(PAGE_SIZE_BYTES_NODE_NAME.validateResolvedOperation(config).asLong());
+        settings.setSendToDLAOnNoRoute(SEND_TO_DLA_ON_NO_ROUTE.validateResolvedOperation(config).asBoolean());
         return settings;
     }
 

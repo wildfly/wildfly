@@ -48,6 +48,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
+import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -76,21 +77,19 @@ public class MessagingDescriptions {
             attr.addResourceAttributeDescription(bundle,  "messaging", node);
         }
 
-        node.get(ATTRIBUTES, CommonAttributes.ACCEPTOR, TYPE).set(ModelType.OBJECT);
-        node.get(ATTRIBUTES, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
-
         node.get(ATTRIBUTES, CommonAttributes.BINDINGS_DIRECTORY).set(getPathDescription("bindings.directory", bundle));
         node.get(ATTRIBUTES, CommonAttributes.JOURNAL_DIRECTORY).set(getPathDescription("journal.directory", bundle));
         node.get(ATTRIBUTES, CommonAttributes.LARGE_MESSAGES_DIRECTORY).set(getPathDescription("large.messages.directory", bundle));
         node.get(ATTRIBUTES, CommonAttributes.PAGING_DIRECTORY).set(getPathDescription("paging.directory", bundle));
 
-        node.get(ATTRIBUTES, CommonAttributes.CONNECTOR, TYPE).set(ModelType.OBJECT);
-        node.get(ATTRIBUTES, CommonAttributes.CONNECTOR, DESCRIPTION).set(bundle.getString("connector"));
-
         node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, TYPE).set(ModelType.OBJECT);
         node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, DESCRIPTION).set(bundle.getString("security-setting"));
 
         node.get(OPERATIONS);   // placeholder
+
+        node.get(CHILDREN, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
+        node.get(CHILDREN, CommonAttributes.ACCEPTOR, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.ACCEPTOR, MODEL_DESCRIPTION);
 
         node.get(CHILDREN, CommonAttributes.ADDRESS_SETTING, DESCRIPTION).set(bundle.getString("address-setting"));
         node.get(CHILDREN, CommonAttributes.ADDRESS_SETTING, MIN_OCCURS).set(0);
@@ -99,6 +98,10 @@ public class MessagingDescriptions {
         node.get(CHILDREN, CommonAttributes.BROADCAST_GROUP, DESCRIPTION).set(bundle.getString("broadcast-group"));
         node.get(CHILDREN, CommonAttributes.BROADCAST_GROUP, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.BROADCAST_GROUP, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.CONNECTOR, DESCRIPTION).set(bundle.getString("connector"));
+        node.get(CHILDREN, CommonAttributes.CONNECTOR, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.CONNECTOR, MODEL_DESCRIPTION);
 
         node.get(CHILDREN, CommonAttributes.DISCOVERY_GROUP, DESCRIPTION).set(bundle.getString("discovery-group"));
         node.get(CHILDREN, CommonAttributes.DISCOVERY_GROUP, MIN_OCCURS).set(0);
@@ -164,9 +167,6 @@ public class MessagingDescriptions {
             attr.addOperationParameterDescription(bundle, "messaging", node);
         }
 
-        node.get(REQUEST_PROPERTIES, CommonAttributes.ACCEPTOR, TYPE).set(ModelType.OBJECT);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
-
         node.get(REQUEST_PROPERTIES, CommonAttributes.BINDINGS_DIRECTORY).set(getPathDescription("bindings.directory", bundle));
         node.get(REQUEST_PROPERTIES, CommonAttributes.BINDINGS_DIRECTORY, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, CommonAttributes.JOURNAL_DIRECTORY).set(getPathDescription("journal.directory", bundle));
@@ -175,9 +175,6 @@ public class MessagingDescriptions {
         node.get(REQUEST_PROPERTIES, CommonAttributes.LARGE_MESSAGES_DIRECTORY, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, CommonAttributes.PAGING_DIRECTORY).set(getPathDescription("paging.directory", bundle));
         node.get(REQUEST_PROPERTIES, CommonAttributes.PAGING_DIRECTORY, REQUIRED).set(false);
-
-        node.get(REQUEST_PROPERTIES, CommonAttributes.CONNECTOR, TYPE).set(ModelType.OBJECT);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.CONNECTOR, DESCRIPTION).set(bundle.getString("connector"));
 
         node.get(REQUEST_PROPERTIES, CommonAttributes.SECURITY_SETTING, TYPE).set(ModelType.OBJECT);
         node.get(REQUEST_PROPERTIES, CommonAttributes.SECURITY_SETTING, DESCRIPTION).set(bundle.getString("security-setting"));
@@ -786,6 +783,7 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
+        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -856,6 +854,7 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
+        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -880,6 +879,7 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
+        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -904,6 +904,7 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
+        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -939,6 +940,7 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
+        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -963,6 +965,7 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
+        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -1002,6 +1005,42 @@ public class MessagingDescriptions {
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
+
+    public static ModelNode getPathResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("path"));
+        for (AttributeDefinition attr : MessagingPathHandlers.ATTRIBUTES) {
+            attr.addResourceAttributeDescription(bundle, "path", root);
+        }
+        return root;
+    }
+
+    public static ModelNode getPathAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("path.add"));
+
+        for (AttributeDefinition attr : MessagingPathHandlers.ATTRIBUTES) {
+            attr.addOperationParameterDescription(bundle, "path", node);
+        }
+
+        return node;
+    }
+
+    public static ModelNode getPathRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(REMOVE);
+        node.get(DESCRIPTION).set(bundle.getString("path.remove"));
+
+        return node;
+    }
+
 
 
     private static ResourceBundle getResourceBundle(Locale locale) {
