@@ -229,7 +229,7 @@ class MessagingSubsystemProviders {
     public static final DescriptionProvider IN_VM_CONNECTOR_ADD = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getInVMConnector(locale);
+            return MessagingDescriptions.getInVMConnectorAdd(locale);
         }
     };
 
@@ -250,7 +250,28 @@ class MessagingSubsystemProviders {
     public static final DescriptionProvider PARAM_REMOVE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getParam(locale);
+            return MessagingDescriptions.getParamRemove(locale);
+        }
+    };
+
+    public static final DescriptionProvider PATH = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getPathResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider PATH_ADD = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getPathAdd(locale);
+        }
+    };
+
+    public static final DescriptionProvider PATH_REMOVE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getPathRemove(locale);
         }
     };
 

@@ -135,6 +135,9 @@ class OperationValidator {
     private void checkParameterTypes(final ModelNode description, final ModelNode operation, final Map<String, ModelNode> describedProperties, final Map<String, ModelNode> actualParams) {
         for (String paramName : actualParams.keySet()) {
             ModelNode value = actualParams.get(paramName);
+            if(!value.isDefined()) {
+                continue;
+            }
             ModelNode typeNode = describedProperties.get(paramName).get(TYPE);
             Assert.assertTrue("No type for param '" + paramName + "' in " + description, typeNode.isDefined());
             final ModelType modelType;

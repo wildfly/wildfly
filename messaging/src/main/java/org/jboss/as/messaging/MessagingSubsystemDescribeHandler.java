@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
@@ -74,12 +75,25 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
         final ModelNode result = context.getResult();
         result.add(subsystemAdd);
 
+        // acceptors / connectors
         for(final String transport : TRANSPORT) {
             if(subModel.hasDefined(transport)) {
                 for(final Property property : subModel.get(transport).asPropertyList()) {
                     final ModelNode address = rootAddress.toModelNode();
                     address.add(transport, property.getName());
                     result.add(TransportConfigOperationHandlers.createAddOperation(address, property.getValue()));
+                }
+            }
+        }
+
+        // the paths
+        if(subModel.hasDefined(PATH)) {
+            final ModelNode paths = subModel.get(PATH);
+            for(final String pathName : CommonAttributes.PATHS) {
+                if(paths.hasDefined(pathName)) {
+                    final ModelNode address = rootAddress.toModelNode();
+                    address.add(PATH, pathName);
+                    result.add(MessagingPathHandlers.createAddOperation(address, subModel.get(pathName)));
                 }
             }
         }

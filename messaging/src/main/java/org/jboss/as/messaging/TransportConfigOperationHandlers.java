@@ -28,8 +28,10 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -154,7 +156,7 @@ class TransportConfigOperationHandlers {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ServiceController<?> controller = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
-                    if(context != null) {
+                    if(controller != null) {
                         context.reloadRequired();
                     }
                     context.completeStep();
@@ -246,7 +248,7 @@ class TransportConfigOperationHandlers {
                 final String binding = config.get(SOCKET_BINDING.getName()).asString();
                 parameters.put(SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
-                connectors.put(connectorName, new TransportConfiguration(NettyConnector.class.getName(), parameters, connectorName));
+                connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
         if(params.hasDefined(IN_VM_CONNECTOR)) {
@@ -255,7 +257,7 @@ class TransportConfigOperationHandlers {
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(config);
                 parameters.put(SERVER_ID.getName(), config.get(SERVER_ID.getName()).asInt());
-                connectors.put(connectorName, new TransportConfiguration(InVMConnector.class.getName(), parameters, connectorName));
+                connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
         configuration.setConnectorConfigurations(connectors);

@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -42,9 +43,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition ALLOW_DIRECT_CONNECTIONS_ONLY = new SimpleAttributeDefinition("allow-direct-connections-only",
             new ModelNode().set(false), ModelType.BOOLEAN,  true);
 
-    SimpleAttributeDefinition ADDRESS = new SimpleAttributeDefinition("address", ModelType.STRING, false);
-
-    SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = new SimpleAttributeDefinition("address-full-policy", ModelType.STRING, true);
+    SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = new SimpleAttributeDefinition("address-full-policy",
+            new ModelNode().set(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()), ModelType.STRING, true);
 
     SimpleAttributeDefinition ALLOW_FAILBACK = new SimpleAttributeDefinition("allow-failback",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN,  true);
@@ -247,7 +247,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = new SimpleAttributeDefinition("log-journal-write-rate",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true);
 
-    SimpleAttributeDefinition LVQ = new SimpleAttributeDefinition("last-value-queue", ModelType.STRING, true);
+    SimpleAttributeDefinition LVQ = new SimpleAttributeDefinition("last-value-queue",
+            new ModelNode().set(AddressSettings.DEFAULT_LAST_VALUE_QUEUE), ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition MANAGEMENT_ADDRESS = new SimpleAttributeDefinition("management-address",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString()), ModelType.STRING, true);
@@ -258,12 +259,14 @@ public interface CommonAttributes {
     SimpleAttributeDefinition MAX_HOPS = new SimpleAttributeDefinition("max-hops",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_MAX_HOPS), ModelType.INT,  true);
 
-    SimpleAttributeDefinition MAX_DELIVERY_ATTEMPTS = new SimpleAttributeDefinition("max-delivery-attempts", ModelType.INT, true);
+    SimpleAttributeDefinition MAX_DELIVERY_ATTEMPTS = new SimpleAttributeDefinition("max-delivery-attempts",
+            new ModelNode().set(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS), ModelType.INT, true);
 
     SimpleAttributeDefinition MAX_RETRY_INTERVAL = new SimpleAttributeDefinition("max-retry-interval",
             new ModelNode().set(HornetQClient.DEFAULT_MAX_RETRY_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
-    SimpleAttributeDefinition MAX_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("max-size-bytes", ModelType.INT, true);
+    SimpleAttributeDefinition MAX_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("max-size-bytes",
+            new ModelNode().set(AddressSettings.DEFAULT_MAX_SIZE_BYTES), ModelType.INT, true);
 
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = new SimpleAttributeDefinition("memory-measure-interval",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
@@ -275,7 +278,7 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition MESSAGE_COUNTER_HISTORY_DAY_LIMIT = new SimpleAttributeDefinition("message-counter-history-day-limit",
-                              ModelType.INT, true);
+            new ModelNode().set(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT), ModelType.INT, true);
 
     SimpleAttributeDefinition MESSAGE_COUNTER_MAX_DAY_HISTORY = new SimpleAttributeDefinition("message-counter-max-day-history",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY), ModelType.INT,  true, MeasurementUnit.DAYS);
@@ -297,7 +300,10 @@ public interface CommonAttributes {
     SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
 
-    SimpleAttributeDefinition PAGE_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("page-size-bytes", ModelType.INT, true);
+    SimpleAttributeDefinition PAGE_SIZE_BYTES_NODE_NAME = new SimpleAttributeDefinition("page-size-bytes",
+            new ModelNode().set(AddressSettings.DEFAULT_PAGE_SIZE), ModelType.LONG, true);
+
+    SimpleAttributeDefinition PATH = new SimpleAttributeDefinition("path", ModelType.STRING, false);
 
     SimpleAttributeDefinition PERF_BLAST_PAGES = new SimpleAttributeDefinition("perf-blast-pages",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES), ModelType.INT,  true, MeasurementUnit.NONE);
@@ -327,9 +333,13 @@ public interface CommonAttributes {
     SimpleAttributeDefinition REFRESH_TIMEOUT = new SimpleAttributeDefinition("refresh-timeout",
             new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
-    SimpleAttributeDefinition REDELIVERY_DELAY = new SimpleAttributeDefinition("redelivery-delay", ModelType.INT, true);
+    SimpleAttributeDefinition REDELIVERY_DELAY = new SimpleAttributeDefinition("redelivery-delay",
+            new ModelNode().set(AddressSettings.DEFAULT_REDELIVER_DELAY), ModelType.INT, true);
 
-    SimpleAttributeDefinition REDISTRIBUTION_DELAY = new SimpleAttributeDefinition("redistribution-delay", ModelType.INT, true);
+    SimpleAttributeDefinition REDISTRIBUTION_DELAY = new SimpleAttributeDefinition("redistribution-delay",
+            new ModelNode().set(AddressSettings.DEFAULT_REDISTRIBUTION_DELAY), ModelType.LONG, true);
+
+    SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinition("relative-to", ModelType.STRING, true);
 
     RemotingInterceptorsAttribute REMOTING_INTERCEPTORS = RemotingInterceptorsAttribute.INSTANCE;
 
@@ -355,7 +365,8 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition SELECTOR = new SimpleAttributeDefinition("selector", ModelType.STRING, true);
 
-    SimpleAttributeDefinition SEND_TO_DLA_ON_NO_ROUTE = new SimpleAttributeDefinition("send-to-dla-on-no-route", ModelType.BOOLEAN, true);
+    SimpleAttributeDefinition SEND_TO_DLA_ON_NO_ROUTE = new SimpleAttributeDefinition("send-to-dla-on-no-route",
+            new ModelNode().set(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE), ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition SERVER_ID = new SimpleAttributeDefinition("server-id", ModelType.INT, false);
 
@@ -474,11 +485,9 @@ public interface CommonAttributes {
     String PAGE_MAX_CACHE_SIZE = "page-max-cache-size";
     String PAGING_DIRECTORY ="paging-directory";
     String PARAM ="param";
-    String PATH ="path";
     String PERMISSION_ELEMENT_NAME ="permission";
     String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
     String QUEUE ="queue";
-    String RELATIVE_TO ="relative-to";
     String REMOTING_INTERCEPTORS_STRING ="remoting-interceptors";
     String REMOTE_ACCEPTOR = "remote-acceptor";
     String REMOTE_CONNECTOR = "remote-connector";
@@ -552,4 +561,7 @@ public interface CommonAttributes {
     AttributeDefinition[] JMS_QUEUE_ATTRIBUTES = { ENTRIES, SELECTOR, DURABLE };
 
     AttributeDefinition[] CONNECTOR_SERVICE_ATTRIBUTES = { FACTORY_CLASS };
+
+    String[] PATHS = new String[] {CommonAttributes.BINDINGS_DIRECTORY, CommonAttributes.JOURNAL_DIRECTORY, CommonAttributes.LARGE_MESSAGES_DIRECTORY, CommonAttributes.PAGING_DIRECTORY};
+
 }

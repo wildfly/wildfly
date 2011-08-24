@@ -173,26 +173,23 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler,
                                   final List<ServiceController<?>> newControllers) throws OperationFailedException {
-
-        // Create path services
-        // TODO move into child resource handlers
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, operation.get(BINDINGS_DIRECTORY), serviceTarget);
-        final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, operation.get(JOURNAL_DIRECTORY), serviceTarget);
-        final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, operation.get(LARGE_MESSAGES_DIRECTORY), serviceTarget);
-        final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, operation.get(PAGING_DIRECTORY), serviceTarget);
-
         // Add a RUNTIME step to actually install the HQ Service. This will execute after the runtime step
         // added by any child resources whose ADD handler executes after this one in the model stage.
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
+                final ServiceTarget serviceTarget = context.getServiceTarget();
 
                 // Transform the configuration based on the recursive model
                 final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                 final ModelNode model = Resource.Tools.readModel(resource);
                 final Configuration configuration = transformConfig(model);
+
+                // Create path services
+                final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, model.get(PATH, BINDINGS_DIRECTORY), serviceTarget);
+                final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, model.get(PATH, JOURNAL_DIRECTORY), serviceTarget);
+                final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, model.get(PATH, LARGE_MESSAGES_DIRECTORY), serviceTarget);
+                final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, model.get(PATH, PAGING_DIRECTORY), serviceTarget);
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService();
@@ -202,9 +199,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
 
-                // Depend on path services
-                // TODO once the above "path service" installs are moved to child resource handlers,
-                // in this step handler we have to ensure the paths exist, creating them if not
                 serviceBuilder.addDependency(bindingsPath, String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
                 serviceBuilder.addDependency(journalPath, String.class, hqService.getPathInjector(DEFAULT_JOURNAL_DIR));
                 serviceBuilder.addDependency(largeMessagePath, String.class, hqService.getPathInjector(DEFAULT_LARGE_MESSSAGE_DIR));
@@ -343,8 +337,9 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
      *
      * @param configuration the hornetQ configuration
      * @param params        the detyped operation parameters
+     * @throws OperationFailedException
      */
-    static void processAddressSettings(final Configuration configuration, final ModelNode params) {
+    static void processAddressSettings(final Configuration configuration, final ModelNode params) throws OperationFailedException {
         if (params.get(ADDRESS_SETTING).isDefined()) {
             for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                 final String match = property.getName();
