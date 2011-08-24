@@ -27,14 +27,12 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.jandex.Indexer;
-import org.jboss.msc.ServiceNamed;
 import org.jboss.msc.service.ServiceName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Random;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -61,7 +59,7 @@ public class TestHelper {
         final Attachable attachable = new SimpleAttachable();
         final DeploymentUnit deploymentUnit = mock(DeploymentUnit.class);
         when(deploymentUnit.getName()).thenReturn(duName);
-        
+
         when(deploymentUnit.getAttachment((AttachmentKey<Object>) any())).thenAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
