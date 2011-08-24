@@ -54,11 +54,6 @@ public class UserTransactionService extends AbstractService<UserTransaction> {
 
     @Override
     public UserTransaction getValue() throws IllegalStateException {
-        ClassLoader tccl = SecurityActions.setContextLoader(getClass().getClassLoader());
-        try {
-            return injectedArjunaTM.getValue().getUserTransaction();
-        } finally {
-            SecurityActions.setContextLoader(tccl);
-        }
+        return injectedArjunaTM.getValue().getUserTransaction();
     }
 }

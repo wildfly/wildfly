@@ -183,7 +183,10 @@ class TransactionSubsystemAdd implements OperationStepHandler {
                             // Configure the ObjectStoreEnvironmentBeans
                             ServiceController<String> objectStoreRPS = RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
                             controllers.add(objectStoreRPS);
-                            final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService();
+
+                            final boolean useHornetqJournalStore = "true".equals(System.getProperty("usehornetqstore")); // TODO wire to domain model instead.
+
+                            final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore);
                             controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
                                     .addDependency(objectStoreRPS.getName(), String.class, objStoreEnvironmentService.getPathInjector())
                                     .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
@@ -266,14 +269,6 @@ class TransactionSubsystemAdd implements OperationStepHandler {
                                 }
                             });
                             utBuilder.install();
-
-                            //we need to initialize this class when we have the correct TCCL set
-                            //so we force it to be initialized here
-                            try {
-                                Class.forName("com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple", true, getClass().getClassLoader());
-                            } catch (ClassNotFoundException e) {
-                                log.warn("Could not load com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionImple", e);
-                            }
 
                             context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
