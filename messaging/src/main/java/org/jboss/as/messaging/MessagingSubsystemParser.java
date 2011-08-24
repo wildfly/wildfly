@@ -55,6 +55,8 @@ import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.INBOUND_CONFIG;
+import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.JMS_CONNECTION_FACTORIES;
 import static org.jboss.as.messaging.CommonAttributes.JMS_DESTINATIONS;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
@@ -70,6 +72,8 @@ import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
@@ -157,17 +161,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
 
             switch (element) {
-                case ACCEPTORS: {
-                    // add acceptors
-                    final ModelNode acceptors = processAcceptors(reader);
-                    // TODO these should be resources
-                    // see processAcceptors(reader, address, list);
-                    operation.get(ACCEPTOR).set(acceptors);
+                case ACCEPTORS:
+                    processAcceptors(reader, address, list);
                     break;
-                } case ADDRESS_SETTINGS: {
+                case ADDRESS_SETTINGS:
                     processAddressSettings(reader, address, list);
                     break;
-                }
                 case BINDINGS_DIRECTORY: {
                     final ModelNode directory = parseDirectory(reader);
                     // TODO this should be a resource
@@ -183,13 +182,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case CLUSTER_CONNECTIONS:
                     processClusterConnections(reader, address, list);
                     break;
-                case CONNECTORS: {
-                    final ModelNode connectors = processConnectors(reader);
-                    // TODO these should be resources
-                    // see processConnectors(reader, address, list);
-                    operation.get(CONNECTOR).set(connectors);
+                case CONNECTORS:
+                    processConnectors(reader, address, list);
                     break;
-                }
                 case CONNECTOR_SERVICES:
                     processConnectorServices(reader, address, list);
                     break;
@@ -731,68 +726,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
        }
     }
 
-    static ModelNode processAcceptors(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode acceptors = new ModelNode();
-        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            String name = null;
-            String socketBinding = null;
-            int serverId = 0;
-
-            int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i++) {
-                final String attrValue = reader.getAttributeValue(i);
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = attrValue;
-                        break;
-                    }
-                    case SOCKET_BINDING: {
-                        socketBinding = attrValue;
-                        break;
-                    }
-                    case SERVER_ID: {
-                        serverId = Integer.valueOf(attrValue);
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-            if(name == null) {
-                ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-            }
-
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case ACCEPTOR: {
-                    final ModelNode acceptor = acceptors.get(name);
-                    acceptor.get(TYPE).set(TransportConfigType.Generic.toString());
-                    if(socketBinding != null) acceptor.get(SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfigurationParams(reader, acceptor, true);
-                    break;
-                } case NETTY_ACCEPTOR: {
-                    final ModelNode acceptor = acceptors.get(name);
-                    acceptor.get(TYPE).set(TransportConfigType.Remote.toString());
-                    if(socketBinding != null) acceptor.get(SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfigurationParams(reader, acceptor, false);
-                    break;
-                } case IN_VM_ACCEPTOR: {
-                    final ModelNode acceptor = acceptors.get(name);
-                    acceptor.get(TYPE).set(TransportConfigType.InVM.toString());
-                    acceptor.get(SERVER_ID.getName()).set(serverId);
-                    parseTransportConfigurationParams(reader, acceptor, false);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
-            }
-        }
-        return acceptors;
-    }
-
-    /** TODO make acceptors/connectors resources for 7.1
     static void processAcceptors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
@@ -833,7 +766,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (element) {
                 case ACCEPTOR: {
                     acceptorAddress.add(ACCEPTOR, name);
-                    if(socketBinding != null) operation.get(SOCKET_BINDING).set(socketBinding);
+                    if(socketBinding != null) operation.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, true);
                     break;
                 } case NETTY_ACCEPTOR: {
@@ -841,12 +774,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     if(socketBinding == null) {
                         ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
-                    operation.get(SOCKET_BINDING).set(socketBinding);
+                    operation.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, false);
                     break;
                 } case IN_VM_ACCEPTOR: {
                     acceptorAddress.add(IN_VM_ACCEPTOR, name);
-                    operation.get(SERVER_ID).set(serverId);
+                    operation.get(SERVER_ID.getName()).set(serverId);
                     parseTransportConfigurationParams(reader, operation, false);
                     break;
                 } default: {
@@ -858,7 +791,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             updates.add(operation);
         }
     }
-    */
 
     static void parseQueues(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
 
@@ -1017,67 +949,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    public static ModelNode processConnectors(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode connectors = new ModelNode();
-        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            String name = null;
-            String socketBinding = null;
-            int serverId = 0;
-
-            int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i++) {
-                final String attrValue = reader.getAttributeValue(i);
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = attrValue;
-                        break;
-                    }
-                    case SOCKET_BINDING: {
-                        socketBinding = attrValue;
-                        break;
-                    }
-                    case SERVER_ID: {
-                        serverId = Integer.valueOf(attrValue);
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-            if(name == null) {
-                ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-            }
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case CONNECTOR: {
-                    final ModelNode connector = connectors.get(name);
-                    connector.get(TYPE).set(TransportConfigType.Generic.toString());
-                    if(socketBinding != null) connector.get(SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfigurationParams(reader, connector, true);
-                    break;
-                } case NETTY_CONNECTOR: {
-                    final ModelNode connector = connectors.get(name);
-                    connector.get(TYPE).set(TransportConfigType.Remote.toString());
-                    if(socketBinding != null) connector.get(SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfigurationParams(reader, connector, false);
-                    break;
-                } case IN_VM_CONNECTOR: {
-                    final ModelNode connector = connectors.get(name);
-                    connector.get(TYPE).set(TransportConfigType.InVM.toString());
-                    connector.get(SERVER_ID.getName()).set(serverId);
-                    parseTransportConfigurationParams(reader, connector, false);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
-            }
-        }
-        return connectors;
-    }
-
-    /** TODO make acceptors/connectors resources for 7.1
     static void processConnectors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
@@ -1118,7 +989,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (element) {
                 case CONNECTOR: {
                     connectorAddress.add(CONNECTOR, name);
-                    if(socketBinding != null) operation.get(SOCKET_BINDING).set(socketBinding);
+                    if(socketBinding != null) operation.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, true);
                     break;
                 } case NETTY_CONNECTOR: {
@@ -1126,12 +997,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     if(socketBinding == null) {
                         ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
-                    operation.get(SOCKET_BINDING).set(socketBinding);
+                    operation.get(SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfigurationParams(reader, operation, false);
                     break;
                 } case IN_VM_CONNECTOR: {
                     connectorAddress.add(IN_VM_CONNECTOR, name);
-                    operation.get(SERVER_ID).set(serverId);
+                    operation.get(SERVER_ID.getName()).set(serverId);
                     parseTransportConfigurationParams(reader, operation, false);
                     break;
                 } default: {
@@ -1143,7 +1014,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             updates.add(operation);
         }
     }
-     */
 
     static void processAddressSettings(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
         final ModelNode settings = new ModelNode();

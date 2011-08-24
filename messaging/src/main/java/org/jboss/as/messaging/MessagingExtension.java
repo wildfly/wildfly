@@ -28,8 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -141,44 +139,58 @@ public class MessagingExtension implements Extension {
             queue.registerReadWriteAttribute(attributeDefinition.getName(), null, QueueConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
 
-        /**
-        // TODO make acceptors/connections resource for 7.1
-        // acceptor
         final ManagementResourceRegistration acceptor = rootRegistration.registerSubModel(GENERIC_ACCEPTOR, MessagingSubsystemProviders.ACCEPTOR);
-        acceptor.registerOperationHandler(ADD, TransportConfigOperations.GENERIC_ADD, MessagingSubsystemProviders.ACCEPTOR_ADD);
-        acceptor.registerOperationHandler(REMOVE, TransportConfigOperations.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
+        acceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.GENERIC_ADD, MessagingSubsystemProviders.ACCEPTOR_ADD);
+        acceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
+        for(final AttributeDefinition def : TransportConfigOperationHandlers.GENERIC) {
+            acceptor.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.GENERIC_ATTR, AttributeAccess.Storage.CONFIGURATION);
+        }
         createParamRegistration(acceptor);
 
         // remote acceptor
         final ManagementResourceRegistration remoteAcceptor = rootRegistration.registerSubModel(REMOTE_ACCEPTOR, MessagingSubsystemProviders.REMOTE_ACCEPTOR);
-        remoteAcceptor.registerOperationHandler(ADD, TransportConfigOperations.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_ACCEPTOR_ADD);
-        remoteAcceptor.registerOperationHandler(REMOVE, TransportConfigOperations.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
+        remoteAcceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_ACCEPTOR_ADD);
+        remoteAcceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
+        for(final AttributeDefinition def : TransportConfigOperationHandlers.REMOTE) {
+            remoteAcceptor.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.REMOTE_ATTR, AttributeAccess.Storage.CONFIGURATION);
+        }
         createParamRegistration(remoteAcceptor);
 
         // in-vm acceptor
         final ManagementResourceRegistration inVMAcceptor = rootRegistration.registerSubModel(IN_VM_ACCEPTOR, MessagingSubsystemProviders.IN_VM_ACCEPTOR);
-        inVMAcceptor.registerOperationHandler(ADD, TransportConfigOperations.IN_VM_ADD, MessagingSubsystemProviders.IN_VM_ACCEPTOR_ADD);
-        inVMAcceptor.registerOperationHandler(REMOVE, TransportConfigOperations.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
+        inVMAcceptor.registerOperationHandler(ADD, TransportConfigOperationHandlers.IN_VM_ADD, MessagingSubsystemProviders.IN_VM_ACCEPTOR_ADD);
+        inVMAcceptor.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.ACCEPTOR_REMOVE);
+        for(final AttributeDefinition def : TransportConfigOperationHandlers.IN_VM) {
+            inVMAcceptor.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.IN_VM_ATTR, AttributeAccess.Storage.CONFIGURATION);
+        }
         createParamRegistration(inVMAcceptor);
 
         // connector
         final ManagementResourceRegistration connector = rootRegistration.registerSubModel(GENERIC_CONNECTOR, MessagingSubsystemProviders.CONNECTOR);
-        connector.registerOperationHandler(ADD, TransportConfigOperations.GENERIC_ADD, MessagingSubsystemProviders.CONNECTOR_ADD);
-        connector.registerOperationHandler(REMOVE, TransportConfigOperations.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
+        connector.registerOperationHandler(ADD, TransportConfigOperationHandlers.GENERIC_ADD, MessagingSubsystemProviders.CONNECTOR_ADD);
+        connector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
+        for(final AttributeDefinition def : TransportConfigOperationHandlers.GENERIC) {
+            connector.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.GENERIC_ATTR, AttributeAccess.Storage.CONFIGURATION);
+        }
         createParamRegistration(connector);
 
         // remote connector
         final ManagementResourceRegistration remoteConnector = rootRegistration.registerSubModel(REMOTE_CONNECTOR, MessagingSubsystemProviders.REMOTE_CONNECTOR);
-        remoteConnector.registerOperationHandler(ADD, TransportConfigOperations.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_CONNECTOR_ADD);
-        remoteConnector.registerOperationHandler(REMOVE, TransportConfigOperations.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
+        remoteConnector.registerOperationHandler(ADD, TransportConfigOperationHandlers.REMOTE_ADD, MessagingSubsystemProviders.REMOTE_CONNECTOR_ADD);
+        remoteConnector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
+        for(final AttributeDefinition def : TransportConfigOperationHandlers.REMOTE) {
+            remoteConnector.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.REMOTE_ATTR, AttributeAccess.Storage.CONFIGURATION);
+        }
         createParamRegistration(remoteConnector);
 
         // in-vm connector
         final ManagementResourceRegistration inVMConnector = rootRegistration.registerSubModel(IN_VM_CONNECTOR, MessagingSubsystemProviders.IN_VM_CONNECTOR);
-        inVMConnector.registerOperationHandler(ADD, TransportConfigOperations.IN_VM_ADD, MessagingSubsystemProviders.IN_VM_CONNECTOR_ADD);
-        inVMConnector.registerOperationHandler(REMOVE, TransportConfigOperations.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
+        inVMConnector.registerOperationHandler(ADD, TransportConfigOperationHandlers.IN_VM_ADD, MessagingSubsystemProviders.IN_VM_CONNECTOR_ADD);
+        inVMConnector.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.CONNECTOR_REMOVE);
+        for(final AttributeDefinition def : TransportConfigOperationHandlers.IN_VM) {
+            inVMConnector.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.IN_VM_ATTR, AttributeAccess.Storage.CONFIGURATION);
+        }
         createParamRegistration(inVMConnector);
-        **/
 
         // Bridges
         final ManagementResourceRegistration bridge = rootRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.BRIDGE), MessagingSubsystemProviders.BRIDGE_RESOURCE);
@@ -258,8 +270,9 @@ public class MessagingExtension implements Extension {
 
     static void createParamRegistration(final ManagementResourceRegistration parent) {
         final ManagementResourceRegistration registration = parent.registerSubModel(PARAM, MessagingSubsystemProviders.PARAM);
-        registration.registerOperationHandler(ADD, TransportConfigOperations.PARAM_ADD, MessagingSubsystemProviders.PARAM_ADD);
-        registration.registerOperationHandler(ADD, TransportConfigOperations.REMOVE, MessagingSubsystemProviders.PARAM_REMOVE);
+        registration.registerOperationHandler(ADD, TransportConfigOperationHandlers.PARAM_ADD, MessagingSubsystemProviders.PARAM_ADD);
+        registration.registerOperationHandler(REMOVE, TransportConfigOperationHandlers.REMOVE, MessagingSubsystemProviders.PARAM_REMOVE);
+        registration.registerReadWriteAttribute("value", null, TransportConfigOperationHandlers.PARAM_ATTR, AttributeAccess.Storage.CONFIGURATION);
     }
 
 }

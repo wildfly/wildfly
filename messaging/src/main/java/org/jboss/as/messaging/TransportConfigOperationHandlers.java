@@ -1,23 +1,25 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *  * JBoss, Home of Professional Open Source.
+ *  * Copyright $year, Red Hat, Inc., and individual contributors
+ *  * as indicated by the @author tags. See the copyright.txt file in the
+ *  * distribution for a full listing of individual contributors.
+ *  *
+ *  * This is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU Lesser General Public License as
+ *  * published by the Free Software Foundation; either version 2.1 of
+ *  * the License, or (at your option) any later version.
+ *  *
+ *  * This software is distributed in the hope that it will be useful,
+ *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  * Lesser General Public License for more details.
+ *  *
+ *  * You should have received a copy of the GNU Lesser General Public
+ *  * License along with this software; if not, write to the Free
+ *  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.jboss.as.messaging;
@@ -47,6 +49,7 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.VALUE;
+import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
@@ -61,7 +64,7 @@ import java.util.Set;
  *
  * @author Emanuel Muckenhuber
  */
-class TransportConfigOperations {
+class TransportConfigOperationHandlers {
 
     static AttributeDefinition[] GENERIC = new AttributeDefinition[] { CommonAttributes.FACTORY_CLASS, CommonAttributes.SOCKET_BINDING_OPTIONAL };
     static AttributeDefinition[] REMOTE = new AttributeDefinition[] { CommonAttributes.SOCKET_BINDING };
@@ -69,12 +72,15 @@ class TransportConfigOperations {
 
     /** The generic transport-config add operation handler. */
     static final OperationStepHandler GENERIC_ADD = new BasicTransportConfigAdd(GENERIC);
+    static final OperationStepHandler GENERIC_ATTR = new AttributeWriteHandler(GENERIC);
 
     /** The remote transport-config add operation handler. */
     static final OperationStepHandler REMOTE_ADD = new BasicTransportConfigAdd(REMOTE);
+    static final OperationStepHandler REMOTE_ATTR = new AttributeWriteHandler(REMOTE);
 
     /** The in-vm transport-config add operation handler. */
     static final OperationStepHandler IN_VM_ADD = new BasicTransportConfigAdd(IN_VM);
+    static final OperationStepHandler IN_VM_ATTR = new AttributeWriteHandler(IN_VM);
 
     /** The transport-config remove operation handler. */
     static final OperationStepHandler REMOVE = new OperationStepHandler() {
@@ -93,6 +99,17 @@ class TransportConfigOperations {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+            VALUE.validateAndSet(operation, resource.getModel());
+            reloadRequiredStep(context);
+            context.completeStep();
+        }
+    };
+
+    static final OperationStepHandler PARAM_ATTR = new OperationStepHandler() {
+
+        @Override
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
             context.completeStep();
@@ -281,6 +298,29 @@ class TransportConfigOperations {
         void process(ModelNode subModel, ModelNode operation) {
             //
         };
+    }
+
+    private static class AttributeWriteHandler extends ServerWriteAttributeOperationHandler {
+        final AttributeDefinition[] attributes;
+
+        private AttributeWriteHandler(AttributeDefinition[] attributes) {
+            this.attributes = attributes;
+        }
+
+        @Override
+        protected void validateValue(String name, ModelNode value) throws OperationFailedException {
+            final AttributeDefinition def = getAttributeDefinition(name);
+            def.getValidator().validateParameter(name, value);
+        }
+
+        static final AttributeDefinition getAttributeDefinition(final String attributeName) {
+            for(final AttributeDefinition def : AddressSettingAdd.ATTRIBUTES) {
+                if(def.getName().equals(attributeName)) {
+                    return def;
+                }
+            }
+            return null;
+        }
     }
 
 }
