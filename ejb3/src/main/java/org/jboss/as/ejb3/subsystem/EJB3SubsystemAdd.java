@@ -42,7 +42,9 @@ import org.jboss.as.ejb3.deployment.processors.EjbJarParsingDeploymentUnitProces
 import org.jboss.as.ejb3.deployment.processors.EjbJndiBindingsDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbRefProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbResourceInjectionAnnotationProcessor;
+import org.jboss.as.ejb3.deployment.processors.entity.EntityBeanComponentDescriptionFactory;
 import org.jboss.as.ejb3.deployment.processors.ImplicitLocalViewProcessor;
+import org.jboss.as.ejb3.deployment.processors.SessionBeanLocalHomeProcessor;
 import org.jboss.as.ejb3.deployment.processors.MessageDrivenComponentDescriptionFactory;
 import org.jboss.as.ejb3.deployment.processors.SessionBeanComponentDescriptionFactory;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceJndiBindingProcessor;
@@ -58,6 +60,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.ConcurrencyManagementMerg
 import org.jboss.as.ejb3.deployment.processors.merging.DeclareRolesMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.EjbConcurrencyMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.EjbDependsOnMergingProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.InitMethodMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.MethodPermissionsMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.RemoveMethodMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.ResourceAdaptorMergingProcessor;
@@ -135,7 +138,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DEPLOYMENT, new EjbJarParsingDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new SessionBeanComponentDescriptionFactory());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ANNOTATION_EJB, new EjbAnnotationProcessor());
-
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SESSION_BEAN_DD, new SessionBeanXmlDescriptorProcessor());
                 // Process @DependsOn after the @Singletons have been registered.
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_CONTEXT_BINDING, new EjbContextJndiBindingProcessor());
@@ -147,6 +149,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SECURITY_ROLE_REF_DD, new SecurityRoleRefDDProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_REMOTE_CLIENT_CONTEXT, new EjbClientContextParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS, new MessageDrivenComponentDescriptionFactory());
+                    processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new EntityBeanComponentDescriptionFactory());
 
 
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
@@ -173,6 +176,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_SYNCHRONIZATION, new SessionSynchronizationMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CLIENT_CONTEXT_SETUP, new EjbClientContextSetupProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ASYNCHRONOUS_MERGE, new AsynchronousMergingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_INIT_METHOD, new InitMethodMergingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LOCAL_HOME, new SessionBeanLocalHomeProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RESOLVE_EJB_INJECTIONS, new EjbInjectionResolutionProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());

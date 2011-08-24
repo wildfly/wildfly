@@ -37,10 +37,16 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class EJBViewDescription extends ViewDescription {
+public class EJBViewDescription extends ViewDescription {
 
     private final MethodIntf methodIntf;
     private final boolean hasJNDIBindings;
+
+    /**
+     * Should be set to true if this view corresponds to a EJB 2.x
+     * local or remote view
+     */
+    private boolean ejb2xView = false;
 
     public EJBViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf) {
         super(componentDescription, viewClassName);
@@ -119,4 +125,11 @@ public final class EJBViewDescription extends ViewDescription {
         return true;
     }
 
+    public boolean isEjb2xView() {
+        return ejb2xView;
+    }
+
+    public void setEjb2xView(final boolean ejb2xView) {
+        this.ejb2xView = ejb2xView;
+    }
 }

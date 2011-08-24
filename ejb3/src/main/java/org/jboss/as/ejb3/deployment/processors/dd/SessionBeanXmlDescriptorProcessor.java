@@ -91,6 +91,17 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         if (businessLocals != null && !businessLocals.isEmpty()) {
             sessionBeanDescription.addLocalBusinessInterfaceViews(businessLocals);
         }
+
+        final String localHome = sessionBean.getLocalHome();
+        if (localHome != null) {
+            sessionBeanDescription.addLocalHome(localHome);
+        }
+
+        final String local = sessionBean.getLocal();
+        if (local != null) {
+            sessionBeanDescription.addEjbLocalObjectView(local);
+        }
+
         // remote business interface views
         BusinessRemotesMetaData businessRemotes = sessionBean.getBusinessRemotes();
         if (businessRemotes != null && !businessRemotes.isEmpty()) {

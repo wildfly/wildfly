@@ -34,10 +34,9 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PoolConfigService;
-import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
-import org.jboss.as.ejb3.component.session.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptorFactory;
@@ -140,7 +139,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                     if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
                             method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
                                     method.getParameterTypes()[0] == Object.class) {
-                        configuration.addViewInterceptor(method, ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
+                        configuration.addClientInterceptor(method, ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
                     }
                 }
 

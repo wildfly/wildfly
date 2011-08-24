@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.session;
+package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.invocation.Interceptor;

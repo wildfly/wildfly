@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.EjbLocalHomeViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -121,6 +122,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private String mappedName;
 
 
+
     public enum SessionBeanType {
         STATELESS,
         STATEFUL,
@@ -155,6 +157,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             registerView(viewClassName, MethodIntf.LOCAL);
         }
     }
+
 
     public void addLocalBusinessInterfaceViews(final String... classNames) {
         addLocalBusinessInterfaceViews(Arrays.asList(classNames));

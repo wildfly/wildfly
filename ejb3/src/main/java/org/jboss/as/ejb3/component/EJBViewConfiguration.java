@@ -32,7 +32,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class EJBViewConfiguration extends ViewConfiguration {
+public class EJBViewConfiguration extends ViewConfiguration {
 
     private final MethodIntf methodIntf;
 

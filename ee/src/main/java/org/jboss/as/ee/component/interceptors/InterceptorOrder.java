@@ -43,7 +43,7 @@ public class InterceptorOrder {
         public static final int CDI_REQUEST_SCOPE                                           = 0x320;
         public static final int BMT_TRANSACTION_INTERCEPTOR                                 = 0x400;
         public static final int TIMEOUT_CMT_INTERCEPTOR                                     = 0x410;
-        public static final int SFSB_SYNCHRONIZATION_INTERCEPTOR                            = 0x500;
+        public static final int SYNCHRONIZATION_INTERCEPTOR = 0x500;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR                                = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR         = 0x700;
 
@@ -75,7 +75,9 @@ public class InterceptorOrder {
         public static final int JPA_SFSB_CREATE = 0xA00;
         public static final int USER_INTERCEPTORS = 0xB00;
         public static final int CDI_INTERCEPTORS = 0xC00;
-        public static final int TERMINAL_INTERCEPTOR = 0xD00;
+        public static final int SFSB_INIT_METHOD = 0xD00;
+        public static final int SETUP_CONTEXT = 0xE00;
+        public static final int TERMINAL_INTERCEPTOR = 0xF00;
 
         private ComponentPostConstruct() {
         }
@@ -103,7 +105,6 @@ public class InterceptorOrder {
     public static final class View {
 
         public static final int NOT_BUSINESS_METHOD                                     = 0x000;
-        public static final int SESSION_BEAN_EQUALS_HASHCODE                            = 0x100;
         public static final int SECURITY_CONTEXT                                        = 0x150;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR                  = 0x200;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR                          = 0x300;
@@ -111,7 +112,8 @@ public class InterceptorOrder {
         public static final int ASSOCIATING_INTERCEPTOR                                 = 0x500;
         public static final int JPA_SFSB_INTERCEPTOR                                    = 0x600;
         public static final int SFSB_REMOVE_INTERCEPTOR                                 = 0x700;
-        public static final int COMPONENT_DISPATCHER                                    = 0x800;
+        public static final int HOME_CREATE_INTERCEPTOR                                 = 0x800;
+        public static final int COMPONENT_DISPATCHER                                    = 0x900;
 
 
         private View() {
@@ -138,6 +140,7 @@ public class InterceptorOrder {
     public static final class Client {
 
         public static final int TO_STRING = 0x100;
+        public static final int EJB_EQUALS_HASHCODE = 0x101;
         public static final int LOCAL_ASYNC_INVOCATION = 0x200;
         public static final int ASSOCIATING_INTERCEPTOR = 0x300;
         public static final int CLIENT_DISPATCHER = 0x400;

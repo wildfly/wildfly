@@ -26,7 +26,9 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -65,8 +67,8 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         }
         for (ComponentDescription componentDescription : componentDescriptions) {
             // process only EJB session beans
-            if (componentDescription instanceof SessionBeanComponentDescription) {
-                this.setupJNDIBindings((SessionBeanComponentDescription) componentDescription, deploymentUnit);
+            if (componentDescription instanceof SessionBeanComponentDescription || componentDescription instanceof EntityBeanComponentDescription) {
+                this.setupJNDIBindings((EJBComponentDescription) componentDescription, deploymentUnit);
             }
         }
     }
@@ -78,7 +80,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
      * @param sessionBean    The session bean
      * @param deploymentUnit The deployment unit containing the session bean
      */
-    private void setupJNDIBindings(SessionBeanComponentDescription sessionBean, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private void setupJNDIBindings(EJBComponentDescription sessionBean, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final Collection<ViewDescription> views = sessionBean.getViews();
         if (views == null || views.isEmpty()) {
             logger.info("No jndi bindings will be created for EJB: " + sessionBean.getEJBName() + " since no views are exposed");

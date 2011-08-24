@@ -51,6 +51,7 @@ import org.jboss.msc.service.ServiceName;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import javax.persistence.Basic;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -162,6 +163,16 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private Method timeoutMethod;
 
     /**
+     * The EJB 2.x local view
+     */
+    private EJBViewDescription ejbLocalView;
+
+    /**
+     * The ejb local home view
+     */
+    private EjbLocalHomeViewDescription ejbLocalHomeView;
+
+    /**
      * TODO: this should not be part of the description
      */
     private TimerService timerService = NonFunctionalTimerService.INSTANCE;
@@ -255,6 +266,23 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         if (txAttr != null)
             return txAttr;
         return beanTransactionAttribute;
+    }
+
+    public void addLocalHome(final String localHome) {
+        final EjbLocalHomeViewDescription view = new EjbLocalHomeViewDescription(this, localHome);
+        getViews().add(view);
+        // setup server side view interceptors
+        setupViewInterceptors(view);
+        // setup client side view interceptors
+        setupClientViewInterceptors(view);
+        // return created view
+        this.ejbLocalHomeView = view;
+    }
+
+    public void addEjbLocalObjectView(final String viewClassName) {
+        final EJBViewDescription view = registerView(viewClassName, MethodIntf.LOCAL);
+        view.setEjb2xView(true);
+        this.ejbLocalView = view;
     }
 
     public TransactionManagementType getTransactionManagementType() {
@@ -776,7 +804,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.descriptorData = descriptorData;
     }
 
-
     public Method getTimeoutMethod() {
         return timeoutMethod;
     }
@@ -795,6 +822,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             scheduleMethods.put(method, schedules = new ArrayList<AutoTimer>(1));
         }
         schedules.add(timer);
+    }
+
+    public EJBViewDescription getEjbLocalView() {
+        return ejbLocalView;
+    }
+
+    public EjbLocalHomeViewDescription getEjbLocalHomeView() {
+        return ejbLocalHomeView;
     }
 
     @Override

@@ -102,14 +102,19 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         List<ViewConfiguration> views = componentConfiguration.getViews();
         if (views != null) {
             for (ViewConfiguration view : views) {
+                //TODO: Get rid of this crap, it should not be here
                 final EJBViewConfiguration ejbView = (EJBViewConfiguration) view;
-                final MethodIntf viewType = ejbView.getMethodIntf();
-                for (Method method : view.getProxyFactory().getCachedMethods()) {
-                    // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
-                    if (!Modifier.isPublic(method.getModifiers()))
-                        continue;
-                    final Method componentMethod = getComponentMethod(componentConfiguration, method.getName(), method.getParameterTypes());
-                    this.processTxAttr(ejbComponentDescription, viewType, componentMethod);
+                if (ejbView.getMethodIntf() == MethodIntf.LOCAL || ejbView.getMethodIntf() == MethodIntf.REMOTE) {
+                    final MethodIntf viewType = ejbView.getMethodIntf();
+                    for (Method method : view.getProxyFactory().getCachedMethods()) {
+                        // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
+                        if (!Modifier.isPublic(method.getModifiers()))
+                            continue;
+                        final Method componentMethod = getComponentMethod(componentConfiguration, method.getName(), method.getParameterTypes());
+                        if(componentMethod != null) {
+                            this.processTxAttr(ejbComponentDescription, viewType, componentMethod);
+                        }
+                    }
                 }
             }
         }
@@ -135,7 +140,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         try {
             return componentConfiguration.getComponentClass().getMethod(name, parameterTypes);
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 
@@ -163,7 +168,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             // it's a BMT bean
             return;
         }
-
 
         String className = method.getDeclaringClass().getName();
         String methodName = method.getName();

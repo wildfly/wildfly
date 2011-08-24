@@ -48,7 +48,9 @@ import org.jboss.msc.service.ServiceName;
 import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -63,6 +65,12 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private MethodDescription beforeCompletion;
     private final Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
     private StatefulTimeoutInfo statefulTimeout;
+
+    /**
+     * Map of init method, to the corresponding home create method on the home interface
+     *
+     */
+    private Map<Method, String> initMethods = new HashMap<Method, String>(0);
 
     public class StatefulRemoveMethod {
         private final MethodIdentifier methodIdentifier;
@@ -114,6 +122,17 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
 
         addStatefulSessionSynchronizationInterceptor();
+
+        addInitMethodInvokingInterceptor();
+    }
+
+    private void addInitMethodInvokingInterceptor() {
+        getConfigurators().addFirst(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                configuration.addPostConstructInterceptor(StatefulInitMethodInterceptorFactory.INSTANCE, InterceptorOrder.ComponentPostConstruct.SFSB_INIT_METHOD);
+            }
+        });
     }
 
     private void addStatefulSessionSynchronizationInterceptor() {
@@ -127,7 +146,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                         return new StatefulSessionSynchronizationInterceptor();
                     }
                 };
-                configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.SFSB_SYNCHRONIZATION_INTERCEPTOR, false);
+                configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
             }
         });
 
@@ -140,7 +159,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         // setup the component create service
         statefulComponentConfiguration.setComponentCreateServiceFactory(new StatefulComponentCreateServiceFactory());
 
-        if(getTransactionManagementType() == TransactionManagementType.BEAN) {
+        if (getTransactionManagementType() == TransactionManagementType.BEAN) {
             getConfigurators().add(new ComponentConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -238,11 +257,11 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 viewConfiguration.addClientPostConstructInterceptor(sessionIdGeneratingInterceptorFactory, InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
                 viewConfiguration.addClientPreDestroyInterceptor(StatefulComponentInstanceDestroyInterceptorFactory.INSTANCE, InterceptorOrder.ClientPreDestroy.INSTANCE_DESTROY);
 
-                for(Method method : viewConfiguration.getProxyFactory().getCachedMethods()) {
-                    if((method.getName().equals("hashCode") && method.getParameterTypes().length==0) ||
-                            method.getName().equals("equals") && method.getParameterTypes().length ==1 &&
+                for (Method method : viewConfiguration.getProxyFactory().getCachedMethods()) {
+                    if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
+                            method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
                                     method.getParameterTypes()[0] == Object.class) {
-                        viewConfiguration.addClientInterceptor(method, StatefulIdentityInterceptorFactory.INSTANCE, InterceptorOrder.View.SESSION_BEAN_EQUALS_HASHCODE);
+                        viewConfiguration.addClientInterceptor(method, StatefulIdentityInterceptorFactory.INSTANCE, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
                     }
                 }
             }
@@ -281,4 +300,11 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         });
     }
 
+    public void addInitMethod(final Method method, final  String createMethod) {
+        initMethods.put(method, createMethod);
+    }
+
+    public Map<Method, String> getInitMethods() {
+        return Collections.unmodifiableMap(initMethods);
+    }
 }

@@ -222,6 +222,7 @@ public enum Phase {
     public static final int PARSE_EJB_DEPLOYMENT                        = 0x1100;
     public static final int PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS     = 0x1150;
     public static final int PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1151;
+    public static final int PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1152;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_WS_EJB_INTEGRATION                    = 0x1701;
@@ -304,6 +305,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_STATEFUL_TIMEOUT            = 0x060D;
     public static final int POST_MODULE_EJB_ASYNCHRONOUS_MERGE          = 0x060E;
     public static final int POST_MODULE_EJB_SESSION_SYNCHRONIZATION     = 0x060F;
+    public static final int POST_MODULE_EJB_INIT_METHOD                 = 0x0610;
     public static final int POST_MODULE_WELD_COMPONENT_INTEGRATION      = 0x0800;
     public static final int POST_MODULE_INSTALL_EXTENSION               = 0x0A00;
     public static final int POST_MODULE_VALIDATOR_FACTORY               = 0x0B00;
@@ -326,6 +328,7 @@ public enum Phase {
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
     public static final int POST_MODULE_EJB_CLIENT_CONTEXT_SETUP        = 0x1D00;
+    public static final int POST_MODULE_LOCAL_HOME                      = 0x1E00;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;

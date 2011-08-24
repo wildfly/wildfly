@@ -32,6 +32,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
 
@@ -66,7 +67,14 @@ public class ViewDescription {
     public ViewDescription(final ComponentDescription componentDescription, final String viewClassName) {
         this.componentDescription = componentDescription;
         this.viewClassName = viewClassName;
-        configurators.addFirst(new DefaultConfigurator());
+        if (isDefaultConfiguratorRequired()) {
+            configurators.addFirst(DefaultConfigurator.INSTANCE);
+        }
+        configurators.addFirst(ViewBindingConfigurator.INSTANCE);
+    }
+
+    protected boolean isDefaultConfiguratorRequired() {
+        return true;
     }
 
     /**
@@ -143,13 +151,14 @@ public class ViewDescription {
 
     /**
      * Create the injection source
+     *
      * @param serviceName The view service name
      */
     protected InjectionSource createInjectionSource(final ServiceName serviceName) {
         return new ViewBindingInjectionSource(serviceName);
     }
 
-    static final ImmediateInterceptorFactory CLIENT_DISPATCHER_INTERCEPTOR_FACTORY = new ImmediateInterceptorFactory(new Interceptor() {
+    public static final ImmediateInterceptorFactory CLIENT_DISPATCHER_INTERCEPTOR_FACTORY = new ImmediateInterceptorFactory(new Interceptor() {
         public Object processInvocation(final InterceptorContext context) throws Exception {
             ComponentViewInstance viewInstance = context.getPrivateData(ComponentViewInstance.class);
             return viewInstance.getEntryPoint(context.getMethod()).processInvocation(context);
@@ -158,15 +167,19 @@ public class ViewDescription {
 
     private static class DefaultConfigurator implements ViewConfigurator {
 
+        public static final DefaultConfigurator INSTANCE = new DefaultConfigurator();
+
         public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
             // Create method indexes
             DeploymentReflectionIndex reflectionIndex = context.getDeploymentUnit().getAttachment(REFLECTION_INDEX);
             ClassReflectionIndex<?> index = reflectionIndex.getClassIndex(componentConfiguration.getComponentClass());
             List<Method> methods = configuration.getProxyFactory().getCachedMethods();
             for (Method method : methods) {
-                final Method componentMethod = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, index, method);
-                configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
-                configuration.addClientInterceptor(method, CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+                final Method componentMethod = ClassReflectionIndexUtil.findMethod(reflectionIndex, index, MethodIdentifier.getIdentifierForMethod(method));
+                if (componentMethod != null) {
+                    configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                    configuration.addClientInterceptor(method, CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+                }
             }
 
             configuration.addViewPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPostConstruct.TERMINAL_INTERCEPTOR);
@@ -174,19 +187,21 @@ public class ViewDescription {
 
             configuration.addClientPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
             configuration.addClientPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
+        }
+    }
+
+
+    private static class ViewBindingConfigurator implements ViewConfigurator {
+
+        public static final ViewBindingConfigurator INSTANCE = new ViewBindingConfigurator();
+
+        @Override
+        public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
 
             // Create view bindings
             final List<BindingConfiguration> bindingConfigurations = configuration.getBindingConfigurations();
-            List<String> viewNameParts = description.getViewNameParts();
-            ///TODO: viewNameParts should be always populated
-            final ServiceName serviceName;
-            if (!viewNameParts.isEmpty()) {
-                serviceName = context.getDeploymentUnit().getServiceName().append("component").append(componentConfiguration.getComponentName()).append("VIEW").append(viewNameParts.toArray(new String[viewNameParts.size()]));
-            } else {
-                serviceName = context.getDeploymentUnit().getServiceName().append("component").append(componentConfiguration.getComponentName()).append("VIEW").append(description.getViewClassName());
-            }
             for (String bindingName : description.getBindingNames()) {
-                bindingConfigurations.add( new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName())));
+                bindingConfigurations.add(new BindingConfiguration(bindingName, description.createInjectionSource(description.getServiceName())));
             }
         }
     }
