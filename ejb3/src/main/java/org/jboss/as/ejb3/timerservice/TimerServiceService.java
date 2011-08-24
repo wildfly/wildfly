@@ -24,9 +24,9 @@ package org.jboss.as.ejb3.timerservice;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
-import org.jboss.ejb3.timerservice.spi.ScheduleTimer;
-import org.jboss.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.ejb3.timerservice.spi.TimerServiceFactory;
+import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -49,7 +49,7 @@ public class TimerServiceService extends ForwardingTimerService implements Servi
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("ejb", "timerService");
 
-    private volatile org.jboss.ejb3.timerservice.api.TimerService timerService;
+    private volatile org.jboss.as.ejb3.timerservice.api.TimerService timerService;
     private final InjectedValue<TimerServiceFactory> timerServiceFactoryInjectedValue = new InjectedValue<TimerServiceFactory>();
     private final InjectedValue<EJBComponent> ejbComponentInjectedValue = new InjectedValue<EJBComponent>();
 
@@ -74,7 +74,7 @@ public class TimerServiceService extends ForwardingTimerService implements Servi
         } else {
             throw new StartException("TimerService can only be used with singleton and stateless components");
         }
-        final org.jboss.ejb3.timerservice.api.TimerService timerService = (org.jboss.ejb3.timerservice.api.TimerService) timerServiceFactory.createTimerService(invoker);
+        final org.jboss.as.ejb3.timerservice.api.TimerService timerService = (org.jboss.as.ejb3.timerservice.api.TimerService) timerServiceFactory.createTimerService(invoker);
         final List<ScheduleTimer> timers = new ArrayList<ScheduleTimer>();
 
         for(Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {

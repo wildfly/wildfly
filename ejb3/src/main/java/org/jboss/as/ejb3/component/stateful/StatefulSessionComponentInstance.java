@@ -25,7 +25,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.ejb3.cache.Identifiable;
+import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.util.id.GUID;

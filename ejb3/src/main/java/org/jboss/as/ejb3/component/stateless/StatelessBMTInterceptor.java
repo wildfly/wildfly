@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ejb3.component.stateless;
 
-import org.jboss.ejb3.context.spi.InvocationContext;
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
+import org.jboss.as.ejb3.context.spi.InvocationContext;
+import org.jboss.as.ejb3.tx.TransactionalInvocationContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -31,7 +31,7 @@ import javax.transaction.TransactionManager;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class StatelessBMTInterceptor extends org.jboss.ejb3.tx2.impl.StatelessBMTInterceptor implements Interceptor {
+class StatelessBMTInterceptor extends org.jboss.as.ejb3.tx.StatelessBMTInterceptor implements Interceptor {
     private StatelessSessionComponent component;
 
     StatelessBMTInterceptor(StatelessSessionComponent component) {
