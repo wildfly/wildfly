@@ -76,7 +76,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor{
     }
 
     /**
-     * Binds the java:comp/UserTransaction service and the java:comp/TransactionSyncronizationService
+     * Binds the java:comp/UserTransaction service and the java:comp/TransactionSynchronizationRegistry
      *
      * @param deploymentUnit The deployment unit
      * @param serviceTarget The service target

@@ -22,8 +22,6 @@
 
 package org.jboss.as.txn;
 
-import static org.jboss.as.txn.SecurityActions.setContextLoader;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +49,7 @@ import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 
 /**
- * A service responsible for exposing the propriatary Arjuna {@link RecoveryManagerService}.
+ * A service responsible for exposing the proprietary Arjuna {@link RecoveryManagerService}.
  *
  * @author John Bailey
  * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
@@ -74,66 +72,60 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
     public synchronized void start(StartContext context) throws StartException {
         final ORB orb = orbInjector.getValue();
 
-        // JTS expects the TCCL to be set to something that can find the log factory class.
-        setContextLoader(ArjunaRecoveryManagerService.class.getClassLoader());
-        try {
-            // Recovery env bean
-            final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
-            final SocketBinding recoveryBinding = recoveryBindingInjector.getValue();
-            recoveryEnvironmentBean.setRecoveryInetAddress(recoveryBinding.getSocketAddress().getAddress());
-            recoveryEnvironmentBean.setRecoveryPort(recoveryBinding.getSocketAddress().getPort());
-            final SocketBinding statusBinding = statusBindingInjector.getValue();
-            recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
-            recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
-            recoveryEnvironmentBean.setRecoveryListener(recoveryListener);
+        // Recovery env bean
+        final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
+        final SocketBinding recoveryBinding = recoveryBindingInjector.getValue();
+        recoveryEnvironmentBean.setRecoveryInetAddress(recoveryBinding.getSocketAddress().getAddress());
+        recoveryEnvironmentBean.setRecoveryPort(recoveryBinding.getSocketAddress().getPort());
+        final SocketBinding statusBinding = statusBindingInjector.getValue();
+        recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
+        recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
+        recoveryEnvironmentBean.setRecoveryListener(recoveryListener);
 
-            final List<String> recoveryExtensions = new ArrayList<String>();
-            recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
-            recoveryExtensions.add(TORecoveryModule.class.getName());
+        final List<String> recoveryExtensions = new ArrayList<String>();
+        recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
+        recoveryExtensions.add(TORecoveryModule.class.getName());
 
-            final List<String> expiryScanners = new ArrayList<String>();
-            expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
+        final List<String> expiryScanners = new ArrayList<String>();
+        expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
 
 
-            if (orb == null) {
-                recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule.class.getName());
-                recoveryEnvironmentBean.setRecoveryModuleClassNames(recoveryExtensions);
-                recoveryEnvironmentBean.setExpiryScannerClassNames(expiryScanners);
-                recoveryEnvironmentBean.setRecoveryActivators(null);
+        if (orb == null) {
+            recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule.class.getName());
+            recoveryEnvironmentBean.setRecoveryModuleClassNames(recoveryExtensions);
+            recoveryEnvironmentBean.setExpiryScannerClassNames(expiryScanners);
+            recoveryEnvironmentBean.setRecoveryActivators(null);
 
-                final RecoveryManagerService recoveryManagerService = new RecoveryManagerService();
-                try {
-                    recoveryManagerService.create();
-                } catch (Exception e) {
-                    throw new StartException("Recovery manager create failed", e);
-                }
-
-                recoveryManagerService.start();
-
-                this.recoveryManagerService = recoveryManagerService;
-            } else {
-                recoveryExtensions.add(TopLevelTransactionRecoveryModule.class.getName());
-                recoveryExtensions.add(ServerTransactionRecoveryModule.class.getName());
-                recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.jts.XARecoveryModule.class.getName());
-                expiryScanners.add(ExpiredContactScanner.class.getName());
-                expiryScanners.add(ExpiredToplevelScanner.class.getName());
-                expiryScanners.add(ExpiredServerScanner.class.getName());
-                recoveryEnvironmentBean.setRecoveryModuleClassNames(recoveryExtensions);
-                recoveryEnvironmentBean.setExpiryScannerClassNames(expiryScanners);
-                recoveryEnvironmentBean.setRecoveryActivatorClassNames(Collections.singletonList(com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement.class.getName()));
-
-
-                try {
-                    final RecoveryManagerService recoveryManagerService = new com.arjuna.ats.jbossatx.jts.RecoveryManagerService(orb);
-                    recoveryManagerService.create();
-                    recoveryManagerService.start();
-                    this.recoveryManagerService = recoveryManagerService;
-                } catch (Exception e) {
-                    throw new StartException("Recovery manager create failed", e);
-                }
+            final RecoveryManagerService recoveryManagerService = new RecoveryManagerService();
+            try {
+                recoveryManagerService.create();
+            } catch (Exception e) {
+                throw new StartException("Recovery manager create failed", e);
             }
-        } finally {
-            setContextLoader(null);
+
+            recoveryManagerService.start();
+
+            this.recoveryManagerService = recoveryManagerService;
+        } else {
+            recoveryExtensions.add(TopLevelTransactionRecoveryModule.class.getName());
+            recoveryExtensions.add(ServerTransactionRecoveryModule.class.getName());
+            recoveryExtensions.add(com.arjuna.ats.internal.jta.recovery.jts.XARecoveryModule.class.getName());
+            expiryScanners.add(ExpiredContactScanner.class.getName());
+            expiryScanners.add(ExpiredToplevelScanner.class.getName());
+            expiryScanners.add(ExpiredServerScanner.class.getName());
+            recoveryEnvironmentBean.setRecoveryModuleClassNames(recoveryExtensions);
+            recoveryEnvironmentBean.setExpiryScannerClassNames(expiryScanners);
+            recoveryEnvironmentBean.setRecoveryActivatorClassNames(Collections.singletonList(com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement.class.getName()));
+
+
+            try {
+                final RecoveryManagerService recoveryManagerService = new com.arjuna.ats.jbossatx.jts.RecoveryManagerService(orb);
+                recoveryManagerService.create();
+                recoveryManagerService.start();
+                this.recoveryManagerService = recoveryManagerService;
+            } catch (Exception e) {
+                throw new StartException("Recovery manager create failed", e);
+            }
         }
     }
 
