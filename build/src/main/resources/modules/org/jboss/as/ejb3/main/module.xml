@@ -49,7 +49,6 @@
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.common-core"/>
         <module name="org.jboss.ejb3"/>
-        <module name="org.jboss.ejb3.timerservice"/>
         <!-- For Interceptor -->
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.ironjacamar.api"/>

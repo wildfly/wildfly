@@ -29,7 +29,7 @@ import org.jboss.invocation.InterceptorContext;
 /**
  * @author Jaikiran Pai
  */
-public class ContainerManagedConcurrencyInterceptor extends org.jboss.ejb3.concurrency.impl.ContainerManagedConcurrencyInterceptor implements Interceptor {
+public class ContainerManagedConcurrencyInterceptor extends org.jboss.ejb3.concurrency.ContainerManagedConcurrencyInterceptor implements Interceptor {
 
     private final LockableComponent lockableComponent;
 
