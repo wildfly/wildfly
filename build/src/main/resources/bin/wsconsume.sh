@@ -53,16 +53,20 @@ fi
 # Setup JBoss sepecific properties
 JAVA_OPTS="$JAVA_OPTS"
 
+# Setup classpath
+JBOSS_CLASSPATH=$JAVA_HOME/lib/tools.jar:$JBOSS_HOME/jboss-modules.jar
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
+    JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
 fi
 
 # Execute the command
 eval \"$JAVA\" $JAVA_OPTS \
     \"-Djava.endorsed.dirs=$JBOSS_HOME/modules/com/sun/xml/bin/main:$JBOSS_HOME/modules/javax/xml/ws/api/main\" \
-    -classpath \"$JAVA_HOME/lib/tools.jar:$JBOSS_HOME/jboss-modules.jar\" \
+    -classpath \"$JBOSS_CLASSPATH\" \
     org.jboss.modules.Main \
     -mp \"$JBOSS_HOME/modules\" \
     -logmodule "org.jboss.logmanager" \
