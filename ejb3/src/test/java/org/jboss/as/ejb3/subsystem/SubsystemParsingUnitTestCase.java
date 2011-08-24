@@ -44,7 +44,7 @@ public class SubsystemParsingUnitTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("subsystem.xml");
 
-        AdditionalInitialization additionalInit = new AdditionalInitialization(){
+        AdditionalInitialization additionalInit = new AdditionalInitialization() {
 
             @Override
             protected OperationContext.Type getType() {

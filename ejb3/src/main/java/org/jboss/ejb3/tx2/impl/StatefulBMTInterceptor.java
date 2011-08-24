@@ -77,7 +77,7 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor {
         }
     }
 
-    Transaction getTransaction() {
+    public Transaction getTransaction() {
         return transaction;
     }
 

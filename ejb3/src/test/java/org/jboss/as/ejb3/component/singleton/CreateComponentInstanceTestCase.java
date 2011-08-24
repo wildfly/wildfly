@@ -68,7 +68,7 @@ public class CreateComponentInstanceTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         final SingletonComponent component = mock(SingletonComponent.class);
         final SimpleInterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
-        when(component.getComponentInstance()).thenCallRealMethod();    
+        when(component.getComponentInstance()).thenCallRealMethod();
         when(component.instantiateComponentInstance(Matchers.<AtomicReference<ManagedReference>>any(), Matchers.<Interceptor>any(), Matchers.<Map<Method, Interceptor>>any(), Matchers.<InterceptorFactoryContext>any())).thenCallRealMethod();
         when(component.createInstance()).thenAnswer(new Answer<Object>() {
             @Override
