@@ -31,9 +31,8 @@
     <target name="copy-files">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
+                <include name="JBossEULA.txt"/>
                 <include name="LICENSE.txt"/>
-                <include name="README.txt"/>
-                <include name="copyright.txt"/>
                 <include name="appclient/**"/>
                 <include name="bin/**"/>
                 <include name="docs/**"/>
