@@ -57,6 +57,7 @@ import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.ExtensionAddHandler;
 import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.JVMHandlers;
@@ -113,7 +114,6 @@ import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymen
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
-import org.jboss.as.server.operations.ExtensionAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
