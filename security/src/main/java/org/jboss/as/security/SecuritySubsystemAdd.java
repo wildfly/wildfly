@@ -22,8 +22,6 @@
 
 package org.jboss.as.security;
 
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.naming.ServiceBasedNamingStore;
 import static org.jboss.as.security.Constants.AUDIT_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHENTICATION_MANAGER_CLASS_NAME;
 import static org.jboss.as.security.Constants.AUTHORIZATION_MANAGER_CLASS_NAME;
@@ -35,14 +33,19 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.security.Constants.SECURITY_PROPERTIES;
 import static org.jboss.as.security.Constants.SUBJECT_FACTORY_CLASS_NAME;
 
-import javax.security.auth.login.Configuration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+
+import javax.security.auth.login.Configuration;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
@@ -50,6 +53,7 @@ import org.jboss.as.security.processors.SecurityDependencyProcessor;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.security.service.SecurityManagementService;
+import org.jboss.as.security.service.SecurityVaultService;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -125,6 +129,9 @@ class SecuritySubsystemAdd implements OperationStepHandler {
         String identityTrustManagerClassName = "default";
         String mappingManagerClassName = "default";
 
+        String vaultClass = null;
+        final Map<String, Object> vaultOptions = new HashMap<String, Object>();
+
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode subModel = resource.getModel();
 
@@ -141,9 +148,20 @@ class SecuritySubsystemAdd implements OperationStepHandler {
             }
         }
 
-        if(operation.hasDefined(Constants.VAULT)) {
-            subModel.get(Constants.VAULT).set(operation.get(Constants.VAULT));
+        if (operation.hasDefined(Constants.VAULT)) {
+            ModelNode vaultNode = operation.get(Constants.VAULT);
+            vaultClass = vaultNode.get(Constants.CODE).asString();
+            List<ModelNode> vaultOptionList = vaultNode.get(Constants.VAULT_OPTION).asList();
+            if (vaultOptionList != null) {
+                for (ModelNode vaultOptionNode : vaultOptionList) {
+                    Property vaultProp = vaultOptionNode.asProperty();
+                    vaultOptions.put(vaultProp.getName(), vaultProp.getValue().asString());
+                }
+            }
+            subModel.get(Constants.VAULT).set(vaultNode);
         }
+
+        final String vaultFQN = vaultClass;
 
         if (operation.hasDefined(AUTHENTICATION_MANAGER_CLASS_NAME)) {
             authenticationManagerClassName = operation.get(AUTHENTICATION_MANAGER_CLASS_NAME).asString();
@@ -285,13 +303,16 @@ class SecuritySubsystemAdd implements OperationStepHandler {
                         Configuration loginConfig = XMLLoginConfigImpl.getInstance();
                         final JaasConfigurationService jaasConfigurationService = new JaasConfigurationService(loginConfig);
                         target.addService(JaasConfigurationService.SERVICE_NAME, jaasConfigurationService)
-                                .addListener(verificationHandler)
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .install();
+                                .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install();
 
+                        // add security vault service
+                        if (vaultFQN != null || vaultOptions.isEmpty() == false) {
+                            final SecurityVaultService vaultService = new SecurityVaultService(vaultFQN, vaultOptions);
+                            target.addService(SecurityVaultService.SERVICE_NAME, vaultService).addListener(verificationHandler)
+                                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                        }
                         target.addService(SimpleSecurityManagerService.SERVICE_NAME, new SimpleSecurityManagerService())
-                                .addListener(verificationHandler)
-                                .install();
+                                .addListener(verificationHandler).install();
 
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
@@ -303,8 +324,8 @@ class SecuritySubsystemAdd implements OperationStepHandler {
             }
         }
 
-        if (context.completeStep() != OperationContext.ResultAction.KEEP
-                && context.getType() == OperationContext.Type.SERVER && !context.isBooting()) {
+        if (context.completeStep() != OperationContext.ResultAction.KEEP && context.getType() == OperationContext.Type.SERVER
+                && !context.isBooting()) {
             context.revertReloadRequired();
         }
     }
