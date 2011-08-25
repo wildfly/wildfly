@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.ejb3.context.spi.InvocationContext;
-import org.jboss.ejb3.tx2.spi.TransactionalInvocationContext;
+import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -31,7 +30,7 @@ import javax.ejb.TransactionAttributeType;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SingletonLifecycleCMTTxInterceptor extends org.jboss.ejb3.tx2.impl.CMTTxInterceptor implements Interceptor {
+public class SingletonLifecycleCMTTxInterceptor extends CMTTxInterceptor implements Interceptor {
     private final TransactionAttributeType txAttr;
 
     public SingletonLifecycleCMTTxInterceptor(final TransactionAttributeType txAttr) {

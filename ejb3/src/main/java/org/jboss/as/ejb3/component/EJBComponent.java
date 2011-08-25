@@ -28,8 +28,8 @@ import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.ejb3.context.CurrentInvocationContext;
-import org.jboss.ejb3.context.spi.InvocationContext;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -58,7 +58,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponent extends BasicComponent implements org.jboss.ejb3.context.spi.EJBComponent {
+public abstract class EJBComponent extends BasicComponent implements org.jboss.as.ejb3.context.spi.EJBComponent {
     private static Logger log = Logger.getLogger(EJBComponent.class);
 
     private static final ApplicationException APPLICATION_EXCEPTION = new ApplicationException() {
@@ -82,7 +82,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.e
 
     private final EJBUtilities utilities;
     private final boolean isBeanManagedTransaction;
-    private static volatile boolean youHaveBeenWarnedEJBTHREE2120 = false;
     private final Map<Class<?>, ApplicationException> applicationExceptions;
     private final EJBSecurityMetaData securityMetaData;
     private final Map<String, ServiceName> viewServices;

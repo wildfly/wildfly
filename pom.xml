@@ -3069,44 +3069,6 @@
                 </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>org.jboss.ejb3</groupId>
-                <artifactId>jboss-ejb3-cache</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>jboss</groupId>
-                        <artifactId>jboss-serialization</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.aop</groupId>
-                        <artifactId>jboss-aop</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-log4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>trove</groupId>
-                        <artifactId>trove</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3</groupId>
-                <artifactId>jboss-ejb3-core-pool</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-            </dependency>
-
             <!-- TODO: this is not the final API -->
             <dependency>
                 <groupId>org.jboss.ejb3</groupId>
@@ -3118,78 +3080,6 @@
                         <artifactId>jboss-ejb-api</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.concurrency</groupId>
-                <artifactId>jboss-ejb3-concurrency-impl</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.concurrency</groupId>
-                <artifactId>jboss-ejb3-concurrency-spi</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.context</groupId>
-                <artifactId>jboss-ejb3-context-base</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.context</groupId>
-                <artifactId>jboss-ejb3-context-spi</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.timerservice</groupId>
-                <artifactId>ejb31-calendar-expr-parser</artifactId>
-                <version>${version.org.jboss.ejb3.timerservice}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.timerservice</groupId>
-                <artifactId>jboss-ejb3-timerservice-api</artifactId>
-                <version>${version.org.jboss.ejb3.timerservice}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.timerservice</groupId>
-                <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
-                <version>${version.org.jboss.ejb3.timerservice}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.kernel</groupId>
-                        <artifactId>jboss-kernel</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.tx2</groupId>
-                <artifactId>jboss-ejb3-tx2-impl</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3.tx2</groupId>
-                <artifactId>jboss-ejb3-tx2-spi</artifactId>
-                <version>${version.org.jboss.ejb3}</version>
             </dependency>
 
 			<dependency>

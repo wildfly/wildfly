@@ -59,7 +59,7 @@
                 <exclusion>
                     <groupId>org.jboss.ironjacamar</groupId>
                     <artifactId>ironjacamar-spec-api</artifactId>
-               </exclusion>
+                </exclusion>
             </exclusions>
         </dependency>
         <!--
@@ -88,7 +88,7 @@
             <artifactId>jboss-as-transactions</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId> org.jboss.spec.javax.resource</groupId>
+                    <groupId>org.jboss.spec.javax.resource</groupId>
                     <artifactId>jboss-connector-api_1.5_spec</artifactId>
                 </exclusion>
             </exclusions>
@@ -122,32 +122,27 @@
 
         <dependency>
             <groupId>org.jboss.ejb3</groupId>
-            <artifactId>jboss-ejb3-cache</artifactId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.ejb3</groupId>
-            <artifactId>jboss-ejb3-core-pool</artifactId>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.ejb3.concurrency</groupId>
-            <artifactId>jboss-ejb3-concurrency-impl</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ejb3.timerservice</groupId>
-            <artifactId>jboss-ejb3-timerservice-mk2</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ejb3.tx2</groupId>
-            <artifactId>jboss-ejb3-tx2-impl</artifactId>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
             <artifactId>jboss-jms-api_1.1_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.xml.rpc</groupId>
+            <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
         </dependency>
 
         <dependency>
