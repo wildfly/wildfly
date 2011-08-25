@@ -26,6 +26,7 @@ import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
+import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
@@ -38,14 +39,15 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
  */
 public final class WSAttachmentKeys {
 
-    public static final AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
-    public static final AttachmentKey<DeploymentType> DEPLOYMENT_TYPE_KEY = AttachmentKey.create(DeploymentType.class);
-    public static final AttachmentKey<JBossAppMetaData> JBOSS_APP_METADATA_KEY = AttachmentKey.create(JBossAppMetaData.class);
-    public static final AttachmentKey<JMSEndpointsMetaData> JMS_ENDPOINT_METADATA_KEY = AttachmentKey.create(JMSEndpointsMetaData.class);
-    public static final AttachmentKey<WebServiceDeployment> WEBSERVICE_DEPLOYMENT_KEY = AttachmentKey.create(WebServiceDeployment.class);
-    public static final AttachmentKey<WebservicesMetaData> WEBSERVICES_METADATA_KEY = AttachmentKey.create(WebservicesMetaData.class);
-    public static final AttachmentKey<JBossWebMetaData> JBOSSWEB_METADATA_KEY = AttachmentKey.create(JBossWebMetaData.class);
-    public static final AttachmentKey<ClassLoader> CLASSLOADER_KEY = AttachmentKey.create(ClassLoader.class);
+    public static final AttachmentKey<WSEndpointHandlersMapping> WS_ENDPOINT_HANDLERS_MAPPING_KEY = AttachmentKey.create(WSEndpointHandlersMapping.class);
+    public static final AttachmentKey<Deployment> WS_DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
+    public static final AttachmentKey<DeploymentType> WS_DEPLOYMENT_TYPE_KEY = AttachmentKey.create(DeploymentType.class);
+    public static final AttachmentKey<JBossAppMetaData> WS_JBOSS_APP_METADATA_KEY = AttachmentKey.create(JBossAppMetaData.class);
+    public static final AttachmentKey<JMSEndpointsMetaData> WS_JMS_ENDPOINT_METADATA_KEY = AttachmentKey.create(JMSEndpointsMetaData.class);
+    public static final AttachmentKey<WebServiceDeployment> WS_EJB_DEPLOYMENT_KEY = AttachmentKey.create(WebServiceDeployment.class);
+    public static final AttachmentKey<WebservicesMetaData> WS_METADATA_KEY = AttachmentKey.create(WebservicesMetaData.class);
+    public static final AttachmentKey<JBossWebMetaData> WS_JBOSSWEB_METADATA_KEY = AttachmentKey.create(JBossWebMetaData.class);
+    public static final AttachmentKey<ClassLoader> WS_CLASSLOADER_KEY = AttachmentKey.create(ClassLoader.class);
 
     private WSAttachmentKeys() {
         // forbidden inheritance

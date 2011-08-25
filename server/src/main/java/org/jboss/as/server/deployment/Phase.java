@@ -224,6 +224,7 @@ public enum Phase {
     public static final int PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1151;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     // create and attach the component description out of EJB annotations
+    public static final int PARSE_WS_HANDLER_CHAIN_ANNOTATION           = 0x1700;
     public static final int PARSE_WS_EJB_INTEGRATION                    = 0x1701;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
@@ -320,7 +321,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_REF                         = 0x1500;
     public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
-    public static final int POST_MODULE_WS_JMS_INTEGRATION              = 0x1800;
+    public static final int POST_MODULE_WS_JMS_INTEGRATION              = 0x1801;
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
@@ -336,7 +337,8 @@ public enum Phase {
     public static final int INSTALL_OSGI_DEPLOYMENT                     = 0x0600;
     public static final int INSTALL_OSGI_MODULE                         = 0x0650;
     public static final int INSTALL_WS_DEPLOYMENT_TYPE_DETECTOR         = 0x0700;
-    public static final int INSTALL_WS_UNIVERSAL_META_DATA_MODEL        = 0x0701;
+    public static final int INSTALL_MODULE_WS_JNDI_BINDINGS             = 0x0701;
+    public static final int INSTALL_WS_UNIVERSAL_META_DATA_MODEL        = 0x0702;
     public static final int INSTALL_WS_DEPLOYMENT_ASPECTS               = 0x0710;
     // IMPORTANT: WS integration installs deployment aspects dynamically
     // so consider INSTALL 0x0710 - 0x07FF reserved for WS subsystem!

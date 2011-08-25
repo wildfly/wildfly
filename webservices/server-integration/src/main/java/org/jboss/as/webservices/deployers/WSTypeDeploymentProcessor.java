@@ -42,13 +42,13 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         if (this.isJaxwsJseDeployment(unit)) {
-            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JSE);
+            unit.putAttachment(WSAttachmentKeys.WS_DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JSE);
         } else if (this.isJaxwsEjbDeployment(unit)) {
-            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_EJB3);
+            unit.putAttachment(WSAttachmentKeys.WS_DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_EJB3);
         } else if (this.isJaxrpcJseDeployment(unit)) {
-            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_JSE);
+            unit.putAttachment(WSAttachmentKeys.WS_DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_JSE);
         } else if (this.isJaxrpcEjbDeployment(unit)) {
-            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_EJB21);
+            unit.putAttachment(WSAttachmentKeys.WS_DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_EJB21);
         }
     }
 
@@ -79,7 +79,7 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
      * @return true if JAXRPC JSE, false otherwise
      */
     private boolean isJaxrpcJseDeployment(final DeploymentUnit unit) {
-        final boolean hasWebservicesMD = ASHelper.hasAttachment(unit, WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
+        final boolean hasWebservicesMD = ASHelper.hasAttachment(unit, WSAttachmentKeys.WS_METADATA_KEY);
         final boolean hasJBossWebMD = ASHelper.getJBossWebMetaData(unit) != null;
 
         if (hasWebservicesMD && hasJBossWebMD) {
@@ -96,7 +96,7 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
      * @return true if JAXWS EJB, false otherwise
      */
     private boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        return ASHelper.hasAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
+        return ASHelper.hasAttachment(unit, WSAttachmentKeys.WS_EJB_DEPLOYMENT_KEY);
     }
 
     /**
@@ -109,11 +109,11 @@ public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor 
         final boolean hasWarMetaData = ASHelper.hasAttachment(unit, WarMetaData.ATTACHMENT_KEY);
         if (hasWarMetaData) {
             //once the deployment is a WAR, the endpoint(s) can be on either http (servlet) transport or jms transport
-            return ASHelper.getJaxwsServlets(unit).size() > 0 || ASHelper.hasAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+            return ASHelper.getJaxwsServlets(unit).size() > 0 || ASHelper.hasAttachment(unit, WSAttachmentKeys.WS_JMS_ENDPOINT_METADATA_KEY);
         } else {
             //otherwise the (JAR) deployment can be a jaxws_jse one if there're jms transport endpoints only (no ejb3)
-            return !ASHelper.hasAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY) &&
-                    ASHelper.hasAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+            return !ASHelper.hasAttachment(unit, WSAttachmentKeys.WS_EJB_DEPLOYMENT_KEY) &&
+                    ASHelper.hasAttachment(unit, WSAttachmentKeys.WS_JMS_ENDPOINT_METADATA_KEY);
         }
     }
 }

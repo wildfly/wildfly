@@ -33,14 +33,14 @@ import org.jboss.ws.common.injection.resolvers.AbstractReferenceResolver;
  *
  * @author <a href="mailto:richard.opalka@jboss.org">Richard Opalka</a>
  */
-final class EJBResourceReferenceResolver extends AbstractReferenceResolver<EJB> {
+final class EJBReferenceResolver extends AbstractReferenceResolver<EJB> {
 
    /**
     * Constructor.
     *
     * @param unit deployment unit
     */
-   EJBResourceReferenceResolver() {
+   EJBReferenceResolver() {
       super(EJB.class);
    }
 
@@ -52,7 +52,10 @@ final class EJBResourceReferenceResolver extends AbstractReferenceResolver<EJB> 
     */
    @Override
    protected String resolveField(final Field field) {
-       throw new UnsupportedOperationException(); // TODO: implement
+       final String fieldName = field.getName();
+       final EJB annotation = field.getAnnotation(EJB.class);
+
+       return isEmpty(annotation.name()) ? field.getDeclaringClass().getName() + "/" + fieldName : annotation.name();
    }
 
    /**
@@ -63,7 +66,15 @@ final class EJBResourceReferenceResolver extends AbstractReferenceResolver<EJB> 
     */
    @Override
    protected String resolveMethod(final Method method) {
-       throw new UnsupportedOperationException(); // TODO: implement
+       final String methodName = method.getName();
+       final String propertyName = methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
+       final EJB annotation = method.getAnnotation(EJB.class);
+
+       return isEmpty(annotation.name()) ? method.getDeclaringClass().getName() + "/" + propertyName : annotation.name();
+   }
+
+   private static boolean isEmpty(final String s) {
+       return s == null || s.length() == 0;
    }
 
 }

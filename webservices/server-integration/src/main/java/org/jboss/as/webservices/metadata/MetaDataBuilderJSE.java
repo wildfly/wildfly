@@ -242,7 +242,7 @@ final class MetaDataBuilderJSE {
     private String getContextRoot(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
         final JBossAppMetaData jbossAppMD = unit.getParent() == null ? null : ASHelper.getOptionalAttachment(unit.getParent(),
-                WSAttachmentKeys.JBOSS_APP_METADATA_KEY);
+                WSAttachmentKeys.WS_JBOSS_APP_METADATA_KEY);
 
         String contextRoot = null;
 

@@ -97,7 +97,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         try {
             SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
             WSDeploymentBuilder.getInstance().build(unit);
-            dep = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
+            dep = unit.getAttachment(WSAttachmentKeys.WS_DEPLOYMENT_KEY);
             dep.addAttachment(ServiceTarget.class, target);
             DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
             dam.setDeploymentAspects(aspects);
@@ -108,7 +108,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             }
             SecurityActions.setContextClassLoader(origClassLoader);
         }
-        Deployment deployment = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
+        Deployment deployment = unit.getAttachment(WSAttachmentKeys.WS_DEPLOYMENT_KEY);
         deployment.addAttachment(StandardContext.class, startWebApp(host, unit)); //TODO simplify and use findChild later in destroy()/stopWebApp()
         return deployment.getService().getEndpoints();
     }
@@ -116,7 +116,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
     private static StandardContext startWebApp(Host host, WSEndpointDeploymentUnit unit) throws Exception {
         StandardContext context = new StandardContext();
         try {
-            JBossWebMetaData jbwebMD = unit.getAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY);
+            JBossWebMetaData jbwebMD = unit.getAttachment(WSAttachmentKeys.WS_JBOSSWEB_METADATA_KEY);
             context.setPath(jbwebMD.getContextRoot());
             context.addLifecycleListener(new ContextConfig());
             ServerConfigService config = (ServerConfigService)unit.getServiceRegistry().getService(WSServices.CONFIG_SERVICE).getService();
@@ -126,7 +126,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             }
             context.setDocBase(docBase.getPath());
 
-            final Loader loader = new WebCtxLoader(unit.getAttachment(WSAttachmentKeys.CLASSLOADER_KEY));
+            final Loader loader = new WebCtxLoader(unit.getAttachment(WSAttachmentKeys.WS_CLASSLOADER_KEY));
             loader.setContainer(host);
             context.setLoader(loader);
             context.setInstanceManager(new LocalInstanceManager());
@@ -250,10 +250,10 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             for (String urlPattern : urlPatternToClassName.keySet()) {
                 addEndpoint(jbossWebMetaData, urlPatternToClassName.get(urlPattern), urlPattern);
             }
-            this.putAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY, jbossWebMetaData);
+            this.putAttachment(WSAttachmentKeys.WS_JBOSSWEB_METADATA_KEY, jbossWebMetaData);
 
-            this.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JSE);
-            this.putAttachment(WSAttachmentKeys.CLASSLOADER_KEY, loader);
+            this.putAttachment(WSAttachmentKeys.WS_DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JSE);
+            this.putAttachment(WSAttachmentKeys.WS_CLASSLOADER_KEY, loader);
         }
 
         private void addEndpoint(JBossWebMetaData jbossWebMetaData, String className, String urlPattern) {

@@ -89,7 +89,7 @@ public final class ASHelper {
      * @return true if JAXWS JSE, JAXRPC JSE, JAXWS EJB or JAXRPC EJB deployment, false otherwise.
      */
     public static boolean isWebServiceDeployment(final DeploymentUnit unit) {
-        return ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY) != null;
+        return ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.WS_DEPLOYMENT_TYPE_KEY) != null;
     }
 
     /**
@@ -119,7 +119,7 @@ public final class ASHelper {
      * @return list of JAXWS EJBs meta data
      */
     public static List<WebServiceDeclaration> getJaxwsEjbs(final DeploymentUnit unit) {
-        final WebServiceDeployment wsDeployment = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
+        final WebServiceDeployment wsDeployment = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.WS_EJB_DEPLOYMENT_KEY);
 
         return Collections.unmodifiableList(wsDeployment.getServiceEndpoints());
     }
@@ -244,7 +244,7 @@ public final class ASHelper {
 
         for (final ServletMetaData servletMD : smd) {
             final boolean isWebServiceEndpoint = index != null ? isWebserviceEndpoint(servletMD, index, jaxws) : isWebserviceEndpoint(
-                    servletMD, unit.getAttachment(WSAttachmentKeys.CLASSLOADER_KEY), jaxws);
+                    servletMD, unit.getAttachment(WSAttachmentKeys.WS_CLASSLOADER_KEY), jaxws);
             if (isWebServiceEndpoint) {
                 endpoints.add(servletMD);
             }
@@ -368,7 +368,7 @@ public final class ASHelper {
                 result = warMetaData.getJbossWebMetaData();
             }
         } else {
-            result = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.JBOSSWEB_METADATA_KEY);
+            result = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.WS_JBOSSWEB_METADATA_KEY);
         }
         return result;
     }

@@ -22,7 +22,7 @@
 package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_EJB_DEPLOYMENT_KEY;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
         processAnnotation(unit, ASHelper.WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
         processAnnotation(unit, ASHelper.WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
         if (!wsDeploymentAdapter.getServiceEndpoints().isEmpty()) {
-            unit.putAttachment(WEBSERVICE_DEPLOYMENT_KEY, wsDeploymentAdapter);
+            unit.putAttachment(WS_EJB_DEPLOYMENT_KEY, wsDeploymentAdapter);
         }
     }
 

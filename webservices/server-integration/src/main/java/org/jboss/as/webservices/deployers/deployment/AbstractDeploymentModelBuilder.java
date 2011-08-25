@@ -91,7 +91,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         this.build(dep, unit);
 
         dep.addAttachment(DeploymentUnit.class, unit);
-        unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_KEY, dep);
+        unit.putAttachment(WSAttachmentKeys.WS_DEPLOYMENT_KEY, dep);
     }
 
     /**
@@ -164,7 +164,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         final ClassLoader classLoader;
         final Module module = unit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            classLoader = unit.getAttachment(WSAttachmentKeys.CLASSLOADER_KEY);
+            classLoader = unit.getAttachment(WSAttachmentKeys.WS_CLASSLOADER_KEY);
             if (classLoader == null) {
                 throw new DeploymentUnitProcessingException("failed to resolve module / classloader for deployment " + unit);
             }
@@ -207,7 +207,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             dep.setRootFile(new ResourceLoaderAdapter(classLoader));
         }
         dep.setRuntimeClassLoader(classLoader);
-        final DeploymentType deploymentType = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
+        final DeploymentType deploymentType = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.WS_DEPLOYMENT_TYPE_KEY);
         dep.setType(deploymentType);
 
         return dep;

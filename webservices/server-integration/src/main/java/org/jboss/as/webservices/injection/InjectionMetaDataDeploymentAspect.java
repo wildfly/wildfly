@@ -63,7 +63,7 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
     static {
         resolvers = new HashMap<Class<? extends Annotation>, ReferenceResolver>();
         resolvers.put(Resource.class, new ResourceReferenceResolver());
-        resolvers.put(EJB.class, new EJBResourceReferenceResolver());
+        resolvers.put(EJB.class, new EJBReferenceResolver());
     }
 
     /**
@@ -98,7 +98,7 @@ public final class InjectionMetaDataDeploymentAspect extends AbstractDeploymentA
         } else if (WSHelper.isJaxwsEjbDeployment(dep)) {
             log.debug("Building injection meta data for JAXWS EJB3 webservice deployment: " + dep.getSimpleName());
             final WebServiceDeployment webServiceDeployment = ASHelper.getRequiredAttachment(unit,
-                    WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
+                    WSAttachmentKeys.WS_EJB_DEPLOYMENT_KEY);
             final Service service = dep.getService();
 
             // iterate through all EJB3 endpoints
