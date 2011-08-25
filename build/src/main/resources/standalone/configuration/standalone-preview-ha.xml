@@ -34,6 +34,7 @@
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
+        <extension module="org.jboss.as.mail"/>
         <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
@@ -273,6 +274,11 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jpa:1.0">
             <jpa default-datasource=""/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:mail:1.0">
+            <mail-session jndi-name="java:jboss/mail/Default" >
+                <smtp-server address="localhost" port="25"/>
+           </mail-session>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->

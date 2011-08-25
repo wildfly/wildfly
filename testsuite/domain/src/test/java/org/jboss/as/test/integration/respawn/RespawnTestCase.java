@@ -396,7 +396,7 @@ public class RespawnTestCase {
 
         @Override
         String getKillCommand(RunningProcess process) {
-            return "taskkill /f /pid " + process.getProcessId();
+            return "taskkill /pid " + process.getProcessId();
         }
     }
 
