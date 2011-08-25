@@ -96,7 +96,7 @@ class MessagingPathHandlers {
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address);
         operation.get(RELATIVE_TO).set(subModel.get(RELATIVE_TO));
-        operation.get(PATH).set(subModel.get(PATH));
+        operation.get(PATH).set(subModel.require(PATH));
         return operation;
     }
 

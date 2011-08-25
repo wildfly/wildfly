@@ -1724,7 +1724,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     static void writeSimpleElement(final XMLExtendedStreamWriter writer, final Element element, final ModelNode node) throws XMLStreamException {
         final String localName = element.getLocalName();
-        if(node.has(localName)) {
+        if(node.hasDefined(localName)) {
             final String content = node.get(localName).asString();
             if(content != null) {
                 writer.writeStartElement(localName);

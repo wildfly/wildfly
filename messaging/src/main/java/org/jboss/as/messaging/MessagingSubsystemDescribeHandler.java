@@ -67,11 +67,6 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
                 subsystemAdd.get(attrName).set(subModel.get(attrName));
             }
         }
-        for(final String attribute : MessagingSubsystemProviders.MESSAGING_ROOT_ATTRIBUTES) {
-            if(subModel.hasDefined(attribute)) {
-                subsystemAdd.get(attribute).set(subModel.get(attribute));
-            }
-        }
         final ModelNode result = context.getResult();
         result.add(subsystemAdd);
 
@@ -93,7 +88,7 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
                 if(paths.hasDefined(pathName)) {
                     final ModelNode address = rootAddress.toModelNode();
                     address.add(PATH, pathName);
-                    result.add(MessagingPathHandlers.createAddOperation(address, subModel.get(pathName)));
+                    result.add(MessagingPathHandlers.createAddOperation(address, paths.get(pathName)));
                 }
             }
         }
@@ -168,9 +163,9 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
                 final ModelNode csNode = property.getValue();
                 result.add(ConnectorServiceAdd.getAddOperation(address, csNode));
                 if (csNode.hasDefined(CommonAttributes.PARAM)) {
-                    for(final Property param : subModel.get(CommonAttributes.PARAM).asPropertyList()) {
+                    for(final Property param : csNode.get(CommonAttributes.PARAM).asPropertyList()) {
                         final ModelNode paramAddress = address.clone().add(CommonAttributes.PARAM, param.getName());
-                        result.add(ConnectorServiceParamAdd.getAddOperation(paramAddress, property.getValue()));
+                        result.add(ConnectorServiceParamAdd.getAddOperation(paramAddress, param.getValue()));
                     }
                 }
             }
@@ -209,14 +204,14 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
         }
 
         if(subModel.hasDefined(CommonAttributes.SECURITY_SETTING)) {
-            final ModelNode securitySetting = subModel.get(CommonAttributes.SECURITY_SETTING);
-            for(final Property setting : securitySetting.asPropertyList()) {
+            final ModelNode securitySettings = subModel.get(CommonAttributes.SECURITY_SETTING);
+            for(final Property setting : securitySettings.asPropertyList()) {
                 final ModelNode settingAddress = rootAddress.toModelNode();
                 settingAddress.add(CommonAttributes.SECURITY_SETTING, setting.getName());
                 result.add(SecuritySettingAdd.createAddOperation(settingAddress, setting.getValue()));
-
+                final ModelNode securitySetting = setting.getValue();
                 if(securitySetting.hasDefined(CommonAttributes.ROLE)) {
-                    for(final Property role : securitySetting.asPropertyList()) {
+                    for(final Property role : securitySetting.get(CommonAttributes.ROLE).asPropertyList()) {
                         final ModelNode address = settingAddress.clone();
                         address.add(CommonAttributes.ROLE, role.getName());
                         result.add(SecurityRoleAdd.createAddOperation(address, role.getValue()));
