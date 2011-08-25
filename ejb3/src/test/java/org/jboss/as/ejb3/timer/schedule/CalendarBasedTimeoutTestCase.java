@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.timer.schedule;
 import junit.framework.Assert;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.logging.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,9 +43,12 @@ import java.util.TimeZone;
 /**
  * CalendarBasedTimeoutTestCase
  *
+ * Ignored because it is slow
+ * 
  * @author Jaikiran Pai
  * @version $Revision: $
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class CalendarBasedTimeoutTestCase {
 
