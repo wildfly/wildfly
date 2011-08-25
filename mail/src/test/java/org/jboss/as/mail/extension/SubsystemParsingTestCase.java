@@ -4,8 +4,8 @@ package org.jboss.as.mail.extension;
 import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.mail.support.AbstractParsingTest;
-import org.jboss.as.mail.support.KernelServices;
+import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SubsystemParsingTestCase extends AbstractParsingTest {
+public class SubsystemParsingTestCase extends AbstractSubsystemTest {
     private String SUBSYSTEM_XML =
             " <subsystem xmlns=\"urn:jboss:domain:mail:1.0\">\n" +
                     "            <mail-session jndi-name=\"java:/Mail\" >\n" +
@@ -38,6 +38,10 @@ public class SubsystemParsingTestCase extends AbstractParsingTest {
                     "            </mail-session>\n" +
                     "        </subsystem>";
     private static final Logger log = Logger.getLogger(SubsystemParsingTestCase.class);
+
+    public SubsystemParsingTestCase() {
+        super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
+    }
 
     /**
      * Tests that the xml is parsed into the correct operations
@@ -59,7 +63,7 @@ public class SubsystemParsingTestCase extends AbstractParsingTest {
         Assert.assertEquals(1, addr.size());
         PathElement element = addr.getElement(0);
         Assert.assertEquals(SUBSYSTEM, element.getKey());
-        Assert.assertEquals(MailSubsystemExtension.SUBSYSTEM_NAME, element.getValue());
+        Assert.assertEquals(MailExtension.SUBSYSTEM_NAME, element.getValue());
     }
 
     /**
@@ -72,7 +76,7 @@ public class SubsystemParsingTestCase extends AbstractParsingTest {
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
-        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(MailSubsystemExtension.SUBSYSTEM_NAME));
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(MailExtension.SUBSYSTEM_NAME));
     }
 
     /**
@@ -115,7 +119,7 @@ public class SubsystemParsingTestCase extends AbstractParsingTest {
         describeOp.get(OP).set(DESCRIBE);
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, MailSubsystemExtension.SUBSYSTEM_NAME)).toModelNode());
+                        PathElement.pathElement(SUBSYSTEM, MailExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
 

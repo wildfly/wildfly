@@ -4,8 +4,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -16,9 +15,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Values;
 
-import javax.mail.Session;
 import java.util.List;
 
 /**
@@ -90,12 +87,12 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
 
         ValueManagedReferenceFactory valueManagedReferenceFactory = new ValueManagedReferenceFactory(service);
-        final ServiceName binderServiceName =  ContextNames.serviceNameOfGlobalEntry(jndiName);
-        final BinderService binderService = new BinderService(binderServiceName.getSimpleName());
+        final ContextNames.BindInfo bindInfo =  ContextNames.bindInfoFor(jndiName);
+        final BinderService binderService = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
-                .addService(binderServiceName, binderService)
+                .addService(bindInfo.getBinderServiceName(), binderService)
                 .addInjection(binderService.getManagedObjectInjector(), valueManagedReferenceFactory)
-                .addDependency(binderServiceName.getParent(), NamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {

@@ -1,6 +1,7 @@
 package org.jboss.as.mail.extension;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.threads.CommonAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -94,6 +95,10 @@ class MailSubsystemProviders {
             operation.get(OPERATION_NAME).set(ADD);
             operation.get(DESCRIPTION).set(bundle.getString("mail-session.add"));
 
+            operation.get(REQUEST_PROPERTIES, CommonAttributes.NAME, DESCRIPTION).set(bundle.getString("session.name"));
+            operation.get(REQUEST_PROPERTIES, CommonAttributes.NAME, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, CommonAttributes.NAME, REQUIRED).set(false);
+
             operation.get(REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, DESCRIPTION).set(bundle.getString("jndi-name.description"));
             operation.get(REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, ModelKeys.JNDI_NAME, REQUIRED).set(true);
@@ -102,6 +107,17 @@ class MailSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, ModelKeys.DEBUG, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, ModelKeys.DEBUG, REQUIRED).set(false);
 
+            operation.get(REQUEST_PROPERTIES, ModelKeys.POP3_SERVER, DESCRIPTION).set(bundle.getString("pop3-server"));
+            operation.get(REQUEST_PROPERTIES, ModelKeys.POP3_SERVER, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ModelKeys.POP3_SERVER, REQUIRED).set(false);
+
+            operation.get(REQUEST_PROPERTIES, ModelKeys.IMAP_SERVER, DESCRIPTION).set(bundle.getString("imap-server"));
+            operation.get(REQUEST_PROPERTIES, ModelKeys.IMAP_SERVER, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ModelKeys.IMAP_SERVER, REQUIRED).set(false);
+
+            operation.get(REQUEST_PROPERTIES, ModelKeys.SMTP_SERVER, DESCRIPTION).set(bundle.getString("smtp-server"));
+            operation.get(REQUEST_PROPERTIES, ModelKeys.SMTP_SERVER, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, ModelKeys.SMTP_SERVER, REQUIRED).set(false);
             return operation;
         }
     };

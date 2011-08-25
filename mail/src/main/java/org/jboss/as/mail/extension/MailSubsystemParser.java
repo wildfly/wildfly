@@ -102,7 +102,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
 
         final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, MailSubsystemExtension.SUBSYSTEM_NAME);
+        address.add(ModelDescriptionConstants.SUBSYSTEM, MailExtension.SUBSYSTEM_NAME);
         address.protect();
 
         final ModelNode subsystem = new ModelNode();

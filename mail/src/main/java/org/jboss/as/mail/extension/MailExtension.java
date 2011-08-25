@@ -11,10 +11,8 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -22,7 +20,6 @@ import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -30,7 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 /**
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
-public class MailSubsystemExtension implements Extension {
+public class MailExtension implements Extension {
 
     /**
      * The name of our subsystem within the model.
@@ -92,8 +89,6 @@ public class MailSubsystemExtension implements Extension {
 
                     addOperation.get(ModelKeys.JNDI_NAME).set(session.getValue().get(ModelKeys.JNDI_NAME).asString());
                     addOperation.get(ModelKeys.DEBUG).set(session.getValue().get(ModelKeys.DEBUG).asString());
-                    addOperation.get(ModelKeys.USERNAME).set(session.getValue().get(ModelKeys.USERNAME).asString());
-                    addOperation.get(ModelKeys.PASSWORD).set(session.getValue().get(ModelKeys.PASSWORD).asString());
                     addOperation.get(ModelKeys.SMTP_SERVER).set(session.getValue().get(ModelKeys.SMTP_SERVER));
                     addOperation.get(ModelKeys.IMAP_SERVER).set(session.getValue().get(ModelKeys.IMAP_SERVER));
                     addOperation.get(ModelKeys.POP3_SERVER).set(session.getValue().get(ModelKeys.POP3_SERVER));
