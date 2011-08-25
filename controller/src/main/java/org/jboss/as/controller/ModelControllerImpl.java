@@ -44,7 +44,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
+import org.jboss.as.controller.operations.common.ExtensionAddHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -172,7 +172,7 @@ class ModelControllerImpl implements ModelController {
                 context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
             } else {
                 OperationContext.Stage stage = OperationContext.Stage.MODEL;
-                if(stepHandler instanceof AbstractExtensionAddHandler) {
+                if(stepHandler instanceof ExtensionAddHandler) {
                     stage = OperationContext.Stage.IMMEDIATE;
                 }
                 context.addStep(response, this.operation, stepHandler, stage);
