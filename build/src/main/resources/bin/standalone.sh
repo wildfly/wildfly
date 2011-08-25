@@ -107,12 +107,17 @@ else
     JVM_OPTVERSION="-server $JVM_OPTVERSION"
 fi
 
+if [ "x$MODULEPATH" = "x" ]; then
+    MODULEPATH="$JBOSS_HOME/modules"
+fi
+
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
     JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
     JBOSS_ENDORSED_DIRS=`cygpath --path --windows "$JBOSS_ENDORSED_DIRS"`
+    MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
 fi
 
 # Display our environment
@@ -136,7 +141,7 @@ while true; do
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/log/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"$JBOSS_HOME/modules\" \
+         -mp \"${MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
          -jaxpmodule javax.xml.jaxp-provider \
          org.jboss.as.standalone \
@@ -149,7 +154,7 @@ while true; do
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/log/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"$JBOSS_HOME/modules\" \
+         -mp \"${MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
          -jaxpmodule javax.xml.jaxp-provider \
          org.jboss.as.standalone \
