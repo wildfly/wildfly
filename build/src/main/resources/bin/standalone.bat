@@ -70,6 +70,11 @@ rem Setup JBoss specific properties
 rem Setup the java endorsed dirs
 set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
 
+rem Set default module root paths
+if "x%MODULEPATH%" == "x" (
+  set  "MODULEPATH=%JBOSS_HOME%\modules"
+)
+
 echo ===============================================================================
 echo.
 echo   JBoss Bootstrap Environment
@@ -88,7 +93,7 @@ echo.
  "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\standalone\log\boot.log" ^
  "-Dlogging.configuration=file:%JBOSS_HOME%/standalone/configuration/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-    -mp "%JBOSS_HOME%\modules" ^
+    -mp "%MODULEPATH%" ^
     -logmodule "org.jboss.logmanager" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
      org.jboss.as.standalone ^
