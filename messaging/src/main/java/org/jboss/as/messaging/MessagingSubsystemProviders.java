@@ -44,11 +44,6 @@ import java.util.Locale;
  */
 class MessagingSubsystemProviders {
 
-    static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] {
-        CONNECTION_FACTORY,
-        GROUPING_HANDLER, JMS_QUEUE, JMS_TOPIC,
-        POOLED_CONNECTION_FACTORY, QUEUE };
-
     static final DescriptionProvider ADDRESS_SETTING = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {

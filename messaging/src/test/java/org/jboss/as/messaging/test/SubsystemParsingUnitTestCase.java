@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.test;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -30,6 +31,10 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
+
+import javax.swing.plaf.OptionPaneUI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Emanuel Muckenhuber
@@ -104,5 +109,28 @@ public class SubsystemParsingUnitTestCase  extends AbstractSubsystemTest {
 
         //Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);
+
+        // test the describe operation
+        final ModelNode operation = createDescribeOperation();
+        final ModelNode result = servicesB.executeOperation(operation);
+        final List<ModelNode> operations = result.get("result").asList();
+
+        servicesB.shutdown();
+
+        KernelServices servicesC = super.installInController(additionalInit, operations);
+        ModelNode modelC = servicesC.readWholeModel();
+
+        super.compare(modelA, modelC);
     }
+
+    static ModelNode createDescribeOperation() {
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "messaging");
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.DESCRIBE);
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        return operation;
+    }
+
 }

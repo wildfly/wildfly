@@ -47,7 +47,7 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
     public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
 
         final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-
+        operation.remove(NAME);
         return operation;
     }
 

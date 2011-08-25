@@ -728,7 +728,7 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector-service.param.add"));
         CommonAttributes.VALUE.addOperationParameterDescription(bundle, "connector-service.param", op);
         op.get(REPLY_PROPERTIES).setEmptyObject();
@@ -782,6 +782,7 @@ public class MessagingDescriptions {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
+        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -853,6 +854,7 @@ public class MessagingDescriptions {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
+        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -878,6 +880,7 @@ public class MessagingDescriptions {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
+        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -903,6 +906,7 @@ public class MessagingDescriptions {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
+        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -939,6 +943,7 @@ public class MessagingDescriptions {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
+        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -964,6 +969,7 @@ public class MessagingDescriptions {
             attr.addOperationParameterDescription(bundle, null, op);
         }
         op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
+        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
