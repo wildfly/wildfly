@@ -44,7 +44,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         log.info("properties: "+props);*/
         for (Property mailSession : sessions) {
             String jndi = mailSession.getName();
-            log.info("jndi: " + jndi);
+            log.debug("jndi: " + jndi);
             ModelNode sessionData = mailSession.getValue();
             writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
 
@@ -158,7 +158,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
 
     private MailSessionConfig parseMailSession(final XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-        log.info("parsing mail session");
+        log.debug("parsing mail session");
         MailSessionConfig cfg = new MailSessionConfig();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
