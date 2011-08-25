@@ -1,0 +1,44 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:domain:mail:1.0"
+           targetNamespace="urn:jboss:domain:mail:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
+    <!-- The mail subsystem root element -->
+    <xs:element name="subsystem" type="mail-subsystemType"/>
+    <xs:complexType name="mail-subsystemType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The configuration of the mail subsystem.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="mail-session" type="mail-sessionType"/>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="mail-sessionType">
+        <xs:sequence>
+            <xs:element name="smtp-server" type="server-type" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="pop3-server" type="server-type" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="imap-server" type="server-type" maxOccurs="1" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="jndi-name" use="required"/>
+        <xs:attribute name="debug" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="login-type" mixed="true">
+        <xs:attribute name="name"/>
+        <xs:attribute name="password"/>
+    </xs:complexType>
+
+    <xs:complexType name="server-type" mixed="true">
+        <xs:sequence>
+            <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="address" use="required"/>
+        <xs:attribute name="port" use="required"/>
+    </xs:complexType>
+
+</xs:schema>

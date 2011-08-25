@@ -538,6 +538,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-logging"/>
         </module-def>
 
+        <module-def name="org.jboss.as.mail">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-mail"/>
+        </module-def>
+
         <module-def name="org.jboss.as.messaging">
             <maven-resource group="org.jboss.as" artifact="jboss-as-messaging"/>
         </module-def>
