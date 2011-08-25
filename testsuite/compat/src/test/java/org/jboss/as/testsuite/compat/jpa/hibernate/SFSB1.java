@@ -46,7 +46,7 @@ public class SFSB1 {
     }
 
     public Employee getEmployeeNoTX(int id) {
-        return em.find(Employee.class, id, LockModeType.NONE);
+        return em.find(Employee.class, id);
     }
 
 }
