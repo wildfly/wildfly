@@ -348,7 +348,12 @@ final class OperationContextImpl implements OperationContext {
             ModelNode newOperation = operation = step.operation;
             modelAddress = PathAddress.pathAddress(newOperation.get(OP_ADDR));
             try {
-                step.handler.execute(this, newOperation);
+                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(step.getClass());
+                try {
+                    step.handler.execute(this, newOperation);
+                } finally {
+                    SecurityActions.setThreadContextClassLoader(oldTccl);
+                }
             } catch (OperationFailedException ofe) {
                 if (currentStage != Stage.DONE) {
                     // Handler threw OFE before calling completeStep(); that's equivalent to

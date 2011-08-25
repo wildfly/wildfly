@@ -317,7 +317,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
                 boolean initialized = false;
                 for (final Extension extension : module.loadService(Extension.class)) {
-                    extension.initializeParsers(context);
+                    ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
+                    try {
+                        extension.initializeParsers(context);
+                    } finally {
+                        SecurityActions.setThreadContextClassLoader(oldTccl);
+                    }
                     if (!initialized) {
                         initialized = true;
                     }

@@ -381,7 +381,13 @@ public class GlobalOperationHandlers {
                 context.getResult().set(result);
                 context.completeStep();
             } else {
-                attributeAccess.getReadHandler().execute(context, operation);
+                OperationStepHandler handler = attributeAccess.getReadHandler();
+                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
+                try {
+                    handler.execute(context, operation);
+                } finally {
+                    SecurityActions.setThreadContextClassLoader(oldTccl);
+                }
             }
         }
     };
@@ -406,7 +412,13 @@ public class GlobalOperationHandlers {
             } else if (attributeAccess.getAccessType() != AccessType.READ_WRITE) {
                 throw new OperationFailedException(new ModelNode().set("Attribute " + attributeName + " is not writeable")); // TODO i18n
             } else {
-                attributeAccess.getWriteHandler().execute(context, operation);
+                OperationStepHandler handler = attributeAccess.getWriteHandler();
+                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
+                try {
+                    handler.execute(context, operation);
+                } finally {
+                    SecurityActions.setThreadContextClassLoader(oldTccl);
+                }
             }
         }
     };

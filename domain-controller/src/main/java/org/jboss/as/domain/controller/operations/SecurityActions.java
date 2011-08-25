@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,43 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.operations.common;
-
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
+package org.jboss.as.domain.controller.operations;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 /**
- * Privileged blocks for this package
+ * Security actions to perform possibly privileged operations.  No methods in
+ * this class are to be made public under any circumstances!
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 class SecurityActions {
-
-    static String setSystemProperty(final String key, final String value) throws SecurityException {
-
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-            public String run() {
-                return System.setProperty(key, value);
-            }
-        });
-    }
-
-    static String clearSystemProperty(final String key) throws SecurityException {
-
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-            public String run() {
-                return System.clearProperty(key);
-            }
-        });
-    }
 
     static ClassLoader setThreadContextClassLoader(Class cl) {
         if (System.getSecurityManager() == null) {
@@ -117,5 +92,4 @@ class SecurityActions {
             }
         };
     }
-
 }
