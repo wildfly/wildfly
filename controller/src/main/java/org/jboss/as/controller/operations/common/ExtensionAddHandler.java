@@ -21,6 +21,8 @@ package org.jboss.as.controller.operations.common;
 
 import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -30,14 +32,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 
 /**
  * Base handler for the extension resource add operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-// TODO consider making this concrete and folding in subclass logic
-public abstract class  AbstractExtensionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class ExtensionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -48,25 +52,41 @@ public abstract class  AbstractExtensionAddHandler extends AbstractAddStepHandle
         return op;
     }
 
+    private final ExtensionContext extensionContext;
+
     /**
      * Create the AbstractAddExtensionHandler
      */
-    protected AbstractExtensionAddHandler() {
+    public ExtensionAddHandler(final ExtensionContext extensionContext) {
+        if (extensionContext == null) {
+            throw new IllegalArgumentException("extensionContext is null");
+        }
+        this.extensionContext = extensionContext;
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String module = address.getLastElement().getValue();
         model.get(ExtensionDescription.MODULE).set(module);
-        installExtension(module, model);
+
+        try {
+            for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
+                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
+                try {
+                    extension.initialize(extensionContext);
+                } finally {
+                    SecurityActions.setThreadContextClassLoader(oldTccl);
+                }
+            }
+        } catch (ModuleLoadException e) {
+            throw new OperationFailedException(new ModelNode().set(e.toString()));
+        }
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ExtensionDescription.getExtensionAddOperation(locale);
     }
-
-    protected abstract void installExtension(String module, ModelNode model) throws OperationFailedException;
 
     protected boolean requiresRuntime(OperationContext context) {
         return false;
