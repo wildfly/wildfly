@@ -22,32 +22,7 @@
 
 package org.jboss.as.test.embedded.mgmt.datasource;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
-import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
-import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
-
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.stream.StreamSource;
-
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -66,8 +41,32 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.stream.StreamSource;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
+import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnection;
+import static org.jboss.as.test.embedded.mgmt.datasource.DataSourceOperationTestUtil.testConnectionXA;
+
 /**
  * Datasource operation unit test.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
  */
@@ -84,8 +83,9 @@ public class DataSourceOperationsUnitTestCase {
 
     // [ARQ-458] @Before not called with @RunAsClient
     private ModelControllerClient getModelControllerClient() throws UnknownHostException {
-        StreamUtils.safeClose(client);
-        client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        if (client == null) {
+            client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        }
         return client;
     }
 
@@ -139,6 +139,7 @@ public class DataSourceOperationsUnitTestCase {
 
     /**
      * AS7-1202 test for enable datasource
+     *
      * @throws Exception
      */
     @Test
@@ -279,6 +280,7 @@ public class DataSourceOperationsUnitTestCase {
     /**
      * AS7-1206 test for jndi binding isn't unbound during remove if jndi name
      * and data-source name are different
+     *
      * @throws Exception
      */
     @Test
@@ -357,6 +359,7 @@ public class DataSourceOperationsUnitTestCase {
 
     /**
      * AS7-1200 test case for xa datasource persistence to xml
+     *
      * @throws Exception
      */
     @Test
@@ -409,6 +412,7 @@ public class DataSourceOperationsUnitTestCase {
 
     /**
      * AS7-1201 test for en/diable xa datasources
+     *
      * @throws Exception
      */
     @Test
@@ -486,6 +490,7 @@ public class DataSourceOperationsUnitTestCase {
 
     /**
      * AS7-1203 test for missing xa-datasource properties
+     *
      * @throws Exception
      */
     @Test
