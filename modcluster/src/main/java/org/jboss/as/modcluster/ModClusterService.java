@@ -26,8 +26,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -207,35 +205,27 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         if (modelconf.hasDefined(CommonAttributes.DOMAIN))
             config.setLoadBalancingGroup(modelconf.get(CommonAttributes.DOMAIN).asString());
 
-        // Read the metrics configuration.
-        final ModelNode loadmetric = modelconf.get(CommonAttributes.LOAD_METRIC);
-
-        if (loadmetric.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER)) {
+        if (modelconf.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER)) {
             // TODO it seems we don't support that stuff.
             // LoadBalanceFactorProvider implementation, org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider.
-            final ModelNode node = loadmetric.get(CommonAttributes.SIMPLE_LOAD_PROVIDER);
+            final ModelNode node = modelconf.get(CommonAttributes.SIMPLE_LOAD_PROVIDER);
             SimpleLoadBalanceFactorProvider myload = new SimpleLoadBalanceFactorProvider();
             myload.setLoadBalanceFactor(node.get(CommonAttributes.FACTOR).asInt(1));
             load = myload;
         }
 
         Set<LoadMetric<LoadContext>> metrics = new HashSet<LoadMetric<LoadContext>>();
-        if (loadmetric.hasDefined(CommonAttributes.DYNAMIC_LOAD_PROVIDER)) {
-            final ModelNode node = loadmetric.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
-            int decayFactor = node.get(CommonAttributes.DECAY).asInt(512);
-            int history = node.get(CommonAttributes.HISTORY).asInt(512);
+        if (modelconf.hasDefined(CommonAttributes.DYNAMIC_LOAD_PROVIDER)) {
+            final ModelNode node = modelconf.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+            int decayFactor = node.get(CommonAttributes.DECAY).asInt(DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR);
+            int history = node.get(CommonAttributes.HISTORY).asInt(DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY);
             // We should have bunch of load-metric and/or custom-load-metric here.
             // TODO read the child nodes or what ....String nodes = node.
             if (node.hasDefined(CommonAttributes.LOAD_METRIC)) {
-                final ModelNode nodemetric = node.get(CommonAttributes.LOAD_METRIC);
-                final List<ModelNode> array = nodemetric.asList();
-                addLoadMetrics(metrics, array);
+                addLoadMetrics(metrics, node.get(CommonAttributes.LOAD_METRIC));
              }
             if (node.hasDefined(CommonAttributes.CUSTOM_LOAD_METRIC)) {
-                final ModelNode nodemetric = node.get(CommonAttributes.CUSTOM_LOAD_METRIC);
-                final List<ModelNode> array = nodemetric.asList();
-                addCustomLoadMetrics(metrics, array);
-
+                addLoadMetrics(metrics, node.get(CommonAttributes.CUSTOM_LOAD_METRIC));
             }
             if (!metrics.isEmpty()) {
                 DynamicLoadBalanceFactorProvider loader = new DynamicLoadBalanceFactorProvider(metrics);
@@ -285,79 +275,49 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         return Registry.getRegistry(null, null).getMBeanServer();
     }
 
-    private void addLoadMetrics(Set<LoadMetric<LoadContext>> metrics, List<ModelNode> array) {
-        Iterator<ModelNode> it= array.iterator();
-
-        while(it.hasNext()) {
-            final ModelNode node= it.next();
-            int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
-            int weight = node.get(CommonAttributes.WEIGHT).asInt(9);
-            String type = node.get(CommonAttributes.TYPE).asString();
+    private void addLoadMetrics(Set<LoadMetric<LoadContext>> metrics, ModelNode nodes) {
+        for (ModelNode node: nodes.asList()) {
+            double capacity = node.get(CommonAttributes.CAPACITY).asDouble(LoadMetric.DEFAULT_CAPACITY);
+            int weight = node.get(CommonAttributes.WEIGHT).asInt(LoadMetric.DEFAULT_WEIGHT);
             Class<? extends LoadMetric> loadMetricClass = null;
-            LoadMetric<LoadContext> metric = null;
+            if (node.hasDefined(CommonAttributes.TYPE)) {
+                String type = node.get(CommonAttributes.TYPE).asString();
+                //  SourcedLoadMetric
+                if (type.equals("cpu"))
+                    loadMetricClass = AverageSystemLoadMetric.class;
+                if (type.equals("mem"))
+                    loadMetricClass = SystemMemoryUsageLoadMetric.class;
+                if (type.equals("heap"))
+                    loadMetricClass = HeapMemoryUsageLoadMetric.class;
 
-            //  SourcedLoadMetric
-            if (type.equals("cpu"))
-                loadMetricClass = AverageSystemLoadMetric.class;
-            if (type.equals("mem"))
-                loadMetricClass = SystemMemoryUsageLoadMetric.class;
+                // MBeanAttributeLoadMetric...
+                if (type.equals("sessions"))
+                    loadMetricClass = ActiveSessionsLoadMetric.class;
+                if (type.equals("receive-traffic"))
+                    loadMetricClass = ReceiveTrafficLoadMetric.class;
+                if (type.equals("send-traffic"))
+                    loadMetricClass = SendTrafficLoadMetric.class;
+                if (type.equals("requests"))
+                    loadMetricClass = RequestCountLoadMetric.class;
 
-            if (type.equals("heap"))
-                loadMetricClass = HeapMemoryUsageLoadMetric.class;
-
-            // MBeanAttributeLoadMetric...
-            if (type.equals("sessions"))
-                loadMetricClass = ActiveSessionsLoadMetric.class;
-            if (type.equals("receive-traffic"))
-                loadMetricClass = ReceiveTrafficLoadMetric.class;
-            if (type.equals("send-traffic"))
-                loadMetricClass = SendTrafficLoadMetric.class;
-            if (type.equals("requests"))
-                loadMetricClass = RequestCountLoadMetric.class;
-
-            // MBeanAttributeRatioLoadMetric
-            if (type.equals("connection-pool"))
-                loadMetricClass = ConnectionPoolUsageLoadMetric.class;
-            if (type.equals("busyness"))
-                loadMetricClass = BusyConnectorsLoadMetric.class;
-
-
-            if (loadMetricClass != null) {
+                // MBeanAttributeRatioLoadMetric
+                if (type.equals("connection-pool"))
+                    loadMetricClass = ConnectionPoolUsageLoadMetric.class;
+                if (type.equals("busyness"))
+                    loadMetricClass = BusyConnectorsLoadMetric.class;
+            } else {
+                String className = node.get(CommonAttributes.CLASS).asString();
                 try {
-                    metric = loadMetricClass.newInstance();
-                    metric.setCapacity(capacity);
-                    metric.setWeight(weight);
-                    metrics.add(metric);
-                } catch (InstantiationException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
+                    loadMetricClass = (Class<? extends LoadMetric>) this.getClass().getClassLoader().loadClass(className);
+                } catch (ClassNotFoundException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
-        }
-    }
 
-
-    private void addCustomLoadMetrics(Set<LoadMetric<LoadContext>> metrics, List<ModelNode> array) {
-        Iterator<ModelNode> it= array.iterator();
-        while(it.hasNext()) {
-            final ModelNode node= it.next();
-            int capacity = node.get(CommonAttributes.CAPACITY).asInt(512);
-            int weight = node.get(CommonAttributes.WEIGHT).asInt(9);
-            String name = node.get(CommonAttributes.CLASS).asString();
-            Class<? extends LoadMetric> loadMetricClass = null;
-            LoadMetric<LoadContext> metric = null;
-            try {
-                loadMetricClass = (Class<? extends LoadMetric>) this.getClass().getClassLoader().loadClass(name);
-            } catch (ClassNotFoundException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
             if (loadMetricClass != null) {
                 try {
-                    metric = loadMetricClass.newInstance();
+                    LoadMetric<LoadContext> metric = loadMetricClass.newInstance();
                     metric.setCapacity(capacity);
                     metric.setWeight(weight);
                     metrics.add(metric);
