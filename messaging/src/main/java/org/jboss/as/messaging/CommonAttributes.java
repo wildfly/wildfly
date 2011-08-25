@@ -442,15 +442,15 @@ public interface CommonAttributes {
     String CONNECTOR_REF_STRING ="connector-ref";
     String CONNECTOR_SERVICE = "connector-service";
     String CONNECTOR_SERVICES = "connector-services";
-    String CONSUME_NAME ="consume";
+    String CONSUME_XML_NAME ="consume";
     String CORE_QUEUE ="core-queue";
     String CORE_QUEUES ="core-queues";
-    String CREATEDURABLEQUEUE_NAME ="createDurableQueue";
+    String CREATEDURABLEQUEUE_XML_NAME ="createDurableQueue";
     String CREATETEMPQUEUE_NAME ="createTempQueue";
-    String CREATE_NON_DURABLE_QUEUE_NAME ="createNonDurableQueue";
-    String DELETEDURABLEQUEUE_NAME ="deleteDurableQueue";
+    String CREATE_NON_DURABLE_QUEUE_XML_NAME ="createNonDurableQueue";
+    String DELETEDURABLEQUEUE_XML_NAME ="deleteDurableQueue";
     String DELETETEMPQUEUE_NAME ="deleteTempQueue";
-    String DELETE_NON_DURABLE_QUEUE_NAME ="deleteNonDurableQueue";
+    String DELETE_NON_DURABLE_QUEUE_XML_NAME ="deleteNonDurableQueue";
     String DISCOVERY_GROUP = "discovery-group";
     String DISCOVERY_GROUPS = "discovery-groups";
     String DISCOVERY_GROUP_REF ="discovery-group-ref";
@@ -474,7 +474,7 @@ public interface CommonAttributes {
     String LIVE_CONNECTOR_REF_STRING ="live-connector-ref";
     String LOCAL = "local";
     String LOCAL_TX = "LocalTransaction";
-    String MANAGE_NAME ="manage";
+    String MANAGE_XML_NAME ="manage";
     String MATCH ="match";
     String MODE = "mode";
     String NAME ="name";
@@ -497,7 +497,7 @@ public interface CommonAttributes {
     String ROLES_ATTR_NAME ="roles";
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
-    String SEND_NAME ="send";
+    String SEND_XML_NAME ="send";
     String STATIC_CONNECTORS = "static-connectors";
     String STRING ="string";
     String SUBSYSTEM ="subsystem";
@@ -521,10 +521,6 @@ public interface CommonAttributes {
 
     AttributeDefinition[]  SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES = {
         FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD
-    };
-
-    String[] COMPLEX_ROOT_RESOURCE_ATTRIBUTES =  {
-        /* TODO remove */ SECURITY_SETTING,
     };
 
     AttributeDefinition[] DIVERT_ATTRIBUTES = {

@@ -25,7 +25,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
@@ -41,11 +40,11 @@ import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONSUME_NAME;
-import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.CONSUME_XML_NAME;
+import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_XML_NAME;
+import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_XML_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_XML_NAME;
+import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_XML_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
@@ -62,12 +61,9 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_CONNECTION_FACTORIES;
 import static org.jboss.as.messaging.CommonAttributes.JMS_DESTINATIONS;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
-import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.MANAGE_XML_NAME;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
@@ -76,9 +72,10 @@ import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INTERCEPTORS;
+import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
+import static org.jboss.as.messaging.CommonAttributes.SEND_XML_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
@@ -100,7 +97,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.messaging.MessagingServices.TransportConfigType;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -219,9 +215,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case SECURITY_SETTINGS: {
                     // process security settings
-                    final ModelNode securitySettings = processSecuritySettings(reader);
-                    // TODO these should be resources
-                    operation.get(SECURITY_SETTING).set(securitySettings);
+                    processSecuritySettings(reader, address, list);
                     break;
                 }
                 case CORE_QUEUES: {
@@ -842,7 +836,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    static ModelNode processSecuritySettings(XMLExtendedStreamReader reader) throws XMLStreamException {
+    static ModelNode processSecuritySettings(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
         final ModelNode security = new ModelNode();
         int tag = reader.getEventType();
         String localName = null;
@@ -853,15 +847,23 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
             switch (element) {
                 case SECURITY_SETTING:
-                    String match = reader.getAttributeValue(0);
-                    parseSecurityRoles(reader, security.get(match));
+                    final String match = reader.getAttributeValue(0);
+
+                    final ModelNode addr = address.clone();
+                    addr.add(SECURITY_SETTING, match);
+                    final ModelNode operation = new ModelNode();
+                    operation.get(OP).set(ADD);
+                    operation.get(OP_ADDR).set(addr);
+                    operations.add(operation);
+
+                    parseSecurityRoles(reader, addr, operations);
                     break;
             }
         } while (reader.hasNext() && localName.equals(Element.SECURITY_SETTING.getLocalName()));
         return security;
     }
 
-    static void parseSecurityRoles(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
+    static void parseSecurityRoles(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
 
         ArrayList<String> send = new ArrayList<String>();
         ArrayList<String> consume = new ArrayList<String>();
@@ -929,13 +931,22 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         } while (reader.hasNext());
 
         for (String role : allRoles) {
-            node.get(role, SEND_NAME).set(send.contains(role));
-            node.get(role, CONSUME_NAME).set(consume.contains(role));
-            node.get(role, CREATEDURABLEQUEUE_NAME).set(createDurableQueue.contains(role));
-            node.get(role, DELETEDURABLEQUEUE_NAME).set(deleteDurableQueue.contains(role));
-            node.get(role, CREATE_NON_DURABLE_QUEUE_NAME).set(createNonDurableQueue.contains(role));
-            node.get(role, DELETE_NON_DURABLE_QUEUE_NAME).set(deleteNonDurableQueue.contains(role));
-            node.get(role, MANAGE_NAME).set(manageRoles.contains(role));
+            final ModelNode addr = address.clone();
+            addr.add(ROLE, role);
+
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(ADD);
+            operation.get(OP_ADDR).set(addr);
+
+            operation.get(SecurityRoleAdd.SEND.getName()).set(send.contains(role));
+            operation.get(SecurityRoleAdd.CONSUME.getName()).set(consume.contains(role));
+            operation.get(SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName()).set(createDurableQueue.contains(role));
+            operation.get(SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName()).set(deleteDurableQueue.contains(role));
+            operation.get(SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName()).set(createNonDurableQueue.contains(role));
+            operation.get(SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName()).set(deleteNonDurableQueue.contains(role));
+            operation.get(SecurityRoleAdd.MANAGE.getName()).set(manageRoles.contains(role));
+
+            operations.add(operation);
         }
     }
 
@@ -1547,47 +1558,50 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeStartElement(Element.SECURITY_SETTING.getLocalName());
             writer.writeAttribute(Attribute.MATCH.getLocalName(), matchRoles.getName());
 
-            ArrayList<String> send = new ArrayList<String>();
-            ArrayList<String> consume = new ArrayList<String>();
-            ArrayList<String> createDurableQueue = new ArrayList<String>();
-            ArrayList<String> deleteDurableQueue = new ArrayList<String>();
-            ArrayList<String> createNonDurableQueue = new ArrayList<String>();
-            ArrayList<String> deleteNonDurableQueue = new ArrayList<String>();
-            ArrayList<String> manageRoles = new ArrayList<String>();
+            if(matchRoles.getValue().hasDefined(ROLE)) {
 
-            for (Property rolePerms : matchRoles.getValue().asPropertyList()) {
-                final String role = rolePerms.getName();
-                final ModelNode perms = rolePerms.getValue();
-                if (perms.get(CommonAttributes.SEND_NAME).asBoolean()) {
-                    send.add(role);
+                ArrayList<String> send = new ArrayList<String>();
+                ArrayList<String> consume = new ArrayList<String>();
+                ArrayList<String> createDurableQueue = new ArrayList<String>();
+                ArrayList<String> deleteDurableQueue = new ArrayList<String>();
+                ArrayList<String> createNonDurableQueue = new ArrayList<String>();
+                ArrayList<String> deleteNonDurableQueue = new ArrayList<String>();
+                ArrayList<String> manageRoles = new ArrayList<String>();
+
+                for (Property rolePerms : matchRoles.getValue().get(ROLE).asPropertyList()) {
+                    final String role = rolePerms.getName();
+                    final ModelNode perms = rolePerms.getValue();
+                    if (perms.get(SecurityRoleAdd.SEND.getName()).asBoolean()) {
+                        send.add(role);
+                    }
+                    if (perms.get(SecurityRoleAdd.CONSUME.getName()).asBoolean()) {
+                        consume.add(role);
+                    }
+                    if (perms.get(SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName()).asBoolean()) {
+                        createDurableQueue.add(role);
+                    }
+                    if (perms.get(SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName()).asBoolean()) {
+                        deleteDurableQueue.add(role);
+                    }
+                    if (perms.get(SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName()).asBoolean()) {
+                        createNonDurableQueue.add(role);
+                    }
+                    if (perms.get(SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName()).asBoolean()) {
+                        deleteNonDurableQueue.add(role);
+                    }
+                    if (perms.get(SecurityRoleAdd.MANAGE.getName()).asBoolean()) {
+                        manageRoles.add(role);
+                    }
                 }
-                if (perms.get(CommonAttributes.CONSUME_NAME).asBoolean()) {
-                    consume.add(role);
-                }
-                if (perms.get(CommonAttributes.CREATEDURABLEQUEUE_NAME).asBoolean()) {
-                    createDurableQueue.add(role);
-                }
-                if (perms.get(CommonAttributes.DELETEDURABLEQUEUE_NAME).asBoolean()) {
-                    deleteDurableQueue.add(role);
-                }
-                if (perms.get(CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME).asBoolean()) {
-                    createNonDurableQueue.add(role);
-                }
-                if (perms.get(CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME).asBoolean()) {
-                    deleteNonDurableQueue.add(role);
-                }
-                if (perms.get(CommonAttributes.MANAGE_NAME).asBoolean()) {
-                    manageRoles.add(role);
-                }
+
+                writePermission(writer, SEND_XML_NAME, send);
+                writePermission(writer, CONSUME_XML_NAME, consume);
+                writePermission(writer, CREATEDURABLEQUEUE_XML_NAME, createDurableQueue);
+                writePermission(writer, DELETEDURABLEQUEUE_XML_NAME, deleteDurableQueue);
+                writePermission(writer, CREATE_NON_DURABLE_QUEUE_XML_NAME, createNonDurableQueue);
+                writePermission(writer, DELETE_NON_DURABLE_QUEUE_XML_NAME, deleteNonDurableQueue);
+                writePermission(writer, MANAGE_XML_NAME, manageRoles);
             }
-
-            writePermission(writer, SEND_NAME, send);
-            writePermission(writer, CONSUME_NAME, consume);
-            writePermission(writer, CREATEDURABLEQUEUE_NAME, createDurableQueue);
-            writePermission(writer, DELETEDURABLEQUEUE_NAME, deleteDurableQueue);
-            writePermission(writer, CREATE_NON_DURABLE_QUEUE_NAME, createNonDurableQueue);
-            writePermission(writer, DELETE_NON_DURABLE_QUEUE_NAME, deleteNonDurableQueue);
-            writePermission(writer, MANAGE_NAME, manageRoles);
 
             writer.writeEndElement();
         }

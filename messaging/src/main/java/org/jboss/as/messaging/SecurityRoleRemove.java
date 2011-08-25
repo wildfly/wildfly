@@ -22,31 +22,45 @@
 
 package org.jboss.as.messaging;
 
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
 /**
- * {@code OperationStepHandler} removing an existing address setting.
+ * {@code OperationStepHandler} for removing a security role.
  *
  * @author Emanuel Muckenhuber
  */
-class AddressSettingRemove extends AbstractRemoveStepHandler {
+class SecurityRoleRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
-    static final OperationStepHandler INSTANCE = new AddressSettingRemove();
+    static final SecurityRoleRemove INSTANCE = new SecurityRoleRemove();
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
         final HornetQServer server = getServer(context);
         if(server != null) {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            server.getAddressSettingsRepository().removeMatch(address.getLastElement().getValue());
+            final String match = address.getElement(address.size() - 2).getValue();
+            final String roleName = address.getLastElement().getValue();
+            final Set<Role> newRoles = new HashSet<Role>();
+            final Set<Role> roles = server.getSecurityRepository().getMatch(match);
+            for(final Role role : roles) {
+                if(! roleName.equals(role.getName())) {
+                     newRoles.add(role);
+                }
+            }
+            server.getSecurityRepository().addMatch(match, newRoles);
         }
     }
 
@@ -58,4 +72,8 @@ class AddressSettingRemove extends AbstractRemoveStepHandler {
         return null;
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getSecurityRoleRemove(locale);
+    }
 }

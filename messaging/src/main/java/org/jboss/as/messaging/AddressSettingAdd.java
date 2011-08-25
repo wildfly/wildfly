@@ -23,7 +23,6 @@
 package org.jboss.as.messaging;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -55,6 +54,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * {@code OperationStepHandler} adding a new address setting.
+ *
  * @author Emanuel Muckenhuber
  */
 class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionProvider {
@@ -62,9 +63,9 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
     static final OperationStepHandler INSTANCE = new AddressSettingAdd();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[] { ADDRESS_FULL_MESSAGE_POLICY,
-                                             DEAD_LETTER_ADDRESS, LVQ, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES_NODE_NAME,
-                                             MESSAGE_COUNTER_HISTORY_DAY_LIMIT, EXPIRY_ADDRESS, REDELIVERY_DELAY,
-                                             REDISTRIBUTION_DELAY, PAGE_SIZE_BYTES_NODE_NAME, SEND_TO_DLA_ON_NO_ROUTE } ;
+                                     DEAD_LETTER_ADDRESS, LVQ, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES_NODE_NAME,
+                                     MESSAGE_COUNTER_HISTORY_DAY_LIMIT, EXPIRY_ADDRESS, REDELIVERY_DELAY,
+                                     REDISTRIBUTION_DELAY, PAGE_SIZE_BYTES_NODE_NAME, SEND_TO_DLA_ON_NO_ROUTE } ;
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -120,7 +121,7 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
         settings.setMaxDeliveryAttempts(MAX_DELIVERY_ATTEMPTS.validateResolvedOperation(config).asInt());
         settings.setMaxSizeBytes(MAX_SIZE_BYTES_NODE_NAME.validateResolvedOperation(config).asInt());
         settings.setMessageCounterHistoryDayLimit(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.validateResolvedOperation(config).asInt());
-        settings.setExpiryAddress(asSimpleString(config.get(EXPIRY_ADDRESS.getName()), null));
+        settings.setExpiryAddress(asSimpleString(EXPIRY_ADDRESS.validateResolvedOperation(config), null));
         settings.setRedeliveryDelay(REDELIVERY_DELAY.validateResolvedOperation(config).asInt());
         settings.setRedistributionDelay(REDISTRIBUTION_DELAY.validateResolvedOperation(config).asLong());
         settings.setPageSizeBytes(PAGE_SIZE_BYTES_NODE_NAME.validateResolvedOperation(config).asLong());
