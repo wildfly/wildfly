@@ -208,6 +208,23 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
             }
         }
 
+        if(subModel.hasDefined(CommonAttributes.SECURITY_SETTING)) {
+            final ModelNode securitySetting = subModel.get(CommonAttributes.SECURITY_SETTING);
+            for(final Property setting : securitySetting.asPropertyList()) {
+                final ModelNode settingAddress = rootAddress.toModelNode();
+                settingAddress.add(CommonAttributes.SECURITY_SETTING, setting.getName());
+                result.add(SecuritySettingAdd.createAddOperation(settingAddress, setting.getValue()));
+
+                if(securitySetting.hasDefined(CommonAttributes.ROLE)) {
+                    for(final Property role : securitySetting.asPropertyList()) {
+                        final ModelNode address = settingAddress.clone();
+                        address.add(CommonAttributes.ROLE, role.getName());
+                        result.add(SecurityRoleAdd.createAddOperation(address, role.getValue()));
+                    }
+                }
+            }
+        }
+
         context.completeStep();
     }
 

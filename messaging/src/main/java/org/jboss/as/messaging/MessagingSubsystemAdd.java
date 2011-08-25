@@ -36,13 +36,8 @@ import static org.jboss.as.messaging.CommonAttributes.CLUSTER_PASSWORD;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_USER;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL_OVERRIDE;
-import static org.jboss.as.messaging.CommonAttributes.CONSUME_NAME;
-import static org.jboss.as.messaging.CommonAttributes.CREATEDURABLEQUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_BINDINGS_DIR;
 import static org.jboss.as.messaging.CommonAttributes.CREATE_JOURNAL_DIR;
-import static org.jboss.as.messaging.CommonAttributes.CREATE_NON_DURABLE_QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DELETEDURABLEQUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.DELETE_NON_DURABLE_QUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.FAILBACK_DELAY;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
@@ -66,7 +61,6 @@ import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOG_JOURNAL_WRITE_RATE;
 import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.MANAGE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.MEMORY_MEASURE_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.MEMORY_WARNING_THRESHOLD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_ENABLED;
@@ -87,7 +81,6 @@ import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_THREAD_POOL_MAX_
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_INVALIDATION_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
-import static org.jboss.as.messaging.CommonAttributes.SEND_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_DUMP_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE;
 import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
@@ -155,12 +148,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
 
         for (final AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
-        }
-
-        for (final String attribute : CommonAttributes.COMPLEX_ROOT_RESOURCE_ATTRIBUTES) {
-            if (operation.hasDefined(attribute)) {
-                model.get(attribute).set(operation.get(attribute));
-            }
         }
 
         model.get(QUEUE);
@@ -340,7 +327,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
      * @throws OperationFailedException
      */
     static void processAddressSettings(final Configuration configuration, final ModelNode params) throws OperationFailedException {
-        if (params.get(ADDRESS_SETTING).isDefined()) {
+        if (params.hasDefined(ADDRESS_SETTING)) {
             for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();
@@ -361,15 +348,11 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
             for (final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();
-                if (config.getType() != ModelType.UNDEFINED) {
+
+                if(config.hasDefined(CommonAttributes.ROLE)) {
                     final Set<Role> roles = new HashSet<Role>();
-                    for (final Property role : config.asPropertyList()) {
-                        final String name = role.getName();
-                        final ModelNode value = role.getValue();
-                        roles.add(new Role(name, value.get(SEND_NAME).asBoolean(false),
-                                value.get(CONSUME_NAME).asBoolean(false), value.get(CREATEDURABLEQUEUE_NAME).asBoolean(false),
-                                value.get(DELETEDURABLEQUEUE_NAME).asBoolean(false), value.get(CREATE_NON_DURABLE_QUEUE_NAME).asBoolean(false),
-                                value.get(DELETE_NON_DURABLE_QUEUE_NAME).asBoolean(false), value.get(MANAGE_NAME).asBoolean(false)));
+                    for (final Property role : config.get(CommonAttributes.ROLE).asPropertyList()) {
+                        roles.add(SecurityRoleAdd.transform(role.getName(), role.getValue()));
                     }
                     configuration.getSecurityRoles().put(match, roles);
                 }

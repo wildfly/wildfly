@@ -82,9 +82,6 @@ public class MessagingDescriptions {
         node.get(ATTRIBUTES, CommonAttributes.LARGE_MESSAGES_DIRECTORY).set(getPathDescription("large.messages.directory", bundle));
         node.get(ATTRIBUTES, CommonAttributes.PAGING_DIRECTORY).set(getPathDescription("paging.directory", bundle));
 
-        node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, TYPE).set(ModelType.OBJECT);
-        node.get(ATTRIBUTES, CommonAttributes.SECURITY_SETTING, DESCRIPTION).set(bundle.getString("security-setting"));
-
         node.get(OPERATIONS);   // placeholder
 
         node.get(CHILDREN, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
@@ -153,6 +150,10 @@ public class MessagingDescriptions {
         node.get(CHILDREN, CommonAttributes.JMS_TOPIC, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.JMS_TOPIC, MODEL_DESCRIPTION);
 
+        node.get(CHILDREN, CommonAttributes.SECURITY_SETTING, DESCRIPTION).set(bundle.getString("security-setting"));
+        node.get(CHILDREN, CommonAttributes.SECURITY_SETTING, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.SECURITY_SETTING, MODEL_DESCRIPTION);
+
         return node;
     }
 
@@ -175,9 +176,6 @@ public class MessagingDescriptions {
         node.get(REQUEST_PROPERTIES, CommonAttributes.LARGE_MESSAGES_DIRECTORY, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, CommonAttributes.PAGING_DIRECTORY).set(getPathDescription("paging.directory", bundle));
         node.get(REQUEST_PROPERTIES, CommonAttributes.PAGING_DIRECTORY, REQUIRED).set(false);
-
-        node.get(REQUEST_PROPERTIES, CommonAttributes.SECURITY_SETTING, TYPE).set(ModelType.OBJECT);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.SECURITY_SETTING, DESCRIPTION).set(bundle.getString("security-setting"));
 
         return node;
     }
@@ -1041,7 +1039,68 @@ public class MessagingDescriptions {
         return node;
     }
 
+    public static ModelNode getSecuritySettingResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
 
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("security-setting"));
+        root.get(CHILDREN, CommonAttributes.ROLE, DESCRIPTION).set(bundle.getString("security-role"));
+        root.get(CHILDREN, CommonAttributes.ROLE, MIN_OCCURS).set(0);
+        root.get(CHILDREN, CommonAttributes.ROLE, MODEL_DESCRIPTION);
+        return root;
+    }
+
+    public static ModelNode getSecuritySettingAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("security-setting.add"));
+        return node;
+    }
+
+    public static ModelNode getSecuritySettingRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(REMOVE);
+        node.get(DESCRIPTION).set(bundle.getString("security-setting.remove"));
+
+        return node;
+    }
+
+    public static ModelNode getSecurityRoleResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("security-role"));
+        for(final AttributeDefinition def : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+            def.addResourceAttributeDescription(bundle, "security-role", root);
+        }
+        return root;
+    }
+
+    public static ModelNode getSecurityRoleAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("security-role.add"));
+        for(final AttributeDefinition def : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+            def.addOperationParameterDescription(bundle, "security-role", node);
+        }
+        return node;
+    }
+
+    public static ModelNode getSecurityRoleRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(REMOVE);
+        node.get(DESCRIPTION).set(bundle.getString("security-role.remove"));
+
+        return node;
+    }
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {

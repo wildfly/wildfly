@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.ConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.ConnectionFactoryWriteAttributeHandler;
@@ -85,6 +87,9 @@ public class MessagingExtension implements Extension {
     private static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
     private static final PathElement DIVERT_PATH = PathElement.pathElement(CommonAttributes.DIVERT);
     private static final PathElement GROUPING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
+
+    static final PathElement SECURITY_ROLE = PathElement.pathElement(CommonAttributes.ROLE);
+    static final PathElement SECURITY_SETTING = PathElement.pathElement(CommonAttributes.SECURITY_SETTING);
 
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
@@ -268,6 +273,18 @@ public class MessagingExtension implements Extension {
         topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, JMSTopicRemove.INSTANCE, false);
         topics.registerReadWriteAttribute(CommonAttributes.ENTRIES.getName(), null, TopicConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         // TODO runtime operations exposed by TopicControl
+
+
+        final ManagementResourceRegistration securitySettings = rootRegistration.registerSubModel(SECURITY_SETTING, MessagingSubsystemProviders.SECURITY_SETTING);
+        securitySettings.registerOperationHandler(ADD, SecuritySettingAdd.INSTANCE, SecuritySettingAdd.INSTANCE);
+        securitySettings.registerOperationHandler(REMOVE, SecuritySettingRemove.INSTANCE, SecuritySettingRemove.INSTANCE);
+
+        final ManagementResourceRegistration securityRole = securitySettings.registerSubModel(SECURITY_ROLE, MessagingSubsystemProviders.SECURITY_ROLE);
+        securityRole.registerOperationHandler(ADD, SecurityRoleAdd.INSTANCE, SecurityRoleAdd.INSTANCE);
+        securityRole.registerOperationHandler(REMOVE, SecurityRoleAdd.INSTANCE, SecurityRoleAdd.INSTANCE);
+        for(final AttributeDefinition def : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+            securityRole.registerReadWriteAttribute(def.getName(), null, SecurityRoleAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        }
     }
 
     public void initializeParsers(ExtensionParsingContext context) {

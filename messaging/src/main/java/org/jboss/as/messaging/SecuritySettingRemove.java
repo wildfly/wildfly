@@ -26,28 +26,36 @@ import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.Locale;
+
 /**
- * {@code OperationStepHandler} removing an existing address setting.
+ * {@code OperationStepHandler} for removing an existing security setting.
  *
  * @author Emanuel Muckenhuber
  */
-class AddressSettingRemove extends AbstractRemoveStepHandler {
+class SecuritySettingRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
 
-    static final OperationStepHandler INSTANCE = new AddressSettingRemove();
+    static final SecuritySettingRemove INSTANCE = new SecuritySettingRemove();
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final HornetQServer server = getServer(context);
         if(server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            server.getAddressSettingsRepository().removeMatch(address.getLastElement().getValue());
+            final String match = address.getLastElement().getValue();
+            server.getSecurityRepository().removeMatch(match);
         }
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getSecuritySettingRemove(locale);
     }
 
     static HornetQServer getServer(final OperationContext context) {
@@ -57,5 +65,4 @@ class AddressSettingRemove extends AbstractRemoveStepHandler {
         }
         return null;
     }
-
 }

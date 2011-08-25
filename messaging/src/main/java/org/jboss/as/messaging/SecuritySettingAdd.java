@@ -22,32 +22,56 @@
 
 package org.jboss.as.messaging;
 
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+
 /**
- * {@code OperationStepHandler} removing an existing address setting.
+ * {@code OperationStepHandler} for adding a new security setting.
  *
  * @author Emanuel Muckenhuber
  */
-class AddressSettingRemove extends AbstractRemoveStepHandler {
+class SecuritySettingAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
-    static final OperationStepHandler INSTANCE = new AddressSettingRemove();
+    static final SecuritySettingAdd INSTANCE = new SecuritySettingAdd();
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        //
+    }
+
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final HornetQServer server = getServer(context);
         if(server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            server.getAddressSettingsRepository().removeMatch(address.getLastElement().getValue());
+            final String match = address.getLastElement().getValue();
+            server.getSecurityRepository().addMatch(match, new HashSet<Role>());
         }
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return MessagingDescriptions.getSecuritySettingAdd(locale);
+    }
+
+    static ModelNode createAddOperation(final ModelNode address, final ModelNode subModel) {
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        return operation;
     }
 
     static HornetQServer getServer(final OperationContext context) {

@@ -45,9 +45,9 @@ import java.util.Locale;
 class MessagingSubsystemProviders {
 
     static final String[] MESSAGING_ROOT_ATTRIBUTES = new String[] {
-        CONNECTION_FACTORY, BINDINGS_DIRECTORY,
-        GROUPING_HANDLER, JMS_QUEUE, JMS_TOPIC, JOURNAL_DIRECTORY, LARGE_MESSAGES_DIRECTORY,
-        PAGING_DIRECTORY, POOLED_CONNECTION_FACTORY, QUEUE, SECURITY_SETTING };
+        CONNECTION_FACTORY,
+        GROUPING_HANDLER, JMS_QUEUE, JMS_TOPIC,
+        POOLED_CONNECTION_FACTORY, QUEUE };
 
     static final DescriptionProvider ADDRESS_SETTING = new DescriptionProvider() {
         @Override
@@ -349,6 +349,20 @@ class MessagingSubsystemProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return MessagingDescriptions.getConnectorServiceParamResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider SECURITY_ROLE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getSecurityRoleResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider SECURITY_SETTING = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getSecuritySettingResource(locale);
         }
     };
 }

@@ -27,10 +27,8 @@ package org.jboss.as.messaging;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -313,6 +311,12 @@ class TransportConfigOperationHandlers {
         protected void validateValue(String name, ModelNode value) throws OperationFailedException {
             final AttributeDefinition def = getAttributeDefinition(name);
             def.getValidator().validateParameter(name, value);
+        }
+
+        @Override
+        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                               ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+            return true;
         }
 
         static final AttributeDefinition getAttributeDefinition(final String attributeName) {
