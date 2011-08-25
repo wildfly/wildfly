@@ -57,6 +57,7 @@ public class Hibernate3SharedModuleProviderTestCase {
             "    <description>Persistence Unit." +
             "    </description>" +
             "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+            "<class>org.jboss.as.testsuite.compat.jpa.hibernate.Employee</class>" +  // currently hibernate 3.3.x cannot discover entities
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
 // set the providerModule to the AS org.hibernate3 module (should be in as/modules/org/hibernate/3 folder

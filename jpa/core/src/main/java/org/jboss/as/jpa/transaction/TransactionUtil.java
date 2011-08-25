@@ -173,8 +173,9 @@ public class TransactionUtil {
             // so that we don't get this error on TransactionalEntityManager
             // (because the EntityManager is the underlying provider that
             // doesn't have the metadata.)
-        }
+        } catch (AbstractMethodError ignore) {          // JPA 1.0 provider won't have unwrap
 
+        }
 
         return result;
     }
