@@ -82,7 +82,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
      * @param scopedPuName      the fully scoped reference to the persistence.xml
      * @param injectionTypeName is normally "javax.persistence.EntityManager" but could be a different target class
 *                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
-     * @param sfsbxpcMap
+     * @param sfsbxpcMap        TODO: refactor to only pass in for type == PersistenceContextType.EXTENDED
      * @param pu
      */
     public PersistenceContextInjectionSource(final PersistenceContextType type, final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName, final SFSBXPCMap sfsbxpcMap, final PersistenceUnitMetadata pu) {
@@ -154,7 +154,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             boolean isExtended;
             if (type.equals(PersistenceContextType.TRANSACTION)) {
                 isExtended = false;
-                entityManager = new TransactionScopedEntityManager(unitName, properties, emf, sfsbxpcMap);
+                entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
                 if (log.isDebugEnabled())
                     log.debug("created new TransactionScopedEntityManager for unit name=" + unitName);
             } else {
