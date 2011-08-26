@@ -30,8 +30,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
-import org.jboss.as.domain.management.security.VerifyPasswordCallback;
 import org.jboss.logging.Logger;
+import org.jboss.sasl.callback.VerifyPasswordCallback;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
