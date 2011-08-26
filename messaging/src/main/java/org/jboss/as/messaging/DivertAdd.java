@@ -120,8 +120,7 @@ public class DivertAdd extends AbstractAddStepHandler implements DescriptionProv
         final String routingName = routingNode.isDefined() ? routingNode.asString() : null;
         final String address = CommonAttributes.DIVERT_ADDRESS.validateResolvedOperation(model).asString();
         final String forwardingAddress = CommonAttributes.DIVERT_FORWARDING_ADDRESS.validateResolvedOperation(model).asString();
-        final ModelNode exclusiveNode = CommonAttributes.EXCLUSIVE.validateResolvedOperation(model);
-        final boolean exclusive = exclusiveNode.isDefined() ? exclusiveNode.asBoolean() : false;
+        final boolean exclusive = CommonAttributes.EXCLUSIVE.validateResolvedOperation(model).asBoolean();
         final ModelNode filterNode = CommonAttributes.FILTER.validateResolvedOperation(model);
         final String filter = filterNode.isDefined() ? filterNode.asString() : null;
         final ModelNode transformerNode =  CommonAttributes.TRANSFORMER_CLASS_NAME.validateResolvedOperation(model);
