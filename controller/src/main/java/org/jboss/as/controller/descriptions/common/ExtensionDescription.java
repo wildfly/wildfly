@@ -40,7 +40,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.AbstractExtensionAddHandler;
+import org.jboss.as.controller.operations.common.ExtensionAddHandler;
 import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -74,7 +74,7 @@ public class ExtensionDescription {
     public static ModelNode getExtensionAddOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(AbstractExtensionAddHandler.OPERATION_NAME);
+        root.get(OPERATION_NAME).set(ExtensionAddHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("extension.add"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
