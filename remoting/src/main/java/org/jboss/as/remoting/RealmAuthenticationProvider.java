@@ -75,6 +75,9 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
         }
 
         if (plainSupported()) {
+            if (true)
+                throw new IllegalStateException("PLAIN not enabled until SSL supported for Native Interface");
+
             return OptionMap.create(Options.SASL_MECHANISMS, Sequence.of(PLAIN), SASL_POLICY_NOPLAINTEXT, false);
         }
 
