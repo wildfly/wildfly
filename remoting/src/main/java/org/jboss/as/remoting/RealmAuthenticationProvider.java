@@ -74,7 +74,7 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
             return OptionMap.create(SASL_MECHANISMS, Sequence.of(ANONYMOUS), SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         }
 
-        return OptionMap.EMPTY;
+        throw new IllegalStateException("A security realm has been specified but no supported mechanism identified.");
     }
 
     public CallbackHandler getCallbackHandler(String mechanismName) {
@@ -83,8 +83,7 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     for (Callback current : callbacks) {
-                        System.out.println(current.getClass().getName());
-                        new Throwable("TRACE").printStackTrace();
+                        throw new UnsupportedCallbackException(current, "ANONYMOUS mechanism so not expecting a callback");
                     }
                 }
             };
@@ -93,6 +92,7 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
         if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported()) {
             final CallbackHandler realHandler = realm.getCallbackHandler();
             // TODO - Correct JBoss Remoting so that the realm can be specified independently of the endpoint name.
+            // TODO - AS7-1093 / XNIO-96
             // In the meantime
             final CallbackHandler realmNameFix = new CallbackHandler() {
 
@@ -109,6 +109,8 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
             };
 
+            // If there is not serverCallbackHandler then we don't need to wrap it so we can just return the realm
+            // name fix handler which is already wrapping the real handler.
             if (serverCallbackHandler == null) {
                 return realmNameFix;
             }
@@ -121,6 +123,9 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
                     }
                 }
 
+                /*
+                 * Check if the PasswordCallback had already been handled.
+                 */
                 private boolean handled(Callback[] callbacks) {
                     for (Callback current : callbacks) {
                         if (current instanceof PasswordCallback) {
