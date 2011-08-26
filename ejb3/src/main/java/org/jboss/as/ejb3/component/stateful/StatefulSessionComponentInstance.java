@@ -57,9 +57,9 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
         this.id = new GUID();
 
-        this.afterBegin = component.createInterceptor(component.afterBegin);
-        this.afterCompletion = component.createInterceptor(component.afterCompletion);
-        this.beforeCompletion = component.createInterceptor(component.beforeCompletion);
+        this.afterBegin = component.createInterceptor(component.getAfterBegin());
+        this.afterCompletion = component.createInterceptor(component.getAfterCompletion());
+        this.beforeCompletion = component.createInterceptor(component.getBeforeCompletion());
     }
 
     protected void afterBegin() {

@@ -27,6 +27,7 @@ import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -49,9 +50,9 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
     private final Map<EJBBusinessMethod, LockType> methodApplicableLockTypes;
 
-    private final Map<String, AccessTimeout> beanLevelAccessTimeout;
+    private final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout;
 
-    private final Map<EJBBusinessMethod, AccessTimeout> methodApplicableAccessTimeouts;
+    private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodApplicableAccessTimeouts;
 
     private final Map<Method, InterceptorFactory> timeoutInterceptors;
     private final Method timeoutMethod;
@@ -81,12 +82,12 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
         this.beanLevelAccessTimeout = sessionBeanComponentDescription.getBeanLevelAccessTimeout();
 
-        final Map<MethodIdentifier, AccessTimeout> methodAccessTimeouts = sessionBeanComponentDescription.getMethodApplicableAccessTimeouts();
+        final Map<MethodIdentifier, AccessTimeoutDetails> methodAccessTimeouts = sessionBeanComponentDescription.getMethodApplicableAccessTimeouts();
         if (methodAccessTimeouts == null) {
             this.methodApplicableAccessTimeouts = Collections.emptyMap();
         } else {
-            final Map<EJBBusinessMethod, AccessTimeout> accessTimeouts = new HashMap();
-            for (Map.Entry<MethodIdentifier, AccessTimeout> entry : methodAccessTimeouts.entrySet()) {
+            final Map<EJBBusinessMethod, AccessTimeoutDetails> accessTimeouts = new HashMap();
+            for (Map.Entry<MethodIdentifier, AccessTimeoutDetails> entry : methodAccessTimeouts.entrySet()) {
                 final MethodIdentifier ejbMethodDescription = entry.getKey();
                 final EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(ejbMethodDescription);
                 accessTimeouts.put(ejbMethod, entry.getValue());
@@ -123,11 +124,11 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
         return this.methodApplicableLockTypes;
     }
 
-    public Map<EJBBusinessMethod, AccessTimeout> getMethodApplicableAccessTimeouts() {
+    public Map<EJBBusinessMethod, AccessTimeoutDetails> getMethodApplicableAccessTimeouts() {
         return this.methodApplicableAccessTimeouts;
     }
 
-    public Map<String, AccessTimeout> getBeanAccessTimeout() {
+    public Map<String, AccessTimeoutDetails> getBeanAccessTimeout() {
         return this.beanLevelAccessTimeout;
     }
 

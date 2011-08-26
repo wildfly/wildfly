@@ -24,23 +24,21 @@ package org.jboss.as.ejb3.component.stateful;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.cache.Cache;
+import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import javax.ejb.AccessTimeout;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -52,23 +50,8 @@ import static org.mockito.Mockito.when;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulSessionSynchronizationInterceptorTestCase {
-    private static AccessTimeout defaultAccessTimeout() {
-        return new AccessTimeout() {
-            @Override
-            public long value() {
-                return 5;
-            }
-
-            @Override
-            public TimeUnit unit() {
-                return MINUTES;
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return AccessTimeout.class;
-            }
-        };
+    private static AccessTimeoutDetails defaultAccessTimeout() {
+        return new AccessTimeoutDetails(5, TimeUnit.MINUTES);
     }
 
     private static Interceptor noop() {

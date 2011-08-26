@@ -19,32 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.deployment.processors.annotation;
+package org.jboss.as.ejb3.concurrency;
 
-import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
-import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationValue;
-
-import javax.ejb.AccessTimeout;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Processes the {@link javax.ejb.AccessTimeout} annotation on a session bean
- *
  * @author Stuart Douglas
  */
-public class AccessTimeoutAnnotationInformationFactory extends ClassAnnotationInformationFactory<AccessTimeout, AccessTimeoutDetails> {
+public class AccessTimeoutDetails {
 
-    protected AccessTimeoutAnnotationInformationFactory() {
-        super(AccessTimeout.class, null);
+    private final long value;
+
+    private final TimeUnit timeUnit;
+
+    public AccessTimeoutDetails(final long value, final TimeUnit timeUnit) {
+        this.value = value;
+        this.timeUnit = timeUnit;
     }
 
-    @Override
-    protected AccessTimeoutDetails fromAnnotation(final AnnotationInstance annotationInstance) {
-        final long timeout = annotationInstance.value().asLong();
-        AnnotationValue unitAnnVal = annotationInstance.value("unit");
-        final TimeUnit unit = unitAnnVal != null ? TimeUnit.valueOf(unitAnnVal.asEnum()) : TimeUnit.MILLISECONDS;
-        return new AccessTimeoutDetails(timeout, unit);
+    public TimeUnit getTimeUnit() {
+        return timeUnit;
+    }
+
+    public long getValue() {
+        return value;
     }
 }
