@@ -50,7 +50,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     /**
      * Logger
      */
-    private static Logger logger = Logger.getLogger(TimerTask.class);
+    private static final Logger logger = Logger.getLogger(TimerTask.class);
 
     /**
      * The timer to which this {@link TimerTask} belongs

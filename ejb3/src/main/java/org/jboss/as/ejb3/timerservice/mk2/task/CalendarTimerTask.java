@@ -42,7 +42,7 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
     /**
      * Logger
      */
-    private static Logger logger = Logger.getLogger(CalendarTimerTask.class);
+    private static final Logger logger = Logger.getLogger(CalendarTimerTask.class);
 
     /**
      * @param calendarTimer

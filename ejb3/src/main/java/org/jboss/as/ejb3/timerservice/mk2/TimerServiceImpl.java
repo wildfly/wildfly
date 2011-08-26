@@ -76,7 +76,7 @@ public class TimerServiceImpl implements TimerService {
     /**
      * Logger
      */
-    private static Logger logger = Logger.getLogger(TimerServiceImpl.class);
+    private static final Logger logger = Logger.getLogger(TimerServiceImpl.class);
 
     /**
      * The {@link TimedObjectInvoker} which is responsible for invoking the timeout

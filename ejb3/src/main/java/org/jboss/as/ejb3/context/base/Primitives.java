@@ -28,7 +28,7 @@ import java.util.Map;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class Primitives {
-    private static Map<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>();
+    private static final Map<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>();
 
     /**
      * @see     Class#isPrimitive()

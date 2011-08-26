@@ -34,7 +34,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class ComponentTypeIdentityInterceptorFactory implements InterceptorFactory {
 
-    public static ComponentTypeIdentityInterceptorFactory INSTANCE = new ComponentTypeIdentityInterceptorFactory();
+    public static final ComponentTypeIdentityInterceptorFactory INSTANCE = new ComponentTypeIdentityInterceptorFactory();
 
     private ComponentTypeIdentityInterceptorFactory() {
 

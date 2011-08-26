@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class EjbJarConfiguration {
 
-    private Map<Class<?>, ApplicationExceptionDetails> applicationExceptions = new HashMap<Class<?>, ApplicationExceptionDetails>();
+    private final Map<Class<?>, ApplicationExceptionDetails> applicationExceptions = new HashMap<Class<?>, ApplicationExceptionDetails>();
 
 
     public EjbJarConfiguration(EjbJarDescription deploymentDescription) {

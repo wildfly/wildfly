@@ -61,7 +61,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private MethodDescription afterBegin;
     private MethodDescription afterCompletion;
     private MethodDescription beforeCompletion;
-    private Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
+    private final Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
     private StatefulTimeoutInfo statefulTimeout;
 
     public class StatefulRemoveMethod {

@@ -39,8 +39,8 @@ import java.util.Properties;
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class BaseEJBContext implements EJBContext {
-    private EJBComponent manager;
-    private Object instance;
+    private final EJBComponent manager;
+    private final Object instance;
 
     public BaseEJBContext(EJBComponent manager, Object instance) {
         this.manager = manager;

@@ -48,7 +48,7 @@ public class CalendarBasedTimeout {
     /**
      * Logger
      */
-    private static Logger logger = Logger.getLogger(CalendarBasedTimeout.class);
+    private static final Logger logger = Logger.getLogger(CalendarBasedTimeout.class);
 
     /**
      * The {@link javax.ejb.ScheduleExpression} from which this {@link CalendarBasedTimeout}
