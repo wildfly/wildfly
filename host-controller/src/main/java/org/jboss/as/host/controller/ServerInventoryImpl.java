@@ -59,6 +59,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.sasl.callback.VerifyPasswordCallback;
 
 /**
  * Inventory of the managed servers.
@@ -370,6 +371,8 @@ public class ServerInventoryImpl implements ServerInventory {
                         server = servers.get(ManagedServer.getServerProcessName(userName));
                     } else if (current instanceof PasswordCallback) {
                         toRespondTo.add(current);
+                    } else if (current instanceof VerifyPasswordCallback) {
+                        toRespondTo.add(current);
                     } else if (current instanceof RealmCallback) {
                         // TODO - for now this is silently ignored.
                     } else {
@@ -385,16 +388,19 @@ public class ServerInventoryImpl implements ServerInventory {
                     return;
                 }
 
+                String password = new String(server.getAuthKey());
+
                 // Second Pass - Now iterate the Callback(s) requiring a response.
                 for (Callback current : toRespondTo) {
                     if (current instanceof AuthorizeCallback) {
-
                         AuthorizeCallback authorizeCallback = (AuthorizeCallback) current;
                         // Don't support impersonating another identity
                         authorizeCallback.setAuthorized(authorizeCallback.getAuthenticationID().equals(authorizeCallback.getAuthorizationID()));
                     } else if (current instanceof PasswordCallback) {
-                        String password = new String(server.getAuthKey());
                         ((PasswordCallback) current).setPassword(password.toCharArray());
+                    } else if (current instanceof VerifyPasswordCallback) {
+                        VerifyPasswordCallback vpc = (VerifyPasswordCallback) current;
+                        vpc.setVerified(password.equals(vpc.getPassword()));
                     }
                 }
 

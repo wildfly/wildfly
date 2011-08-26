@@ -23,6 +23,7 @@ package org.jboss.as.remoting;
 
 import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
+import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -37,6 +38,7 @@ import java.util.List;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
+import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
@@ -57,6 +59,8 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
     static final String DIGEST_MD5 = "DIGEST-MD5";
 
+    static final String PLAIN = "PLAIN";
+
     private final SecurityRealm realm;
     private final CallbackHandler serverCallbackHandler;
 
@@ -70,6 +74,10 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
             return OptionMap.create(SASL_MECHANISMS, Sequence.of(DIGEST_MD5));
         }
 
+        if (plainSupported()) {
+            return OptionMap.create(Options.SASL_MECHANISMS, Sequence.of(PLAIN), SASL_POLICY_NOPLAINTEXT, false);
+        }
+
         if (realm == null) {
             return OptionMap.create(SASL_MECHANISMS, Sequence.of(ANONYMOUS), SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         }
@@ -78,6 +86,7 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
     }
 
     public CallbackHandler getCallbackHandler(String mechanismName) {
+        // If the mechanism is ANONYMOUS and we don't have a realm we return quickly.
         if (ANONYMOUS.equals(mechanismName) && realm == null) {
             return new CallbackHandler() {
 
@@ -89,6 +98,9 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
             };
         }
 
+        CallbackHandler realmCallbackHandler = null;
+
+        // We must have a match in this block or throw an IllegalStateException.
         if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported()) {
             final CallbackHandler realHandler = realm.getCallbackHandler();
             // TODO - Correct JBoss Remoting so that the realm can be specified independently of the endpoint name.
@@ -109,37 +121,50 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
             };
 
-            // If there is not serverCallbackHandler then we don't need to wrap it so we can just return the realm
-            // name fix handler which is already wrapping the real handler.
-            if (serverCallbackHandler == null) {
-                return realmNameFix;
-            }
-
-            return new CallbackHandler() {
-                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    serverCallbackHandler.handle(callbacks);
-                    if (handled(callbacks) == false) {
-                        realmNameFix.handle(callbacks);
-                    }
-                }
-
-                /*
-                 * Check if the PasswordCallback had already been handled.
-                 */
-                private boolean handled(Callback[] callbacks) {
-                    for (Callback current : callbacks) {
-                        if (current instanceof PasswordCallback) {
-                            PasswordCallback pcb = (PasswordCallback) current;
-                            char[] password = pcb.getPassword();
-                            return (password != null && password.length > 0);
-                        }
-                    }
-                    return false;
-                }
-            };
+            realmCallbackHandler = realmNameFix;
+        } else if (PLAIN.equals(mechanismName) && plainSupported()) {
+            // No fancy wrapping needed for this one ;-)
+            realmCallbackHandler = realm.getCallbackHandler();
+        } else {
+            throw new IllegalStateException("Unsupported Callback '" + mechanismName + "'");
         }
 
-        return null;
+
+        // If there is not serverCallbackHandler then we don't need to wrap it so we can just return the realm
+        // name fix handler which is already wrapping the real handler.
+        if (serverCallbackHandler == null) {
+            return realmCallbackHandler;
+        }
+
+        final CallbackHandler wrappedHandler = realmCallbackHandler; // Just a copy so it can be made final for the inner class.
+        return new CallbackHandler() {
+            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                serverCallbackHandler.handle(callbacks);
+                if (handled(callbacks) == false) {
+                    wrappedHandler.handle(callbacks);
+                }
+            }
+
+            /*
+            * Check if the PasswordCallback had already been handled.
+            */
+            private boolean handled(Callback[] callbacks) {
+                // For the moment handled will only return true if the user was successfully authenticated,
+                // may later add a Callback to obtain the server info to verify is a server was identified with
+                // the specified username.
+
+                for (Callback current : callbacks) {
+                    if (current instanceof PasswordCallback) {
+                        PasswordCallback pcb = (PasswordCallback) current;
+                        char[] password = pcb.getPassword();
+                        return (password != null && password.length > 0);
+                    } else if (current instanceof VerifyPasswordCallback) {
+                        return ((VerifyPasswordCallback) current).isVerified();
+                    }
+                }
+                return false;
+            }
+        };
     }
 
     private boolean digestMd5Supported() {
@@ -155,6 +180,25 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
             return false;
         }
         if (contains(PasswordCallback.class, callbacks) == false) {
+            return false;
+        }
+        if (contains(AuthorizeCallback.class, callbacks) == false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean plainSupported() {
+        if (realm == null) {
+            return false;
+        }
+
+        Class[] callbacks = realm.getCallbackHandler().getSupportedCallbacks();
+        if (contains(NameCallback.class, callbacks) == false) {
+            return false;
+        }
+        if (contains(VerifyPasswordCallback.class, callbacks) == false) {
             return false;
         }
         if (contains(AuthorizeCallback.class, callbacks) == false) {
