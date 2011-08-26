@@ -236,7 +236,7 @@ public class DayOfMonth extends IntegerBasedExpression {
                 this.assertValid(dayOfMonthEnd);
 
                 // start and end are both the same. So it's just a single value
-                if (dayOfMonthStart == dayOfMonthEnd) {
+                if (dayOfMonthStart.equals(dayOfMonthEnd)) {
                     eligibleDaysOfMonth.add(dayOfMonthEnd);
                     continue;
 

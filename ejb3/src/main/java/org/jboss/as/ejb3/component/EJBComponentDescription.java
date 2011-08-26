@@ -339,7 +339,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 final Method TO_STRING_METHOD;
                 try {
-                    TO_STRING_METHOD = Object.class.getMethod("toString", new Class<?>[0]);
+                    TO_STRING_METHOD = Object.class.getMethod("toString");
                 } catch (NoSuchMethodException nsme) {
                     throw new DeploymentUnitProcessingException(nsme);
                 }

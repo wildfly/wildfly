@@ -28,7 +28,7 @@ import org.jboss.as.ejb3.context.util.ThreadLocalStack;
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class CurrentInvocationContext {
-    private static ThreadLocalStack<InvocationContext> stack = new ThreadLocalStack<InvocationContext>();
+    private static final ThreadLocalStack<InvocationContext> stack = new ThreadLocalStack<InvocationContext>();
 
     public static InvocationContext get() {
         InvocationContext current = stack.get();

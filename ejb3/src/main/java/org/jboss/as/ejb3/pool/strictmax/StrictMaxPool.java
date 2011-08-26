@@ -52,13 +52,13 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
     /**
      * The time to wait for the semaphore.
      */
-    private long timeout;
-    private TimeUnit timeUnit;
+    private final long timeout;
+    private final TimeUnit timeUnit;
     /**
      * The pool data structure
      * Guarded by the implicit lock for "pool"
      */
-    private LinkedList<T> pool = new LinkedList<T>();
+    private final LinkedList<T> pool = new LinkedList<T>();
 
     private int inUse = 0;
 

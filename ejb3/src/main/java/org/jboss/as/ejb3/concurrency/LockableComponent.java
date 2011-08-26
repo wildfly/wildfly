@@ -47,7 +47,7 @@ public interface LockableComponent {
     LockType getLockType(Method method);
 
     /**
-     * Returns the {@link javax.ejb.AccessTimeout} applicable for the passed <code>method</code>.
+     * Returns the {@link AccessTimeoutDetails} applicable for the passed <code>method</code>.
      *
      * @param method
      * @return
@@ -55,8 +55,8 @@ public interface LockableComponent {
     AccessTimeoutDetails getAccessTimeout(Method method);
 
     /**
-     * Returns the default applicable {@link javax.ejb.AccessTimeout} for a component. This value will be used if a method doesn't
-     * explicitly specify an {@link javax.ejb.AccessTimeout}
+     * Returns the default applicable {@link AccessTimeoutDetails} for a component. This value will be used if a method doesn't
+     * explicitly specify an {@link AccessTimeoutDetails}
      *
      * @return
      */

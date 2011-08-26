@@ -42,7 +42,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceName;
 
@@ -85,22 +84,22 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     /**
      * Map of class name to default {@link LockType} for this bean.
      */
-    private Map<String, LockType> beanLevelLockType = new HashMap<String, LockType>();
+    private final Map<String, LockType> beanLevelLockType = new HashMap<String, LockType>();
 
     /**
      * Map of class name to default {@link AccessTimeoutDetails} for this component.
      */
-    private Map<String, AccessTimeoutDetails> beanLevelAccessTimeout = new HashMap<String, AccessTimeoutDetails>();
+    private final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout = new HashMap<String, AccessTimeoutDetails>();
 
     /**
      * The {@link LockType} applicable for a specific bean methods.
      */
-    private Map<MethodIdentifier, LockType> methodLockTypes = new HashMap<MethodIdentifier, LockType>();
+    private final Map<MethodIdentifier, LockType> methodLockTypes = new HashMap<MethodIdentifier, LockType>();
 
     /**
      * The {@link AccessTimeout} applicable for a specific bean methods.
      */
-    private Map<MethodIdentifier, AccessTimeoutDetails> methodAccessTimeouts = new HashMap<MethodIdentifier, AccessTimeoutDetails>();
+    private final Map<MethodIdentifier, AccessTimeoutDetails> methodAccessTimeouts = new HashMap<MethodIdentifier, AccessTimeoutDetails>();
 
     /**
      * Methods on the component marked as @Asynchronous

@@ -61,7 +61,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
 
         //handle lock annotations
 
-        final RuntimeAnnotationInformation<LockType> lockData = MethodAnnotationAggregator.<Lock, LockType>runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, Lock.class);
+        final RuntimeAnnotationInformation<LockType> lockData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, Lock.class);
         for (Map.Entry<String, List<LockType>> entry : lockData.getClassAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 componentConfiguration.setBeanLevelLockType(entry.getKey(), entry.getValue().get(0));
@@ -135,7 +135,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
         if (methodData.getMethodParams() == null) {
             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());
             if (methods.isEmpty()) {
-                return resolveMethod(index, (Class<Object>) componentClass.getSuperclass(), methodData);
+                return resolveMethod(index, componentClass.getSuperclass(), methodData);
             } else if (methods.size() > 1) {
                 throw new DeploymentUnitProcessingException("More than one method " + methodData.getMethodName() + "found on class" + componentClass.getName() + " referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity");
             }
@@ -155,7 +155,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
                 }
             }
         }
-        return resolveMethod(index, (Class<Object>) componentClass.getSuperclass(), methodData);
+        return resolveMethod(index, componentClass.getSuperclass(), methodData);
     }
 
     @Override

@@ -51,7 +51,7 @@ public class CalendarTimer extends TimerImpl {
     /**
      * The calendar based timeout for this timer
      */
-    private CalendarBasedTimeout calendarTimeout;
+    private final CalendarBasedTimeout calendarTimeout;
 
     /**
      * Represents whether this is an auto-timer or a normal

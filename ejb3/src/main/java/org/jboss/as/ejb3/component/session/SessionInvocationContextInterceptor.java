@@ -76,7 +76,7 @@ public class SessionInvocationContextInterceptor implements Interceptor {
     }
 
     protected static class CustomSessionInvocationContext extends BaseSessionInvocationContext implements TransactionalInvocationContext {
-        private InterceptorContext context;
+        private final InterceptorContext context;
 
         protected CustomSessionInvocationContext(boolean lifecycleCallback, InterceptorContext context, Class<?> invokedBusinessInterface, Method method, Object[] parameters) {
             super(lifecycleCallback, invokedBusinessInterface, method, parameters);

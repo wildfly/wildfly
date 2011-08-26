@@ -32,7 +32,7 @@ public class SingleValue implements ScheduleValue {
     /**
      * The value
      */
-    private String value;
+    private final String value;
 
     /**
      * @param val

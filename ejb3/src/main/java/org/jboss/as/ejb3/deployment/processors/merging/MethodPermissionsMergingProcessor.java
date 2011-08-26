@@ -188,7 +188,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                     final Collection<Method> denyAllApplicableMethods = ClassReflectionIndexUtil.findMethods(deploymentReflectionIndex, classReflectionIndex, methodName, paramTypes);
                     // just log a WARN message and proceed, in case there was no method by that name and param types
                     if (denyAllApplicableMethods.isEmpty()) {
-                        logger.warn("No method named: " + methodName + " with param types: " + paramTypes + " found on EJB: " + description.getEJBName() + " while processing exclude-list element in ejb-jar.xml");
+                        logger.warn("No method named: " + methodName + " with param types: " + Arrays.toString(paramTypes) + " found on EJB: " + description.getEJBName() + " while processing exclude-list element in ejb-jar.xml");
                         continue;
                     }
                     // apply the @DenyAll/exclude-list
@@ -267,7 +267,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                         final Collection<Method> applicableMethods = ClassReflectionIndexUtil.findMethods(deploymentReflectionIndex, classReflectionIndex, methodName, paramTypes);
                         // just log a WARN message and proceed, in case there was no method by that name and param types
                         if (applicableMethods.isEmpty()) {
-                            logger.warn("No method named: " + methodName + " with param types: " + paramTypes + " found on EJB: " + description.getEJBName() + " while processing method-permission element in ejb-jar.xml");
+                            logger.warn("No method named: " + methodName + " with param types: " + Arrays.toString(paramTypes) + " found on EJB: " + description.getEJBName() + " while processing method-permission element in ejb-jar.xml");
                             continue;
                         }
                         // apply the @RolesAllowed/method-permission

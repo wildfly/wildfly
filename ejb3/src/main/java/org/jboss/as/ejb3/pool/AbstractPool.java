@@ -37,8 +37,8 @@ public abstract class AbstractPool<T> implements Pool<T> {
     private static final Logger log = Logger.getLogger(AbstractPool.class);
 
     private final StatelessObjectFactory<T> factory;
-    private AtomicInteger createCount = new AtomicInteger(0);
-    private AtomicInteger removeCount = new AtomicInteger(0);
+    private final AtomicInteger createCount = new AtomicInteger(0);
+    private final AtomicInteger removeCount = new AtomicInteger(0);
 
     protected AbstractPool(StatelessObjectFactory<T> factory) {
         assert factory != null : "factory is null";

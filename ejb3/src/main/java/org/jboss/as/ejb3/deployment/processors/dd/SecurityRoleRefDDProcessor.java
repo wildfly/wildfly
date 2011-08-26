@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -54,7 +53,7 @@ public class SecurityRoleRefDDProcessor extends AbstractEjbXmlDescriptorProcesso
     protected void processBeanMetaData(final EnterpriseBeanMetaData beanMetaData, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         SecurityRoleRefsMetaData securityRoleRefs = null;
         if (beanMetaData instanceof SessionBeanMetaData) {
-            securityRoleRefs = ((SessionBeanMetaData) beanMetaData).getSecurityRoleRefs();
+            securityRoleRefs = beanMetaData.getSecurityRoleRefs();
         } else if (beanMetaData instanceof MessageDrivenBeanMetaData) {
             // TODO: Why doesn't MessageDrivenBeanMetaData have security role refs metadata
             logger.warn("security-role-ref for message driven beans isn't yet implemented");

@@ -42,24 +42,24 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
     /**
      * Keep track of the number of read locks held by this thread
      */
-    private ThreadLocal<Integer> readLockCount = new ThreadLocal<Integer>();
+    private final ThreadLocal<Integer> readLockCount = new ThreadLocal<Integer>();
 
     /**
      * We delegate all locking semantics to this {@link java.util.concurrent.locks.ReentrantReadWriteLock}
      */
-    private ReentrantReadWriteLock delegate = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock delegate = new ReentrantReadWriteLock();
 
     /**
      * Read lock instance which will be handed out to clients
      * on a call to {@link #readLock()}
      */
-    private Lock readLock = new ReadLock();
+    private final Lock readLock = new ReadLock();
 
     /**
      * Write lock instance which will be handed out to clients
      * on a call to {@link #writeLock()}
      */
-    private Lock writeLock = new WriteLock();
+    private final Lock writeLock = new WriteLock();
 
     /**
      * A read lock which increments/decrements the count of
