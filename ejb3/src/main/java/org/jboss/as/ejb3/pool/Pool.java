@@ -64,13 +64,6 @@ public interface Pool<T> {
      */
     void release(T obj);
 
-    /**
-     * Remove the specified object from the pool.
-     *
-     * @param key the identifier of the object
-     */
-    //void remove(Object key);
-
     void setMaxSize(int maxSize);
 
     /**
