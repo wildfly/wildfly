@@ -25,12 +25,12 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.metadata.ejb.spec.AccessTimeoutMetaData;
 import org.jboss.metadata.ejb.spec.ConcurrentMethodMetaData;
 import org.jboss.metadata.ejb.spec.ConcurrentMethodsMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
@@ -40,12 +40,10 @@ import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import javax.ejb.AccessTimeout;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class that can merge {@link javax.ejb.Lock} and {@link javax.ejb.AccessTimeout} metadata
@@ -75,13 +73,13 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
             }
         }
 
-        final RuntimeAnnotationInformation<AccessTimeout> accessTimeout = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, AccessTimeout.class);
-        for (Map.Entry<String, List<AccessTimeout>> entry : accessTimeout.getClassAnnotations().entrySet()) {
+        final RuntimeAnnotationInformation<AccessTimeoutDetails> accessTimeout = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, AccessTimeout.class);
+        for (Map.Entry<String, List<AccessTimeoutDetails>> entry : accessTimeout.getClassAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 componentConfiguration.setBeanLevelAccessTimeout(entry.getKey(), entry.getValue().get(0));
             }
         }
-        for (Map.Entry<Method, List<AccessTimeout>> entry : accessTimeout.getMethodAnnotations().entrySet()) {
+        for (Map.Entry<Method, List<AccessTimeoutDetails>> entry : accessTimeout.getMethodAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 componentConfiguration.setAccessTimeout(entry.getValue().get(0), MethodIdentifier.getIdentifierForMethod(entry.getKey()));
             }
@@ -104,7 +102,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
 
             //handle access timeout
             if (descriptor.getAccessTimeout() != null) {
-                componentConfiguration.setBeanLevelAccessTimeout(componentConfiguration.getEJBClassName(), getAccessTimeout(descriptor.getAccessTimeout()));
+                componentConfiguration.setBeanLevelAccessTimeout(componentConfiguration.getEJBClassName(), new AccessTimeoutDetails(descriptor.getAccessTimeout().getTimeout(), descriptor.getAccessTimeout().getUnit()));
             }
 
             final ConcurrentMethodsMetaData methods = descriptor.getConcurrentMethods();
@@ -116,7 +114,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
                         componentConfiguration.setLockType(method.getLockType(), methodIdentifier);
                     }
                     if (method.getAccessTimeout() != null) {
-                        componentConfiguration.setAccessTimeout(getAccessTimeout(method.getAccessTimeout()), methodIdentifier);
+                        componentConfiguration.setAccessTimeout( new AccessTimeoutDetails(descriptor.getAccessTimeout().getTimeout(), descriptor.getAccessTimeout().getUnit()), methodIdentifier);
                     }
 
                 }
@@ -126,24 +124,6 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
         }
     }
 
-    private AccessTimeout getAccessTimeout(final AccessTimeoutMetaData accessTimeout) {
-        return new AccessTimeout() {
-            @Override
-            public long value() {
-                return accessTimeout.getTimeout();
-            }
-
-            @Override
-            public TimeUnit unit() {
-                return accessTimeout.getUnit();
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return AccessTimeout.class;
-            }
-        };
-    }
 
 
     private Method resolveMethod(final DeploymentReflectionIndex index, final Class<?> componentClass, final NamedMethodMetaData methodData) throws DeploymentUnitProcessingException {

@@ -23,12 +23,13 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.component.EJBBusinessMethod;
-import org.jboss.as.ejb3.component.session.SessionBeanComponent;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
+import org.jboss.as.ejb3.component.EJBBusinessMethod;
+import org.jboss.as.ejb3.component.session.SessionBeanComponent;
+import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.context.spi.SessionContext;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -44,7 +45,6 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
@@ -61,14 +61,14 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     public static final Object SESSION_ATTACH_KEY = new Object();
 
-    private Cache<StatefulSessionComponentInstance> cache;
-
     private static final Logger logger = Logger.getLogger(StatefulSessionComponent.class);
 
-    final InterceptorFactory afterBegin;
-    final InterceptorFactory afterCompletion;
-    final InterceptorFactory beforeCompletion;
-    private Map<EJBBusinessMethod, AccessTimeout> methodAccessTimeouts;
+    private final Cache<StatefulSessionComponentInstance> cache;
+
+    private final InterceptorFactory afterBegin;
+    private final InterceptorFactory afterCompletion;
+    private final InterceptorFactory beforeCompletion;
+    private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
 
     /**
      * Construct a new instance.
@@ -104,7 +104,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     @Override
     public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
-        if(businessInterface == null) {
+        if (businessInterface == null) {
             throw new IllegalStateException("Business interface type cannot be null");
         }
         return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SESSION_ATTACH_KEY, getSessionIdOf(ctx)));
@@ -118,34 +118,20 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     /**
      * Returns the {@link AccessTimeout} applicable to given method
      */
-    public AccessTimeout getAccessTimeout(Method method) {
+    public AccessTimeoutDetails getAccessTimeout(Method method) {
         final EJBBusinessMethod ejbMethod = new EJBBusinessMethod(method);
-        final AccessTimeout accessTimeout = this.methodAccessTimeouts.get(ejbMethod);
+        final AccessTimeoutDetails accessTimeout = this.methodAccessTimeouts.get(ejbMethod);
         if (accessTimeout != null) {
             return accessTimeout;
         }
         // check bean level access timeout
-        final AccessTimeout timeout = this.beanLevelAccessTimeout.get(method.getDeclaringClass().getName());
+        final AccessTimeoutDetails timeout = this.beanLevelAccessTimeout.get(method.getDeclaringClass().getName());
         if (timeout != null) {
             return timeout;
         }
-        return new AccessTimeout() {
-            @Override
-            public long value() {
-                return 5;
-            }
-
-            @Override
-            public TimeUnit unit() {
-                return TimeUnit.MINUTES;
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return AccessTimeout.class;
-            }
-        };
+        return new AccessTimeoutDetails(5, TimeUnit.MINUTES);
     }
+
 
     //    @Override
 //    public Interceptor createClientInterceptor(Class<?> view) {
@@ -237,44 +223,57 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     }
 
+    public InterceptorFactory getAfterBegin() {
+        return afterBegin;
+    }
+
+    public InterceptorFactory getAfterCompletion() {
+        return afterCompletion;
+    }
+
+    public InterceptorFactory getBeforeCompletion() {
+        return beforeCompletion;
+    }
+
     /**
-     * A {@link javax.transaction.Synchronization} which removes a stateful session in it's {@link javax.transaction.Synchronization#afterCompletion(int)}
-     * callback.
-     */
-    private static class RemoveSynchronization implements Synchronization {
-        private final StatefulSessionComponent statefulComponent;
-        private final Serializable sessionId;
+ * A {@link javax.transaction.Synchronization} which removes a stateful session in it's {@link javax.transaction.Synchronization#afterCompletion(int)}
+ * callback.
+ */
+private static class RemoveSynchronization implements Synchronization {
+    private final StatefulSessionComponent statefulComponent;
+    private final Serializable sessionId;
 
-        public RemoveSynchronization(final StatefulSessionComponent component, final Serializable sessionId) {
-            if (sessionId == null) {
-                throw new IllegalArgumentException("Session id cannot be null");
-            }
-            if (component == null) {
-                throw new IllegalArgumentException("Stateful component cannot be null");
-            }
-            this.sessionId = sessionId;
-            this.statefulComponent = component;
-
+    public RemoveSynchronization(final StatefulSessionComponent component, final Serializable sessionId) {
+        if (sessionId == null) {
+            throw new IllegalArgumentException("Session id cannot be null");
         }
-
-        public void beforeCompletion() {
+        if (component == null) {
+            throw new IllegalArgumentException("Stateful component cannot be null");
         }
+        this.sessionId = sessionId;
+        this.statefulComponent = component;
 
-        public void afterCompletion(int status) {
-            try {
-                // remove the session
-                this.statefulComponent.getCache().remove(this.sessionId);
-            } catch (Throwable t) {
-                // An exception thrown from afterCompletion is gobbled up
-                logger.error("Failed to remove bean: " + this.statefulComponent.getComponentName() + " with session id " + this.sessionId, t);
-                if (t instanceof Error)
-                    throw (Error) t;
-                if (t instanceof RuntimeException)
-                    throw (RuntimeException) t;
-                throw new RuntimeException(t);
-            }
+    }
+
+    public void beforeCompletion() {
+    }
+
+    public void afterCompletion(int status) {
+        try {
+            // remove the session
+            this.statefulComponent.getCache().remove(this.sessionId);
+        } catch (Throwable t) {
+            // An exception thrown from afterCompletion is gobbled up
+            logger.error("Failed to remove bean: " + this.statefulComponent.getComponentName() + " with session id " + this.sessionId, t);
+            if (t instanceof Error)
+                throw (Error) t;
+            if (t instanceof RuntimeException)
+                throw (RuntimeException) t;
+            throw new RuntimeException(t);
         }
     }
+
+}
 
     @Override
     public void start() {

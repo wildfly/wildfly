@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright (c) 2010, JBoss Inc., and individual contributors as indicated
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -21,23 +21,33 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.as.ejb3.context.spi.InvocationContext;
-
-import javax.ejb.TransactionAttributeType;
-
 /**
- * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
+ * Class that stores details about application exceptions
+ *
+ * @author Stuart Douglas
  */
-public interface TransactionalInvocationContext extends InvocationContext {
-    ApplicationExceptionDetails getApplicationException(Class<?> e);
+public class ApplicationExceptionDetails {
 
-    /**
-     * The transaction attribute for this invocation.
-     */
-    TransactionAttributeType getTransactionAttribute();
+    private final String exceptionClass;
+    private final boolean inherited;
+    private final boolean rollback;
 
-    /**
-     * The transaction timeout for this invocation in seconds.
-     */
-    int getTransactionTimeout();
+
+    public ApplicationExceptionDetails(final String exceptionClass, final boolean inherited, final boolean rollback) {
+        this.exceptionClass = exceptionClass;
+        this.inherited = inherited;
+        this.rollback = rollback;
+    }
+
+    public String getExceptionClass() {
+        return exceptionClass;
+    }
+
+    public boolean isInherited() {
+        return inherited;
+    }
+
+    public boolean isRollback() {
+        return rollback;
+    }
 }

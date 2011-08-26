@@ -22,7 +22,8 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import javax.ejb.ApplicationException;
+import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
+
 import java.rmi.RemoteException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ import java.util.Map;
  */
 public class EjbJarConfiguration {
 
-    private Map<Class<?>, ApplicationException> applicationExceptions = new HashMap();
+    private Map<Class<?>, ApplicationExceptionDetails> applicationExceptions = new HashMap<Class<?>, ApplicationExceptionDetails>();
 
 
     public EjbJarConfiguration(EjbJarDescription deploymentDescription) {
@@ -41,15 +42,15 @@ public class EjbJarConfiguration {
 
     }
 
-    public ApplicationException getApplicationException(Class<?> exceptionClass) {
+    public ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass) {
         return this.applicationExceptions.get(exceptionClass);
     }
 
-    public Map<Class<?>, ApplicationException> getApplicationExceptions() {
+    public Map<Class<?>, ApplicationExceptionDetails> getApplicationExceptions() {
         return Collections.unmodifiableMap(this.applicationExceptions);
     }
 
-    public void addApplicationException(Class<?> exceptionClass, ApplicationException applicationException) {
+    public void addApplicationException(Class<?> exceptionClass, ApplicationExceptionDetails applicationException) {
         if (exceptionClass == null) {
             throw new IllegalArgumentException("Exception class cannot be null");
         }
