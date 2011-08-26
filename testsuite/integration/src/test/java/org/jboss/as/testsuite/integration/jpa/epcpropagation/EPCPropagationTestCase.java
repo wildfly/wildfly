@@ -143,9 +143,8 @@ public class EPCPropagationTestCase {
     }
 
     /**
-     * 7.6.2.1 ensure that  NoTxEPCStatefulBean.em (extended persistence context entity manager) is inherited by
-     * StatelessBean.em (transactional scoped entity manager).  The test ensures that the modified entity (in XPC)
-     * is visible to the transactional scoped entity manager (modified entity is returned from em.find call).
+     * Ensure that AS7-1663 is fixed, extended persistence context should not be propagated if there is no JTA transaction.
+     *
      * @throws Exception
      */
     @Test
@@ -156,7 +155,7 @@ public class EPCPropagationTestCase {
         StatefulInterface stateful = lookup("NoTxEPCStatefulBean", StatefulInterface.class);
         boolean equal = stateful.execute(6, "EntityName");
 
-        assertTrue("Name changes should propagate", equal);
+        assertFalse("Name changes should not propagate (non-tx SFSB XPC shouldn't see SLSB PC changes)", equal);
     }
 
     @Test
