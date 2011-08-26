@@ -62,6 +62,11 @@ public class ConnectionAddHandler extends AbstractAddStepHandler implements Desc
         }
     }
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER || context.getType() == OperationContext.Type.HOST;
+    }
+
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
