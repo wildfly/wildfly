@@ -1,0 +1,141 @@
+diff --git a/build/build.xml b/build/build.xml
+index 0df0775..3e16533 100644
+--- a/build/build.xml
++++ b/build/build.xml
+@@ -152,7 +152,7 @@
+         </module-def>
+ 
+         <module-def name="javax.faces.api">
+-            <maven-resource group="org.jboss.spec.javax.faces" artifact="jboss-jsf-api_2.0_spec"/>
++            <maven-resource group="org.jboss.spec.javax.faces" artifact="jboss-jsf-api_2.1_spec"/>
+         </module-def>
+ 
+         <module-def name="javax.faces.api" slot="1.2">
+diff --git a/build/pom.xml b/build/pom.xml
+index e2d98da..27cd9e6 100644
+--- a/build/pom.xml
++++ b/build/pom.xml
+@@ -1260,7 +1260,7 @@
+ 
+         <dependency>
+             <groupId>org.jboss.spec.javax.faces</groupId>
+-            <artifactId>jboss-jsf-api_2.0_spec</artifactId>
++            <artifactId>jboss-jsf-api_2.1_spec</artifactId>
+         </dependency>
+ 
+         <dependency>
+diff --git a/demos/pom.xml b/demos/pom.xml
+index e817f50..76d8388 100644
+--- a/demos/pom.xml
++++ b/demos/pom.xml
+@@ -199,7 +199,7 @@
+         </dependency>
+         <dependency>
+             <groupId>org.jboss.spec.javax.faces</groupId>
+-            <artifactId>jboss-jsf-api_2.0_spec</artifactId>
++            <artifactId>jboss-jsf-api_2.1_spec</artifactId>
+         </dependency>
+         <dependency>
+             <groupId>org.jboss.spec.javax.interceptor</groupId>
+diff --git a/pom.xml b/pom.xml
+index d07ab51..214abb1 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -76,9 +76,9 @@
+         <version.jacorb>2.3.1jboss.patch01-brew</version.jacorb>
+         <version.javax.activation.activation>1.1.1</version.javax.activation.activation>
+         <version.javax.enterprise.cdi-api>1.0-SP4</version.javax.enterprise.cdi-api>
+-        <version.javax.faces.jsf-api.1.2>1.2_13</version.javax.faces.jsf-api.1.2>
+-        <version.javax.faces.jsf-impl>2.0.4-b09-jbossorg-4</version.javax.faces.jsf-impl>
+-        <version.javax.faces.jsf-impl.1.2>1.2_13</version.javax.faces.jsf-impl.1.2>
++        <version.javax.faces.jsf-api.1.2>1.2_15-jbossorg-1</version.javax.faces.jsf-api.1.2>
++        <version.javax.faces.jsf-impl>2.1.3-b02-jbossorg-2</version.javax.faces.jsf-impl>
++        <version.javax.faces.jsf-impl.1.2>1.2_15-jbossorg-1</version.javax.faces.jsf-impl.1.2>
+         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
+         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
+         <version.javax.mail.mail>1.4.4</version.javax.mail.mail>
+@@ -174,7 +174,7 @@
+         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>1.0.1.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.1_spec>
+         <version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>1.0.0.Final</version.org.jboss.spec.javax.el.jboss-el-api_2.2_spec>
+         <version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>1.0.0.Final</version.org.jboss.spec.javax.enterprise.deploy.jboss-jad-api_1.2_spec>
+-        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.0_spec>
++        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.1_spec>2.0.0.Beta1</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.1_spec>
+         <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.1_spec>
+         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
+         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
+@@ -4389,8 +4389,8 @@
+ 
+             <dependency>
+                 <groupId>org.jboss.spec.javax.faces</groupId>
+-                <artifactId>jboss-jsf-api_2.0_spec</artifactId>
+-                <version>${version.org.jboss.spec.javax.faces.jboss-jsf-api_2.0_spec}</version>
++                <artifactId>jboss-jsf-api_2.1_spec</artifactId>
++                <version>${version.org.jboss.spec.javax.faces.jboss-jsf-api_2.1_spec}</version>
+             </dependency>
+ 
+             <dependency>
+diff --git a/spec-api/pom.xml b/spec-api/pom.xml
+index 49bf72a..0c76992 100644
+--- a/spec-api/pom.xml
++++ b/spec-api/pom.xml
+@@ -55,7 +55,7 @@
+     </dependency>
+     <dependency>
+       <groupId>org.jboss.spec.javax.faces</groupId>
+-      <artifactId>jboss-jsf-api_2.0_spec</artifactId>
++      <artifactId>jboss-jsf-api_2.1_spec</artifactId>
+     </dependency>
+     <dependency>
+       <groupId>org.jboss.spec.javax.interceptor</groupId>
+diff --git a/web/pom.xml b/web/pom.xml
+index 4f385fa..d8afcc0 100644
+--- a/web/pom.xml
++++ b/web/pom.xml
+@@ -41,7 +41,7 @@
+     <dependencies>
+         <dependency>
+             <groupId>org.jboss.spec.javax.faces</groupId>
+-            <artifactId>jboss-jsf-api_2.0_spec</artifactId>
++            <artifactId>jboss-jsf-api_2.1_spec</artifactId>
+         </dependency>
+ 
+         <dependency>
+diff --git a/web/src/main/java/org/jboss/as/web/deployment/jsf/JandexAnnotationProvider.java b/web/src/main/java/org/jboss/as/web/deployment/jsf/JandexAnnotationProvider.java
+index 37fc730..551219d 100644
+--- a/web/src/main/java/org/jboss/as/web/deployment/jsf/JandexAnnotationProvider.java
++++ b/web/src/main/java/org/jboss/as/web/deployment/jsf/JandexAnnotationProvider.java
+@@ -24,7 +24,6 @@ package org.jboss.as.web.deployment.jsf;
+ 
+ import com.sun.faces.spi.AnnotationProvider;
+ import java.lang.annotation.Annotation;
+-import java.net.URL;
+ import java.util.Map;
+ import java.util.Set;
+ import javax.servlet.ServletContext;
+@@ -46,7 +45,11 @@ public class JandexAnnotationProvider extends AnnotationProvider {
+         annotations = (Map<Class<? extends Annotation>, Set<Class<?>>>) servletContext.getAttribute(FACES_ANNOTATIONS);
+     }
+ 
+-    public Map<Class<? extends Annotation>, Set<Class<?>>> getAnnotatedClasses(final Set<URL> urls) {
+-        return annotations; // TODO:  Should this be limited by URL
++    // Note: The Mojarra 2.0 SPI specifies that this method takes Set<URL> as its argument.  The Mojarra 2.1 SPI
++    // makes a slight change and specifies Set<URI> as its argument.  Since we aren't using this anyway, we can just
++    // use a plain Set and it should work for both versions.
++    @Override
++    public Map<Class<? extends Annotation>, Set<Class<?>>> getAnnotatedClasses(final Set uris) {
++        return annotations; // TODO:  Should this be limited by URI
+     }
+ }
+diff --git a/weld/pom.xml b/weld/pom.xml
+index 84685a3..e607766 100644
+--- a/weld/pom.xml
++++ b/weld/pom.xml
+@@ -90,7 +90,7 @@
+         
+         <dependency>
+             <groupId>org.jboss.spec.javax.faces</groupId>
+-            <artifactId>jboss-jsf-api_2.0_spec</artifactId>
++            <artifactId>jboss-jsf-api_2.1_spec</artifactId>
+         </dependency>
+ 
+         <dependency>
