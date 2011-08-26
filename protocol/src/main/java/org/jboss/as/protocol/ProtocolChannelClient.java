@@ -22,6 +22,7 @@
 package org.jboss.as.protocol;
 
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
+import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -108,7 +109,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         }
 
         // TODO - do we need better way to decide this?
-        OptionMap map = OptionMap.create(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
+        OptionMap map = OptionMap.create(SASL_POLICY_NOANONYMOUS, Boolean.FALSE, SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
         IoFuture<Connection> future;
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
