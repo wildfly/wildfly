@@ -101,42 +101,16 @@ public class ConsoleHandler implements ManagementHttpHandler {
         String resource = path.substring(CONTEXT.length(), path.length());
         if(resource.startsWith("/")) resource = resource.substring(1);
 
-
-        if(resource.equals("")) {
+        if (resource.equals("")) {
             // "/console" request redirect to "/console/index.html"
 
-            InetSocketAddress address = http.getHttpContext().getServer().getAddress();
-            String hostName = address.getHostName();
-            int port = address.getPort();
-
-            // Use Host header value if available
-            String hostHeader = http.getRequestHeaders().getFirst(HOST_HEADER);
-            if (hostHeader != null) {
-                // Parse the hostHeader using URI
-                try {
-                    URI hostURI = new URI("http://" + hostHeader);
-                    if (hostURI.getHost() != null) {
-                        hostName = hostURI.getHost();
-                    }
-                    if (hostURI.getPort() != -1) {
-                        port = hostURI.getPort();
-                    }
-                } catch (java.net.URISyntaxException ex) {
-                    // invalid Host header value, just ignore
-                }
-            }
-
-            final Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add(CONTENT_TYPE, TEXT_HTML);
-            responseHeaders.add(LOCATION, "http://"+hostName + ":"+port+"/console/index.html");
-            http.sendResponseHeaders(FOUND, 0);
-
-            OutputStream outputStream = http.getResponseBody();
-            outputStream.flush();
-            safeClose(outputStream);
+            Headers responseHeaders = http.getResponseHeaders();
+            responseHeaders.add(LOCATION, "/console/index.html");
+            http.sendResponseHeaders(MOVED_PERMENANTLY, 0);
+            http.close();
 
             return;
-        } else if(resource.indexOf(".")==-1) {
+        } else if (resource.indexOf(".") == -1) {
             respond404(http);
         }
 
