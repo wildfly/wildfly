@@ -156,6 +156,7 @@ public class ManagementHttpServer {
         }
 
         ManagementHttpServer managementHttpServer = new ManagementHttpServer(httpServer, secureHttpServer, securityRealm);
+        managementHttpServer.addHandler(new RootHandler());
         managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient));
         managementHttpServer.addHandler(new ConsoleHandler());
 
