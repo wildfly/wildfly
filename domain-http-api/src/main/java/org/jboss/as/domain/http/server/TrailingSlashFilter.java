@@ -21,6 +21,7 @@
  */
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.domain.http.server.Constants.LOCATION;
 import static org.jboss.as.domain.http.server.Constants.MOVED_PERMENANTLY;
 
 import java.io.IOException;
@@ -36,8 +37,6 @@ import org.jboss.com.sun.net.httpserver.HttpExchange;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class TrailingSlashFilter extends Filter {
-
-    private static final String LOCATION = "Location";
 
     /**
      * Sent a MOVED_PERMENANTLY response for requests that omit a trailing slash.
