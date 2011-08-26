@@ -32,7 +32,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class StatelessBMTInterceptor extends org.jboss.as.ejb3.tx.StatelessBMTInterceptor implements Interceptor {
-    private StatelessSessionComponent component;
+    private final StatelessSessionComponent component;
 
     StatelessBMTInterceptor(StatelessSessionComponent component) {
         this.component = component;

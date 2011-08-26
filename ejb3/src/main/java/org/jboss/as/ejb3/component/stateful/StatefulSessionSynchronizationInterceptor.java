@@ -169,7 +169,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
 
     private class StatefulSessionSynchronization implements Synchronization {
 
-        private StatefulSessionComponentInstance statefulSessionComponentInstance;
+        private final StatefulSessionComponentInstance statefulSessionComponentInstance;
 
         StatefulSessionSynchronization(StatefulSessionComponentInstance statefulSessionComponentInstance) {
             this.statefulSessionComponentInstance = statefulSessionComponentInstance;

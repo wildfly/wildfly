@@ -65,7 +65,7 @@ class MessageDrivenInvocationContextInterceptor implements Interceptor {
     }
 
     protected static class CustomInvocationContext extends BaseInvocationContext implements TransactionalInvocationContext {
-        private InterceptorContext context;
+        private final InterceptorContext context;
 
         protected CustomInvocationContext(InterceptorContext context, Method method, Object[] parameters) {
             super(method, parameters);

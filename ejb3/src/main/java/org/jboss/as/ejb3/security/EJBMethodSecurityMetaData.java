@@ -27,6 +27,7 @@ import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -222,7 +223,7 @@ public class EJBMethodSecurityMetaData {
         try {
             return componentClass.getMethod(viewMethod.getName(), viewMethod.getParameterTypes());
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Method named " + viewMethod.getName() + " with params " + viewMethod.getParameterTypes()
+            throw new RuntimeException("Method named " + viewMethod.getName() + " with params " + Arrays.toString(viewMethod.getParameterTypes())
                     + " not found on component class " + componentClass);
         }
 

@@ -35,7 +35,7 @@ import java.util.Date;
  */
 public class NonFunctionalTimerService implements TimerService {
 
-    public static NonFunctionalTimerService INSTANCE = new NonFunctionalTimerService();
+    public static final NonFunctionalTimerService INSTANCE = new NonFunctionalTimerService();
 
     private static final UnsupportedOperationException UNSUPPORTED_OPERATION_EXCEPTION = new UnsupportedOperationException("The timer service has been disabled. Please add a <timer-service> entry into the ejb section of the server configuration to enable it.");
 

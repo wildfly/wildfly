@@ -53,13 +53,13 @@ public abstract class IntegerBasedExpression {
 
     protected abstract boolean accepts(ScheduleExpressionType scheduleExprType);
 
-    protected SortedSet<Integer> absoluteValues = new TreeSet<Integer>();
+    protected final SortedSet<Integer> absoluteValues = new TreeSet<Integer>();
 
-    protected Set<ScheduleValue> relativeValues = new HashSet<ScheduleValue>();
+    protected final Set<ScheduleValue> relativeValues = new HashSet<ScheduleValue>();
 
-    protected ScheduleExpressionType scheduleExpressionType;
+    protected final ScheduleExpressionType scheduleExpressionType;
 
-    protected String origValue;
+    protected final String origValue;
 
     public IntegerBasedExpression(String value) {
         this.origValue = value;
@@ -144,7 +144,7 @@ public abstract class IntegerBasedExpression {
         this.assertValid(rangeEnd);
 
         // start and end are both the same. So it's just a single value
-        if (rangeStart == rangeEnd) {
+        if (rangeStart.equals(rangeEnd)) {
             this.absoluteValues.add(rangeStart);
             return;
 

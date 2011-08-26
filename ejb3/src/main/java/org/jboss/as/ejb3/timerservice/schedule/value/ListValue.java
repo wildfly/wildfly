@@ -54,7 +54,7 @@ public class ListValue implements ScheduleValue {
      * or a {@link RangeValue}
      * </p>
      */
-    private List<String> values = new ArrayList<String>();
+    private final List<String> values = new ArrayList<String>();
 
     /**
      * Creates a {@link ListValue} by parsing the passed <code>value</code>.

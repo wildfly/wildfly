@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ExpiringCache<T extends Identifiable> implements Cache<T> {
 
-    private final long SLEEP_TIME = 500;
+    private static final long SLEEP_TIME = 500;
 
     private final long millisecondTimeout;
     private final String beanName;

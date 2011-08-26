@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
  */
 public abstract class BaseSessionInvocationContext extends BaseInvocationContext
         implements SessionInvocationContext {
-    private Class<?> invokedBusinessInterface;
+    private final Class<?> invokedBusinessInterface;
 
     private MessageContext messageContext;
     private Future future;

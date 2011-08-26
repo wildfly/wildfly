@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor {
 
-    private static Logger logger = Logger.getLogger(ImplicitLocalViewProcessor.class);
+    private static final Logger logger = Logger.getLogger(ImplicitLocalViewProcessor.class);
 
     @Override
     protected void processComponentConfig(DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, CompositeIndex index, ComponentDescription componentDescription) throws DeploymentUnitProcessingException {

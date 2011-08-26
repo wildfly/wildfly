@@ -49,7 +49,7 @@ public class BaseSessionContext extends BaseEJBContext
     private static class Handle implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        private Object instance;
+        private final Object instance;
 
         private Handle(Object instance) {
             this.instance = instance;

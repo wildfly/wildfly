@@ -75,7 +75,7 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
             if (aroundInvokes != null) {
                 for (AroundInvokeMetaData aroundInvoke : aroundInvokes) {
                     String methodName = aroundInvoke.getMethodName();
-                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, new Class<?>[]{InvocationContext.class});
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, InvocationContext.class);
                     interceptorModuleClassDescription.setAroundInvokeMethod(methodIdentifier);
                 }
             }
@@ -85,7 +85,7 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
             if (postConstructs != null) {
                 for (LifecycleCallbackMetaData postConstruct : postConstructs) {
                     String methodName = postConstruct.getMethodName();
-                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, new Class<?>[]{InvocationContext.class});
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, InvocationContext.class);
                     // add it to the interceptor description
                     interceptorModuleClassDescription.setPostConstructMethod(methodIdentifier);
                 }
@@ -96,7 +96,7 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
             if (preDestroys != null) {
                 for (LifecycleCallbackMetaData preDestroy : preDestroys) {
                     String methodName = preDestroy.getMethodName();
-                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, new Class<?>[]{InvocationContext.class});
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodName, InvocationContext.class);
                     // add it to the interceptor description
                     interceptorModuleClassDescription.setPreDestroyMethod(methodIdentifier);
                 }

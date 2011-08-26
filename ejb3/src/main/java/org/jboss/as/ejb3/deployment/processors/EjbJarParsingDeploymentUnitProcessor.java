@@ -65,7 +65,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
     /**
      * Logger
      */
-    private static Logger logger = Logger.getLogger(EjbJarParsingDeploymentUnitProcessor.class);
+    private static final Logger logger = Logger.getLogger(EjbJarParsingDeploymentUnitProcessor.class);
 
     /**
      * .war file extension

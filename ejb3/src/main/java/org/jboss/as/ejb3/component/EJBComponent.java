@@ -58,7 +58,7 @@ import java.util.Map;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class EJBComponent extends BasicComponent implements org.jboss.as.ejb3.context.spi.EJBComponent {
-    private static Logger log = Logger.getLogger(EJBComponent.class);
+    private static final Logger log = Logger.getLogger(EJBComponent.class);
 
     private static final ApplicationExceptionDetails APPLICATION_EXCEPTION = new ApplicationExceptionDetails("java.lang.Exception", true, false);
 

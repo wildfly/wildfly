@@ -46,13 +46,13 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     /**
      * Module id for Java EE module
      */
-    private static ModuleIdentifier JAVAEE_MODULE_IDENTIFIER = ModuleIdentifier.create("javaee.api");
+    private static final ModuleIdentifier JAVAEE_MODULE_IDENTIFIER = ModuleIdentifier.create("javaee.api");
 
     /**
      * Needed for timer handle persistence
      * TODO: restrict visibility
      */
-    private static ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.as.ejb3");
+    private static final ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.as.ejb3");
 
 
     /**

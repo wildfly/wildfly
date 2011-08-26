@@ -41,7 +41,7 @@ import java.util.Properties;
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class BaseInvocationContext implements InvocationContext {
-    private Map<String, Object> contextData = new HashMap<String, Object>();
+    private final Map<String, Object> contextData = new HashMap<String, Object>();
     protected final boolean lifecycleCallback;
     private final Method method;
     private Object[] parameters;
