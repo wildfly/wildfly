@@ -24,7 +24,6 @@ package org.jboss.as.web.deployment.jsf;
 
 import com.sun.faces.spi.AnnotationProvider;
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.ServletContext;
@@ -46,7 +45,11 @@ public class JandexAnnotationProvider extends AnnotationProvider {
         annotations = (Map<Class<? extends Annotation>, Set<Class<?>>>) servletContext.getAttribute(FACES_ANNOTATIONS);
     }
 
-    public Map<Class<? extends Annotation>, Set<Class<?>>> getAnnotatedClasses(final Set<URL> urls) {
-        return annotations; // TODO:  Should this be limited by URL
+    // Note: The Mojarra 2.0 SPI specifies that this method takes Set<URL> as its argument.  The Mojarra 2.1 SPI
+    // makes a slight change and specifies Set<URI> as its argument.  Since we aren't using this anyway, we can just
+    // use a plain Set and it should work for both versions.
+    @Override
+    public Map<Class<? extends Annotation>, Set<Class<?>>> getAnnotatedClasses(final Set uris) {
+        return annotations; // TODO:  Should this be limited by URI
     }
 }
