@@ -30,13 +30,13 @@ import org.jboss.as.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.as.ejb3.context.spi.SessionInvocationContext;
+import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.as.ejb3.tx.TransactionalInvocationContext;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
-import javax.ejb.ApplicationException;
 import javax.ejb.TransactionAttributeType;
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -85,7 +85,7 @@ public class SessionInvocationContextInterceptor implements Interceptor {
         }
 
         @Override
-        public ApplicationException getApplicationException(Class<?> e) {
+        public ApplicationExceptionDetails getApplicationException(Class<?> e) {
             return getComponent().getApplicationException(e, getMethod());
         }
 

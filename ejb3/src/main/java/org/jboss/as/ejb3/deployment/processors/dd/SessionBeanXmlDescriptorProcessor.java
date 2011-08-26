@@ -29,7 +29,6 @@ import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -37,7 +36,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.spec.AccessTimeoutMetaData;
 import org.jboss.metadata.ejb.spec.AroundInvokeMetaData;
 import org.jboss.metadata.ejb.spec.BusinessLocalsMetaData;
 import org.jboss.metadata.ejb.spec.BusinessRemotesMetaData;
@@ -45,10 +43,7 @@ import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 
-import javax.ejb.AccessTimeout;
 import javax.interceptor.InvocationContext;
-import java.lang.annotation.Annotation;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jaikiran Pai
@@ -159,38 +154,6 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         // no-interface view
         if (sessionBean31MetaData.isNoInterfaceBean()) {
             sessionBeanComponentDescription.addNoInterfaceView();
-        }
-        // process singleton bean specific description
-        if (sessionBean31MetaData.isSingleton() && sessionBeanComponentDescription instanceof SingletonComponentDescription) {
-            this.processSingletonBean(sessionBean31MetaData, (SingletonComponentDescription) sessionBeanComponentDescription);
-        }
-    }
-
-    private void processSingletonBean(SessionBean31MetaData singletonBeanMetaData, SingletonComponentDescription singletonComponentDescription) {
-
-        // bean level access timeout
-        // TODO: This should apply to other bean types too (JBoss specific feature) and not just singleton beans
-        AccessTimeoutMetaData accessTimeoutMetaData = singletonBeanMetaData.getAccessTimeout();
-        if (accessTimeoutMetaData != null) {
-            final long timeout = accessTimeoutMetaData.getTimeout();
-            final TimeUnit unit = accessTimeoutMetaData.getUnit();
-            AccessTimeout accessTimeout = new AccessTimeout() {
-                @Override
-                public long value() {
-                    return timeout;
-                }
-
-                @Override
-                public TimeUnit unit() {
-                    return unit;
-                }
-
-                @Override
-                public Class<? extends Annotation> annotationType() {
-                    return AccessTimeout.class;
-                }
-            };
-            singletonComponentDescription.setBeanLevelAccessTimeout(singletonComponentDescription.getEJBClassName(), accessTimeout);
         }
     }
 
