@@ -24,7 +24,6 @@ package org.jboss.as.jpa.container;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
-import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import java.util.Map;
@@ -43,52 +42,28 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
     private final String puScopedName;          // Scoped name of the persistent unit
     private final Map properties;
     private final EntityManagerFactory emf;
-    private final SFSBXPCMap sfsbxpcMap;
 
-    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, final SFSBXPCMap sfsbxpcMap) {
+    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf) {
         super(puScopedName, false);
         this.puScopedName = puScopedName;
         this.properties = properties;
         this.emf = emf;
-        this.sfsbxpcMap = sfsbxpcMap;
     }
 
     @Override
     protected EntityManager getEntityManager() {
-        EntityManager result = null;
+        EntityManager result;
         boolean isInTx;
 
         isInTx = TransactionUtil.getInstance().isInTx();
 
-        // try to get EM from XPC and return it if puScopedName is found
-        if (isInTx && (result = SFSBCallStack.findPersistenceContext(puScopedName, sfsbxpcMap)) != null) {
-
-
-            // 7.6.3.1 throw EJBException if a different persistence context is already joined to the
-            // transaction (with the same puScopedName).
-            EntityManager existing = TransactionUtil.getInstance().getTransactionScopedEntityManager(puScopedName);
-            if (existing != null && existing != result) {       // should be enough to test if not the same object
-                throw new EJBException(
-                    "Found extended persistence context in SFSB invocation call stack but that cannot be used " +
-                        "because the transaction already has a transactional context associated with it.  " +
-                        "This can be avoided by changing application code, either eliminate the extended " +
-                        "persistence context or the transactional context.  See JPA spec 2.0 section 7.6.3.1.  " +
-                        "Scoped persistence unit name=" + puScopedName +
-                        ", persistence context already in transaction =" + existing +
-                        ", extended persistence context =" + result);
-            } else if (existing == null) {
-                // JPA 7.9.1 join the transaction if not already done.
-                TransactionUtil.getInstance().registerExtendedWithTransaction(puScopedName, result);
-            }
+        if (isInTx) {
+            result = TransactionUtil.getInstance().getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties);
         } else {
-            if (isInTx) {
-                result = TransactionUtil.getInstance().getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties);
-            } else {
-                result = NonTxEmCloser.get(puScopedName);
-                if (result == null) {
-                    result = EntityManagerUtil.createEntityManager(emf, properties);
-                    NonTxEmCloser.add(puScopedName, result);
-                }
+            result = NonTxEmCloser.get(puScopedName);
+            if (result == null) {
+                result = EntityManagerUtil.createEntityManager(emf, properties);
+                NonTxEmCloser.add(puScopedName, result);
             }
         }
         return result;
