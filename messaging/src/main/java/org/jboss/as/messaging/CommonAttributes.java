@@ -161,7 +161,8 @@ public interface CommonAttributes {
 
     JndiEntriesAttribute ENTRIES = JndiEntriesAttribute.DESTINATION;
 
-    SimpleAttributeDefinition EXCLUSIVE = new SimpleAttributeDefinition("exclusive", ModelType.BOOLEAN,  true);
+    SimpleAttributeDefinition EXCLUSIVE = new SimpleAttributeDefinition("exclusive",
+            new ModelNode().set(ConfigurationImpl.DEFAULT_DIVERT_EXCLUSIVE), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition FACTORY_CLASS = new SimpleAttributeDefinition("factory-class", ModelType.STRING, false);
 
