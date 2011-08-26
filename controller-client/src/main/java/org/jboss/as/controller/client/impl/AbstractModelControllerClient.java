@@ -234,7 +234,7 @@ public abstract class AbstractModelControllerClient implements ModelControllerCl
                         throw new IOException(e);
                     } finally {
                         ManagementBatchIdManager.DEFAULT.freeBatchId(getBatchId());
-                        activeRequests.remove(getCurrentRequestId());
+                        activeRequests.remove(getBatchId());
                         executeRequestContext.done();
                     }
                 }
