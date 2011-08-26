@@ -38,6 +38,7 @@ import javax.naming.directory.SearchResult;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 import java.io.IOException;
 
@@ -59,7 +60,7 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
 
     public static final String SERVICE_SUFFIX = "ldap";
 
-    private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, VerifyPasswordCallback.class};
+    private static final Class[] supportedCallbacks = {RealmCallback.class, NameCallback.class, VerifyPasswordCallback.class, AuthorizeCallback.class};
     private static final String DEFAULT_USER_DN = "dn";
 
     private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
@@ -119,6 +120,17 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
     }
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        if (callbacks.length == 1 && callbacks[0] instanceof AuthorizeCallback) {
+            AuthorizeCallback acb = (AuthorizeCallback) callbacks[0];
+            String authenticationId = acb.getAuthenticationID();
+            String authorizationId = acb.getAuthorizationID();
+
+            // TODO - Remove "" check once SASL-3 is resolved.
+            acb.setAuthorized("".equals(authorizationId) || authenticationId.equals(authorizationId));
+
+            return;
+        }
+
         ConnectionManager connectionManager = this.connectionManager.getValue();
         String username = null;
         VerifyPasswordCallback verifyPasswordCallback = null;
