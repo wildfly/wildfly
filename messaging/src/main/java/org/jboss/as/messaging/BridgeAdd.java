@@ -123,9 +123,9 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
     }
 
     static void addBridgeConfigs(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
-        if (model.hasDefined(CommonAttributes.DIVERT)) {
+        if (model.hasDefined(CommonAttributes.BRIDGE)) {
             final List<BridgeConfiguration> configs = configuration.getBridgeConfigurations();
-            for (Property prop : model.get(CommonAttributes.DIVERT).asPropertyList()) {
+            for (Property prop : model.get(CommonAttributes.BRIDGE).asPropertyList()) {
                 configs.add(createBridgeConfiguration(prop.getName(), prop.getValue()));
 
             }
