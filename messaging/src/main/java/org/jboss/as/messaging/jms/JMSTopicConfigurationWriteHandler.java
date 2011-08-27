@@ -22,10 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.messaging.CommonAttributes;
@@ -37,11 +33,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class TopicConfigurationWriteHandler extends ServerWriteAttributeOperationHandler {
+public class JMSTopicConfigurationWriteHandler extends ServerWriteAttributeOperationHandler {
 
-    public static final TopicConfigurationWriteHandler INSTANCE = new TopicConfigurationWriteHandler();
+    public static final JMSTopicConfigurationWriteHandler INSTANCE = new JMSTopicConfigurationWriteHandler();
 
-    private TopicConfigurationWriteHandler() {
+    private JMSTopicConfigurationWriteHandler() {
     }
 
     @Override
