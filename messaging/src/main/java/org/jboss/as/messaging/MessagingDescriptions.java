@@ -24,12 +24,14 @@ package org.jboss.as.messaging;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -39,16 +41,39 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONSUMER_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE_MESSAGE_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
+
+import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.FACTORY_TYPE;
+import static org.jboss.as.messaging.CommonAttributes.HA;
+import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGES_ADDED;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_MESSAGE_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
+import static org.jboss.as.messaging.CommonAttributes.PAUSED;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
+import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
+
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -205,11 +230,39 @@ public class MessagingDescriptions {
             attr.addResourceAttributeDescription(bundle, "queue", node);
         }
 
+        final ModelNode attributes = node.get(ATTRIBUTES);
+
+        // Runtime attributes
+        addResourceAttributeDescription(bundle, "queue", attributes, CommonAttributes.ID, ModelType.LONG, false, null);
+        addResourceAttributeDescription(bundle, "queue", attributes, PAUSED, ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "queue", attributes, TEMPORARY, ModelType.BOOLEAN, false, null);
+
+        // Metrics
+        addResourceAttributeDescription(bundle, "queue", attributes, MESSAGE_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "queue", attributes, SCHEDULED_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "queue", attributes, CONSUMER_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "queue", attributes, DELIVERING_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "queue", attributes, MESSAGES_ADDED, ModelType.LONG, false, MeasurementUnit.NONE);
+
         node.get(OPERATIONS); // placeholder
 
         node.get(CHILDREN).setEmptyObject();
 
         return node;
+    }
+
+    private static ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix,
+                                                             final ModelNode attributes, final String attrName,
+                                                             final ModelType type, final boolean nillable,
+                                                             final MeasurementUnit measurementUnit) {
+        final ModelNode attr = attributes.get(attrName);
+        attr.get(DESCRIPTION).set(bundle.getString(prefix + "." + attrName));
+        attr.get(TYPE).set(type);
+        attr.get(NILLABLE).set(nillable);
+        if (measurementUnit != null) {
+            attr.get(UNIT).set(measurementUnit.getName());
+        }
+        return attr;
     }
 
     public static ModelNode getQueueAdd(Locale locale) {
@@ -246,6 +299,22 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
             attr.addResourceAttributeDescription(bundle, "jms-queue", node);
         }
+
+        final ModelNode attributes = node.get(ATTRIBUTES);
+
+        // Runtime attributes
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, QUEUE_ADDRESS.getName(), ModelType.STRING, false, null);
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, EXPIRY_ADDRESS.getName(), ModelType.STRING, true, null);
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, DEAD_LETTER_ADDRESS.getName(), ModelType.STRING, true, null);
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, PAUSED, ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, TEMPORARY, ModelType.BOOLEAN, false, null);
+
+        // Metrics
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, MESSAGE_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, SCHEDULED_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, CONSUMER_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, DELIVERING_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "jms-queue", attributes, MESSAGES_ADDED, ModelType.LONG, false, MeasurementUnit.NONE);
 
         node.get(OPERATIONS); //placeholder
 
@@ -288,6 +357,22 @@ public class MessagingDescriptions {
 
         ENTRIES.addResourceAttributeDescription(bundle, "topic", node);
 
+        final ModelNode attributes = node.get(ATTRIBUTES);
+
+        // Runtime attributes
+        addResourceAttributeDescription(bundle, "topic", attributes, TOPIC_ADDRESS, ModelType.STRING, false, null);
+        addResourceAttributeDescription(bundle, "topic", attributes, TEMPORARY, ModelType.BOOLEAN, false, null);
+
+        // Metrics
+        addResourceAttributeDescription(bundle, "topic", attributes, MESSAGE_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "topic", attributes, DELIVERING_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "topic", attributes, MESSAGES_ADDED, ModelType.LONG, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "topic", attributes, DURABLE_MESSAGE_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "topic", attributes, NON_DURABLE_MESSAGE_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "topic", attributes, SUBSCRIPTION_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "topic", attributes, DURABLE_SUBSCRIPTION_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+        addResourceAttributeDescription(bundle, "topic", attributes, NON_DURABLE_SUBSCRIPTION_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
+
         node.get(OPERATIONS); // placeholder
 
         node.get(CHILDREN).setEmptyObject();
@@ -325,6 +410,17 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("connection-factory"));
         addConnectionFactoryProperties(bundle, node, true);
+
+        final ModelNode attributes = node.get(ATTRIBUTES);
+
+        // Runtime attributes
+        addResourceAttributeDescription(bundle, "connection-factory", attributes, HA.getName(), ModelType.BOOLEAN, false, null);
+        final ModelNode type = addResourceAttributeDescription(bundle, "connection-factory", attributes, FACTORY_TYPE, ModelType.INT, false, null);
+        final ModelNode allowed = type.get(ALLOWED);
+        for (int i = 0; i < 6; i++) {
+            allowed.get(i);
+        }
+        addResourceAttributeDescription(bundle, "connection-factory", attributes, INITIAL_MESSAGE_PACKET_SIZE, ModelType.INT, false, MeasurementUnit.BYTES);
 
         node.get(OPERATIONS); // placeholder
 
