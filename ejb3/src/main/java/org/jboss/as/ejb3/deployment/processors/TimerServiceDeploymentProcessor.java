@@ -27,43 +27,30 @@ import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
-import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
-import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
 import org.jboss.as.ejb3.timerservice.TimerServiceService;
+import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.TransactionSynchronizationRegistryService;
-import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-import javax.ejb.Schedule;
-import javax.ejb.TimedObject;
-import javax.ejb.Timeout;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -106,47 +93,6 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                         final SessionBeanComponentDescription ejbComponentDescription = (SessionBeanComponentDescription) description;
-
-                        final DeploymentReflectionIndex deploymentReflectionIndex = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-                        final EEApplicationClasses applicationClasses = phaseContext.getDeploymentUnit().getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-
-                        final RuntimeAnnotationInformation<AutoTimer> scheduleAnnotationData = MethodAnnotationAggregator.runtimeAnnotationInformation(configuration.getComponentClass(), applicationClasses, deploymentReflectionIndex, Schedule.class);
-                        final Set<Method> timerAnnotationData = MethodAnnotationAggregator.runtimeAnnotationPresent(configuration.getComponentClass(), applicationClasses, deploymentReflectionIndex, Timeout.class);
-                        final Method timeoutMethod;
-                        if(timerAnnotationData.size() > 1) {
-                            throw new DeploymentUnitProcessingException("Component class " + configuration.getComponentClass() + " has multiple @Timeout annotations");
-                        } else if(timerAnnotationData.size() == 1) {
-                            timeoutMethod = timerAnnotationData.iterator().next();
-                        } else {
-                            timeoutMethod = null;
-                        }
-
-                        //First resolve the timer method and auto timer
-                        Class<?> c = configuration.getComponentClass();
-                        while (c != null && c != Object.class) {
-                            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(c);
-                            //TimedObject takes precedence
-                            Method method = null;
-                            if (TimedObject.class.isAssignableFrom(configuration.getComponentClass())) {
-                                method = index.getMethod(Void.TYPE, "ejbTimeout", javax.ejb.Timer.class);
-                            } else if (ejbComponentDescription.getTimeoutMethod() == null && timeoutMethod != null) {
-                                method = timeoutMethod;
-                            } else {
-                                break;
-                            }
-                            if (method != null) {
-                                ejbComponentDescription.setTimeoutMethod(method);
-                                break;
-                            }
-                            c = c.getSuperclass();
-                        }
-                        //now for the schedule methods
-                        for (Map.Entry<Method, List<AutoTimer>> entry : scheduleAnnotationData.getMethodAnnotations().entrySet()) {
-
-                            for (AutoTimer timer : entry.getValue()) {
-                                ejbComponentDescription.addScheduleMethod(entry.getKey(), timer);
-                            }
-                        }
 
                         configuration.addTimeoutInterceptor(SessionInvocationContextInterceptor.FACTORY, InterceptorOrder.Component.TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR);
 
