@@ -19,65 +19,105 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.deployment.processors.dd;
+package org.jboss.as.ejb3.deployment.processors.merging;
 
-import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
+import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.deployment.processors.dd.MethodResolutionUtils;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.ScheduleMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.TimerMetaData;
-import org.jboss.modules.Module;
 
+import javax.ejb.Schedule;
 import javax.ejb.ScheduleExpression;
+import javax.ejb.TimedObject;
+import javax.ejb.Timeout;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Deployment unit processor that merges the annotation information with the information in the deployment descriptor
  *
  * @author Stuart Douglas
  */
-public class TimeoutMethodDeploymentDescriptorProcessor extends AbstractEjbXmlDescriptorProcessor<SessionBeanMetaData> {
+public class TimerMethodMergingProcessor extends AbstractMergingProcessor<SessionBeanComponentDescription> {
 
-    @Override
-    protected Class<SessionBeanMetaData> getMetaDataType() {
-        return SessionBeanMetaData.class;
+
+    public TimerMethodMergingProcessor() {
+        super(SessionBeanComponentDescription.class);
     }
 
     @Override
-    protected void processBeanMetaData(final SessionBeanMetaData beanMetaData, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
+        final RuntimeAnnotationInformation<AutoTimer> scheduleAnnotationData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, Schedule.class);
+        final Set<Method> timerAnnotationData = MethodAnnotationAggregator.runtimeAnnotationPresent(componentClass, applicationClasses, deploymentReflectionIndex, Timeout.class);
+        final Method timeoutMethod;
+        if (timerAnnotationData.size() > 1) {
+            throw new DeploymentUnitProcessingException("Component class " + componentClass + " has multiple @Timeout annotations");
+        } else if (timerAnnotationData.size() == 1) {
+            timeoutMethod = timerAnnotationData.iterator().next();
+        } else {
+            timeoutMethod = null;
+        }
+        description.setTimeoutMethod(timeoutMethod);
 
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final SessionBeanComponentDescription sessionBean = (SessionBeanComponentDescription) moduleDescription.getComponentByName(beanMetaData.getEjbName());
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        if (module == null) {
-            return;
-        }
-        if (sessionBean == null) {
-            //should not happen
-            return;
-        }
 
-        final Class<?> componentClass;
-        try {
-            componentClass = module.getClassLoader().loadClass(sessionBean.getComponentClassName());
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load EJB class " + sessionBean.getComponentClassName());
-        }
-        final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        //now for the schedule methods
+        for (Map.Entry<Method, List<AutoTimer>> entry : scheduleAnnotationData.getMethodAnnotations().entrySet()) {
 
-        if (beanMetaData.getTimeoutMethod() != null) {
-            parseTimeoutMethod(beanMetaData, sessionBean, componentClass, deploymentReflectionIndex);
+            for (AutoTimer timer : entry.getValue()) {
+                description.addScheduleMethod(entry.getKey(), timer);
+            }
         }
-        parseScheduleMethods(beanMetaData, sessionBean, componentClass, deploymentReflectionIndex);
     }
+
+    @Override
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
+        final SessionBeanMetaData descriptorData = description.getDescriptorData();
+        if (descriptorData != null) {
+            if (descriptorData.getTimeoutMethod() != null) {
+                parseTimeoutMethod(descriptorData, description, componentClass, deploymentReflectionIndex);
+            }
+            parseScheduleMethods(descriptorData, description, componentClass, deploymentReflectionIndex);
+        }
+
+        //now check to see if the class implemented TimedObject
+        //if so, this will take precedence over annotations
+        //or the method specified in the deployment descriptor
+        if (TimedObject.class.isAssignableFrom(componentClass)) {
+            Class<?> c = componentClass;
+            while (c != null && c != Object.class) {
+                final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(c);
+                //TimedObject takes precedence
+                Method method = index.getMethod(Void.TYPE, "ejbTimeout", javax.ejb.Timer.class);
+                if (method != null) {
+
+                    final Method otherMethod = description.getTimeoutMethod();
+                    if (otherMethod != null) {
+                        if (!otherMethod.equals(method)) {
+                            throw new DeploymentUnitProcessingException("EJB 3.1 18.2.5.3 entity bean " + componentClass + " implemented TimedObject, " +
+                                    "but has a different timeout method specified either via annotations or via the deployment descriptor");
+                        }
+                    }
+                    description.setTimeoutMethod(method);
+                    break;
+                }
+                c = c.getSuperclass();
+            }
+        }
+    }
+
 
     private void parseScheduleMethods(final SessionBeanMetaData beanMetaData, final SessionBeanComponentDescription sessionBean, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         if (beanMetaData instanceof SessionBean31MetaData) {
@@ -114,6 +154,7 @@ public class TimeoutMethodDeploymentDescriptorProcessor extends AbstractEjbXmlDe
 
         }
     }
+
 
     private void parseTimeoutMethod(final SessionBeanMetaData beanMetaData, final SessionBeanComponentDescription sessionBean, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         //resolve timeout methods
