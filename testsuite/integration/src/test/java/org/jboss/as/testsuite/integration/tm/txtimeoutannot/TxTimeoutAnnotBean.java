@@ -48,7 +48,7 @@ public class TxTimeoutAnnotBean {
     /**
      * This method's timeout should be 5 secs
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @TransactionTimeout(5)
     public void testOverriddenTimeoutExpires() {
         sleep(7000, false);
@@ -68,7 +68,7 @@ public class TxTimeoutAnnotBean {
     /**
      * This method's timeout should be 20 secs
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @TransactionTimeout(20)
     public void testOverriddenTimeoutDoesNotExpire() {
         sleep(12000, true);
