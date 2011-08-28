@@ -32,7 +32,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.TimerServiceAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
-import org.jboss.as.ejb3.deployment.processors.dd.TimeoutMethodDeploymentDescriptorProcessor;
+import org.jboss.as.ejb3.deployment.processors.merging.TimerMethodMergingProcessor;
 import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -134,7 +134,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler implements D
                     //we only add the timer service DUP's when the timer service in enabled in XML
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TIMEOUT_ANNOTATION, new TimerServiceAnnotationProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_METADATA_MERGE, new TimeoutMethodDeploymentDescriptorProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_METADATA_MERGE, new TimerMethodMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(coreThreadCount, maxThreadCount, true));
                 }
             }, OperationContext.Stage.RUNTIME);
