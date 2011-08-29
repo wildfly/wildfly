@@ -187,11 +187,11 @@ public interface CommonAttributes {
     SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
             null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition GROUP_ADDRESS = new SimpleAttributeDefinition("group-address", ModelType.STRING, false);
+    SimpleAttributeDefinition GROUP_ADDRESS = new SimpleAttributeDefinition("group-address", ModelType.STRING, true);
 
     SimpleAttributeDefinition GROUP_ID = new SimpleAttributeDefinition("group-id", ModelType.STRING, true);
 
-    SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", ModelType.INT, false);
+    SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", new ModelNode().set(0), ModelType.INT, true);
 
     SimpleAttributeDefinition HA = new SimpleAttributeDefinition("ha", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, true);
 
@@ -529,13 +529,16 @@ public interface CommonAttributes {
         ROUTING_NAME, DIVERT_ADDRESS, DIVERT_FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
     };
 
-    AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = {
-        LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT, BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP
+    AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = { SOCKET_BINDING_OPTIONAL, BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP,
+            // TODO remove
+            LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT
     };
 
-    AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = {
-        LOCAL_BIND_ADDRESS, GROUP_ADDRESS, GROUP_PORT, REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT
-    };
+
+    // TODO change socket - binding to non-optional!
+    AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = { SOCKET_BINDING_OPTIONAL, REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT,
+            // TODO remove
+            LOCAL_BIND_ADDRESS, GROUP_ADDRESS, GROUP_PORT};
 
     AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};
 

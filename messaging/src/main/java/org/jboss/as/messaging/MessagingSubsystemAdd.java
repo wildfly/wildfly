@@ -22,6 +22,10 @@
 
 package org.jboss.as.messaging;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.core.cluster.DiscoveryGroup;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
@@ -92,6 +96,7 @@ import javax.management.MBeanServer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
@@ -199,6 +204,24 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 for (final String socketBinding : socketBindings) {
                     final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
                     serviceBuilder.addDependency(socketName, SocketBinding.class, hqService.getSocketBindingInjector(socketBinding));
+                }
+
+                final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
+                final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = configuration.getDiscoveryGroupConfigurations();
+
+                if(broadcastGroupConfigurations != null) {
+                    for(final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
+                        final String name = config.getName();
+                        final ServiceName groupBinding = GroupBindingService.BASE.append(name);
+                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector(name));
+                    }
+                }
+                if(discoveryGroupConfigurations != null) {
+                    for(final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
+                        final String name = config.getName();
+                        final ServiceName groupBinding = GroupBindingService.BASE.append(name);
+                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector(name));
+                    }
                 }
 
                 serviceBuilder.addListener(verificationHandler);

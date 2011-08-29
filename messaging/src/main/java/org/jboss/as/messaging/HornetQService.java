@@ -1,12 +1,16 @@
 package org.jboss.as.messaging;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -47,6 +51,7 @@ class HornetQService implements Service<HornetQServer> {
     private HornetQServer server;
     private Map<String, String> paths = new HashMap<String, String>();
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
+    private Map<String, SocketBinding> groupBindings = new HashMap<String, SocketBinding>();
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
 
     Injector<String> getPathInjector(String name) {
@@ -55,6 +60,10 @@ class HornetQService implements Service<HornetQServer> {
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
         return new MapInjector<String, SocketBinding>(socketBindings, name);
+    }
+
+    Injector<SocketBinding> getGroupBindingInjector(String name) {
+        return new MapInjector<String, SocketBinding>(groupBindings, name);
     }
 
     InjectedValue<MBeanServer> getMBeanServer() {
@@ -93,6 +102,8 @@ class HornetQService implements Service<HornetQServer> {
             // Map the socket bindings onto the connectors/acceptors
             Collection<TransportConfiguration> acceptors = configuration.getAcceptorConfigurations();
             Collection<TransportConfiguration> connectors = configuration.getConnectorConfigurations().values();
+            Collection<BroadcastGroupConfiguration> broadcastGroups = configuration.getBroadcastGroupConfigurations();
+            Map<String, DiscoveryGroupConfiguration> discoveryGroups = configuration.getDiscoveryGroupConfigurations();
             if (connectors != null) {
                 for (TransportConfiguration tc : connectors) {
                     // If there is a socket binding set the HOST/PORT values
@@ -121,6 +132,29 @@ class HornetQService implements Service<HornetQServer> {
                         tc.getParams().put(HOST, binding.getSocketAddress().getHostName());
                         tc.getParams().put(PORT, "" + binding.getSocketAddress().getPort());
                     }
+                }
+            }
+            if(broadcastGroups != null) {
+                final List<BroadcastGroupConfiguration> newConfigs = new ArrayList<BroadcastGroupConfiguration>();
+                for(final BroadcastGroupConfiguration config : broadcastGroups) {
+                    final String name = config.getName();
+                    final SocketBinding binding = groupBindings.get(name);
+                    if (binding == null) {
+                        throw new StartException("Failed to find SocketBinding for broadcast binding: " + name);
+                    }
+                    newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
+                }
+            }
+            if(discoveryGroups != null) {
+                configuration.setDiscoveryGroupConfigurations(new HashMap<String, DiscoveryGroupConfiguration>());
+                for(final Map.Entry<String, DiscoveryGroupConfiguration> entry : discoveryGroups.entrySet()) {
+                    final String name = entry.getKey();
+                    final SocketBinding binding = groupBindings.get(name);
+                    if (binding == null) {
+                        throw new StartException("Failed to find SocketBinding for discovery binding: " + entry.getKey());
+                    }
+                    final DiscoveryGroupConfiguration config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding);
+                    configuration.getDiscoveryGroupConfigurations().put(name, config);
                 }
             }
 
