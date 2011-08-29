@@ -22,9 +22,13 @@
 
 package org.jboss.as.messaging;
 
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,10 +40,16 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Handler for adding a broadcast group.
@@ -80,8 +90,42 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
         ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
         if (hqService != null) {
             context.reloadRequired();
+        } else {
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String name = address.getLastElement().getValue();
+
+            final ServiceTarget target = context.getServiceTarget();
+            if(model.hasDefined(CommonAttributes.SOCKET_BINDING.getName())) {
+                final GroupBindingService bindingService = new GroupBindingService();
+                target.addService(GroupBindingService.BASE.append(name), bindingService)
+                        .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(model.get(SOCKET_BINDING).asString()), SocketBinding.class, bindingService.getBindingRef())
+                        .install();
+            } else {
+
+                final ModelNode localAddrNode = CommonAttributes.LOCAL_BIND_ADDRESS.validateResolvedOperation(model);
+                final String localAddress = localAddrNode.isDefined() ? localAddrNode.asString() : null;
+                final String groupAddress = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asString();
+                final int groupPort = CommonAttributes.GROUP_PORT.validateResolvedOperation(model).asInt();
+
+                try {
+
+                    final InetAddress inet = localAddress != null ? InetAddress.getByName(localAddress) : InetAddress.getLocalHost();
+                    final NetworkInterface intf = NetworkInterface.getByInetAddress(inet);
+                    final NetworkInterfaceBinding b = new NetworkInterfaceBinding(Collections.singleton(intf), inet);
+                    final InetAddress group = InetAddress.getByName(groupAddress);
+
+                    final SocketBinding socketBinding = new SocketBinding(name, -1, false, group, groupPort, b, null);
+
+                    final GroupBindingService bindingService = new GroupBindingService();
+                    target.addService(GroupBindingService.BASE.append(name), bindingService)
+                            .addInjectionValue(bindingService.getBindingRef(), new ImmediateValue<SocketBinding>(socketBinding))
+                            .install();
+
+                } catch (Exception e) {
+                    throw new OperationFailedException(new ModelNode().set(e.getMessage()));
+                }
+            }
         }
-        // else MessagingSubsystemAdd will add a handler that calls addBroadcastGroupConfigs
     }
 
     @Override
@@ -105,7 +149,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
         final String localAddress = localAddrNode.isDefined() ? localAddrNode.asString() : null;
         final int localPort = CommonAttributes.LOCAL_BIND_PORT.validateResolvedOperation(model).asInt();
         final String groupAddress = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asString();
-        final int groupPort = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asInt();
+        final int groupPort = CommonAttributes.GROUP_PORT.validateResolvedOperation(model).asInt(0);
         final long broadcastPeriod = CommonAttributes.BROADCAST_PERIOD.validateResolvedOperation(model).asLong();
         final List<String> connectorRefs = new ArrayList<String>();
         if (model.hasDefined(CommonAttributes.CONNECTORS)) {
@@ -116,4 +160,17 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
 
         return new BroadcastGroupConfiguration(name, localAddress, localPort, groupAddress, groupPort, broadcastPeriod, connectorRefs);
     }
+
+    static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, BroadcastGroupConfiguration config, SocketBinding socketBinding) {
+
+        final String localAddress = socketBinding.getAddress().toString();
+        final String groupAddress = socketBinding.getMulticastAddress().toString();
+        final int localPort = socketBinding.getPort();
+        final int groupPort = socketBinding.getMulticastPort();
+        final long broadcastPeriod = config.getBroadcastPeriod();
+        final List<String> connectorRefs = config.getConnectorInfos();
+
+        return new BroadcastGroupConfiguration(name, localAddress, localPort, groupAddress, groupPort, broadcastPeriod, connectorRefs);
+    }
+
 }

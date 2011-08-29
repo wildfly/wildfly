@@ -78,6 +78,7 @@ import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SEND_XML_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING_OPTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
@@ -598,10 +599,33 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     private static void parseBroadcastGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
 
-        requireSingleAttribute(reader, CommonAttributes.NAME);
-        String name = reader.getAttributeValue(0);
+        String name = null;
+        String socketBinding = null;
+
+        int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String attrValue = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    name = attrValue;
+                    break;
+                }
+                case SOCKET_BINDING: {
+                    socketBinding = attrValue;
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if(name == null) {
+            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
 
         ModelNode broadcastGroupAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.BROADCAST_GROUP, name));
+        if(socketBinding != null) broadcastGroupAdd.get(SOCKET_BINDING.getName()).set(socketBinding);
 
         EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -648,10 +672,34 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     private static void parseDiscoveryGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
 
-        requireSingleAttribute(reader, CommonAttributes.NAME);
-        String name = reader.getAttributeValue(0);
+        String name = null;
+        String socketBinding = null;
 
-        ModelNode broadcastGroupAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.DISCOVERY_GROUP, name));
+        int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String attrValue = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    name = attrValue;
+                    break;
+                }
+                case SOCKET_BINDING: {
+                    socketBinding = attrValue;
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if(name == null) {
+            ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        ModelNode discoveryGroup = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.DISCOVERY_GROUP, name));
+        if(socketBinding != null) discoveryGroup.get(SOCKET_BINDING.getName()).set(socketBinding);
+
 
         EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -663,7 +711,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case GROUP_PORT:
                 case REFRESH_TIMEOUT:
                 case INITIAL_WAIT_TIMEOUT:
-                    handleElementText(reader, element, broadcastGroupAdd);
+                    handleElementText(reader, element, discoveryGroup);
                     break;
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -675,7 +723,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             missingRequired(reader, required);
         }
 
-        updates.add(broadcastGroupAdd);
+        updates.add(discoveryGroup);
     }
 
     static void processConnectionFactories(final XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -1670,7 +1718,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : node.asPropertyList()) {
                 writer.writeStartElement(Element.BROADCAST_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                SOCKET_BINDING.marshallAsAttribute(property.getValue(), false, writer);
                 for (AttributeDefinition attribute : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
+                    if(attribute == SOCKET_BINDING_OPTIONAL) {
+                        continue;
+                    }
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();
@@ -1686,7 +1738,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : node.asPropertyList()) {
                 writer.writeStartElement(Element.DISCOVERY_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                SOCKET_BINDING.marshallAsAttribute(property.getValue(), false, writer);
                 for (AttributeDefinition attribute : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
+                    if(attribute == SOCKET_BINDING_OPTIONAL) {
+                        continue;
+                    }
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();

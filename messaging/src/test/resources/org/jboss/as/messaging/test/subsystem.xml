@@ -54,6 +54,8 @@
                     <group-address>groupB</group-address>
                     <group-port>34567</group-port>
                 </broadcast-group>
+                <broadcast-group name="groupS" socket-binding="group-s-binding">
+                </broadcast-group>
             </broadcast-groups>
 
             <discovery-groups>
@@ -67,6 +69,8 @@
                 <discovery-group name="groupD">
                     <group-address>groupD</group-address>
                     <group-port>56789</group-port>
+                </discovery-group>
+                <discovery-group name="groupT" socket-binding="group-t-binding">
                 </discovery-group>
             </discovery-groups>
 
