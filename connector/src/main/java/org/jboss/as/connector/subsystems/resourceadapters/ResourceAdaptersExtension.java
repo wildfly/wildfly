@@ -21,6 +21,54 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
+import org.jboss.as.connector.pool.PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler;
+import org.jboss.as.connector.pool.PoolMetrics;
+import org.jboss.as.connector.pool.PoolOperations;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
+import org.jboss.jca.common.api.metadata.common.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
+import org.jboss.jca.common.api.metadata.common.CommonSecurity;
+import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
+import org.jboss.jca.common.api.metadata.common.CommonValidation;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
+import org.jboss.logging.Logger;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE;
@@ -79,56 +127,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
-import org.jboss.as.connector.pool.PoolConfigurationRWHandler.RaPoolConfigurationWriteHandler;
-import org.jboss.as.connector.pool.PoolMetrics;
-import org.jboss.as.connector.pool.PoolOperations;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
-import org.jboss.jca.common.api.metadata.common.CommonValidation;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.common.Credential;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterParser;
-import org.jboss.logging.Logger;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -208,7 +206,7 @@ public class ResourceAdaptersExtension implements Extension {
         }
 
         private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
-            streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADPTER.getLocalName());
+            streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADAPTER.getLocalName());
 
             writeElementIfHas(streamWriter, ra, ResourceAdapter.Tag.ARCHIVE, ARCHIVE);
 
@@ -255,9 +253,9 @@ public class ResourceAdaptersExtension implements Extension {
         private void writeAdminObject(XMLExtendedStreamWriter streamWriter, ModelNode adminObject) throws XMLStreamException {
             streamWriter.writeStartElement(ResourceAdapter.Tag.ADMIN_OBJECT.getLocalName());
             writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.CLASS_NAME, CLASS_NAME);
-            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.JNDINAME, JNDI_NAME);
+            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.JNDI_NAME, JNDI_NAME);
             writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.ENABLED, ENABLED);
-            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
+            writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.USE_JAVA_CONTEXT, USE_JAVA_CONTEXT);
             writeAttributeIfHas(streamWriter, adminObject, CommonAdminObject.Attribute.POOL_NAME, POOL_NAME);
 
             writeConfigProperties(streamWriter, adminObject);
@@ -268,11 +266,11 @@ public class ResourceAdaptersExtension implements Extension {
         private void writeConDef(XMLExtendedStreamWriter streamWriter, ModelNode conDef) throws XMLStreamException {
             streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITION.getLocalName());
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.CLASS_NAME, CLASS_NAME);
-            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.JNDINAME, JNDI_NAME);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.JNDI_NAME, JNDI_NAME);
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.ENABLED, ENABLED);
-            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USE_JAVA_CONTEXT, USE_JAVA_CONTEXT);
             writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.POOL_NAME, POOL_NAME);
-            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USECCM, USE_CCM);
+            writeAttributeIfHas(streamWriter, conDef, CommonConnDef.Attribute.USE_CCM, USE_CCM);
 
 
             writeConfigProperties(streamWriter, conDef);
@@ -283,12 +281,12 @@ public class ResourceAdaptersExtension implements Extension {
                         || conDef.has(PAD_XID) || conDef.has(SAME_RM_OVERRIDE)) {
                     streamWriter.writeStartElement(CommonConnDef.Tag.XA_POOL.getLocalName());
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MIN_POOL_SIZE, MIN_POOL_SIZE);
-                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MAXPOOLSIZE, MAX_POOL_SIZE);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MAX_POOL_SIZE, MAX_POOL_SIZE);
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.PREFILL, POOL_PREFILL);
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.FLUSH_STRATEGY, FLUSH_STRATEGY);
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.USE_STRICT_MIN, POOL_USE_STRICT_MIN);
 
-                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE, SAME_RM_OVERRIDE);
+                    writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.IS_SAME_RM_OVERRIDE, SAME_RM_OVERRIDE);
                     writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.INTERLEAVING, INTERLEAVING);
                     writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.NO_TX_SEPARATE_POOLS, NOTXSEPARATEPOOL);
                     writeElementIfHas(streamWriter, conDef, CommonXaPool.Tag.PAD_XID, PAD_XID);
@@ -298,7 +296,7 @@ public class ResourceAdaptersExtension implements Extension {
                 } else {
                     streamWriter.writeStartElement(CommonConnDef.Tag.POOL.getLocalName());
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MIN_POOL_SIZE, MIN_POOL_SIZE);
-                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MAXPOOLSIZE, MAX_POOL_SIZE);
+                    writeElementIfHas(streamWriter, conDef, CommonPool.Tag.MAX_POOL_SIZE, MAX_POOL_SIZE);
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.PREFILL, POOL_PREFILL);
                     writeElementIfHas(streamWriter, conDef, CommonPool.Tag.USE_STRICT_MIN, POOL_USE_STRICT_MIN);
                     streamWriter.writeEndElement();
@@ -320,22 +318,22 @@ public class ResourceAdaptersExtension implements Extension {
             if (conDef.has(BLOCKING_TIMEOUT_WAIT_MILLIS) || conDef.has(IDLETIMEOUTMINUTES) || conDef.has(ALLOCATION_RETRY)
                     || conDef.has(ALLOCATION_RETRY_WAIT_MILLIS) || conDef.has(XA_RESOURCE_TIMEOUT)) {
                 streamWriter.writeStartElement(CommonConnDef.Tag.TIMEOUT.getLocalName());
-                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.BLOCKINGTIMEOUTMILLIS, BLOCKING_TIMEOUT_WAIT_MILLIS);
-                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.IDLETIMEOUTMINUTES, IDLETIMEOUTMINUTES);
-                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.ALLOCATIONRETRY, ALLOCATION_RETRY);
-                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.ALLOCATIONRETRYWAITMILLIS,
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.BLOCKING_TIMEOUT_MILLIS, BLOCKING_TIMEOUT_WAIT_MILLIS);
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.IDLE_TIMEOUT_MINUTES, IDLETIMEOUTMINUTES);
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.ALLOCATION_RETRY, ALLOCATION_RETRY);
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS,
                         ALLOCATION_RETRY_WAIT_MILLIS);
-                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.XARESOURCETIMEOUT, XA_RESOURCE_TIMEOUT);
+                writeElementIfHas(streamWriter, conDef, CommonTimeOut.Tag.XA_RESOURCE_TIMEOUT, XA_RESOURCE_TIMEOUT);
                 streamWriter.writeEndElement();
             }
 
             if (conDef.has(BACKGROUNDVALIDATION) || conDef.has(BACKGROUNDVALIDATIONMILLIS) || conDef.has(USE_FAST_FAIL) ||
                 conDef.has(BACKGROUNDVALIDATIONMINUTES_REMOVE) || conDef.has(USE_FAST_FAIL_REMOVE)) {
                 streamWriter.writeStartElement(CommonConnDef.Tag.VALIDATION.getLocalName());
-                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATION, BACKGROUNDVALIDATION);
-                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUNDVALIDATIONMILLIS,
+                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUND_VALIDATION, BACKGROUNDVALIDATION);
+                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.BACKGROUND_VALIDATION_MILLIS,
                         BACKGROUNDVALIDATIONMILLIS);
-                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.USEFASTFAIL, USE_FAST_FAIL);
+                writeElementIfHas(streamWriter, conDef, CommonValidation.Tag.USE_FAST_FAIL, USE_FAST_FAIL);
                 streamWriter.writeEndElement();
             }
 
@@ -347,7 +345,7 @@ public class ResourceAdaptersExtension implements Extension {
                 if (conDef.hasDefined(RECOVERY_USERNAME) || conDef.hasDefined(RECOVERY_PASSWORD)
                         || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN)) {
                     streamWriter.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
-                    writeElementIfHas(streamWriter, conDef, Credential.Tag.USERNAME.getLocalName(), RECOVERY_USERNAME);
+                    writeElementIfHas(streamWriter, conDef, Credential.Tag.USER_NAME.getLocalName(), RECOVERY_USERNAME);
                     writeElementIfHas(streamWriter, conDef, Credential.Tag.PASSWORD.getLocalName(), RECOVERY_PASSWORD);
                     writeElementIfHas(streamWriter, conDef, Credential.Tag.SECURITY_DOMAIN.getLocalName(),
                             RECOVERY_SECURITY_DOMAIN);
@@ -456,7 +454,6 @@ public class ResourceAdaptersExtension implements Extension {
 
             list.add(subsystem);
 
-            ResourceAdapters ras = null;
             try {
                 String localName = null;
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -467,7 +464,7 @@ public class ResourceAdaptersExtension implements Extension {
                         switch (element) {
                             case SUBSYSTEM: {
                                 ResourceAdapterParser parser = new ResourceAdapterParser();
-                                ras = parser.parse(reader);
+                                parser.parse(reader, list, address);
                                 ParseUtils.requireNoContent(reader);
                                 break;
                             }
@@ -476,49 +473,6 @@ public class ResourceAdaptersExtension implements Extension {
                 }
             } catch (Exception e) {
                 throw new XMLStreamException(e);
-            }
-
-            if (ras != null && ras.getResourceAdapters() != null) {
-                for (ResourceAdapter ra : ras.getResourceAdapters()) {
-                    final ModelNode raAddress = address.clone();
-                    raAddress.add(RESOURCEADAPTER, ra.getArchive());
-                    raAddress.protect();
-
-                    final ModelNode operation = new ModelNode();
-                    operation.get(OP_ADDR).set(raAddress);
-                    operation.get(OP).set(ADD);
-                    if (ra.getConfigProperties() != null) {
-                        for (Entry<String, String> entry : ra.getConfigProperties().entrySet()) {
-                            operation.get(CONFIG_PROPERTIES, entry.getKey()).set(entry.getValue());
-                        }
-                    }
-                    setStringIfNotNull(operation, ARCHIVE, ra.getArchive());
-                    setStringIfNotNull(operation, TRANSACTIONSUPPORT, ra.getTransactionSupport() != null ? ra
-                            .getTransactionSupport().name() : null);
-                    setStringIfNotNull(operation, BOOTSTRAPCONTEXT, ra.getBootstrapContext());
-
-                    if (ra.getBeanValidationGroups() != null) {
-                        for (String beanValidationGroup : ra.getBeanValidationGroups()) {
-                            operation.get(BEANVALIDATIONGROUPS).add(beanValidationGroup);
-                        }
-                    }
-
-                    if (ra.getConnectionDefinitions() != null) {
-                        for (CommonConnDef conDef : ra.getConnectionDefinitions()) {
-                            operation.get(CONNECTIONDEFINITIONS).add(createConnectionDefinitionModel(conDef));
-
-                        }
-                    }
-
-                    if (ra.getAdminObjects() != null) {
-                        for (CommonAdminObject adminObject : ra.getAdminObjects()) {
-                            operation.get(ADMIN_OBJECTS).add(createAdminObjectModel(adminObject));
-
-                        }
-                    }
-
-                    list.add(operation);
-                }
             }
 
         }
@@ -564,7 +518,7 @@ public class ResourceAdaptersExtension implements Extension {
                     setBooleanIfNotNull(condefModel, PAD_XID, xaPool.isPadXid());
                     setBooleanIfNotNull(condefModel, SAME_RM_OVERRIDE, xaPool.isSameRmOverride());
                     setBooleanIfNotNull(condefModel, NOTXSEPARATEPOOL, xaPool.isNoTxSeparatePool());
-                    setBooleanIfNotNull(condefModel, WRAP_XA_RESOURCE, xaPool.isWrapXaDataSource(), Boolean.TRUE);
+                    setBooleanIfNotNull(condefModel, WRAP_XA_RESOURCE, xaPool.isWrapXaResource(), Boolean.TRUE);
                 }
             } else {
                 if (conDef.isXa()) {

@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A ConnectorServices.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -59,7 +60,9 @@ public final class ConnectorServices {
 
     public static final ServiceName RESOURCE_ADAPTER_ACTIVATOR_SERVICE = ServiceName.JBOSS.append("raactivator");
 
-    /** MDR service name **/
+    /**
+     * MDR service name *
+     */
     public static final ServiceName IRONJACAMAR_MDR = ServiceName.JBOSS.append("ironjacamar", "mdr");
 
     public static final ServiceName RA_REPOSISTORY_SERVICE = ServiceName.JBOSS.append("rarepository");
@@ -79,7 +82,8 @@ public final class ConnectorServices {
 
     /**
      * convenient method to check notNull of value
-     * @param <T> type of the value
+     *
+     * @param <T>   type of the value
      * @param value the value
      * @return the value or throw an {@link IllegalStateException} if value is
      *         null (a.k.a. service not started)
@@ -90,18 +94,34 @@ public final class ConnectorServices {
         return value;
     }
 
-    public static synchronized ServiceName getNextValidResourceAdapterXmlServiceName(String raName) {
-        ServiceName serviceName = null;
-       if(resourceAdapterXmlServiceNames.get(raName) == null) {
-           serviceName =  RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append( raName + "_1");
-           Set<ServiceName> serviceNames = new HashSet<ServiceName>(1);
-           serviceNames.add(serviceName);
-           resourceAdapterXmlServiceNames.put(raName,serviceNames);
-       } else {
-           serviceName =  RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append( raName + "_" + String.valueOf(resourceAdapterXmlServiceNames.get(raName).size() +1));
-           resourceAdapterXmlServiceNames.get(raName).add(serviceName);
-       }
-       return serviceName;
+    public static synchronized String getNextValidSuffix(String raName) {
+        if (resourceAdapterXmlServiceNames.get(raName) == null && resourceAdapterServiceNames.get(raName) == null) {
+            return "_1";
+        } else {
+            if (resourceAdapterServiceNames.get(raName) != null) {
+                if (resourceAdapterXmlServiceNames.get(raName) != null) {
+                    return "_" + (Math.max(resourceAdapterServiceNames.get(raName).size(),
+                            resourceAdapterXmlServiceNames.get(raName).size()) + 1);
+                } else {
+                    return "_" + resourceAdapterXmlServiceNames.get(raName).size();
+                }
+            } else {
+                return "_" + resourceAdapterXmlServiceNames.get(raName).size();
+            }
+        }
+    }
+
+
+    public static synchronized ServiceName registerResourceAdapterXmlServiceNameWithSuffix(String raName, String suffix) {
+        ServiceName serviceName = RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(raName + suffix);
+        if (resourceAdapterXmlServiceNames.get(raName) == null) {
+            Set<ServiceName> serviceNames = new HashSet<ServiceName>(1);
+            serviceNames.add(serviceName);
+            resourceAdapterXmlServiceNames.put(raName, serviceNames);
+        } else {
+            resourceAdapterXmlServiceNames.get(raName).add(serviceName);
+        }
+        return serviceName;
     }
 
     public static Set<ServiceName> getResourceAdapterXmlServiceName(String raName) {
@@ -109,18 +129,16 @@ public final class ConnectorServices {
 
     }
 
-    public static synchronized ServiceName getNextValidResourceAdapterServiceName(String raName) {
-        ServiceName serviceName = null;
-       if(resourceAdapterServiceNames.get(raName) == null) {
-           serviceName =  RESOURCE_ADAPTER_SERVICE_PREFIX.append( raName + "_1");
-           Set<ServiceName> serviceNames = new HashSet<ServiceName>(1);
-           serviceNames.add(serviceName);
-           resourceAdapterServiceNames.put(raName,serviceNames);
-       } else {
-           serviceName =  RESOURCE_ADAPTER_SERVICE_PREFIX.append( raName + "_" + String.valueOf(resourceAdapterXmlServiceNames.get(raName).size() +1));
-           resourceAdapterServiceNames.get(raName).add(serviceName);
-       }
-       return serviceName;
+    public static synchronized ServiceName registerResourceAdapterServiceNameWithSuffix(String raName, String suffix) {
+        ServiceName serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName + suffix);
+        if (resourceAdapterServiceNames.get(raName) == null) {
+            Set<ServiceName> serviceNames = new HashSet<ServiceName>(1);
+            serviceNames.add(serviceName);
+            resourceAdapterServiceNames.put(raName, serviceNames);
+        } else {
+            resourceAdapterServiceNames.get(raName).add(serviceName);
+        }
+        return serviceName;
     }
 
     public static Set<ServiceName> getResourceAdapteServiceName(String raName) {

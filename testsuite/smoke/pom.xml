@@ -85,6 +85,7 @@
                                 <exclude>org/jboss/as/test/embedded/demos/jms/**</exclude>
                                 <exclude>org/jboss/as/test/embedded/demos/messaging/**</exclude>
                                 <exclude>org/jboss/as/test/embedded/demos/ws/**</exclude>
+                                <exclude>org/jboss/as/test/embedded/deployment/rar/**/*TestCase.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>

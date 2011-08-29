@@ -22,6 +22,37 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.FlushStrategy;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.jca.common.api.metadata.ds.DsSecurity;
+import org.jboss.jca.common.api.metadata.ds.Statement;
+import org.jboss.jca.common.api.metadata.ds.TimeOut;
+import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
+import org.jboss.jca.common.api.metadata.ds.Validation;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.common.metadata.common.CommonPoolImpl;
+import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
+import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.jca.common.metadata.ds.DataSourceImpl;
+import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
+import org.jboss.jca.common.metadata.ds.StatementImpl;
+import org.jboss.jca.common.metadata.ds.TimeOutImpl;
+import org.jboss.jca.common.metadata.ds.ValidationImpl;
+import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE;
@@ -58,8 +89,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDST
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
@@ -86,223 +117,12 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOUR
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.common.Credential;
-import org.jboss.jca.common.api.metadata.common.Extension;
-import org.jboss.jca.common.api.metadata.common.FlushStrategy;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.ds.DataSource;
-import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.Statement;
-import org.jboss.jca.common.api.metadata.ds.TimeOut;
-import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
-import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.CommonPoolImpl;
-import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
-import org.jboss.jca.common.metadata.common.CredentialImpl;
-import org.jboss.jca.common.metadata.ds.DataSourceImpl;
-import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
-import org.jboss.jca.common.metadata.ds.StatementImpl;
-import org.jboss.jca.common.metadata.ds.TimeOutImpl;
-import org.jboss.jca.common.metadata.ds.ValidationImpl;
-import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
-
 /**
  * Utility used to help convert between JCA spi data-source instances and model
  * node representations and vice-versa.
  * @author John Bailey
  */
 class DataSourceModelNodeUtil {
-
-    static void fillFrom(final ModelNode dataSourceModel, final DataSource dataSource) {
-        for (Map.Entry<String, String> entry : dataSource.getConnectionProperties().entrySet()) {
-            dataSourceModel.get(CONNECTION_PROPERTIES, entry.getKey()).set(entry.getValue());
-        }
-        setStringIfNotNull(dataSourceModel, CONNECTION_URL, dataSource.getConnectionUrl());
-        setStringIfNotNull(dataSourceModel, DATASOURCE_DRIVER_CLASS, dataSource.getDriverClass());
-        setStringIfNotNull(dataSourceModel, DATASOURCE_CLASS, dataSource.getDataSourceClass());
-        setStringIfNotNull(dataSourceModel, JNDINAME, dataSource.getJndiName());
-        setStringIfNotNull(dataSourceModel, DATASOURCE_DRIVER, dataSource.getDriver());
-        setStringIfNotNull(dataSourceModel, NEW_CONNECTION_SQL, dataSource.getNewConnectionSql());
-        setStringIfNotNull(dataSourceModel, POOLNAME, dataSource.getPoolName());
-        setStringIfNotNull(dataSourceModel, URL_DELIMITER, dataSource.getUrlDelimiter());
-        setStringIfNotNull(dataSourceModel, URL_SELECTOR_STRATEGY_CLASS_NAME, dataSource.getUrlSelectorStrategyClassName());
-        setBooleanIfNotNull(dataSourceModel, USE_JAVA_CONTEXT, dataSource.isUseJavaContext());
-        setBooleanIfNotNull(dataSourceModel, ENABLED, dataSource.isEnabled());
-        setBooleanIfNotNull(dataSourceModel, JTA, dataSource.isJTA());
-
-        CommonPool pool = dataSource.getPool();
-        if (pool != null) {
-            setIntegerIfNotNull(dataSourceModel, MAX_POOL_SIZE, pool.getMaxPoolSize());
-            setIntegerIfNotNull(dataSourceModel, MIN_POOL_SIZE, pool.getMinPoolSize());
-            setBooleanIfNotNull(dataSourceModel, POOL_PREFILL, pool.isPrefill());
-            setBooleanIfNotNull(dataSourceModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
-            if (pool.getFlushStrategy() != null) {
-                setStringIfNotNull(dataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().getName());
-            }
-        }
-        DsSecurity security = dataSource.getSecurity();
-        if (security != null) {
-            setStringIfNotNull(dataSourceModel, USERNAME, security.getUserName());
-            setStringIfNotNull(dataSourceModel, PASSWORD, security.getPassword());
-            setStringIfNotNull(dataSourceModel, SECURITY_DOMAIN, security.getSecurityDomain());
-            setExtensionIfNotNull(dataSourceModel, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES, security.getReauthPlugin());
-        }
-        Statement statement = dataSource.getStatement();
-        if (statement != null) {
-            setLongIfNotNull(dataSourceModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
-            setBooleanIfTrue(dataSourceModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
-            if (statement.getTrackStatements() != null) {
-                setStringIfNotNull(dataSourceModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
-            }
-        }
-        TimeOut timeout = dataSource.getTimeOut();
-        if (timeout != null) {
-            setIntegerIfNotNull(dataSourceModel, ALLOCATION_RETRY, timeout.getAllocationRetry());
-            setLongIfNotNull(dataSourceModel, ALLOCATION_RETRY_WAIT_MILLIS, timeout.getAllocationRetryWaitMillis());
-            setLongIfNotNull(dataSourceModel, BLOCKING_TIMEOUT_WAIT_MILLIS, timeout.getBlockingTimeoutMillis());
-            setLongIfNotNull(dataSourceModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
-            setLongIfNotNull(dataSourceModel, QUERYTIMEOUT, timeout.getQueryTimeout());
-            setLongIfNotNull(dataSourceModel, USETRYLOCK, timeout.getUseTryLock());
-            setBooleanIfTrue(dataSourceModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
-        }
-        if (dataSource.getTransactionIsolation() != null) {
-            setStringIfNotNull(dataSourceModel, TRANSACTION_ISOLOATION, dataSource.getTransactionIsolation().name());
-        }
-
-        if (dataSource.isSpy()) {
-            setBooleanIfNotNull(dataSourceModel, SPY, dataSource.isSpy());
-        }
-
-        if (dataSource.isUseCcm()) {
-            setBooleanIfNotNull(dataSourceModel, USE_CCM, dataSource.isUseCcm());
-        }
-
-        Validation validation = dataSource.getValidation();
-        if (validation != null) {
-            setStringIfNotNull(dataSourceModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-            setExtensionIfNotNull(dataSourceModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
-                    validation.getExceptionSorter());
-            setExtensionIfNotNull(dataSourceModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
-                    validation.getStaleConnectionChecker());
-            setExtensionIfNotNull(dataSourceModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
-                    validation.getValidConnectionChecker());
-            setLongIfNotNull(dataSourceModel, BACKGROUNDVALIDATIONMINUTES_REMOVE, validation.getBackgroundValidationMillis());
-            setLongIfNotNull(dataSourceModel, BACKGROUNDVALIDATIONMILLIS, validation.getBackgroundValidationMillis());
-            setBooleanIfNotNull(dataSourceModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
-            setBooleanIfNotNull(dataSourceModel, USE_FAST_FAIL_REMOVE, validation.isUseFastFail());
-            setBooleanIfNotNull(dataSourceModel, USE_FAST_FAIL, validation.isUseFastFail());
-            setBooleanIfNotNull(dataSourceModel, VALIDATEONMATCH, validation.isValidateOnMatch());
-        }
-    }
-
-    static void fillFrom(final ModelNode xaDataSourceModel, final XaDataSource xaDataSource) {
-        for (Map.Entry<String, String> entry : xaDataSource.getXaDataSourceProperty().entrySet()) {
-            xaDataSourceModel.get(XADATASOURCEPROPERTIES).add(entry.getKey(), entry.getValue());
-        }
-        setStringIfNotNull(xaDataSourceModel, XADATASOURCECLASS, xaDataSource.getXaDataSourceClass());
-        setStringIfNotNull(xaDataSourceModel, JNDINAME, xaDataSource.getJndiName());
-        setStringIfNotNull(xaDataSourceModel, DATASOURCE_DRIVER, xaDataSource.getDriver());
-        setStringIfNotNull(xaDataSourceModel, NEW_CONNECTION_SQL, xaDataSource.getNewConnectionSql());
-        setStringIfNotNull(xaDataSourceModel, POOLNAME, xaDataSource.getPoolName());
-        setStringIfNotNull(xaDataSourceModel, URL_DELIMITER, xaDataSource.getUrlDelimiter());
-        setStringIfNotNull(xaDataSourceModel, URL_SELECTOR_STRATEGY_CLASS_NAME, xaDataSource.getUrlSelectorStrategyClassName());
-        setBooleanIfNotNull(xaDataSourceModel, USE_JAVA_CONTEXT, xaDataSource.isUseJavaContext());
-        setBooleanIfNotNull(xaDataSourceModel, ENABLED, xaDataSource.isEnabled());
-        final CommonXaPool pool = xaDataSource.getXaPool();
-        if (pool != null) {
-            setIntegerIfNotNull(xaDataSourceModel, MAX_POOL_SIZE, pool.getMaxPoolSize());
-            setIntegerIfNotNull(xaDataSourceModel, MIN_POOL_SIZE, pool.getMinPoolSize());
-            setBooleanIfNotNull(xaDataSourceModel, POOL_PREFILL, pool.isPrefill());
-            setBooleanIfNotNull(xaDataSourceModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
-            if (pool.getFlushStrategy() != null) {
-                setStringIfNotNull(xaDataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().getName());
-            }
-            setBooleanIfNotNull(xaDataSourceModel, INTERLEAVING, pool.isInterleaving());
-            setBooleanIfNotNull(xaDataSourceModel, NOTXSEPARATEPOOL, pool.isNoTxSeparatePool());
-            setBooleanIfNotNull(xaDataSourceModel, PAD_XID, pool.isPadXid());
-            setBooleanIfNotNull(xaDataSourceModel, SAME_RM_OVERRIDE, pool.isSameRmOverride());
-            setBooleanIfNotNull(xaDataSourceModel, WRAP_XA_RESOURCE, pool.isWrapXaDataSource());
-        }
-        final DsSecurity security = xaDataSource.getSecurity();
-        if (security != null) {
-            setStringIfNotNull(xaDataSourceModel, USERNAME, security.getUserName());
-            setStringIfNotNull(xaDataSourceModel, PASSWORD, security.getPassword());
-            setStringIfNotNull(xaDataSourceModel, SECURITY_DOMAIN, security.getSecurityDomain());
-            setExtensionIfNotNull(xaDataSourceModel, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES,
-                    security.getReauthPlugin());
-        }
-        final Statement statement = xaDataSource.getStatement();
-        if (statement != null) {
-            setLongIfNotNull(xaDataSourceModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
-            setBooleanIfNotNull(xaDataSourceModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
-            if (statement.getTrackStatements() != null) {
-                setStringIfNotNull(xaDataSourceModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
-            }
-        }
-        final TimeOut timeout = xaDataSource.getTimeOut();
-        if (timeout != null) {
-            setIntegerIfNotNull(xaDataSourceModel, ALLOCATION_RETRY, timeout.getAllocationRetry());
-            setLongIfNotNull(xaDataSourceModel, ALLOCATION_RETRY_WAIT_MILLIS, timeout.getAllocationRetryWaitMillis());
-            setLongIfNotNull(xaDataSourceModel, BLOCKING_TIMEOUT_WAIT_MILLIS, timeout.getBlockingTimeoutMillis());
-            setLongIfNotNull(xaDataSourceModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
-            setLongIfNotNull(xaDataSourceModel, QUERYTIMEOUT, timeout.getQueryTimeout());
-            setLongIfNotNull(xaDataSourceModel, USETRYLOCK, timeout.getUseTryLock());
-            setBooleanIfTrue(xaDataSourceModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
-            setIntegerIfNotNull(xaDataSourceModel, XA_RESOURCE_TIMEOUT, timeout.getXaResourceTimeout());
-        }
-        if (xaDataSource.getTransactionIsolation() != null) {
-            setStringIfNotNull(xaDataSourceModel, TRANSACTION_ISOLOATION, xaDataSource.getTransactionIsolation().name());
-        }
-
-        if (xaDataSource.isSpy()) {
-            setBooleanIfNotNull(xaDataSourceModel, SPY, xaDataSource.isSpy());
-        }
-
-        if (xaDataSource.isUseCcm()) {
-            setBooleanIfNotNull(xaDataSourceModel, USE_CCM, xaDataSource.isUseCcm());
-        }
-
-        final Validation validation = xaDataSource.getValidation();
-        if (xaDataSource.getValidation() != null) {
-            setStringIfNotNull(xaDataSourceModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-            setExtensionIfNotNull(xaDataSourceModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
-                    validation.getExceptionSorter());
-            setExtensionIfNotNull(xaDataSourceModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
-                    validation.getStaleConnectionChecker());
-            setExtensionIfNotNull(xaDataSourceModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
-                    validation.getValidConnectionChecker());
-            setLongIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATIONMINUTES_REMOVE, validation.getBackgroundValidationMillis());
-            setLongIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATIONMILLIS, validation.getBackgroundValidationMillis());
-            setBooleanIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
-            setBooleanIfNotNull(xaDataSourceModel, USE_FAST_FAIL_REMOVE, validation.isUseFastFail());
-            setBooleanIfNotNull(xaDataSourceModel, USE_FAST_FAIL, validation.isUseFastFail());
-            setBooleanIfNotNull(xaDataSourceModel, VALIDATEONMATCH, validation.isValidateOnMatch());
-        }
-
-        if (xaDataSource.getRecovery() != null) {
-            final Recovery recovery = xaDataSource.getRecovery();
-            setStringIfNotNull(xaDataSourceModel, RECOVERY_USERNAME, recovery.getCredential() != null ? recovery
-                    .getCredential().getUserName() : null);
-            setStringIfNotNull(xaDataSourceModel, RECOVERY_PASSWORD, recovery.getCredential() != null ? recovery
-                    .getCredential().getPassword() : null);
-            setStringIfNotNull(xaDataSourceModel, RECOVERY_SECURITY_DOMAIN, recovery.getCredential() != null ? recovery
-                    .getCredential().getSecurityDomain() : null);
-            setExtensionIfNotNull(xaDataSourceModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES,
-                    recovery.getRecoverPlugin());
-            setBooleanIfNotNull(xaDataSourceModel, NO_RECOVERY, recovery.getNoRecovery());
-        }
-    }
 
     static DataSource from(final ModelNode dataSourceNode) throws ValidateException {
         final Map<String, String> connectionProperties;
@@ -470,7 +290,7 @@ class DataSourceModelNodeUtil {
 
         final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
 
-        final Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+        final Extension recoverPlugin = extractExtension(dataSourceNode, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
         final boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, false);
         Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
         return new XADataSourceImpl(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
@@ -565,7 +385,7 @@ class DataSourceModelNodeUtil {
             if (dataSourceNode.hasDefined(propertyName)) {
                 exceptionSorterProperty = new HashMap<String, String>(dataSourceNode.get(propertyName).asList().size());
                 for (ModelNode property : dataSourceNode.get(propertyName).asList()) {
-                    exceptionSorterProperty.put(property.asProperty().getName(), property.asString());
+                    exceptionSorterProperty.put(property.asProperty().getName(), property.asProperty().getValue().asString());
                 }
             }
 

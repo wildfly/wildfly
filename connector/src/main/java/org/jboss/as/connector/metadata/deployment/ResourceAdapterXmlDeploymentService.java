@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jgroups.stack.StateTransferInfo;
 
 import java.io.File;
 import java.net.URL;
@@ -59,13 +60,16 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
     private final ResourceAdapter raxml;
     private final String deployment;
+    private final String serviceSuffix;
+
 
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
-            Module module, final String deployment) {
+            Module module, final String deployment, final String serviceSuffix) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.raxml = raxml;
         this.module = module;
         this.deployment = deployment;
+        this.serviceSuffix = serviceSuffix;
     }
 
     /**
@@ -84,11 +88,11 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(raxml, cmd);
 
-            String deploymentName = archive.substring(0, archive.indexOf(".rar"));
+            String deploymentName = archive.substring(0, archive.indexOf(".rar")) ;
 
             final ServiceContainer container = context.getController().getServiceContainer();
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
-                    deploymentName, root, module.getClassLoader(), cmd, raxml, ijmd);
+                    deploymentName + serviceSuffix, root, module.getClassLoader(), cmd, raxml, ijmd);
 
             raDeployer.setConfiguration(config.getValue());
 
@@ -103,7 +107,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
             if (raxmlDeployment.getResourceAdapter() != null) {
                 registry.getValue().registerResourceAdapterDeployment(value);
-                ServiceName serviceName = ConnectorServices.getNextValidResourceAdapterServiceName(this.value.getDeployment().getDeploymentName());
+                ServiceName serviceName = ConnectorServices.registerResourceAdapterServiceNameWithSuffix(deploymentName, serviceSuffix);
                 log.infof("Starting sevice %s", serviceName);
 
                 context.getChildTarget()
