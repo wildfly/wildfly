@@ -119,6 +119,84 @@ class ModClusterSubsystemDescriptions {
         node.get(REQUEST_PROPERTIES, "port", TYPE).set(ModelType.INT);
         node.get(REQUEST_PROPERTIES, "port", REQUIRED).set(true);
     }
+
+    /* Something like:
+     * <load-metric type="cpu" weight="2" capacity="1" (properties) .../>
+     * or
+     * <custom-load-metric class="classname" weight="2" capacity="1" (properties) ... />
+     */
+    static void addCommonMetricDescription(ModelNode node, ResourceBundle bundle) {
+
+        node.get(REQUEST_PROPERTIES, "weight",DESCRIPTION).set(bundle.getString("modcluster.configuration.metric.weight"));
+        node.get(REQUEST_PROPERTIES, "weight", TYPE).set(ModelType.INT);
+        node.get(REQUEST_PROPERTIES, "weight", REQUIRED).set(false);
+
+        node.get(REQUEST_PROPERTIES, "capacity",DESCRIPTION).set(bundle.getString("modcluster.configuration.metric.capacity"));
+        node.get(REQUEST_PROPERTIES, "capacity", TYPE).set(ModelType.INT);
+        node.get(REQUEST_PROPERTIES, "capacity", REQUIRED).set(false);
+
+        node.get(REQUEST_PROPERTIES, "property",DESCRIPTION).set(bundle.getString("modcluster.configuration.metric.property"));
+        node.get(REQUEST_PROPERTIES, "property", TYPE).set(ModelType.PROPERTY);
+        node.get(REQUEST_PROPERTIES, "property", REQUIRED).set(false);
+    }
+    static ModelNode getAddMetricDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("add-metric");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.add-metric"));
+
+        node.get(REQUEST_PROPERTIES, "type", DESCRIPTION).set(bundle.getString("modcluster.configuration.metric.type"));
+        node.get(REQUEST_PROPERTIES, "type", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "type", REQUIRED).set(true);
+
+        addCommonMetricDescription(node, bundle);
+
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+
+    }
+    static ModelNode getRemoveMetricDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("add-metric");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.add-metric"));
+
+        node.get(REQUEST_PROPERTIES, "type", DESCRIPTION).set(bundle.getString("modcluster.configuration.metric.type"));
+        node.get(REQUEST_PROPERTIES, "type", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "type", REQUIRED).set(true);
+
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+
+    }
+    static ModelNode getAddCustomMetricDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("add-custom-metric");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.add-custom-metric"));
+
+        node.get(REQUEST_PROPERTIES, "class", DESCRIPTION).set(bundle.getString("modcluster.configuration.metric.class"));
+        node.get(REQUEST_PROPERTIES, "class", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "class", REQUIRED).set(true);
+
+        addCommonMetricDescription(node, bundle);
+
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
+    static ModelNode getRemoveCustomMetricDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("remove-custom-metric");
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.remove-custom-metric"));
+
+        node.get(REQUEST_PROPERTIES, "class", DESCRIPTION).set(bundle.getString("modcluster.configuration.metric.class"));
+        node.get(REQUEST_PROPERTIES, "class", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "class", REQUIRED).set(true);
+
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
     static ModelNode getAddProxyDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -204,7 +282,7 @@ class ModClusterSubsystemDescriptions {
         return node;
     }
 
-    static void AddHostContextDescription(ModelNode node, ResourceBundle bundle) {
+    static void addHostContextDescription(ModelNode node, ResourceBundle bundle) {
         node.get(REQUEST_PROPERTIES, "virtualhost", DESCRIPTION).set(bundle.getString("modcluster.virtualhost"));
         node.get(REQUEST_PROPERTIES, "virtualhost", TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, "virtualhost", REQUIRED).set(true);
@@ -220,7 +298,7 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("enable-context");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.enable-context"));
-        AddHostContextDescription(node, bundle);
+        addHostContextDescription(node, bundle);
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
@@ -231,7 +309,7 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("disable-context");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.disable-context"));
-        AddHostContextDescription(node, bundle);
+        addHostContextDescription(node, bundle);
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
@@ -242,7 +320,7 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set("stop-context");
         node.get(DESCRIPTION).set(bundle.getString("modcluster.stop-context"));
-        AddHostContextDescription(node, bundle);
+        addHostContextDescription(node, bundle);
         AddWaitTimeDescription(node, bundle);
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
