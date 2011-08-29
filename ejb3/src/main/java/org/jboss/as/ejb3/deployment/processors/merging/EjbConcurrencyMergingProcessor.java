@@ -114,7 +114,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
                         componentConfiguration.setLockType(method.getLockType(), methodIdentifier);
                     }
                     if (method.getAccessTimeout() != null) {
-                        componentConfiguration.setAccessTimeout( new AccessTimeoutDetails(descriptor.getAccessTimeout().getTimeout(), descriptor.getAccessTimeout().getUnit()), methodIdentifier);
+                        componentConfiguration.setAccessTimeout( new AccessTimeoutDetails(method.getAccessTimeout().getTimeout(), method.getAccessTimeout().getUnit()), methodIdentifier);
                     }
 
                 }
