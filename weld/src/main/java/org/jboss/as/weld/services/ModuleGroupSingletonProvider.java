@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.services;
 
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.weld.bootstrap.api.Singleton;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
 
@@ -46,9 +47,10 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
     /**
      * Maps a top level class loader to all CL's in the deployment
      */
-    public static void addClassLoaders(ClassLoader topLevel,Set<ClassLoader> allClassLoaders) {
-        deploymentClassLoaders.put(topLevel,allClassLoaders);
+    public static void addClassLoaders(ClassLoader topLevel, Set<ClassLoader> allClassLoaders) {
+        deploymentClassLoaders.put(topLevel, allClassLoaders);
     }
+
     /**
      * Removes the class loader mapping
      */
@@ -66,7 +68,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         private final Map<ClassLoader, T> store = new Hashtable<ClassLoader, T>();
 
         public T get() {
-            T instance = store.get(getClassLoader());
+            T instance = store.get(findParentModuleCl(getClassLoader()));
             if (instance == null) {
                 throw new IllegalStateException("Singleton not set for " + getClassLoader());
             }
@@ -76,9 +78,9 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         public void set(T object) {
             ClassLoader classLoader = getClassLoader();
             store.put(classLoader, object);
-            if(deploymentClassLoaders.containsKey(classLoader)) {
-                for(ClassLoader cl : deploymentClassLoaders.get(classLoader)) {
-                    store.put(cl,object);
+            if (deploymentClassLoaders.containsKey(classLoader)) {
+                for (ClassLoader cl : deploymentClassLoaders.get(classLoader)) {
+                    store.put(cl, object);
                 }
             }
         }
@@ -86,15 +88,28 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         public void clear() {
             ClassLoader classLoader = getClassLoader();
             store.remove(classLoader);
-            if(deploymentClassLoaders.containsKey(classLoader)) {
-                for(ClassLoader cl : deploymentClassLoaders.get(classLoader)) {
+            if (deploymentClassLoaders.containsKey(classLoader)) {
+                for (ClassLoader cl : deploymentClassLoaders.get(classLoader)) {
                     store.remove(cl);
                 }
             }
         }
 
         public boolean isSet() {
-            return store.containsKey(getClassLoader());
+            return store.containsKey(findParentModuleCl(getClassLoader()));
+        }
+
+        /**
+         * If a custom CL is in use we want to get the module CL it delegates to
+         * @param classLoader The current CL
+         * @returnThe corresponding module CL
+         */
+        private ClassLoader findParentModuleCl(ClassLoader classLoader) {
+            ClassLoader c = classLoader;
+            while (c != null && !(c instanceof ModuleClassLoader)) {
+                c = c.getParent();
+            }
+            return c;
         }
 
         private ClassLoader getClassLoader() {
