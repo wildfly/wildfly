@@ -68,15 +68,15 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler implements Desc
 
         model.setEmptyObject();
 
-        boolean hasStatic = operation.hasDefined(ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName());
+        boolean hasStatic = operation.hasDefined(ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.getName());
         boolean hasDiscGroup = operation.hasDefined(CommonAttributes.DISCOVERY_GROUP_NAME.getName());
         if (hasStatic && hasDiscGroup) {
             throw new OperationFailedException(new ModelNode().set(String.format("Operation cannot include both parameter %s and parameter %s",
-                    ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
+                    ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
         }
 
         for (final AttributeDefinition attributeDefinition : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
-            if (hasDiscGroup && attributeDefinition == ConnectorRefsAttribute.BRIDGE_CONNECTORS) {
+            if (hasDiscGroup && attributeDefinition == ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS) {
                 continue;
             } else if (hasStatic && attributeDefinition == CommonAttributes.DISCOVERY_GROUP_NAME) {
                 continue;
