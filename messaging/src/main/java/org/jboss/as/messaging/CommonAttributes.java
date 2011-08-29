@@ -496,6 +496,7 @@ public interface CommonAttributes {
     String MESSAGE_COUNT = "message-count";
     String MODE = "mode";
     String NAME ="name";
+    String NODE_ID = "node-id";
     String NETTY_ACCEPTOR ="netty-acceptor";
     String NETTY_CONNECTOR ="netty-connector";
     String NONE = "none";
@@ -520,6 +521,7 @@ public interface CommonAttributes {
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
     String SEND_XML_NAME ="send";
+    String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";
     String STRING ="string";
     String SUBSCRIPTION_COUNT = "subscription-count";

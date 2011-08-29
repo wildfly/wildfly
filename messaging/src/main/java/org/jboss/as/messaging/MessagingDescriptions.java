@@ -44,10 +44,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
+import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_SERVICE;
 import static org.jboss.as.messaging.CommonAttributes.CONSUMER_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
@@ -59,19 +68,28 @@ import org.jboss.as.controller.AttributeDefinition;
 
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_TYPE;
+import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGES_ADDED;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.NODE_ID;
 import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PAUSED;
+import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.STARTED;
 import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
+
+import javax.xml.soap.Node;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.messaging.jms.JMSServices;
@@ -208,14 +226,7 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getSubsystemRemove(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("divert.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, "messaging");
     }
 
     public static ModelNode getQueueResource(Locale locale) {
@@ -251,20 +262,6 @@ public class MessagingDescriptions {
         return node;
     }
 
-    private static ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix,
-                                                             final ModelNode attributes, final String attrName,
-                                                             final ModelType type, final boolean nillable,
-                                                             final MeasurementUnit measurementUnit) {
-        final ModelNode attr = attributes.get(attrName);
-        attr.get(DESCRIPTION).set(bundle.getString(prefix + "." + attrName));
-        attr.get(TYPE).set(type);
-        attr.get(NILLABLE).set(nillable);
-        if (measurementUnit != null) {
-            attr.get(UNIT).set(measurementUnit.getName());
-        }
-        return attr;
-    }
-
     public static ModelNode getQueueAdd(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -280,13 +277,7 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getQueueRemove(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(REMOVE);
-        node.get(DESCRIPTION).set(bundle.getString("queue.remove"));
-
-        return node;
+        return getDescriptionOnlyOperation(locale, REMOVE, QUEUE);
     }
 
 
@@ -338,15 +329,7 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getJmsQueueRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("jms-queue.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, JMS_QUEUE);
     }
 
     static ModelNode getTopic(final Locale locale) {
@@ -393,15 +376,7 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getTopicRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("topic.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, "topic");
     }
 
     static ModelNode getConnectionFactory(final Locale locale) {
@@ -439,6 +414,10 @@ public class MessagingDescriptions {
         node.get(REPLY_PROPERTIES).setEmptyObject();
 
         return node;
+    }
+
+    static ModelNode getConnectionFactoryRemove(final Locale locale) {
+        return getDescriptionOnlyOperation(locale, REMOVE, CONNECTION_FACTORY);
     }
 
     static ModelNode getPooledConnectionFactory(final Locale locale) {
@@ -485,15 +464,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getPooledConnectionFactoryRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, POOLED_CONNECTION_FACTORY);
     }
 
     private static void addConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, boolean resource) {
@@ -511,18 +482,6 @@ public class MessagingDescriptions {
                 node.get(propType, attr.getName(), VALUE_TYPE).set(ModelType.STRING);
             }
         }
-    }
-
-    static ModelNode getConnectionFactoryRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("connection-factory.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return op;
     }
 
     static ModelNode getDivertResource(final Locale locale) {
@@ -554,15 +513,9 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getDivertRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("divert.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, DIVERT);
     }
+
 
     static ModelNode getBroadcastGroupResource(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -572,7 +525,7 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
             attr.addResourceAttributeDescription(bundle, "broadcast-group", root);
         }
-
+        addResourceAttributeDescription(bundle, BROADCAST_GROUP, root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
         root.get(OPERATIONS); // placeholder
 
         root.get(CHILDREN).setEmptyObject();
@@ -584,7 +537,7 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("broadcast-group.add"));
         for (AttributeDefinition attr : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, "broadcast-group", op);
@@ -594,14 +547,13 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getBroadcastGroupRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
+        return getDescriptionOnlyOperation(locale, REMOVE, BROADCAST_GROUP);
+    }
 
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("broadcast-group.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+    public static ModelNode getGetConnectorPairsAsJSON(Locale locale) {
+        final ModelNode result = getDescriptionOnlyOperation(locale, BroadcastGroupControlHandler.GET_CONNECTOR_PAIRS_AS_JSON, BROADCAST_GROUP);
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        return result;
     }
 
     static ModelNode getDiscoveryGroupResource(Locale locale) {
@@ -624,7 +576,7 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("discovery-group.add"));
         for (AttributeDefinition attr : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, "discovery-group", op);
@@ -634,14 +586,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getDiscoveryGroupRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("discovery-group.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, DISCOVERY_GROUP);
     }
 
     static ModelNode getGroupingHandlerResource(Locale locale) {
@@ -663,7 +608,7 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("grouping-handler.add"));
         for (AttributeDefinition attr : CommonAttributes.GROUPING_HANDLER_ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, "grouping-handler", op);
@@ -673,14 +618,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getGroupingHandlerRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("grouping-handler.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, GROUPING_HANDLER);
     }
 
     static ModelNode getBridgeResource(Locale locale) {
@@ -692,6 +630,8 @@ public class MessagingDescriptions {
             attr.addResourceAttributeDescription(bundle, "bridge", root);
         }
 
+        addResourceAttributeDescription(bundle, BRIDGE, root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
+
         root.get(OPERATIONS); // placeholder
 
         root.get(CHILDREN).setEmptyObject();
@@ -702,7 +642,7 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("bridge.add"));
         for (AttributeDefinition attr : CommonAttributes.BRIDGE_ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, "bridge", op);
@@ -712,14 +652,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getBridgeRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("bridge.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, BRIDGE);
     }
 
     static ModelNode getClusterConnectionResource(Locale locale) {
@@ -731,6 +664,10 @@ public class MessagingDescriptions {
             attr.addResourceAttributeDescription(bundle, "cluster-connection", root);
         }
 
+        final ModelNode attrs = root.get(ATTRIBUTES);
+        addResourceAttributeDescription(bundle, CLUSTER_CONNECTION, attrs, NODE_ID, ModelType.STRING, false, null);
+        addResourceAttributeDescription(bundle, CLUSTER_CONNECTION, attrs, STARTED, ModelType.BOOLEAN, false, null);
+
         root.get(OPERATIONS); // placeholder
 
         root.get(CHILDREN).setEmptyObject();
@@ -741,7 +678,7 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("cluster-connection.add"));
         for (AttributeDefinition attr : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, "cluster-connection", op);
@@ -751,14 +688,21 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getClusterConnectionRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
+        return getDescriptionOnlyOperation(locale, REMOVE, CLUSTER_CONNECTION);
+    }
 
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("cluster-connection.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+    public static ModelNode getGetStaticConnectorsAsJSON(Locale locale) {
+        final ModelNode result = getDescriptionOnlyOperation(locale,  ClusterConnectionControlHandler.GET_STATIC_CONNECTORS_AS_JSON, CLUSTER_CONNECTION);
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        return result;
+    }
+
+    public static ModelNode getGetNodes(Locale locale) {
+        final ModelNode result = getDescriptionOnlyOperation(locale,  ClusterConnectionControlHandler.GET_NODES, CLUSTER_CONNECTION);
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(getResourceBundle(locale).getString("cluster-connection.get-nodes.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
+        return result;
     }
 
     static ModelNode getConnectorServiceResource(Locale locale) {
@@ -783,7 +727,7 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
+        op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("connector-service.add"));
         for (AttributeDefinition attr : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, "connector-service", op);
@@ -793,14 +737,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getConnectorServiceRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("connector-service.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, CONNECTOR_SERVICE);
     }
 
     static ModelNode getConnectorServiceParamResource(Locale locale) {
@@ -829,14 +766,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getConnectorServiceParamRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("connector-service.param.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, "connector-service.param");
     }
 
     private static ModelNode getPathDescription(final String description, final ResourceBundle bundle) {
@@ -862,6 +792,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
+
+        addResourceAttributeDescription(bundle, "acceptor", root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
+
         return root;
     }
 
@@ -881,14 +814,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getAcceptorRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("acceptor.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, ACCEPTOR);
     }
 
     static ModelNode getAddressSetting(final Locale locale) {
@@ -916,14 +842,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getAddressSettingRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("address-setting.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, ADDRESS_SETTING);
     }
 
     static ModelNode getRemoteAcceptor(final Locale locale) {
@@ -1005,14 +924,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getConnectorRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(REMOVE);
-        op.get(DESCRIPTION).set(bundle.getString("connector.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, CONNECTOR);
     }
 
     static ModelNode getRemoteConnector(final Locale locale) {
@@ -1093,14 +1005,7 @@ public class MessagingDescriptions {
     }
 
     static ModelNode getParamRemove(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("transport-config.param.remove"));
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
+        return getDescriptionOnlyOperation(locale, REMOVE, "transport-config.param");
     }
 
     public static ModelNode getPathResource(Locale locale) {
@@ -1129,13 +1034,7 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getPathRemove(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(REMOVE);
-        node.get(DESCRIPTION).set(bundle.getString("path.remove"));
-
-        return node;
+        return getDescriptionOnlyOperation(locale, REMOVE, PATH);
     }
 
     public static ModelNode getSecuritySettingResource(Locale locale) {
@@ -1159,13 +1058,7 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getSecuritySettingRemove(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(REMOVE);
-        node.get(DESCRIPTION).set(bundle.getString("security-setting.remove"));
-
-        return node;
+        return getDescriptionOnlyOperation(locale, REMOVE, SECURITY_SETTING);
     }
 
     public static ModelNode getSecurityRoleResource(Locale locale) {
@@ -1192,13 +1085,35 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getSecurityRoleRemove(Locale locale) {
+        return getDescriptionOnlyOperation(locale, REMOVE, "security-role");
+    }
+
+    public static ModelNode getDescriptionOnlyOperation(final Locale locale, final String operationName, final String descriptionPrefix) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(REMOVE);
-        node.get(DESCRIPTION).set(bundle.getString("security-role.remove"));
+        node.get(OPERATION_NAME).set(operationName);
+        String descriptionKey = descriptionPrefix == null ? operationName : descriptionPrefix + "." + operationName;
+        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
+
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
 
         return node;
+    }
+
+    private static ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix,
+                                                             final ModelNode attributes, final String attrName,
+                                                             final ModelType type, final boolean nillable,
+                                                             final MeasurementUnit measurementUnit) {
+        final ModelNode attr = attributes.get(attrName);
+        attr.get(DESCRIPTION).set(bundle.getString(prefix + "." + attrName));
+        attr.get(TYPE).set(type);
+        attr.get(NILLABLE).set(nillable);
+        if (measurementUnit != null) {
+            attr.get(UNIT).set(measurementUnit.getName());
+        }
+        return attr;
     }
 
     private static ResourceBundle getResourceBundle(Locale locale) {

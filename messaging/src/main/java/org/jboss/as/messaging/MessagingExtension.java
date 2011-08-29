@@ -144,10 +144,8 @@ public class MessagingExtension implements Extension {
         for (AttributeDefinition attributeDefinition : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
             broadcastGroups.registerReadWriteAttribute(attributeDefinition.getName(), null, BroadcastGroupWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
-        // TODO operations exposed by BroadcastGroupControl
+        BroadcastGroupControlHandler.INSTANCE.register(broadcastGroups);
         // getConnectorPairs, -- no, this is just the same as attribute connector-refs
-        // getConnectorPairsAsJSON
-        // isStarted, start, stop
 
         // Discovery groups
         final ManagementResourceRegistration discoveryGroups = rootRegistration.registerSubModel(DISCOVERY_GROUP_PATH, MessagingSubsystemProviders.DISCOVERY_GROUP_RESOURCE);
@@ -188,8 +186,8 @@ public class MessagingExtension implements Extension {
             acceptor.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.GENERIC_ATTR, AttributeAccess.Storage.CONFIGURATION);
         }
         createParamRegistration(acceptor);
-        // TODO operations exposed by AcceptorControl
-        // isStarted, start, stop
+        AcceptorControlHandler.INSTANCE.register(acceptor);
+
 
         // remote acceptor
         final ManagementResourceRegistration remoteAcceptor = rootRegistration.registerSubModel(REMOTE_ACCEPTOR, MessagingSubsystemProviders.REMOTE_ACCEPTOR);
@@ -243,9 +241,7 @@ public class MessagingExtension implements Extension {
         for (AttributeDefinition attributeDefinition : CommonAttributes.BRIDGE_ATTRIBUTES) {
             bridge.registerReadWriteAttribute(attributeDefinition.getName(), null, BridgeWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
-
-        // TODO operations exposed by BridgeControl
-        // isStarted, start, stop
+        BridgeControlHandler.INSTANCE.register(bridge);
 
         // Cluster connections
         final ManagementResourceRegistration cluster = rootRegistration.registerSubModel(PathElement.pathElement(CommonAttributes.CLUSTER_CONNECTION),
@@ -255,9 +251,7 @@ public class MessagingExtension implements Extension {
         for (AttributeDefinition attributeDefinition : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
             cluster.registerReadWriteAttribute(attributeDefinition.getName(), null, ClusterConnectionWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
-        // TODO runtime operations exposed by ClusterConnectionControl
-        // getStaticConnectorsAsJSON, getNodes
-        // isStarted, start, stop
+        ClusterConnectionControlHandler.INSTANCE.register(cluster);
 
         // Grouping Handler
         final ManagementResourceRegistration groupingHandler = rootRegistration.registerSubModel(GROUPING_HANDLER_PATH, MessagingSubsystemProviders.GROUPING_HANDLER_RESOURCE);
