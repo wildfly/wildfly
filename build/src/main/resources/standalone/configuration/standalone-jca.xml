@@ -238,7 +238,38 @@
             </modules>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
+
+
+            <resource-adapters>
+                <resource-adapter>
+                    <archive>as7_1452.rar</archive>
+
+                    <config-property name="Property">A</config-property>
+
+                    <transaction-support>NoTransaction</transaction-support>
+
+                    <connection-definitions>
+                        <connection-definition
+                                class-name="org.jboss.as.test.embedded.deployment.rar.AS7_1452.ConfigPropertyManagedConnectionFactory"
+                                jndi-name="java:jboss/ConfigPropertyConnectionFactory1"
+                                pool-name="ConfigPropertyConnectionFactory">
+                            <config-property name="Property">B</config-property>
+                        </connection-definition>
+                    </connection-definitions>
+
+                    <admin-objects>
+                        <admin-object
+                                class-name="org.jboss.as.test.embedded.deployment.rar.AS7_1452.ConfigPropertyAdminObjectImpl"
+                                jndi-name="java:jboss/ConfigPropertyAdminObjectInterface1">
+                            <config-property name="Property">C</config-property>
+                        </admin-object>
+                    </admin-objects>
+
+                </resource-adapter>
+            </resource-adapters>
+
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>
@@ -271,10 +302,10 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+            <inet-address value="127.0.0.1"/>
         </interface>
         <interface name="public">
-           <inet-address value="${jboss.bind.address.public:127.0.0.1}"/>
+           <inet-address value="127.0.0.1"/>
         </interface>
     </interfaces>
 

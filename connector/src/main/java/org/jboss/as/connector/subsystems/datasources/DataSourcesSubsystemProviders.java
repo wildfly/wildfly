@@ -40,6 +40,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
@@ -418,6 +419,8 @@ class DataSourcesSubsystemProviders {
                 node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
                 node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getModelType());
                 node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(propertyType.isRequired());
+                if (propertyType.getDefaultValue() != null)
+                    node.get(ATTRIBUTES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
             }
 
             for (String name : LocalAndXaDataSourcesJdbcMetrics.ATTRIBUTES) {
@@ -464,6 +467,8 @@ class DataSourcesSubsystemProviders {
                         bundle.getString(propertyType.getName()));
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getModelType());
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(propertyType.isRequired());
+                if (propertyType.getDefaultValue() != null)
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
             }
             return operation;
         }
@@ -549,6 +554,8 @@ class DataSourcesSubsystemProviders {
                 node.get(ATTRIBUTES, propertyType.getName(), DESCRIPTION).set(bundle.getString(propertyType.getName()));
                 node.get(ATTRIBUTES, propertyType.getName(), TYPE).set(propertyType.getModelType());
                 node.get(ATTRIBUTES, propertyType.getName(), REQUIRED).set(propertyType.isRequired());
+                if (propertyType.getDefaultValue() != null)
+                    node.get(ATTRIBUTES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
             }
 
             for (String name : LocalAndXaDataSourcesJdbcMetrics.ATTRIBUTES) {
@@ -593,6 +600,8 @@ class DataSourcesSubsystemProviders {
                         bundle.getString(propertyType.getName()));
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getModelType());
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(propertyType.isRequired());
+                if (propertyType.getDefaultValue() != null)
+                    operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
             }
             return operation;
         }

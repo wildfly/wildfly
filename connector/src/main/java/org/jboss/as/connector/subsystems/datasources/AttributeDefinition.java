@@ -23,9 +23,11 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.dmr.ModelType;
+import org.jboss.jca.common.api.metadata.Defaults;
 
 /**
  * Definition of a data-source attribute.
+ *
  * @author John Bailey
  */
 public enum AttributeDefinition {
@@ -35,21 +37,21 @@ public enum AttributeDefinition {
             ModelType.STRING, true), NEW_CONNECTION_SQL(Constants.NEW_CONNECTION_SQL, ModelType.STRING, false), POOLNAME(
             Constants.POOLNAME, ModelType.STRING, true), URL_DELIMITER(Constants.URL_DELIMITER, ModelType.STRING, false), URL_SELECTOR_STRATEGY_CLASS_NAME(
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, ModelType.STRING, false), USE_JAVA_CONTEXT(Constants.USE_JAVA_CONTEXT,
-            ModelType.BOOLEAN, false), ENABLED(Constants.ENABLED, ModelType.BOOLEAN, false), JTA(Constants.JTA,
-            ModelType.BOOLEAN, false), MAX_POOL_SIZE(org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, ModelType.INT, false), MIN_POOL_SIZE(
-            org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE, ModelType.INT, false), POOL_PREFILL(
-            org.jboss.as.connector.pool.Constants.POOL_PREFILL, ModelType.BOOLEAN, false), POOL_USE_STRICT_MIN(
-            org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN, ModelType.BOOLEAN, false), FLUSH_STRATEGY(
-            Constants.FLUSH_STRATEGY, ModelType.STRING, false), USERNAME(Constants.USERNAME, ModelType.STRING, false), PASSWORD(
+            ModelType.BOOLEAN, false, Defaults.USE_JAVA_CONTEXT), ENABLED(Constants.ENABLED, ModelType.BOOLEAN, false, Defaults.ENABLED), JTA(Constants.JTA,
+            ModelType.BOOLEAN, false, Defaults.JTA), MAX_POOL_SIZE(org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, ModelType.INT, false, Defaults.MAX_POOL_SIZE), MIN_POOL_SIZE(
+            org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE, ModelType.INT, false, Defaults.MIN_POOL_SIZE), POOL_PREFILL(
+            org.jboss.as.connector.pool.Constants.POOL_PREFILL, ModelType.BOOLEAN, false, Defaults.PREFILL), POOL_USE_STRICT_MIN(
+            org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN, ModelType.BOOLEAN, false, Defaults.USE_STRICT_MIN), FLUSH_STRATEGY(
+            Constants.FLUSH_STRATEGY, ModelType.STRING, false, Defaults.FLUSH_STRATEGY), USERNAME(Constants.USERNAME, ModelType.STRING, false), PASSWORD(
             Constants.PASSWORD, ModelType.STRING, false), SECURITY_DOMAIN(Constants.SECURITY_DOMAIN, ModelType.STRING, false), PREPAREDSTATEMENTSCACHESIZE(
             Constants.PREPAREDSTATEMENTSCACHESIZE, ModelType.LONG, false), SHAREPREPAREDSTATEMENTS(
-            Constants.SHAREPREPAREDSTATEMENTS, ModelType.BOOLEAN, false), TRACKSTATEMENTS(Constants.TRACKSTATEMENTS,
-            ModelType.STRING, false), ALLOCATION_RETRY(Constants.ALLOCATION_RETRY, ModelType.INT, false), ALLOCATION_RETRY_WAIT_MILLIS(
+            Constants.SHAREPREPAREDSTATEMENTS, ModelType.BOOLEAN, false, Defaults.SHARE_PREPARED_STATEMENTS), TRACKSTATEMENTS(Constants.TRACKSTATEMENTS,
+            ModelType.STRING, false, Defaults.TRACK_STATEMENTS), ALLOCATION_RETRY(Constants.ALLOCATION_RETRY, ModelType.INT, false), ALLOCATION_RETRY_WAIT_MILLIS(
             Constants.ALLOCATION_RETRY_WAIT_MILLIS, ModelType.LONG, false), BLOCKING_TIMEOUT_WAIT_MILLIS(
             org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS, ModelType.LONG, false), IDLETIMEOUTMINUTES(
             org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES, ModelType.LONG, false), QUERYTIMEOUT(
             Constants.QUERYTIMEOUT, ModelType.LONG, false), USETRYLOCK(Constants.USETRYLOCK, ModelType.LONG, false), SETTXQUERYTIMEOUT(
-            Constants.SETTXQUERYTIMEOUT, ModelType.BOOLEAN, false), TRANSACTION_ISOLOATION(Constants.TRANSACTION_ISOLOATION,
+            Constants.SETTXQUERYTIMEOUT, ModelType.BOOLEAN, false, Defaults.SET_TX_QUERY_TIMEOUT), TRANSACTION_ISOLOATION(Constants.TRANSACTION_ISOLOATION,
             ModelType.STRING, false), CHECKVALIDCONNECTIONSQL(Constants.CHECKVALIDCONNECTIONSQL, ModelType.STRING, false), EXCEPTIONSORTERCLASSNAME(
             Constants.EXCEPTIONSORTERCLASSNAME, ModelType.STRING, false), EXCEPTIONSORTER_PROPERTIES(
             Constants.EXCEPTIONSORTER_PROPERTIES, ModelType.OBJECT, false), STALECONNECTIONCHECKERCLASSNAME(
@@ -59,34 +61,44 @@ public enum AttributeDefinition {
             Constants.VALIDCONNECTIONCHECKER_PROPERTIES, ModelType.OBJECT, false), BACKGROUNDVALIDATIONMILLIS(
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS, ModelType.LONG, false), BACKGROUNDVALIDATIONMINUTES_REMOVE(
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE, ModelType.LONG, false), BACKGROUNDVALIDATION(
-            org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION, ModelType.BOOLEAN, false), USE_FAST_FAIL(
-            org.jboss.as.connector.pool.Constants.USE_FAST_FAIL, ModelType.BOOLEAN, false), USE_FAST_FAIL_REMOVE(
+            org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION, ModelType.BOOLEAN, false, Defaults.BACKGROUND_VALIDATION), USE_FAST_FAIL(
+            org.jboss.as.connector.pool.Constants.USE_FAST_FAIL, ModelType.BOOLEAN, false, Defaults.USE_FAST_FAIl), USE_FAST_FAIL_REMOVE(
             org.jboss.as.connector.pool.Constants.USE_FAST_FAIL_REMOVE, ModelType.BOOLEAN, false), VALIDATEONMATCH(
-            Constants.VALIDATEONMATCH, ModelType.BOOLEAN, false), SPY(Constants.SPY, ModelType.BOOLEAN, false), USE_CCM(
-            Constants.USE_CCM, ModelType.BOOLEAN, false), XADATASOURCECLASS(Constants.XADATASOURCECLASS, ModelType.STRING, true), INTERLEAVING(
-            Constants.INTERLEAVING, ModelType.BOOLEAN, false), NOTXSEPARATEPOOL(Constants.NOTXSEPARATEPOOL, ModelType.BOOLEAN,
-            false), PAD_XID(Constants.PAD_XID, ModelType.BOOLEAN, false), SAME_RM_OVERRIDE(Constants.SAME_RM_OVERRIDE,
-            ModelType.BOOLEAN, false), WRAP_XA_RESOURCE(Constants.WRAP_XA_RESOURCE, ModelType.BOOLEAN, true), XA_RESOURCE_TIMEOUT(
+            Constants.VALIDATEONMATCH, ModelType.BOOLEAN, false, Defaults.VALIDATE_ON_MATCH), SPY(Constants.SPY, ModelType.BOOLEAN, false, Defaults.SPY), USE_CCM(
+            Constants.USE_CCM, ModelType.BOOLEAN, false, Defaults.USE_CCM), XADATASOURCECLASS(Constants.XADATASOURCECLASS, ModelType.STRING, true), INTERLEAVING(
+            Constants.INTERLEAVING, ModelType.BOOLEAN, false, Defaults.INTERLEAVING), NOTXSEPARATEPOOL(Constants.NOTXSEPARATEPOOL, ModelType.BOOLEAN,
+            false, Defaults.NO_TX_SEPARATE_POOL), PAD_XID(Constants.PAD_XID, ModelType.BOOLEAN, false, Defaults.PAD_XID), SAME_RM_OVERRIDE(Constants.SAME_RM_OVERRIDE,
+            ModelType.BOOLEAN, false, Defaults.IS_SAME_RM_OVERRIDE), WRAP_XA_RESOURCE(Constants.WRAP_XA_RESOURCE, ModelType.BOOLEAN, true, Defaults.WRAP_XA_RESOURCE), XA_RESOURCE_TIMEOUT(
             Constants.XA_RESOURCE_TIMEOUT, ModelType.INT, false), REAUTHPLUGIN_CLASSNAME(Constants.REAUTHPLUGIN_CLASSNAME,
             ModelType.STRING, false), REAUTHPLUGIN_PROPERTIES(Constants.REAUTHPLUGIN_PROPERTIES, ModelType.OBJECT, false), RECOVERY_USERNAME(
             Constants.RECOVERY_USERNAME, ModelType.STRING, false), RECOVERY_PASSWORD(Constants.RECOVERY_PASSWORD,
             ModelType.STRING, false), RECOVERY_SECURITY_DOMAIN(Constants.RECOVERY_SECURITY_DOMAIN, ModelType.STRING, false), RECOVERLUGIN_CLASSNAME(
-            Constants.RECOVERLUGIN_CLASSNAME, ModelType.STRING, false), RECOVERLUGIN_PROPERTIES(
-            Constants.RECOVERLUGIN_PROPERTIES, ModelType.OBJECT, false), NO_RECOVERY(Constants.NO_RECOVERY, ModelType.BOOLEAN,
+            Constants.RECOVER_PLUGIN_CLASSNAME, ModelType.STRING, false), RECOVERLUGIN_PROPERTIES(
+            Constants.RECOVER_PLUGIN_PROPERTIES, ModelType.OBJECT, false), NO_RECOVERY(Constants.NO_RECOVERY, ModelType.BOOLEAN,
             false), XADATASOURCE_PROPERTIES(Constants.XADATASOURCEPROPERTIES, ModelType.OBJECT, true);
 
     private final String propertyName;
     private final ModelType modelType;
     private final boolean required;
+    private final Object defaultValue;
 
     private AttributeDefinition(String propertyName, ModelType modelType, boolean required) {
         this.propertyName = propertyName;
         this.modelType = modelType;
         this.required = required;
+        this.defaultValue = null;
+    }
+
+    private AttributeDefinition(String propertyName, ModelType modelType, boolean required, Object defaultValue) {
+        this.propertyName = propertyName;
+        this.modelType = modelType;
+        this.required = required;
+        this.defaultValue = defaultValue;
     }
 
     /**
      * Get the model attribute name.
+     *
      * @return the name
      */
     public String getName() {
@@ -95,6 +107,7 @@ public enum AttributeDefinition {
 
     /**
      * Get the model type.
+     *
      * @return the type
      */
     public ModelType getModelType() {
@@ -103,9 +116,15 @@ public enum AttributeDefinition {
 
     /**
      * Is the attribute required.
+     *
      * @return true if the attribute is required, false otherwise
      */
     public boolean isRequired() {
         return required;
     }
+
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
 }

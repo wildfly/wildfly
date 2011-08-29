@@ -145,8 +145,6 @@ class Constants {
 
     static final String WRAP_XA_RESOURCE = "wrap-xa-resource";
 
-    static final String NEWCONNECTIONSQL = "new-connection-sql";
-
     static final String EXCEPTIONSORTER_PROPERTIES = "exception-sorter-properties";
 
     static final String STALECONNECTIONCHECKER_PROPERTIES = "stale-connection-checker-properties";
@@ -167,9 +165,9 @@ class Constants {
 
     static final String RECOVERY_SECURITY_DOMAIN = "recovery-security-domain";
 
-    static final String RECOVERLUGIN_CLASSNAME = "recovery-plugin-class-name";
+    static final String RECOVER_PLUGIN_CLASSNAME = "recovery-plugin-class-name";
 
-    static final String RECOVERLUGIN_PROPERTIES = "recovery-plugin-properties";
+    static final String RECOVER_PLUGIN_PROPERTIES = "recovery-plugin-properties";
 
     static final String NO_RECOVERY = "no-recovery";
 

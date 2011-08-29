@@ -56,6 +56,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
@@ -73,6 +74,7 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.logging.Logger;
 
 /**
@@ -81,18 +83,18 @@ import org.jboss.logging.Logger;
  */
 class ResourceAdaptersSubsystemProviders {
 
-    static final String[] RESOURCEADAPTER_ATTRIBUTE = new String[] { ARCHIVE, TRANSACTIONSUPPORT, BOOTSTRAPCONTEXT,
-            CONFIG_PROPERTIES, BEANVALIDATIONGROUPS, CONNECTIONDEFINITIONS, ADMIN_OBJECTS };
-    static final NodeAttribute[] CONNECTIONDEFINITIONS_NODEATTRIBUTE = new NodeAttribute[] {
+    static final String[] RESOURCEADAPTER_ATTRIBUTE = new String[]{ARCHIVE, TRANSACTIONSUPPORT, BOOTSTRAPCONTEXT,
+            CONFIG_PROPERTIES, BEANVALIDATIONGROUPS, CONNECTIONDEFINITIONS, ADMIN_OBJECTS};
+    static final NodeAttribute[] CONNECTIONDEFINITIONS_NODEATTRIBUTE = new NodeAttribute[]{
             new NodeAttribute(CLASS_NAME, ModelType.STRING, true), new NodeAttribute(JNDINAME, ModelType.STRING, true),
             new NodeAttribute(POOL_NAME, ModelType.STRING, false),
-            new NodeAttribute(USE_JAVA_CONTEXT, ModelType.BOOLEAN, false),
-            new NodeAttribute(ENABLED, ModelType.BOOLEAN, false), new NodeAttribute(MAX_POOL_SIZE, ModelType.INT, false),
-            new NodeAttribute(MIN_POOL_SIZE, ModelType.INT, false),
-            new NodeAttribute(POOL_USE_STRICT_MIN, ModelType.BOOLEAN, false),
-            new NodeAttribute(FLUSH_STRATEGY, ModelType.STRING, false),
+            new NodeAttribute(USE_JAVA_CONTEXT, ModelType.BOOLEAN, false, Defaults.USE_JAVA_CONTEXT),
+            new NodeAttribute(ENABLED, ModelType.BOOLEAN, false, Defaults.ENABLED), new NodeAttribute(MAX_POOL_SIZE, ModelType.INT, false, Defaults.MAX_POOL_SIZE),
+            new NodeAttribute(MIN_POOL_SIZE, ModelType.INT, false, Defaults.MIN_POOL_SIZE),
+            new NodeAttribute(POOL_USE_STRICT_MIN, ModelType.BOOLEAN, false, Defaults.USE_STRICT_MIN),
+            new NodeAttribute(FLUSH_STRATEGY, ModelType.STRING, false, Defaults.FLUSH_STRATEGY),
             new NodeAttribute(SECURITY_DOMAIN_AND_APPLICATION, ModelType.STRING, false),
-            new NodeAttribute(APPLICATION, ModelType.STRING, false),
+            new NodeAttribute(APPLICATION, ModelType.BOOLEAN, false, Defaults.APPLICATION_MANAGED_SECURITY),
             new NodeAttribute(SECURITY_DOMAIN, ModelType.STRING, false),
             new NodeAttribute(ALLOCATION_RETRY, ModelType.BOOLEAN, false),
             new NodeAttribute(ALLOCATION_RETRY_WAIT_MILLIS, ModelType.LONG, false),
@@ -101,13 +103,13 @@ class ResourceAdaptersSubsystemProviders {
             new NodeAttribute(XA_RESOURCE_TIMEOUT, ModelType.LONG, false),
             new NodeAttribute(USETRYLOCK, ModelType.BOOLEAN, false),
             new NodeAttribute(BACKGROUNDVALIDATIONMILLIS, ModelType.LONG, false),
-            new NodeAttribute(BACKGROUNDVALIDATION, ModelType.BOOLEAN, false),
-            new NodeAttribute(USE_FAST_FAIL, ModelType.BOOLEAN, false), new NodeAttribute(USE_CCM, ModelType.BOOLEAN, false) };
+            new NodeAttribute(BACKGROUNDVALIDATION, ModelType.BOOLEAN, false, Defaults.BACKGROUND_VALIDATION),
+            new NodeAttribute(USE_FAST_FAIL, ModelType.BOOLEAN, false, Defaults.USE_FAST_FAIl), new NodeAttribute(USE_CCM, ModelType.BOOLEAN, false, Defaults.USE_CCM)};
 
-    static final NodeAttribute[] ADMIN_OBJECTS_NODEATTRIBUTE = new NodeAttribute[] {
+    static final NodeAttribute[] ADMIN_OBJECTS_NODEATTRIBUTE = new NodeAttribute[]{
             new NodeAttribute(CLASS_NAME, ModelType.STRING, true), new NodeAttribute(JNDINAME, ModelType.STRING, true),
             new NodeAttribute(POOL_NAME, ModelType.STRING, false),
-            new NodeAttribute(USE_JAVA_CONTEXT, ModelType.BOOLEAN, false), new NodeAttribute(ENABLED, ModelType.BOOLEAN, false) };
+            new NodeAttribute(USE_JAVA_CONTEXT, ModelType.BOOLEAN, false, Defaults.USE_JAVA_CONTEXT), new NodeAttribute(ENABLED, ModelType.BOOLEAN, false, Defaults.ENABLED)};
 
     static final String RESOURCE_NAME = ResourceAdaptersSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -164,11 +166,12 @@ class ResourceAdaptersSubsystemProviders {
             connectionDefinitionsNode.get(DESCRIPTION).set(CONNECTIONDEFINITIONS);
 
             for (NodeAttribute attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
-                Logger.getLogger(this.getClass()).debugf("##########################################%s", attribute.getName());
                 connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), DESCRIPTION).set(
                         bundle.getString(attribute.getName()));
                 connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), TYPE).set(attribute.getModelType());
                 connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), REQUIRED).set(attribute.isRequired());
+                if (attribute.getDefaultValue() != null)
+                    connectionDefinitionsNode.get(ATTRIBUTES, attribute.getName(), DEFAULT).set(attribute.getDefaultValue().toString());
 
             }
             resourceAdaptersNode.get(CONNECTIONDEFINITIONS).set(connectionDefinitionsNode);
@@ -182,6 +185,8 @@ class ResourceAdaptersSubsystemProviders {
                 adminObjectNode.get(ATTRIBUTES, attribute.getName(), DESCRIPTION).set(bundle.getString(attribute.getName()));
                 adminObjectNode.get(ATTRIBUTES, attribute.getName(), TYPE).set(attribute.getModelType());
                 adminObjectNode.get(ATTRIBUTES, attribute.getName(), REQUIRED).set(attribute.isRequired());
+                if (attribute.getDefaultValue() != null)
+                    adminObjectNode.get(ATTRIBUTES, attribute.getName(), DEFAULT).set(attribute.getDefaultValue().toString());
 
             }
             resourceAdaptersNode.get(ADMIN_OBJECTS).set(adminObjectNode);
@@ -222,6 +227,8 @@ class ResourceAdaptersSubsystemProviders {
                         bundle.getString(attribute.getName()));
                 connectionDefinitionsNode.get(REQUEST_PROPERTIES, attribute.getName(), TYPE).set(attribute.getModelType());
                 connectionDefinitionsNode.get(REQUEST_PROPERTIES, attribute.getName(), REQUIRED).set(attribute.isRequired());
+                if (attribute.getDefaultValue() != null)
+                    connectionDefinitionsNode.get(REQUEST_PROPERTIES, attribute.getName(), DEFAULT).set(attribute.getDefaultValue().toString());
 
             }
             operation.get(CONNECTIONDEFINITIONS).set(connectionDefinitionsNode);
@@ -234,6 +241,8 @@ class ResourceAdaptersSubsystemProviders {
                         bundle.getString(attribute.getName()));
                 adminObjectNode.get(REQUEST_PROPERTIES, attribute.getName(), TYPE).set(attribute.getModelType());
                 adminObjectNode.get(REQUEST_PROPERTIES, attribute.getName(), REQUIRED).set(attribute.isRequired());
+                if (attribute.getDefaultValue() != null)
+                    adminObjectNode.get(REQUEST_PROPERTIES, attribute.getName(), DEFAULT).set(attribute.getDefaultValue().toString());
 
             }
             operation.get(ADMIN_OBJECTS).set(adminObjectNode);
@@ -309,11 +318,22 @@ class ResourceAdaptersSubsystemProviders {
         private final ModelType modelType;
         private final boolean required;
 
+        private final Object defaultValue;
+
         public NodeAttribute(String name, ModelType modelType, boolean required) {
             super();
             this.name = name;
             this.modelType = modelType;
             this.required = required;
+            this.defaultValue = null;
+        }
+
+        public NodeAttribute(String name, ModelType modelType, boolean required, Object defaultValue) {
+            super();
+            this.name = name;
+            this.modelType = modelType;
+            this.required = required;
+            this.defaultValue = defaultValue;
         }
 
         public String getName() {
@@ -328,9 +348,14 @@ class ResourceAdaptersSubsystemProviders {
             return required;
         }
 
+        public Object getDefaultValue() {
+            return defaultValue;
+        }
+
+
         @Override
         public String toString() {
-            return "NodeAttribute [name=" + name + ", modelType=" + modelType + ", required=" + required + "]";
+            return "NodeAttribute [name=" + name + ", modelType=" + modelType + ", required=" + required + ", defaultValue=" + defaultValue + "]";
         }
 
     }

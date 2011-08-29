@@ -109,12 +109,13 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     } else {
                         deployment = deploymentUnit.getName().substring(0, deploymentUnit.getName().lastIndexOf('.'));
                     }
-
+                    String suffix = ConnectorServices.getNextValidSuffix(connectorXmlDescriptor.getDeploymentName());
                     ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
-                            raxml, module, deployment);
+                            raxml, module, deployment, suffix);
                     // Create the service
-                    ServiceName serviceName = ConnectorServices.getNextValidResourceAdapterXmlServiceName(connectorXmlDescriptor.getDeploymentName());
-                     serviceTarget
+                    ServiceName serviceName = ConnectorServices.registerResourceAdapterXmlServiceNameWithSuffix(
+                            connectorXmlDescriptor.getDeploymentName(), suffix);
+                    serviceTarget
                             .addService(serviceName, service)
                             .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, service.getMdrInjector())
                             .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class,
@@ -131,9 +132,8 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                                     service.getSubjectFactoryInjector())
                             .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector())
                             .addDependency(NamingService.SERVICE_NAME)
-                            .addDependencies(
-                                    ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor
-                                            .getDeploymentName())).setInitialMode(Mode.ACTIVE).install();
+                            .addDependency(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()))
+                            .setInitialMode(Mode.ACTIVE).install();
                 }
             }
         } catch (Throwable t) {

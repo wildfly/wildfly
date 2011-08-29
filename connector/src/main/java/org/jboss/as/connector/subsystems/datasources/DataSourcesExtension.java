@@ -21,120 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE;
-import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
-import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
-import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
-import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL_REMOVE;
-import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.populateAddModel;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER_CLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
-import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
-import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
-import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
-import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERYTIMEOUT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
-import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLOATION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USETRYLOCK;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
-import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
-import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.fillFrom;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_JDBC_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_IDLE_CONNECTION_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.GET_INSTALLED_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.INSTALLED_DRIVERS_LIST_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.connector.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.pool.PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler;
 import org.jboss.as.connector.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
@@ -171,12 +57,123 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.jca.common.metadata.ds.DsParser;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE;
+import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL_REMOVE;
+import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.populateAddModel;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERYTIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLOATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USETRYLOCK;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_IDLE_CONNECTION_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.GET_INSTALLED_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.INSTALLED_DRIVERS_LIST_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -302,51 +299,51 @@ public class DataSourcesExtension implements Extension {
                     writer.writeStartElement(isXADataSource ? DataSources.Tag.XA_DATASOURCE.getLocalName()
                             : DataSources.Tag.DATASOURCE.getLocalName());
 
-                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JNDINAME, JNDINAME);
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JNDI_NAME, JNDINAME);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.POOL_NAME, POOLNAME);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.ENABLED, ENABLED);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.JTA, JTA);
-                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.USEJAVACONTEXT, USE_JAVA_CONTEXT);
+                    writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.USE_JAVA_CONTEXT, USE_JAVA_CONTEXT);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.SPY, SPY);
                     writeAttributeIfHas(writer, dataSourceNode, DataSource.Attribute.USE_CCM, USE_CCM);
 
                     if (!isXADataSource) {
-                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.CONNECTIONURL, CONNECTION_URL);
-                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVERCLASS, DATASOURCE_DRIVER_CLASS);
-                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DATASOURCECLASS, DATASOURCE_CLASS);
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.CONNECTION_URL, CONNECTION_URL);
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVER_CLASS, DATASOURCE_DRIVER_CLASS);
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DATASOURCE_CLASS, DATASOURCE_CLASS);
                         if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
                             for (Property connectionProperty : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(), DataSource.Tag.CONNECTIONPROPERTY.getLocalName());
+                                        .getValue().asString(), DataSource.Tag.CONNECTION_PROPERTY.getLocalName());
                             }
                         }
                     }
                     if (isXADataSource) {
                         if (dataSourceNode.hasDefined(XADATASOURCEPROPERTIES)) {
                             for (Property prop : dataSourceNode.get(XADATASOURCEPROPERTIES).asPropertyList()) {
-                                writer.writeStartElement(XaDataSource.Tag.XADATASOURCEPROPERTY.getLocalName());
+                                writer.writeStartElement(XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName());
                                 writer.writeAttribute("name", prop.getName());
                                 writer.writeCharacters(prop.getValue().asString());
                                 writer.writeEndElement();
                             }
 
                         }
-                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.XADATASOURCECLASS, XADATASOURCECLASS);
+                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.XA_DATASOURCE_CLASS, XADATASOURCECLASS);
 
                     }
                     writeElementIfHas(writer, dataSourceNode, DataSource.Tag.DRIVER, DATASOURCE_DRIVER);
 
                     if (isXADataSource) {
-                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.URLDELIMITER, URL_DELIMITER);
-                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.URLSELECTORSTRATEGYCLASSNAME,
+                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.URL_DELIMITER, URL_DELIMITER);
+                        writeElementIfHas(writer, dataSourceNode, XaDataSource.Tag.URL_SELECTOR_STRATEGY_CLASS_NAME,
                                 URL_SELECTOR_STRATEGY_CLASS_NAME);
                     }
-                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.NEWCONNECTIONSQL, NEW_CONNECTION_SQL);
-                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.TRANSACTIONISOLATION, TRANSACTION_ISOLOATION);
+                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.NEW_CONNECTION_SQL, NEW_CONNECTION_SQL);
+                    writeElementIfHas(writer, dataSourceNode, DataSource.Tag.TRANSACTION_ISOLATION, TRANSACTION_ISOLOATION);
 
                     if (!isXADataSource) {
-                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.URLDELIMITER, URL_DELIMITER);
-                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.URLSELECTORSTRATEGYCLASSNAME,
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.URL_DELIMITER, URL_DELIMITER);
+                        writeElementIfHas(writer, dataSourceNode, DataSource.Tag.URL_SELECTOR_STRATEGY_CLASS_NAME,
                                 URL_SELECTOR_STRATEGY_CLASS_NAME);
                     }
                     boolean poolRequired = hasAnyOf(dataSourceNode, MIN_POOL_SIZE, MAX_POOL_SIZE, POOL_PREFILL,
@@ -360,13 +357,13 @@ public class DataSourcesExtension implements Extension {
                         writer.writeStartElement(isXADataSource ? XaDataSource.Tag.XA_POOL.getLocalName() : DataSource.Tag.POOL
                                 .getLocalName());
                         writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.MIN_POOL_SIZE, MIN_POOL_SIZE);
-                        writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.MAXPOOLSIZE, MAX_POOL_SIZE);
+                        writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.MAX_POOL_SIZE, MAX_POOL_SIZE);
                         writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.PREFILL, POOL_PREFILL);
                         writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.USE_STRICT_MIN, POOL_USE_STRICT_MIN);
                         writeElementIfHas(writer, dataSourceNode, CommonPool.Tag.FLUSH_STRATEGY, FLUSH_STRATEGY);
 
                         if (isXADataSource) {
-                            writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.ISSAMERMOVERRIDEVALUE,
+                            writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.IS_SAME_RM_OVERRIDE,
                                     SAME_RM_OVERRIDE);
                             writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.INTERLEAVING, INTERLEAVING);
                             writeEmptyElementIfHasAndTrue(writer, dataSourceNode, CommonXaPool.Tag.NO_TX_SEPARATE_POOLS,
@@ -380,7 +377,7 @@ public class DataSourcesExtension implements Extension {
                             REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
                     if (securityRequired) {
                         writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
-                        writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.USERNAME, USERNAME);
+                        writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.USER_NAME, USERNAME);
                         writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.PASSWORD, PASSWORD);
                         writeElementIfHas(writer, dataSourceNode, DsSecurity.Tag.SECURITY_DOMAIN, SECURITY_DOMAIN);
 
@@ -404,25 +401,25 @@ public class DataSourcesExtension implements Extension {
                     }
 
                     boolean recoveryRequired = hasAnyOf(dataSourceNode, RECOVERY_USERNAME, RECOVERY_PASSWORD,
-                            RECOVERY_SECURITY_DOMAIN, RECOVERLUGIN_CLASSNAME, NO_RECOVERY, RECOVERLUGIN_PROPERTIES);
+                            RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME, NO_RECOVERY, RECOVER_PLUGIN_PROPERTIES);
                     if (recoveryRequired) {
                         writer.writeStartElement(XaDataSource.Tag.RECOVERY.getLocalName());
                         writeAttributeIfHas(writer, dataSourceNode, Recovery.Attribute.NO_RECOVERY, NO_RECOVERY);
                         if (hasAnyOf(dataSourceNode, RECOVERY_USERNAME, RECOVERY_PASSWORD, RECOVERY_SECURITY_DOMAIN)) {
                             writer.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
-                            writeElementIfHas(writer, dataSourceNode, Credential.Tag.USERNAME.getLocalName(), RECOVERY_USERNAME);
+                            writeElementIfHas(writer, dataSourceNode, Credential.Tag.USER_NAME.getLocalName(), RECOVERY_USERNAME);
                             writeElementIfHas(writer, dataSourceNode, Credential.Tag.PASSWORD.getLocalName(), RECOVERY_PASSWORD);
                             writeElementIfHas(writer, dataSourceNode, Credential.Tag.SECURITY_DOMAIN.getLocalName(),
                                     RECOVERY_SECURITY_DOMAIN);
                             writer.writeEndElement();
                         }
-                        if (hasAnyOf(dataSourceNode, RECOVERLUGIN_CLASSNAME)) {
+                        if (hasAnyOf(dataSourceNode, RECOVER_PLUGIN_CLASSNAME)) {
                             writer.writeStartElement(Recovery.Tag.RECOVER_PLUGIN.getLocalName());
                             writer.writeAttribute(
                                     org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
-                                    dataSourceNode.get(RECOVERLUGIN_CLASSNAME).asString());
-                            if (dataSourceNode.hasDefined(RECOVERLUGIN_PROPERTIES)) {
-                                for (Property connectionProperty : dataSourceNode.get(RECOVERLUGIN_PROPERTIES).asPropertyList()) {
+                                    dataSourceNode.get(RECOVER_PLUGIN_CLASSNAME).asString());
+                            if (dataSourceNode.hasDefined(RECOVER_PLUGIN_PROPERTIES)) {
+                                for (Property connectionProperty : dataSourceNode.get(RECOVER_PLUGIN_PROPERTIES).asPropertyList()) {
                                     writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
                                             .getValue().asString(),
                                             org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
@@ -443,7 +440,7 @@ public class DataSourcesExtension implements Extension {
                     if (validationRequired) {
                         writer.writeStartElement(DataSource.Tag.VALIDATION.getLocalName());
                         if (dataSourceNode.hasDefined(VALIDCONNECTIONCHECKERCLASSNAME)) {
-                            writer.writeStartElement(Validation.Tag.VALIDCONNECTIONCHECKER.getLocalName());
+                            writer.writeStartElement(Validation.Tag.VALID_CONNECTION_CHECKER.getLocalName());
                             writer.writeAttribute(
                                     org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                     dataSourceNode.get(VALIDCONNECTIONCHECKERCLASSNAME).asString());
@@ -459,15 +456,15 @@ public class DataSourcesExtension implements Extension {
                             }
                             writer.writeEndElement();
                         }
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.CHECKVALIDCONNECTIONSQL,
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.CHECK_VALID_CONNECTION_SQL,
                                 CHECKVALIDCONNECTIONSQL);
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.VALIDATEONMATCH, VALIDATEONMATCH);
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATION, BACKGROUNDVALIDATION);
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUNDVALIDATIONMILLIS,
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.VALIDATE_ON_MATCH, VALIDATEONMATCH);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUND_VALIDATION, BACKGROUNDVALIDATION);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.BACKGROUND_VALIDATION_MILLIS,
                                 BACKGROUNDVALIDATIONMILLIS);
-                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.USEFASTFAIL, USE_FAST_FAIL);
+                        writeElementIfHas(writer, dataSourceNode, Validation.Tag.USE_FAST_FAIL, USE_FAST_FAIL);
                         if (dataSourceNode.hasDefined(STALECONNECTIONCHECKERCLASSNAME)) {
-                            writer.writeStartElement(Validation.Tag.STALECONNECTIONCHECKER.getLocalName());
+                            writer.writeStartElement(Validation.Tag.STALE_CONNECTION_CHECKER.getLocalName());
                             writer.writeAttribute(
                                     org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                     dataSourceNode.get(STALECONNECTIONCHECKERCLASSNAME).asString());
@@ -485,7 +482,7 @@ public class DataSourcesExtension implements Extension {
                             writer.writeEndElement();
                         }
                         if (dataSourceNode.hasDefined(EXCEPTIONSORTERCLASSNAME)) {
-                            writer.writeStartElement(Validation.Tag.EXCEPTIONSORTER.getLocalName());
+                            writer.writeStartElement(Validation.Tag.EXCEPTION_SORTER.getLocalName());
                             writer.writeAttribute(
                                     org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
                                     dataSourceNode.get(EXCEPTIONSORTERCLASSNAME).asString());
@@ -507,26 +504,26 @@ public class DataSourcesExtension implements Extension {
                             XA_RESOURCE_TIMEOUT);
                     if (timeoutRequired) {
                         writer.writeStartElement(DataSource.Tag.TIMEOUT.getLocalName());
-                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.BLOCKINGTIMEOUTMILLIS,
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.BLOCKING_TIMEOUT_MILLIS,
                                 BLOCKING_TIMEOUT_WAIT_MILLIS);
-                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.IDLETIMEOUTMINUTES, IDLETIMEOUTMINUTES);
-                        writeEmptyElementIfHasAndTrue(writer, dataSourceNode, TimeOut.Tag.SETTXQUERYTIMEOUT, SETTXQUERYTIMEOUT);
-                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.QUERYTIMEOUT, QUERYTIMEOUT);
-                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.USETRYLOCK, USETRYLOCK);
-                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.ALLOCATIONRETRY, ALLOCATION_RETRY);
-                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.ALLOCATIONRETRYWAITMILLIS,
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.IDLE_TIMEOUT_MINUTES, IDLETIMEOUTMINUTES);
+                        writeEmptyElementIfHasAndTrue(writer, dataSourceNode, TimeOut.Tag.SET_TX_QUERY_TIMEOUT, SETTXQUERYTIMEOUT);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.QUERY_TIMEOUT, QUERYTIMEOUT);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.USE_TRY_LOCK, USETRYLOCK);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.ALLOCATION_RETRY, ALLOCATION_RETRY);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS,
                                 ALLOCATION_RETRY_WAIT_MILLIS);
-                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.XARESOURCETIMEOUT, XA_RESOURCE_TIMEOUT);
+                        writeElementIfHas(writer, dataSourceNode, TimeOut.Tag.XA_RESOURCE_TIMEOUT, XA_RESOURCE_TIMEOUT);
                         writer.writeEndElement();
                     }
                     boolean statementRequired = hasAnyOf(dataSourceNode, TRACKSTATEMENTS, PREPAREDSTATEMENTSCACHESIZE,
                             SHAREPREPAREDSTATEMENTS);
                     if (statementRequired) {
                         writer.writeStartElement(DataSource.Tag.STATEMENT.getLocalName());
-                        writeElementIfHas(writer, dataSourceNode, Statement.Tag.TRACKSTATEMENTS, TRACKSTATEMENTS);
-                        writeElementIfHas(writer, dataSourceNode, Statement.Tag.PREPAREDSTATEMENTCACHESIZE,
+                        writeElementIfHas(writer, dataSourceNode, Statement.Tag.TRACK_STATEMENTS, TRACKSTATEMENTS);
+                        writeElementIfHas(writer, dataSourceNode, Statement.Tag.PREPARED_STATEMENT_CACHE_SIZE,
                                 PREPAREDSTATEMENTSCACHESIZE);
-                        writeEmptyElementIfHasAndTrue(writer, dataSourceNode, Statement.Tag.SHAREPREPAREDSTATEMENTS,
+                        writeEmptyElementIfHasAndTrue(writer, dataSourceNode, Statement.Tag.SHARE_PREPARED_STATEMENTS,
                                 SHAREPREPAREDSTATEMENTS);
 
                         writer.writeEndElement();
@@ -544,9 +541,9 @@ public class DataSourcesExtension implements Extension {
                     writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MODULE, DRIVER_MODULE_NAME);
                     writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MAJOR_VERSION, DRIVER_MAJOR_VERSION);
                     writeAttributeIfHas(writer, driverProperty.getValue(), Driver.Attribute.MINOR_VERSION, DRIVER_MINOR_VERSION);
-                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.DRIVERCLASS.getLocalName(),
+                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.DRIVER_CLASS.getLocalName(),
                             DRIVER_CLASS_NAME);
-                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.XADATASOURCECLASS.getLocalName(),
+                    writeElementIfHas(writer, driverProperty.getValue(), Driver.Tag.XA_DATASOURCE_CLASS.getLocalName(),
                             DRIVER_XA_DATASOURCE_CLASS_NAME);
 
                     writer.writeEndElement();
@@ -685,7 +682,6 @@ public class DataSourcesExtension implements Extension {
 
             list.add(subsystem);
 
-            DataSources dataSources = null;
             try {
                 String localName = null;
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -697,7 +693,7 @@ public class DataSourcesExtension implements Extension {
                             case SUBSYSTEM: {
 
                                 final DsParser parser = new DsParser();
-                                dataSources = parser.parse(reader);
+                                parser.parse(reader, list, address);
                                 requireNoContent(reader);
                                 break;
                             }
@@ -708,55 +704,6 @@ public class DataSourcesExtension implements Extension {
                 throw new XMLStreamException(e);
             }
 
-            if (dataSources != null) {
-                for (DataSource dataSource : dataSources.getDataSource()) {
-                    final ModelNode dsAddress = address.clone();
-                    dsAddress.add(DATA_SOURCE, dataSource.getJndiName());
-                    dsAddress.protect();
-
-                    final ModelNode operation = new ModelNode();
-                    operation.get(OP_ADDR).set(dsAddress);
-                    operation.get(OP).set(ADD);
-
-                    fillFrom(operation, dataSource);
-                    list.add(operation);
-                }
-
-                for (XaDataSource xaDataSource : dataSources.getXaDataSource()) {
-                    final ModelNode dsAddress = address.clone();
-                    dsAddress.add(XA_DATA_SOURCE, xaDataSource.getJndiName());
-                    dsAddress.protect();
-
-                    final ModelNode operation = new ModelNode();
-                    operation.get(OP_ADDR).set(dsAddress);
-                    operation.get(OP).set(ADD);
-
-                    fillFrom(operation, xaDataSource);
-                    list.add(operation);
-                }
-
-                for (Driver driver : dataSources.getDrivers()) {
-                    final ModelNode driverAddress = address.clone();
-                    driverAddress.add(JDBC_DRIVER, driver.getName());
-                    driverAddress.protect();
-                    final ModelNode op = Util.getEmptyOperation(ADD, driverAddress);
-
-                    op.get(DRIVER_NAME).set(driver.getName());
-                    op.get(DRIVER_MODULE_NAME).set(driver.getModule());
-                    if (driver.getMajorVersion() != null)
-                        op.get(DRIVER_MAJOR_VERSION).set(driver.getMajorVersion());
-                    if (driver.getMinorVersion() != null)
-                        op.get(DRIVER_MINOR_VERSION).set(driver.getMinorVersion());
-                    if (driver.getDriverClass() != null)
-                        op.get(DRIVER_CLASS_NAME).set(driver.getDriverClass());
-                    if (driver.getDataSourceClass() != null)
-                        op.get(DRIVER_DATASOURCE_CLASS_NAME).set(driver.getDataSourceClass());
-                    if (driver.getXaDataSourceClass() != null)
-                        op.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(driver.getXaDataSourceClass());
-
-                    list.add(op);
-                }
-            }
         }
 
     }
