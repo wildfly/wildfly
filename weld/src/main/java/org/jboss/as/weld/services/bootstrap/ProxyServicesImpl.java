@@ -21,15 +21,17 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.weld.exceptions.WeldException;
+import org.jboss.weld.logging.messages.BeanMessage;
+import org.jboss.weld.serialization.spi.ProxyServices;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-
-import org.jboss.modules.Module;
-import org.jboss.weld.exceptions.WeldException;
-import org.jboss.weld.logging.messages.BeanMessage;
-import org.jboss.weld.serialization.spi.ProxyServices;
 
 /**
  * {@link ProxyServices} implementation that delegates to the module class loader if the bean class loader cannot be determined
@@ -61,6 +63,22 @@ public class ProxyServicesImpl implements ProxyServices {
     private ClassLoader _getClassLoader(Class<?> proxiedBeanType) {
         if (proxiedBeanType.getName().startsWith("java")) {
             return module.getClassLoader();
+        } else if(proxiedBeanType.getClassLoader() instanceof ModuleClassLoader) {
+            final ModuleClassLoader loader = (ModuleClassLoader)proxiedBeanType.getClassLoader();
+            //even though this is not strictly spec compliant if a class from the app server is
+            //being proxied we use the deployment CL to prevent a memory leak
+            //in theory this means that package private methods will not work correctly
+            //however the application does not have access to package private methods anyway
+            //as it is in a different class loader
+            if(loader.getModule().getModuleLoader() instanceof ServiceModuleLoader) {
+                //this is a dynamic module
+                //we can use it to load the proxy
+                return proxiedBeanType.getClassLoader();
+            } else {
+                //otherwise we use the deployments CL
+                //rather than using a server modules CL
+                return module.getClassLoader();
+            }
         } else {
             return proxiedBeanType.getClassLoader();
         }
