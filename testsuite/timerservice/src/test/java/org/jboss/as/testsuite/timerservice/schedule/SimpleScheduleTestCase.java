@@ -50,12 +50,19 @@ public class SimpleScheduleTestCase {
     }
 
     @Test
-    public void testTimerServiceCalled() throws NamingException {
+    public void testScheduleAnnotation() throws NamingException {
         InitialContext ctx = new InitialContext();
         SimpleScheduleBean bean = (SimpleScheduleBean)ctx.lookup("java:module/" + SimpleScheduleBean.class.getSimpleName());
         Assert.assertTrue(SimpleScheduleBean.awaitTimerCall());
     }
 
+
+    @Test
+    public void testSchedulesAnnotation() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        SimpleSchedulesBean bean = (SimpleSchedulesBean)ctx.lookup("java:module/" + SimpleSchedulesBean.class.getSimpleName());
+        Assert.assertTrue(SimpleSchedulesBean.awaitTimerCall());
+    }
 
 
 }
