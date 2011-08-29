@@ -30,13 +30,20 @@ import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
 
 /**
@@ -91,9 +98,111 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         registration.registerOperationHandler("disable-context", ModClusterDisableContext.INSTANCE, ModClusterDisableContext.INSTANCE, false);
         registration.registerOperationHandler("stop-context", ModClusterStopContext.INSTANCE, ModClusterStopContext.INSTANCE, false);
 
+        // Attributes. (standard)
+
+        registration.registerReadWriteAttribute(CommonAttributes.ADVERTISE_SOCKET, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.PROXY_LIST, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.PROXY_URL, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.ADVERTISE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.ADVERTISE_SECURITY_KEY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.EXCLUDED_CONTEXTS, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.AUTO_ENABLE_CONTEXTS, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.STOP_CONTEXT_TIMEOUT, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.SOCKET_TIMEOUT, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+
+        registration.registerReadWriteAttribute(CommonAttributes.STICKY_SESSION, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.STICKY_SESSION_REMOVE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.STICKY_SESSION_FORCE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.WORKER_TIMEOUT, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.MAX_ATTEMPTS, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.FLUSH_PACKETS, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.FLUSH_WAIT, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.PING, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.SMAX, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.TTL, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.NODE_TIMEOUT, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.BALANCER, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.DOMAIN, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
+
+        // Special Attributes.
+        registration.registerReadWriteAttribute(CommonAttributes.DYNAMIC_LOAD_PROVIDER, null, new WriteDynamicLoadProviderOperationHandler(), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.SIMPLE_LOAD_PROVIDER, null, new WriteSimpleLoadProviderOperationHandler(), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(CommonAttributes.SSL, null, new WriteSSLProviderOperationHandler(), Storage.CONFIGURATION);
+
+        // Metric for the  dynamic-load-provider
+        registration.registerOperationHandler("add-metric", ModClusterAddMetric.INSTANCE, ModClusterAddMetric.INSTANCE, false);
+        registration.registerOperationHandler("add-custom-metric", ModClusterAddCustomMetric.INSTANCE, ModClusterAddCustomMetric.INSTANCE, false);
+        registration.registerOperationHandler("remove-metric", ModClusterRemoveMetric.INSTANCE, ModClusterRemoveMetric.INSTANCE, false);
+        registration.registerOperationHandler("remove-custom-metric", ModClusterRemoveCustomMetric.INSTANCE, ModClusterRemoveCustomMetric.INSTANCE, false);
+
         subsystem.registerXMLElementWriter(parser);
     }
 
+    public static class WriteDynamicLoadProviderOperationHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode history = operation.get(CommonAttributes.HISTORY);
+            ModelNode decay = operation.get(CommonAttributes.DECAY);
+
+            // final ModelNode submodel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+            final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+            final ModelNode currentValue = submodel.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER).clone();
+            if (!history.isDefined())
+                history = currentValue.get(CommonAttributes.HISTORY);
+            submodel.get(CommonAttributes.HISTORY).set(history);
+            if (!decay.isDefined())
+                decay = currentValue.get(CommonAttributes.DECAY);
+            submodel.get(CommonAttributes.DECAY).set(decay);
+
+            submodel.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER).get(CommonAttributes.HISTORY).set(history);
+            submodel.get(CommonAttributes.DYNAMIC_LOAD_PROVIDER).get(CommonAttributes.DECAY).set(decay);
+
+            context.completeStep();
+        }
+
+    }
+
+    public static class WriteSimpleLoadProviderOperationHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode factor = operation.get(CommonAttributes.FACTOR);
+
+            final ModelNode submodel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+            final ModelNode currentValue = submodel.get(CommonAttributes.SIMPLE_LOAD_PROVIDER).clone();
+            if (!factor.isDefined())
+                factor = currentValue.get(CommonAttributes.HISTORY);
+            submodel.get(CommonAttributes.FACTOR).set(factor);
+
+            submodel.get(CommonAttributes.SIMPLE_LOAD_PROVIDER).get(CommonAttributes.FACTOR).set(factor);
+
+            context.completeStep();
+        }
+
+    }
+    public static class WriteSSLProviderOperationHandler implements OperationStepHandler {
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            final ModelNode  currentValue = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+
+            setSSLNodeAttribute(currentValue,  operation, CommonAttributes.PASSWORD);
+            setSSLNodeAttribute(currentValue,  operation, CommonAttributes.CERTIFICATE_KEY_FILE);
+            setSSLNodeAttribute(currentValue,  operation, CommonAttributes.CIPHER_SUITE);
+            setSSLNodeAttribute(currentValue,  operation, CommonAttributes.PROTOCOL);
+            setSSLNodeAttribute(currentValue,  operation, CommonAttributes.VERIFY_CLIENT);
+            setSSLNodeAttribute(currentValue,  operation, CommonAttributes.CA_CERTIFICATE_FILE);
+            setSSLNodeAttribute(currentValue,  operation, CommonAttributes.CA_REVOCATION_URL);
+
+            context.completeStep();
+        }
+        public void setSSLNodeAttribute(ModelNode currentnode, ModelNode operation, String attribute) {
+            ModelNode node = operation.get(attribute);
+            if (node.isDefined())
+                currentnode.get(CommonAttributes.SSL).get(attribute).set(node);
+        }
+
+    }
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
