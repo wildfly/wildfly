@@ -399,41 +399,45 @@ public class GlobalOperationHandlers {
                 final Set<String> children = context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
                 if (children.contains(attributeName)) {
                     throw new OperationFailedException(new ModelNode().set(String.format("'%s' is a registered child of resource (%s)", attributeName, operation.get(OP_ADDR)))); // TODO i18n
-                } else if (subModel.hasDefined(attributeName) || !defaults) {
+                } else if (subModel.hasDefined(attributeName)) {
                     final ModelNode result = subModel.get(attributeName);
                     context.getResult().set(result);
-                    context.completeStep();
                 } else {
+                    // No defined value in the model. See if we should reply with a default from the metadata,
+                    // reply with undefined, or fail because it's a non-existent attribute name
                     final ModelNode nodeDescription = getNodeDescription(registry, operation);
-                    if (nodeDescription.get(ATTRIBUTES).hasDefined(attributeName) &&
+                    if (defaults && nodeDescription.get(ATTRIBUTES).hasDefined(attributeName) &&
                             nodeDescription.get(ATTRIBUTES, attributeName).hasDefined(DEFAULT)) {
                         final ModelNode result = nodeDescription.get(ATTRIBUTES, attributeName, DEFAULT);
                         context.getResult().set(result);
-                        context.completeStep();
+                    } else if (subModel.has(attributeName) || nodeDescription.get(ATTRIBUTES).has(attributeName)) {
+                        // model had no defined value, but we treat its existence in the model or the metadata
+                        // as proof that it's a legit attribute name
+                        context.getResult(); // this initializes the "result" to ModelType.UNDEFINED
                     } else {
-                        final ModelNode result = new ModelNode();
-                        context.getResult().set(result);
-                        context.completeStep();
+                        throw new OperationFailedException(new ModelNode().set(String.format("No known attribute %s", attributeName))); // TODO i18n
                     }
                 }
+                // Complete the step for the unregistered attribute case
+                context.completeStep();
             } else if (attributeAccess.getReadHandler() == null) {
+                // We know the attribute name is legit as it's in the registry, so this case is simpler
                 if (subModel.hasDefined(attributeName) || !defaults) {
                     final ModelNode result = subModel.get(attributeName);
                     context.getResult().set(result);
-                    context.completeStep();
                 } else {
+                    // It wasn't in the model, but user wants a default value from metadata if there is one
                     final ModelNode nodeDescription = getNodeDescription(registry, operation);
                     if (nodeDescription.get(ATTRIBUTES).hasDefined(attributeName) &&
                             nodeDescription.get(ATTRIBUTES, attributeName).hasDefined(DEFAULT)) {
                         final ModelNode result = nodeDescription.get(ATTRIBUTES, attributeName, DEFAULT);
                         context.getResult().set(result);
-                        context.completeStep();
                     } else {
-                        final ModelNode result = new ModelNode();
-                        context.getResult().set(result);
-                        context.completeStep();
+                        context.getResult(); // this initializes the "result" to ModelType.UNDEFINED
                     }
                 }
+                // Complete the step for the "registered attribute but default read handler" case
+                context.completeStep();
             } else {
                 OperationStepHandler handler = attributeAccess.getReadHandler();
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
@@ -442,6 +446,7 @@ public class GlobalOperationHandlers {
                 } finally {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }
+                // no context.completeStep() here as that's the read handler's job
             }
         }
 

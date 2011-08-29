@@ -73,16 +73,23 @@ public class GlobalDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("global.read-resource"));
         node.get(REQUEST_PROPERTIES, RECURSIVE, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, RECURSIVE, DESCRIPTION).set(bundle.getString("global.read-resource.recursive"));
+        node.get(REQUEST_PROPERTIES, RECURSIVE, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, RECURSIVE, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, RECURSIVE, DEFAULT).set(false);
         node.get(REQUEST_PROPERTIES, PROXIES, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, PROXIES, DESCRIPTION).set(bundle.getString("global.read-resource.proxies"));
+        node.get(REQUEST_PROPERTIES, PROXIES, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, PROXIES, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, PROXIES, DEFAULT).set(false);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, DESCRIPTION).set(bundle.getString("global.read-resource.include-runtime"));
+        node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, NILLABLE).set(true);
+        node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, DEFAULT).set(false);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DESCRIPTION).set(bundle.getString("global.read-resource.include-defaults"));
-        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(true);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         //TODO value type
@@ -104,6 +111,7 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DESCRIPTION).set(bundle.getString("global.read-attribute.include-defaults"));
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(true);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
@@ -185,10 +193,12 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, PROXIES, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, DESCRIPTION).set(bundle.getString("global.read-children-resources.include-runtime"));
+        node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, INCLUDE_RUNTIME, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, TYPE).set(ModelType.BOOLEAN);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DESCRIPTION).set(bundle.getString("global.read-children-resources.include-defaults"));
-        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(true);
 
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
