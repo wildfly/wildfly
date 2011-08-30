@@ -16,16 +16,6 @@
  */
 package org.jboss.as.test.embedded.osgi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.io.InputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
@@ -33,6 +23,7 @@ import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -41,6 +32,15 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.service.startlevel.StartLevel;
+
+import javax.inject.Inject;
+import java.io.InputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * [ARQ-465] Add suport for bundle start level
@@ -112,7 +112,9 @@ public class SimpleStartLevelTestCase {
             }
         });
         startLevel.setStartLevel(3);
-        latch.await(3, TimeUnit.SECONDS);
+        if(!latch.await(6, TimeUnit.SECONDS)) {
+            Assert.fail("Bundle did not start within 6 seconds");
+        }
 
         // The bundle should now be started
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
