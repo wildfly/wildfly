@@ -381,7 +381,7 @@ public class MessagingDescriptions {
 
             if (attr.getName().equals(CONNECTOR)) {
                 final String propType =  resource ? ATTRIBUTES : REQUEST_PROPERTIES;
-                node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
+                node.get(propType, attr.getName(), VALUE_TYPE).set(ModelType.STRING);
             }
         }
     }
@@ -410,14 +410,9 @@ public class MessagingDescriptions {
 
             if (attr.getName().equals(CONNECTOR)) {
                 String propType = resource ? ATTRIBUTES : REQUEST_PROPERTIES;
-                node.get(propType, attr.getName(), VALUE_TYPE).set(getConnectionFactoryConnectionValueType(bundle, propType));
+                node.get(propType, attr.getName(), VALUE_TYPE).set(ModelType.STRING);
             }
         }
-    }
-
-    private static ModelNode getConnectionFactoryConnectionValueType(final ResourceBundle bundle, final String propType) {
-        ModelNode node = new ModelNode().set("TBD");
-        return node;
     }
 
     static ModelNode getConnectionFactoryRemove(final Locale locale) {

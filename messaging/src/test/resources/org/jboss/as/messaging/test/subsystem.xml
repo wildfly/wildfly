@@ -199,7 +199,7 @@
               </connection-factory>
               <connection-factory name="RemoteConnectionFactory">
                  <connectors>
-                    <connector-ref connector-name="netty"/>
+                    <connector-ref connector-name="netty" backup-connector-name="netty-throughput"/>
                  </connectors>
                  <entries>
                     <entry name="RemoteConnectionFactory"/>

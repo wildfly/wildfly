@@ -427,6 +427,7 @@ public interface CommonAttributes {
     String ACCEPTORS ="acceptors";
     String ADDRESS_SETTING ="address-setting";
     String ADDRESS_SETTINGS ="address-settings";
+    String BACKUP_CONNECTOR_NAME ="backup-connector-name";
     String BINDINGS_DIRECTORY ="bindings-directory";
     String BRIDGE = "bridge";
     String BRIDGES = "bridges";
