@@ -35,6 +35,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handler for runtime operations that interact with a HornetQ {@link org.hornetq.api.core.management.ClusterConnectionControl}.
@@ -62,7 +63,8 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
         registry.registerOperationHandler(GET_STATIC_CONNECTORS_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getGetStaticConnectorsAsJSON(locale);
+                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_STATIC_CONNECTORS_AS_JSON,
+                        CommonAttributes.CLUSTER_CONNECTION, ModelType.STRING, false);
             }
         });
 

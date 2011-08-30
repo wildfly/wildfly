@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import org.hornetq.api.jms.management.TopicControl;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
@@ -29,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
@@ -48,6 +51,7 @@ import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
+import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
@@ -68,6 +72,7 @@ import org.jboss.as.controller.AttributeDefinition;
 
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_TYPE;
+import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
@@ -82,6 +87,7 @@ import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.STARTED;
@@ -89,10 +95,12 @@ import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
 
+import javax.ejb.Local;
 import javax.xml.soap.Node;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.messaging.jms.JMSServices;
+import org.jboss.as.messaging.jms.JMSTopicControlHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -377,6 +385,201 @@ public class MessagingDescriptions {
 
     public static ModelNode getTopicRemove(final Locale locale) {
         return getDescriptionOnlyOperation(locale, REMOVE, "topic");
+    }
+
+    public static ModelNode getListSubscriptionsOperation(Locale locale, String operationName) {
+
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode result = getNoArgSimpleReplyOperation(bundle, operationName, "topic", ModelType.LIST, true);
+
+        final ModelNode queueName = result.get(REPLY_PROPERTIES, VALUE_TYPE, "queue-name");
+        queueName.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.queue-name"));
+        queueName.get(TYPE).set(ModelType.STRING);
+        queueName.get(NILLABLE).set(false);
+        final ModelNode clientID = result.get(REPLY_PROPERTIES, VALUE_TYPE, "client-id");
+        clientID.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.client-id"));
+        clientID.get(TYPE).set(ModelType.STRING);
+        clientID.get(NILLABLE).set(false);
+        final ModelNode selector = result.get(REPLY_PROPERTIES, VALUE_TYPE, "selector");
+        selector.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.selector"));
+        selector.get(TYPE).set(ModelType.STRING);
+        selector.get(NILLABLE).set(true);
+        final ModelNode name = result.get(REPLY_PROPERTIES, VALUE_TYPE, "name");
+        name.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.name"));
+        name.get(TYPE).set(ModelType.STRING);
+        name.get(NILLABLE).set(false);
+        final ModelNode durable = result.get(REPLY_PROPERTIES, VALUE_TYPE, "durable");
+        durable.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.durable"));
+        durable.get(TYPE).set(ModelType.BOOLEAN);
+        durable.get(NILLABLE).set(false);
+        final ModelNode messageCount = result.get(REPLY_PROPERTIES, VALUE_TYPE, "message-count");
+        messageCount.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.message-count"));
+        messageCount.get(TYPE).set(ModelType.LONG);
+        messageCount.get(NILLABLE).set(false);
+        messageCount.get(UNIT).set(MeasurementUnit.NONE.getName());
+        final ModelNode deliveringCount = result.get(REPLY_PROPERTIES, VALUE_TYPE, "delivering-count");
+        deliveringCount.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.delivering-count"));
+        deliveringCount.get(TYPE).set(ModelType.INT);
+        deliveringCount.get(NILLABLE).set(false);
+        deliveringCount.get(UNIT).set(MeasurementUnit.NONE.getName());
+        final ModelNode consumers = result.get(REPLY_PROPERTIES, VALUE_TYPE, "consumers");
+        consumers.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers"));
+        consumers.get(TYPE).set(ModelType.LIST);
+        consumers.get(NILLABLE).set(false);
+        consumers.get(MIN_LENGTH).set(0);
+        final ModelNode consumerId = consumers.get(VALUE_TYPE, "consumer-id");
+        consumerId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.consumer-id"));
+        consumerId.get(TYPE).set(ModelType.LONG);
+        consumerId.get(NILLABLE).set(false);
+        final ModelNode connectionId = consumers.get(VALUE_TYPE, "connection-id");
+        connectionId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.connection-id"));
+        connectionId.get(TYPE).set(ModelType.STRING);
+        connectionId.get(NILLABLE).set(false);
+        final ModelNode sessionId = consumers.get(VALUE_TYPE, "session-id");
+        sessionId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.session-id"));
+        sessionId.get(TYPE).set(ModelType.STRING);
+        sessionId.get(NILLABLE).set(true);
+        final ModelNode browseOnly = consumers.get(VALUE_TYPE, "browse-only");
+        browseOnly.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.browse-only"));
+        browseOnly.get(TYPE).set(ModelType.BOOLEAN);
+        browseOnly.get(NILLABLE).set(false);
+        final ModelNode creationTime = consumers.get(VALUE_TYPE, "creation-time");
+        creationTime.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.creation-time"));
+        creationTime.get(TYPE).set(ModelType.LONG);
+        creationTime.get(NILLABLE).set(false);
+
+        return result;
+    }
+
+    public static ModelNode getListMessagesForSubscription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getListMessagesBase(bundle, JMSTopicControlHandler.LIST_MESSAGES_FOR_SUBSCRIPTION);
+
+        final ModelNode replyProps = result.get(REPLY_PROPERTIES);
+        replyProps.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply"));
+        replyProps.get(TYPE).set(ModelType.LIST);
+        final ModelNode valueType = replyProps.get(VALUE_TYPE);
+        final ModelNode priority = valueType.get("JMSPriority");
+        priority.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSPriority"));
+        priority.get(TYPE).set(ModelType.INT);
+        final ModelNode timestamp = valueType.get("JMSTimestamp");
+        timestamp.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSTimestamp"));
+        timestamp.get(TYPE).set(ModelType.LONG);
+        final ModelNode expiration = valueType.get("JMSExpiration");
+        expiration.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSExpiration"));
+        expiration.get(TYPE).set(ModelType.LONG);
+        final ModelNode deliveryMode = valueType.get("JMSDeliveryMode");
+        deliveryMode.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSDeliveryMode"));
+        deliveryMode.get(TYPE).set(ModelType.STRING);
+        deliveryMode.get(NILLABLE).set(false);
+        deliveryMode.get(ALLOWED).add("PERSISTENT");
+        deliveryMode.get(ALLOWED).add("NON_PERSISTENT");
+        final ModelNode messageId = valueType.get("JMSMessageID");
+        messageId.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSMessageID"));
+        messageId.get(TYPE).set(ModelType.STRING);
+        messageId.get(NILLABLE).set(true);
+
+        return result;
+    }
+
+    public static ModelNode getListMessagesForSubscriptionAsJSON(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getListMessagesBase(bundle, JMSTopicControlHandler.LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON);
+
+        final ModelNode replyProps = result.get(REPLY_PROPERTIES);
+        replyProps.get(DESCRIPTION).set("topic.list-messages-for-subscription-as-json.reply");
+        replyProps.get(TYPE).set(ModelType.STRING);
+
+        return result;
+    }
+
+    private static ModelNode getListMessagesBase(final ResourceBundle bundle, final String operationName) {
+
+        final ModelNode result = new ModelNode();
+
+        result.get(OPERATION_NAME).set(operationName);
+        result.get(DESCRIPTION).set(bundle.getString("topic." + operationName));
+
+        final ModelNode nameProp = result.get(REQUEST_PROPERTIES, QUEUE_NAME.getName());
+        nameProp.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.queue-name"));
+        nameProp.get(TYPE).set(ModelType.STRING);
+        nameProp.get(REQUIRED).set(true);
+        nameProp.get(NILLABLE).set(false);
+
+        return result;
+    }
+
+    public static ModelNode getCountMessagesForSubscription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = new ModelNode();
+
+        result.get(OPERATION_NAME).set(JMSTopicControlHandler.COUNT_MESSAGES_FOR_SUBSCRIPTION);
+        result.get(DESCRIPTION).set(bundle.getString("topic." + JMSTopicControlHandler.COUNT_MESSAGES_FOR_SUBSCRIPTION));
+
+        final ModelNode reqProps = result.get(REQUEST_PROPERTIES);
+        final ModelNode clientId = reqProps.get(CLIENT_ID.getName());
+        clientId.get(DESCRIPTION).set(bundle.getString("topic.client-id"));
+        clientId.get(TYPE).set(ModelType.STRING);
+        clientId.get(NILLABLE).set(false);
+        final ModelNode subscriptionName = reqProps.get(JMSTopicControlHandler.SUBSCRIPTION_NAME);
+        subscriptionName.get(DESCRIPTION).set(bundle.getString("topic.subscription-name"));
+        subscriptionName.get(TYPE).set(ModelType.STRING);
+        subscriptionName.get(NILLABLE).set(false);
+        final ModelNode filter = reqProps.get(FILTER.getName());
+        filter.get(DESCRIPTION).set(bundle.getString("topic.filter"));
+        filter.get(TYPE).set(ModelType.STRING);
+        filter.get(NILLABLE).set(true);
+
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.INT);
+
+        return result;
+    }
+
+    public static ModelNode getDropDurableSubscription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = new ModelNode();
+
+        result.get(OPERATION_NAME).set(JMSTopicControlHandler.DROP_DURABLE_SUBSCRIPTION);
+        result.get(DESCRIPTION).set(bundle.getString("topic." + JMSTopicControlHandler.DROP_DURABLE_SUBSCRIPTION));
+
+        final ModelNode reqProps = result.get(REQUEST_PROPERTIES);
+        final ModelNode clientId = reqProps.get(CLIENT_ID.getName());
+        clientId.get(DESCRIPTION).set(bundle.getString("topic.client-id"));
+        clientId.get(TYPE).set(ModelType.STRING);
+        clientId.get(NILLABLE).set(false);
+        final ModelNode subscriptionName = reqProps.get(JMSTopicControlHandler.SUBSCRIPTION_NAME);
+        subscriptionName.get(DESCRIPTION).set(bundle.getString("topic.subscription-name"));
+        subscriptionName.get(TYPE).set(ModelType.STRING);
+        subscriptionName.get(NILLABLE).set(false);
+
+        result.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return result;
+    }
+
+    public static ModelNode getRemoveMessages(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = new ModelNode();
+
+        result.get(OPERATION_NAME).set(JMSTopicControlHandler.REMOVE_MESSAGES);
+        result.get(DESCRIPTION).set(bundle.getString("topic." + JMSTopicControlHandler.REMOVE_MESSAGES));
+
+        final ModelNode reqProps = result.get(REQUEST_PROPERTIES);
+        final ModelNode filter = reqProps.get(FILTER.getName());
+        filter.get(DESCRIPTION).set(bundle.getString("topic.filter"));
+        filter.get(TYPE).set(ModelType.STRING);
+        filter.get(REQUIRED).set(false);
+        filter.get(NILLABLE).set(true);
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("topic.remove-messages.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.INT);
+
+        return result;
     }
 
     static ModelNode getConnectionFactory(final Locale locale) {
@@ -1091,6 +1294,11 @@ public class MessagingDescriptions {
     public static ModelNode getDescriptionOnlyOperation(final Locale locale, final String operationName, final String descriptionPrefix) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
+        return getDescriptionOnlyOperation(bundle, operationName, descriptionPrefix);
+    }
+
+    private static ModelNode getDescriptionOnlyOperation(final ResourceBundle bundle, final String operationName, final String descriptionPrefix) {
+
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(operationName);
         String descriptionKey = descriptionPrefix == null ? operationName : descriptionPrefix + "." + operationName;
@@ -1100,6 +1308,26 @@ public class MessagingDescriptions {
         node.get(REPLY_PROPERTIES).setEmptyObject();
 
         return node;
+    }
+
+    public static ModelNode getNoArgSimpleReplyOperation(final Locale locale, final String operationName,
+                                                         final String descriptionPrefix, final ModelType replyType,
+                                                         final boolean describeReply) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return getNoArgSimpleReplyOperation(bundle, operationName, descriptionPrefix, replyType, describeReply);
+    }
+
+    private static ModelNode getNoArgSimpleReplyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final ModelType replyType,
+                                                         final boolean describeReply) {
+        final ModelNode result = getDescriptionOnlyOperation(bundle,  operationName, descriptionPrefix);
+        if (describeReply) {
+            String replyKey = descriptionPrefix == null ? operationName + ".reply" : descriptionPrefix + "." + operationName + ".reply";
+            result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(replyKey));
+        }
+        result.get(REPLY_PROPERTIES, TYPE).set(replyType);
+
+        return result;
     }
 
     private static ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix,

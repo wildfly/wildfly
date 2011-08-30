@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handler for runtime operations that interact with a HornetQ {@link BroadcastGroupControl}.
@@ -55,7 +56,8 @@ public class BroadcastGroupControlHandler extends AbstractHornetQComponentContro
         registry.registerOperationHandler(GET_CONNECTOR_PAIRS_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getGetConnectorPairsAsJSON(locale);
+                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_CONNECTOR_PAIRS_AS_JSON,
+                        CommonAttributes.BROADCAST_GROUP, ModelType.STRING, false);
             }
         });
     }
