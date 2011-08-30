@@ -31,6 +31,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,9 +66,12 @@ public class TxTimeoutAnnotUnitTestCase {
      * Tests whether @TransactionTimeout expires system sends EJBTransactionRolledbackException
      * and transaction is rolled back.
      *
+     * Note: @TransactionTimeout annotation has not been implemented yet.
+     *
      * @throws Exception
      */
     @Test(expected = EJBTransactionRolledbackException.class)
+    @Ignore
     public void testOverriddenTimeoutExpires() throws Exception {
         bean.testOverriddenTimeoutExpires();
     }
@@ -76,9 +80,12 @@ public class TxTimeoutAnnotUnitTestCase {
      * Tests whether @TransactionTimeout expires greater that wait time of doesn't make transaction to roll back
      * or stay in different status that STATUS_ACTIVE.
      *
+     * Note: @TransactionTimeout annotation has not been implemented yet.
+     *
      * @throws Exception
      */
     @Test
+    @Ignore
     public void testOverriddenTimeoutDoesNotExpire() throws Exception {
         bean.testOverriddenTimeoutDoesNotExpire();
     }
