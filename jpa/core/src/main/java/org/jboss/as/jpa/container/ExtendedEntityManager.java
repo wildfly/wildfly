@@ -92,7 +92,8 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
                         "persistence context or the transactional context.  See JPA spec 2.0 section 7.6.3.1.  " +
                         "Scoped persistence unit name=" + puScopedName +
                         ", persistence context already in transaction =" + existing +
-                        ", extended persistence context =" + this);
+                        ", extended persistence context =" + this +
+                        ", extended persistence context underlying entity manager =" + underlyingEntityManager);
             } else if (existing == null) {
                 // JPA 7.9.1 join the transaction if not already done.
                 TransactionUtil.getInstance().registerExtendedUnderlyingWithTransaction(puScopedName, this, underlyingEntityManager);
