@@ -198,6 +198,7 @@ public class CalendarUtilTestCase {
         // 2nd Wed of Apr 2010
         int expectedDateOfSecWedApr2010 = 14;
         Calendar apr2010 = new GregorianCalendar();
+        apr2010.set(Calendar.DAY_OF_MONTH, 1);
         apr2010.set(Calendar.MONTH, Calendar.APRIL);
         apr2010.set(Calendar.YEAR, 2010);
 
@@ -208,6 +209,7 @@ public class CalendarUtilTestCase {
         // 2nd Thu of Mar 2067
         int expectedDateOfSecondThuMar2067 = 10;
         Calendar march2067 = new GregorianCalendar();
+        march2067.set(Calendar.DAY_OF_MONTH, 1);
         march2067.set(Calendar.MONTH, Calendar.MARCH);
         march2067.set(Calendar.YEAR, 2067);
 
@@ -218,6 +220,7 @@ public class CalendarUtilTestCase {
         // 2nd Fri of Nov 2020
         int expectedDateOfSecFriNov2020 = 13;
         Calendar nov2020 = new GregorianCalendar();
+        nov2020.set(Calendar.DAY_OF_MONTH, 1);
         nov2020.set(Calendar.MONTH, Calendar.NOVEMBER);
         nov2020.set(Calendar.YEAR, 2020);
 
@@ -228,6 +231,7 @@ public class CalendarUtilTestCase {
         // 2nd Sat of Sep 2013
         int expectedDateOfSecSatOfSep2013 = 14;
         Calendar aug2000 = new GregorianCalendar();
+        aug2000.set(Calendar.DAY_OF_MONTH, 1);
         aug2000.set(Calendar.MONTH, Calendar.SEPTEMBER);
         aug2000.set(Calendar.YEAR, 2013);
 
