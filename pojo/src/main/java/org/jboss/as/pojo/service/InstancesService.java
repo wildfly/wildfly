@@ -260,8 +260,10 @@ final class InstancesService implements Service<Set<Object>> {
     }
 
     static Set<Object> getBeans(Class<?> type, BeanState state) {
-        TypeBeanStateKey key = new TypeBeanStateKey(type, state);
-        Set<Object> objects = beans.get(key);
-        return (objects != null) ? objects : Collections.emptySet();
+        synchronized (type) {
+            TypeBeanStateKey key = new TypeBeanStateKey(type, state);
+            Set<Object> objects = beans.get(key);
+            return (objects != null) ? Collections.unmodifiableSet(objects) : Collections.emptySet();
+        }
     }
 }
