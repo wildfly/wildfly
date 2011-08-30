@@ -43,7 +43,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
     @Override
     public int complete(CommandContext ctx, final String buffer, int cursor, List<String> candidates) {
 
-        int firstCharIndex = 0;
+        int firstCharIndex = cursor;
         while(firstCharIndex < buffer.length()) {
             if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
                 break;
@@ -65,7 +65,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                         if(arg.getIndex() >= 0) {
                             final CommandLineCompleter valCompl = arg.getValueCompleter();
                             if(valCompl != null) {
-                                valCompl.complete(ctx, "", cursor, candidates);
+                                valCompl.complete(ctx, "", 0, candidates);
                             }
                         } else {
                             String argName = arg.getFullName();
@@ -76,13 +76,13 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                         }
                     }
                 }
-                return cursor + buffer.length();
+                return buffer.length();
             }
         } catch (CommandFormatException e) {
             return -1;
         }
 
-        int result = cursor + buffer.length();
+        int result = buffer.length();
 
         String chunk = null;
         CommandLineCompleter valueCompleter = null;
@@ -107,7 +107,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
             } else {
                 chunk = argName;
                 if(firstCharIndex == buffer.length()) {
-                    result = cursor + firstCharIndex;
+                    result = buffer.length();
                 } else {
                     result = parsedCmd.getLastChunkIndex();
                 }
@@ -121,7 +121,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
         }
 
         if(valueCompleter != null) {
-            int valueResult = valueCompleter.complete(ctx, chunk == null ? "" : chunk, cursor, candidates);
+            int valueResult = valueCompleter.complete(ctx, chunk == null ? "" : chunk, 0, candidates);
             if(valueResult < 0) {
                 return valueResult;
             } else {
@@ -135,7 +135,7 @@ public abstract class BaseArgumentTabCompleter implements CommandLineCompleter {
                     if(arg.getIndex() >= 0) {
                         CommandLineCompleter valCompl = arg.getValueCompleter();
                         if(valCompl != null) {
-                            valCompl.complete(ctx, chunk == null ? "" : chunk, cursor, candidates);
+                            valCompl.complete(ctx, chunk == null ? "" : chunk, 0, candidates);
                         }
                     } else {
                         String argFullName = arg.getFullName();
