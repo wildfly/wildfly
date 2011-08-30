@@ -36,6 +36,7 @@ import org.jboss.logging.Logger;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -90,7 +91,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
         final Map<Method, Interceptor> timeouts;
         if (timeoutInterceptors != null) {
-            timeouts = new IdentityHashMap<Method, Interceptor>();
+            timeouts = new HashMap<Method, Interceptor>();
             for (Map.Entry<Method, InterceptorFactory> entry : timeoutInterceptors.entrySet()) {
                 timeouts.put(entry.getKey(), entry.getValue().create(interceptorContext));
             }

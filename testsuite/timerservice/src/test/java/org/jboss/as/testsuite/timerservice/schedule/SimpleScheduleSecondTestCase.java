@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,13 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.testsuite.timerservice.schedule;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,35 +33,25 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Tests that an @Timout method is called when a timer is created programatically.
+ * Tests that persistent timers created out of @Schedule work fine
  *
- * @author Stuart Douglas
+ * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
-public class SimpleScheduleTestCase {
+public class SimpleScheduleSecondTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class,"testSchedule.war");
-        war.addPackage(SimpleScheduleTestCase.class.getPackage());
-        return war;
-
+        return SimpleScheduleFirstTestCase.createDeployment(SimpleScheduleSecondTestCase.class);
     }
 
+    /**
+     * The timer should be restored and the @Schedule must timeout
+     */
     @Test
-    public void testScheduleAnnotation() throws NamingException {
+    public void testScheduleMethodTimeout() throws NamingException {
         InitialContext ctx = new InitialContext();
         SimpleScheduleBean bean = (SimpleScheduleBean)ctx.lookup("java:module/" + SimpleScheduleBean.class.getSimpleName());
         Assert.assertTrue(SimpleScheduleBean.awaitTimerCall());
     }
-
-
-    @Test
-    public void testSchedulesAnnotation() throws NamingException {
-        InitialContext ctx = new InitialContext();
-        SimpleSchedulesBean bean = (SimpleSchedulesBean)ctx.lookup("java:module/" + SimpleSchedulesBean.class.getSimpleName());
-        Assert.assertTrue(SimpleSchedulesBean.awaitTimerCall());
-    }
-
-
 }
