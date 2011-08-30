@@ -56,8 +56,9 @@ final class InstancesService implements Service<Set<Object>> {
     private final Class<?> type;
     private final Set<Object> instances = new HashSet<Object>(); // we do own locking, per type (service is also per type)
 
-    private static Map<Class<?>, Map<BeanState, List<Callback>>> incallbacks = new HashMap<Class<?>, Map<BeanState, List<Callback>>>();
-    private static Map<Class<?>, Map<BeanState, List<Callback>>> uncallbacks = new HashMap<Class<?>, Map<BeanState, List<Callback>>>();
+    private static Map<TypeBeanStateKey, Set<Object>> beans = new HashMap<TypeBeanStateKey, Set<Object>>();
+    private static Map<TypeBeanStateKey, List<Callback>> incallbacks = new HashMap<TypeBeanStateKey, List<Callback>>();
+    private static Map<TypeBeanStateKey, List<Callback>> uncallbacks = new HashMap<TypeBeanStateKey, List<Callback>>();
 
     private InstancesService(Class<?> type) {
         this.type = type;
@@ -67,9 +68,9 @@ final class InstancesService implements Service<Set<Object>> {
      * Add bean instance.
      *
      * @param registry the service registry
-     * @param target the service target
-     * @param state the bean state
-     * @param bean the bean
+     * @param target   the service target
+     * @param state    the bean state
+     * @param bean     the bean
      * @throws StartException for any error
      */
     static void addInstance(ServiceRegistry registry, ServiceTarget target, BeanState state, Object bean) throws StartException {
@@ -80,8 +81,8 @@ final class InstancesService implements Service<Set<Object>> {
      * Remove bean instance.
      *
      * @param registry the service registry
-     * @param state the bean state
-     * @param bean the bean
+     * @param state    the bean state
+     * @param bean     the bean
      */
     static void removeInstance(ServiceRegistry registry, BeanState state, Object bean) {
         removeInstance(registry, state, bean.getClass(), bean);
@@ -123,7 +124,7 @@ final class InstancesService implements Service<Set<Object>> {
         removeCallback(uncallbacks, callback);
     }
 
-    private static void addCallback(Map<Class<?>, Map<BeanState, List<Callback>>> map, Callback callback) {
+    private static void addCallback(Map<TypeBeanStateKey, List<Callback>> map, Callback callback) {
         final Class<?> type = callback.getType();
         synchronized (type) {
             if (map == incallbacks) {
@@ -134,33 +135,25 @@ final class InstancesService implements Service<Set<Object>> {
                 }
             }
 
-            Map<BeanState, List<Callback>> states = map.get(type);
-            if (states == null) {
-                states = new HashMap<BeanState, List<Callback>>();
-                map.put(type, states);
-            }
-            List<Callback> callbacks = states.get(callback.getState());
+            TypeBeanStateKey key = new TypeBeanStateKey(type, callback.getState());
+            List<Callback> callbacks = map.get(key);
             if (callbacks == null) {
                 callbacks = new ArrayList<Callback>();
-                states.put(callback.getState(), callbacks);
+                map.put(key, callbacks);
             }
             callbacks.add(callback);
         }
     }
 
-    private static void removeCallback(Map<Class<?>, Map<BeanState, List<Callback>>> map, Callback callback) {
+    private static void removeCallback(Map<TypeBeanStateKey, List<Callback>> map, Callback callback) {
         final Class<?> type = callback.getType();
         synchronized (type) {
-            Map<BeanState, List<Callback>> states = map.get(type);
-            if (states != null) {
-                List<Callback> callbacks = states.get(callback.getState());
-                if (callbacks != null) {
-                    callbacks.remove(callback);
-                    if (callbacks.isEmpty())
-                        states.remove(callback.getState());
-                }
-                if (states.isEmpty())
-                    map.remove(type);
+            TypeBeanStateKey key = new TypeBeanStateKey(type, callback.getState());
+            List<Callback> callbacks = map.get(key);
+            if (callbacks != null) {
+                callbacks.remove(callback);
+                if (callbacks.isEmpty())
+                    map.remove(key);
             }
 
             if (map == uncallbacks) {
@@ -173,18 +166,18 @@ final class InstancesService implements Service<Set<Object>> {
         }
     }
 
-    private static void invokeCallbacks(Map<Class<?>, Map<BeanState, List<Callback>>> map, BeanState state, final Class<?> clazz, Object bean) {
+    private static void invokeCallbacks(Map<TypeBeanStateKey, List<Callback>> map, BeanState state, final Class<?> clazz, Object bean) {
         synchronized (clazz) {
-            Map<BeanState, List<Callback>> states = map.get(clazz);
-            if (states != null) {
-                List<Callback> callbacks = states.get(state);
-                if (callbacks != null)
-                    for (Callback c : callbacks)
-                        try {
-                            c.dispatch(bean);
-                        } catch (Throwable t) {
-                            log.warn("Error invoking callback: " + c, t);
-                        }
+            TypeBeanStateKey key = new TypeBeanStateKey(clazz, state);
+            List<Callback> callbacks = map.get(key);
+            if (callbacks != null) {
+                for (Callback c : callbacks) {
+                    try {
+                        c.dispatch(bean);
+                    } catch (Throwable t) {
+                        log.warn("Error invoking callback: " + c, t);
+                    }
+                }
             }
         }
     }
@@ -198,6 +191,11 @@ final class InstancesService implements Service<Set<Object>> {
         InstancesService service = putIfAbsent(registry, name, builder);
         synchronized (clazz) {
             service.instances.add(bean);
+
+            TypeBeanStateKey key = new TypeBeanStateKey(clazz, state);
+            if (beans.containsKey(key) == false)
+                beans.put(key, service.instances);
+
             invokeCallbacks(incallbacks, state, clazz, bean);
         }
 
@@ -208,7 +206,7 @@ final class InstancesService implements Service<Set<Object>> {
     }
 
     private static InstancesService putIfAbsent(ServiceRegistry registry, ServiceName name, ServiceBuilder builder) throws StartException {
-        for (;;) {
+        for (; ; ) {
             try {
                 ServiceController sc = registry.getService(name);
                 if (sc == null) {
@@ -232,8 +230,11 @@ final class InstancesService implements Service<Set<Object>> {
             synchronized (clazz) {
                 service.instances.remove(bean);
                 invokeCallbacks(uncallbacks, state, clazz, bean);
-                if (service.instances.isEmpty())
+                if (service.instances.isEmpty()) {
+                    beans.remove(new TypeBeanStateKey(clazz, state));
+
                     controller.setMode(ServiceController.Mode.REMOVE);
+                }
             }
         }
 
@@ -256,5 +257,11 @@ final class InstancesService implements Service<Set<Object>> {
         synchronized (type) {
             return Collections.unmodifiableSet(instances);
         }
+    }
+
+    static Set<Object> getBeans(Class<?> type, BeanState state) {
+        TypeBeanStateKey key = new TypeBeanStateKey(type, state);
+        Set<Object> objects = beans.get(key);
+        return (objects != null) ? objects : Collections.emptySet();
     }
 }
