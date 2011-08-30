@@ -123,6 +123,13 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
 
             @Override
             protected EEModuleClassConfiguration compute() {
+
+                //as the module configurations are lazily generated if no component uses the class
+                //then the exception will not be thrown
+                if(classDescription.isInvalid()) {
+                    throw new RuntimeException("Could not get class configuration for " + classDescription.getClassName() + " due to the following errors: " + classDescription.getInvalidMessage());
+                }
+
                 Class<?> clazz = null;
                 //we need to make sure we load the class with the correct context class loader
                 ClassLoader oldCl = SecurityActions.getContextClassLoader();
@@ -131,9 +138,7 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
                     try {
                         clazz = Class.forName(classDescription.getClassName(), false, subModule.getClassLoader());
                     } catch (ClassNotFoundException e) {
-                        classDescription.setInvalid("Failed to load class " + classDescription.getClassName() + e.getMessage());
-                        logger.debug("Failed to load class " + classDescription.getClassName(), e);
-                        return null;
+                        throw new RuntimeException("Failed to load class " + classDescription.getClassName(), e);
                     }
                     final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, classDescription, deploymentReflectionIndex);
                     logger.debug("Configuring EE module class: " + clazz);
