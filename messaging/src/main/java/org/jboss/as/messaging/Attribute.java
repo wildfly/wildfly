@@ -12,6 +12,7 @@ public enum Attribute {
    UNKNOWN((String) null),
    /* Messaging 1.0 attributes, in alpha order */
    ALLOW_DIRECT_CONNECTIONS_ONLY(CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY),
+   BACKUP_CONNECTOR_NAME(CommonAttributes.BACKUP_CONNECTOR_NAME),
    CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
    CONSUME_NAME(CommonAttributes.CONSUME_XML_NAME),
    CREATEDURABLEQUEUE_NAME(CommonAttributes.CREATEDURABLEQUEUE_XML_NAME),

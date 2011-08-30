@@ -1782,12 +1782,13 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         if (has(factory, CONNECTOR)) {
             writer.writeStartElement(Element.CONNECTORS.getLocalName());
             for (Property connProp : factory.get(CONNECTOR).asPropertyList()) {
+                writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
+                writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
                 final ModelNode conn = connProp.getValue();
                 if (conn.isDefined()) {
-                    writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
-                    writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
-                    writer.writeEndElement();
+                    writer.writeAttribute(Attribute.BACKUP_CONNECTOR_NAME.getLocalName(), connProp.getValue().asString());
                 }
+                writer.writeEndElement();
             }
             writer.writeEndElement();
         }
@@ -1991,6 +1992,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         final ModelNode connectors = new ModelNode();
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
+            String backup = null;
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final String value = reader.getAttributeValue(i);
@@ -1998,6 +2000,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 switch (attribute) {
                     case CONNECTOR_NAME: {
                         name = value.trim();
+                        break;
+                    } case BACKUP_CONNECTOR_NAME: {
+                        backup = value.trim();
                         break;
                     } default: {
                         throw ParseUtils.unexpectedAttribute(reader, i);
@@ -2012,7 +2017,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 throw ParseUtils.unexpectedElement(reader);
             }
             ParseUtils.requireNoContent(reader);
-            final ModelNode connector = connectors.get(name).setEmptyObject();
+
+            final ModelNode connector = connectors.get(name);
+            if (backup != null) {
+                connector.set(backup);
+            }
         }
         return connectors;
     }
