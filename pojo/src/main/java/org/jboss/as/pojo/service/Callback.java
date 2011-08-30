@@ -65,7 +65,7 @@ public class Callback {
     }
 
     public void dispatch() throws Throwable {
-        for (Object bean : config.getBeans())
+        for (Object bean : InstancesService.getBeans(getType(), getState()))
             dispatch(bean);
     }
 
@@ -79,5 +79,19 @@ public class Callback {
         };
         joinpoint.setParameters(new ValueConfig[]{param});
         joinpoint.dispatch();
+    }
+
+    @Override
+    public int hashCode() {
+        return config.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Callback == false)
+            return false;
+
+        Callback callback = (Callback) obj;
+        return config.equals(callback.config);
     }
 }
