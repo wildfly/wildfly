@@ -46,6 +46,8 @@ import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSQueueRemove;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
+import org.jboss.as.messaging.jms.JMSTopicControlHandler;
+import org.jboss.as.messaging.jms.JMSTopicReadAttributeHandler;
 import org.jboss.as.messaging.jms.JMSTopicRemove;
 import org.jboss.as.messaging.jms.JmsQueueConfigurationWriteHandler;
 import org.jboss.as.messaging.jms.JmsQueueReadAttributeHandler;
@@ -330,6 +332,8 @@ public class MessagingExtension implements Extension {
         topics.registerOperationHandler(ADD, JMSTopicAdd.INSTANCE, JMSTopicAdd.INSTANCE, false);
         topics.registerOperationHandler(REMOVE, JMSTopicRemove.INSTANCE, JMSTopicRemove.INSTANCE, false);
         topics.registerReadWriteAttribute(CommonAttributes.ENTRIES.getName(), null, JMSTopicConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        JMSTopicReadAttributeHandler.INSTANCE.registerAttributes(topics);
+        JMSTopicControlHandler.INSTANCE.registerOperations(topics);
         // TODO runtime operations exposed by TopicControl/DestinationControl
         // getJNDIBindings (no -- same as "entries")
         // addJNDI, listAllSubscriptions, listAllSubscriptionsAsJSON,
