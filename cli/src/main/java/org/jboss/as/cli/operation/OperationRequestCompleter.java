@@ -23,8 +23,8 @@ package org.jboss.as.cli.operation;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
+import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
@@ -65,78 +65,146 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         return complete(ctx, ctx.getParsedCommandLine(), buffer, cursor, candidates);
     }
 
-    public int complete(CommandContext ctx, ParsedCommandLine parsedCmd, final String buffer, int cursor, List<String> candidates) {
+    public int complete(CommandContext ctx, ParsedCommandLine parsedCmd, final String buffer, int ccursor, List<String> candidates) {
 
         if(parsedCmd.isRequestComplete()) {
             return -1;
         }
 
-        if(parsedCmd.hasProperties() || parsedCmd.endsOnPropertyListStart()) {
-
-            if(parsedCmd.endsOnPropertyValueSeparator()) {
-                // no value completion
-                return -1;
+        int firstCharIndex = 0;
+        while(firstCharIndex < buffer.length()) {
+            if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
+                break;
             }
+            ++firstCharIndex;
+        }
 
-            OperationCandidatesProvider provider = ctx.getOperationCandidatesProvider();
+        if (parsedCmd.hasProperties() || parsedCmd.endsOnPropertyListStart()) {
 
-            List<String> propertyNames = provider.getPropertyNames(parsedCmd.getOperationName(), parsedCmd.getAddress());
-            if(propertyNames.isEmpty()) {
-                if(parsedCmd.endsOnPropertyListStart()) {
-                    candidates.add(")");
-                    return buffer.length();
-                }
-                return -1;
-            }
-
-            if(parsedCmd.endsOnPropertyListStart()) {
-                if(propertyNames.size() == 1) {
-                    candidates.add(propertyNames.get(0) + '=');
-                } else {
-                    candidates.addAll(propertyNames);
-                    Collections.sort(candidates);
-                }
-                return parsedCmd.getLastSeparatorIndex() + 1;
-            }
-
-            Set<String> specifiedNames = parsedCmd.getPropertyNames();
-
-            String chunk = null;
-            for(String specifiedName : specifiedNames) {
-                String value = parsedCmd.getPropertyValue(specifiedName);
-                if(value == null) {
-                    chunk = specifiedName;
-                } else {
-                    propertyNames.remove(specifiedName);
-                }
-            }
-
-            if(chunk == null) {
-                if(parsedCmd.endsOnPropertySeparator()) {
-                    if(propertyNames.size() == 1) {
-                        candidates.add(propertyNames.get(0) + '=');
-                    } else {
-                        candidates.addAll(propertyNames);
-                        Collections.sort(candidates);
-                    }
-                } else if(propertyNames.isEmpty()) {
-                    candidates.add(")");
-                }
+            final List<CommandArgument> allArgs = ctx.getOperationCandidatesProvider().getProperties(parsedCmd.getOperationName(), ctx.getPrefix());
+            if (allArgs.isEmpty()) {
+                candidates.add(")");
                 return buffer.length();
             }
 
-            for(String candidate : propertyNames) {
-                if(candidate.startsWith(chunk)) {
-                    candidates.add(candidate);
+            try {
+                if (!parsedCmd.hasProperties()) {
+                    for (CommandArgument arg : allArgs) {
+                        if (arg.canAppearNext(ctx)) {
+                            if (arg.getIndex() >= 0) {
+                                final CommandLineCompleter valCompl = arg.getValueCompleter();
+                                if (valCompl != null) {
+                                    valCompl.complete(ctx, "", 0, candidates);
+                                }
+                            } else {
+                                String argName = arg.getFullName();
+                                if (arg.isValueRequired()) {
+                                    argName += '=';
+                                }
+                                candidates.add(argName);
+                            }
+                        }
+                    }
+                    Collections.sort(candidates);
+                    return buffer.length();
+                }
+            } catch (CommandFormatException e) {
+                return -1;
+            }
+
+            int result = buffer.length();
+
+            String chunk = null;
+            CommandLineCompleter valueCompleter = null;
+            if (!parsedCmd.endsOnPropertySeparator()) {
+                final String argName = parsedCmd.getLastParsedPropertyName();
+                final String argValue = parsedCmd.getLastParsedPropertyValue();
+                if (argValue != null || parsedCmd.endsOnPropertyValueSeparator()) {
+                    result = parsedCmd.getLastChunkIndex();
+                    if (parsedCmd.endsOnPropertyValueSeparator()) {
+                        ++result;// it enters on '='
+                    }
+                    chunk = argValue;
+                    if (argName != null) {
+                        valueCompleter = getValueCompleter(ctx, allArgs, argName);
+                    } else {
+                        valueCompleter = getValueCompleter(ctx, allArgs, parsedCmd.getOtherProperties().size() - 1);
+                    }
+                    if (valueCompleter == null) {
+                        if (parsedCmd.endsOnSeparator()) {
+                            return -1;
+                        }
+                        for (CommandArgument arg : allArgs) {
+                            try {
+                                if (arg.canAppearNext(ctx) && !arg.getFullName().equals(argName)) {
+                                    return -1;
+                                }
+                            } catch (CommandFormatException e) {
+                                break;
+                            }
+                        }
+                        candidates.add(")");
+                        return buffer.length();
+                    }
+                } else {
+                    chunk = argName;
+                    if (firstCharIndex == buffer.length()) {
+                        result = firstCharIndex;
+                    } else {
+                        result = parsedCmd.getLastChunkIndex();
+                    }
+                }
+            } else {
+                chunk = null;
+            }
+
+            if (valueCompleter != null) {
+                int valueResult = valueCompleter.complete(ctx, chunk == null ? "" : chunk, 0, candidates);
+                if (valueResult < 0) {
+                    return valueResult;
+                } else {
+                    return result + valueResult;
                 }
             }
 
-            if(candidates.size() == 1) {
-                candidates.set(0, (String)candidates.get(0) + '=');
+            for (CommandArgument arg : allArgs) {
+                try {
+                    if (arg.canAppearNext(ctx)) {
+                        if (arg.getIndex() >= 0) {
+                            CommandLineCompleter valCompl = arg.getValueCompleter();
+                            if (valCompl != null) {
+                                final String value = chunk == null ? "" : chunk;
+                                valCompl.complete(ctx, value, value.length(), candidates);
+                            }
+                        } else {
+                            String argFullName = arg.getFullName();
+                            if (chunk == null) {
+                                if (arg.isValueRequired()) {
+                                    argFullName += '=';
+                                }
+                                candidates.add(argFullName);
+                            } else if (argFullName.startsWith(chunk)) {
+                                if (arg.isValueRequired()) {
+                                    argFullName += '=';
+                                }
+                                candidates.add(argFullName);
+                            }
+                        }
+                    }
+                } catch (CommandFormatException e) {
+                    e.printStackTrace();
+                    return -1;
+                }
+            }
+
+            if (candidates.isEmpty()) {
+                if (chunk == null && !parsedCmd.endsOnSeparator()) {
+                    candidates.add(")");
+                }
             } else {
                 Collections.sort(candidates);
             }
-            return parsedCmd.endsOnSeparator() ? parsedCmd.getLastSeparatorIndex() + 1 : parsedCmd.getLastChunkIndex();
+            return result;
         }
 
         if(parsedCmd.hasOperationName() || parsedCmd.endsOnAddressOperationNameSeparator()) {
@@ -216,5 +284,37 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         }
 
         return parsedCmd.endsOnSeparator() ? parsedCmd.getLastSeparatorIndex() + 1 : parsedCmd.getLastChunkIndex();
+    }
+
+    protected CommandLineCompleter getValueCompleter(CommandContext ctx, Iterable<CommandArgument> allArgs, final String argName) {
+
+        if(argName != null) {
+            for(CommandArgument arg : allArgs) {
+                if(argName.equals(arg.getFullName())) {
+                    return arg.getValueCompleter();
+                }
+            }
+            return null;
+        }
+
+        for (CommandArgument arg : allArgs) {
+            try {
+                if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
+                    return arg.getValueCompleter();
+                }
+            } catch (CommandFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    protected CommandLineCompleter getValueCompleter(CommandContext ctx, Iterable<CommandArgument> allArgs, int index) {
+        for (CommandArgument arg : allArgs) {
+            if (arg.getIndex() == index) {
+                return arg.getValueCompleter();
+            }
+        }
+        return null;
     }
 }

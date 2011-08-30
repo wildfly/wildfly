@@ -56,6 +56,10 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
     @Override
     public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
+        if(cursor != buffer.length()) {
+            return -1;
+        }
+
         int cmdFirstIndex = 0;
         while(cmdFirstIndex < buffer.length()) {
             if(!Character.isWhitespace(buffer.charAt(cmdFirstIndex))) {
@@ -108,7 +112,7 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
                         ++nextCharIndex;
                     }
 
-                    return argsCompleter.complete(ctx, buffer.substring(nextCharIndex), nextCharIndex, candidates);
+                    return argsCompleter.complete(ctx, buffer, nextCharIndex, candidates);
                 }
             }
         }
