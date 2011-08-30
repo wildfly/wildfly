@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.logging.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -38,12 +39,14 @@ import java.util.Set;
 
 /**
  * Class which can turn a pre-runtime description of annotations into a runtime description.
- *
+ * <p/>
  * This correctly handles overriden methods, so the annotations on overriden methods will not show up in the result
  *
  * @author Stuart Douglas
  */
 public class MethodAnnotationAggregator {
+
+    private static final Logger logger = Logger.getLogger(MethodAnnotationAggregator.class);
 
     public static <A extends Annotation, T> RuntimeAnnotationInformation<T> runtimeAnnotationInformation(final Class<?> componentClass, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex index, final Class<A> annotationType) {
         final HashSet<MethodIdentifier> methodIdentifiers = new HashSet<MethodIdentifier>();
@@ -66,10 +69,16 @@ public class MethodAnnotationAggregator {
 
 
                     for (Map.Entry<MethodIdentifier, List<T>> entry : annotationData.getMethodLevelAnnotations().entrySet()) {
-                        if (!methodIdentifiers.contains(entry.getKey())) {
-                            Method method = classIndex.getMethod(entry.getKey());
-
-                            methods.put(method, entry.getValue());
+                        final Method method = classIndex.getMethod(entry.getKey());
+                        if (method != null) {
+                            //we do not have to worry about private methods being overriden
+                            if (Modifier.isPrivate(method.getModifiers()) || !methodIdentifiers.contains(entry.getKey())) {
+                                methods.put(method, entry.getValue());
+                            }
+                        } else {
+                            //this should not happen
+                            //but if it does, we give some info
+                            logger.error("Could not resolve method " + entry.getKey() + " on class " + c + " with annotations " + entry.getValue());
                         }
                     }
                 }
