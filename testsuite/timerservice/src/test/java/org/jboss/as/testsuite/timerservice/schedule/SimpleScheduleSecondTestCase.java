@@ -53,5 +53,9 @@ public class SimpleScheduleSecondTestCase {
         InitialContext ctx = new InitialContext();
         SimpleScheduleBean bean = (SimpleScheduleBean)ctx.lookup("java:module/" + SimpleScheduleBean.class.getSimpleName());
         Assert.assertTrue(SimpleScheduleBean.awaitTimerCall());
+
+        final SingletonScheduleBean singletonBean = (SingletonScheduleBean) ctx.lookup("java:module/" + SingletonScheduleBean.class.getSimpleName());
+        Assert.assertTrue(SingletonScheduleBean.awaitTimerCall());
+
     }
 }

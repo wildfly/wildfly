@@ -48,7 +48,7 @@ public class SimpleScheduleFirstTestCase {
 
     public static Archive<?> createDeployment(final Class<?> testClass) {
         final WebArchive war = ShrinkWrap.create(WebArchive.class,"testSchedule.war");
-        war.addClasses(SimpleScheduleBean.class, SimpleSchedulesBean.class);
+        war.addClasses(SimpleScheduleBean.class, SimpleSchedulesBean.class, SingletonScheduleBean.class);
         war.addClass(testClass);
         return war;
 
@@ -59,6 +59,9 @@ public class SimpleScheduleFirstTestCase {
         InitialContext ctx = new InitialContext();
         SimpleScheduleBean bean = (SimpleScheduleBean)ctx.lookup("java:module/" + SimpleScheduleBean.class.getSimpleName());
         Assert.assertTrue(SimpleScheduleBean.awaitTimerCall());
+
+        final SingletonScheduleBean singletonBean = (SingletonScheduleBean) ctx.lookup("java:module/" + SingletonScheduleBean.class.getSimpleName());
+        Assert.assertTrue(SingletonScheduleBean.awaitTimerCall());
     }
 
 
