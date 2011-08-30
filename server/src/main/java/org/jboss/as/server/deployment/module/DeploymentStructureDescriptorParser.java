@@ -903,7 +903,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                         default:
                             throw unexpectedContent(reader);
                     }
-                    // not reached
+                    break;
                 }
                 default: {
                     throw unexpectedContent(reader);
