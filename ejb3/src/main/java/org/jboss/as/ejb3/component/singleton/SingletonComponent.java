@@ -41,6 +41,7 @@ import org.jboss.msc.service.StopContext;
 import javax.ejb.LockType;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +107,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         }
         final Map<Method, Interceptor> timeouts;
         if (timeoutInterceptors != null) {
-            timeouts = new IdentityHashMap<Method, Interceptor>();
+            timeouts = new HashMap<Method, Interceptor>();
             for (Map.Entry<Method, InterceptorFactory> entry : timeoutInterceptors.entrySet()) {
                 timeouts.put(entry.getKey(), entry.getValue().create(interceptorContext));
             }
