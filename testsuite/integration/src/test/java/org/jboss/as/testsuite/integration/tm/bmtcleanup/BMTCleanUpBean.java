@@ -28,7 +28,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
@@ -49,6 +48,7 @@ public class BMTCleanUpBean
 
     public void doNormal()
     {
+        checkTransaction();
         UserTransaction ut = ejbContext.getUserTransaction();
         try
         {
@@ -59,21 +59,6 @@ public class BMTCleanUpBean
         {
             throw new EJBException("Error", e);
         }
-    }
-
-    public void testIncomplete()
-    {
-        BMTCleanUpBean remote = getBean();
-        try
-        {
-            remote.doIncomplete();
-        }
-        catch (EJBException expected)
-        {
-            // expected
-        }
-        checkTransaction();
-        remote.doNormal();
     }
 
     public void doIncomplete()
@@ -87,21 +72,6 @@ public class BMTCleanUpBean
         {
             throw new EJBException("Error", e);
         }
-    }
-
-    public void testTxTimeout()
-    {
-        BMTCleanUpBean remote = getBean();
-        try
-        {
-            remote.doTimeout();
-        }
-        catch (EJBException expected)
-        {
-            // expected
-        }
-        checkTransaction();
-        remote.doNormal();
     }
 
     public void doTimeout()
@@ -141,16 +111,4 @@ public class BMTCleanUpBean
         }
     }
 
-    private BMTCleanUpBean getBean()
-    {
-        try
-        {
-            // java:global/bmtcleanuptest/BMTCleanUpBean
-            return (BMTCleanUpBean) new InitialContext().lookup("java:global/" + BMTCleanUpUnitTestCase.ARCHIVE_NAME + "/" + BMTCleanUpBean.class.getSimpleName());
-        }
-        catch (NamingException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
 }

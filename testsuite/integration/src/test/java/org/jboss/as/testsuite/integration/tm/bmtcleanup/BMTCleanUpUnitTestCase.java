@@ -30,6 +30,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.ejb.EJBException;
 import javax.inject.Inject;
 
 /**
@@ -54,15 +55,37 @@ public class BMTCleanUpUnitTestCase
     }
 
     @Test
+    public void testNormal() throws Exception
+    {
+        bean.doNormal();
+    }
+
+    @Test
     public void testIncomplete() throws Exception
     {
-        bean.testIncomplete();
+        try
+        {
+            bean.doIncomplete();
+        }
+        catch (EJBException expected)
+        {
+            // expected
+        }
+        bean.doNormal();
     }
 
     @Test
     public void testTxTimeout() throws Exception
     {
-        bean.testTxTimeout();
+        try
+        {
+            bean.doTimeout();
+        }
+        catch (EJBException expected)
+        {
+            // expected
+        }
+        bean.doNormal();
     }
 
 }
