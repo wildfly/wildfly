@@ -22,9 +22,12 @@
 
 package org.jboss.as.ejb3.component;
 
-import java.util.concurrent.Executor;
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 
 /**
@@ -33,24 +36,29 @@ import org.jboss.logging.Logger;
  * interceptor to prevent that context from becoming lost.  This interceptor should be associated with the client
  * interceptor stack.
  *
+ * This interceptor should only be used for local invocations.
+ *
+ * @author Stuart Douglas
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AsyncVoidInterceptor implements Interceptor {
+public final class AsyncVoidInterceptorFactory implements InterceptorFactory {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.ejb3.component.async");
 
-    private final Executor executor;
+    public static final InterceptorFactory INSTANCE = new AsyncVoidInterceptorFactory();
 
-    public AsyncVoidInterceptor(final Executor executor) {
-        this.executor = executor;
-    }
+    @Override
+    public Interceptor create(final InterceptorFactoryContext context) {
 
-    /**
-     * {@inheritDoc}
-     */
-    public Object processInvocation(final InterceptorContext context) throws Exception {
-        executor.execute(new Task(context.clone()));
-        return null;
+        final SessionBeanComponent component = (SessionBeanComponent) context.getContextData().get(Component.class);
+
+        return new Interceptor() {
+            @Override
+            public Object processInvocation(final InterceptorContext context) throws Exception {
+                component.getAsynchronousExecutor().execute(new Task(context.clone()));
+                return null;
+            }
+        };
     }
 
     private static class Task implements Runnable {

@@ -22,13 +22,10 @@
 package org.jboss.as.ejb3.component.session;
 
 
-import org.jboss.as.ejb3.component.AsyncFutureInterceptor;
-import org.jboss.as.ejb3.component.AsyncVoidInterceptor;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.as.threads.ThreadsServices;
-import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
@@ -38,11 +35,9 @@ import javax.ejb.EJBObject;
 import javax.ejb.TransactionAttributeType;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import static java.util.Collections.emptyMap;
 
@@ -53,11 +48,10 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
     private static final Logger logger = Logger.getLogger(SessionBeanComponent.class);
 
-    static final ServiceName ASYNC_EXECUTOR_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3-async");
+    public static final ServiceName ASYNC_EXECUTOR_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3-async");
 
     protected final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout;
-    private final Set<Method> asynchronousMethods;
-    protected Executor asyncExecutor;
+    private final ExecutorService asyncExecutor;
 
     /**
      * Construct a new instance.
@@ -68,9 +62,11 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         super(ejbComponentCreateService);
 
         this.beanLevelAccessTimeout = ejbComponentCreateService.getBeanAccessTimeout();
-        this.asynchronousMethods = null;
         //ejbComponentCreateService.getAsynchronousMethods();
         //        this.asyncExecutor = (Executor) ejbComponentCreateService.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
+
+        //if this bean has no async methods, then this will not be injected
+        this.asyncExecutor = ejbComponentCreateService.getAsyncExecutorService().getOptionalValue();
     }
 
     @Override
@@ -100,7 +96,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
      *
      * @return the async executor
      */
-    public Executor getAsynchronousExecutor() {
+    public ExecutorService getAsynchronousExecutor() {
         return asyncExecutor;
     }
 
@@ -111,110 +107,6 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
             throw new IllegalStateException("EJB 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute");
         }
         return super.getRollbackOnly();
-    }
-
-    protected boolean isAsynchronous(final Method method) {
-        final Set<Method> asyncMethods = this.asynchronousMethods;
-        if (asyncMethods == null) {
-            return false;
-        }
-
-        for (Method asyncMethod : asyncMethods) {
-            if (method.getName().equals(asyncMethod.getName())) {
-                final Object[] methodParams = method.getParameterTypes();
-                final Object[] asyncMethodParams = asyncMethod.getParameterTypes();
-                if (Arrays.equals(methodParams, asyncMethodParams)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    protected Object invokeAsynchronous(final Method method, final InterceptorContext context) throws Exception {
-        if (Void.TYPE.isAssignableFrom(method.getReturnType())) {
-            return new AsyncVoidInterceptor(getAsynchronousExecutor()).processInvocation(context);
-        } else {
-            return new AsyncFutureInterceptor(getAsynchronousExecutor()).processInvocation(context);
-        }
-    }
-
-//    @Override
-//    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
-//        // ignore the session id. Session aware components like (StatefulSessionComponent) should override
-//        // this method to take into account the session id.
-//        return this.createClientInterceptor(view);
-//    }
-//
-//    @Override
-//    public Interceptor createClientInterceptor(final Class<?> view) {
-//
-//        return new Interceptor() {
-//            @Override
-//            public Object processInvocation(InterceptorContext context) throws Exception {
-//                final Method method = context.getMethod();
-//                // if no-interface view, then check whether invocation on the method is allowed
-//                // (for ex: invocation on protected methods isn't allowed)
-//                if (SessionBeanComponent.this.getComponentClass().equals(view)) {
-//                    if (!SessionBeanComponent.this.isInvocationAllowed(method)) {
-//                        throw new javax.ejb.EJBException("Cannot invoke method " + method
-//                                + " on nointerface view of bean " + SessionBeanComponent.this.getComponentName());
-//
-//                    }
-//                }
-//                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
-//                // runs on remote clients.
-//                context.putPrivateData(Component.class, SessionBeanComponent.this);
-//                try {
-//                    if (isAsynchronous(method)) {
-//                        return invokeAsynchronous(method, context);
-//                    }
-//                    return context.proceed();
-//                } finally {
-//                    context.putPrivateData(Component.class, null);
-//                }
-//            }
-//        };
-//    }
-
-    /**
-     * EJB 3.1 spec mandates that the view should allow invocation on only public, non-final, non-static
-     * methods. This method returns true if the passed {@link Method method} is public, non-static and non-final.
-     * Else returns false.
-     */
-    protected boolean isInvocationAllowed(Method method) {
-        int m = method.getModifiers();
-        // We handle only public, non-static, non-final methods
-        if (!Modifier.isPublic(m)) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Method " + method + " is *not* public");
-            }
-            // it's not a public method
-            return false;
-        }
-        if (Modifier.isFinal(m)) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Method " + method + " is final");
-            }
-            // it's a final method
-            return false;
-        }
-        if (Modifier.isStatic(m)) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Method " + method + " is static");
-            }
-            // it's a static method
-            return false;
-        }
-        if (Modifier.isNative(m)) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Method " + method + " is native");
-            }
-            // it's a native method
-            return false;
-        }
-        // we handle rest of the methods
-        return true;
     }
 
     @Override

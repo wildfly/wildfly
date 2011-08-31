@@ -139,7 +139,8 @@ public class InterceptorOrder {
     public static final class Client {
 
         public static final int TO_STRING = 0x100;
-        public static final int CLIENT_DISPATCHER = 0x200;
+        public static final int LOCAL_ASYNC_INVOCATION = 0x200;
+        public static final int CLIENT_DISPATCHER = 0x300;
 
         private Client() {
         }
