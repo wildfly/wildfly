@@ -23,9 +23,9 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.util.id.GUID;
@@ -33,6 +33,7 @@ import org.jboss.util.id.GUID;
 import javax.ejb.EJBException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -54,7 +55,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
      * @param component the component
      */
     protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, Collections.<Method, Interceptor>emptyMap());
         this.id = new GUID();
 
         this.afterBegin = component.createInterceptor(component.getAfterBegin());

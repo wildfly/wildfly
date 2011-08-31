@@ -21,7 +21,11 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
-import org.jboss.as.ejb3.component.singleton.SingletonComponent;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentInstance;
+import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
+import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentInstance;
+import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 
 import javax.ejb.Timer;
@@ -29,21 +33,38 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 /**
- * Timed object invoker for singleton EJB's
+ * Timed object invoker for an EJB
  *
  * @author Stuart Douglas
  */
-public class SingletonTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObjectInvoker, Serializable {
+public class MessageDrivenTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObjectInvoker, Serializable {
 
-    private final SingletonComponent ejbComponent;
+    private final MessageDrivenComponent ejbComponent;
+    private final Pool<MessageDrivenComponentInstance> pool;
 
-    public SingletonTimedObjectInvokerImpl(final SingletonComponent ejbComponent) {
+    public MessageDrivenTimedObjectInvokerImpl(final MessageDrivenComponent ejbComponent) {
         this.ejbComponent = ejbComponent;
+        this.pool = ejbComponent.getPool();
     }
 
     @Override
     public void callTimeout(final Timer timer, final Method timeoutMethod) throws Exception {
-        ejbComponent.getComponentInstance().invokeTimeoutMethod(timeoutMethod, timer);
+        final MessageDrivenComponentInstance instance = acquireInstance();
+        try {
+            instance.invokeTimeoutMethod(timeoutMethod, timer);
+        } finally {
+            releaseInstance(instance);
+        }
+    }
+
+    private MessageDrivenComponentInstance acquireInstance() {
+        final MessageDrivenComponentInstance instance;
+        if (pool != null) {
+            instance = pool.get();
+        } else {
+            instance = (MessageDrivenComponentInstance) ejbComponent.createInstance();
+        }
+        return instance;
     }
 
     @Override
@@ -53,9 +74,23 @@ public class SingletonTimedObjectInvokerImpl implements MultiTimeoutMethodTimedO
 
     @Override
     public void callTimeout(final Timer timer) throws Exception {
-        ejbComponent.getComponentInstance().invokeTimeoutMethod(timer);
+        final MessageDrivenComponentInstance instance = acquireInstance();
+        try {
+            instance.invokeTimeoutMethod(timer);
+        } finally {
+            releaseInstance(instance);
+        }
     }
 
+    private void releaseInstance(final MessageDrivenComponentInstance instance) {
+        if (pool != null) {
+            pool.release(instance);
+        } else {
+            instance.destroy();
+        }
+    }
+
+    @Override
     public ClassLoader getClassLoader() {
         return ejbComponent.getComponentClass().getClassLoader();
     }

@@ -22,10 +22,10 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.base.BaseMessageDrivenContext;
 import org.jboss.as.ejb3.context.spi.MessageDrivenContext;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 
 import java.lang.reflect.Method;
@@ -35,15 +35,15 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class MessageDrivenComponentInstance extends BasicComponentInstance {
+public class MessageDrivenComponentInstance extends EjbComponentInstance {
 
     /**
      * Construct a new instance.
      *
      * @param component the component
      */
-    public MessageDrivenComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    public MessageDrivenComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Map<Method, Interceptor> timeoutInterceptors) {
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
     }
 
     protected class MessageDrivenComponentInstanceContext extends BaseMessageDrivenContext {

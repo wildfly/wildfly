@@ -27,11 +27,14 @@ import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
+import org.jboss.as.ejb3.timerservice.MessageDrivenTimedObjectInvokerImpl;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.ejb3.context.spi.MessageDrivenBeanComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.StopContext;
@@ -42,6 +45,8 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -128,31 +133,17 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        return new MessageDrivenComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
+        final Map<Method, Interceptor> timeouts;
+        if (timeoutInterceptors != null) {
+            timeouts = new HashMap<Method, Interceptor>();
+            for (Map.Entry<Method, InterceptorFactory> entry : timeoutInterceptors.entrySet()) {
+                timeouts.put(entry.getKey(), entry.getValue().create(interceptorContext));
+            }
+        } else {
+            timeouts = Collections.emptyMap();
+        }
+        return new MessageDrivenComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, timeouts);
     }
-
-//    @Override
-//    public Interceptor createClientInterceptor(Class<?> view) {
-//        return createClientInterceptor(view, null);
-//    }
-//
-//    @Override
-//    public Interceptor createClientInterceptor(Class<?> view, Serializable sessionId) {
-//        return new Interceptor() {
-//            @Override
-//            public Object processInvocation(InterceptorContext context) throws Exception {
-//                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
-//                // runs on remote clients.
-//                context.putPrivateData(Component.class, MessageDrivenComponent.this);
-//                try {
-//                    return context.proceed();
-//                }
-//                finally {
-//                    context.putPrivateData(Component.class, null);
-//                }
-//            }
-//        };
-//    }
 
     @Override
     public Pool<MessageDrivenComponentInstance> getPool() {
@@ -182,5 +173,10 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
         resourceAdapter.endpointDeactivation(endpointFactory, activationSpec);
 
         super.stop(stopContext);
+    }
+
+    @Override
+    public TimedObjectInvoker getTimedObjectInvoker() {
+        return new MessageDrivenTimedObjectInvokerImpl(this);
     }
 }

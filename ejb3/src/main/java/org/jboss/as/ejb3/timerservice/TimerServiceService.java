@@ -22,8 +22,6 @@
 package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.singleton.SingletonComponent;
-import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
@@ -66,19 +64,15 @@ public class TimerServiceService extends ForwardingTimerService implements Servi
         final TimerServiceFactory timerServiceFactory = timerServiceFactoryInjectedValue.getValue();
 
         final EJBComponent component = ejbComponentInjectedValue.getValue();
-        final TimedObjectInvoker invoker;
-        if(component instanceof SingletonComponent) {
-            invoker = new SingletonTimedObjectInvokerImpl((SingletonComponent) component, classLoader);
-        } else if(component instanceof StatelessSessionComponent) {
-            invoker = new StatelessTimedObjectInvokerImpl((StatelessSessionComponent) component, classLoader);
-        } else {
-            throw new StartException("TimerService can only be used with singleton and stateless components");
+        final TimedObjectInvoker invoker = component.getTimedObjectInvoker();
+        if (invoker == null) {
+            throw new StartException("No timed object invoke for " + component);
         }
         final org.jboss.as.ejb3.timerservice.api.TimerService timerService = (org.jboss.as.ejb3.timerservice.api.TimerService) timerServiceFactory.createTimerService(invoker);
         final List<ScheduleTimer> timers = new ArrayList<ScheduleTimer>();
 
-        for(Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {
-            for(AutoTimer timer : entry.getValue()) {
+        for (Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {
+            for (AutoTimer timer : entry.getValue()) {
                 timers.add(new ScheduleTimer(entry.getKey(), timer.getScheduleExpression(), timer.getTimerConfig()));
             }
         }
@@ -97,7 +91,7 @@ public class TimerServiceService extends ForwardingTimerService implements Servi
     @Override
     protected TimerService delegate() {
         final TimerService timerService = this.timerService;
-        if(timerService == null) {
+        if (timerService == null) {
             throw new IllegalStateException("TimerService is not started");
         }
         return timerService;

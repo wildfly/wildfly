@@ -30,10 +30,8 @@ import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
-import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
 import org.jboss.as.ejb3.timerservice.TimerServiceService;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
@@ -85,14 +83,14 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
         for (final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
 
-            if (component instanceof SingletonComponentDescription || component instanceof StatelessComponentDescription) {
+            if (component.isTimerServiceApplicable()) {
                 timerServiceRequired = true;
                 logger.debug("Installing timer service for component " + component.getComponentName());
 
                 component.getConfigurators().add(new ComponentConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                        final SessionBeanComponentDescription ejbComponentDescription = (SessionBeanComponentDescription) description;
+                        final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
 
                         configuration.addTimeoutInterceptor(SessionInvocationContextInterceptor.FACTORY, InterceptorOrder.Component.TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR);
 

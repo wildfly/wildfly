@@ -29,16 +29,12 @@ import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 
-import javax.ejb.AccessTimeout;
 import javax.ejb.LockType;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -54,8 +50,6 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodApplicableAccessTimeouts;
 
-    private final Map<Method, InterceptorFactory> timeoutInterceptors;
-    private final Method timeoutMethod;
 
     /**
      * Construct a new instance.
@@ -94,20 +88,7 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
             }
             this.methodApplicableAccessTimeouts = Collections.unmodifiableMap(accessTimeouts);
         }
-        if (sessionBeanComponentDescription.isTimerServiceApplicable()) {
-            Map<Method, InterceptorFactory> timeoutInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
-            for (Method method : componentConfiguration.getDefinedComponentMethods()) {
-                timeoutInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getAroundTimeoutInterceptors(method)));
-            }
-            this.timeoutInterceptors = timeoutInterceptors;
-        } else {
-            timeoutInterceptors = null;
-        }
-        this.timeoutMethod = sessionBeanComponentDescription.getTimeoutMethod();
 
-        if(this.timeoutMethod != null) {
-            processTxAttr(sessionBeanComponentDescription, MethodIntf.BEAN, this.timeoutMethod);
-        }
         if(sessionBeanComponentDescription.getScheduleMethods() != null) {
             for(Method method : sessionBeanComponentDescription.getScheduleMethods().keySet()) {
             processTxAttr(sessionBeanComponentDescription, MethodIntf.BEAN, method);
@@ -151,11 +132,4 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
         return new EJBBusinessMethod(methodName, paramTypes);
     }
 
-    public Map<Method, InterceptorFactory> getTimeoutInterceptors() {
-        return timeoutInterceptors;
-    }
-
-    public Method getTimeoutMethod() {
-        return timeoutMethod;
-    }
 }

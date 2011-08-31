@@ -116,15 +116,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      */
     private String mappedName;
 
-    /**
-     * @Schedule methods
-     */
-    private final Map<Method, List<AutoTimer>> scheduleMethods = new IdentityHashMap<Method, List<AutoTimer>>();
-
-    /**
-     * The actual timeout method
-     */
-    private Method timeoutMethod;
 
     public enum SessionBeanType {
         STATELESS,
@@ -425,27 +416,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public boolean isStateless() {
         return getSessionBeanType() == SessionBeanType.STATELESS;
     }
-
-    public Method getTimeoutMethod() {
-        return timeoutMethod;
-    }
-
-    public void setTimeoutMethod(final Method timeoutMethod) {
-        this.timeoutMethod = timeoutMethod;
-    }
-
-    public Map<Method, List<AutoTimer>> getScheduleMethods() {
-        return Collections.unmodifiableMap(scheduleMethods);
-    }
-
-    public void addScheduleMethod(final Method method, final AutoTimer timer) {
-        List<AutoTimer> schedules = scheduleMethods.get(method);
-        if(schedules == null) {
-            scheduleMethods.put(method, schedules = new ArrayList<AutoTimer>(1));
-        }
-        schedules.add(timer);
-    }
-
 
     @Override
     public SessionBeanMetaData getDescriptorData() {

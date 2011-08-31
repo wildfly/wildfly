@@ -28,6 +28,8 @@ import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
+import org.jboss.as.ejb3.timerservice.SingletonTimedObjectInvokerImpl;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.invocation.Interceptor;
@@ -42,7 +44,6 @@ import javax.ejb.LockType;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -68,8 +69,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
 
     private final List<ServiceName> dependsOn;
-    private final Method timeoutMethod;
-
     /**
      * Construct a new instance.
      *
@@ -85,7 +84,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         this.beanLevelLockType = singletonComponentCreateService.getBeanLockType();
         this.methodLockTypes = singletonComponentCreateService.getMethodApplicableLockTypes();
         this.methodAccessTimeouts = singletonComponentCreateService.getMethodApplicableAccessTimeouts();
-        this.timeoutMethod = singletonComponentCreateService.getTimeoutMethod();
     }
 
     @Override
@@ -191,7 +189,8 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         }
     }
 
-    public Method getTimeoutMethod() {
-        return timeoutMethod;
+    @Override
+    public TimedObjectInvoker getTimedObjectInvoker() {
+        return new SingletonTimedObjectInvokerImpl(this);
     }
 }
