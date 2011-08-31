@@ -78,7 +78,7 @@ public class MethodAnnotationAggregator {
                         } else {
                             //this should not happen
                             //but if it does, we give some info
-                            logger.error("Could not resolve method " + entry.getKey() + " on class " + c + " with annotations " + entry.getValue());
+                            throw new RuntimeException("Could not resolve method " + entry.getKey() + " on class " + c + " with annotations " + entry.getValue());
                         }
                     }
                 }
