@@ -25,6 +25,10 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.invocation.InterceptorContext;
 
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
+import java.rmi.RemoteException;
+
 /**
  * A {@link ComponentInstance} associating interceptor for EJB components (SLSB and message driven) which
  * have pooling disabled. Upon each {@link #processInvocation(org.jboss.invocation.InterceptorContext) invocation}
@@ -47,12 +51,37 @@ public class NonPooledEJBComponentInstanceAssociatingInterceptor extends Abstrac
         // create the instance
         final ComponentInstance componentInstance = component.createInstance();
         context.putPrivateData(ComponentInstance.class, componentInstance);
+        //if this is set to true we do not invoke instance.destroy
+        //as we are not allowed to invoke pre-destroy callbacks
+        boolean discard = false;
         try {
             return context.proceed();
+        } catch (Exception ex) {
+            final EJBComponent ejbComponent = (EJBComponent) component;
+            // Detect app exception
+            if (ejbComponent.getApplicationException(ex.getClass(), context.getMethod()) != null) {
+                // it's an application exception, just throw it back.
+                throw ex;
+            }
+            if (ex instanceof ConcurrentAccessTimeoutException || ex instanceof ConcurrentAccessException) {
+                throw ex;
+            }
+            if (ex instanceof RuntimeException || ex instanceof RemoteException) {
+                discard = true;
+            }
+            throw ex;
+        } catch (final Error e) {
+            discard = true;
+            throw e;
+        } catch (final Throwable t) {
+            discard = true;
+            throw new RuntimeException(t);
         } finally {
             context.putPrivateData(ComponentInstance.class, null);
             // destroy the instance
-            componentInstance.destroy();
+            if (!discard) {
+                componentInstance.destroy();
+            }
         }
     }
 
