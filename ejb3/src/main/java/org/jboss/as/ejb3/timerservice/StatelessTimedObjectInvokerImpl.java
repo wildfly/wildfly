@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentInstance;
+import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 
 import javax.ejb.Timer;
@@ -37,21 +38,31 @@ import java.lang.reflect.Method;
 public class StatelessTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObjectInvoker, Serializable {
 
     private final StatelessSessionComponent ejbComponent;
-    private final ClassLoader classLoader;
+    private final Pool<StatelessSessionComponentInstance> pool;
 
-    public StatelessTimedObjectInvokerImpl(final StatelessSessionComponent ejbComponent, final ClassLoader classLoader) {
+    public StatelessTimedObjectInvokerImpl(final StatelessSessionComponent ejbComponent) {
         this.ejbComponent = ejbComponent;
-        this.classLoader = classLoader;
+        this.pool = ejbComponent.getPool();
     }
 
     @Override
     public void callTimeout(final Timer timer, final Method timeoutMethod) throws Exception {
-        final StatelessSessionComponentInstance instance = ejbComponent.getPool().get();
+        final StatelessSessionComponentInstance instance = acquireInstance();
         try {
             instance.invokeTimeoutMethod(timeoutMethod, timer);
         } finally {
-            ejbComponent.getPool().release(instance);
+            releaseInstance(instance);
         }
+    }
+
+    private StatelessSessionComponentInstance acquireInstance() {
+        final StatelessSessionComponentInstance instance;
+        if (pool != null) {
+            instance = pool.get();
+        } else {
+            instance = (StatelessSessionComponentInstance) ejbComponent.createInstance();
+        }
+        return instance;
     }
 
     @Override
@@ -61,16 +72,24 @@ public class StatelessTimedObjectInvokerImpl implements MultiTimeoutMethodTimedO
 
     @Override
     public void callTimeout(final Timer timer) throws Exception {
-        final StatelessSessionComponentInstance instance = ejbComponent.getPool().get();
+        final StatelessSessionComponentInstance instance = acquireInstance();
         try {
             instance.invokeTimeoutMethod(timer);
         } finally {
-            ejbComponent.getPool().release(instance);
+            releaseInstance(instance);
+        }
+    }
+
+    private void releaseInstance(final StatelessSessionComponentInstance instance) {
+        if (pool != null) {
+            pool.release(instance);
+        } else {
+            instance.destroy();
         }
     }
 
     @Override
     public ClassLoader getClassLoader() {
-        return classLoader;
+        return ejbComponent.getComponentClass().getClassLoader();
     }
 }

@@ -58,7 +58,6 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
     protected final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout;
     private final Set<Method> asynchronousMethods;
     protected Executor asyncExecutor;
-    protected final Map<Method, InterceptorFactory> timeoutInterceptors;
 
     /**
      * Construct a new instance.
@@ -70,7 +69,6 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
         this.beanLevelAccessTimeout = ejbComponentCreateService.getBeanAccessTimeout();
         this.asynchronousMethods = null;
-        this.timeoutInterceptors = ejbComponentCreateService.getTimeoutInterceptors();
         //ejbComponentCreateService.getAsynchronousMethods();
         //        this.asyncExecutor = (Executor) ejbComponentCreateService.getInjection(ASYNC_EXECUTOR_SERVICE_NAME).getValue();
     }
