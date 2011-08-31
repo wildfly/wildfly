@@ -212,6 +212,7 @@ public enum Element {
    USE_LOCAL_TX(CommonAttributes.USE_LOCAL_TX),
    SETUP_ATTEMPTS(CommonAttributes.SETUP_ATTEMPTS),
    SETUP_INTERVAL(CommonAttributes.SETUP_INTERVAL),
+   SOCKET_BINDING(CommonAttributes.SOCKET_BINDING.getName()),
    ;
 
    private final String name;

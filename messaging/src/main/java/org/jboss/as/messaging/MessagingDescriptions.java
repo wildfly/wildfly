@@ -1111,4 +1111,5 @@ public class MessagingDescriptions {
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
+
 }

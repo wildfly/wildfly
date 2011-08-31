@@ -289,7 +289,9 @@ public class MessagingExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.MESSAGING_1_0.getUriString(), MessagingSubsystemParser.getInstance());
+        for(Namespace namespace : Namespace.values()) {
+            context.setSubsystemXmlMapping(namespace.getUriString(), MessagingSubsystemParser.getInstance());
+        }
     }
 
     static void createParamRegistration(final ManagementResourceRegistration parent) {

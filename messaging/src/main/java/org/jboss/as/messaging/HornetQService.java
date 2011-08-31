@@ -138,7 +138,7 @@ class HornetQService implements Service<HornetQServer> {
                 final List<BroadcastGroupConfiguration> newConfigs = new ArrayList<BroadcastGroupConfiguration>();
                 for(final BroadcastGroupConfiguration config : broadcastGroups) {
                     final String name = config.getName();
-                    final SocketBinding binding = groupBindings.get(name);
+                    final SocketBinding binding = groupBindings.get("broadcast" + name);
                     if (binding == null) {
                         throw new StartException("Failed to find SocketBinding for broadcast binding: " + name);
                     }
@@ -149,7 +149,7 @@ class HornetQService implements Service<HornetQServer> {
                 configuration.setDiscoveryGroupConfigurations(new HashMap<String, DiscoveryGroupConfiguration>());
                 for(final Map.Entry<String, DiscoveryGroupConfiguration> entry : discoveryGroups.entrySet()) {
                     final String name = entry.getKey();
-                    final SocketBinding binding = groupBindings.get(name);
+                    final SocketBinding binding = groupBindings.get("discovery" + name);
                     if (binding == null) {
                         throw new StartException("Failed to find SocketBinding for discovery binding: " + entry.getKey());
                     }

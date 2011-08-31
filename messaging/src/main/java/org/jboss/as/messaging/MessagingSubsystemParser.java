@@ -78,6 +78,7 @@ import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SEND_XML_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
+import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING_ALTERNATIVE;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING_OPTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
@@ -600,7 +601,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     private static void parseBroadcastGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
 
         String name = null;
-        String socketBinding = null;
 
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -609,10 +609,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (attribute) {
                 case NAME: {
                     name = attrValue;
-                    break;
-                }
-                case SOCKET_BINDING: {
-                    socketBinding = attrValue;
                     break;
                 }
                 default: {
@@ -625,7 +621,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         ModelNode broadcastGroupAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.BROADCAST_GROUP, name));
-        if(socketBinding != null) broadcastGroupAdd.get(SOCKET_BINDING.getName()).set(socketBinding);
 
         EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -636,6 +631,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case LOCAL_BIND_PORT:
                 case GROUP_ADDRESS:
                 case GROUP_PORT:
+                case SOCKET_BINDING:
                 case BROADCAST_PERIOD:
                     handleElementText(reader, element, broadcastGroupAdd);
                     break;
@@ -673,7 +669,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     private static void parseDiscoveryGroup(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
 
         String name = null;
-        String socketBinding = null;
 
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -682,10 +677,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (attribute) {
                 case NAME: {
                     name = attrValue;
-                    break;
-                }
-                case SOCKET_BINDING: {
-                    socketBinding = attrValue;
                     break;
                 }
                 default: {
@@ -698,8 +689,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         ModelNode discoveryGroup = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.DISCOVERY_GROUP, name));
-        if(socketBinding != null) discoveryGroup.get(SOCKET_BINDING.getName()).set(socketBinding);
-
 
         EnumSet<Element> required = EnumSet.of(Element.GROUP_ADDRESS, Element.GROUP_PORT);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -710,6 +699,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case GROUP_ADDRESS:
                 case GROUP_PORT:
                 case REFRESH_TIMEOUT:
+                case SOCKET_BINDING:
                 case INITIAL_WAIT_TIMEOUT:
                     handleElementText(reader, element, discoveryGroup);
                     break;
@@ -1718,11 +1708,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : node.asPropertyList()) {
                 writer.writeStartElement(Element.BROADCAST_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                SOCKET_BINDING.marshallAsAttribute(property.getValue(), false, writer);
                 for (AttributeDefinition attribute : CommonAttributes.BROADCAST_GROUP_ATTRIBUTES) {
-                    if(attribute == SOCKET_BINDING_OPTIONAL) {
-                        continue;
-                    }
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();
@@ -1738,11 +1724,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for(final Property property : node.asPropertyList()) {
                 writer.writeStartElement(Element.DISCOVERY_GROUP.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                SOCKET_BINDING.marshallAsAttribute(property.getValue(), false, writer);
                 for (AttributeDefinition attribute : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
-                    if(attribute == SOCKET_BINDING_OPTIONAL) {
-                        continue;
-                    }
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
                 writer.writeEndElement();

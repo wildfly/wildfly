@@ -36,12 +36,13 @@ public enum Namespace {
    // must be first
    UNKNOWN(null),
 
-   MESSAGING_1_0("urn:jboss:domain:messaging:1.0");
+   MESSAGING_1_0("urn:jboss:domain:messaging:1.0"),
+   MESSAGING_1_1("urn:jboss:domain:messaging:1.1");
 
    /**
     * The current namespace version.
     */
-   public static final Namespace CURRENT = MESSAGING_1_0;
+   public static final Namespace CURRENT = MESSAGING_1_1;
 
    private final String name;
 

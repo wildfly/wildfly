@@ -60,13 +60,23 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
 
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, createParameterValidator(type, allowNull, allowExpression));
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, createParameterValidator(type, allowNull, allowExpression), null);
+    }
+
+    public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
+                                     final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                                     final ParameterValidator validator) {
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, validator, null);
     }
 
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
-                                     final ParameterValidator validator) {
-        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, validator);
+                                     final ParameterValidator validator, String[] alternatives) {
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, validator, alternatives);
+    }
+
+    public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final String[] alternatives) {
+        this(name, name, defaultValue, type, allowNull, false, MeasurementUnit.NONE, createParameterValidator(type, allowNull, false), alternatives);
     }
 
     private static ParameterValidator createParameterValidator(final ModelType type,final boolean allowNull, final boolean allowExpression) {

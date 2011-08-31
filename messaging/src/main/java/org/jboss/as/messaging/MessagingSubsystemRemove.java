@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import org.hornetq.core.server.group.impl.GroupBinding;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -68,6 +69,12 @@ class MessagingSubsystemRemove implements OperationStepHandler, DescriptionProvi
 
                 context.removeService(JMSServices.JMS_MANAGER);
                 context.removeService(MessagingServices.JBOSS_MESSAGING);
+                for(final Resource.ResourceEntry broadcastGroup : resource.getChildren(CommonAttributes.BROADCAST_GROUP)) {
+                    context.removeService(GroupBindingService.BROADCAST.append(broadcastGroup.getName()));
+                }
+                for(final Resource.ResourceEntry divertGroup : resource.getChildren(CommonAttributes.DISCOVERY_GROUP)) {
+                    context.removeService(GroupBindingService.DISCOVERY.append(divertGroup.getName()));
+                }
                 context.removeService(MessagingSubsystemAdd.PATH_BASE.append(MessagingSubsystemAdd.DEFAULT_BINDINGS_DIR));
                 context.removeService(MessagingSubsystemAdd.PATH_BASE.append(MessagingSubsystemAdd.DEFAULT_JOURNAL_DIR));
                 context.removeService(MessagingSubsystemAdd.PATH_BASE.append(MessagingSubsystemAdd.DEFAULT_LARGE_MESSSAGE_DIR));

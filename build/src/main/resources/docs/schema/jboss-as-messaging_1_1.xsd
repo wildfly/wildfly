@@ -19,12 +19,13 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
+
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:messaging:1.0"
-           targetNamespace="urn:jboss:domain:messaging:1.0"
+           xmlns="urn:jboss:domain:messaging:1.1"
+           targetNamespace="urn:jboss:domain:messaging:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.0">
+           version="1.1">
 
     <!-- The messaging subsystem root element -->
     <xs:element name="subsystem">
@@ -206,25 +207,39 @@
 
     <xs:complexType name="broadcast-groupType">
        <xs:sequence>
-          <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address" />
-          <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-port" />
-          <xs:element maxOccurs="1" minOccurs="1" ref="group-address" />
-          <xs:element maxOccurs="1" minOccurs="1" ref="group-port" />
-          <xs:element maxOccurs="1" minOccurs="0" ref="broadcast-period" />
-          <xs:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xs:string" />
+           <xs:choice>
+               <xs:sequence>
+                  <xs:element maxOccurs="1" minOccurs="1" name="socket-binding" type="xs:string" />
+               </xs:sequence>
+               <xs:sequence>
+                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address" />
+                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-port" />
+                  <xs:element maxOccurs="1" minOccurs="1" ref="group-address" />
+                  <xs:element maxOccurs="1" minOccurs="1" ref="group-port" />
+               </xs:sequence>
+           </xs:choice>
+           <xs:element maxOccurs="1" minOccurs="0" ref="broadcast-period" />
+           <xs:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xs:string" />
        </xs:sequence>
        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="discovery-groupType">
-       <xs:sequence>
-          <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address" />
-          <xs:element maxOccurs="1" minOccurs="1" ref="group-address" />
-          <xs:element maxOccurs="1" minOccurs="1" ref="group-port" />
-          <xs:element maxOccurs="1" minOccurs="0" name="refresh-timeout" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" ref="initial-wait-timeout" />
-       </xs:sequence>
-       <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:sequence>
+            <xs:choice>
+               <xs:sequence>
+                  <xs:element maxOccurs="1" minOccurs="1" name="socket-binding" type="xs:string" />
+               </xs:sequence>
+               <xs:sequence>
+                  <xs:element maxOccurs="1" minOccurs="0" ref="local-bind-address" />
+                  <xs:element maxOccurs="1" minOccurs="1" ref="group-address" />
+                  <xs:element maxOccurs="1" minOccurs="1" ref="group-port" />
+               </xs:sequence>
+            </xs:choice>
+            <xs:element maxOccurs="1" minOccurs="0" name="refresh-timeout" type="xs:int" />
+            <xs:element maxOccurs="1" minOccurs="0" ref="initial-wait-timeout" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:element name="discovery-group-ref">

@@ -48,7 +48,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
 
     public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator) {
-        super(name, xmlName, null, ModelType.LIST, allowNull, false, MeasurementUnit.NONE, new ListValidator(elementValidator, allowNull, minSize, maxSize));
+        super(name, xmlName, null, ModelType.LIST, allowNull, false, MeasurementUnit.NONE, new ListValidator(elementValidator, allowNull, minSize, maxSize), null);
         this.elementValidator = elementValidator;
     }
 
