@@ -27,7 +27,7 @@ import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
-import org.jboss.as.ejb3.timerservice.MessageDrivenTimedObjectInvokerImpl;
+import org.jboss.as.ejb3.timerservice.PooledTimedObjectInvokerImpl;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.ejb3.context.spi.MessageDrivenBeanComponent;
@@ -177,6 +177,6 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
 
     @Override
     public TimedObjectInvoker getTimedObjectInvoker() {
-        return new MessageDrivenTimedObjectInvokerImpl(this);
+        return new PooledTimedObjectInvokerImpl(this);
     }
 }
