@@ -31,6 +31,7 @@ import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.CommandLineParser;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 
@@ -56,12 +57,23 @@ public class LsHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandFormatException {
 
-        final String nodePath = this.nodePath.getValue(ctx.getParsedCommandLine());
+        final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
+        String nodePath = this.nodePath.getValue(parsedCmd);
 
         final OperationRequestAddress address;
         if (nodePath != null) {
             address = new DefaultOperationRequestAddress(ctx.getPrefix());
             CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(address);
+            nodePath = ctx.getArgumentsString();
+            if(l.isPresent(parsedCmd)) {
+                nodePath = nodePath.trim();
+                if(nodePath.startsWith("-l ")) {
+                    nodePath = nodePath.substring(3);
+                } else {
+                    nodePath = nodePath.substring(0, nodePath.length() - 3);
+                }
+            }
+
             try {
                 ctx.getCommandLineParser().parse(nodePath, handler);
             } catch (CommandFormatException e) {
@@ -80,6 +92,6 @@ public class LsHandler extends CommandHandlerWithHelp {
             names = Util.getNodeTypes(ctx.getModelControllerClient(), address);
         }
 
-        printList(ctx, names, l.isPresent(ctx.getParsedCommandLine()));
+        printList(ctx, names, l.isPresent(parsedCmd));
     }
 }
