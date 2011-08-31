@@ -482,6 +482,7 @@ public interface CommonAttributes {
     String JMS_DESTINATIONS = "jms-destinations";
     String JMS_QUEUE ="jms-queue";
     String JMS_TOPIC ="jms-topic";
+    String JNDI_BINDING = "jndi-binding";
     String JOURNAL_DIRECTORY ="journal-directory";
     String KEY ="key";
     String INBOUND_CONFIG = "inbound-config";

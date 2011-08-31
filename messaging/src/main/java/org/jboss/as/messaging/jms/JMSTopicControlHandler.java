@@ -257,29 +257,35 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private static ModelNode convertSubscriptionKeys(ModelNode jsonAsNode) {
-        final ModelNode converted = new ModelNode();
-        for (Property prop : jsonAsNode.asPropertyList()) {
-            String key = prop.getName();
-            ModelNode value = prop.getValue();
-            if ("queueName".equals(key)) {
-                key = "queue-name";
-            } else if ("clientID".equals(key)) {
-                key = "client-id";
-            } else if ("messageCount".equals(key)) {
-                key = "message-count";
-            } else if ("deliveringCount".equals(key)) {
-                key = "delivering-count";
-            } else if ("consumers".equals(key)) {
-                ModelNode consumers = new ModelNode();
-                consumers.setEmptyList();
-                for (ModelNode raw : value.asList()) {
-                    consumers.add(convertConsumer(raw));
+        final ModelNode result = new ModelNode();
+        result.setEmptyList();
+        for (ModelNode element : jsonAsNode.asList()) {
+            final ModelNode converted = new ModelNode();
+            converted.setEmptyObject();
+            for (Property prop : element.asPropertyList()) {
+                String key = prop.getName();
+                ModelNode value = prop.getValue();
+                if ("queueName".equals(key)) {
+                    key = "queue-name";
+                } else if ("clientID".equals(key)) {
+                    key = "client-id";
+                } else if ("messageCount".equals(key)) {
+                    key = "message-count";
+                } else if ("deliveringCount".equals(key)) {
+                    key = "delivering-count";
+                } else if ("consumers".equals(key)) {
+                    ModelNode consumers = new ModelNode();
+                    consumers.setEmptyList();
+                    for (ModelNode raw : value.asList()) {
+                        consumers.add(convertConsumer(raw));
+                    }
+                    value = consumers;
                 }
-                value = consumers;
+                converted.get(key).set(prop.getValue());
             }
-            converted.get(key).set(prop.getValue());
+            result.add(converted);
         }
-        return converted;
+        return result;
     }
 
     private static ModelNode convertConsumer(ModelNode raw) {

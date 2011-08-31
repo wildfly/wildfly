@@ -39,13 +39,16 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
+import org.jboss.as.messaging.jms.ConnectionFactoryAddJndiHandler;
 import org.jboss.as.messaging.jms.ConnectionFactoryReadAttributeHandler;
 import org.jboss.as.messaging.jms.ConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.ConnectionFactoryWriteAttributeHandler;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
+import org.jboss.as.messaging.jms.JMSQueueAddJndiHandler;
 import org.jboss.as.messaging.jms.JMSQueueRemove;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
+import org.jboss.as.messaging.jms.JMSTopicAddJndiHandler;
 import org.jboss.as.messaging.jms.JMSTopicControlHandler;
 import org.jboss.as.messaging.jms.JMSTopicReadAttributeHandler;
 import org.jboss.as.messaging.jms.JMSTopicRemove;
@@ -291,12 +294,8 @@ public class MessagingExtension implements Extension {
             cfs.registerReadWriteAttribute(attributeDefinition.getName(), null, ConnectionFactoryWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
         ConnectionFactoryReadAttributeHandler.INSTANCE.registerAttributes(cfs);
-        // TODO runtime operations exposed by ConnectionFactoryControl
-        // METRICS
-        // READ-ATTRIBUTES
+        ConnectionFactoryAddJndiHandler.INSTANCE.registerHandler(cfs);
         // getJNDIBindings (no -- same as "entries")
-        // OPS
-        //addJNDI
 
         // Resource Adapter Pooled connection factories
         final ManagementResourceRegistration resourceAdapters = rootRegistration.registerSubModel(RA_PATH, MessagingSubsystemProviders.RA);
@@ -315,12 +314,13 @@ public class MessagingExtension implements Extension {
             queues.registerReadWriteAttribute(attributeDefinition.getName(), null, JmsQueueConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
         JmsQueueReadAttributeHandler.INSTANCE.registerAttributes(queues);
+        JMSQueueAddJndiHandler.INSTANCE.registerHandler(queues);
         // TODO runtime operations exposed by JmsQueueControl/DestinationControl
         // setExpiryAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
         // READ-ATTRIBUTES
         // getJNDIBindings (no -- same as "entries")
         // OPS
-        // addJNDI, listMessages, listMessagesAsJSON, countMessages, removeMessage
+        // listMessages, listMessagesAsJSON, countMessages, removeMessage
         // removeMessages, expireMessages, expireMessage, sendMessageToDeadLetterAddress, sendMessagesToDeadLetterAddress,
         // changeMessagePriority, changeMessagesPriority, moveMessage, moveMessages, listMessageCounter,
         // resetMessageCounter, listMessageCounterAsHTML, listMessageCounterHistory, listMessageCounterHistoryAsHTML,
@@ -334,13 +334,8 @@ public class MessagingExtension implements Extension {
         topics.registerReadWriteAttribute(CommonAttributes.ENTRIES.getName(), null, JMSTopicConfigurationWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         JMSTopicReadAttributeHandler.INSTANCE.registerAttributes(topics);
         JMSTopicControlHandler.INSTANCE.registerOperations(topics);
-        // TODO runtime operations exposed by TopicControl/DestinationControl
+        JMSTopicAddJndiHandler.INSTANCE.registerHandler(topics);
         // getJNDIBindings (no -- same as "entries")
-        // addJNDI, listAllSubscriptions, listAllSubscriptionsAsJSON,
-        // listDurableSubscriptions, listDurableSubscriptionsAsJSON, listNonDurableSubscriptions, listNonDurableSubscriptionsAsJSON
-        // listMessagesForSubscription, listMessagesForSubscriptionAsJSON, countMessagesForSubscription,
-        // dropDurableSubscription, dropAllSubscriptions
-        // removeMessages
 
         final ManagementResourceRegistration securitySettings = rootRegistration.registerSubModel(SECURITY_SETTING, MessagingSubsystemProviders.SECURITY_SETTING);
         securitySettings.registerOperationHandler(ADD, SecuritySettingAdd.INSTANCE, SecuritySettingAdd.INSTANCE);

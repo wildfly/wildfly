@@ -99,6 +99,7 @@ import javax.ejb.Local;
 import javax.xml.soap.Node;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.messaging.jms.AbstractAddJndiHandler;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.JMSTopicControlHandler;
 import org.jboss.dmr.ModelNode;
@@ -1320,13 +1321,31 @@ public class MessagingDescriptions {
     private static ModelNode getNoArgSimpleReplyOperation(final ResourceBundle bundle, final String operationName,
                                                          final String descriptionPrefix, final ModelType replyType,
                                                          final boolean describeReply) {
-        final ModelNode result = getDescriptionOnlyOperation(bundle,  operationName, descriptionPrefix);
+        final ModelNode result = getDescriptionOnlyOperation(bundle, operationName, descriptionPrefix);
         if (describeReply) {
             String replyKey = descriptionPrefix == null ? operationName + ".reply" : descriptionPrefix + "." + operationName + ".reply";
             result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(replyKey));
         }
         result.get(REPLY_PROPERTIES, TYPE).set(replyType);
 
+        return result;
+    }
+
+    public static ModelNode getAddJndiOperation(final Locale locale, final String resourceType) {
+        final ResourceBundle bundle =  getResourceBundle(locale);
+
+        final ModelNode result = new ModelNode();
+        result.get(OPERATION_NAME).set(AbstractAddJndiHandler.ADD_JNDI);
+        result.get(DESCRIPTION).set(bundle.getString(resourceType + "." + AbstractAddJndiHandler.ADD_JNDI));
+
+        final ModelNode binding = result.get(REQUEST_PROPERTIES, CommonAttributes.JNDI_BINDING);
+        binding.get(DESCRIPTION).set(bundle.getString(CommonAttributes.JNDI_BINDING));
+        binding.get(TYPE).set(ModelType.STRING);
+        binding.get(REQUIRED).set(true);
+        binding.get(NILLABLE).set(false);
+        binding.get(MIN_LENGTH).set(1);
+
+        result.get(REPLY_PROPERTIES).setEmptyObject();
         return result;
     }
 
