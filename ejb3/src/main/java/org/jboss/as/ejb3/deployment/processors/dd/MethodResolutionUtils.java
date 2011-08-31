@@ -47,6 +47,12 @@ public class MethodResolutionUtils {
             if (parameters == null) {
                 final Collection<Method> methods = classIndex.getAllMethods(methodName);
                 if (methods.size() > 1) {
+                    //if we have a duplicate we match the method with no parameters
+                    for(final Method method : methods) {
+                        if(method.getParameterTypes().length == 0) {
+                            return method;
+                        }
+                    }
                     throw new DeploymentUnitProcessingException("More than one method " + methodName + "found on class" + componentClass.getName() + " referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity");
                 } else if (methods.size() == 1) {
                     return methods.iterator().next();
