@@ -212,6 +212,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
             final UnboundedQueueThreadPoolService threadPoolService = new UnboundedQueueThreadPoolService(Runtime.getRuntime().availableProcessors(), TimeSpec.DEFAULT_KEEPALIVE);
             threadPoolService.getThreadFactoryInjector().inject(Executors.defaultThreadFactory());
             newControllers.add(serviceTarget.addService(org.jboss.as.ejb3.component.session.SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, threadPoolService)
+                    .addListener(verificationHandler)
                     .install());
         }
 

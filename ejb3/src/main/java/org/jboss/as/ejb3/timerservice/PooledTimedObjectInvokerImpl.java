@@ -21,48 +21,81 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
-import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
-import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentInstance;
-import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
-import org.jboss.as.ejb3.component.stateless.StatelessSessionComponentInstance;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.EjbComponentInstance;
+import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.Timer;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.rmi.RemoteException;
 
 /**
  * Timed object invoker for an EJB
  *
  * @author Stuart Douglas
  */
-public class MessageDrivenTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObjectInvoker, Serializable {
+public class PooledTimedObjectInvokerImpl implements MultiTimeoutMethodTimedObjectInvoker, Serializable {
 
-    private final MessageDrivenComponent ejbComponent;
-    private final Pool<MessageDrivenComponentInstance> pool;
+    private final EJBComponent ejbComponent;
+    private final Pool<EjbComponentInstance> pool;
 
-    public MessageDrivenTimedObjectInvokerImpl(final MessageDrivenComponent ejbComponent) {
+    public PooledTimedObjectInvokerImpl(final EJBComponent ejbComponent) {
         this.ejbComponent = ejbComponent;
-        this.pool = ejbComponent.getPool();
+        this.pool = ((PooledComponent<EjbComponentInstance>) ejbComponent).getPool();
     }
 
     @Override
     public void callTimeout(final Timer timer, final Method timeoutMethod) throws Exception {
-        final MessageDrivenComponentInstance instance = acquireInstance();
+        final EjbComponentInstance instance = acquireInstance();
+        boolean discarded = false;
         try {
             instance.invokeTimeoutMethod(timeoutMethod, timer);
+        } catch (Exception ex) {
+            // Detect app exception
+            if (ejbComponent.getApplicationException(ex.getClass(), timeoutMethod) != null) {
+                // it's an application exception, just throw it back.
+                throw ex;
+            }
+            if (ex instanceof ConcurrentAccessTimeoutException || ex instanceof ConcurrentAccessException) {
+                throw ex;
+            }
+            if (ex instanceof RuntimeException || ex instanceof RemoteException) {
+                discarded = true;
+                if (pool != null) {
+                    pool.discard(instance);
+                }
+            }
+            throw ex;
+        } catch (final Error e) {
+            discarded = true;
+            if (pool != null) {
+                pool.discard(instance);
+            }
+            throw e;
+        } catch (final Throwable t) {
+            discarded = true;
+            if (pool != null) {
+                pool.discard(instance);
+            }
+            throw new RuntimeException(t);
         } finally {
-            releaseInstance(instance);
+            if (!discarded) {
+                releaseInstance(instance);
+            }
         }
     }
 
-    private MessageDrivenComponentInstance acquireInstance() {
-        final MessageDrivenComponentInstance instance;
+    private EjbComponentInstance acquireInstance() {
+        final EjbComponentInstance instance;
         if (pool != null) {
             instance = pool.get();
         } else {
-            instance = (MessageDrivenComponentInstance) ejbComponent.createInstance();
+            instance = (EjbComponentInstance) ejbComponent.createInstance();
         }
         return instance;
     }
@@ -74,7 +107,7 @@ public class MessageDrivenTimedObjectInvokerImpl implements MultiTimeoutMethodTi
 
     @Override
     public void callTimeout(final Timer timer) throws Exception {
-        final MessageDrivenComponentInstance instance = acquireInstance();
+        final EjbComponentInstance instance = acquireInstance();
         try {
             instance.invokeTimeoutMethod(timer);
         } finally {
@@ -82,7 +115,7 @@ public class MessageDrivenTimedObjectInvokerImpl implements MultiTimeoutMethodTi
         }
     }
 
-    private void releaseInstance(final MessageDrivenComponentInstance instance) {
+    private void releaseInstance(final EjbComponentInstance instance) {
         if (pool != null) {
             pool.release(instance);
         } else {
