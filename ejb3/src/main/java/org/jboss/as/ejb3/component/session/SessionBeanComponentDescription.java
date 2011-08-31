@@ -107,10 +107,14 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private final Set<MethodIdentifier> asynchronousMethods = new HashSet<MethodIdentifier>();
 
     /**
+     * Classes the component marked as @Asynchronous
+     */
+    private final Set<String> asynchronousClasses = new HashSet<String>();
+
+    /**
      * Views the component marked as @Asynchronous
      */
     private final Set<String> asynchronousViews = new HashSet<String>();
-
     /**
      * mapped-name of the session bean
      */
@@ -133,9 +137,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public SessionBeanComponentDescription(final String componentName, final String componentClassName,
                                            final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
-        // TODO: AS7-447
-        //addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
-        // setSessionContext() method invocation interceptor
         this.addSetSessionContextMethodInvocationInterceptor();
     }
 
@@ -321,6 +322,39 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
+     *
+     * @return The identifier of all async methods
+     */
+    public Set<MethodIdentifier> getAsynchronousMethods() {
+        return asynchronousMethods;
+    }
+
+    /**
+     * Add a bean class or superclass that has been marked asynchronous
+     *
+     * @param viewName The view name
+     */
+    public void addAsynchronousClass(final String viewName) {
+        asynchronousClasses.add(viewName);
+    }
+
+    /**
+     *
+     * @return The class name of all asynchronous classes
+     */
+    public Set<String> getAsynchronousClasses() {
+        return asynchronousClasses;
+    }
+
+    /**
+     *
+     * @return The class name of all asynchronous views
+     */
+    public Set<String> getAsynchronousViews() {
+        return asynchronousViews;
+    }
+
+    /**
      * Set an entire view's asynchronous nature.  All business methods for the view will be asynchronous.
      *
      * @param viewName The view name
@@ -328,6 +362,9 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public void addAsynchronousView(final String viewName) {
         asynchronousViews.add(viewName);
     }
+
+
+
 
     /**
      * Returns the type of the session bean

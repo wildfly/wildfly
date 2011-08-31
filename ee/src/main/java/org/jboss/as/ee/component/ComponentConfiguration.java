@@ -64,7 +64,7 @@ public class ComponentConfiguration {
     // Component instance management
     private ManagedReferenceFactory instanceFactory;
 
-    private final List<DependencyConfigurator<Service<Component>>> createDependencies = new ArrayList<DependencyConfigurator<Service<Component>>>();
+    private final List<DependencyConfigurator<? extends Service<Component>>> createDependencies = new ArrayList<DependencyConfigurator<? extends Service<Component>>>();
     private final List<DependencyConfigurator<ComponentStartService>> startDependencies = new ArrayList<DependencyConfigurator<ComponentStartService>>();
 
     // Views
@@ -223,7 +223,7 @@ public class ComponentConfiguration {
      *
      * @return the create dependencies list
      */
-    public List<DependencyConfigurator<Service<Component>>> getCreateDependencies() {
+    public List<DependencyConfigurator<? extends Service<Component>>> getCreateDependencies() {
         return createDependencies;
     }
 
