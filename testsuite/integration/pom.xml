@@ -102,6 +102,7 @@
                                 <exclude>org/jboss/as/testsuite/integration/wsejb/**/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/testsuite/integration/xerces/ws/**/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/testsuite/integration/mdb/**/*TestCase.java</exclude>
+                                <exclude>org/jboss/as/testsuite/integration/ejb/async/**/*TestCase.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -147,6 +148,7 @@
                                         <include>org/jboss/as/testsuite/integration/wsejb/**/*TestCase.java</include>
                                         <include>org/jboss/as/testsuite/integration/xerces/ws/**/*TestCase.java</include>
                                         <include>org/jboss/as/testsuite/integration/mdb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/testsuite/integration/ejb/async/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>none</exclude>

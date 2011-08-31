@@ -32,14 +32,15 @@ import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.msc.value.InjectedValue;
 
-import javax.ejb.AccessTimeout;
 import javax.ejb.LockType;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
  * User: jpai
@@ -47,15 +48,12 @@ import java.util.Map;
 public abstract class SessionBeanComponentCreateService extends EJBComponentCreateService {
 
     private final Map<String, LockType> beanLevelLockType;
-
     private final Map<EJBBusinessMethod, LockType> methodApplicableLockTypes;
-
     private final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout;
-
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodApplicableAccessTimeouts;
-
     private final Map<Method, InterceptorFactory> timeoutInterceptors;
     private final Method timeoutMethod;
+    private final InjectedValue<ExecutorService> asyncExecutorService = new InjectedValue<ExecutorService>();
 
     /**
      * Construct a new instance.
@@ -157,5 +155,9 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
     public Method getTimeoutMethod() {
         return timeoutMethod;
+    }
+
+    public InjectedValue<ExecutorService> getAsyncExecutorService() {
+        return asyncExecutorService;
     }
 }
