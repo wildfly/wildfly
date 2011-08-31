@@ -98,6 +98,7 @@ public class MessagingExtension implements Extension {
         final ManagementResourceRegistration rootRegistration = subsystem.registerSubsystemModel(MessagingSubsystemProviders.SUBSYSTEM);
 
         rootRegistration.registerOperationHandler(ADD, MessagingSubsystemAdd.INSTANCE, MessagingSubsystemAdd.INSTANCE, false);
+        rootRegistration.registerOperationHandler(REMOVE, MessagingSubsystemRemove.INSTANCE, MessagingSubsystemRemove.INSTANCE);
         // TODO REMOVE op
         rootRegistration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         for (AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {

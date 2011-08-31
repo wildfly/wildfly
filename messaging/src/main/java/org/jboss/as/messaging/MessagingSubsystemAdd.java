@@ -131,7 +131,7 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
 
     private static final String DEFAULT_PATH = "messaging";
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
-    private static final ServiceName PATH_BASE = MessagingServices.JBOSS_MESSAGING.append("paths");
+    static final ServiceName PATH_BASE = MessagingServices.JBOSS_MESSAGING.append("paths");
 
     static final String DEFAULT_BINDINGS_DIR = "bindings";
     static final String DEFAULT_JOURNAL_DIR = "journal";
