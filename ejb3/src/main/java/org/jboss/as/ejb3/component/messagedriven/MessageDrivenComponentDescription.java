@@ -195,6 +195,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         }
     }
 
+    @Override
+    public boolean isTimerServiceApplicable() {
+        return true;
+    }
 
     @Override
     public MessageDrivenBeanMetaData getDescriptorData() {

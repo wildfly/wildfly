@@ -27,10 +27,12 @@ import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -70,6 +72,10 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
     private final EJBSecurityMetaData securityMetaData;
     private final Map<String, ServiceName> viewServices;
     private final TimerService timerService;
+    protected final Map<Method, InterceptorFactory> timeoutInterceptors;
+    private final Method timeoutMethod;
+
+
 
     /**
      * Construct a new instance.
@@ -96,6 +102,8 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         this.securityMetaData = ejbComponentCreateService.getSecurityMetaData();
         this.viewServices = ejbComponentCreateService.getViewServices();
         this.timerService = ejbComponentCreateService.getTimerService();
+        this.timeoutInterceptors = ejbComponentCreateService.getTimeoutInterceptors();
+        this.timeoutMethod = ejbComponentCreateService.getTimeoutMethod();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -339,5 +347,13 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
 
     public EJBSecurityMetaData getSecurityMetaData() {
         return this.securityMetaData;
+    }
+
+    public TimedObjectInvoker getTimedObjectInvoker() {
+        return null;
+    }
+
+    public Method getTimeoutMethod() {
+        return timeoutMethod;
     }
 }

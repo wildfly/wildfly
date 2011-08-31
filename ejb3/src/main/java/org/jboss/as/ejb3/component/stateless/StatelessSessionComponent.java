@@ -26,9 +26,11 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
+import org.jboss.as.ejb3.timerservice.StatelessTimedObjectInvokerImpl;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -37,7 +39,6 @@ import org.jboss.logging.Logger;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -104,6 +105,11 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     @Override
     public Pool<StatelessSessionComponentInstance> getPool() {
         return pool;
+    }
+
+    @Override
+    public TimedObjectInvoker getTimedObjectInvoker() {
+        return new StatelessTimedObjectInvokerImpl(this);
     }
 
     public Method getTimeoutMethod() {

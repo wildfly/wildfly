@@ -29,6 +29,8 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -39,6 +41,7 @@ import javax.ejb.TransactionManagementType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +62,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final TimerService timerService;
 
+    private final Map<Method, InterceptorFactory> timeoutInterceptors;
+
+    private final Method timeoutMethod;
 
     /**
      * Construct a new instance.
@@ -83,6 +89,16 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         // Setup the security metadata for the bean
         this.securityMetaData = new EJBSecurityMetaData(componentConfiguration);
 
+        if (ejbComponentDescription.isTimerServiceApplicable()) {
+            Map<Method, InterceptorFactory> timeoutInterceptors = new IdentityHashMap<Method, InterceptorFactory>();
+            for (Method method : componentConfiguration.getDefinedComponentMethods()) {
+                timeoutInterceptors.put(method, Interceptors.getChainedInterceptorFactory(componentConfiguration.getAroundTimeoutInterceptors(method)));
+            }
+            this.timeoutInterceptors = timeoutInterceptors;
+        } else {
+            timeoutInterceptors = null;
+        }
+
         List<ViewConfiguration> views = componentConfiguration.getViews();
         if (views != null) {
             for (ViewConfiguration view : views) {
@@ -97,6 +113,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
                 }
             }
         }
+
+        this.timeoutMethod = ejbComponentDescription.getTimeoutMethod();
 
         // FIXME: TODO: a temporary measure until EJBTHREE-2120 is fully resolved, let's create tx attribute map
         // for the component methods. Once the issue is resolved, we should get rid of this block and just rely on setting
@@ -171,7 +189,15 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return this.securityMetaData;
     }
 
+    public Map<Method, InterceptorFactory> getTimeoutInterceptors() {
+        return timeoutInterceptors;
+    }
+
     public TimerService getTimerService() {
         return timerService;
+    }
+
+    public Method getTimeoutMethod() {
+        return timeoutMethod;
     }
 }

@@ -24,17 +24,18 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.processors.dd.MethodResolutionUtils;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.common.ejb.IScheduleTarget;
+import org.jboss.metadata.common.ejb.ITimeoutTarget;
+import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.ScheduleMetaData;
-import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
-import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.TimerMetaData;
 
 import javax.ejb.Schedule;
@@ -51,15 +52,15 @@ import java.util.Set;
  *
  * @author Stuart Douglas
  */
-public class TimerMethodMergingProcessor extends AbstractMergingProcessor<SessionBeanComponentDescription> {
+public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
 
     public TimerMethodMergingProcessor() {
-        super(SessionBeanComponentDescription.class);
+        super(EJBComponentDescription.class);
     }
 
     @Override
-    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
         final RuntimeAnnotationInformation<AutoTimer> scheduleAnnotationData = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, Schedule.class);
         final Set<Method> timerAnnotationData = MethodAnnotationAggregator.runtimeAnnotationPresent(componentClass, applicationClasses, deploymentReflectionIndex, Timeout.class);
         final Method timeoutMethod;
@@ -83,11 +84,14 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<Sessio
     }
 
     @Override
-    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
-        final SessionBeanMetaData descriptorData = description.getDescriptorData();
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
+        final EnterpriseBeanMetaData descriptorData = description.getDescriptorData();
         if (descriptorData != null) {
-            if (descriptorData.getTimeoutMethod() != null) {
-                parseTimeoutMethod(descriptorData, description, componentClass, deploymentReflectionIndex);
+            if (descriptorData instanceof ITimeoutTarget) {
+                ITimeoutTarget target = (ITimeoutTarget) descriptorData;
+                if (target.getTimeoutMethod() != null) {
+                    parseTimeoutMethod(target, description, componentClass, deploymentReflectionIndex);
+                }
             }
             parseScheduleMethods(descriptorData, description, componentClass, deploymentReflectionIndex);
         }
@@ -119,9 +123,9 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<Sessio
     }
 
 
-    private void parseScheduleMethods(final SessionBeanMetaData beanMetaData, final SessionBeanComponentDescription sessionBean, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-        if (beanMetaData instanceof SessionBean31MetaData) {
-            SessionBean31MetaData md = (SessionBean31MetaData) beanMetaData;
+    private void parseScheduleMethods(final EnterpriseBeanMetaData beanMetaData, final EJBComponentDescription sessionBean, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        if (beanMetaData instanceof IScheduleTarget) {
+            IScheduleTarget md = (IScheduleTarget) beanMetaData;
             if (md.getTimers() != null) {
                 for (final TimerMetaData timer : md.getTimers()) {
                     AutoTimer autoTimer = new AutoTimer();
@@ -156,7 +160,7 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<Sessio
     }
 
 
-    private void parseTimeoutMethod(final SessionBeanMetaData beanMetaData, final SessionBeanComponentDescription sessionBean, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+    private void parseTimeoutMethod(final ITimeoutTarget beanMetaData, final EJBComponentDescription sessionBean, final Class<?> componentClass, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
         //resolve timeout methods
         final NamedMethodMetaData methodData = beanMetaData.getTimeoutMethod();
         sessionBean.setTimeoutMethod(MethodResolutionUtils.resolveMethod(methodData, componentClass, deploymentReflectionIndex));
