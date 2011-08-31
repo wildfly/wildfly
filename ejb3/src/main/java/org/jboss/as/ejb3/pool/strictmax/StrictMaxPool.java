@@ -44,11 +44,11 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
      * When set, only maxSize instances may be active and any attempt to get an
      * instance will block until an instance is freed.
      */
-    private Semaphore semaphore;
+    private final Semaphore semaphore;
     /**
      * The maximum number of instances allowed in the pool
      */
-    private int maxSize = 30;
+    private final int maxSize;
     /**
      * The time to wait for the semaphore.
      */
@@ -64,7 +64,6 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
 
     public StrictMaxPool(StatelessObjectFactory<T> factory, int maxSize, long timeout, TimeUnit timeUnit) {
         super(factory);
-
         this.maxSize = maxSize;
         this.semaphore = new Semaphore(maxSize, true);
         this.timeout = timeout;
@@ -98,8 +97,7 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
     }
 
     public void setMaxSize(int maxSize) {
-        this.maxSize = maxSize;
-        this.semaphore = new Semaphore(maxSize, true);
+        throw new RuntimeException("Not implemented");
     }
 
     /**
