@@ -212,15 +212,15 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 if(broadcastGroupConfigurations != null) {
                     for(final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                         final String name = config.getName();
-                        final ServiceName groupBinding = GroupBindingService.BASE.append(name);
-                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector(name));
+                        final ServiceName groupBinding = GroupBindingService.BROADCAST.append(name);
+                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector("broadcast" + name));
                     }
                 }
                 if(discoveryGroupConfigurations != null) {
                     for(final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                         final String name = config.getName();
-                        final ServiceName groupBinding = GroupBindingService.BASE.append(name);
-                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector(name));
+                        final ServiceName groupBinding = GroupBindingService.DISCOVERY.append(name);
+                        serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector("discovery" + name));
                     }
                 }
 

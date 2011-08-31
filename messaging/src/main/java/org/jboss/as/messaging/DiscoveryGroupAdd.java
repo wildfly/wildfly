@@ -36,7 +36,6 @@ import java.util.Map;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -59,13 +58,13 @@ import org.jboss.msc.value.ImmediateValue;
  */
 public class DiscoveryGroupAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
+    private static final OperationValidator VALIDATOR = new OperationValidator.AttributeDefinitionOperationValidator(CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES);
+
     /**
      * Create an "add" operation using the existing model
      */
     public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
-
         final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-
         return operation;
     }
 
@@ -76,12 +75,8 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
         model.setEmptyObject();
-
-        for (final AttributeDefinition attributeDefinition : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
-            attributeDefinition.validateAndSet(operation, model);
-        }
+        VALIDATOR.validateAndSet(operation, model);
     }
 
     @Override
@@ -97,7 +92,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
             final ServiceTarget target = context.getServiceTarget();
             if(model.hasDefined(CommonAttributes.SOCKET_BINDING.getName())) {
                 final GroupBindingService bindingService = new GroupBindingService();
-                target.addService(GroupBindingService.BASE.append(name), bindingService)
+                target.addService(GroupBindingService.DISCOVERY.append(name), bindingService)
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(model.get(SOCKET_BINDING).asString()), SocketBinding.class, bindingService.getBindingRef())
                         .install();
             } else {
@@ -117,7 +112,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
                     final SocketBinding socketBinding = new SocketBinding(name, -1, false, group, groupPort, b, null);
 
                     final GroupBindingService bindingService = new GroupBindingService();
-                    target.addService(GroupBindingService.BASE.append(name), bindingService)
+                    target.addService(GroupBindingService.DISCOVERY.append(name), bindingService)
                             .addInjectionValue(bindingService.getBindingRef(), new ImmediateValue<SocketBinding>(socketBinding))
                             .install();
 
@@ -149,14 +144,10 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
 
     static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final ModelNode model) throws OperationFailedException {
 
-        final ModelNode localAddrNode = CommonAttributes.LOCAL_BIND_ADDRESS.validateResolvedOperation(model);
-        final String localAddress = localAddrNode.isDefined() ? localAddrNode.asString() : null;
-        final String groupAddress = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asString();
-        final int groupPort = CommonAttributes.GROUP_PORT.validateResolvedOperation(model).asInt();
         final long refreshTimeout = CommonAttributes.REFRESH_TIMEOUT.validateResolvedOperation(model).asLong();
         final long initialWaitTimeout = CommonAttributes.INITIAL_WAIT_TIMEOUT.validateResolvedOperation(model).asLong();
-
-        return new DiscoveryGroupConfiguration(name, localAddress, groupAddress, groupPort, refreshTimeout, initialWaitTimeout);
+        // Requires runtime service
+        return new DiscoveryGroupConfiguration(name, null, null, 0, refreshTimeout, initialWaitTimeout);
     }
 
     static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final SocketBinding socketBinding) {

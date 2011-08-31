@@ -187,11 +187,13 @@ public interface CommonAttributes {
     SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = new SimpleAttributeDefinition("grouping-handler-address", "address",
             null, ModelType.STRING, false, false, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition GROUP_ADDRESS = new SimpleAttributeDefinition("group-address", ModelType.STRING, true);
+    SimpleAttributeDefinition GROUP_ADDRESS = new SimpleAttributeDefinition("group-address", null, ModelType.STRING, false,
+            new String[] {"socket-binding"});
 
     SimpleAttributeDefinition GROUP_ID = new SimpleAttributeDefinition("group-id", ModelType.STRING, true);
 
-    SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", new ModelNode().set(0), ModelType.INT, true);
+    SimpleAttributeDefinition GROUP_PORT = new SimpleAttributeDefinition("group-port", null, ModelType.INT, false,
+            new String[] {"socket-binding"});
 
     SimpleAttributeDefinition HA = new SimpleAttributeDefinition("ha", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, true);
 
@@ -241,9 +243,11 @@ public interface CommonAttributes {
     SimpleAttributeDefinition LOAD_BALANCING_CLASS_NAME = new SimpleAttributeDefinition("connection-load-balancing-policy-class-name",
             new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME), ModelType.STRING, true);
 
-    SimpleAttributeDefinition LOCAL_BIND_ADDRESS = new SimpleAttributeDefinition("local-bind-address", ModelType.STRING, true);
+    SimpleAttributeDefinition LOCAL_BIND_ADDRESS = new SimpleAttributeDefinition("local-bind-address", null, ModelType.STRING, true,
+            new String[] {"socket-binding"});
 
-    SimpleAttributeDefinition LOCAL_BIND_PORT = new SimpleAttributeDefinition("local-bind-port", new ModelNode().set(-1), ModelType.INT, true);
+    SimpleAttributeDefinition LOCAL_BIND_PORT = new SimpleAttributeDefinition("local-bind-port", new ModelNode().set(-1), ModelType.INT, true,
+            new String[] {"socket-binding"});
 
     SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = new SimpleAttributeDefinition("log-journal-write-rate",
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true);
@@ -384,6 +388,9 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinition("socket-binding", ModelType.STRING, false);
 
     SimpleAttributeDefinition SOCKET_BINDING_OPTIONAL = new SimpleAttributeDefinition("socket-binding", ModelType.STRING, true);
+
+    SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = new SimpleAttributeDefinition("socket-binding", null, ModelType.STRING, false,
+            new String[] {"group-address", "group-port"});
 
     SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("thread-pool-max-size",
             new ModelNode().set(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
@@ -529,15 +536,11 @@ public interface CommonAttributes {
         ROUTING_NAME, DIVERT_ADDRESS, DIVERT_FORWARDING_ADDRESS, FILTER, TRANSFORMER_CLASS_NAME, EXCLUSIVE
     };
 
-    AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = { SOCKET_BINDING_OPTIONAL, BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP,
-            // TODO remove
+    AttributeDefinition[] BROADCAST_GROUP_ATTRIBUTES = { SOCKET_BINDING_ALTERNATIVE, BROADCAST_PERIOD, ConnectorRefsAttribute.BROADCAST_GROUP,
             LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT, GROUP_ADDRESS, GROUP_PORT
     };
 
-
-    // TODO change socket - binding to non-optional!
-    AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = { SOCKET_BINDING_OPTIONAL, REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT,
-            // TODO remove
+    AttributeDefinition[] DISCOVERY_GROUP_ATTRIBUTES = { SOCKET_BINDING_ALTERNATIVE, REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT,
             LOCAL_BIND_ADDRESS, GROUP_ADDRESS, GROUP_PORT};
 
     AttributeDefinition[] GROUPING_HANDLER_ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT};

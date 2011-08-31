@@ -37,6 +37,7 @@ public class ModelDescriptionConstants {
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
     public static final String ALLOWED = "allowed";
+    public static final String ALTERNATIVES = "alternatives";
     public static final String ANY = "any";
     public static final String ANY_ADDRESS = "any-address";
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";

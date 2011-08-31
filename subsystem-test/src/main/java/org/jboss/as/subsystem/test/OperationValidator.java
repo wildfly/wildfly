@@ -21,6 +21,7 @@
 */
 package org.jboss.as.subsystem.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
@@ -33,9 +34,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -125,9 +128,18 @@ class OperationValidator {
             } else {
                 required = true;
             }
-
+            Collection<ModelNode> alternatives = null;
+            if(described.hasDefined(ALTERNATIVES)) {
+                alternatives = described.get(ALTERNATIVES).asList();
+            }
+            final boolean exist = actualParams.containsKey(paramName);
             if (required) {
-                Assert.assertTrue("Required parameter '" + paramName + "' is not present in " + operation, actualParams.containsKey(paramName));
+                if(! exist && ! hasAlternative(actualParams.keySet(), alternatives)) {
+                    Assert.fail("Required parameter '" + paramName + "' is not present in " + operation);
+                }
+            }
+            if(exist && hasAlternative(actualParams.keySet(), alternatives)) {
+                Assert.fail("Alternative parameter for '" + paramName + "' is present in " + operation);
             }
         }
     }
@@ -321,5 +333,15 @@ class OperationValidator {
         return provider;
     }
 
-
+    static boolean hasAlternative(final Set<String> keys, Collection<ModelNode> alternatives) {
+        if(alternatives == null || alternatives.isEmpty()) {
+            return false;
+        }
+        for(final ModelNode alternative : alternatives) {
+            if(keys.contains(alternative.asString())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

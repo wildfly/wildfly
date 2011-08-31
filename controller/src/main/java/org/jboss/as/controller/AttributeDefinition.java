@@ -24,10 +24,13 @@ package org.jboss.as.controller;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -47,11 +50,12 @@ public abstract class AttributeDefinition {
     private final boolean allowExpression;
     private final ModelNode defaultValue;
     private final MeasurementUnit measurementUnit;
+    private final String[] alternatives;
     private final ParameterValidator validator;
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
-                               final ParameterValidator validator) {
+                               final ParameterValidator validator, final String[] alternatives) {
         this.name = name;
         this.xmlName = xmlName;
         this.type = type;
@@ -63,6 +67,7 @@ public abstract class AttributeDefinition {
         }
         this.defaultValue.protect();
         this.measurementUnit = measurementUnit;
+        this.alternatives = alternatives;
         this.validator = validator;
     }
 
@@ -96,6 +101,10 @@ public abstract class AttributeDefinition {
 
     public ParameterValidator getValidator() {
         return validator;
+    }
+
+    public String[] getAlternatives() {
+        return alternatives;
     }
 
     /**
@@ -138,7 +147,7 @@ public abstract class AttributeDefinition {
 
         ModelNode node = new ModelNode();
         if (operationObject.has(name)) {
-            node.set(operationObject.get(name)) ;
+            node.set(operationObject.get(name));
         }
         if (!node.isDefined() && defaultValue.isDefined()) {
             validator.validateParameter(name, defaultValue);
@@ -178,7 +187,7 @@ public abstract class AttributeDefinition {
     public final ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
         ModelNode node = new ModelNode();
         if (operationObject.has(name)) {
-            node.set(operationObject.get(name)) ;
+            node.set(operationObject.get(name));
         }
         if (!node.isDefined() && defaultValue.isDefined()) {
             node.set(defaultValue);
@@ -187,6 +196,33 @@ public abstract class AttributeDefinition {
         validator.validateParameter(name, resolved);
 
         return resolved;
+    }
+
+    public boolean isAllowed(final ModelNode operationObject) {
+        if(alternatives != null) {
+            for(final String alternative : alternatives) {
+                if(operationObject.has(alternative)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isRequired(final ModelNode operationObject) {
+        final boolean required = ! allowNull;
+        return required ? ! hasAlternative(operationObject) : required;
+    }
+
+    public boolean hasAlternative(final ModelNode operationObject) {
+        if(alternatives != null) {
+            for(final String alternative : alternatives) {
+                if(operationObject.has(alternative)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -222,6 +258,11 @@ public abstract class AttributeDefinition {
         if (measurementUnit != MeasurementUnit.NONE) {
             attr.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
         }
+        if (alternatives != null) {
+            for(final String alternative : alternatives) {
+                attr.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
+            }
+        }
         resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
         return attr;
     }
@@ -247,6 +288,11 @@ public abstract class AttributeDefinition {
         if (measurementUnit != MeasurementUnit.NONE) {
             param.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
         }
+        if (alternatives != null) {
+            for(final String alternative : alternatives) {
+                param.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
+            }
+        }
         operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
         return param;
     }
@@ -255,7 +301,4 @@ public abstract class AttributeDefinition {
         final String bundleKey = prefix == null ? name : (prefix + "." + name);
         return bundle.getString(bundleKey);
     }
-
-
-
 }
