@@ -34,6 +34,8 @@ import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 /**
  * Distributed lock manager intended for use cases where multiple local threads can share the lock, but only one node in the
  * cluster can have threads using the lock. Nodes holding the lock yield it to remote requestors if no local threads are using
@@ -148,7 +150,7 @@ public class SharedLocalYieldingClusterLockManager {
                         current = lockState.get();
                     }
                 } else {
-                    throw new IllegalStateException("Should not receive unlock calls for remote node " + caller);
+                    throw MESSAGES.receivedUnlockForRemoteNode(caller);
                     // BES -- the below was an impl, but this case is not correct so
                     // replaced with above exception
                     // for (;;)
@@ -434,7 +436,7 @@ public class SharedLocalYieldingClusterLockManager {
                             if (this.clusterSupport.lock(lockName, remaining)) {
                                 result = LockResult.ACQUIRED_FROM_CLUSTER;
                             } else {
-                                throw new TimeoutException("Cannot acquire lock " + lockName + " from cluster");
+                                throw new TimeoutException(MESSAGES.cannotAcquireLock(lockName));
                             }
                         } else {
                             // Some other thread is asking the cluster
@@ -514,7 +516,7 @@ public class SharedLocalYieldingClusterLockManager {
         this.clusterSupport.start();
 
         if (this.localNode == null) {
-            throw new IllegalStateException("Null localNode");
+            throw MESSAGES.nullVar("localNode");
         }
     }
 
@@ -539,7 +541,7 @@ public class SharedLocalYieldingClusterLockManager {
     }
 
     private static void throwTimeoutException(Serializable lockName, LockState lockState) throws TimeoutException {
-        TimeoutException te = lockState.lockHolder == null ? new TimeoutException("Unable to acquire lock " + lockName)
+        TimeoutException te = lockState.lockHolder == null ? new TimeoutException(MESSAGES.cannotAcquireLock(lockName))
                 : new TimeoutException(lockState.lockHolder);
         throw te;
     }

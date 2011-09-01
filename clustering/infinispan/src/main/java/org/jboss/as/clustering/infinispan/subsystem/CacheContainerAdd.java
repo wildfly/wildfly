@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.List;
@@ -315,7 +316,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
             newControllers.add(cacheBuilder.install());
         }
         if (!configurations.containsKey(defaultCache)) {
-            throw new IllegalArgumentException(String.format("%s is not a valid default cache. The %s cache container does not contain a cache with that name", defaultCache, name));
+            throw MESSAGES.invalidCacheStore(defaultCache, name);
         }
 
         if (requiresTransport) {
@@ -381,7 +382,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 CacheStore cacheStore = Class.forName(className).asSubclass(CacheStore.class).newInstance();
                 return cacheStore.getConfigurationClass().asSubclass(CacheStoreConfig.class).newInstance();
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format("%s is not a valid cache store", className), e);
+                throw MESSAGES.invalidCacheStore(e, className);
             }
         }
         // If no class, we assume it's a file cache store

@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.clustering.ClusterNode;
 
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 /**
  *
  * @author Brian Stansberry
@@ -56,7 +58,7 @@ public class ClusterLockState {
 
     ClusterLockState(Serializable lockId) {
         if (lockId == null) {
-            throw new IllegalArgumentException("lockId is null");
+            throw MESSAGES.nullVar("lockId");
         }
         this.lockId = lockId;
     }

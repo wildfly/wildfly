@@ -35,9 +35,11 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.CoreGroupCommunicationService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
-import org.jboss.logging.Logger;
 import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jgroups.Channel;
+
+import static org.jboss.as.clustering.web.infinispan.InfinispanWebLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSAGES;
 
 /**
  * @author Vladimir Blagojevic
@@ -49,8 +51,6 @@ public class DefaultLockManagerSource implements LockManagerSource {
     public static final Short SCOPE_ID = Short.valueOf((short) 222);
     /** The service name of the group communication service */
     public static final String SERVICE_NAME = "HTTPSESSIONOWNER";
-
-    static final Logger log = Logger.getLogger(DefaultLockManagerSource.class);
 
     // Store LockManagers in static map so they can be shared across DCMs
     static final Map<String, LockManagerEntry> lockManagers = new HashMap<String, LockManagerEntry>();
@@ -118,7 +118,7 @@ public class DefaultLockManagerSource implements LockManagerSource {
             try {
                 this.service.start();
             } catch (Exception e) {
-                throw new IllegalStateException(String.format("Unexpected exception while starting group communication service for %s", channel.getClusterName()));
+                throw MESSAGES.errorStartingGroupCommunications(channel.getClusterName());
             }
 
             this.lockManager = new SharedLocalYieldingClusterLockManager(SERVICE_NAME, this.service, this.service);
@@ -127,7 +127,7 @@ public class DefaultLockManagerSource implements LockManagerSource {
                 this.lockManager.start();
             } catch (Exception e) {
                 this.service.stop();
-                throw new IllegalStateException(String.format("Unexpected exception while starting lock manager for %s", channel.getClusterName()));
+                throw MESSAGES.errorStartingLockManager(channel.getClusterName());
             }
         }
 
@@ -148,12 +148,12 @@ public class DefaultLockManagerSource implements LockManagerSource {
                 try {
                     this.lockManager.stop();
                 } catch (Exception e) {
-                    log.warn(e.getMessage(), e);
+                    ROOT_LOGGER.warn(e.getMessage(), e);
                 }
                 try {
                     this.service.stop();
                 } catch (Exception e) {
-                    log.warn(e.getMessage(), e);
+                    ROOT_LOGGER.warn(e.getMessage(), e);
                 }
             }
 
@@ -187,6 +187,6 @@ public class DefaultLockManagerSource implements LockManagerSource {
     }
 
     static void debug(String message, Object... args) {
-        log.debugf(message, args);
+        ROOT_LOGGER.debugf(message, args);
     }
 }
