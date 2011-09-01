@@ -39,7 +39,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -58,6 +57,7 @@ import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.txn.CommonAttributes.*;
+import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 
 /**
@@ -72,8 +72,6 @@ class TransactionSubsystemAdd implements OperationStepHandler {
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
     private static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
     private static final ServiceName INTERNAL_CORE_ENV_VAR_PATH = TxnServices.JBOSS_TXN_PATHS.append("core-var-dir");
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.transactions");
 
     private TransactionSubsystemAdd() {
         //
@@ -99,11 +97,11 @@ class TransactionSubsystemAdd implements OperationStepHandler {
         final String objectStorePath = objectStore.hasDefined(PATH) ? objectStore.get(PATH).asString() : "tx-object-store";
         final int maxPorts = 10;
         final int coordinatorDefaultTimeout = operation.get(COORDINATOR_ENVIRONMENT, DEFAULT_TIMEOUT).asInt(300);
-        if(log.isDebugEnabled()) {
-            log.debugf("nodeIdentifier=%s\n", nodeIdentifier);
-            log.debugf("varDirPathRef=%s, varDirPath=%s\n", varDirPathRef, varDirPath);
-            log.debugf("objectStorePathRef=%s, objectStorePathRef=%s\n", objectStorePathRef, objectStorePath);
-            log.debugf("recoveryBindingName=%s, recoveryStatusBindingName=%s\n", recoveryBindingName, recoveryStatusBindingName);
+        if(ROOT_LOGGER.isDebugEnabled()) {
+            ROOT_LOGGER.debugf("nodeIdentifier=%s\n", nodeIdentifier);
+            ROOT_LOGGER.debugf("varDirPathRef=%s, varDirPath=%s\n", varDirPathRef, varDirPath);
+            ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePathRef=%s\n", objectStorePathRef, objectStorePath);
+            ROOT_LOGGER.debugf("recoveryBindingName=%s, recoveryStatusBindingName=%s\n", recoveryBindingName, recoveryStatusBindingName);
         }
 
 

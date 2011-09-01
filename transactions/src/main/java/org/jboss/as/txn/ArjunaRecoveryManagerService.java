@@ -48,6 +48,8 @@ import com.arjuna.ats.internal.jts.recovery.transactions.TopLevelTransactionReco
 import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
 /**
  * A service responsible for exposing the proprietary Arjuna {@link RecoveryManagerService}.
  *
@@ -100,7 +102,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
             try {
                 recoveryManagerService.create();
             } catch (Exception e) {
-                throw new StartException("Recovery manager create failed", e);
+                throw MESSAGES.managerStartFailure(e, "Recovery");
             }
 
             recoveryManagerService.start();
@@ -124,7 +126,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
                 recoveryManagerService.start();
                 this.recoveryManagerService = recoveryManagerService;
             } catch (Exception e) {
-                throw new StartException("Recovery manager create failed", e);
+                throw MESSAGES.managerStartFailure(e, "Recovery");
             }
         }
     }
