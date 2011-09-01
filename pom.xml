@@ -136,6 +136,7 @@
         <version.org.jboss.jboss-vfs>3.0.1.GA</version.org.jboss.jboss-vfs>
         <version.org.jboss.jsfunit.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit.jsfunit>
         <version.org.jboss.logging.jboss-logging>3.0.0.GA</version.org.jboss.logging.jboss-logging>
+        <version.org.jboss.logging.jboss-logging-tools>1.0.0.Beta8</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.logmanager.jboss-logmanager>1.2.0.GA</version.org.jboss.logmanager.jboss-logmanager>
         <version.org.jboss.logmanager.jboss-logmanager-log4j>1.0.0.GA</version.org.jboss.logmanager.jboss-logmanager-log4j>
         <version.org.jboss.management.console>1.0.0.Beta16</version.org.jboss.management.console>
@@ -430,9 +431,7 @@
                                             <exclude>org.jboss.logging:jboss-logging-spi</exclude>
                                             <exclude>org.jboss.logging:jboss-logging-log4j</exclude>
                                             <exclude>org.jboss.logging:jboss-logging-jdk</exclude>
-                                            <exclude>org.jboss.logging:jboss-logging-generator</exclude>
                                             <exclude>org.jboss.logging:jboss-logging-logmanager</exclude>
-                                            <exclude>org.jboss.logging:jboss-logging-processor</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
                                             <exclude>org.jboss.spec.javax.resource:jboss-connector-api_1.5_spec</exclude>
                                             <exclude>org.opensaml:opensaml</exclude>
@@ -1157,7 +1156,7 @@
                 <artifactId>jline</artifactId>
                 <version>${version.jline}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
@@ -2980,7 +2979,7 @@
                 <artifactId>arquillian-junit-core</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.arquillian.testng</groupId>
                 <artifactId>arquillian-testng-core</artifactId>
@@ -2998,7 +2997,7 @@
                 </exclusion>
               </exclusions>
             </dependency>
-            
+
             <dependency>
               <groupId>org.jboss.arquillian.testng</groupId>
               <artifactId>arquillian-testng-container</artifactId>
@@ -3008,6 +3007,10 @@
                   <groupId>commons-logging</groupId>
                   <artifactId>commons-logging</artifactId>
                 </exclusion>
+                  <exclusion>
+                      <groupId>org.jboss.logging</groupId>
+                      <artifactId>jboss-logging-tools</artifactId>
+                  </exclusion>
               </exclusions>
             </dependency>
 
@@ -3461,6 +3464,10 @@
                         <artifactId>jboss-server-manager</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-tools</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
@@ -3539,6 +3546,10 @@
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                     <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-tools</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>stax</groupId>
@@ -3785,6 +3796,18 @@
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
                 <version>${version.org.jboss.logging.jboss-logging}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-generator</artifactId>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-processor</artifactId>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
             </dependency>
 
             <dependency>
@@ -4343,7 +4366,7 @@
                 <artifactId>jboss-jms-api_1.1_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec}</version>
             </dependency>
-            
+
             <dependency>
               <groupId>org.jboss.spec.javax.management.j2ee</groupId>
               <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
@@ -5108,7 +5131,7 @@
                 <artifactId>slf4j-ext</artifactId>
                 <version>${version.org.slf4j.slf4j-ext}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
