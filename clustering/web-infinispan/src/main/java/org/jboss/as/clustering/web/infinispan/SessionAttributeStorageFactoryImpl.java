@@ -23,8 +23,10 @@ package org.jboss.as.clustering.web.infinispan;
 
 import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
+
+import static org.jboss.as.clustering.web.infinispan.InfinispanWebLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.web.infinispan.InfinispanWebMessages.MESSAGES;
 
 /**
  * Default factory for creating strategies for storing session attributes.
@@ -32,7 +34,6 @@ import org.jboss.metadata.web.jboss.ReplicationGranularity;
  * @author Paul Ferraro
  */
 public class SessionAttributeStorageFactoryImpl implements SessionAttributeStorageFactory {
-    private static Logger log = Logger.getLogger(SessionAttributeStorageFactoryImpl.class);
 
     /**
      * {@inheritDoc}
@@ -51,11 +52,11 @@ public class SessionAttributeStorageFactoryImpl implements SessionAttributeStora
                 return (SessionAttributeStorage<T>) new FineSessionAttributeStorage(marshaller);
             }
             case FIELD: {
-                log.warn("FIELD replication granularity is deprecated.  Falling back to SESSION granularity instead.");
+                ROOT_LOGGER.deprecatedGranularity(ReplicationGranularity.FIELD.name(), ReplicationGranularity.SESSION.name());
                 return this.createStorage(ReplicationGranularity.SESSION, marshaller);
             }
             default: {
-                throw new IllegalArgumentException("Unknown replication granularity: " + granularity);
+                throw MESSAGES.unknownReplicationGranularity(granularity);
             }
         }
     }

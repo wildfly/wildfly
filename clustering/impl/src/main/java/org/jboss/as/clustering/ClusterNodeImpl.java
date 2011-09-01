@@ -26,6 +26,8 @@ import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
 
+import static org.jboss.as.clustering.ClusteringImplMessages.MESSAGES;
+
 /**
  * Replacement for a JG IpAddress that doesn't base its representation on the JG address but on the computed node name added to
  * the IPAddress instead. This is to avoid any problem in the cluster as some nodes may interpret a node name differently (IP
@@ -58,10 +60,10 @@ public class ClusterNodeImpl implements ClusterNode {
 
     ClusterNodeImpl(String id, Address jgAddress, InetSocketAddress socketAddress) {
         if (id == null) {
-            throw new IllegalArgumentException("Null id");
+            throw MESSAGES.nullVar("id");
         }
         if (socketAddress == null) {
-            throw new IllegalArgumentException("Null addressPort");
+            throw MESSAGES.nullVar("addressPort");
         }
         this.id = id;
         this.socketAddress = socketAddress;
@@ -97,12 +99,6 @@ public class ClusterNodeImpl implements ClusterNode {
 
     @Override
     public int compareTo(ClusterNode o) {
-        if (o == null)
-            throw new ClassCastException("Comparison to null value");
-
-        if (!(o instanceof ClusterNodeImpl))
-            throw new ClassCastException("Comparison between different classes");
-
         return this.id.compareTo(o.getName());
     }
 

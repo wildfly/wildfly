@@ -28,6 +28,8 @@ import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.SimpleMarshalledValue;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
 
+import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
+
 /**
  * Session attribute marshaller that marshals attribute values using a {@link SimpleCachableMarshalledValue}.
  *
@@ -51,7 +53,7 @@ public class SessionAttributeMarshallerImpl implements SessionAttributeMarshalle
             return value;
         }
         if (!(value instanceof Serializable)) {
-            throw new IllegalArgumentException(String.format("%s does not implement %s", value, Serializable.class.getName()));
+            throw MESSAGES.interfaceNotImplemented(value, Serializable.class.getName());
         }
         return new SimpleMarshalledValue<Object>(value, this.context);
     }
