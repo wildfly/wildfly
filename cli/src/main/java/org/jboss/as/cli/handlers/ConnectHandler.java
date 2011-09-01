@@ -22,7 +22,10 @@
 package org.jboss.as.cli.handlers;
 
 
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
  * Connect handler.
@@ -47,21 +50,28 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) {
 
-        String args = ctx.getArgumentsString();
         int port = -1;
         String host = null;
-        if(args != null) {
+        final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
+        final List<String> args = parsedCmd.getOtherProperties();
+
+        if(!args.isEmpty()) {
+            if(args.size() != 1) {
+                ctx.printLine("The command expects only one argument but got " + args);
+                return;
+            }
+            final String arg = args.get(0);
             String portStr = null;
-            int colonIndex = args.indexOf(':');
+            int colonIndex = arg.indexOf(':');
             if(colonIndex < 0) {
                 // default port
-                host = args;
+                host = arg;
             } else if(colonIndex == 0) {
                 // default host
-                portStr = args.substring(1).trim();
+                portStr = arg.substring(1).trim();
             } else {
-                host = args.substring(0, colonIndex).trim();
-                portStr = args.substring(colonIndex + 1).trim();
+                host = arg.substring(0, colonIndex).trim();
+                portStr = arg.substring(colonIndex + 1).trim();
             }
 
             if(portStr != null) {

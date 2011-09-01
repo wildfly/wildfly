@@ -22,9 +22,10 @@
 package org.jboss.as.cli;
 
 
-import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.cli.impl.CommandCandidatesProvider;
+import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 
@@ -39,11 +40,13 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
 
     private final CommandContext ctx;
     private final CommandRegistry cmdRegistry;
+    private final CommandCandidatesProvider cmdProvider;
 
     public CommandCompleter(CommandRegistry cmdRegistry, CommandContext ctx) {
         if(cmdRegistry == null)
             throw new IllegalArgumentException("Command registry can't be null.");
         this.cmdRegistry = cmdRegistry;
+        this.cmdProvider = new CommandCandidatesProvider(cmdRegistry);
         this.ctx = ctx;
     }
 
@@ -87,7 +90,17 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
             }
         }
 
+        final OperationCandidatesProvider candidatesProvider;
         char firstChar = buffer.charAt(cmdFirstIndex);
+        if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
+            candidatesProvider = ctx.getOperationCandidatesProvider();
+        } else {
+            candidatesProvider = cmdProvider;
+        }
+
+        return OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
+
+/*        char firstChar = buffer.charAt(cmdFirstIndex);
         if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
             return OperationRequestCompleter.INSTANCE.complete(ctx, buffer, cursor, candidates);
         }
@@ -129,5 +142,5 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
         }
         Collections.sort(candidates);
         return buffer.length() - cmd.length();
-    }
+*/    }
 }

@@ -65,23 +65,19 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         return complete(ctx, ctx.getParsedCommandLine(), buffer, cursor, candidates);
     }
 
-    public int complete(CommandContext ctx, ParsedCommandLine parsedCmd, final String buffer, int ccursor, List<String> candidates) {
+    public int complete(CommandContext ctx, ParsedCommandLine parsedCmd, final String buffer, int cursor, List<String> candidates) {
+        return complete(ctx, parsedCmd, ctx.getOperationCandidatesProvider(), buffer, cursor, candidates);
+    }
+
+    public int complete(CommandContext ctx, ParsedCommandLine parsedCmd, OperationCandidatesProvider candidatesProvider, final String buffer, int cursor, List<String> candidates) {
 
         if(parsedCmd.isRequestComplete()) {
             return -1;
         }
 
-        int firstCharIndex = 0;
-        while(firstCharIndex < buffer.length()) {
-            if(!Character.isWhitespace(buffer.charAt(firstCharIndex))) {
-                break;
-            }
-            ++firstCharIndex;
-        }
-
         if (parsedCmd.hasProperties() || parsedCmd.endsOnPropertyListStart()) {
 
-            final List<CommandArgument> allArgs = ctx.getOperationCandidatesProvider().getProperties(parsedCmd.getOperationName(), ctx.getPrefix());
+            final List<CommandArgument> allArgs = candidatesProvider.getProperties(ctx, parsedCmd.getOperationName(), ctx.getPrefix());
             if (allArgs.isEmpty()) {
                 candidates.add(")");
                 return buffer.length();
@@ -148,11 +144,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
                     }
                 } else {
                     chunk = argName;
-                    if (firstCharIndex == buffer.length()) {
-                        result = firstCharIndex;
-                    } else {
-                        result = parsedCmd.getLastChunkIndex();
-                    }
+                    result = parsedCmd.getLastChunkIndex();
                 }
             } else {
                 chunk = null;
@@ -212,8 +204,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
             if(parsedCmd.getAddress().endsOnType()) {
                 return -1;
             }
-            OperationCandidatesProvider provider = ctx.getOperationCandidatesProvider();
-            final List<String> names = provider.getOperationNames(parsedCmd.getAddress());
+            final List<String> names = candidatesProvider.getOperationNames(ctx, parsedCmd.getAddress());
             if(names.isEmpty()) {
                 return -1;
             }
@@ -251,12 +242,11 @@ public class OperationRequestCompleter implements CommandLineCompleter {
             chunk = address.toNodeType();
         }
 
-        OperationCandidatesProvider provider = ctx.getOperationCandidatesProvider();
         final List<String> names;
         if(address.endsOnType()) {
-            names = provider.getNodeNames(address);
+            names = candidatesProvider.getNodeNames(ctx, address);
         } else {
-            names = provider.getNodeTypes(address);
+            names = candidatesProvider.getNodeTypes(ctx, address);
         }
 
         if(names.isEmpty()) {

@@ -49,7 +49,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 public class MockCommandContext implements CommandContext {
 
     private ModelControllerClient mcc;
-    private CommandLineParser operationParser;
+    //private CommandLineParser operationParser;
     private OperationRequestAddress prefix;
     private PrefixFormatter prefixFormatter;
     private OperationCandidatesProvider operationCandidatesProvider;
@@ -164,7 +164,7 @@ public class MockCommandContext implements CommandContext {
     @Override
     public OperationCandidatesProvider getOperationCandidatesProvider() {
         if(operationCandidatesProvider == null) {
-            operationCandidatesProvider = new DefaultOperationCandidatesProvider(this);
+            operationCandidatesProvider = new DefaultOperationCandidatesProvider();
         }
         return operationCandidatesProvider;
     }

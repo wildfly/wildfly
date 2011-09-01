@@ -22,9 +22,12 @@
 package org.jboss.as.cli.handlers;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
 
+import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandLineCompleter;
@@ -110,5 +113,10 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
     @Override
     public boolean hasArgument(int index) {
         return false;
+    }
+
+    @Override
+    public List<CommandArgument> getArguments(CommandContext ctx) {
+        return Collections.emptyList();
     }
 }
