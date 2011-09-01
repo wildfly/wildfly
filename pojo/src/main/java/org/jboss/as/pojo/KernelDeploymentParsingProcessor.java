@@ -22,16 +22,6 @@
 
 package org.jboss.as.pojo;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptorParser;
 import org.jboss.as.server.deployment.Attachments;
@@ -45,6 +35,15 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * DeploymentUnitProcessor responsible for parsing a jboss-beans.xml
  * descriptor and attaching the corresponding KernelDeploymentXmlDescriptor.
@@ -57,7 +56,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
     public KernelDeploymentParsingProcessor() {
-        xmlMapper.registerRootElement(new QName("urn:jboss:mc:7.0", "deployment"), new KernelDeploymentXmlDescriptorParser());
+        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.NAMESPACE, "deployment"), new KernelDeploymentXmlDescriptorParser());
     }
 
     /**

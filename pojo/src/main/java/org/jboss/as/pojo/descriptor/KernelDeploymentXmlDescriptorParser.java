@@ -48,7 +48,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<ParseResult<KernelDeploymentXmlDescriptor>>, XMLStreamConstants {
-    public static final String NAMESPACE = "urn:jboss:mc:7.0";
+    public static final String NAMESPACE = "urn:jboss:pojo:7.0";
 
     private enum Element {
         BEAN(new QName(NAMESPACE, "bean")),
