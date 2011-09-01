@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,33 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.lock;
+package org.jboss.as.clustering.infinispan;
 
-import org.jboss.as.clustering.ClusterNode;
-
-import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+import org.jboss.as.clustering.ClusteringMessages;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.Messages;
 
 /**
- * Thrown to indicate failure to acquire a lock within a specified timeout.
+ * Date: 29.08.2011
  *
- * @author Brian Stansberry
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class TimeoutException extends java.util.concurrent.TimeoutException {
-    /** The serialVersionUID */
-    private static final long serialVersionUID = 7786468949269669386L;
+@MessageBundle(projectCode = "JBAS")
+public interface InfinispanMessages extends ClusteringMessages {
 
-    private ClusterNode owner;
-
-    public TimeoutException(ClusterNode owner) {
-        super((owner == null ? MESSAGES.cannotAcquireHeldLock() : MESSAGES.cannotAcquireHeldLock(owner)));
-        this.owner = owner;
-    }
-
-    public TimeoutException(String msg) {
-        super(msg);
-    }
-
-    public ClusterNode getOwner() {
-        return owner;
-    }
+    /**
+     * A logger with the category of the default clustering package.
+     */
+    InfinispanMessages MESSAGES = Messages.getBundle(InfinispanMessages.class);
 }

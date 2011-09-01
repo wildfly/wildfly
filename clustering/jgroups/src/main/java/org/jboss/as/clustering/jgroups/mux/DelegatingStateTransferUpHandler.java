@@ -25,6 +25,8 @@ package org.jboss.as.clustering.jgroups.mux;
 import org.jgroups.Event;
 import org.jgroups.UpHandler;
 
+import static org.jboss.as.clustering.jgroups.JGroupsMessages.MESSAGES;
+
 /**
  * An UpHandler that integrates another UpHandler and a StateTransferFilter.
  *
@@ -43,8 +45,8 @@ public class DelegatingStateTransferUpHandler implements StateTransferFilter, Up
      * @param filter the StateTransferFilter to delegate to
      */
     public DelegatingStateTransferUpHandler(UpHandler delegate, StateTransferFilter filter) {
-        assert delegate != null : "delegate is null";
-        assert filter != null : "filter is null";
+        assert delegate != null : MESSAGES.nullVar("delegate");
+        assert filter != null : MESSAGES.nullVar("filter");
 
         this.delegate = delegate;
         this.filter = filter;

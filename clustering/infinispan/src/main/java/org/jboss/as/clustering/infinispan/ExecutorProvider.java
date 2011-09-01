@@ -33,6 +33,8 @@ import org.infinispan.executors.ScheduledExecutorFactory;
 import org.jboss.as.clustering.ManagedExecutorService;
 import org.jboss.as.clustering.ManagedScheduledExecutorService;
 
+import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
+
 /**
  * @author Paul Ferraro
  */
@@ -71,7 +73,7 @@ public class ExecutorProvider implements ExecutorFactory, ScheduledExecutorFacto
     public ExecutorService getExecutor(Properties properties) {
         Executor executor = (Executor) properties.get(EXECUTOR);
         if (executor == null) {
-            throw new IllegalStateException(String.format("No %s property was specified within the executor properties: %s", EXECUTOR, properties));
+            throw MESSAGES.invalidExecutorProperty(EXECUTOR, properties);
         }
         return new ManagedExecutorService(executor);
     }
@@ -84,7 +86,7 @@ public class ExecutorProvider implements ExecutorFactory, ScheduledExecutorFacto
     public ScheduledExecutorService getScheduledExecutor(Properties properties) {
         ScheduledExecutorService executor = (ScheduledExecutorService) properties.get(EXECUTOR);
         if (executor == null) {
-            throw new IllegalStateException(String.format("No %s property was specified within the executor properties: %s", EXECUTOR, properties));
+            throw MESSAGES.invalidExecutorProperty(EXECUTOR, properties);
         }
         return new ManagedScheduledExecutorService(executor);
     }
