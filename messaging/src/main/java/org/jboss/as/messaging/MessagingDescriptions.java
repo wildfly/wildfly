@@ -22,17 +22,16 @@
 
 package org.jboss.as.messaging;
 
-import org.hornetq.api.jms.management.TopicControl;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
@@ -64,12 +63,6 @@ import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.AttributeDefinition;
-
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
@@ -95,9 +88,11 @@ import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
 
-import javax.ejb.Local;
-import javax.xml.soap.Node;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.messaging.jms.AbstractAddJndiHandler;
 import org.jboss.as.messaging.jms.JMSServices;
@@ -289,6 +284,272 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, QUEUE);
     }
 
+    public static ModelNode getListScheduledMessages(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, QueueControlHandler.LIST_SCHEDULED_MESSAGES, "queue");
+
+        final ModelNode repProps = result.get(REPLY_PROPERTIES);
+        repProps.get(DESCRIPTION).set(bundle.getString("queue.list-scheduled-messages.reply"));
+        repProps.get(TYPE).set(ModelType.LIST);
+        populateCoreMessageDescription(bundle, repProps.get(VALUE_TYPE));
+
+        return result;
+    }
+
+    public static ModelNode getListMessages(Locale locale, boolean forJMS, boolean json) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.LIST_MESSAGES, "queue");
+
+        populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
+
+        final ModelNode repProps = result.get(REPLY_PROPERTIES);
+        repProps.get(DESCRIPTION).set(bundle.getString("queue.list-messages.reply"));
+        if (json) {
+            repProps.get(TYPE).set(ModelType.STRING);
+        } else {
+            repProps.get(TYPE).set(ModelType.LIST);
+            if (forJMS) {
+                populateJMSMessageDescription(bundle, repProps.get(VALUE_TYPE));
+            } else {
+                populateCoreMessageDescription(bundle, repProps.get(VALUE_TYPE));
+            }
+        }
+
+        return result;
+    }
+
+    private static void populateFilterParam(final ResourceBundle bundle, final ModelNode filter) {
+        filter.get(DESCRIPTION).set(bundle.getString("queue.filter"));
+        filter.get(TYPE).set(ModelType.STRING);
+        filter.get(REQUIRED).set(false);
+        filter.get(NILLABLE).set(true);
+    }
+
+    private static void populateCoreMessageDescription(final ResourceBundle bundle, final ModelNode node) {
+
+        final ModelNode msgId = node.get("messageID");
+        msgId.get(DESCRIPTION).set(bundle.getString("queue.message.messageID"));
+        msgId.get(TYPE).set(ModelType.STRING);
+        msgId.get(NILLABLE).set(false);
+
+        final ModelNode userId = node.get("userID");
+        userId.get(DESCRIPTION).set(bundle.getString("queue.message.userID"));
+        userId.get(TYPE).set(ModelType.STRING);
+        userId.get(NILLABLE).set(true);
+
+        final ModelNode address = node.get("address");
+        address.get(DESCRIPTION).set(bundle.getString("queue.message.address"));
+        address.get(TYPE).set(ModelType.STRING);
+        address.get(NILLABLE).set(false);
+
+        final ModelNode type = node.get("type");
+        type.get(DESCRIPTION).set(bundle.getString("queue.message.type"));
+        type.get(TYPE).set(ModelType.INT);
+        type.get(NILLABLE).set(false);
+        type.get(ALLOWED).add(0);
+        type.get(ALLOWED).add(2);
+        type.get(ALLOWED).add(3);
+        type.get(ALLOWED).add(4);
+        type.get(ALLOWED).add(5);
+        type.get(ALLOWED).add(6);
+
+        final ModelNode durable = node.get("durable");
+        durable.get(DESCRIPTION).set(bundle.getString("queue.message.durable"));
+        durable.get(TYPE).set(ModelType.INT);
+        durable.get(NILLABLE).set(false);
+
+        final ModelNode expiration = node.get("expiration");
+        expiration.get(DESCRIPTION).set(bundle.getString("queue.message.expiration"));
+        expiration.get(TYPE).set(ModelType.LONG);
+        expiration.get(NILLABLE).set(false);
+
+        final ModelNode timestamp = node.get("timestamp");
+        timestamp.get(DESCRIPTION).set(bundle.getString("queue.message.timestamp"));
+        timestamp.get(TYPE).set(ModelType.LONG);
+        timestamp.get(NILLABLE).set(false);
+
+        final ModelNode priority = node.get("priority");
+        priority.get(DESCRIPTION).set(bundle.getString("queue.message.priority"));
+        priority.get(TYPE).set(ModelType.INT);
+        priority.get(NILLABLE).set(false);
+        priority.get(MIN_VALUE).set(0);
+        priority.get(MAX_VALUE).set(9);
+    }
+
+    public static ModelNode getCountMessages(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.COUNT_MESSAGES, "queue");
+
+        populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
+
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.LONG);
+
+        return result;
+    }
+
+    public static ModelNode getRemoveMessage(Locale locale, boolean forJMS) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGE, "queue");
+
+        populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.remove-message.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.BOOLEAN);
+
+        return result;
+    }
+
+    private static void populateMessageIDParam(final ResourceBundle bundle, final ModelNode messageID, boolean forJMS) {
+        messageID.get(DESCRIPTION).set(bundle.getString("queue.message-id"));
+        messageID.get(TYPE).set(forJMS ? ModelType.STRING : ModelType.LONG);
+        messageID.get(REQUIRED).set(false);
+        messageID.get(NILLABLE).set(true);
+    }
+
+    public static ModelNode getRemoveMessages(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGES, "queue");
+
+        populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.remove-messages.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.INT);
+
+        return result;
+    }
+
+    public static ModelNode getExpireMessages(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGES, "queue");
+
+        populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.expire-messages.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.INT);
+
+        return result;
+    }
+
+    public static ModelNode getExpireMessage(Locale locale, boolean forJMS) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
+
+        populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.expire-message.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.BOOLEAN);
+
+        return result;
+    }
+
+    public static ModelNode getSendMessageToDeadLetterAddress(Locale locale, boolean forJMS) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.SEND_MESSAGE_TO_DEAD_LETTER_ADDRESS, "queue");
+
+        populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.send-message-to-dead-letter-address.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.BOOLEAN);
+
+        return result;
+    }
+
+    public static ModelNode getSendMessagesToDeadLetterAddress(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.SEND_MESSAGES_TO_DEAD_LETTER_ADDRESS, "queue");
+
+        populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.send-messages-to-dead-letter-address.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.INT);
+
+        return result;
+    }
+
+    public static ModelNode getChangeMessagePriority(Locale locale, boolean forJMS) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
+
+        populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
+
+        populatePriorityParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.NEW_PRIORITY));
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.expire-message.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.BOOLEAN);
+
+        return result;
+    }
+
+    public static ModelNode getChangeMessagesPriority(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGES, "queue");
+
+        populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
+
+        populatePriorityParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.NEW_PRIORITY));
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.remove-messages.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.INT);
+
+        return result;
+    }
+
+    private static void populatePriorityParam(final ResourceBundle bundle, final ModelNode priority) {
+        priority.get(DESCRIPTION).set(bundle.getString("queue.change-message-priority.new-priority"));
+        priority.get(TYPE).set(ModelType.INT);
+        priority.get(REQUIRED).set(true);
+        priority.get(MIN_VALUE).set(0);
+        priority.get(MAX_VALUE).set(9);
+    }
+
+    public static ModelNode getMoveMessage(Locale locale, boolean forJMS) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
+
+        populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
+
+        populateOtherQueueParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.OTHER_QUEUE_NAME));
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.move-message.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.BOOLEAN);
+
+        return result;
+    }
+
+    private static void populateOtherQueueParam(final ResourceBundle bundle, final ModelNode otherQueue) {
+        otherQueue.get(DESCRIPTION).set(bundle.getString("queue.move-message.other-queue-name"));
+        otherQueue.get(TYPE).set(ModelType.STRING);
+        otherQueue.get(REQUIRED).set(true);
+        otherQueue.get(NILLABLE).set(false);
+    }
+
+    public static ModelNode getMoveMessages(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.MOVE_MESSAGES, "queue");
+
+        populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
+
+        populateOtherQueueParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.OTHER_QUEUE_NAME));
+
+        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("queue.move-messages.reply"));
+        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.INT);
+
+        return result;
+    }
+
 
     static ModelNode getJmsQueueResource(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -460,28 +721,32 @@ public class MessagingDescriptions {
         final ModelNode replyProps = result.get(REPLY_PROPERTIES);
         replyProps.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply"));
         replyProps.get(TYPE).set(ModelType.LIST);
-        final ModelNode valueType = replyProps.get(VALUE_TYPE);
-        final ModelNode priority = valueType.get("JMSPriority");
-        priority.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSPriority"));
+        populateJMSMessageDescription(bundle, replyProps.get(VALUE_TYPE));
+
+        return result;
+    }
+
+    private static void populateJMSMessageDescription(final ResourceBundle bundle, final ModelNode node) {
+        final ModelNode priority = node.get("JMSPriority");
+        priority.get(DESCRIPTION).set(bundle.getString("jms-queue.message.JMSPriority"));
         priority.get(TYPE).set(ModelType.INT);
-        final ModelNode timestamp = valueType.get("JMSTimestamp");
-        timestamp.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSTimestamp"));
+        final ModelNode timestamp = node.get("JMSTimestamp");
+        timestamp.get(DESCRIPTION).set(bundle.getString("jms-queue.message.JMSTimestamp"));
         timestamp.get(TYPE).set(ModelType.LONG);
-        final ModelNode expiration = valueType.get("JMSExpiration");
-        expiration.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSExpiration"));
+        final ModelNode expiration = node.get("JMSExpiration");
+        expiration.get(DESCRIPTION).set(bundle.getString("jms-queue.message.JMSExpiration"));
         expiration.get(TYPE).set(ModelType.LONG);
-        final ModelNode deliveryMode = valueType.get("JMSDeliveryMode");
-        deliveryMode.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSDeliveryMode"));
+        final ModelNode deliveryMode = node.get("JMSDeliveryMode");
+        deliveryMode.get(DESCRIPTION).set(bundle.getString("jms-queue.message.JMSDeliveryMode"));
         deliveryMode.get(TYPE).set(ModelType.STRING);
         deliveryMode.get(NILLABLE).set(false);
         deliveryMode.get(ALLOWED).add("PERSISTENT");
         deliveryMode.get(ALLOWED).add("NON_PERSISTENT");
-        final ModelNode messageId = valueType.get("JMSMessageID");
-        messageId.get(DESCRIPTION).set(bundle.getString("topic.list-messages-for-subscription.reply.JMSMessageID"));
+        final ModelNode messageId = node.get("JMSMessageID");
+        messageId.get(DESCRIPTION).set(bundle.getString("jms-queue.message.JMSMessageID"));
         messageId.get(TYPE).set(ModelType.STRING);
         messageId.get(NILLABLE).set(true);
 
-        return result;
     }
 
     public static ModelNode getListMessagesForSubscriptionAsJSON(Locale locale) {
@@ -558,27 +823,6 @@ public class MessagingDescriptions {
         subscriptionName.get(NILLABLE).set(false);
 
         result.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return result;
-    }
-
-    public static ModelNode getRemoveMessages(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode result = new ModelNode();
-
-        result.get(OPERATION_NAME).set(JMSTopicControlHandler.REMOVE_MESSAGES);
-        result.get(DESCRIPTION).set(bundle.getString("topic." + JMSTopicControlHandler.REMOVE_MESSAGES));
-
-        final ModelNode reqProps = result.get(REQUEST_PROPERTIES);
-        final ModelNode filter = reqProps.get(FILTER.getName());
-        filter.get(DESCRIPTION).set(bundle.getString("topic.filter"));
-        filter.get(TYPE).set(ModelType.STRING);
-        filter.get(REQUIRED).set(false);
-        filter.get(NILLABLE).set(true);
-
-        result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("topic.remove-messages.reply"));
-        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.INT);
 
         return result;
     }
