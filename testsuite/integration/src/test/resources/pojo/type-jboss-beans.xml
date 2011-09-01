@@ -19,9 +19,9 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<deployment xmlns="urn:jboss:mc:7.0"
+<deployment xmlns="urn:jboss:pojo:7.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:mc:7.0 jboss-mc_7_0.xsd">
+      xsi:schemaLocation="urn:jboss:pojo:7.0 jboss-mc_7_0.xsd">
 
     <bean name="B" class="org.jboss.as.testsuite.integration.pojo.support.B">
         <property name="c"><inject/></property>
