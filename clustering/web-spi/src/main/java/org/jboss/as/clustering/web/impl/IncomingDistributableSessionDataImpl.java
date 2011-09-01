@@ -27,6 +27,8 @@ import java.util.Map;
 import org.jboss.as.clustering.web.DistributableSessionMetadata;
 import org.jboss.as.clustering.web.IncomingDistributableSessionData;
 
+import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
+
 /**
  * Base implementation of {@link DistributableSessionData}.
  *
@@ -39,9 +41,9 @@ public class IncomingDistributableSessionDataImpl implements IncomingDistributab
     private volatile Map<String, Object> attributes;
 
     public IncomingDistributableSessionDataImpl(Integer version, Long timestamp, DistributableSessionMetadata metadata) {
-        assert version != null : "version is null";
-        assert timestamp != null : "timestamp is null";
-        assert metadata != null : "metadata is null";
+        assert version != null : MESSAGES.nullVar("version");
+        assert timestamp != null : MESSAGES.nullVar("timestamp");
+        assert metadata != null : MESSAGES.nullVar("metadata");
 
         this.version = version.intValue();
         this.timestamp = timestamp.longValue();
@@ -66,7 +68,7 @@ public class IncomingDistributableSessionDataImpl implements IncomingDistributab
     @Override
     public Map<String, Object> getSessionAttributes() {
         if (this.attributes == null) {
-            throw new IllegalStateException("Not configured to provide session attributes");
+            throw MESSAGES.sessionAttributesNotConfigured();
         }
 
         return attributes;

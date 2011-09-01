@@ -50,7 +50,7 @@ class AsynchEventHandler implements Runnable {
     private AsynchEventProcessor processor;
     private boolean stopped = true;
     private Thread handlerThread;
-    private Logger log;
+    private final ClusteringLogger log;
 
     /**
      * Create a new AsynchEventHandler.
@@ -65,7 +65,7 @@ class AsynchEventHandler implements Runnable {
         if (name == null)
             name = "AsynchEventHandler";
         this.name = name;
-        this.log = Logger.getLogger(processor.getClass().getName() + "." + name);
+        this.log = Logger.getMessageLogger(ClusteringLogger.class, processor.getClass().getName() + "." + name);
     }
 
     /**
@@ -82,7 +82,7 @@ class AsynchEventHandler implements Runnable {
 
     @Override
     public void run() {
-        log.debug("Begin " + name + " Thread");
+        log.debugf("Begin %s Thread", name);
         stopped = false;
         boolean intr = false;
         try {
@@ -99,15 +99,15 @@ class AsynchEventHandler implements Runnable {
                     intr = true;
                     blocking = false;
                     if (stopped) {
-                        log.debug(name + " Thread interrupted");
+                        log.debugf("%s Thread interrupted", name);
                         break;
                     }
-                    log.error(name + " Thread interrupted", e);
+                    log.threadInterrupted(e, name);
                 } catch (Throwable t) {
-                    log.error("Caught Throwable handling asynch events", t);
+                    log.errorHandlingAsyncEvent(t);
                 }
             }
-            log.debug("End " + name + " Thread");
+            log.debugf("End %s Thread", name);
         } finally {
             if (intr)
                 Thread.currentThread().interrupt();

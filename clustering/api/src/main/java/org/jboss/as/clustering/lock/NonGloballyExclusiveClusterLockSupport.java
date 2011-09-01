@@ -28,6 +28,8 @@ import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 /**
  * Support class for cluster locking scenarios where threads can hold a local lock on a category but not a cluster-wide lock.
  * Multiple nodes can simultaneously hold a local lock on a category, but none can hold a local lock on a category if the
@@ -54,7 +56,7 @@ public class NonGloballyExclusiveClusterLockSupport extends AbstractClusterLockS
     public void unlock(Serializable lockId) {
         ClusterNode myself = getLocalClusterNode();
         if (myself == null) {
-            throw new IllegalStateException("Must call start() before first call to unlock()");
+            throw MESSAGES.invalidMethodCall("start()", "unlock()");
         }
 
         ClusterLockState lockState = getClusterLockState(lockId, false);
@@ -69,7 +71,7 @@ public class NonGloballyExclusiveClusterLockSupport extends AbstractClusterLockS
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
-                throw new RuntimeException("Failed releasing remote lock", e);
+                throw MESSAGES.remoteLockReleaseFailure(e);
             }
         }
     }

@@ -36,7 +36,9 @@ import org.jboss.as.clustering.GroupMembershipListener;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.lock.ClusterLockState.State;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.clustering.ClusteringApiLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
 
 /**
  * Base class for cluster-wide lock implementations.
@@ -68,8 +70,6 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
         }
     }
 
-    protected final Logger log = Logger.getLogger(getClass());
-
     private final ConcurrentMap<Serializable, ClusterLockState> lockStates = new ConcurrentHashMap<Serializable, ClusterLockState>();
     private final ConcurrentMap<ClusterNode, Set<ClusterLockState>> lockStatesByOwner = new ConcurrentHashMap<ClusterNode, Set<ClusterLockState>>();
     private ClusterNode me;
@@ -84,20 +84,20 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
     public AbstractClusterLockSupport(String serviceHAName, GroupRpcDispatcher rpcDispatcher,
             GroupMembershipNotifier membershipNotifier, LocalLockHandler handler) {
         if (serviceHAName == null) {
-            throw new IllegalArgumentException("serviceHAName is null");
+            throw MESSAGES.nullVar("serviceHAName");
         }
         if (rpcDispatcher == null) {
-            throw new IllegalArgumentException("rpcDispatcher is null");
+            throw MESSAGES.nullVar("rpcDispatcher");
         }
         if (membershipNotifier == null) {
-            throw new IllegalArgumentException("membershipNotifier is null");
+            throw MESSAGES.nullVar("membershipNotifier");
         }
         if (handler == null) {
-            throw new IllegalArgumentException("localHandler is null");
+            throw MESSAGES.nullVar("localHandler");
         }
         if (!rpcDispatcher.isConsistentWith(membershipNotifier)) {
-            throw new IllegalArgumentException(GroupRpcDispatcher.class.getSimpleName() + " " + rpcDispatcher
-                    + " is not compatible with " + GroupMembershipNotifier.class.getSimpleName() + " " + membershipNotifier);
+            throw MESSAGES.incompatibleDispatcher(GroupRpcDispatcher.class.getSimpleName(), rpcDispatcher,
+                    GroupMembershipNotifier.class.getSimpleName(), membershipNotifier);
         }
 
         this.rpcDispatcher = rpcDispatcher;
@@ -128,7 +128,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
 
     public boolean lock(Serializable lockId, long timeout) {
         if (this.rpcTarget == null) {
-            throw new IllegalStateException("Must call start() before first call to lock()");
+            throw MESSAGES.invalidMethodCall("start()", "lock()");
         }
         ClusterLockState category = getClusterLockState(lockId, true);
 
@@ -159,8 +159,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
                                 remoteLocked = false;
                                 if (superiorCompetitor == null) {
                                     superiorCompetitor = getSuperiorCompetitor(rsp.holder);
-                                    log.debug("Received " + rsp.flag + " response from " + rsp.responder
-                                            + " -- reports lock is held by " + rsp.holder);
+                                    ROOT_LOGGER.debugf("Received %s response from %s -- reports lock is held by %s", rsp.flag, rsp.responder, rsp.holder);
                                 }
                             }
                         }
@@ -368,7 +367,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
                 break;
             case REMOTE_LOCKING:
                 if (me.equals(caller)) {
-                    log.warn("Received remoteLock call from self");
+                    ROOT_LOGGER.receivedRemoteLockFromSelf();
                     response = new RemoteLockResponse(me, RemoteLockResponse.Flag.OK);
                 } else if (getSuperiorCompetitor(caller) == null) {
                     // I want the lock and I take precedence
@@ -446,7 +445,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
             localHandler.lockFromCluster(categoryName, caller, timeout);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("Caught InterruptedException; Failing request by " + caller + " to lock " + categoryName);
+            ROOT_LOGGER.caughtInterruptedException(caller, categoryName);
             return new RemoteLockResponse(me, RemoteLockResponse.Flag.FAIL, localHandler.getLockHolder(categoryName));
         } catch (TimeoutException t) {
             return new RemoteLockResponse(me, RemoteLockResponse.Flag.FAIL, t.getOwner());
@@ -476,7 +475,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed releasing remote lock", e);
+            throw MESSAGES.remoteLockReleaseFailure(e);
         } finally {
             if (category.state.compareAndSet(ClusterLockState.State.REMOTE_LOCKING, ClusterLockState.State.UNLOCKED) == false) {
                 category.state.compareAndSet(ClusterLockState.State.LOCAL_LOCKING, ClusterLockState.State.UNLOCKED);

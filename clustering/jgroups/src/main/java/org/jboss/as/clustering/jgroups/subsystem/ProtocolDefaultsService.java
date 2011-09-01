@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -37,6 +36,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.conf.XmlConfigurator;
+
+import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.jgroups.JGroupsMessages.MESSAGES;
 
 /**
  * Service that provides protocol property defaults per protocol type.
@@ -47,7 +49,6 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME, "stack", "defaults");
 
     private static final String DEFAULTS = "jgroups-defaults.xml";
-    private static final Logger log = Logger.getLogger(ProtocolDefaultsService.class.getPackage().getName());
 
     private final String resource;
     private volatile ProtocolDefaults defaults;
@@ -85,11 +86,11 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
 
     private static ProtocolStackConfigurator load(String resource) throws StartException {
         URL url = find(resource, JGroupsExtension.class.getClassLoader());
-        log.debugf("Loading JGroups protocol defaults from %s", url.toString());
+        ROOT_LOGGER.debugf("Loading JGroups protocol defaults from %s", url.toString());
         try {
             return XmlConfigurator.getInstance(url);
         } catch (IOException e) {
-            throw new StartException(String.format("Failed to parse %s", url), e);
+            throw new StartException(MESSAGES.parserFailure(url));
         }
     }
 
@@ -102,7 +103,7 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
                 }
             }
         }
-        throw new StartException(String.format("Failed to locate %s", resource));
+        throw new StartException(MESSAGES.notFound(resource));
     }
 
     /**
