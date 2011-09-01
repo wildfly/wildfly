@@ -68,8 +68,9 @@ import static org.jboss.as.txn.CommonAttributes.RECOVERY_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.RECOVERY_LISTENER;
 import static org.jboss.as.txn.CommonAttributes.SOCKET_PROCESS_ID_MAX_PORTS;
 import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
+import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
+
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -83,16 +84,13 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 public class TransactionExtension implements Extension {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.txn");
-
     public static final String SUBSYSTEM_NAME = "transactions";
     private static final TransactionSubsystemParser parser = new TransactionSubsystemParser();
 
     /** {@inheritDoc} */
     @Override
     public void initialize(ExtensionContext context) {
-        log.debug("Initializing Transactions Extension");
+        ROOT_LOGGER.debug("Initializing Transactions Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(TransactionSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, TransactionSubsystemAdd.INSTANCE, TransactionSubsystemProviders.SUBSYSTEM_ADD, false);
