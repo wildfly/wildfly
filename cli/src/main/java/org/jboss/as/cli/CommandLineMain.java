@@ -610,7 +610,7 @@ public class CommandLineMain {
             }
 
             this.history = new HistoryImpl();
-            operationCandidatesProvider = new DefaultOperationCandidatesProvider(this);
+            operationCandidatesProvider = new DefaultOperationCandidatesProvider();
 
             operationHandler = new OperationRequestHandler();
 

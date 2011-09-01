@@ -45,6 +45,164 @@ public class CommandTestCase {
         assertEquals("some-command", cmd.getOperationName());
         assertFalse(cmd.hasProperties());
         assertNull(cmd.getOutputTarget());
+        assertFalse(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertFalse(cmd.endsOnPropertySeparator());
+        assertEquals(0, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testPropertyListStart() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("some-command ");
+        assertEquals("some-command", cmd.getOperationName());
+        assertFalse(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertTrue(cmd.endsOnSeparator());
+        assertTrue(cmd.endsOnPropertyListStart());
+        assertFalse(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertEquals(0, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testSingleArgValue() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("some-command arg-value");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertFalse(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertFalse(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertTrue(cmd.getPropertyNames().isEmpty());
+        assertEquals(1, cmd.getOtherProperties().size());
+        assertEquals("arg-value", cmd.getOtherProperties().get(0));
+        assertEquals(13, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testSingleArgValueAndSeparator() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("some-command arg-value ");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertTrue(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertTrue(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertTrue(cmd.getPropertyNames().isEmpty());
+        assertEquals(1, cmd.getOtherProperties().size());
+        assertEquals("arg-value", cmd.getOtherProperties().get(0));
+        assertEquals(13, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testSingleArgName() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("some-command --arg-name");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertFalse(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertFalse(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertEquals(1, cmd.getPropertyNames().size());
+        assertTrue(cmd.getOtherProperties().isEmpty());
+        assertTrue(cmd.hasProperty("--arg-name"));
+        assertNull(cmd.getPropertyValue("--arg-name"));
+        assertEquals(13, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testSingleArgNameAndSeparator() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("some-command --arg-name ");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertTrue(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertTrue(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertEquals(1, cmd.getPropertyNames().size());
+        assertTrue(cmd.getOtherProperties().isEmpty());
+        assertTrue(cmd.hasProperty("--arg-name"));
+        assertNull(cmd.getPropertyValue("--arg-name"));
+        assertEquals(13, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testSingleArgNameAndValueSeparator() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("some-command --arg-name=");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertTrue(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertFalse(cmd.endsOnPropertySeparator());
+        assertTrue(cmd.endsOnPropertyValueSeparator());
+        assertEquals(1, cmd.getPropertyNames().size());
+        assertTrue(cmd.getOtherProperties().isEmpty());
+        assertTrue(cmd.hasProperty("--arg-name"));
+        assertNull(cmd.getPropertyValue("--arg-name"));
+        assertEquals(23, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testSingleArgNameWithValue() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("some-command --arg-name=value");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertFalse(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertFalse(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertEquals(1, cmd.getPropertyNames().size());
+        assertTrue(cmd.getOtherProperties().isEmpty());
+        assertTrue(cmd.hasProperty("--arg-name"));
+        assertEquals("value", cmd.getPropertyValue("--arg-name"));
+        assertEquals(24, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testSingleArgNameWithValueAndSeparator() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("some-command --arg-name=value ");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertTrue(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertTrue(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertEquals(1, cmd.getPropertyNames().size());
+        assertTrue(cmd.getOtherProperties().isEmpty());
+        assertTrue(cmd.hasProperty("--arg-name"));
+        assertEquals("value", cmd.getPropertyValue("--arg-name"));
+        assertEquals(24, cmd.getLastChunkIndex());
+    }
+
+    @Test
+    public void testWhitespaces() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("   ");
+        assertFalse(cmd.hasOperationName());
+        assertFalse(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertFalse(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertFalse(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertTrue(cmd.getPropertyNames().isEmpty());
+        assertTrue(cmd.getOtherProperties().isEmpty());
+        assertEquals(0, cmd.getLastChunkIndex());
     }
 
     @Test
