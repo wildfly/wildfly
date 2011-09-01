@@ -75,6 +75,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     protected final CommandLineCompleter genericCompleter;
 
+    // these are caching vars
+    private final List<CommandArgument> staticArgs = new ArrayList<CommandArgument>();
+    private List<CommandArgument> nodeProps;
+    private Map<String, List<CommandArgument>> propsByOp;
+
     public GenericTypeOperationHandler(String nodeType, String idProperty) {
         this(nodeType, idProperty, Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
                 "read-children-types", "read-operation-description", "read-operation-names", "read-resource",
@@ -145,7 +150,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         address.toNode(node.getType(), node.getName());
                     }
                     address.toNode(type, "?");
-                    List<String> ops = ctx.getOperationCandidatesProvider().getOperationNames(address);
+                    List<String> ops = ctx.getOperationCandidatesProvider().getOperationNames(ctx, address);
                     ops.removeAll(excludeOps);
                     return ops;
                 }}), 0, "--operation") {
@@ -207,83 +212,82 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
 
         ///
+        staticArgs.add(helpArg);
+        staticArgs.add(helpCommands);
+        staticArgs.add(helpProperties);
+        staticArgs.add(profile);
+        staticArgs.add(name);
+        staticArgs.add(operation);
 
         genericCompleter = new BaseArgumentTabCompleter(){
-            private final List<CommandArgument> staticArgs = new ArrayList<CommandArgument>();
-            {
-                staticArgs.add(helpArg);
-                staticArgs.add(helpCommands);
-                staticArgs.add(helpProperties);
-                staticArgs.add(profile);
-                staticArgs.add(name);
-                staticArgs.add(operation);
-            }
-
-            private List<CommandArgument> nodeProps;
-            private Map<String, List<CommandArgument>> propsByOp;
-
             @Override
             protected Iterable<CommandArgument> getAllArguments(CommandContext ctx) {
+                    return getArguments(ctx);
+                }
+            };
+    }
 
-                ParsedCommandLine args = ctx.getParsedCommandLine();
+    @Override
+    public List<CommandArgument> getArguments(CommandContext ctx) {
 
-                try {
-                    if(!name.isValueComplete(args)) {
-                        return staticArgs;
+        ParsedCommandLine args = ctx.getParsedCommandLine();
+
+        try {
+            if(!name.isValueComplete(args)) {
+                return staticArgs;
+            }
+        } catch (CommandFormatException e) {
+            return Collections.emptyList();
+        }
+
+        final String op = operation.getValue(args);
+        if(op == null) {
+            // list node properties
+            if(nodeProps == null) {
+                nodeProps = new ArrayList<CommandArgument>();
+                for(Property prop : getNodeProperties(ctx)) {
+                    final ModelNode propDescr = prop.getValue();
+                    if(propDescr.has("access-type") && "read-write".equals(propDescr.get("access-type").asString())) {
+                        if(propDescr.has("type") && ModelType.BOOLEAN == propDescr.get("type").asType()) {
+                            nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, SimpleTabCompleter.BOOLEAN,"--" + prop.getName()));
+                        } else {
+                            nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                        }
                     }
-                } catch (CommandFormatException e) {
+                }
+            }
+            return nodeProps;
+        } else {
+            // list operation properties
+            if(propsByOp == null) {
+                propsByOp = new HashMap<String, List<CommandArgument>>();
+            }
+            List<CommandArgument> opProps = propsByOp.get(op);
+            if(opProps == null) {
+                final ModelNode descr;
+                try {
+                    descr = getOperationDescription(ctx, op);
+                } catch (IOException e1) {
                     return Collections.emptyList();
                 }
 
-                final String op = operation.getValue(args);
-                if(op == null) {
-                    // list node properties
-                    if(nodeProps == null) {
-                        nodeProps = new ArrayList<CommandArgument>();
-                        for(Property prop : getNodeProperties(ctx)) {
-                            final ModelNode propDescr = prop.getValue();
-                            if(propDescr.has("access-type") && "read-write".equals(propDescr.get("access-type").asString())) {
-                                if(propDescr.has("type") && ModelType.BOOLEAN == propDescr.get("type").asType()) {
-                                    nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, SimpleTabCompleter.BOOLEAN,"--" + prop.getName()));
-                                } else {
-                                    nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
-                                }
-                            }
-                        }
-                    }
-                    return nodeProps;
+                if(descr == null || !descr.has("request-properties")) {
+                    opProps = Collections.emptyList();
                 } else {
-                    // list operation properties
-                    if(propsByOp == null) {
-                        propsByOp = new HashMap<String, List<CommandArgument>>();
-                    }
-                    List<CommandArgument> opProps = propsByOp.get(op);
-                    if(opProps == null) {
-                        final ModelNode descr;
-                        try {
-                            descr = getOperationDescription(ctx, op);
-                        } catch (IOException e1) {
-                            return Collections.emptyList();
-                        }
-
-                        if(descr == null || !descr.has("request-properties")) {
-                            opProps = Collections.emptyList();
+                    opProps = new ArrayList<CommandArgument>();
+                    for (Property prop : descr.get("request-properties").asPropertyList()) {
+                        final ModelNode propDescr = prop.getValue();
+                        if(propDescr.has("type") && ModelType.BOOLEAN == propDescr.get("type").asType()) {
+                            opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, SimpleTabCompleter.BOOLEAN, "--" + prop.getName()));
                         } else {
-                            opProps = new ArrayList<CommandArgument>();
-                            for (Property prop : descr.get("request-properties").asPropertyList()) {
-                                final ModelNode propDescr = prop.getValue();
-                                if(propDescr.has("type") && ModelType.BOOLEAN == propDescr.get("type").asType()) {
-                                    opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, SimpleTabCompleter.BOOLEAN, "--" + prop.getName()));
-                                } else {
-                                    opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
-                                }
-                            }
+                            opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
                         }
-                        propsByOp.put(op, opProps);
                     }
-                    return opProps;
                 }
-            }};
+                propsByOp.put(op, opProps);
+            }
+            return opProps;
+        }
     }
 
     @Override

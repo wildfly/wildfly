@@ -53,7 +53,7 @@ public class CommandState extends DefaultParsingState {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                final CharacterHandler handler = enterStateHandlers.getHandler(ctx.getCharacter());
+                final CharacterHandler handler = getHandler(ctx.getCharacter());
                 if(handler != null) {
                     handler.handle(ctx);
                 }
