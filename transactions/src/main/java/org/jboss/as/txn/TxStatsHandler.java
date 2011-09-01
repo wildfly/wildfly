@@ -35,6 +35,8 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
 /**
  * Handler for transaction manager metrics
  *
@@ -91,7 +93,7 @@ public class TxStatsHandler implements OperationStepHandler {
 
         TxStat stat = TxStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
         if (stat == null) {
-            context.getFailureDescription().set(String.format("Unknown metric %s", operation.require(ModelDescriptionConstants.NAME).asString()));
+            context.getFailureDescription().set(MESSAGES.unknownMetric(operation.require(ModelDescriptionConstants.NAME).asString()));
         }
         else {
             ModelNode result = new ModelNode();
@@ -124,7 +126,7 @@ public class TxStatsHandler implements OperationStepHandler {
                     result.set(txStats.getNumberOfResourceRollbacks());
                     break;
                 default:
-                    throw new IllegalStateException(String.format("Unknown metric %s", stat));
+                    throw new IllegalStateException(MESSAGES.unknownMetric(stat));
             }
             context.getResult().set(result);
         }

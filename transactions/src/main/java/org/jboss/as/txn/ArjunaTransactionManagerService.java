@@ -46,6 +46,8 @@ import com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResour
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
 
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
 /**
  * A service for the proprietary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
  *
@@ -110,7 +112,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             try {
                 service.create();
             } catch (Exception e) {
-                throw new StartException("Transaction manager create failed", e);
+                throw MESSAGES.managerStartFailure(e, "Transaction");
             }
             service.start();
             value = service;
@@ -130,12 +132,12 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             try {
                 service.create();
             } catch (Exception e) {
-                throw new StartException("Create failed", e);
+                throw MESSAGES.createFailed(e);
             }
             try {
                 service.start(orb);
             } catch (Exception e) {
-                throw new StartException("Start failed", e);
+                throw MESSAGES.startFailure(e);
             }
             value = service;
         }
@@ -144,7 +146,7 @@ final class ArjunaTransactionManagerService implements Service<com.arjuna.ats.jb
             objStoreBrowser.setTypes(objStoreBrowserTypes);
             objStoreBrowser.start();
         } catch (Exception e) {
-            throw new StartException("Failed to configure object store browser bean", e);
+            throw MESSAGES.objectStoreStartFailure(e);
         }
         // todo: JNDI bindings
 
