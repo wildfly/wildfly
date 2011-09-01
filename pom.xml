@@ -141,7 +141,7 @@
         <version.org.jboss.management.console>1.0.0.Beta16</version.org.jboss.management.console>
         <version.org.jboss.marshalling.jboss-marshalling>1.3.0.GA</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.marshalling.jboss-marshalling-river>1.3.0.GA</version.org.jboss.marshalling.jboss-marshalling-river>
-        <version.org.jboss.metadata>7.0.0.Beta9</version.org.jboss.metadata>
+        <version.org.jboss.metadata>7.0.0.Beta10</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.1.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.0.2.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.1.GA</version.org.jboss.msc.jboss-msc>
