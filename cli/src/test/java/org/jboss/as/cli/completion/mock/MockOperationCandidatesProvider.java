@@ -23,7 +23,6 @@ package org.jboss.as.cli.completion.mock;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class MockOperationCandidatesProvider implements OperationCandidatesProvi
     }
 
     @Override
-    public List<String> getNodeNames(OperationRequestAddress prefix) {
+    public List<String> getNodeNames(CommandContext ctx, OperationRequestAddress prefix) {
 
         if(prefix.isEmpty()) {
             throw new IllegalArgumentException("Can't call getNodeNames() with an empty prefix.");
@@ -79,7 +78,7 @@ public class MockOperationCandidatesProvider implements OperationCandidatesProvi
     }
 
     @Override
-    public List<String> getNodeTypes(OperationRequestAddress prefix) {
+    public List<String> getNodeTypes(CommandContext ctx, OperationRequestAddress prefix) {
 
         if(prefix.endsOnType()) {
             throw new IllegalArgumentException("The prefix isn't expected to end on a type.");
@@ -102,12 +101,12 @@ public class MockOperationCandidatesProvider implements OperationCandidatesProvi
     }
 
     @Override
-    public List<String> getOperationNames(OperationRequestAddress prefix) {
+    public List<String> getOperationNames(CommandContext ctx, OperationRequestAddress prefix) {
         return new ArrayList<String>(root.getOperationNames());
     }
 
     @Override
-    public List<CommandArgument> getProperties(String operationName, OperationRequestAddress address) {
+    public List<CommandArgument> getProperties(CommandContext ctx, String operationName, OperationRequestAddress address) {
         MockOperation operation = root.getOperation(operationName);
         if(operation == null) {
             return Collections.emptyList();

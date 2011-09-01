@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli;
 
+import java.util.List;
+
 
 /**
  *
@@ -67,4 +69,6 @@ public interface CommandHandler {
      * @return  true if the handler accepts an argument with the specified index, otherwise - false.
      */
     boolean hasArgument(int index);
+
+    List<CommandArgument> getArguments(CommandContext ctx);
 }

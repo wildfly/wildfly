@@ -43,20 +43,11 @@ import org.jboss.dmr.ModelNode;
  */
 public class DefaultOperationCandidatesProvider implements OperationCandidatesProvider {
 
-    private final CommandContext ctx;
-
-    public DefaultOperationCandidatesProvider(CommandContext ctx) {
-        if(ctx == null) {
-            throw new IllegalArgumentException("The context can't be null!");
-        }
-        this.ctx = ctx;
-    }
-
     /* (non-Javadoc)
      * @see org.jboss.as.cli.CandidatesProvider#getNodeNames(org.jboss.as.cli.Prefix)
      */
     @Override
-    public List<String> getNodeNames(OperationRequestAddress prefix) {
+    public List<String> getNodeNames(CommandContext ctx, OperationRequestAddress prefix) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
@@ -100,12 +91,12 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
      * @see org.jboss.as.cli.CandidatesProvider#getNodeTypes(org.jboss.as.cli.Prefix)
      */
     @Override
-    public List<String> getNodeTypes(OperationRequestAddress prefix) {
+    public List<String> getNodeTypes(CommandContext ctx, OperationRequestAddress prefix) {
         return Util.getNodeTypes(ctx.getModelControllerClient(), prefix);
     }
 
     @Override
-    public List<String> getOperationNames(OperationRequestAddress prefix) {
+    public List<String> getOperationNames(CommandContext ctx, OperationRequestAddress prefix) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
@@ -141,7 +132,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
     }
 
     @Override
-    public List<CommandArgument> getProperties(String operationName, OperationRequestAddress address) {
+    public List<CommandArgument> getProperties(CommandContext ctx, String operationName, OperationRequestAddress address) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
