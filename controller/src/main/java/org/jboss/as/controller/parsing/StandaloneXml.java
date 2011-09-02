@@ -22,12 +22,45 @@
 
 package org.jboss.as.controller.parsing;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import org.jboss.as.controller.operations.common.Util;
-
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTION;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -38,38 +71,6 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly {@code standalone.xml}.
@@ -83,15 +84,18 @@ public class StandaloneXml extends CommonXml {
     }
 
     @Override
-    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList) throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList)
+            throws XMLStreamException {
         final ModelNode address = new ModelNode().setEmptyList();
-        if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0 || Element.forName(reader.getLocalName()) != Element.SERVER) {
+        if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0
+                || Element.forName(reader.getLocalName()) != Element.SERVER) {
             throw unexpectedElement(reader);
         }
         readServerElement(reader, address, operationList);
     }
 
-    private void readServerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void readServerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
 
         parseNamespaces(reader, address, list);
 
@@ -99,7 +103,7 @@ public class StandaloneXml extends CommonXml {
 
         // attributes
         final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
+        for (int i = 0; i < count; i++) {
             switch (Namespace.forUri(reader.getAttributeNamespace(i))) {
                 case NONE: {
                     final String value = reader.getAttributeValue(i);
@@ -109,7 +113,8 @@ public class StandaloneXml extends CommonXml {
                             serverName = value;
                             break;
                         }
-                        default: throw unexpectedAttribute(reader, i);
+                        default:
+                            throw unexpectedAttribute(reader, i);
                     }
                     break;
                 }
@@ -129,7 +134,8 @@ public class StandaloneXml extends CommonXml {
                     }
                     break;
                 }
-                default: throw unexpectedAttribute(reader, i);
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
 
@@ -178,31 +184,38 @@ public class StandaloneXml extends CommonXml {
             parseDeployments(reader, address, list, true);
             element = nextElement(reader);
         }
+
+        if (element == Element.VAULT) {
+            parseVault(reader, address);
+            element = nextElement(reader);
+        }
+
         if (element != null) {
             throw unexpectedElement(reader);
         }
 
-//        for (;;) {
-//            switch (reader.nextTag()) {
-//                case START_ELEMENT: {
-//                    readHeadComment(reader, address, list);
-//                    if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-//                        throw unexpectedElement(reader);
-//                    }
-//                    switch (Element.forName(reader.getLocalName())) {
-//                        default: throw unexpectedElement(reader);
-//                    }
-//                }
-//                case END_ELEMENT: {
-//                    readTailComment(reader, address, list);
-//                    return;
-//                }
-//                default: throw new IllegalStateException();
-//            }
-//        }
+        // for (;;) {
+        // switch (reader.nextTag()) {
+        // case START_ELEMENT: {
+        // readHeadComment(reader, address, list);
+        // if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+        // throw unexpectedElement(reader);
+        // }
+        // switch (Element.forName(reader.getLocalName())) {
+        // default: throw unexpectedElement(reader);
+        // }
+        // }
+        // case END_ELEMENT: {
+        // readTailComment(reader, address, list);
+        // return;
+        // }
+        // default: throw new IllegalStateException();
+        // }
+        // }
     }
 
-    private void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+    private void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces,
+            final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> socketBindings = new HashSet<String>();
 
         // Handle attributes
@@ -212,7 +225,7 @@ public class StandaloneXml extends CommonXml {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.DEFAULT_INTERFACE);
         final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
+        for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
@@ -235,14 +248,13 @@ public class StandaloneXml extends CommonXml {
                         try {
                             int offset = Integer.parseInt(value);
                             if (offset < 0) {
-                                throw new XMLStreamException(portOffset + " is not a valid " +
-                                        attribute.getLocalName() + " -- must be greater than zero",
-                                        reader.getLocation());
+                                throw new XMLStreamException(portOffset + " is not a valid " + attribute.getLocalName()
+                                        + " -- must be greater than zero", reader.getLocation());
                             }
                         } catch (final NumberFormatException e) {
                             if (!Util.isExpression(value)) {
-                                throw new XMLStreamException(portOffset + " is not a valid " +
-                                        attribute.getLocalName(), reader.getLocation(), e);
+                                throw new XMLStreamException(portOffset + " is not a valid " + attribute.getLocalName(),
+                                        reader.getLocation(), e);
                             }
                         }
                     }
@@ -253,7 +265,7 @@ public class StandaloneXml extends CommonXml {
             }
         }
 
-        if (! required.isEmpty()) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
 
@@ -274,7 +286,8 @@ public class StandaloneXml extends CommonXml {
                             // FIXME JBAS-8825
                             final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                             if (socketBindings.contains(bindingName)) {
-                                throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
+                                throw new XMLStreamException("socket-binding " + bindingName + " already declared",
+                                        reader.getLocation());
                             }
                             socketBindings.add(bindingName);
                             break;
@@ -290,7 +303,8 @@ public class StandaloneXml extends CommonXml {
         }
     }
 
-    private void parseServerProfile(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseServerProfile(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
         // Attributes
         requireNoAttributes(reader);
 
@@ -311,14 +325,14 @@ public class StandaloneXml extends CommonXml {
             reader.handleAny(subsystems);
 
             // Process subsystems
-            for(final ModelNode update : subsystems) {
+            for (final ModelNode update : subsystems) {
                 // TODO remove logging
-                if(! update.has(OP_ADDR)) {
+                if (!update.has(OP_ADDR)) {
                     Logger.getLogger("missing address").error(update);
                 }
                 // Process relative subsystem path address
                 final ModelNode subsystemAddress = address.clone();
-                for(final Property path : update.get(OP_ADDR).asPropertyList()) {
+                for (final Property path : update.get(OP_ADDR).asPropertyList()) {
                     subsystemAddress.add(path.getName(), path.getValue().asString());
                 }
                 update.get(OP_ADDR).set(subsystemAddress);
@@ -335,7 +349,8 @@ public class StandaloneXml extends CommonXml {
     }
 
     @Override
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context) throws XMLStreamException {
+    public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context)
+            throws XMLStreamException {
 
         ModelNode modelNode = context.getModelNode();
         writer.writeStartDocument();
@@ -357,7 +372,7 @@ public class StandaloneXml extends CommonXml {
             writeProperties(writer, modelNode.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, true);
         }
 
-        if(modelNode.hasDefined(PATH)) {
+        if (modelNode.hasDefined(PATH)) {
             writePaths(writer, modelNode.get(PATH));
         }
 
@@ -385,6 +400,23 @@ public class StandaloneXml extends CommonXml {
             writeServerDeployments(writer, modelNode.get(DEPLOYMENT));
         }
 
+        if (modelNode.hasDefined(VAULT)) {
+            ModelNode vault = modelNode.get(VAULT);
+            writer.writeStartElement(Element.VAULT.getLocalName());
+            String code = vault.get(Attribute.CODE.getLocalName()).asString();
+            if (code != null && !code.isEmpty()) {
+                writer.writeAttribute(Attribute.CODE.getLocalName(), code);
+            }
+
+            ModelNode properties = vault.get(VAULT_OPTION);
+            for (Property prop : properties.asPropertyList()) {
+                writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
+            }
+            writer.writeEndElement();
+        }
+
         writer.writeEndElement();
         writer.writeEndDocument();
     }
@@ -397,10 +429,10 @@ public class StandaloneXml extends CommonXml {
             boolean deploymentWritten = false;
             for (String uniqueName : deploymentNames) {
                 final ModelNode deployment = modelNode.get(uniqueName);
-                if(deployment.hasDefined(PERSISTENT) && !deployment.get(PERSISTENT).asBoolean()) {
+                if (deployment.hasDefined(PERSISTENT) && !deployment.get(PERSISTENT).asBoolean()) {
                     continue;
                 }
-                if(!deploymentWritten) {
+                if (!deploymentWritten) {
                     writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
                     deploymentWritten = true;
                 }
@@ -418,13 +450,14 @@ public class StandaloneXml extends CommonXml {
                 }
                 writer.writeEndElement();
             }
-            if(deploymentWritten) {
+            if (deploymentWritten) {
                 writer.writeEndElement();
             }
         }
     }
 
-    private void writeServerProfile(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context) throws XMLStreamException {
+    private void writeServerProfile(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context)
+            throws XMLStreamException {
 
         ModelNode profileNode = context.getModelNode();
 
@@ -439,8 +472,7 @@ public class StandaloneXml extends CommonXml {
                     if (subsystemWriter != null) { // FIXME -- remove when extensions are doing the registration
                         subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
                     }
-                }
-                finally {
+                } finally {
                     writer.setDefaultNamespace(defaultNamespace);
                 }
             }
