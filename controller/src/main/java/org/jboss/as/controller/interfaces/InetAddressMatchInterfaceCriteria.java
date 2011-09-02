@@ -29,6 +29,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
     private static final long serialVersionUID = 149404752878332750L;
 
     private ModelNode address;
+    private String addressString;
     private InetAddress resolved;
     private boolean unknownHostLogged;
     private boolean anyLocalLogged;
@@ -47,9 +48,28 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
         this.address = address;
     }
 
+    /**
+     * Creates a new InetAddressMatchInterfaceCriteria
+     *
+     * @param address a valid String value to pass to {@link InetAddress#getByName(String)}
+     *                Cannot be {@code null}
+     *
+     * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
+     */
+    public InetAddressMatchInterfaceCriteria(final String address) {
+        if (address == null || address.isEmpty() || address.trim().isEmpty()) {
+            throw new IllegalArgumentException("address is null");
+        }
+        this.addressString = address;
+    }
+
     public synchronized InetAddress getAddress() throws UnknownHostException {
         if (resolved == null) {
-            resolved = InetAddress.getByName(address.resolve().asString());
+            if (address != null) {
+                resolved = InetAddress.getByName(address.resolve().asString());
+            } else {
+                resolved = InetAddress.getByName(addressString);
+            }
         }
         return this.resolved;
     }
@@ -67,7 +87,7 @@ public class InetAddressMatchInterfaceCriteria implements InterfaceCriteria {
             // One time only warn against use of wildcard addresses
             if (!anyLocalLogged && toMatch.isAnyLocalAddress()) {
                 log.warnf("Address %1$s is a wildcard address, which will not match " +
-                    "against any specific address. Do not use the '%2$s' configuration element" +
+                    "against any specific address. Do not use the '%2$s' configuration element " +
                     "to specify that an interface should use a wildcard address; " +
                     "use '%3$s', '%4$s', or '%5$s'", this.address,
                     INET_ADDRESS, ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS);

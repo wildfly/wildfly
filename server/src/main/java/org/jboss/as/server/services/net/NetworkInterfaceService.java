@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source
-* Copyright 2010, Red Hat Inc., and individual contributors as indicated
-* by the @authors tag. See the copyright.txt in the distribution for a
-* full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.server.services.net;
 
 import java.net.Inet4Address;
@@ -27,6 +27,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,9 +36,11 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.controller.interfaces.InetAddressMatchInterfaceCriteria;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -45,11 +49,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * Service resolving the {@code NetworkInterfaceBinding} based on the configured
- * interfaces in the domain model.
+ * Service resolving the {@code NetworkInterfaceBinding} based on the configured interfaces in the domain model.
  *
- * @author Emanuel Muckenhuber
- * Scott stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
+ * @author Emanuel Muckenhuber Scott stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
 public class NetworkInterfaceService implements Service<NetworkInterfaceBinding> {
     private static Logger log = Logger.getLogger("org.jboss.as.server.net");
@@ -73,7 +75,8 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
     private final InterfaceCriteria criteria;
 
     public static Service<NetworkInterfaceBinding> create(String name, ParsedInterfaceCriteria criteria) {
-        return new NetworkInterfaceService(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(), new OverallInterfaceCriteria(criteria.getCriteria()));
+        return new NetworkInterfaceService(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(),
+                new OverallInterfaceCriteria(criteria.getCriteria()));
     }
 
     public NetworkInterfaceService(final String name, final boolean anyLocalV4, final boolean anyLocalV6,
@@ -89,30 +92,62 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
         log.debug("Starting NetworkInterfaceService\n");
         try {
             this.interfaceBinding = createBinding(name, anyLocalV4, anyLocalV6, anyLocal, criteria);
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new StartException(e);
         }
-        if(this.interfaceBinding == null) {
+        if (this.interfaceBinding == null) {
             throw new StartException("failed to resolve interface " + name);
         }
         log.debugf("NetworkInterfaceService matched interface binding: %s\n", interfaceBinding);
     }
 
-    public static NetworkInterfaceBinding createBinding(String name, ParsedInterfaceCriteria criteria)  throws SocketException, UnknownHostException {
-        return createBinding(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(), new OverallInterfaceCriteria(criteria.getCriteria()));
+    public static NetworkInterfaceBinding createBinding(String name, ParsedInterfaceCriteria criteria) throws SocketException,
+            UnknownHostException {
+        return createBinding(name, criteria.isAnyLocalV4(), criteria.isAnyLocalV6(), criteria.isAnyLocal(),
+                new OverallInterfaceCriteria(criteria.getCriteria()));
     }
 
-    static NetworkInterfaceBinding createBinding(final String name, final boolean anyLocalV4, final boolean anyLocalV6, final boolean anyLocal, final InterfaceCriteria criteria) throws SocketException, UnknownHostException{
+    static NetworkInterfaceBinding createBinding(final String name, final boolean anyLocalV4, final boolean anyLocalV6,
+            final boolean anyLocal, final InterfaceCriteria criteria) throws SocketException, UnknownHostException {
+
+        // Begin check for -b information (AS7-1668)
+        String argBinding = null;
+        if (System.getSecurityManager() == null) {
+            argBinding = System.getProperty(ServerEnvironment.NETWORK_IP_PREFIX + name);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<String>() {
+                public String run() {
+                    return System.getProperty(ServerEnvironment.NETWORK_IP_PREFIX + name);
+                }
+            });
+        }
+
+        log.infof("The argument binding for logical interface %s is %s\n", name, argBinding);
+        if (argBinding != null && !argBinding.trim().isEmpty()) {
+            InetAddress address = InetAddress.getByName(argBinding);
+            if (address.isAnyLocalAddress()) {
+                log.infof("Logical interface %s bound to any address.\n", name);
+                if (address instanceof Inet4Address) {
+                    return getNetworkInterfaceBinding(IPV4_ANYLOCAL);
+                } else if (address instanceof Inet6Address) {
+                    return getNetworkInterfaceBinding(IPV6_ANYLOCAL);
+                } else {
+                    throw new IllegalArgumentException("Unrecognized inet address: " + argBinding);
+                }
+            } else {
+                InetAddressMatchInterfaceCriteria argCriteria = new InetAddressMatchInterfaceCriteria(argBinding);
+                return resolveInterface(argCriteria);
+            }
+        }
+        // End check for AS7-1668
+
         if (anyLocalV4) {
             return getNetworkInterfaceBinding(IPV4_ANYLOCAL);
-        }
-        else if (anyLocalV6) {
+        } else if (anyLocalV6) {
             return getNetworkInterfaceBinding(IPV6_ANYLOCAL);
-        }
-        else if (anyLocal) {
+        } else if (anyLocal) {
             return getNetworkInterfaceBinding(preferIPv4Stack ? IPV4_ANYLOCAL : IPV6_ANYLOCAL);
-        }
-        else {
+        } else {
             return resolveInterface(criteria);
         }
     }
@@ -123,7 +158,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
     public synchronized NetworkInterfaceBinding getValue() throws IllegalStateException {
         final NetworkInterfaceBinding binding = this.interfaceBinding;
-        if(binding == null) {
+        if (binding == null) {
             throw new IllegalStateException();
         }
         return binding;
@@ -147,14 +182,15 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
         return result;
     }
 
-    private static NetworkInterfaceBinding resolveInterface(final InterfaceCriteria criteria, final NetworkInterface networkInterface) throws SocketException {
+    private static NetworkInterfaceBinding resolveInterface(final InterfaceCriteria criteria,
+            final NetworkInterface networkInterface) throws SocketException {
         log.tracef("resolveInterface, checking NetworkInterface: %s\n", toString(networkInterface));
         final Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
         while (interfaceAddresses.hasMoreElements()) {
             final InetAddress address = interfaceAddresses.nextElement();
-            if(preferIPv4Stack && ! preferIPv6Stack && ! (address instanceof Inet4Address)) {
+            if (preferIPv4Stack && !preferIPv6Stack && !(address instanceof Inet4Address)) {
                 continue;
-            } else if(preferIPv6Stack && ! preferIPv4Stack && ! (address instanceof Inet6Address)) {
+            } else if (preferIPv6Stack && !preferIPv4Stack && !(address instanceof Inet6Address)) {
                 continue;
             }
             log.tracef("Checking interface(name=%s,address=%s), criteria=%s\n", networkInterface.getName(), address, criteria);
@@ -187,19 +223,15 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
         }
 
         /**
-         * Loop through associated criteria and build a unique address as follows:
-         * 1. Iterate through all criteria, returning null if any criteria return a null result
-         * from {@linkplain #isAcceptable(java.net.NetworkInterface, java.net.InetAddress)}.
-         * 2. Collect the accepted addressed into a Set.
-         * 3. If the set contains a single address, this is returned as the criteria match.
-         * 4. If there are more than 2 addresses, log a warning and return null to indicate no
-         *  match was agreed on.
-         * 5. If there are 2 addresses, remove the input address and if the resulting set
-         *  has only one address, return it as the criteria match. Otherwise, log a warning
-         *  indicating 2 unique criteria addresses were seen and return null to indicate no
-         *  match was agreed on.
-         * @return the unique address determined by the all criteria, null if no such address
-         * was found
+         * Loop through associated criteria and build a unique address as follows: 1. Iterate through all criteria, returning
+         * null if any criteria return a null result from
+         * {@linkplain #isAcceptable(java.net.NetworkInterface, java.net.InetAddress)}. 2. Collect the accepted addressed into a
+         * Set. 3. If the set contains a single address, this is returned as the criteria match. 4. If there are more than 2
+         * addresses, log a warning and return null to indicate no match was agreed on. 5. If there are 2 addresses, remove the
+         * input address and if the resulting set has only one address, return it as the criteria match. Otherwise, log a
+         * warning indicating 2 unique criteria addresses were seen and return null to indicate no match was agreed on.
+         *
+         * @return the unique address determined by the all criteria, null if no such address was found
          * @throws SocketException
          */
         @Override
@@ -218,18 +250,18 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             log.debugf("Candidate accepted addresses are: %s\n", addresses);
             // Determine which address to return
             InetAddress bindAddress = null;
-            if(addresses.size() > 0) {
+            if (addresses.size() > 0) {
                 log.tracef("Determining unique address from among: %s\n", addresses.toString());
-                if(addresses.size() == 1)
+                if (addresses.size() == 1)
                     bindAddress = addresses.iterator().next();
                 else {
                     // Remove the input address and see if non-unique addresses exist
-                    if(addresses.size() > 2)
+                    if (addresses.size() > 2)
                         log.warnf("More than two unique criteria addresses were seen: %s\n", addresses.toString());
                     else {
                         log.warnf("Checking two unique criteria addresses were seen: %s\n", addresses.toString());
                         addresses.remove(address);
-                        if(addresses.size() == 1)
+                        if (addresses.size() == 1)
                             bindAddress = addresses.iterator().next();
                         else
                             log.warnf("Two unique criteria addresses were seen: %s\n", addresses.toString());
@@ -238,32 +270,34 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             }
             return bindAddress;
         }
+
         public String toString() {
             StringBuilder sb = new StringBuilder("OverallInterfaceCriteria(");
             for (InterfaceCriteria criteria : interfaceCriteria) {
                 sb.append(criteria.toString());
                 sb.append(",");
             }
-            sb.setLength(sb.length()-1);
+            sb.setLength(sb.length() - 1);
             sb.append(")");
             return sb.toString();
         }
     }
 
     /**
-     * A little toString utility for NetworkInterface since its version
-     * seems to add the hardware address and this corrupts logging output.
-     * @param iface
-     * @return toSring for NetworkInterface
+     * A little toString utility for NetworkInterface since its version seems to add the hardware address and this corrupts
+     * logging output.
+     *
+     * @param iface The interface to convert to string format.
+     * @return toString for NetworkInterface
      */
     static String toString(NetworkInterface iface) {
-       StringBuilder sb = new StringBuilder("NetworkInterface(");
-       sb.append("name:");
-       sb.append(iface.getName());
-       sb.append("(");
-       sb.append(iface.getDisplayName());
-       sb.append("), addresses:");
-       sb.append(iface.getInterfaceAddresses());
-       return sb.toString();
+        StringBuilder sb = new StringBuilder("NetworkInterface(");
+        sb.append("name:");
+        sb.append(iface.getName());
+        sb.append("(");
+        sb.append(iface.getDisplayName());
+        sb.append("), addresses:");
+        sb.append(iface.getInterfaceAddresses());
+        return sb.toString();
     }
 }
