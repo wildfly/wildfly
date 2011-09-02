@@ -31,7 +31,7 @@ public class VirtualInterfaceCriteria implements InterfaceCriteria {
     @Override
     public InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
 
-        if( networkInterface.isVirtual() )
+        if (networkInterface.isVirtual())
             return address;
         return null;
     }

@@ -168,6 +168,10 @@ public class ServerEnvironment implements Serializable {
      */
     public static final String BOOTSTRAP_MAX_THREADS = "org.jboss.server.bootstrap.maxThreads";
 
+     * Prefix for the system property used to store bind information from the command-line (-b).
+     */
+    public static final String NETWORK_IP_PREFIX = "jboss.network.ip.";
+
     private final LaunchType launchType;
     private final String qualifiedHostName;
     private final String hostName;
