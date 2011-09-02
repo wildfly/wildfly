@@ -77,11 +77,6 @@ public class MessagingDescriptions {
             attr.addResourceAttributeDescription(bundle,  "messaging", node);
         }
 
-        node.get(ATTRIBUTES, CommonAttributes.BINDINGS_DIRECTORY).set(getPathDescription("bindings.directory", bundle));
-        node.get(ATTRIBUTES, CommonAttributes.JOURNAL_DIRECTORY).set(getPathDescription("journal.directory", bundle));
-        node.get(ATTRIBUTES, CommonAttributes.LARGE_MESSAGES_DIRECTORY).set(getPathDescription("large.messages.directory", bundle));
-        node.get(ATTRIBUTES, CommonAttributes.PAGING_DIRECTORY).set(getPathDescription("paging.directory", bundle));
-
         node.get(OPERATIONS);   // placeholder
 
         node.get(CHILDREN, CommonAttributes.ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor"));
@@ -133,6 +128,22 @@ public class MessagingDescriptions {
         node.get(CHILDREN, CommonAttributes.CONNECTOR_SERVICE, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.CONNECTOR_SERVICE, MODEL_DESCRIPTION);
 
+        node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, DESCRIPTION).set(bundle.getString("bindings.directory"));
+        node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, DESCRIPTION).set(bundle.getString("bindings.directory"));
+
+        node.get(CHILDREN, CommonAttributes.JOURNAL_DIRECTORY, DESCRIPTION).set(bundle.getString("journal.directory"));
+        node.get(CHILDREN, CommonAttributes.JOURNAL_DIRECTORY, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.JOURNAL_DIRECTORY, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.LARGE_MESSAGES_DIRECTORY, DESCRIPTION).set(bundle.getString("large.messages.directory"));
+        node.get(CHILDREN, CommonAttributes.LARGE_MESSAGES_DIRECTORY, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.LARGE_MESSAGES_DIRECTORY, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.PAGING_DIRECTORY, DESCRIPTION).set(bundle.getString("paging.directory"));
+        node.get(CHILDREN, CommonAttributes.PAGING_DIRECTORY, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.PAGING_DIRECTORY, MODEL_DESCRIPTION);
+
         //jms stuff
         node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, DESCRIPTION).set(bundle.getString("connection-factory"));
         node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, MIN_OCCURS).set(0);
@@ -167,15 +178,6 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             attr.addOperationParameterDescription(bundle, "messaging", node);
         }
-
-        node.get(REQUEST_PROPERTIES, CommonAttributes.BINDINGS_DIRECTORY).set(getPathDescription("bindings.directory", bundle));
-        node.get(REQUEST_PROPERTIES, CommonAttributes.BINDINGS_DIRECTORY, REQUIRED).set(false);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.JOURNAL_DIRECTORY).set(getPathDescription("journal.directory", bundle));
-        node.get(REQUEST_PROPERTIES, CommonAttributes.JOURNAL_DIRECTORY, REQUIRED).set(false);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.LARGE_MESSAGES_DIRECTORY).set(getPathDescription("large.messages.directory", bundle));
-        node.get(REQUEST_PROPERTIES, CommonAttributes.LARGE_MESSAGES_DIRECTORY, REQUIRED).set(false);
-        node.get(REQUEST_PROPERTIES, CommonAttributes.PAGING_DIRECTORY).set(getPathDescription("paging.directory", bundle));
-        node.get(REQUEST_PROPERTIES, CommonAttributes.PAGING_DIRECTORY, REQUIRED).set(false);
 
         return node;
     }

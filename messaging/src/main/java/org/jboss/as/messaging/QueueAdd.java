@@ -47,17 +47,12 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
     public static ModelNode getAddOperation(final ModelNode address, ModelNode subModel) {
 
         final ModelNode operation = org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, subModel);
-        operation.remove(NAME);
         return operation;
     }
 
     private QueueAdd() {}
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        model.get(NAME).set(name);
         for (final AttributeDefinition attributeDefinition : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
@@ -70,9 +65,7 @@ public class QueueAdd extends AbstractAddStepHandler implements DescriptionProvi
         if (hqService != null) {
             PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String queueName = address.getLastElement().getValue();
-
             final CoreQueueConfiguration queueConfiguration = createCoreQueueConfiguration(queueName, model);
-
             final QueueService service = new QueueService(queueConfiguration, false);
             newControllers.add(context.getServiceTarget().addService(MessagingServices.CORE_QUEUE_BASE.append(queueName), service)
                     .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQService())
