@@ -262,7 +262,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
                         final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
-                        if (jtaDataSource != null) {
+                        if (jtaDataSource != null && jtaDataSource.length() > 0) {
                             if (jtaDataSource.startsWith("java:")) {
                                 builder.addDependency(ContextNames.bindInfoFor(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                                 useDefaultDataSource = false;
@@ -271,7 +271,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                                 useDefaultDataSource = false;
                             }
                         }
-                        if (nonJtaDataSource != null) {
+                        if (nonJtaDataSource != null && nonJtaDataSource.length() > 0) {
                             if (nonJtaDataSource.startsWith("java:")) {
                                 builder.addDependency(ContextNames.bindInfoFor(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                                 useDefaultDataSource = false;
@@ -336,7 +336,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     }
 
     private String adjustJndi(String dataSourceName) {
-        if (dataSourceName != null && !dataSourceName.startsWith("java:")) {
+        if (dataSourceName != null && dataSourceName.length() > 0 && !dataSourceName.startsWith("java:")) {
             if (dataSourceName.startsWith("jboss/")) {
                 return "java:" + dataSourceName;
             }
