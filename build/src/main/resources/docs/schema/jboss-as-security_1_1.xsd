@@ -45,6 +45,7 @@
          <xs:element name="subject-factory" type="subjectFactoryType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="security-domains" type="securityDomainsType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="security-properties" type="properties" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="vault" type="vaultType" minOccurs="0" maxOccurs="1"/>
       </xs:all>
    </xs:complexType>
 

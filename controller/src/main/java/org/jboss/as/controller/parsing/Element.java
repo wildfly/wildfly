@@ -134,6 +134,8 @@ public enum Element {
 
     VARIABLE("variable"),
     VIRTUAL("virtual"),
+    VAULT("vault"),
+    VAULT_OPTION("vault-option")
     ;
 
     private final String name;

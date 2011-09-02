@@ -35,15 +35,15 @@ import javax.xml.XMLConstants;
  */
 public enum Namespace {
     // must be first
-    UNKNOWN(null),
-    NONE(null),
+    UNKNOWN(null), NONE(null),
 
     // predefined standard
     XML_SCHEMA_INSTANCE("http://www.w3.org/2001/XMLSchema-instance"),
 
     // domain versions, oldest to newest
-    DOMAIN_1_0("urn:jboss:domain:1.0")
-    ;
+    DOMAIN_1_0("urn:jboss:domain:1.0"),
+
+    DOMAIN_1_1("urn:jboss:domain:1.1"), ;
 
     /**
      * The current namespace version.
@@ -76,14 +76,16 @@ public enum Namespace {
         final Map<String, Namespace> map = new HashMap<String, Namespace>();
         for (Namespace namespace : values()) {
             final String name = namespace.getUriString();
-            if (name != null) map.put(name, namespace);
+            if (name != null)
+                map.put(name, namespace);
         }
         MAP = map;
     }
 
     public static Namespace forUri(String uri) {
         // FIXME when STXM-8 is done, remove the null check
-        if (uri == null || XMLConstants.NULL_NS_URI.equals(uri)) return NONE;
+        if (uri == null || XMLConstants.NULL_NS_URI.equals(uri))
+            return NONE;
         final Namespace element = MAP.get(uri);
         return element == null ? UNKNOWN : element;
     }
