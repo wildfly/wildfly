@@ -42,6 +42,7 @@ public enum Attribute {
     AUTO_START("auto-start"),
     BASE_DN("base-dn"),
     BOOT_TIME("boot-time"),
+    CODE("code"),
     CONNECTION("connection"),
     DEFAULT_INTERFACE("default-interface"),
     DEBUG_ENABLED("debug-enabled"),

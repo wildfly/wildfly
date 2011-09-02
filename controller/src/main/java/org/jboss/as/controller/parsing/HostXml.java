@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -45,6 +44,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTION;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
@@ -82,16 +83,19 @@ public class HostXml extends CommonXml {
     }
 
     @Override
-    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList) throws XMLStreamException {
+    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList)
+            throws XMLStreamException {
         final ModelNode address = new ModelNode().setEmptyList();
-        if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0 || Element.forName(reader.getLocalName()) != Element.HOST) {
+        if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0
+                || Element.forName(reader.getLocalName()) != Element.HOST) {
             throw unexpectedElement(reader);
         }
         readHostElement(reader, address, operationList);
     }
 
     @Override
-    public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context) throws XMLStreamException {
+    public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context)
+            throws XMLStreamException {
 
         final ModelNode modelNode = context.getModelNode();
 
@@ -127,7 +131,7 @@ public class HostXml extends CommonXml {
         }
         if (modelNode.hasDefined(JVM)) {
             writer.writeStartElement(Element.JVMS.getLocalName());
-            for(final Property jvm : modelNode.get(JVM).asPropertyList()) {
+            for (final Property jvm : modelNode.get(JVM).asPropertyList()) {
                 writeJVMElement(writer, jvm.getName(), jvm.getValue());
             }
             writer.writeEndElement();
@@ -137,11 +141,29 @@ public class HostXml extends CommonXml {
             writeServers(writer, modelNode.get(SERVER_CONFIG));
         }
 
+        if (modelNode.hasDefined(VAULT)) {
+            ModelNode vault = modelNode.get(VAULT);
+            writer.writeStartElement(Element.VAULT.getLocalName());
+            String code = vault.get(Attribute.CODE.getLocalName()).asString();
+            if (code != null && !code.isEmpty()) {
+                writer.writeAttribute(Attribute.CODE.getLocalName(), code);
+            }
+
+            ModelNode properties = vault.get(VAULT_OPTION);
+            for (Property prop : properties.asPropertyList()) {
+                writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
+            }
+            writer.writeEndElement();
+        }
+
         writer.writeEndElement();
         writer.writeEndDocument();
     }
 
-    private void readHostElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void readHostElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
         String hostName = null;
 
         // Deffer adding the namespaces and schema locations until after the host has been created.
@@ -150,7 +172,7 @@ public class HostXml extends CommonXml {
 
         // attributes
         final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
+        for (int i = 0; i < count; i++) {
             switch (Namespace.forUri(reader.getAttributeNamespace(i))) {
                 case NONE: {
                     final String value = reader.getAttributeValue(i);
@@ -160,7 +182,8 @@ public class HostXml extends CommonXml {
                             hostName = value;
                             break;
                         }
-                        default: throw unexpectedAttribute(reader, i);
+                        default:
+                            throw unexpectedAttribute(reader, i);
                     }
                     break;
                 }
@@ -180,7 +203,8 @@ public class HostXml extends CommonXml {
                     }
                     break;
                 }
-                default: throw unexpectedAttribute(reader, i);
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
 
@@ -232,24 +256,29 @@ public class HostXml extends CommonXml {
             element = nextElement(reader);
         }
 
-//        for ( ;reader.hasNext(); ) {
-//            switch (reader.nextTag()) {
-//                case START_ELEMENT: {
-//                    readHeadComment(reader, address, list);
-//                    if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-//                        throw unexpectedElement(reader);
-//                    }
-//                    switch (Element.forName(reader.getLocalName())) {
-//                        default: throw unexpectedElement(reader);
-//                    }
-//                }
-//                case END_ELEMENT: {
-//                    readTailComment(reader, address, list);
-//                    return;
-//                }
-//                default: throw new IllegalStateException();
-//            }
-//        }
+        if (element == Element.VAULT) {
+            parseVault(reader, address);
+            element = nextElement(reader);
+        }
+
+        // for ( ;reader.hasNext(); ) {
+        // switch (reader.nextTag()) {
+        // case START_ELEMENT: {
+        // readHeadComment(reader, address, list);
+        // if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+        // throw unexpectedElement(reader);
+        // }
+        // switch (Element.forName(reader.getLocalName())) {
+        // default: throw unexpectedElement(reader);
+        // }
+        // }
+        // case END_ELEMENT: {
+        // readTailComment(reader, address, list);
+        // return;
+        // }
+        // default: throw new IllegalStateException();
+        // }
+        // }
 
     }
 
@@ -258,7 +287,7 @@ public class HostXml extends CommonXml {
      */
     private void addLocalHost(final ModelNode address, final List<ModelNode> operationList, final String hostName) {
         // All further operations should modify the newly added host so the address passed in is updated.
-        address.add(HOST,hostName);
+        address.add(HOST, hostName);
 
         final ModelNode host = new ModelNode();
         host.get(OP).set("add-host");
@@ -269,9 +298,8 @@ public class HostXml extends CommonXml {
         operationList.add(host);
     }
 
-
-    private void parseDomainController(final XMLExtendedStreamReader reader,
-            final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseDomainController(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
 
         requireNoAttributes(reader);
 
@@ -284,14 +312,11 @@ public class HostXml extends CommonXml {
                     switch (element) {
                         case LOCAL: {
                             if (hasLocal) {
-                                throw new XMLStreamException("Child " + element.getLocalName() +
-                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
-                                        " already declared", reader.getLocation());
-                            }
-                            else if (hasRemote) {
-                                throw new XMLStreamException("Child " + Element.REMOTE.getLocalName() +
-                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
-                                        " already declared", reader.getLocation());
+                                throw new XMLStreamException("Child " + element.getLocalName() + " of element "
+                                        + Element.DOMAIN_CONTROLLER.getLocalName() + " already declared", reader.getLocation());
+                            } else if (hasRemote) {
+                                throw new XMLStreamException("Child " + Element.REMOTE.getLocalName() + " of element "
+                                        + Element.DOMAIN_CONTROLLER.getLocalName() + " already declared", reader.getLocation());
                             }
                             requireNoAttributes(reader);
                             requireNoContent(reader);
@@ -300,29 +325,28 @@ public class HostXml extends CommonXml {
                         }
                         case REMOTE: {
                             if (hasRemote) {
-                                throw new XMLStreamException("Child " + element.getLocalName() +
-                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
-                                        " already declared", reader.getLocation());
-                            }
-                            else if (hasLocal) {
-                                throw new XMLStreamException("Child " + Element.LOCAL.getLocalName() +
-                                        " of element " + Element.DOMAIN_CONTROLLER.getLocalName() +
-                                        " already declared", reader.getLocation());
+                                throw new XMLStreamException("Child " + element.getLocalName() + " of element "
+                                        + Element.DOMAIN_CONTROLLER.getLocalName() + " already declared", reader.getLocation());
+                            } else if (hasLocal) {
+                                throw new XMLStreamException("Child " + Element.LOCAL.getLocalName() + " of element "
+                                        + Element.DOMAIN_CONTROLLER.getLocalName() + " already declared", reader.getLocation());
                             }
                             parseRemoteDomainController(reader, address, list);
                             hasRemote = true;
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw unexpectedElement(reader);
             }
         }
         if (!hasLocal && !hasRemote) {
-            throw new XMLStreamException("Either a " + Element.REMOTE.getLocalName() + " or " +
-                    Element.LOCAL.getLocalName() + " domain controller configuration must be declared.", reader.getLocation());
+            throw new XMLStreamException("Either a " + Element.REMOTE.getLocalName() + " or " + Element.LOCAL.getLocalName()
+                    + " domain controller configuration must be declared.", reader.getLocation());
         }
 
         if (hasLocal) {
@@ -333,14 +357,14 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseRemoteDomainController(final XMLExtendedStreamReader reader,
-            final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseRemoteDomainController(final XMLExtendedStreamReader reader, final ModelNode address,
+            final List<ModelNode> list) throws XMLStreamException {
         // Handle attributes
         String host = null;
         Integer port = null;
         String securityRealm = null;
         final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
+        for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
@@ -354,9 +378,8 @@ public class HostXml extends CommonXml {
                     case PORT: {
                         port = Integer.valueOf(value);
                         if (port.intValue() < 1) {
-                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() +
-                                    "' value " + port + " -- cannot be less than one",
-                                    reader.getLocation());
+                            throw new XMLStreamException("Illegal '" + attribute.getLocalName() + "' value " + port
+                                    + " -- cannot be less than one", reader.getLocation());
                         }
                         break;
                     }
@@ -364,14 +387,15 @@ public class HostXml extends CommonXml {
                         securityRealm = value;
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw unexpectedAttribute(reader, i);
                 }
             }
         }
-        if(host == null) {
+        if (host == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.HOST.getLocalName()));
         }
-        if(port == null) {
+        if (port == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PORT.getLocalName()));
         }
 
@@ -388,7 +412,8 @@ public class HostXml extends CommonXml {
         reader.discardRemainder();
     }
 
-    private void parseJvms(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseJvms(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
 
         requireNoAttributes(reader);
 
@@ -414,8 +439,8 @@ public class HostXml extends CommonXml {
         }
     }
 
-
-    private void parseServers(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseServers(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
 
         requireNoAttributes(reader);
         // Handle elements
@@ -440,13 +465,14 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseServer(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list, final Set<String> serverNames) throws XMLStreamException {
+    private void parseServer(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list,
+            final Set<String> serverNames) throws XMLStreamException {
         // Handle attributes
         String name = null;
         String group = null;
         Boolean start = null;
         final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i ++) {
+        for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
@@ -468,7 +494,8 @@ public class HostXml extends CommonXml {
                         start = Boolean.valueOf(value);
                         break;
                     }
-                    default: throw unexpectedAttribute(reader, i);
+                    default:
+                        throw unexpectedAttribute(reader, i);
                 }
             }
         }
@@ -510,7 +537,7 @@ public class HostXml extends CommonXml {
                             sawJvm = true;
                             break;
                         }
-                        case PATHS : {
+                        case PATHS: {
                             parsePaths(reader, address, list, true);
                             break;
                         }
@@ -530,22 +557,24 @@ public class HostXml extends CommonXml {
                             sawSystemProperties = true;
                             break;
                         }
-                        default: throw unexpectedElement(reader);
+                        default:
+                            throw unexpectedElement(reader);
                     }
                     break;
                 }
-                default: throw unexpectedElement(reader);
+                default:
+                    throw unexpectedElement(reader);
             }
         }
 
     }
 
-    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
+            throws XMLStreamException {
         writer.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
         if (modelNode.hasDefined(LOCAL)) {
             writer.writeEmptyElement(Element.LOCAL.getLocalName());
-        }
-        else if (modelNode.hasDefined(REMOTE)) {
+        } else if (modelNode.hasDefined(REMOTE)) {
             writer.writeStartElement(Element.REMOTE.getLocalName());
             final ModelNode remote = modelNode.get(REMOTE);
             if (remote.has(HOST)) {
@@ -586,8 +615,8 @@ public class HostXml extends CommonXml {
             if (server.hasDefined(INTERFACE)) {
                 writeInterfaces(writer, server.get(INTERFACE));
             }
-            if (server.hasDefined(JVM)){
-                for(final Property jvm : server.get(JVM).asPropertyList()) {
+            if (server.hasDefined(JVM)) {
+                for (final Property jvm : server.get(JVM).asPropertyList()) {
                     writeJVMElement(writer, jvm.getName(), jvm.getValue());
                     break; // TODO just write the first !?
                 }
