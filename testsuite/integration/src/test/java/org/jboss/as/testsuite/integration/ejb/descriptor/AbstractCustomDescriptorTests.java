@@ -21,13 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.ejb.descriptor;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -39,27 +33,15 @@ import static org.junit.Assert.fail;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@RunWith(Arquillian.class)
-public class CustomDescriptorTestCase {
-    @Deployment
-    public static Archive<?> deployment() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-descriptor-test.jar")
-            .addPackage(DescriptorGreeterBean.class.getPackage())
-            .addAsManifestResource("ejb/descriptor/jboss-ejb3.xml", "jboss-ejb3.xml");
-        return jar;
-    }
-
-//    @EJB
-//    private DescriptorGreeterBean bean;
-
+public abstract class AbstractCustomDescriptorTests {
     @Test
-    public void testAnnotated() throws NamingException {
+    public void test1() throws NamingException {
         final InitialContext ctx = new InitialContext();
         try {
-            final AnnotatedGreeterBean bean = (AnnotatedGreeterBean) ctx.lookup("java:global/ejb-descriptor-test/AnnotatedGreeter!org.jboss.as.testsuite.integration.ejb.descriptor.AnnotatedGreeterBean");
-            final String name = "testAnnotated";
+            final DescriptorGreeterBean bean = (DescriptorGreeterBean) ctx.lookup("java:global/ejb-descriptor-test/DescriptorGreeter!org.jboss.as.testsuite.integration.ejb.descriptor.DescriptorGreeterBean");
+            final String name = "test1";
             final String result = bean.greet(name);
-            assertEquals("Hi testAnnotated", result);
+            assertEquals("Hi test1", result);
         } catch (NameNotFoundException e) {
             fail(e.getMessage());
         }
