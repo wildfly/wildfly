@@ -21,6 +21,7 @@
  */
 package org.jboss.as.osgi.parser;
 
+import java.io.IOException;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -29,6 +30,7 @@ import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -38,7 +40,7 @@ import org.junit.Test;
 /**
  * @author David Bosschaert
  */
-public class OSGiSubsystemTestCase extends AbstractSubsystemTest {
+public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     // Sample subsystem configuration
     private static final String SUBSYSTEM_XML_1 =
         "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='lazy'>" +
@@ -64,6 +66,11 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemTest {
 
     public OSGiSubsystemTestCase() {
         super(OSGiExtension.SUBSYSTEM_NAME, new OSGiExtension());
+    }
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return SUBSYSTEM_XML_1;
     }
 
     @Test

@@ -22,115 +22,24 @@
 
 package org.jboss.as.messaging.test;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.messaging.MessagingSubsystemParser;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
-import javax.swing.plaf.OptionPaneUI;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class SubsystemParsingUnitTestCase  extends AbstractSubsystemTest {
-
-    private static final String namespace = "urn:jboss:domain:messaging:1.0";
-    private static final MessagingSubsystemParser parser = MessagingSubsystemParser.getInstance();
-
-//    private static File tmpDir;
-//
-//    @BeforeClass
-//    public static void createDataDir() {
-//        File tmp =  new File(System.getProperty("java.io.tmpdir"));
-//        tmpDir = new File(tmp, SubsystemParsingUnitTestCase.class.getSimpleName());
-//    }
-//
-//    @AfterClass
-//    public static void deleteDataDir() {
-//        cleanDir(tmpDir);
-//    }
-//
-//    private static void cleanDir(File file) {
-//        if (file.isDirectory()) {
-//            for (File child : file.listFiles()) {
-//                cleanDir(child);
-//            }
-//        }
-//
-//        if (file.exists() && !file.delete()) {
-//            file.deleteOnExit();
-//        }
-//    }
+public class SubsystemParsingUnitTestCase extends AbstractSubsystemBaseTest {
 
     public SubsystemParsingUnitTestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
 
-    @Test
-    public void testParseAndMarshalModel() throws Exception {
-        //Parse the subsystem xml and install into the first controller
-        String subsystemXml = readResource("subsystem.xml");
-
-        AdditionalInitialization additionalInit = new AdditionalInitialization(){
-
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-
-//            @Override
-//            public void setupController(ControllerInitializer controllerInitializer) {
-//                controllerInitializer.addSocketBinding("messaging", 12345);
-//                controllerInitializer.addSocketBinding("messaging-throughput", 12346);
-//                File dataDir = new File(tmpDir, "testParseAndMarshalModel");
-//                controllerInitializer.addPath("jboss.server.data.dir", dataDir.getAbsolutePath(), null);
-//            }
-        };
-
-        KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
-        //Get the model and the persisted xml from the first controller
-        ModelNode modelA = servicesA.readWholeModel();
-        String marshalled = servicesA.getPersistedSubsystemXml();
-        servicesA.shutdown();
-
-        System.out.println(marshalled);
-
-        //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(additionalInit, marshalled);
-        ModelNode modelB = servicesB.readWholeModel();
-
-        //Make sure the models from the two controllers are identical
-        super.compare(modelA, modelB);
-
-        // test the describe operation
-        final ModelNode operation = createDescribeOperation();
-        final ModelNode result = servicesB.executeOperation(operation);
-        final List<ModelNode> operations = result.get("result").asList();
-
-        servicesB.shutdown();
-
-        KernelServices servicesC = super.installInController(additionalInit, operations);
-        ModelNode modelC = servicesC.readWholeModel();
-
-        super.compare(modelA, modelC);
-    }
-
-    static ModelNode createDescribeOperation() {
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-
-        final ModelNode operation = new ModelNode();
-        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.DESCRIBE);
-        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
-        return operation;
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("subsystem.xml");
     }
 
 }
