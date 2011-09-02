@@ -238,7 +238,9 @@ public class ModelDescriptionConstants {
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
+    public static final String VAULT = "vault";
+    public static final String VAULT_OPTION = "vault-option";
 
-
-    private ModelDescriptionConstants() { }
+    private ModelDescriptionConstants() {
+    }
 }
