@@ -128,6 +128,10 @@ public abstract class AbstractSubsystemTest {
 
     }
 
+    public String getMainSubsystemName() {
+        return mainSubsystemName;
+    }
+
     @Before
     public void initializeParser() throws Exception {
         //Initialize the parser
