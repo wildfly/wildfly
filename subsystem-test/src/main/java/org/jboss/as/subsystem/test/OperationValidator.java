@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.subsystem.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
@@ -109,6 +109,13 @@ class OperationValidator {
 
     private void checkActualOperationParamsAreDescribed(final ModelNode description, final ModelNode operation, final Map<String, ModelNode> describedProperties, final Map<String, ModelNode> actualParams) {
         for (String paramName : actualParams.keySet()) {
+            final ModelNode param = actualParams.get(paramName);
+            if(! param.isDefined()) {
+                continue;
+            }
+            if(param.getType() == ModelType.OBJECT && param.keys().isEmpty()) {
+                return;
+            }
             if (!describedProperties.containsKey(paramName)) {
                 Assert.fail("Operation " + operation + " contains a parameter '" + paramName + "' which does not appear in the description " + description);
             }
@@ -137,6 +144,9 @@ class OperationValidator {
             ModelNode value = actualParams.get(paramName);
             if(!value.isDefined()) {
                 continue;
+            }
+            if(value.getType() == ModelType.OBJECT && value.keys().isEmpty()) {
+                return;
             }
             ModelNode typeNode = describedProperties.get(paramName).get(TYPE);
             Assert.assertTrue("No type for param '" + paramName + "' in " + description, typeNode.isDefined());
