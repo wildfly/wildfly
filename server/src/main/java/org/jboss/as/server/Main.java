@@ -176,6 +176,10 @@ public final class Main {
                     }
                     systemProperties.setProperty(name, value);
                     SecurityActions.setSystemProperty(name, value);
+                } else if (arg.startsWith("-b")) {
+                    String value = args[++i];
+                    String logicalName = "-b".equals(arg) ? "public" : arg.substring(2);
+                    SecurityActions.setSystemProperty(ServerEnvironment.NETWORK_IP_PREFIX + logicalName, value);
                 } else {
                     System.err.printf("Invalid option '%s'\n", arg);
                     usage();
