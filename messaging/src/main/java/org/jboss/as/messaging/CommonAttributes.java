@@ -453,6 +453,7 @@ public interface CommonAttributes {
     String CONNECTOR_SERVICES = "connector-services";
     String CONSUME_XML_NAME ="consume";
     String CONSUMER_COUNT ="consumer-count";
+    String CORE_ADDRESS ="core-address";
     String CORE_QUEUE ="core-queue";
     String CORE_QUEUES ="core-queues";
     String CREATEDURABLEQUEUE_XML_NAME ="createDurableQueue";
