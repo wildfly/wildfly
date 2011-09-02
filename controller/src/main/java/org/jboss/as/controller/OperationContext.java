@@ -292,11 +292,25 @@ public interface OperationContext {
      * Create a new resource, relative to the executed operation address.  Since only one operation
      * may write at a time, this operation may block until other writing operations have completed.
      *
-     * @param address the (possibly empty) address to remove
+     * @param address the (possibly empty) address where the resource should be created. Address is relative to the
+     *                address of the operation being executed
      * @return the created resource
+     * @throws IllegalStateException if a resource already exists at the given address
      * @throws UnsupportedOperationException if the calling operation is not a model operation
      */
     Resource createResource(PathAddress address) throws UnsupportedOperationException;
+
+    /**
+     * Add a new resource, relative to the executed operation address.  Since only one operation
+     * may write at a time, this operation may block until other writing operations have completed.
+     *
+     * @param address the (possibly empty) address where the resource should be added. Address is relative to the
+     *                address of the operation being executed
+     * @param toAdd the new resource
+     * @throws IllegalStateException if a resource already exists at the given address
+     * @throws UnsupportedOperationException if the calling operation is not a model operation
+     */
+    void addResource(PathAddress address, Resource toAdd);
 
     /**
      * Get the addressable resource for read only operations.
