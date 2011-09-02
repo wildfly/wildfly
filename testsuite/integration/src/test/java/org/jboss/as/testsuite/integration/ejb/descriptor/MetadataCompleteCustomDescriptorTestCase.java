@@ -33,35 +33,29 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @RunWith(Arquillian.class)
-public class CustomDescriptorTestCase {
+public class MetadataCompleteCustomDescriptorTestCase extends AbstractCustomDescriptorTests {
     @Deployment
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-descriptor-test.jar")
             .addPackage(DescriptorGreeterBean.class.getPackage())
-            .addAsManifestResource("ejb/descriptor/jboss-ejb3.xml", "jboss-ejb3.xml");
+            .addAsManifestResource("ejb/descriptor/jboss-ejb3-md-complete.xml", "jboss-ejb3.xml");
         return jar;
     }
-
-//    @EJB
-//    private DescriptorGreeterBean bean;
 
     @Test
     public void testAnnotated() throws NamingException {
         final InitialContext ctx = new InitialContext();
         try {
             final AnnotatedGreeterBean bean = (AnnotatedGreeterBean) ctx.lookup("java:global/ejb-descriptor-test/AnnotatedGreeter!org.jboss.as.testsuite.integration.ejb.descriptor.AnnotatedGreeterBean");
-            final String name = "testAnnotated";
-            final String result = bean.greet(name);
-            assertEquals("Hi testAnnotated", result);
+            fail("The annotated bean should not be available");
         } catch (NameNotFoundException e) {
-            fail(e.getMessage());
+            // good
         }
     }
 }
