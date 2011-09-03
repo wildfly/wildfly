@@ -110,7 +110,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
         // Begin check for -b information (AS7-1668)
         String argBinding = ServerEnvironment.getNetworkBinding(name);
-        log.infof("The argument binding for logical interface %s is %s\n", name, argBinding);
+        log.debugf("The argument binding for logical interface %s is %s\n", name, argBinding);
         if (argBinding != null && !argBinding.trim().isEmpty()) {
             InetAddress address = InetAddress.getByName(argBinding);
             if (address.isAnyLocalAddress()) {
