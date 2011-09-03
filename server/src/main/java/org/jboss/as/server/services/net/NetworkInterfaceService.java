@@ -27,8 +27,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -111,17 +109,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             final boolean anyLocal, final InterfaceCriteria criteria) throws SocketException, UnknownHostException {
 
         // Begin check for -b information (AS7-1668)
-        String argBinding = null;
-        if (System.getSecurityManager() == null) {
-            argBinding = System.getProperty(ServerEnvironment.NETWORK_IP_PREFIX + name);
-        } else {
-            AccessController.doPrivileged(new PrivilegedAction<String>() {
-                public String run() {
-                    return System.getProperty(ServerEnvironment.NETWORK_IP_PREFIX + name);
-                }
-            });
-        }
-
+        String argBinding = ServerEnvironment.getNetworkBinding(name);
         log.infof("The argument binding for logical interface %s is %s\n", name, argBinding);
         if (argBinding != null && !argBinding.trim().isEmpty()) {
             InetAddress address = InetAddress.getByName(argBinding);
