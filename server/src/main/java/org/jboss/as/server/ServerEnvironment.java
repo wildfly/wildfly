@@ -168,6 +168,7 @@ public class ServerEnvironment implements Serializable {
      */
     public static final String BOOTSTRAP_MAX_THREADS = "org.jboss.server.bootstrap.maxThreads";
 
+    /**
      * Prefix for the system property used to store bind information from the command-line (-b).
      */
     public static final String NETWORK_IP_PREFIX = "jboss.network.ip.";
@@ -409,6 +410,10 @@ public class ServerEnvironment implements Serializable {
 
     public LaunchType getLaunchType() {
         return launchType;
+    }
+
+    public static String getNetworkBinding(String logicalName) {
+        return SecurityActions.getSystemProperty(NETWORK_IP_PREFIX + logicalName);
     }
 
     public boolean isStandalone() {
