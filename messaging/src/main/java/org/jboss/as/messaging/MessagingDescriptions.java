@@ -130,7 +130,7 @@ public class MessagingDescriptions {
 
         node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, DESCRIPTION).set(bundle.getString("bindings.directory"));
         node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, MIN_OCCURS).set(0);
-        node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, DESCRIPTION).set(bundle.getString("bindings.directory"));
+        node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, MODEL_DESCRIPTION);
 
         node.get(CHILDREN, CommonAttributes.JOURNAL_DIRECTORY, DESCRIPTION).set(bundle.getString("journal.directory"));
         node.get(CHILDREN, CommonAttributes.JOURNAL_DIRECTORY, MIN_OCCURS).set(0);
