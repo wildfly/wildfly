@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -84,7 +85,7 @@ public class MessagingExtension implements Extension {
     static final PathElement IN_VM_CONNECTOR = PathElement.pathElement(CommonAttributes.IN_VM_CONNECTOR);
 
     static final PathElement PARAM = PathElement.pathElement(CommonAttributes.PARAM);
-
+    private static final PathElement CORE_ADDRESS_PATH = PathElement.pathElement(CommonAttributes.CORE_ADDRESS);
     private static final PathElement CFS_PATH = PathElement.pathElement(CommonAttributes.CONNECTION_FACTORY);
     private static final PathElement JMS_QUEUE_PATH = PathElement.pathElement(CommonAttributes.JMS_QUEUE);
     private static final PathElement TOPIC_PATH = PathElement.pathElement(CommonAttributes.JMS_TOPIC);
@@ -110,18 +111,12 @@ public class MessagingExtension implements Extension {
         for (AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             rootRegistration.registerReadWriteAttribute(attributeDefinition.getName(), null, HornetQServerControlWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
-        // TODO runtime operations exposed by HornetQServerControl
-        // METRICS
+        HornetQServerControlHandler.INSTANCE.register(rootRegistration);
+        // runtime operations exposed by HornetQServerControl
         // READ-ATTRIBUTES
         // getConnectors (maybe), getAddressNames, getQueueNames, getDivertNames, getBridgeNames,
         // OPS
-        // getConnectorsAsJSON, enableMessageCounters(maybe), disableMessageCounters(maybe), resetAllMessageCounters,
-        // resetAllMessageCounterHistories, listPreparedTransactions,
-        // listPreparedTransactionDetailsAsJSON, listPreparedTransactionDetailsAsHTML, listHeuristicCommittedTransactions
-        // listHeuristicRolledBackTransactions, commitPreparedTransaction, rollbackPreparedTransaction,
-        // listRemoteAddresses, listRemoteAddresses(String), closeConnectionsForAddress, listConnectionIDs,
-        // listProducersInfoAsJSON, listSessions, getRoles, getRolesAsJSON, getAddressSettingsAsJSON,
-        // forceFailover
+        // enableMessageCounters(maybe), disableMessageCounters(maybe)
         // TODO runtime operations exposed by JMSServerControl
         // METRICS
         // READ-ATTRIBUTES
@@ -131,17 +126,17 @@ public class MessagingExtension implements Extension {
         // listConsumersAsJSON, listAllConsumersAsJSON, listTargetDestinations, getLastSentMessageID,
         // getSessionCreationTime, listSessionsAsJSON, listPreparedTransactionDetailsAsJSON, listPreparedTransactionDetailsAsHTML
 
-
+        // Runtime addresses
+        final ManagementResourceRegistration coreAddress = rootRegistration.registerSubModel(CORE_ADDRESS_PATH, MessagingSubsystemProviders.CORE_ADDRESS);
+        AddressControlHandler.INSTANCE.register(coreAddress);
 
         // Address settings
-        final ManagementResourceRegistration address = rootRegistration.registerSubModel(ADDRESS_SETTING, MessagingSubsystemProviders.ADDRESS_SETTING);
-        address.registerOperationHandler(ADD, AddressSettingAdd.INSTANCE, MessagingSubsystemProviders.ADDRESS_SETTING_ADD);
-        address.registerOperationHandler(REMOVE, AddressSettingRemove.INSTANCE, MessagingSubsystemProviders.ADDRESS_SETTING_REMOVE);
+        final ManagementResourceRegistration addressSetting = rootRegistration.registerSubModel(ADDRESS_SETTING, MessagingSubsystemProviders.ADDRESS_SETTING);
+        addressSetting.registerOperationHandler(ADD, AddressSettingAdd.INSTANCE, MessagingSubsystemProviders.ADDRESS_SETTING_ADD);
+        addressSetting.registerOperationHandler(REMOVE, AddressSettingRemove.INSTANCE, MessagingSubsystemProviders.ADDRESS_SETTING_REMOVE);
         for(final AttributeDefinition definition : AddressSettingAdd.ATTRIBUTES) {
-            address.registerReadWriteAttribute(definition.getName(), null, AddressSettingsWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+            addressSetting.registerReadWriteAttribute(definition.getName(), null, AddressSettingsWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
         }
-        // TODO operations exposed by AddressControl
-        // getRoles, getRolesAsJSON, getQueueNames, getNumberOfPages, getNumberOfBytesPerPage, getBindingNames
 
         // Broadcast groups
         final ManagementResourceRegistration broadcastGroups = rootRegistration.registerSubModel(BROADCAST_GROUP_PATH, MessagingSubsystemProviders.BROADCAST_GROUP_RESOURCE);

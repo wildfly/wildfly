@@ -360,4 +360,11 @@ class MessagingSubsystemProviders {
             return MessagingDescriptions.getSecuritySettingResource(locale);
         }
     };
+
+    public static final DescriptionProvider CORE_ADDRESS = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getCoreAddressResource(locale);
+        }
+    };
 }
