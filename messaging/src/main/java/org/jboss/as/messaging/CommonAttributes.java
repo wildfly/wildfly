@@ -435,6 +435,7 @@ public interface CommonAttributes {
     String ADDRESS_SETTING ="address-setting";
     String ADDRESS_SETTINGS ="address-settings";
     String BACKUP_CONNECTOR_NAME ="backup-connector-name";
+    String BINDING_NAMES ="binding-names";
     String BINDINGS_DIRECTORY ="bindings-directory";
     String BRIDGE = "bridge";
     String BRIDGES = "bridges";
@@ -505,6 +506,8 @@ public interface CommonAttributes {
     String NON_DURABLE_MESSAGE_COUNT = "non-durable-message-count";
     String NON_DURABLE_SUBSCRIPTION_COUNT = "non-durable-subscription-count";
     String NO_TX = "NoTransaction";
+    String NUMBER_OF_BYTES_PER_PAGE = "number-of-bytes-per-page";
+    String NUMBER_OF_PAGES = "number-of-pages";
     String PAGE_MAX_CACHE_SIZE = "page-max-cache-size";
     String PAGING_DIRECTORY ="paging-directory";
     String PARAM ="param";
@@ -512,6 +515,7 @@ public interface CommonAttributes {
     String PERMISSION_ELEMENT_NAME ="permission";
     String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
     String QUEUE ="queue";
+    String QUEUE_NAMES ="queue-names";
     String REMOTING_INTERCEPTORS_STRING ="remoting-interceptors";
     String REMOTE_ACCEPTOR = "remote-acceptor";
     String REMOTE_CONNECTOR = "remote-connector";
@@ -532,6 +536,7 @@ public interface CommonAttributes {
     String TOPIC_ADDRESS ="topic-address";
     String TRANSACTION = "transaction";
     String TYPE_ATTR_NAME ="type";
+    String VERSION = "version";
     String XA = "xa";
     String XA_TX = "XATransaction";
 

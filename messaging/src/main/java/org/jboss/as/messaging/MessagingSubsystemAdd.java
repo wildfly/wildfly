@@ -149,10 +149,21 @@ class MessagingSubsystemAdd implements OperationStepHandler, DescriptionProvider
 
     /** {@inheritDoc */
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+
+        // We use a custom Resource impl so we can expose runtime HQ components (e.g. AddressControl) as child resources
         final HornetQServerResource resource = new HornetQServerResource();
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
         final ModelNode model = resource.getModel();
-        populateModel(operation, model);
+
+        for (final AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+            attributeDefinition.validateAndSet(operation, model);
+        }
+
+        model.get(QUEUE).setEmptyObject();
+        model.get(CONNECTION_FACTORY).setEmptyObject();
+        model.get(JMS_QUEUE).setEmptyObject();
+        model.get(JMS_TOPIC).setEmptyObject();
+        model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
@@ -172,20 +183,6 @@ class MessagingSubsystemAdd implements OperationStepHandler, DescriptionProvider
             }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep();
-    }
-
-    private void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.setEmptyObject();
-
-        for (final AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            attributeDefinition.validateAndSet(operation, model);
-        }
-
-        model.get(QUEUE);
-        model.get(CONNECTION_FACTORY).setEmptyObject();
-        model.get(JMS_QUEUE).setEmptyObject();
-        model.get(JMS_TOPIC).setEmptyObject();
-        model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
     }
 
     private void performRuntime(final OperationContext context, final HornetQServerResource resource,

@@ -191,34 +191,26 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
 
         try {
             if (LIST_ALL_SUBSCRIPTIONS.equals(operationName)) {
-//                Object[] subscriptions = control.listAllSubscriptions();
-//                recordSubscriptions(subscriptions, context.getResult());
                 String json = control.listAllSubscriptionsAsJSON();
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
-                context.getResult().set(convertSubscriptionKeys(jsonAsNode));
+                context.getResult().set(jsonAsNode);
             } else if (LIST_ALL_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listAllSubscriptionsAsJSON());
             } else if (LIST_DURABLE_SUBSCRIPTIONS.equals(operationName)) {
-//                Object[] subscriptions = control.listDurableSubscriptions();
-//                recordSubscriptions(subscriptions, context.getResult());
                 String json = control.listDurableSubscriptionsAsJSON();
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
-                context.getResult().set(convertSubscriptionKeys(jsonAsNode));
+                context.getResult().set(jsonAsNode);
             } else if (LIST_DURABLE_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listDurableSubscriptionsAsJSON());
             } else if (LIST_NON_DURABLE_SUBSCRIPTIONS.equals(operationName)) {
-//                Object[] subscriptions = control.listNonDurableSubscriptions();
-//                recordSubscriptions(subscriptions, context.getResult());
                 String json = control.listNonDurableSubscriptionsAsJSON();
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
-                context.getResult().set(convertSubscriptionKeys(jsonAsNode));
+                context.getResult().set(jsonAsNode);
             } else if (LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listNonDurableSubscriptionsAsJSON());
             } else if (LIST_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
                 listMessagesForSubscriptionValidator.validate(operation);
                 final String queueName = operation.require(QUEUE_NAME.getName()).asString();
-//                Map<String, Object>[] messages = control.listMessagesForSubscription(queueName);
-//                recordMessages(messages, context.getResult());
                 String json = control.listMessagesForSubscriptionAsJSON(queueName);
                 context.getResult().set(ModelNode.fromJSONString(json));
             } else if (LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON.equals(operationName)) {
@@ -254,57 +246,5 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         }
 
         context.completeStep();
-    }
-
-    private static ModelNode convertSubscriptionKeys(ModelNode jsonAsNode) {
-        final ModelNode result = new ModelNode();
-        result.setEmptyList();
-        for (ModelNode element : jsonAsNode.asList()) {
-            final ModelNode converted = new ModelNode();
-            converted.setEmptyObject();
-            for (Property prop : element.asPropertyList()) {
-                String key = prop.getName();
-                ModelNode value = prop.getValue();
-                if ("queueName".equals(key)) {
-                    key = "queue-name";
-                } else if ("clientID".equals(key)) {
-                    key = "client-id";
-                } else if ("messageCount".equals(key)) {
-                    key = "message-count";
-                } else if ("deliveringCount".equals(key)) {
-                    key = "delivering-count";
-                } else if ("consumers".equals(key)) {
-                    ModelNode consumers = new ModelNode();
-                    consumers.setEmptyList();
-                    for (ModelNode raw : value.asList()) {
-                        consumers.add(convertConsumer(raw));
-                    }
-                    value = consumers;
-                }
-                converted.get(key).set(prop.getValue());
-            }
-            result.add(converted);
-        }
-        return result;
-    }
-
-    private static ModelNode convertConsumer(ModelNode raw) {
-        final ModelNode converted = new ModelNode();
-        for (Property prop : raw.asPropertyList()) {
-            String key = prop.getName();
-            ModelNode value = prop.getValue();
-            if ("connectionID".equals(key)) {
-                key = "connection-id";
-            } else if ("consumerID".equals(key)) {
-                key = "consumer-id";
-            } else if ("sessionID".equals(key)) {
-                key = "session-id";
-            } else if ("browseOnly".equals(key)) {
-                key = "browse-only";
-            } else if ("creationTime".equals(key)) {
-                key = "creation-time";
-            }
-        }
-        return converted;
     }
 }

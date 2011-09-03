@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -48,6 +49,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
+import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
@@ -56,6 +58,7 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_SERVICE;
 import static org.jboss.as.messaging.CommonAttributes.CONSUMER_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
@@ -75,12 +78,16 @@ import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.NODE_ID;
 import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_BYTES_PER_PAGE;
+import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAMES;
+import static org.jboss.as.messaging.CommonAttributes.ROLES_ATTR_NAME;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.STARTED;
@@ -231,6 +238,29 @@ public class MessagingDescriptions {
 
     public static ModelNode getSubsystemRemove(Locale locale) {
         return getDescriptionOnlyOperation(locale, REMOVE, "messaging");
+    }
+
+    public static ModelNode getGetRoles(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode result = getSingleParamSimpleReplyOperation(bundle, HornetQServerControlHandler.GET_ROLES,
+                HornetQServerControlHandler.HQ_SERVER, HornetQServerControlHandler.ADDRESS_MATCH, ModelType.STRING,
+                false, ModelType.LIST, true);
+        final ModelNode valueType = result.get(REPLY_PROPERTIES, VALUE_TYPE);
+        final ModelNode roleName = valueType.get(NAME);
+        roleName.get(DESCRIPTION).set(bundle.getString("security-role.name"));
+        roleName.get(TYPE).set(ModelType.STRING);
+        roleName.get(NILLABLE).set(false);
+        roleName.get(MIN_LENGTH).set(1);
+
+        for (AttributeDefinition attr : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+            final String attrName = attr.getName();
+            final ModelNode attrNode = valueType.get(attrName);
+            attrNode.get(DESCRIPTION).set(bundle.getString("security-role." + attrName));
+            attrNode.get(TYPE).set(ModelType.BOOLEAN);
+            attrNode.get(NILLABLE).set(false);
+        }
+
+        return result;
     }
 
     public static ModelNode getQueueResource(Locale locale) {
@@ -654,12 +684,12 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode result = getNoArgSimpleReplyOperation(bundle, operationName, "topic", ModelType.LIST, true);
 
-        final ModelNode queueName = result.get(REPLY_PROPERTIES, VALUE_TYPE, "queue-name");
-        queueName.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.queue-name"));
+        final ModelNode queueName = result.get(REPLY_PROPERTIES, VALUE_TYPE, "queueName");
+        queueName.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.queueName"));
         queueName.get(TYPE).set(ModelType.STRING);
         queueName.get(NILLABLE).set(false);
-        final ModelNode clientID = result.get(REPLY_PROPERTIES, VALUE_TYPE, "client-id");
-        clientID.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.client-id"));
+        final ModelNode clientID = result.get(REPLY_PROPERTIES, VALUE_TYPE, "clientID");
+        clientID.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.clientID"));
         clientID.get(TYPE).set(ModelType.STRING);
         clientID.get(NILLABLE).set(false);
         final ModelNode selector = result.get(REPLY_PROPERTIES, VALUE_TYPE, "selector");
@@ -674,13 +704,13 @@ public class MessagingDescriptions {
         durable.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.durable"));
         durable.get(TYPE).set(ModelType.BOOLEAN);
         durable.get(NILLABLE).set(false);
-        final ModelNode messageCount = result.get(REPLY_PROPERTIES, VALUE_TYPE, "message-count");
-        messageCount.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.message-count"));
+        final ModelNode messageCount = result.get(REPLY_PROPERTIES, VALUE_TYPE, "messageCount");
+        messageCount.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.messageCount"));
         messageCount.get(TYPE).set(ModelType.LONG);
         messageCount.get(NILLABLE).set(false);
         messageCount.get(UNIT).set(MeasurementUnit.NONE.getName());
-        final ModelNode deliveringCount = result.get(REPLY_PROPERTIES, VALUE_TYPE, "delivering-count");
-        deliveringCount.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.delivering-count"));
+        final ModelNode deliveringCount = result.get(REPLY_PROPERTIES, VALUE_TYPE, "deliveringCount");
+        deliveringCount.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.deliveringCount"));
         deliveringCount.get(TYPE).set(ModelType.INT);
         deliveringCount.get(NILLABLE).set(false);
         deliveringCount.get(UNIT).set(MeasurementUnit.NONE.getName());
@@ -689,24 +719,24 @@ public class MessagingDescriptions {
         consumers.get(TYPE).set(ModelType.LIST);
         consumers.get(NILLABLE).set(false);
         consumers.get(MIN_LENGTH).set(0);
-        final ModelNode consumerId = consumers.get(VALUE_TYPE, "consumer-id");
-        consumerId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.consumer-id"));
+        final ModelNode consumerId = consumers.get(VALUE_TYPE, "consumerID");
+        consumerId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.consumerID"));
         consumerId.get(TYPE).set(ModelType.LONG);
         consumerId.get(NILLABLE).set(false);
-        final ModelNode connectionId = consumers.get(VALUE_TYPE, "connection-id");
-        connectionId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.connection-id"));
+        final ModelNode connectionId = consumers.get(VALUE_TYPE, "connectionID");
+        connectionId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.connectionID"));
         connectionId.get(TYPE).set(ModelType.STRING);
         connectionId.get(NILLABLE).set(false);
-        final ModelNode sessionId = consumers.get(VALUE_TYPE, "session-id");
-        sessionId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.session-id"));
+        final ModelNode sessionId = consumers.get(VALUE_TYPE, "sessionID");
+        sessionId.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.sessionID"));
         sessionId.get(TYPE).set(ModelType.STRING);
         sessionId.get(NILLABLE).set(true);
-        final ModelNode browseOnly = consumers.get(VALUE_TYPE, "browse-only");
-        browseOnly.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.browse-only"));
+        final ModelNode browseOnly = consumers.get(VALUE_TYPE, "browseOnly");
+        browseOnly.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.browseOnly"));
         browseOnly.get(TYPE).set(ModelType.BOOLEAN);
         browseOnly.get(NILLABLE).set(false);
-        final ModelNode creationTime = consumers.get(VALUE_TYPE, "creation-time");
-        creationTime.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.creation-time"));
+        final ModelNode creationTime = consumers.get(VALUE_TYPE, "creationTime");
+        creationTime.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.consumers.creationTime"));
         creationTime.get(TYPE).set(ModelType.LONG);
         creationTime.get(NILLABLE).set(false);
 
@@ -1555,6 +1585,33 @@ public class MessagingDescriptions {
         return node;
     }
 
+    public static ModelNode getSingleParamOnlyOperation(final Locale locale, final String operationName,
+                                                        final String descriptionPrefix, final String paramName,
+                                                        final ModelType paramType, final boolean nillable) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        return getSingleParamOnlyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, nillable);
+    }
+
+    private static ModelNode getSingleParamOnlyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final String paramName,
+                                                        final ModelType paramType, final boolean nillable) {
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(operationName);
+        String descriptionKey = descriptionPrefix == null ? operationName : descriptionPrefix + "." + operationName;
+        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
+
+        final ModelNode param = node.get(REQUEST_PROPERTIES, paramName);
+        param.get(TYPE).set(paramType);
+        param.get(REQUIRED).set(!nillable);
+        param.get(NILLABLE).set(nillable);
+
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return node;
+    }
+
     public static ModelNode getNoArgSimpleReplyOperation(final Locale locale, final String operationName,
                                                          final String descriptionPrefix, final ModelType replyType,
                                                          final boolean describeReply) {
@@ -1575,6 +1632,62 @@ public class MessagingDescriptions {
         return result;
     }
 
+    public static ModelNode getSingleParamSimpleReplyOperation(final Locale locale, final String operationName,
+                                                         final String descriptionPrefix, final String paramName,
+                                                         final ModelType paramType, final boolean paramNillable,
+                                                         final ModelType replyType, final boolean describeReply) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, paramNillable, replyType, describeReply);
+    }
+
+    private static ModelNode getSingleParamSimpleReplyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final String paramName,
+                                                         final ModelType paramType, final boolean paramNillable,
+                                                         final ModelType replyType, final boolean describeReply) {
+        final ModelNode result = getSingleParamOnlyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, paramNillable);
+        if (describeReply) {
+            String replyKey = descriptionPrefix == null ? operationName + ".reply" : descriptionPrefix + "." + operationName + ".reply";
+            result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(replyKey));
+        }
+        result.get(REPLY_PROPERTIES, TYPE).set(replyType);
+
+        return result;
+    }
+
+    public static ModelNode getNoArgSimpleListReplyOperation(final Locale locale, final String operationName,
+                                                         final String descriptionPrefix, final ModelType listValueType,
+                                                         final boolean describeReply) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return getNoArgSimpleListReplyOperation(bundle, operationName, descriptionPrefix, listValueType, describeReply);
+    }
+
+    public static ModelNode getNoArgSimpleListReplyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final ModelType listValueType,
+                                                         final boolean describeReply) {
+        ModelNode result = getNoArgSimpleReplyOperation(bundle, operationName, descriptionPrefix, ModelType.LIST, describeReply);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(listValueType);
+        return result;
+    }
+
+    public static ModelNode getSingleParamSimpleListReplyOperation(final Locale locale, final String operationName,
+                                                         final String descriptionPrefix, final String paramName,
+                                                         final ModelType paramType, final boolean paramNillable,
+                                                         final ModelType listValueType, final boolean describeReply) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
+                paramType, paramNillable, listValueType, describeReply);
+    }
+
+    public static ModelNode getSingleParamSimpleListReplyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final String paramName,
+                                                         final ModelType paramType, final boolean paramNillable,
+                                                         final ModelType listValueType, final boolean describeReply) {
+        ModelNode result = getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
+                paramType, paramNillable, ModelType.LIST, describeReply);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(listValueType);
+        return result;
+    }
+
     public static ModelNode getAddJndiOperation(final Locale locale, final String resourceType) {
         final ResourceBundle bundle =  getResourceBundle(locale);
 
@@ -1590,6 +1703,34 @@ public class MessagingDescriptions {
         binding.get(MIN_LENGTH).set(1);
 
         result.get(REPLY_PROPERTIES).setEmptyObject();
+        return result;
+    }
+
+    public static ModelNode getCoreAddressResource(Locale locale) {
+        final ResourceBundle bundle =  getResourceBundle(locale);
+
+        final ModelNode result = new ModelNode();
+        final ModelNode attrs = result.get(ATTRIBUTES);
+        final ModelNode roles = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, ROLES_ATTR_NAME, ModelType.LIST, false, null);
+        final ModelNode rolesValue = roles.get(VALUE_TYPE);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, NAME, ModelType.STRING, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.SEND.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.CONSUME.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName(), ModelType.BOOLEAN, false, null);
+        addResourceAttributeDescription(bundle, "security-role", rolesValue, SecurityRoleAdd.MANAGE.getName(), ModelType.BOOLEAN, false, null);
+        final ModelNode queues = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, QUEUE_NAMES, ModelType.LIST, false, null);
+        queues.get(VALUE_TYPE).set(ModelType.STRING);
+        addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, NUMBER_OF_BYTES_PER_PAGE, ModelType.LONG, false, MeasurementUnit.BYTES);
+        addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, NUMBER_OF_PAGES, ModelType.INT, false, MeasurementUnit.NONE);
+        final ModelNode bindings = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, BINDING_NAMES, ModelType.LIST, false, null);
+        bindings.get(VALUE_TYPE).set(ModelType.STRING);
+
+        result.get(OPERATIONS); // placeholder
+        result.get(CHILDREN).setEmptyObject();
+
         return result;
     }
 
