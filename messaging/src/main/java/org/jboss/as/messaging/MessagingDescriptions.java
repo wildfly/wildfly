@@ -101,7 +101,9 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.messaging.jms.AbstractAddJndiHandler;
+import org.jboss.as.messaging.jms.JMSServerControlHandler;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.JMSTopicControlHandler;
 import org.jboss.dmr.ModelNode;
@@ -240,9 +242,23 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, "messaging");
     }
 
+    public static ModelNode getGetLastSentMessageId(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        ModelNode result = MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, JMSServerControlHandler.GET_LAST_SENT_MESSAGE_ID,
+                JMSServerControlHandler.JMS_SERVER, JMSServerControlHandler.SESSION_ID, ModelType.STRING, false, ModelType.STRING, true);
+
+        final ModelNode addr = result.get(REPLY_PROPERTIES, JMSServerControlHandler.ADDRESS_NAME);
+        addr.get(DESCRIPTION).set(bundle.getString("jms-server.address-name"));
+        addr.get(TYPE).set(ModelType.STRING);
+        addr.get(REQUIRED).set(true);
+        addr.get(NILLABLE).set(false);
+
+        return result;
+    }
+
     public static ModelNode getGetRoles(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode result = getSingleParamSimpleReplyOperation(bundle, HornetQServerControlHandler.GET_ROLES,
+        final ModelNode result = CommonDescriptions.getSingleParamSimpleReplyOperation(bundle, HornetQServerControlHandler.GET_ROLES,
                 HornetQServerControlHandler.HQ_SERVER, HornetQServerControlHandler.ADDRESS_MATCH, ModelType.STRING,
                 false, ModelType.LIST, true);
         final ModelNode valueType = result.get(REPLY_PROPERTIES, VALUE_TYPE);
@@ -317,7 +333,7 @@ public class MessagingDescriptions {
     public static ModelNode getListScheduledMessages(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, QueueControlHandler.LIST_SCHEDULED_MESSAGES, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, QueueControlHandler.LIST_SCHEDULED_MESSAGES, "queue");
 
         final ModelNode repProps = result.get(REPLY_PROPERTIES);
         repProps.get(DESCRIPTION).set(bundle.getString("queue.list-scheduled-messages.reply"));
@@ -330,7 +346,7 @@ public class MessagingDescriptions {
     public static ModelNode getListMessages(Locale locale, boolean forJMS, boolean json) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.LIST_MESSAGES, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.LIST_MESSAGES, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -411,7 +427,7 @@ public class MessagingDescriptions {
     public static ModelNode getCountMessages(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.COUNT_MESSAGES, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.COUNT_MESSAGES, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -423,7 +439,7 @@ public class MessagingDescriptions {
     public static ModelNode getRemoveMessage(Locale locale, boolean forJMS) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGE, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGE, "queue");
 
         populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
 
@@ -443,7 +459,7 @@ public class MessagingDescriptions {
     public static ModelNode getRemoveMessages(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGES, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGES, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -456,7 +472,7 @@ public class MessagingDescriptions {
     public static ModelNode getExpireMessages(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGES, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGES, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -469,7 +485,7 @@ public class MessagingDescriptions {
     public static ModelNode getExpireMessage(Locale locale, boolean forJMS) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
 
         populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
 
@@ -482,7 +498,7 @@ public class MessagingDescriptions {
     public static ModelNode getSendMessageToDeadLetterAddress(Locale locale, boolean forJMS) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.SEND_MESSAGE_TO_DEAD_LETTER_ADDRESS, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.SEND_MESSAGE_TO_DEAD_LETTER_ADDRESS, "queue");
 
         populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
 
@@ -495,7 +511,7 @@ public class MessagingDescriptions {
     public static ModelNode getSendMessagesToDeadLetterAddress(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.SEND_MESSAGES_TO_DEAD_LETTER_ADDRESS, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.SEND_MESSAGES_TO_DEAD_LETTER_ADDRESS, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -508,7 +524,7 @@ public class MessagingDescriptions {
     public static ModelNode getChangeMessagePriority(Locale locale, boolean forJMS) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
 
         populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
 
@@ -523,7 +539,7 @@ public class MessagingDescriptions {
     public static ModelNode getChangeMessagesPriority(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGES, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGES, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -546,7 +562,7 @@ public class MessagingDescriptions {
     public static ModelNode getMoveMessage(Locale locale, boolean forJMS) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
 
         populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
 
@@ -568,7 +584,7 @@ public class MessagingDescriptions {
     public static ModelNode getMoveMessages(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.MOVE_MESSAGES, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.MOVE_MESSAGES, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -682,7 +698,7 @@ public class MessagingDescriptions {
     public static ModelNode getListSubscriptionsOperation(Locale locale, String operationName) {
 
         final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode result = getNoArgSimpleReplyOperation(bundle, operationName, "topic", ModelType.LIST, true);
+        final ModelNode result = CommonDescriptions.getNoArgSimpleReplyOperation(bundle, operationName, "topic", ModelType.LIST, true);
 
         final ModelNode queueName = result.get(REPLY_PROPERTIES, VALUE_TYPE, "queueName");
         queueName.get(DESCRIPTION).set(bundle.getString("topic.list-subscriptions.queueName"));
@@ -1028,12 +1044,6 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, BROADCAST_GROUP);
     }
 
-    public static ModelNode getGetConnectorPairsAsJSON(Locale locale) {
-        final ModelNode result = getDescriptionOnlyOperation(locale, BroadcastGroupControlHandler.GET_CONNECTOR_PAIRS_AS_JSON, BROADCAST_GROUP);
-        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
-        return result;
-    }
-
     static ModelNode getDiscoveryGroupResource(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -1167,12 +1177,6 @@ public class MessagingDescriptions {
 
     static ModelNode getClusterConnectionRemove(final Locale locale) {
         return getDescriptionOnlyOperation(locale, REMOVE, CLUSTER_CONNECTION);
-    }
-
-    public static ModelNode getGetStaticConnectorsAsJSON(Locale locale) {
-        final ModelNode result = getDescriptionOnlyOperation(locale,  ClusterConnectionControlHandler.GET_STATIC_CONNECTORS_AS_JSON, CLUSTER_CONNECTION);
-        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
-        return result;
     }
 
     public static ModelNode getGetNodes(Locale locale) {
@@ -1569,20 +1573,7 @@ public class MessagingDescriptions {
     public static ModelNode getDescriptionOnlyOperation(final Locale locale, final String operationName, final String descriptionPrefix) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        return getDescriptionOnlyOperation(bundle, operationName, descriptionPrefix);
-    }
-
-    private static ModelNode getDescriptionOnlyOperation(final ResourceBundle bundle, final String operationName, final String descriptionPrefix) {
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(operationName);
-        String descriptionKey = descriptionPrefix == null ? operationName : descriptionPrefix + "." + operationName;
-        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
-
-        node.get(REQUEST_PROPERTIES).setEmptyObject();
-        node.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return node;
+        return CommonDescriptions.getDescriptionOnlyOperation(bundle, operationName, descriptionPrefix);
     }
 
     public static ModelNode getSingleParamOnlyOperation(final Locale locale, final String operationName,
@@ -1590,46 +1581,14 @@ public class MessagingDescriptions {
                                                         final ModelType paramType, final boolean nillable) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        return getSingleParamOnlyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, nillable);
-    }
-
-    private static ModelNode getSingleParamOnlyOperation(final ResourceBundle bundle, final String operationName,
-                                                         final String descriptionPrefix, final String paramName,
-                                                        final ModelType paramType, final boolean nillable) {
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(operationName);
-        String descriptionKey = descriptionPrefix == null ? operationName : descriptionPrefix + "." + operationName;
-        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
-
-        final ModelNode param = node.get(REQUEST_PROPERTIES, paramName);
-        param.get(TYPE).set(paramType);
-        param.get(REQUIRED).set(!nillable);
-        param.get(NILLABLE).set(nillable);
-
-        node.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return node;
+        return CommonDescriptions.getSingleParamOnlyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, nillable);
     }
 
     public static ModelNode getNoArgSimpleReplyOperation(final Locale locale, final String operationName,
                                                          final String descriptionPrefix, final ModelType replyType,
                                                          final boolean describeReply) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        return getNoArgSimpleReplyOperation(bundle, operationName, descriptionPrefix, replyType, describeReply);
-    }
-
-    private static ModelNode getNoArgSimpleReplyOperation(final ResourceBundle bundle, final String operationName,
-                                                         final String descriptionPrefix, final ModelType replyType,
-                                                         final boolean describeReply) {
-        final ModelNode result = getDescriptionOnlyOperation(bundle, operationName, descriptionPrefix);
-        if (describeReply) {
-            String replyKey = descriptionPrefix == null ? operationName + ".reply" : descriptionPrefix + "." + operationName + ".reply";
-            result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(replyKey));
-        }
-        result.get(REPLY_PROPERTIES, TYPE).set(replyType);
-
-        return result;
+        return CommonDescriptions.getNoArgSimpleReplyOperation(bundle, operationName, descriptionPrefix, replyType, describeReply);
     }
 
     public static ModelNode getSingleParamSimpleReplyOperation(final Locale locale, final String operationName,
@@ -1637,36 +1596,7 @@ public class MessagingDescriptions {
                                                          final ModelType paramType, final boolean paramNillable,
                                                          final ModelType replyType, final boolean describeReply) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        return getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, paramNillable, replyType, describeReply);
-    }
-
-    private static ModelNode getSingleParamSimpleReplyOperation(final ResourceBundle bundle, final String operationName,
-                                                         final String descriptionPrefix, final String paramName,
-                                                         final ModelType paramType, final boolean paramNillable,
-                                                         final ModelType replyType, final boolean describeReply) {
-        final ModelNode result = getSingleParamOnlyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, paramNillable);
-        if (describeReply) {
-            String replyKey = descriptionPrefix == null ? operationName + ".reply" : descriptionPrefix + "." + operationName + ".reply";
-            result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(replyKey));
-        }
-        result.get(REPLY_PROPERTIES, TYPE).set(replyType);
-
-        return result;
-    }
-
-    public static ModelNode getNoArgSimpleListReplyOperation(final Locale locale, final String operationName,
-                                                         final String descriptionPrefix, final ModelType listValueType,
-                                                         final boolean describeReply) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return getNoArgSimpleListReplyOperation(bundle, operationName, descriptionPrefix, listValueType, describeReply);
-    }
-
-    public static ModelNode getNoArgSimpleListReplyOperation(final ResourceBundle bundle, final String operationName,
-                                                         final String descriptionPrefix, final ModelType listValueType,
-                                                         final boolean describeReply) {
-        ModelNode result = getNoArgSimpleReplyOperation(bundle, operationName, descriptionPrefix, ModelType.LIST, describeReply);
-        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(listValueType);
-        return result;
+        return CommonDescriptions.getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, paramNillable, replyType, describeReply);
     }
 
     public static ModelNode getSingleParamSimpleListReplyOperation(final Locale locale, final String operationName,
@@ -1674,18 +1604,15 @@ public class MessagingDescriptions {
                                                          final ModelType paramType, final boolean paramNillable,
                                                          final ModelType listValueType, final boolean describeReply) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        return getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
+        return CommonDescriptions.getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
                 paramType, paramNillable, listValueType, describeReply);
     }
 
-    public static ModelNode getSingleParamSimpleListReplyOperation(final ResourceBundle bundle, final String operationName,
-                                                         final String descriptionPrefix, final String paramName,
-                                                         final ModelType paramType, final boolean paramNillable,
-                                                         final ModelType listValueType, final boolean describeReply) {
-        ModelNode result = getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
-                paramType, paramNillable, ModelType.LIST, describeReply);
-        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(listValueType);
-        return result;
+    public static ModelNode getNoArgSimpleListReplyOperation(final Locale locale, final String operationName,
+                                                         final String descriptionPrefix, final ModelType listValueType,
+                                                         final boolean describeReply) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        return CommonDescriptions.getNoArgSimpleListReplyOperation(bundle, operationName, descriptionPrefix, listValueType, describeReply);
     }
 
     public static ModelNode getAddJndiOperation(final Locale locale, final String resourceType) {
@@ -1754,5 +1681,4 @@ public class MessagingDescriptions {
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
-
 }

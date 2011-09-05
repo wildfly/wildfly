@@ -281,7 +281,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getSingleParamSimpleListReplyOperation(locale,  LIST_REMOTE_ADDRESSES,
-                        HQ_SERVER, ADDRESS_MATCH, ModelType.STRING, true, ModelType.STRING, true);
+                        HQ_SERVER, IP_ADDRESS, ModelType.STRING, true, ModelType.STRING, true);
             }
         });
 

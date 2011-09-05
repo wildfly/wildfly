@@ -219,6 +219,84 @@ public class CommonDescriptions {
         return root;
     }
 
+    public static ModelNode getDescriptionOnlyOperation(final ResourceBundle bundle, final String operationName, final String descriptionPrefix) {
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(operationName);
+        String descriptionKey = descriptionPrefix == null ? operationName : descriptionPrefix + "." + operationName;
+        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
+
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return node;
+    }
+
+    public static ModelNode getSingleParamOnlyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final String paramName,
+                                                        final ModelType paramType, final boolean nillable) {
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(operationName);
+        String descriptionKey = descriptionPrefix == null ? operationName : descriptionPrefix + "." + operationName;
+        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
+
+        final ModelNode param = node.get(REQUEST_PROPERTIES, paramName);
+        param.get(DESCRIPTION).set(bundle.getString(descriptionKey + "." + paramName));
+        param.get(TYPE).set(paramType);
+        param.get(REQUIRED).set(!nillable);
+        param.get(NILLABLE).set(nillable);
+
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+
+        return node;
+    }
+
+    public static ModelNode getNoArgSimpleReplyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final ModelType replyType,
+                                                         final boolean describeReply) {
+        final ModelNode result = getDescriptionOnlyOperation(bundle, operationName, descriptionPrefix);
+        if (describeReply) {
+            String replyKey = descriptionPrefix == null ? operationName + ".reply" : descriptionPrefix + "." + operationName + ".reply";
+            result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(replyKey));
+        }
+        result.get(REPLY_PROPERTIES, TYPE).set(replyType);
+
+        return result;
+    }
+
+    public static ModelNode getSingleParamSimpleReplyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final String paramName,
+                                                         final ModelType paramType, final boolean paramNillable,
+                                                         final ModelType replyType, final boolean describeReply) {
+        final ModelNode result = getSingleParamOnlyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, paramNillable);
+        if (describeReply) {
+            String replyKey = descriptionPrefix == null ? operationName + ".reply" : descriptionPrefix + "." + operationName + ".reply";
+            result.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(replyKey));
+        }
+        result.get(REPLY_PROPERTIES, TYPE).set(replyType);
+
+        return result;
+    }
+
+    public static ModelNode getNoArgSimpleListReplyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final ModelType listValueType,
+                                                         final boolean describeReply) {
+        ModelNode result = getNoArgSimpleReplyOperation(bundle, operationName, descriptionPrefix, ModelType.LIST, describeReply);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(listValueType);
+        return result;
+    }
+
+    public static ModelNode getSingleParamSimpleListReplyOperation(final ResourceBundle bundle, final String operationName,
+                                                         final String descriptionPrefix, final String paramName,
+                                                         final ModelType paramType, final boolean paramNillable,
+                                                         final ModelType listValueType, final boolean describeReply) {
+        ModelNode result = getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
+                paramType, paramNillable, ModelType.LIST, describeReply);
+        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(listValueType);
+        return result;
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();

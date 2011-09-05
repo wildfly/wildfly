@@ -48,6 +48,7 @@ import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSQueueAddJndiHandler;
 import org.jboss.as.messaging.jms.JMSQueueControlHandler;
 import org.jboss.as.messaging.jms.JMSQueueRemove;
+import org.jboss.as.messaging.jms.JMSServerControlHandler;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
 import org.jboss.as.messaging.jms.JMSTopicAddJndiHandler;
@@ -117,14 +118,9 @@ public class MessagingExtension implements Extension {
         // getConnectors (maybe), getAddressNames, getQueueNames, getDivertNames, getBridgeNames,
         // OPS
         // enableMessageCounters(maybe), disableMessageCounters(maybe)
-        // TODO runtime operations exposed by JMSServerControl
-        // METRICS
+        JMSServerControlHandler.INSTANCE.register(rootRegistration);
         // READ-ATTRIBUTES
-        // isStarted, getVersion, getTopicNames, getQueueNames, getConnectionFactoryNames,
-        // OPS
-        // listRemoteAddresses, closeConnectionsForAddress, listConnectionIDs, listConnectionsAsJSON, listSessions,
-        // listConsumersAsJSON, listAllConsumersAsJSON, listTargetDestinations, getLastSentMessageID,
-        // getSessionCreationTime, listSessionsAsJSON, listPreparedTransactionDetailsAsJSON, listPreparedTransactionDetailsAsHTML
+        // getTopicNames, getQueueNames, getConnectionFactoryNames,
 
         // Runtime addresses
         final ManagementResourceRegistration coreAddress = rootRegistration.registerSubModel(CORE_ADDRESS_PATH, MessagingSubsystemProviders.CORE_ADDRESS);
