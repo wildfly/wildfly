@@ -107,7 +107,6 @@ public class MessagingExtension implements Extension {
 
         rootRegistration.registerOperationHandler(ADD, MessagingSubsystemAdd.INSTANCE, MessagingSubsystemAdd.INSTANCE, false);
         rootRegistration.registerOperationHandler(REMOVE, MessagingSubsystemRemove.INSTANCE, MessagingSubsystemRemove.INSTANCE);
-        // TODO REMOVE op
         rootRegistration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         for (AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             rootRegistration.registerReadWriteAttribute(attributeDefinition.getName(), null, HornetQServerControlWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
@@ -189,6 +188,7 @@ public class MessagingExtension implements Extension {
             remoteAcceptor.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.REMOTE_ATTR, AttributeAccess.Storage.CONFIGURATION);
         }
         createParamRegistration(remoteAcceptor);
+        AcceptorControlHandler.INSTANCE.register(remoteAcceptor);
 
         // in-vm acceptor
         final ManagementResourceRegistration inVMAcceptor = rootRegistration.registerSubModel(IN_VM_ACCEPTOR, MessagingSubsystemProviders.IN_VM_ACCEPTOR);
@@ -198,6 +198,7 @@ public class MessagingExtension implements Extension {
             inVMAcceptor.registerReadWriteAttribute(def.getName(), null, TransportConfigOperationHandlers.IN_VM_ATTR, AttributeAccess.Storage.CONFIGURATION);
         }
         createParamRegistration(inVMAcceptor);
+        AcceptorControlHandler.INSTANCE.register(inVMAcceptor);
 
         // connector
         final ManagementResourceRegistration connector = rootRegistration.registerSubModel(GENERIC_CONNECTOR, MessagingSubsystemProviders.CONNECTOR);

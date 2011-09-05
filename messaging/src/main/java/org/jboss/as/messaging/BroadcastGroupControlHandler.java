@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 import org.hornetq.api.core.management.BroadcastGroupControl;
@@ -32,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -59,7 +61,7 @@ public class BroadcastGroupControlHandler extends AbstractHornetQComponentContro
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_CONNECTOR_PAIRS_AS_JSON,
                         CommonAttributes.BROADCAST_GROUP, ModelType.STRING, false);
             }
-        });
+        }, EnumSet.of(OperationEntry.Flag.READ_ONLY));
     }
 
     @Override

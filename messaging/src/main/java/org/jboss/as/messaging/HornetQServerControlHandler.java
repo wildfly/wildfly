@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.messaging.CommonAttributes.STARTED;
 import static org.jboss.as.messaging.CommonAttributes.VERSION;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 import org.hornetq.api.core.management.HornetQServerControl;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -205,12 +207,14 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             registry.registerReadOnlyAttribute(attr, this, AttributeAccess.Storage.RUNTIME);
         }
 
+        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+
         registry.registerOperationHandler(GET_CONNECTORS_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_CONNECTORS_AS_JSON, HQ_SERVER, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(RESET_ALL_MESSAGE_COUNTERS, this, new DescriptionProvider() {
             @Override
@@ -231,35 +235,35 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleListReplyOperation(locale, LIST_PREPARED_TRANSACTIONS, HQ_SERVER, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON, HQ_SERVER, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_PREPARED_TRANSACTION_DETAILS_AS_HTML, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_PREPARED_TRANSACTION_DETAILS_AS_HTML, HQ_SERVER, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_HEURISTIC_COMMITTED_TRANSACTIONS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleListReplyOperation(locale, LIST_HEURISTIC_COMMITTED_TRANSACTIONS, HQ_SERVER, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_HEURISTIC_ROLLED_BACK_TRANSACTIONS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleListReplyOperation(locale, LIST_HEURISTIC_ROLLED_BACK_TRANSACTIONS, HQ_SERVER, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(COMMIT_PREPARED_TRANSACTION, this, new DescriptionProvider() {
             @Override
@@ -283,7 +287,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 return MessagingDescriptions.getSingleParamSimpleListReplyOperation(locale,  LIST_REMOTE_ADDRESSES,
                         HQ_SERVER, IP_ADDRESS, ModelType.STRING, true, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(CLOSE_CONNECTIONS_FOR_ADDRESS, this, new DescriptionProvider() {
             @Override
@@ -298,14 +302,14 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleListReplyOperation(locale, LIST_CONNECTION_IDS, HQ_SERVER, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_PRODUCERS_INFO_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_PRODUCERS_INFO_AS_JSON, HQ_SERVER, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_SESSIONS, this, new DescriptionProvider() {
             @Override
@@ -313,14 +317,14 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 return MessagingDescriptions.getSingleParamSimpleListReplyOperation(locale,  LIST_SESSIONS,
                         HQ_SERVER, CONNECTION_ID, ModelType.STRING, true, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(GET_ROLES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getGetRoles(locale);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(GET_ROLES_AS_JSON, this, new DescriptionProvider() {
             @Override
@@ -328,7 +332,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, GET_ROLES_AS_JSON, HQ_SERVER,
                         ADDRESS_MATCH, ModelType.STRING, false, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(GET_ADDRESS_SETTINGS_AS_JSON, this, new DescriptionProvider() {
             @Override
@@ -336,7 +340,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, GET_ADDRESS_SETTINGS_AS_JSON, HQ_SERVER,
                         ADDRESS_MATCH, ModelType.STRING, false, ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(FORCE_FAILOVER, this, new DescriptionProvider() {
             @Override
