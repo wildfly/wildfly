@@ -638,6 +638,11 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public OperationEntry getOperationEntry(PathAddress address, String operationName) {
+            return null;
+        }
+
+        @Override
         public OperationStepHandler getOperationHandler(PathAddress address, String operationName) {
             return null;
         }
@@ -709,6 +714,11 @@ public abstract class AbstractSubsystemTest {
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
                 DescriptionProvider descriptionProvider) {
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler,
+                DescriptionProvider descriptionProvider, EnumSet<Flag> flags) {
         }
 
         @Override

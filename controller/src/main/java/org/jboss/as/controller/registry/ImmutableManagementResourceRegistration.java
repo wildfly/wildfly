@@ -85,6 +85,16 @@ public interface ImmutableManagementResourceRegistration {
     Set<OperationEntry.Flag> getOperationFlags(PathAddress address, String operationName);
 
     /**
+     * Get the entry representing an operation registered with the given name at the given address, or {@code null} if none exists.
+     *
+     * @param address the address, relative to this node
+     * @param operationName the operation name
+     * @return the operation entry or {@code null}
+     *
+     */
+    OperationEntry getOperationEntry(PathAddress address, String operationName);
+
+    /**
      * Get the names of the attributes for a node
      *
      * @param address the address, relative to this node

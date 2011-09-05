@@ -71,6 +71,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
+import junit.framework.Assert;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -557,11 +558,15 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         ModelNode operation = createOperation(READ_OPERATION_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
 
         operation.get(NAME).set("Nothing");
-        ModelNode result = executeForResult(operation);
-        assertFalse(result.isDefined());
+        try {
+            ModelNode result = executeForResult(operation);
+            fail("Received invalid successful result " + result.toString());
+        } catch (OperationFailedException good) {
+            // the correct result
+        }
 
         operation.get(NAME).set("testA1-2");
-        result = executeForResult(operation);
+        ModelNode result = executeForResult(operation);
         assertEquals(ModelType.OBJECT, result.getType());
         assertEquals("testA2", result.require(OPERATION_NAME).asString());
         assertEquals(ModelType.STRING, result.require(REQUEST_PROPERTIES).require("paramA2").require(TYPE).asType());

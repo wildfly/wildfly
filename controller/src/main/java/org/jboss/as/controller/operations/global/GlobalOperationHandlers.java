@@ -38,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -705,11 +706,17 @@ public class GlobalOperationHandlers {
             String operationName = operation.require(NAME).asString();
 
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-            final DescriptionProvider descriptionProvider = registry.getOperationDescription(PathAddress.EMPTY_ADDRESS, operationName);
+            OperationEntry operationEntry = registry.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
+            if (operationEntry == null) {
+                throw new OperationFailedException(new ModelNode().set(String.format("There is no operation %s registered at address %s",
+                        operationName, PathAddress.pathAddress(operation.require(OP_ADDR)))));
+            } else {
+                final ModelNode result = operationEntry.getDescriptionProvider().getModelDescription(getLocale(operation));
+                Set<OperationEntry.Flag> flags = operationEntry.getFlags();
+                result.get(READ_ONLY).set(flags.contains(OperationEntry.Flag.READ_ONLY));
 
-            final ModelNode result = descriptionProvider == null ? new ModelNode() : descriptionProvider.getModelDescription(getLocale(operation));
-
-            context.getResult().set(result);
+                context.getResult().set(result);
+            }
             context.completeStep();
         }
     };

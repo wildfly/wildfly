@@ -62,6 +62,11 @@ public class DelegatingImmutableManagementResourceRegistration implements Immuta
     }
 
     @Override
+    public OperationEntry getOperationEntry(PathAddress address, String operationName) {
+        return delegate.getOperationEntry(address, operationName);
+    }
+
+    @Override
     public OperationStepHandler getOperationHandler(PathAddress address, String operationName) {
         return delegate.getOperationHandler(address, operationName);
     }

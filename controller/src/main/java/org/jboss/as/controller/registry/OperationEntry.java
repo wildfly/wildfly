@@ -51,7 +51,7 @@ public final class OperationEntry {
     private final EnumSet<Flag> flags;
     private final boolean inherited;
 
-    protected OperationEntry(final OperationStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type, final EnumSet<Flag> flags) {
+    OperationEntry(final OperationStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type, final EnumSet<Flag> flags) {
         this.operationHandler = operationHandler;
         this.descriptionProvider = descriptionProvider;
         this.inherited = inherited;
@@ -59,7 +59,7 @@ public final class OperationEntry {
         this.flags = flags;
     }
 
-    protected OperationEntry(final OperationStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
+    OperationEntry(final OperationStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
        this(operationHandler, descriptionProvider, inherited, type, EnumSet.noneOf(Flag.class));
     }
 

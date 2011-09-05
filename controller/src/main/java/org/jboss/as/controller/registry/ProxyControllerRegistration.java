@@ -44,19 +44,21 @@ import org.jboss.dmr.ModelNode;
 final class ProxyControllerRegistration extends AbstractResourceRegistration implements DescriptionProvider {
 
     private final ProxyController proxyController;
+    private final OperationEntry operationEntry;
 
     ProxyControllerRegistration(final String valueString, final NodeSubregistry parent, final ProxyController proxyController) {
         super(valueString, parent);
+        this.operationEntry = new OperationEntry(new ProxyStepHandler(proxyController), this, false, EntryType.PRIVATE);
         this.proxyController = proxyController;
     }
 
     @Override
-    OperationStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String operationName, OperationStepHandler inherited) {
-        return new ProxyStepHandler(proxyController);
+    OperationEntry getOperationEntry(final ListIterator<PathElement> iterator, final String operationName, OperationEntry inherited) {
+        return operationEntry;
     }
 
     @Override
-    OperationStepHandler getInheritableOperationHandler(String operationName) {
+    OperationEntry getInheritableOperationEntry(String operationName) {
         return null;
     }
 
@@ -122,26 +124,6 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     void getInheritedOperationEntries(final Map<String, OperationEntry> providers) {
-    }
-
-    @Override
-    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName, DescriptionProvider inherited) {
-        return null;
-    }
-
-    @Override
-    DescriptionProvider getInheritableOperationDescription(String operationName) {
-        return null;
-    }
-
-    @Override
-    Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName, Set<OperationEntry.Flag> inherited) {
-        return Collections.emptySet();
-    }
-
-    @Override
-    Set<OperationEntry.Flag> getInheritableOperationFlags(String operationName) {
-        return Collections.emptySet();
     }
 
     @Override

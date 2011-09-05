@@ -112,27 +112,27 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    OperationStepHandler getOperationHandler(final ListIterator<PathElement> iterator, final String operationName, OperationStepHandler inherited) {
+    OperationEntry getOperationEntry(final ListIterator<PathElement> iterator, final String operationName, OperationEntry inherited) {
         if (iterator.hasNext()) {
-            OperationStepHandler ourInherited = getInheritableOperationHandler(operationName);
-            OperationStepHandler inheritance = ourInherited == null ? inherited : ourInherited;
+            OperationEntry ourInherited = getInheritableOperationEntry(operationName);
+            OperationEntry inheritance = ourInherited == null ? inherited : ourInherited;
             final PathElement next = iterator.next();
             final NodeSubregistry subregistry = children.get(next.getKey());
             if (subregistry == null) {
                 return null;
             }
-            return subregistry.getOperationHandler(iterator, next.getValue(), operationName, inheritance);
+            return subregistry.getOperationEntry(iterator, next.getValue(), operationName, inheritance);
         } else {
             final OperationEntry entry = operationsUpdater.get(this, operationName);
-            return entry == null ? inherited : entry.getOperationHandler();
+            return entry == null ? inherited : entry;
         }
     }
 
     @Override
-    OperationStepHandler getInheritableOperationHandler(final String operationName) {
+    OperationEntry getInheritableOperationEntry(final String operationName) {
         final OperationEntry entry = operationsUpdater.get(this, operationName);
         if (entry != null && entry.isInherited()) {
-            return entry.getOperationHandler();
+            return entry;
         }
         return null;
     }
@@ -236,66 +236,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
                 // otherwise, retry the loop because the map changed
             }
         }
-    }
-
-//    void registerProxyController(final ListIterator<PathElement> iterator, final ProxyController controller) {
-//        if (! iterator.hasNext()) {
-//            throw new IllegalArgumentException("Handlers have already been registered at location '" + getLocationString() + "'");
-//        }
-//        final PathElement element = iterator.next();
-//        getOrCreateSubregistry(element.getKey()).registerProxyController(element.getValue(), controller);
-//    }
-
-    @Override
-    DescriptionProvider getOperationDescription(final Iterator<PathElement> iterator, final String operationName, DescriptionProvider inherited) {
-        if (iterator.hasNext()) {
-            DescriptionProvider ourInherited = getInheritableOperationDescription(operationName);
-            DescriptionProvider inheritance = ourInherited == null ? inherited : ourInherited;
-            final PathElement next = iterator.next();
-            final NodeSubregistry subregistry = children.get(next.getKey());
-            if (subregistry == null) {
-                return null;
-            }
-            return subregistry.getOperationDescription(iterator, next.getValue(), operationName, inheritance);
-        } else {
-            final OperationEntry entry = operationsUpdater.get(this, operationName);
-            return entry == null ? inherited : entry.getDescriptionProvider();
-        }
-    }
-
-    @Override
-    DescriptionProvider getInheritableOperationDescription(final String operationName) {
-        final OperationEntry entry = operationsUpdater.get(this, operationName);
-        if (entry != null && entry.isInherited()) {
-            return entry.getDescriptionProvider();
-        }
-        return null;
-    }
-
-    @Override
-    Set<OperationEntry.Flag> getOperationFlags(ListIterator<PathElement> iterator, String operationName, Set<OperationEntry.Flag> inherited) {
-        if (iterator.hasNext()) {
-            Set<OperationEntry.Flag> ourInherited = getInheritableOperationFlags(operationName);
-            Set<OperationEntry.Flag> inheritance = ourInherited == null ? inherited : ourInherited;
-            final PathElement next = iterator.next();
-            final NodeSubregistry subregistry = children.get(next.getKey());
-            if (subregistry == null) {
-                return null;
-            }
-            return subregistry.getOperationFlags(iterator, next.getValue(), operationName, inheritance);
-        } else {
-            final OperationEntry entry = operationsUpdater.get(this, operationName);
-            return entry == null ? inherited : entry.getFlags();
-        }
-    }
-
-    @Override
-    Set<OperationEntry.Flag> getInheritableOperationFlags(String operationName) {
-        final OperationEntry entry = operationsUpdater.get(this, operationName);
-        if (entry != null && entry.isInherited()) {
-            return entry.getFlags();
-        }
-        return null;
     }
 
     @Override

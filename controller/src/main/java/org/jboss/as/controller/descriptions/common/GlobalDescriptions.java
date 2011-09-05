@@ -94,7 +94,6 @@ public class GlobalDescriptions {
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         //TODO value type
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource.reply"));
-        node.protect();
 
         return node;
     }
@@ -117,7 +116,6 @@ public class GlobalDescriptions {
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         node.get(REPLY_PROPERTIES, VALUE_TYPE).set(bundle.getString("global.read-attribute.reply.type"));
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-attribute.reply"));
-        node.protect();
 
         return node;
     }
@@ -136,7 +134,6 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, VALUE, DESCRIPTION).set(bundle.getString("global.write-attribute.value"));
         node.get(REQUEST_PROPERTIES, VALUE, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, VALUE, REQUIRED).set(false);
-        node.protect();
 
         return node;
     }
@@ -155,7 +152,6 @@ public class GlobalDescriptions {
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-names.reply"));
         node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
 
-        node.protect();
         return node;
     }
 
@@ -170,7 +166,6 @@ public class GlobalDescriptions {
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-types.reply"));
         node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
 
-        node.protect();
         return node;
     }
 
@@ -205,7 +200,6 @@ public class GlobalDescriptions {
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-children-resources.reply"));
         node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.OBJECT);
 
-        node.protect();
         return node;
     }
 
@@ -220,7 +214,6 @@ public class GlobalDescriptions {
         node.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-operation-names.reply"));
 
-        node.protect();
         return node;
     }
 
@@ -243,7 +236,6 @@ public class GlobalDescriptions {
         //TODO value type?
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-operation.type"));
 
-        node.protect();
         return node;
     }
 
@@ -272,7 +264,6 @@ public class GlobalDescriptions {
 
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-resource-description.reply"));
-        node.protect();
 
         return node;
     }

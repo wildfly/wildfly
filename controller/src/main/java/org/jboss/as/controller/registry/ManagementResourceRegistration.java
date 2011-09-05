@@ -86,6 +86,17 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param operationName the operation name
      * @param handler the operation handler
      * @param descriptionProvider the description provider for this operation
+     * @param flags operational modifier flags for this operation (e.g. read-only)
+     * @throws IllegalArgumentException if either parameter is {@code null}
+     */
+    void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags);
+
+    /**
+     * Register an operation handler for this model node.
+     *
+     * @param operationName the operation name
+     * @param handler the operation handler
+     * @param descriptionProvider the description provider for this operation
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @throws IllegalArgumentException if either parameter is {@code null}
      */

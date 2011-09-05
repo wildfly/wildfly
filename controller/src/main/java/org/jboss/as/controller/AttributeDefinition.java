@@ -22,15 +22,13 @@
 
 package org.jboss.as.controller;
 
+import java.util.ResourceBundle;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.ResourceBundle;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -115,7 +113,7 @@ public abstract class AttributeDefinition {
      *
      * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
      *
-     * @return {@true} if the given {@code resourceModel} has a defined value under this attribute's {@link #getName()} () name}.
+     * @return {@code true} if the given {@code resourceModel} has a defined value under this attribute's {@link #getName()} () name}.
      */
     public boolean isMarshallable(final ModelNode resourceModel) {
         return isMarshallable(resourceModel, true);
@@ -127,7 +125,7 @@ public abstract class AttributeDefinition {
      * @param resourceModel the model, a non-null node of {@link ModelType#OBJECT}.
      * @param marshallDefault {@code true} if the value should be marshalled even if it matches the default value
      *
-     * @return {@true} if the given {@code resourceModel} has a defined value under this attribute's {@link #getName()} () name}
+     * @return {@code true} if the given {@code resourceModel} has a defined value under this attribute's {@link #getName()} () name}
      * and {@code marshallDefault} is {@code true} or that value differs from this attribute's {@link #getDefaultValue() default value}.
      */
     public boolean isMarshallable(final ModelNode resourceModel, final boolean marshallDefault) {
@@ -163,7 +161,7 @@ public abstract class AttributeDefinition {
      * validates it using this attribute's {@link #getValidator() validator}, and, stores it under this attribute's name in the given {@code model}.
      *
      * @param operationObject model node of type {@link ModelType#OBJECT}, typically representing an operation request
-     * @parm model model node in which the value should be stored
+     * @param model model node in which the value should be stored
      *
      * @throws OperationFailedException if the value is not valid
      */
@@ -231,7 +229,7 @@ public abstract class AttributeDefinition {
      *
      * @param resourceModel the model, a non-null node of {@link org.jboss.dmr.ModelType#OBJECT}.
      * @param writer stream writer to use for writing the attribute
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws javax.xml.stream.XMLStreamException if thrown by {@code writer}
      */
     public abstract void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException;
 
@@ -249,8 +247,7 @@ public abstract class AttributeDefinition {
         final ModelNode attr = new ModelNode();
         attr.get(ModelDescriptionConstants.TYPE).set(attr.getType());
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
-        // TODO enable when this metadata is finalized
-//        attr.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
+        attr.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
         attr.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
         if (defaultValue != null && defaultValue.isDefined()) {
             attr.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
@@ -281,8 +278,7 @@ public abstract class AttributeDefinition {
         final ModelNode param = new ModelNode();
         param.get(ModelDescriptionConstants.TYPE).set(type);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
-        // TODO enable when this metadata is finalized
-//        param.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
+        param.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
         param.get(ModelDescriptionConstants.REQUIRED).set(!isAllowNull());
         param.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
         if (measurementUnit != MeasurementUnit.NONE) {
