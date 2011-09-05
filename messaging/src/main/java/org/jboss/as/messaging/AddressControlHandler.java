@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.messaging.CommonAttributes.*;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 import org.hornetq.api.core.management.AddressControl;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -74,7 +76,7 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
             registry.registerReadOnlyAttribute(attr, this, AttributeAccess.Storage.RUNTIME);
         }
 
-        registry.registerOperationHandler(GET_ROLES_AS_JSON, this, this);
+        registry.registerOperationHandler(GET_ROLES_AS_JSON, this, this, EnumSet.of(OperationEntry.Flag.READ_ONLY));
     }
 
     @Override

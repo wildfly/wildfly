@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 import org.hornetq.core.server.HornetQServer;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -115,26 +117,28 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
         final boolean forJMS = isJMS();
 
+        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+
         registry.registerOperationHandler(LIST_MESSAGES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListMessages(locale, forJMS, false);
             }
-        });
+        }, false, OperationEntry.EntryType.PUBLIC, readOnly);
 
         registry.registerOperationHandler(LIST_MESSAGES_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListMessages(locale, forJMS, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(COUNT_MESSAGES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getCountMessages(locale);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(REMOVE_MESSAGE, this, new DescriptionProvider() {
             @Override
@@ -213,14 +217,14 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_MESSAGE_COUNTER_AS_JSON, "queue", ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_MESSAGE_COUNTER_AS_HTML, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_MESSAGE_COUNTER_AS_HTML, "queue", ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(RESET_MESSAGE_COUNTER, this, new DescriptionProvider() {
             @Override
@@ -236,14 +240,14 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_MESSAGE_COUNTER_HISTORY_AS_JSON, "queue", ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_MESSAGE_COUNTER_HISTORY_AS_HTML, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_MESSAGE_COUNTER_HISTORY_AS_HTML, "queue", ModelType.STRING, true);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(PAUSE, this, new DescriptionProvider() {
             @Override
@@ -266,7 +270,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_CONSUMERS_AS_JSON, "queue", ModelType.STRING, true);
             }
-        });
+        }, readOnly);
     }
 
     @Override

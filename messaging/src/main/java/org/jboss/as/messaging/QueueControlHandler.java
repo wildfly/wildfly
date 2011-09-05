@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 import org.hornetq.api.core.management.QueueControl;
@@ -32,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -55,19 +57,21 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
 
+        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+
         registry.registerOperationHandler(LIST_SCHEDULED_MESSAGES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListScheduledMessages(locale);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_SCHEDULED_MESSAGES_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_SCHEDULED_MESSAGES_AS_JSON, "queue", ModelType.STRING, true);
             }
-        });
+        }, readOnly);
     }
 
     @Override

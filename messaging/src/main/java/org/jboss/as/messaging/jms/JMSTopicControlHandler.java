@@ -24,6 +24,7 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.messaging.CommonAttributes.*;
 
+import java.util.EnumSet;
 import java.util.Locale;
 
 import apple.awt.ClientPropertyApplicator;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
@@ -92,12 +94,14 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
 
     public void registerOperations(final ManagementResourceRegistration registry) {
 
+        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+
         registry.registerOperationHandler(LIST_ALL_SUBSCRIPTIONS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListSubscriptionsOperation(locale,  LIST_ALL_SUBSCRIPTIONS);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_ALL_SUBSCRIPTIONS_AS_JSON, this, new DescriptionProvider() {
             @Override
@@ -105,14 +109,14 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_ALL_SUBSCRIPTIONS_AS_JSON,
                         TOPIC, ModelType.STRING, false);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_DURABLE_SUBSCRIPTIONS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListSubscriptionsOperation(locale,  LIST_DURABLE_SUBSCRIPTIONS);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_DURABLE_SUBSCRIPTIONS_AS_JSON, this, new DescriptionProvider() {
             @Override
@@ -120,14 +124,14 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_DURABLE_SUBSCRIPTIONS_AS_JSON,
                         TOPIC, ModelType.STRING, false);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_NON_DURABLE_SUBSCRIPTIONS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListSubscriptionsOperation(locale,  LIST_NON_DURABLE_SUBSCRIPTIONS);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON, this, new DescriptionProvider() {
             @Override
@@ -135,28 +139,28 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON,
                         TOPIC, ModelType.STRING, false);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_MESSAGES_FOR_SUBSCRIPTION, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListMessagesForSubscription(locale);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getListMessagesForSubscriptionAsJSON(locale);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(COUNT_MESSAGES_FOR_SUBSCRIPTION, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getCountMessagesForSubscription(locale);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(DROP_DURABLE_SUBSCRIPTION, this, new DescriptionProvider() {
             @Override

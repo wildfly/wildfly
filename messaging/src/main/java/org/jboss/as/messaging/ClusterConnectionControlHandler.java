@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -60,20 +62,22 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
 
         registry.registerReadOnlyAttribute(NODE_ID, this, AttributeAccess.Storage.RUNTIME);
 
+        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+
         registry.registerOperationHandler(GET_STATIC_CONNECTORS_AS_JSON, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_STATIC_CONNECTORS_AS_JSON,
                         CommonAttributes.CLUSTER_CONNECTION, ModelType.STRING, false);
             }
-        });
+        }, readOnly);
 
         registry.registerOperationHandler(GET_NODES, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getGetNodes(locale);
             }
-        });
+        }, readOnly);
     }
 
     @Override
