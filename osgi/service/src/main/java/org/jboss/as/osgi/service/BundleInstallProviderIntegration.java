@@ -30,7 +30,6 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 import org.jboss.as.osgi.deployment.DeploymentHolderService;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -48,6 +47,8 @@ import org.osgi.framework.BundleException;
 import java.io.InputStream;
 import java.util.concurrent.Future;
 
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
 /**
@@ -57,8 +58,6 @@ import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
  * @since 24-Nov-2010
  */
 public class BundleInstallProviderIntegration implements BundleInstallProvider {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
@@ -80,14 +79,14 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
     @Override
     public void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         deploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
     }
 
     @Override
     public void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
@@ -97,7 +96,7 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
 
     @Override
     public void installBundle(ServiceTarget serviceTarget, Deployment dep) throws BundleException {
-        log.tracef("Install deployment: %s", dep);
+        ROOT_LOGGER.tracef("Install deployment: %s", dep);
         try {
 
             // Install the {@link Deployment} holder service
@@ -117,13 +116,13 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
         } catch (BundleException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new BundleException("Cannot deploy bundle: " + dep, ex);
+            throw new BundleException(MESSAGES.cannotDeployBundle(dep), ex);
         }
     }
 
     @Override
     public void uninstallBundle(Deployment dep) {
-        log.tracef("Uninstall deployment: %s", dep);
+        ROOT_LOGGER.tracef("Uninstall deployment: %s", dep);
 
         try {
             // Undeploy through the deployment manager
@@ -134,7 +133,7 @@ public class BundleInstallProviderIntegration implements BundleInstallProvider {
             DeploymentAction removeAction = builder.getLastAction();
             executeDeploymentPlan(plan, removeAction);
         } catch (Exception ex) {
-            log.warn("Cannot undeploy bundle: " + dep, ex);
+            ROOT_LOGGER.cannotUndeployBundle(ex, dep);
         }
     }
 

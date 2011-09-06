@@ -29,7 +29,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.as.osgi.parser.SubsystemState;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -43,6 +42,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+
 /**
  * Maintains a set of {@link Dictionary}s in the domain model keyd be persistent ID (PID).
  *
@@ -50,8 +51,6 @@ import org.jboss.msc.value.InjectedValue;
  * @since 29-Nov-2010
  */
 public class ConfigAdminServiceImpl implements ConfigAdminService {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final Set<ConfigAdminListener> listeners = new CopyOnWriteArraySet<ConfigAdminListener>();
@@ -105,14 +104,14 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
     @Override
     public void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         serviceContainer = context.getController().getServiceContainer();
     }
 
     @Override
     public void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
     @Override
@@ -122,7 +121,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
 
     @Override
     public void addListener(ConfigAdminListener listener) {
-        log.debugf("Add listener: %s", listener);
+        ROOT_LOGGER.debugf("Add listener: %s", listener);
         listeners.add(listener);
 
         // Call the newly registered listener with a potentially null dictionaly for every registered pid
@@ -137,7 +136,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
 
     @Override
     public void removeListener(ConfigAdminListener listener) {
-        log.debugf("Remove listener: %s", listener);
+        ROOT_LOGGER.debugf("Remove listener: %s", listener);
         listeners.remove(listener);
     }
 
@@ -164,7 +163,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
         @Override
         public void start(StartContext context) throws StartException {
             ServiceController<?> controller = context.getController();
-            log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+            ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
             Set<ConfigAdminListener> snapshot = new HashSet<ConfigAdminListener>(listeners);
             for (ConfigAdminListener aux : snapshot) {
                 Set<String> pids = aux.getPIDs();
@@ -172,7 +171,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
                     try {
                         aux.configurationModified(pid, props);
                     } catch (Exception ex) {
-                        log.errorf(ex, "Error in configuration listener: %s", aux);
+                        ROOT_LOGGER.configurationListenerError(ex, aux);
                     }
                 }
             }
@@ -183,7 +182,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
         @Override
         public void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
-            log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         }
 
         @Override

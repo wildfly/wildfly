@@ -26,6 +26,8 @@ import org.jboss.modules.ModuleClassLoaderFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
 /**
  * A {@link ModuleClassLoader} that hosld a reference to the underlying bundle.
  *
@@ -39,7 +41,7 @@ class BundleReferenceClassLoader extends ModuleClassLoader implements BundleRefe
     BundleReferenceClassLoader(Configuration configuration, Bundle bundle) {
         super(configuration);
         if (bundle == null)
-            throw new IllegalArgumentException("Null bundle");
+            throw MESSAGES.nullVar("bundle");
         this.bundle = bundle;
     }
 
