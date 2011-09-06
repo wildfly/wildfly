@@ -29,6 +29,8 @@ import org.jboss.msc.value.Value;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * Value that is looked up from a naming context.
  *
@@ -58,7 +60,7 @@ public class NamingLookupValue<T> implements Value<T> {
         try {
             return (T)context.lookup(contextName);
         } catch (NamingException e) {
-            throw new IllegalStateException("Jndi entry '" + contextName + "' is not yet registered in context '" + context + "'", e);
+            throw MESSAGES.entryNotRegistered(e, contextName, context);
         }
     }
 

@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming;
 
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 import static org.jboss.as.naming.util.NamingUtils.isEmpty;
 import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
@@ -48,7 +50,6 @@ import javax.naming.spi.ResolveResult;
 
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
 import org.jboss.as.naming.util.NameParser;
-import org.jboss.logging.Logger;
 
 /**
  * Naming context implementation which proxies calls to a {@code NamingStore} instance.  This context is
@@ -57,7 +58,6 @@ import org.jboss.logging.Logger;
  * @author John E. Bailey
  */
 public class NamingContext implements EventContext {
-    private static final Logger log = Logger.getLogger("org.jboss.as.naming");
 
     /*
      * The active naming store to use for any context created without a name store.
@@ -79,7 +79,7 @@ public class NamingContext implements EventContext {
         try {
             NamingManager.setObjectFactoryBuilder(ObjectFactoryBuilder.INSTANCE);
         } catch(Throwable t) {
-            log.warn("Failed to set ObjectFactoryBuilder", t);
+            ROOT_LOGGER.failedToSet(t, "ObjectFactoryBuilder");
         }
     }
 
@@ -94,7 +94,7 @@ public class NamingContext implements EventContext {
             if (!NamingManager.hasInitialContextFactoryBuilder())
                 NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
         } catch (NamingException e) {
-            log.warn("Failed to set InitialContextFactoryBuilder", e);
+            ROOT_LOGGER.failedToSet(e, "InitialContextFactoryBuilder");
         }
     }
 
@@ -137,11 +137,11 @@ public class NamingContext implements EventContext {
      */
     public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable<String, Object> environment) {
         if(prefix == null) {
-            throw new IllegalArgumentException("Naming prefix can not be null");
+            throw MESSAGES.nullVar("Naming prefix");
         }
         this.prefix = prefix;
         if(namingStore == null) {
-            throw new IllegalArgumentException("NamingStore can not be null");
+            throw MESSAGES.nullVar("NamingStore");
         }
         this.namingStore = namingStore;
         if(environment != null) {
@@ -211,43 +211,43 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void bind(final Name name, Object object) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public void bind(final String name, final Object obj) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public void rebind(final Name name, Object object) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public void rebind(final String name, final Object obj) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public void unbind(final Name name) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public void unbind(final String name) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public void rename(final Name oldName, final Name newName) throws NamingException {
-       throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
 
     }
 
     /** {@inheritDoc} */
     public void rename(final String oldName, final String newName) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
@@ -296,22 +296,22 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public void destroySubcontext(final Name name) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public void destroySubcontext(String name) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public Context createSubcontext(Name name) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
     public Context createSubcontext(String name) throws NamingException {
-        throw new UnsupportedOperationException("Naming context is read-only");
+        throw MESSAGES.readOnlyNamingContext();
     }
 
     /** {@inheritDoc} */
@@ -327,7 +327,7 @@ public class NamingContext implements EventContext {
             }
             return link;
         } catch (Exception e) {
-            throw namingException("Could not lookup link", e, name);
+            throw namingException(MESSAGES.cannotLookupLink(), e, name);
         }
     }
 
@@ -436,7 +436,7 @@ public class NamingContext implements EventContext {
         } catch(NamingException e) {
             throw e;
         } catch(Throwable t) {
-            throw namingException("Could not dereference object", t);
+            throw MESSAGES.cannotDeferenceObject(t);
         }
     }
 
@@ -451,7 +451,7 @@ public class NamingContext implements EventContext {
                 linkResult = new InitialContext().lookup(referenceName);
             }
         } catch (Throwable t) {
-            throw namingException("Could not dereference object", t);
+            throw MESSAGES.cannotDeferenceObject(t);
         }
         return linkResult;
     }

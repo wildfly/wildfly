@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.naming.util.NamingUtils.cannotProceedException;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -40,16 +38,15 @@ import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-import javax.naming.NotContextException;
 import javax.naming.Reference;
 import javax.naming.event.NamingListener;
 import javax.naming.spi.ResolveResult;
 
-import com.sun.corba.se.spi.ior.ObjectKey;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.omg.DynamicAny.DynAnyPackage.InvalidValueHelper;
+
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -181,7 +178,7 @@ public class ServiceBasedNamingStore implements NamingStore {
     private List<ServiceName> listChildren(final ServiceName name) throws NamingException {
         final ConcurrentSkipListSet<ServiceName> boundServices = this.boundServices;
         if (boundServices.contains(name)) {
-            throw new NamingException("Unable to list a non Context binding.");
+            throw MESSAGES.cannotListNonContextBinding();
         }
         final NavigableSet<ServiceName> tail = boundServices.tailSet(name);
         final List<ServiceName> children = new ArrayList<ServiceName>();
@@ -208,7 +205,7 @@ public class ServiceBasedNamingStore implements NamingStore {
     public void add(final ServiceName serviceName) {
         final ConcurrentSkipListSet<ServiceName> boundServices = this.boundServices;
         if (boundServices.contains(serviceName)) {
-            throw new IllegalArgumentException("Service with name [" + serviceName + "] already bound.");
+            throw MESSAGES.serviceAlreadyBound(serviceName);
         }
         boundServices.add(serviceName);
     }

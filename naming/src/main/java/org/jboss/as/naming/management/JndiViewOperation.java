@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming.management;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -38,6 +36,8 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -61,7 +61,7 @@ public class JndiViewOperation implements OperationStepHandler {
                     try {
                         addEntries(contextsNode.get("java:"), new NamingContext(javaContextNamingStore, null));
                     } catch (NamingException e) {
-                        throw new OperationFailedException(e, new ModelNode().set("Failed to read java: context entries."));
+                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToReadContextEntries("java:")));
                     }
 
                     final ServiceController<?> jbossContextService = serviceRegistry.getService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME);
@@ -69,7 +69,7 @@ public class JndiViewOperation implements OperationStepHandler {
                     try {
                         addEntries(contextsNode.get("java:jboss"), new NamingContext(jbossContextNamingStore, null));
                     } catch (NamingException e) {
-                        throw new OperationFailedException(e, new ModelNode().set("Failed to read java:jboss context entries."));
+                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToReadContextEntries("java:jboss")));
                     }
 
                     final ServiceController<?> globalContextService = serviceRegistry.getService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME);
@@ -77,7 +77,7 @@ public class JndiViewOperation implements OperationStepHandler {
                     try {
                         addEntries(contextsNode.get("java:global"), new NamingContext(globalContextNamingStore, null));
                     } catch (NamingException e) {
-                        throw new OperationFailedException(e, new ModelNode().set("Failed to read java:global context entries."));
+                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToReadContextEntries("java:global")));
                     }
 
                     final ServiceController<?> extensionRegistryController = serviceRegistry.getService(JndiViewExtensionRegistry.SERVICE_NAME);
@@ -104,7 +104,7 @@ public class JndiViewOperation implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
-            throw new OperationFailedException(new ModelNode().set("Jndi view is only available in runtime mode."));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.jndiViewNotAvailable()));
         }
         context.completeStep();
     }
