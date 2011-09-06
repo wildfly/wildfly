@@ -55,7 +55,7 @@ public class EJBWebServicesTestCase {
                 + "    </test:setState>"
                 + "  </soapenv:Body>"
                 + "</soapenv:Envelope>";
-        String result = HttpRequest.put("http://localhost:8080/ejbws-example/SingletonEndpoint", message, 10, SECONDS);
+        String result = HttpRequest.post("http://localhost:8080/ejbws-example/SingletonEndpoint", message, 10, SECONDS);
         // TODO: check something
         System.out.println(result);
     }
