@@ -34,11 +34,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.interfaces.InetAddressMatchInterfaceCriteria;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.network.NetworkInterfaceBinding;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -107,28 +105,6 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
     static NetworkInterfaceBinding createBinding(final String name, final boolean anyLocalV4, final boolean anyLocalV6,
             final boolean anyLocal, final InterfaceCriteria criteria) throws SocketException, UnknownHostException {
-
-        // Begin check for -b information (AS7-1668)
-        String argBinding = ServerEnvironment.getNetworkBinding(name);
-        log.debugf("The argument binding for logical interface %s is %s\n", name, argBinding);
-        if (argBinding != null && !argBinding.trim().isEmpty()) {
-            InetAddress address = InetAddress.getByName(argBinding);
-            if (address.isAnyLocalAddress()) {
-                log.infof("Logical interface %s bound to any address.\n", name);
-                if (address instanceof Inet4Address) {
-                    return getNetworkInterfaceBinding(IPV4_ANYLOCAL);
-                } else if (address instanceof Inet6Address) {
-                    return getNetworkInterfaceBinding(IPV6_ANYLOCAL);
-                } else {
-                    throw new IllegalArgumentException("Unrecognized inet address: " + argBinding);
-                }
-            } else {
-                InetAddressMatchInterfaceCriteria argCriteria = new InetAddressMatchInterfaceCriteria(argBinding);
-                return resolveInterface(argCriteria);
-            }
-        }
-        // End check for AS7-1668
-
         if (anyLocalV4) {
             return getNetworkInterfaceBinding(IPV4_ANYLOCAL);
         } else if (anyLocalV6) {
