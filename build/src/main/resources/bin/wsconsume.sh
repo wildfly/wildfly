@@ -34,7 +34,7 @@ fi
 # Setup JBOSS_HOME
 if [ "x$JBOSS_HOME" = "x" ]; then
     # get the full path (without any relative bits)
-    JBOSS_HOME=`cd $DIRNAME/..; pwd`
+    JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
 fi
 export JBOSS_HOME
 
