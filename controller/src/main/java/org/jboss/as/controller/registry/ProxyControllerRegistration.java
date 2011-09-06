@@ -98,12 +98,27 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
+    public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
+        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    }
+
+    @Override
     public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, AttributeAccess.Storage storage) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
     @Override
+    public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
+        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    }
+
+    @Override
     public void registerMetric(final String attributeName, final OperationStepHandler metricHandler) {
+        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    }
+
+    @Override
+    public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
     }
 
