@@ -80,17 +80,23 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
                                 final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
         boolean restartRequired = false;
-        if (context.getType() == OperationContext.Type.SERVER) {
+        boolean applyToRuntime = context.getType() == OperationContext.Type.SERVER;
+        ModelNode resolvedValue = null;
+        if (applyToRuntime) {
             validateResolvedValue(attributeName, newValue);
-            ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
+            resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
             restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue);
             if (restartRequired) {
                 context.reloadRequired();
             }
         }
 
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && restartRequired) {
-            context.revertReloadRequired();
+        if (context.completeStep() != OperationContext.ResultAction.KEEP && applyToRuntime) {
+            ModelNode valueToRestore = currentValue.isDefined() ? currentValue.resolve() : currentValue;
+            revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue);
+            if (restartRequired) {
+                context.revertReloadRequired();
+            }
         }
     }
 
@@ -124,7 +130,25 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
      */
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-        return false;
+        return true;
+    }
+
+    /**
+     * Hook to allow subclasses to make revert runtime changes made in
+     * {@link #applyUpdateToRuntime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, String, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)}.
+     * <p>
+     * This default implementation simply does nothing.
+     * </p>
+     *
+     * @param context the context of the operation
+     * @param operation the operation
+     * @param attributeName the name of the attribute being modified
+     * @param valueToRestore the previous value for the attribute, before this operation was executed
+     * @param valueToRevert the new value for the attribute that should be reverted
+     */
+    protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                         final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert) throws OperationFailedException {
+
     }
 
 

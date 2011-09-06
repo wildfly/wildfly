@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +35,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
@@ -50,6 +53,9 @@ public class ConnectionFactoryWriteAttributeHandler extends ServerWriteAttribute
 
     public static final ConnectionFactoryWriteAttributeHandler INSTANCE = new ConnectionFactoryWriteAttributeHandler();
 
+    private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
+    private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+
     private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
     private final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
     private ConnectionFactoryWriteAttributeHandler() {
@@ -58,6 +64,14 @@ public class ConnectionFactoryWriteAttributeHandler extends ServerWriteAttribute
         }
         for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_WRITE_ATTRS) {
             runtimeAttributes.put(attr.getName(), attr);
+        }
+    }
+
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
+            String attrName = attr.getName();
+            EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
+            registry.registerReadWriteAttribute(attrName, null, this, flags);
         }
     }
 
