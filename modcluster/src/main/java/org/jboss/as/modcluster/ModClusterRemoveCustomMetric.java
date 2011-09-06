@@ -59,7 +59,7 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler, Descr
                     // Look for the dynamic-load-provider
                     final ModelNode dynamicLoadProvider = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
                     String classname = null;
-                     if (dynamicLoadProvider.isDefined()) {
+                    if (dynamicLoadProvider.isDefined()) {
                          List<Property> list = operation.asPropertyList();
                          Iterator<Property> it = list.iterator();
                          while(it.hasNext()) {
@@ -72,7 +72,12 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler, Descr
                          if (classname != null) {
                              removeMetric( dynamicLoadProvider, classname);
                          }
-                     }
+                    }
+
+                    if (!dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined() && !dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).isDefined()) {
+                        context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().remove(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+                    }
+
 
                     context.completeStep();
                 }
@@ -87,6 +92,10 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler, Descr
                         if (!node.get("class").asString().equals(classname)) {
                             dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).add(node);
                         }
+                    }
+                    list = dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).asList();
+                    if (list.isEmpty()) {
+                        dynamicLoadProvider.remove(CommonAttributes.CUSTOM_LOAD_METRIC);
                     }
                 }
             }, OperationContext.Stage.MODEL);

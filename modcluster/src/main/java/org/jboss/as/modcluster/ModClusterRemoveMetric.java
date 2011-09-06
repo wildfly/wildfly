@@ -72,6 +72,10 @@ public class ModClusterRemoveMetric implements OperationStepHandler, Description
                          if (type != null) {
                              removeMetric( dynamicLoadProvider, type);
                          }
+                         if (!dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).isDefined() && !dynamicLoadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC).isDefined()) {
+                             context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().remove(CommonAttributes.DYNAMIC_LOAD_PROVIDER);
+                         }
+
                      }
 
                     context.completeStep();
@@ -84,9 +88,13 @@ public class ModClusterRemoveMetric implements OperationStepHandler, Description
                     Iterator<ModelNode> it = list.iterator();
                     while(it.hasNext()) {
                         ModelNode node = it.next();
-                        if (!node.get("class").asString().equals(type)) {
+                        if (!node.get("type").asString().equals(type)) {
                             dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).add(node);
                         }
+                    }
+                    list = dynamicLoadProvider.get(CommonAttributes.LOAD_METRIC).asList();
+                    if (list.isEmpty()) {
+                        dynamicLoadProvider.remove(CommonAttributes.LOAD_METRIC);
                     }
                 }
             }, OperationContext.Stage.MODEL);
