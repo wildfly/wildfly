@@ -31,6 +31,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
 import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.osgi.parser.CommonAttributes.ENTRIES;
@@ -178,7 +179,7 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                                 case NAME: {
                                     name = attrValue;
                                     if (configuration.has(name))
-                                        throw new XMLStreamException("Property " + name + " already exists", reader.getLocation());
+                                        throw new XMLStreamException(MESSAGES.propertyAlreadyExists(name), reader.getLocation());
                                     break;
                                 }
                                 default:

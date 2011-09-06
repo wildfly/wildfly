@@ -22,7 +22,8 @@
 
 package org.jboss.as.osgi.service;
 
-import org.jboss.as.naming.ServiceBasedNamingStore;
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
 import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 
@@ -41,7 +42,6 @@ import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.logging.Logger;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -84,9 +84,6 @@ public class FrameworkBootstrapService implements Service<Void> {
     public static final ServiceName FRAMEWORK_BASE_NAME = SERVICE_BASE_NAME.append("framework");
     public static final ServiceName FRAMEWORK_BOOTSTRAP = FRAMEWORK_BASE_NAME.append("bootstrap");
 
-    // Provide logging
-    private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
-
     private final InjectedValue<ServerEnvironment> injectedEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
@@ -113,7 +110,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
@@ -141,14 +138,14 @@ public class FrameworkBootstrapService implements Service<Void> {
             Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
             builder.createFrameworkServices(initialMode, true);
         } catch (Throwable t) {
-            throw new StartException("Failed to create Framework services", t);
+            throw new StartException(MESSAGES.failedToCreateFrameworkServices(), t);
         }
     }
 
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-        log.infof("Stopping OSGi Framework");
+        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.stoppingOsgiFramework();
     }
 
     @Override
@@ -196,14 +193,14 @@ public class FrameworkBootstrapService implements Service<Void> {
         @Override
         public void start(StartContext context) throws StartException {
             ServiceController<?> controller = context.getController();
-            log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+            ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
             serviceContainer = context.getController().getServiceContainer();
         }
 
         @Override
         public void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
-            log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         }
 
         @Override
@@ -244,13 +241,13 @@ public class FrameworkBootstrapService implements Service<Void> {
         @Override
         public void start(StartContext context) throws StartException {
             ServiceController<?> controller = context.getController();
-            log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+            ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         }
 
         @Override
         public void stop(StopContext context) {
             ServiceController<?> controller = context.getController();
-            log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+            ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
             frameworkModule = null;
         }
 
