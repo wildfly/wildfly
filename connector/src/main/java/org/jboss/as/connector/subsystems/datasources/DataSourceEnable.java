@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 
 import org.jboss.as.controller.OperationContext;
@@ -32,7 +33,6 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -52,8 +52,6 @@ public class DataSourceEnable implements OperationStepHandler {
         super();
         this.xa = xa;
     }
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     public void execute(OperationContext context, ModelNode operation) {
 
@@ -94,10 +92,10 @@ public class DataSourceEnable implements OperationStepHandler {
                         if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.ACTIVE);
                         } else {
-                            throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is already started"));
+                            throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source", jndiName)));
                         }
                     } else {
-                        throw new OperationFailedException(new ModelNode().set("Data-source service [" + jndiName + "] is not available"));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source", jndiName)));
                     }
 
                     final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);

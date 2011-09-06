@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
@@ -43,7 +45,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -58,8 +59,6 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class JdbcDriverAdd extends AbstractAddStepHandler {
     static final JdbcDriverAdd INSTANCE = new JdbcDriverAdd();
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         final String driverName = operation.require(DRIVER_NAME.getName()).asString();
@@ -104,7 +103,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             moduleId = ModuleIdentifier.create(moduleName);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleLoadException e) {
-            context.getFailureDescription().set("Failed to load module for driver [" + moduleName + "]");
+            context.getFailureDescription().set(MESSAGES.failedToLoadModuleDriver(moduleName));
             return;
         }
 
@@ -122,7 +121,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                 final Driver driver = constructor.newInstance();
                 startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
             } catch (Exception e) {
-                log.warnf("Unable to instantiate driver class \"%s\": %s", driverClassName, e);
+                SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
             }
         }
     }
@@ -133,16 +132,16 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
         final int minorVer = driver.getMinorVersion();
         if ((majorVersion != null && majorVersion.intValue() != majorVer)
                 || (minorVersion != null && minorVersion.intValue() != minorVer)) {
-            throw new IllegalStateException("Specified driver version doesn't match with actual driver version");
+            throw MESSAGES.driverVersionMismatch();
         }
 
         final boolean compliant = driver.jdbcCompliant();
         if (compliant) {
-            log.infof("Deploying JDBC-compliant driver %s (version %d.%d)", driver.getClass(),
-                    Integer.valueOf(majorVer), Integer.valueOf(minorVer));
+            SUBSYSTEM_DATASOURCES_LOGGER.deployingCompliantJdbcDriver(driver.getClass(), Integer.valueOf(majorVer),
+                    Integer.valueOf(minorVer));
         } else {
-            log.infof("Deploying non-JDBC-compliant driver %s (version %d.%d)", driver.getClass(),
-                    Integer.valueOf(majorVer), Integer.valueOf(minorVer));
+            SUBSYSTEM_DATASOURCES_LOGGER.deployingNonCompliantJdbcDriver(driver.getClass(), Integer.valueOf(majorVer),
+                    Integer.valueOf(minorVer));
         }
         InstalledDriver driverMetadata = new InstalledDriver(driverName, moduleId, driver.getClass().getName(),
             dataSourceClassName, xaDataSourceClassName, majorVer, minorVer, compliant);

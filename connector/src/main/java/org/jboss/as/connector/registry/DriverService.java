@@ -12,6 +12,8 @@ import org.jboss.msc.value.InjectedValue;
 
 import java.sql.Driver;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * Service wrapper for a {@link java.sql.Driver}.
  *
@@ -25,8 +27,8 @@ public class DriverService implements Service<Driver> {
     private final Driver driver;
 
     public DriverService(InstalledDriver driverMetaData, Driver driver) {
-        assert driverMetaData != null : "driverMetaData is null";
-        assert driver != null : "driver is null";
+        assert driverMetaData != null : MESSAGES.nullVar("driverMetaData");
+        assert driver != null : MESSAGES.nullVar("driver");
         this.driverMetaData = driverMetaData;
         this.driver = driver;
     }

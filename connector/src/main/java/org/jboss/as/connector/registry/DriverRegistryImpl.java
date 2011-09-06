@@ -27,7 +27,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.logging.Logger;
+import static org.jboss.as.connector.ConnectorLogger.DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * Standard {@link DriverRegistry} implementation.
@@ -35,16 +36,14 @@ import org.jboss.logging.Logger;
  */
 public class DriverRegistryImpl implements DriverRegistry {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector.registry");
-
     private Map<String, InstalledDriver> drivers = new HashMap<String, InstalledDriver>();
 
     @Override
     public void registerInstalledDriver(InstalledDriver driver) throws IllegalArgumentException {
         if (driver == null)
-            throw new IllegalArgumentException("driver is null");
+            throw new IllegalArgumentException(MESSAGES.nullVar("driver"));
 
-        log.tracef("Adding driver: %s", driver);
+        DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Adding driver: %s", driver);
 
         synchronized (drivers) {
             drivers.put(driver.getDriverName(), driver);
@@ -55,9 +54,9 @@ public class DriverRegistryImpl implements DriverRegistry {
     @Override
     public void unregisterInstalledDriver(InstalledDriver driver) {
         if (driver == null)
-            throw new IllegalArgumentException("driver is null");
+            throw new IllegalArgumentException(MESSAGES.nullVar("driver"));
 
-        log.tracef("Removing deployment: %s", driver);
+        DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Removing deployment: %s", driver);
 
         synchronized (drivers) {
             drivers.put(driver.getDriverName(), driver);

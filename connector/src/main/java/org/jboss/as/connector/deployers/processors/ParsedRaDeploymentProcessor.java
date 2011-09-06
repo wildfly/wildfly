@@ -37,7 +37,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.txn.TxnServices;
 import org.jboss.jandex.Index;
 import org.jboss.jca.common.annotations.Annotations;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -47,10 +46,8 @@ import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
-import org.jboss.jca.core.spi.naming.JndiStrategy;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
@@ -61,6 +58,8 @@ import org.jboss.as.security.service.SubjectFactoryService;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
  * service for ResourceAdapter.
@@ -68,8 +67,6 @@ import java.util.Map.Entry;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.radeployer");
 
     public ParsedRaDeploymentProcessor() {
     }
@@ -92,7 +89,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + phaseContext.getDeploymentUnit());
+            throw MESSAGES.failedToGetModuleAttachment(phaseContext.getDeploymentUnit());
 
         final ClassLoader classLoader = module.getClassLoader();
 

@@ -28,15 +28,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.logging.Logger;
+import static org.jboss.as.connector.ConnectorLogger.DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 
 /**
  * The interface for the resource adapter deployment registry
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public final class ResourceAdapterDeploymentRegistryImpl implements ResourceAdapterDeploymentRegistry {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector.registry");
 
     private Set<ResourceAdapterDeployment> deployments;
 
@@ -53,9 +53,9 @@ public final class ResourceAdapterDeploymentRegistryImpl implements ResourceAdap
      */
     public void registerResourceAdapterDeployment(ResourceAdapterDeployment deployment) {
         if (deployment == null)
-            throw new IllegalArgumentException("Deployment is null");
+            throw new IllegalArgumentException(MESSAGES.nullVar("Deployment"));
 
-        log.tracef("Adding deployment: %s", deployment);
+        DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Adding deployment: %s", deployment);
 
         deployments.add(deployment);
     }
@@ -66,9 +66,9 @@ public final class ResourceAdapterDeploymentRegistryImpl implements ResourceAdap
      */
     public void unregisterResourceAdapterDeployment(ResourceAdapterDeployment deployment) {
         if (deployment == null)
-            throw new IllegalArgumentException("Deployment is null");
+            throw new IllegalArgumentException(MESSAGES.nullVar("Deployment"));
 
-        log.tracef("Removing deployment: %s", deployment);
+        DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Removing deployment: %s", deployment);
 
         deployments.remove(deployment);
     }

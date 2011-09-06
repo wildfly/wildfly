@@ -44,7 +44,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -52,14 +51,14 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+
 /**
  * Abstract operation handler responsible for adding a DataSource.
  *
  * @author John Bailey
  */
 public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
 
@@ -109,15 +108,15 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                log.infof("Bound data source [%s]", jndiName);
+                                SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
                                 break;
                             }
                             case START_REQUESTED_to_DOWN: {
-                                log.infof("Unbound data source [%s]", jndiName);
+                                SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
                                 break;
                             }
                             case REMOVING_to_REMOVED: {
-                                log.debugf("Removed JDBC Data-source [%s]", jndiName);
+                                SUBSYSTEM_DATASOURCES_LOGGER.debugf("Removed JDBC Data-source [%s]", jndiName);
                                 break;
                             }
                         }

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -168,7 +169,6 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -181,11 +181,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class DataSourcesExtension implements Extension {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.datasources");
-
     @Override
     public void initialize(final ExtensionContext context) {
-        log.debugf("Initializing Datasources Extension");
+        SUBSYSTEM_DATASOURCES_LOGGER.debugf("Initializing Datasources Extension");
 
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(DATASOURCES);
@@ -671,7 +669,7 @@ public class DataSourcesExtension implements Extension {
                     case DATASOURCES_1_0: {
                         localName = reader.getLocalName();
                         Element element = Element.forName(reader.getLocalName());
-                        log.tracef("%s -> %s", localName, element);
+                        SUBSYSTEM_DATASOURCES_LOGGER.tracef("%s -> %s", localName, element);
                         switch (element) {
                             case SUBSYSTEM: {
 

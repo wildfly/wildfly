@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
 
@@ -62,8 +62,7 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
         try {
             dataSourceConfig = xaFrom(operation);
         } catch (ValidateException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Failed to create XaDataSource instance for ["
-                    + operation + "]\n reason:" + e.getLocalizedMessage()));
+            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("XaDataSource", operation, e.getLocalizedMessage())));
         }
         final ServiceName dataSourceCongServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
         final XADataSourceConfigService configService = new XADataSourceConfigService(dataSourceConfig);

@@ -25,7 +25,6 @@ package org.jboss.as.connector.transactionintegration;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.core.tx.jbossts.TransactionIntegrationImpl;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -38,6 +37,8 @@ import org.jboss.tm.usertx.UserTransactionRegistry;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
+
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A WorkManager Service.
@@ -57,8 +58,6 @@ public final class TransactionIntegrationService implements Service<TransactionI
 
     private final InjectedValue<XAResourceRecoveryRegistry> rr = new InjectedValue<XAResourceRecoveryRegistry>();
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
-
     /** create an instance **/
     public TransactionIntegrationService() {
         super();
@@ -73,7 +72,7 @@ public final class TransactionIntegrationService implements Service<TransactionI
     public void start(StartContext context) throws StartException {
         this.value = new TransactionIntegrationImpl(tm.getValue(), tsr.getValue(), utr.getValue(), terminator.getValue(),
                 rr.getValue());
-        log.debugf("Starting JCA TransactionIntegrationService");
+        ROOT_LOGGER.debugf("Starting JCA TransactionIntegrationService");
     }
 
     @Override

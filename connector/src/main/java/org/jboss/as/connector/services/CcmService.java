@@ -3,7 +3,6 @@ package org.jboss.as.connector.services;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.connectionmanager.ccm.CachedConnectionManagerImpl;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -12,9 +11,10 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
+
 public class CcmService implements Service<CachedConnectionManager> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "admin-object");
 
     private final InjectedValue<TransactionIntegration> transactionIntegration = new InjectedValue<TransactionIntegration>();
@@ -42,13 +42,13 @@ public class CcmService implements Service<CachedConnectionManager> {
                 transactionIntegration.getValue().getTransactionSynchronizationRegistry());
         value.setDebug(debug);
         value.setError(error);
-        log.debugf("started CcmService %s", context.getController().getName());
+        ROOT_LOGGER.debugf("started CcmService %s", context.getController().getName());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("stopped CcmService %s", context.getController().getName());
+        ROOT_LOGGER.debugf("stopped CcmService %s", context.getController().getName());
 
     }
 

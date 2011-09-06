@@ -40,13 +40,15 @@ import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
+
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -57,8 +59,6 @@ import org.jboss.security.SubjectFactory;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.raxmldeployer");
 
     private final MetadataRepository mdr;
 
@@ -91,11 +91,11 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         if (raxmls == null)
             return;
 
-        log.tracef("processing Raxml");
+        ROOT_LOGGER.tracef("processing Raxml");
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
         if (module == null)
-            throw new DeploymentUnitProcessingException("Failed to get module attachment for " + deploymentUnit);
+            throw MESSAGES.failedToGetModuleAttachment(deploymentUnit);
 
         try {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();

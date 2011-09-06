@@ -21,6 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -112,7 +113,6 @@ import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -124,11 +124,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class ResourceAdaptersExtension implements Extension {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.resourceadapters");
-
     @Override
     public void initialize(final ExtensionContext context) {
-        log.debugf("Initializing ResourceAdapters Extension");
+        SUBSYSTEM_RA_LOGGER.debugf("Initializing ResourceAdapters Extension");
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTERS_NAME);
 
@@ -384,7 +382,7 @@ public class ResourceAdaptersExtension implements Extension {
                     case RESOURCEADAPTERS_1_0: {
                         localName = reader.getLocalName();
                         final Element element = Element.forName(reader.getLocalName());
-                        log.tracef("%s -> %s", localName, element);
+                        SUBSYSTEM_RA_LOGGER.tracef("%s -> %s", localName, element);
                         switch (element) {
                             case SUBSYSTEM: {
                                 ResourceAdapterParser parser = new ResourceAdapterParser();

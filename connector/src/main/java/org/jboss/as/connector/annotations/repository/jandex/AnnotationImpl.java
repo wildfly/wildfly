@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  *
  * A AnnotationImpl.
@@ -81,7 +83,7 @@ public class AnnotationImpl implements Annotation {
         if (annotationClass.isAnnotation()) {
             this.annotationClass = (Class<? extends java.lang.annotation.Annotation>) annotationClass;
         } else {
-            throw new IllegalArgumentException("annotationClass should be an annotation");
+            throw MESSAGES.notAnAnnotation(annotationClass);
         }
 
     }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.pool;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -108,7 +109,7 @@ public class PoolConfigurationRWHandler {
                                 poolConfigs = getMatchingPoolConfigs(jndiName, repository);
                                 updatePoolConfigs(poolConfigs, parameterName, newValue);
                             } catch (Exception e) {
-                                throw new OperationFailedException(new ModelNode().set("failed to set attribute" + e.getMessage()));
+                                throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToSetAttribute(e.getLocalizedMessage())));
                             }
                         }
 
@@ -228,7 +229,7 @@ public class PoolConfigurationRWHandler {
             } else if (USE_FAST_FAIL.equals(parameterName)) {
                 boolValidator.validateParameter(parameterName, value);
             } else {
-                throw new OperationFailedException(new ModelNode().set("Wrong parameter name for " + parameterName));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidParameterName(parameterName)));
             }
 
         }

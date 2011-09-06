@@ -1,15 +1,14 @@
 package org.jboss.as.connector.services;
 
 import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-public class ManagementRepositoryService implements Service<ManagementRepository> {
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
+public class ManagementRepositoryService implements Service<ManagementRepository> {
 
     private final ManagementRepository value;
 
@@ -27,13 +26,13 @@ public class ManagementRepositoryService implements Service<ManagementRepository
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("started ManagementRepositoryService %s", context.getController().getName());
+        ROOT_LOGGER.debugf("started ManagementRepositoryService %s", context.getController().getName());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("stopped ManagementRepositoryService %s", context.getController().getName());
+        ROOT_LOGGER.debugf("stopped ManagementRepositoryService %s", context.getController().getName());
 
     }
 

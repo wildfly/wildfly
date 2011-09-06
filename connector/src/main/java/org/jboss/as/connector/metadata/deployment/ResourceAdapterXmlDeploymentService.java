@@ -45,6 +45,9 @@ import org.jboss.msc.service.StopContext;
 import java.io.File;
 import java.net.URL;
 
+import static org.jboss.as.connector.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * A ResourceAdapterXmlDeploymentService.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -53,7 +56,7 @@ import java.net.URL;
 public final class ResourceAdapterXmlDeploymentService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector");
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7RaXmlDeployer.class.getName());
 
     private final Module module;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
@@ -99,7 +102,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             try {
                 raxmlDeployment = raDeployer.doDeploy();
             } catch (Throwable t) {
-                throw new StartException("Failed to start RA deployment [" + deploymentName + "]", t);
+                throw MESSAGES.failedToStartRaDeployment(t, deploymentName);
             }
 
             value = new ResourceAdapterDeployment(raxmlDeployment);
@@ -107,8 +110,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             if (raxmlDeployment.getResourceAdapter() != null) {
                 registry.getValue().registerResourceAdapterDeployment(value);
                 ServiceName serviceName = ConnectorServices.registerResourceAdapterServiceNameWithSuffix(deploymentName, serviceSuffix);
-                log.infof("Starting sevice %s", serviceName);
-
+                DEPLOYMENT_CONNECTOR_LOGGER.startingService(serviceName);
                 context.getChildTarget()
                         .addService(serviceName,
                                 new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(ServiceController.Mode.ACTIVE)
@@ -124,7 +126,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
      */
     @Override
     public void stop(StopContext context) {
-        log.debugf("Stopping sevice %s",
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s",
                 ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
         managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
@@ -161,8 +163,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
         @Override
         protected DeployersLogger getLogger() {
-
-            return Logger.getMessageLogger(DeployersLogger.class, AS7RaXmlDeployer.class.getName());
+            return DEPLOYERS_LOGGER;
         }
 
     }

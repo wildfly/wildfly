@@ -29,11 +29,12 @@ import java.util.List;
 
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 
 /**
  * A ResourceAdaptersService.
@@ -43,8 +44,6 @@ import org.jboss.msc.service.StopContext;
 final class ResourceAdaptersService implements Service<ResourceAdaptersService.ModifiableResourceAdaptors> {
 
     private final ModifiableResourceAdaptors value;
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.resourceadapters");
 
     /** create an instance **/
     public ResourceAdaptersService(ModifiableResourceAdaptors value) {
@@ -58,7 +57,7 @@ final class ResourceAdaptersService implements Service<ResourceAdaptersService.M
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting ResourceAdapters Service");
+        SUBSYSTEM_RA_LOGGER.debugf("Starting ResourceAdapters Service");
     }
 
     @Override

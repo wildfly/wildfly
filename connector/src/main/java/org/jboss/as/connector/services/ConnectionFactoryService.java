@@ -1,18 +1,15 @@
 package org.jboss.as.connector.services;
 
-import javax.resource.cci.ConnectionFactory;
-
-import org.jboss.jca.core.api.management.AdminObject;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
+
 public class ConnectionFactoryService implements Service<Object> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "connection-factory");
 
     private final Object value;
@@ -31,13 +28,13 @@ public class ConnectionFactoryService implements Service<Object> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("started ConnectionFactoryService %s", context.getController().getName());
+        ROOT_LOGGER.debugf("started ConnectionFactoryService %s", context.getController().getName());
 
     }
 
     @Override
     public void stop(StopContext context) {
-        log.debugf("stopped ConnectionFactoryService %s", context.getController().getName());
+        ROOT_LOGGER.debugf("stopped ConnectionFactoryService %s", context.getController().getName());
 
     }
 

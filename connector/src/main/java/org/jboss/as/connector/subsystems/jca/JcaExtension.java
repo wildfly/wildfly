@@ -21,6 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
 import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
@@ -75,7 +76,6 @@ import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
 import org.jboss.as.threads.ThreadsParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -86,13 +86,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class JcaExtension implements Extension {
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
     private static String SUBSYSTEM_NAME = "jca";
 
     @Override
     public void initialize(final ExtensionContext context) {
-        log.debugf("Initializing Connector Extension");
+        ROOT_LOGGER.debugf("Initializing Connector Extension");
         // Register the connector subsystem
         final SubsystemRegistration registration = context.registerSubsystem(JCA);
 

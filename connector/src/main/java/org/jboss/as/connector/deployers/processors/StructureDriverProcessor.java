@@ -22,32 +22,16 @@
 
 package org.jboss.as.connector.deployers.processors;
 
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.registry.DriverRegistry;
-import org.jboss.as.connector.registry.DriverService;
-import org.jboss.as.connector.registry.InstalledDriver;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.ServicesAttachment;
-import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.sql.Driver;
 import java.util.List;
-import java.util.jar.Manifest;
 
 /**
  * Detects a JDBC driver at an early stage, and sets flags critical to the deployment.
@@ -56,8 +40,6 @@ import java.util.jar.Manifest;
  * @author Jason T. Greene
  */
 public final class StructureDriverProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector.deployers.jdbc");
 
     /** {@inheritDoc} */
     @Override
