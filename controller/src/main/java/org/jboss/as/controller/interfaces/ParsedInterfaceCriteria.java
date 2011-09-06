@@ -210,7 +210,8 @@ public final class ParsedInterfaceCriteria {
             case INET_ADDRESS: {
                 checkStringType(prop.getValue(), element.getLocalName(), true);
                 try {
-                    InetAddress address = InetAddress.getByName(prop.getValue().asString());
+                    String rawAddress = prop.getValue().resolve().asString();
+                    InetAddress address = InetAddress.getByName(rawAddress);
                     if (address.isAnyLocalAddress()) {
                         // they've entered a wildcard address
                         return new WildcardInetAddressInterfaceCriteria(address);
