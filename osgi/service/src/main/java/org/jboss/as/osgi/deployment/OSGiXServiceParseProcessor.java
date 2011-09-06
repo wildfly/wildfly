@@ -33,6 +33,8 @@ import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
 /**
  * Processes deployments that contain META-INF/jbosgi-xservice.properties
  *
@@ -62,7 +64,7 @@ public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
             metadata = OSGiMetaDataBuilder.load(xserviceFile.openStream());
             OSGiMetaDataAttachment.attachOSGiMetaData(deploymentUnit, metadata);
         } catch (IOException ex) {
-            throw new DeploymentUnitProcessingException("Cannot parse: " + xserviceFile);
+            throw new DeploymentUnitProcessingException(MESSAGES.cannotParse(xserviceFile));
         }
     }
 

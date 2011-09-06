@@ -24,6 +24,7 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.naming.deployment.ContextNames.contextServiceNameOfComponent;
 import static org.jboss.as.naming.deployment.ContextNames.contextServiceNameOfModule;
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX;
 
 import java.util.List;
@@ -49,7 +50,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.Type;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -65,8 +65,6 @@ import org.osgi.framework.BundleContext;
  */
 public class BundleContextJndiBindingProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
@@ -78,7 +76,7 @@ public class BundleContextJndiBindingProcessor implements DeploymentUnitProcesso
 
         final CompositeIndex compositeIndex = depUnit.getAttachment(COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {
-            log.warnf("Cannot find composite annotation index in: %s", depUnit);
+            ROOT_LOGGER.cannotFindAnnotationIndex(depUnit);
             return;
         }
 

@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import org.jboss.as.osgi.deployment.BundleStartTracker;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
@@ -42,7 +43,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -55,8 +55,6 @@ import org.jboss.msc.service.ServiceTarget;
  * @since 11-Sep-2010
  */
 class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     static final Activation DEFAULT_ACTIVATION = Activation.LAZY;
 
@@ -73,7 +71,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
     }
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        log.infof("Activating OSGi Subsystem");
+        ROOT_LOGGER.activatingSubsystem();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -91,7 +89,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
         newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, verificationHandler));
 
         long end = System.currentTimeMillis();
-        log.debugf("Activated OSGi Subsystem in %dms", end - begin);
+        ROOT_LOGGER.debugf("Activated OSGi Subsystem in %dms", end - begin);
     }
 
     @Override

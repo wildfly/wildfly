@@ -24,7 +24,6 @@ package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -39,6 +38,8 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
 
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.server.deployment.Services.deploymentUnitName;
 
 /**
@@ -48,8 +49,6 @@ import static org.jboss.as.server.deployment.Services.deploymentUnitName;
  * @since 20-Sep-2010
  */
 public class BundleInstallService implements Service<BundleInstallService> {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "deployment");
 
@@ -91,25 +90,25 @@ public class BundleInstallService implements Service<BundleInstallService> {
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
             BundleManagerService bundleManager = injectedBundleManager.getValue();
             installedBundleName = bundleManager.installBundle(serviceTarget, deployment);
             injectedStartTracker.getValue().addInstalledBundle(installedBundleName, deployment);
         } catch (Throwable t) {
-            throw new StartException("Failed to install deployment: " + deployment, t);
+            throw new StartException(MESSAGES.failedToInstallDeployment(deployment), t);
         }
     }
 
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        log.debugf("Stoppping: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
         try {
             BundleManagerService bundleManager = injectedBundleManager.getValue();
             bundleManager.uninstallBundle(deployment);
         } catch (Throwable t) {
-            log.errorf(t, "Failed to uninstall deployment: %s", deployment);
+            ROOT_LOGGER.failedToUninstallDeployment(t, deployment);
         }
 
         // [JBAS-8801] Undeployment leaks root deployment service

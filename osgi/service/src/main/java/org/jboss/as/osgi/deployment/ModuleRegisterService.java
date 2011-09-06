@@ -26,7 +26,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
@@ -43,6 +42,9 @@ import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.OSGiMetaData;
 
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
 /**
  * Service responsible for creating and managing the life-cycle of an OSGi deployment.
  *
@@ -50,8 +52,6 @@ import org.jboss.osgi.metadata.OSGiMetaData;
  * @since 03-Jun-2011
  */
 public class ModuleRegisterService implements Service<ModuleRegisterService> {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.osgi");
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("osgi", "registration");
 
@@ -91,26 +91,26 @@ public class ModuleRegisterService implements Service<ModuleRegisterService> {
 
     public synchronized void start(StartContext context) throws StartException {
         ServiceController<?> controller = context.getController();
-        log.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
-        log.infof("Register module: %s", module);
+        ROOT_LOGGER.debugf("Starting: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.registerModule(module);
         try {
             ServiceTarget serviceTarget = context.getChildTarget();
             BundleManagerService bundleManager = injectedBundleManager.getValue();
             installedBundleName = bundleManager.registerModule(serviceTarget, module, metadata);
         } catch (Throwable t) {
-            throw new StartException("Failed to register module: " + module, t);
+            throw new StartException(MESSAGES.failedToRegisterModule(module), t);
         }
     }
 
     public synchronized void stop(StopContext context) {
         ServiceController<?> controller = context.getController();
-        log.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-        log.infof("Unregister module: %s", module);
+        ROOT_LOGGER.debugf("Stopping: %s in mode %s", controller.getName(), controller.getMode());
+        ROOT_LOGGER.unregisterModule(module);
         try {
             BundleManagerService bundleManager = injectedBundleManager.getValue();
             bundleManager.unregisterModule(module.getIdentifier());
         } catch (Throwable t) {
-            log.errorf(t, "Failed to uninstall module: %s", module);
+            ROOT_LOGGER.failedToUninstallModule(t, module);
         }
     }
 
