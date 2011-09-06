@@ -35,6 +35,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
@@ -52,6 +54,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -70,15 +73,15 @@ class TransportConfigOperationHandlers {
 
     /** The generic transport-config add operation handler. */
     static final OperationStepHandler GENERIC_ADD = new BasicTransportConfigAdd(GENERIC);
-    static final OperationStepHandler GENERIC_ATTR = new AttributeWriteHandler(GENERIC);
+    static final SelfRegisteringAttributeHandler GENERIC_ATTR = new AttributeWriteHandler(GENERIC);
 
     /** The remote transport-config add operation handler. */
     static final OperationStepHandler REMOTE_ADD = new BasicTransportConfigAdd(REMOTE);
-    static final OperationStepHandler REMOTE_ATTR = new AttributeWriteHandler(REMOTE);
+    static final SelfRegisteringAttributeHandler REMOTE_ATTR = new AttributeWriteHandler(REMOTE);
 
     /** The in-vm transport-config add operation handler. */
     static final OperationStepHandler IN_VM_ADD = new BasicTransportConfigAdd(IN_VM);
-    static final OperationStepHandler IN_VM_ATTR = new AttributeWriteHandler(IN_VM);
+    static final SelfRegisteringAttributeHandler IN_VM_ATTR = new AttributeWriteHandler(IN_VM);
 
     /** The transport-config remove operation handler. */
     static final OperationStepHandler REMOVE = new OperationStepHandler() {
@@ -298,11 +301,22 @@ class TransportConfigOperationHandlers {
         };
     }
 
-    private static class AttributeWriteHandler extends ServerWriteAttributeOperationHandler {
+    interface SelfRegisteringAttributeHandler extends OperationStepHandler {
+        void registerAttributes(final ManagementResourceRegistration registry);
+    }
+
+    static class AttributeWriteHandler extends ServerWriteAttributeOperationHandler implements SelfRegisteringAttributeHandler {
         final AttributeDefinition[] attributes;
 
         private AttributeWriteHandler(AttributeDefinition[] attributes) {
             this.attributes = attributes;
+        }
+
+        public void registerAttributes(final ManagementResourceRegistration registry) {
+            final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            for (AttributeDefinition attr : attributes) {
+                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+            }
         }
 
         @Override

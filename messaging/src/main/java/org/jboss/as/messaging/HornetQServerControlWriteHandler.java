@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -44,6 +47,9 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
 
     public static final HornetQServerControlWriteHandler INSTANCE = new HornetQServerControlWriteHandler();
 
+    private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
+    private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+
     private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
     private final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
     private HornetQServerControlWriteHandler() {
@@ -52,6 +58,14 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
         }
         for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES) {
             runtimeAttributes.put(attr.getName(), attr);
+        }
+    }
+
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
+            String attrName = attr.getName();
+            EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
+            registry.registerReadWriteAttribute(attrName, null, this, flags);
         }
     }
 

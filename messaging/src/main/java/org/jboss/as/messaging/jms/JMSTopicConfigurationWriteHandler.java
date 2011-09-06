@@ -22,8 +22,13 @@
 
 package org.jboss.as.messaging.jms;
 
+import java.util.EnumSet;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -38,6 +43,11 @@ public class JMSTopicConfigurationWriteHandler extends ServerWriteAttributeOpera
     public static final JMSTopicConfigurationWriteHandler INSTANCE = new JMSTopicConfigurationWriteHandler();
 
     private JMSTopicConfigurationWriteHandler() {
+    }
+
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        registry.registerReadWriteAttribute(CommonAttributes.ENTRIES.getName(), null, this, flags);
     }
 
     @Override

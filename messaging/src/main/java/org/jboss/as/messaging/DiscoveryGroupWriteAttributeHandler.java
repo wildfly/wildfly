@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -47,6 +50,13 @@ public class DiscoveryGroupWriteAttributeHandler extends ServerWriteAttributeOpe
     private DiscoveryGroupWriteAttributeHandler() {
         for (AttributeDefinition attr : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
             attributes.put(attr.getName(), attr);
+        }
+    }
+
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        for (AttributeDefinition attr : CommonAttributes.DISCOVERY_GROUP_ATTRIBUTES) {
+            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
         }
     }
 

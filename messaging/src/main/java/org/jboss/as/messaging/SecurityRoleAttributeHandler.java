@@ -30,11 +30,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,6 +47,13 @@ import java.util.Set;
 class SecurityRoleAttributeHandler extends ServerWriteAttributeOperationHandler {
 
     static final SecurityRoleAttributeHandler INSTANCE = new SecurityRoleAttributeHandler();
+
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
+        for (AttributeDefinition attr : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
+        }
+    }
 
     @Override
     protected void validateValue(String name, ModelNode value) throws OperationFailedException {
