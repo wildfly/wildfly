@@ -28,6 +28,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Hashtable;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * Initial context factory builder which ensures the proper naming context factory is used if the environment
  * does not override the initial context impl property.
@@ -55,7 +57,7 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
             final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
             return (javax.naming.spi.InitialContextFactory)factoryClass.newInstance();
         } catch (Exception e) {
-            throw new NamingException("Failed instantiate InitialContextFactory " + factoryClassName + " from classloader " + classLoader);
+            throw MESSAGES.failedToInstantiate("InitialContextFactory", factoryClassName, classLoader);
         }
     }
 

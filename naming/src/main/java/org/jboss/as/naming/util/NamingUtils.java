@@ -35,6 +35,8 @@ import javax.naming.NotContextException;
 import java.util.Collection;
 import java.util.Iterator;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * Common utility functions used by the naming implementation.
  *
@@ -106,7 +108,7 @@ public class NamingUtils {
      * @return the exception
      */
     public static NameNotFoundException nameNotFoundException(final String name, final Name contextName) {
-        return new NameNotFoundException(String.format("Name '%s' not found in context '%s'", name, contextName.toString()));
+        return MESSAGES.nameNotFoundInContext(name, contextName);
     }
 
     /**
@@ -125,7 +127,7 @@ public class NamingUtils {
      * @return the exception
      */
     public static InvalidNameException emptyNameException() {
-        return new InvalidNameException("An empty name is not allowed");
+        return MESSAGES.emptyNameNotAllowed();
     }
 
     /**

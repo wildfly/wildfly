@@ -33,7 +33,7 @@ import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 import java.util.Hashtable;
 
-import static org.jboss.as.naming.util.NamingUtils.namingException;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * ObjectFactoryBuilder implementation used to support custom object factories being loaded from modules. This class
@@ -123,7 +123,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
             }
             return factory;
         } catch (Throwable t) {
-            throw namingException("Failed to create object factory from classloader.", t);
+            throw MESSAGES.objectFactoryCreationFailure(t);
         }
     }
 }

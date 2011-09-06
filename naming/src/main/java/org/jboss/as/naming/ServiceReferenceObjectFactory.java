@@ -40,6 +40,8 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.ServiceController.State;
 
+
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 /**
  * Abstract object factory that allows for the creation of service references. Object factories that subclass
  * {@link ServiceReferenceObjectFactory} can get access to the value of the service described by the reference.
@@ -71,14 +73,14 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
         final Reference reference = (Reference) obj;
         final ServiceNameRefAdr nameAdr = (ServiceNameRefAdr) reference.get("srof");
         if (nameAdr == null) {
-            throw new NamingException("Invalid context reference.  Not a 'srof' reference.");
+            throw MESSAGES.invalidContextReference("srof");
         }
         final ServiceName serviceName = (ServiceName)nameAdr.getContent();
         final ServiceController<?> controller;
         try {
             controller = serviceRegistry.getRequiredService(serviceName);
         } catch (ServiceNotFoundException e) {
-            throw new NamingException("Could not resolve service " + serviceName);
+            throw MESSAGES.cannotResolveService(serviceName);
         }
 
         ServiceReferenceListener listener = new ServiceReferenceListener();
@@ -89,7 +91,7 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
                 try {
                     listener.wait();
                 } catch (InterruptedException e) {
-                    throw new NamingException("Thread interrupted while retrieving service reference for service " + serviceName);
+                    throw MESSAGES.threadInterrupt(serviceName);
                 }
             }
         }
@@ -97,15 +99,12 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
             case UP:
                 return getObjectInstance(listener.getValue(), obj, name, nameCtx, environment);
             case START_FAILED:
-                throw new NamingException("Could not resolve service reference to " + serviceName + " in factory "
-                        + getClass().getName() + ". Service was in state START_FAILED.");
+                throw MESSAGES.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
             case REMOVED:
-                throw new NamingException("Could not resolve service reference to " + serviceName + " in factory "
-                        + getClass().getName() + ". Service was in state START_FAILED.");
+                throw MESSAGES.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
         }
         // we should never get here, as the listener should not notify unless the state was one of the above
-        throw new NamingException("Could not resolve service reference to " + serviceName + " in factory "
-                + getClass().getName() + ". This is a bug in ServiceReferenceObjectFactory. State was" + listener.getState());
+        throw MESSAGES.cannotResolveServiceBug(serviceName, getClass().getName(), listener.getState().toString());
     }
 
     /**

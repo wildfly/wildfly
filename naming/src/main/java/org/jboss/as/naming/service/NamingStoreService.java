@@ -24,13 +24,13 @@ package org.jboss.as.naming.service;
 
 import javax.naming.NamingException;
 
-import org.jboss.as.naming.InMemoryNamingStore;
-import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Service responsible for managing the creation and life-cycle of a naming store.
@@ -72,7 +72,7 @@ public class NamingStoreService implements Service<ServiceBasedNamingStore> {
             store.close();
             store = null;
         } catch (NamingException e) {
-            throw new IllegalStateException("Failed to destroy naming store", e);
+            throw MESSAGES.failedToDestroyRootContext(e);
         }
     }
 

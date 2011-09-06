@@ -32,6 +32,7 @@ import javax.naming.NameClassPair;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 import static org.jboss.as.naming.util.NamingUtils.nameNotFoundException;
 import org.jboss.as.naming.util.ThreadLocalStack;
 
@@ -59,7 +60,7 @@ public class MockContext implements Context {
         if (trap != null) {
             trap.bindings.put(bindName, value);
         } else {
-            throw new IllegalStateException("Nothing available to bind to.");
+            throw MESSAGES.noBindingsAvailable();
         }
     }
 
@@ -95,7 +96,7 @@ public class MockContext implements Context {
             }
             trap.bindings.put(newAbsolute, value);
         } else {
-            throw new IllegalStateException("Nothing available to bind to.");
+            throw MESSAGES.noBindingsAvailable();
         }
     }
 

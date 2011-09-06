@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * This class represents access to a path in the JNDI tree. A JndiPermission
  * consists of a pathname and a set of actions valid for that pathname.
@@ -157,13 +159,13 @@ public final class JndiPermission extends Permission
      */
     private void init(int mask) {
         if ((mask & Action.ALL.mask) != mask)
-            throw new IllegalArgumentException("invalid actions mask");
+            throw MESSAGES.invalidActionMask();
 
         if (mask == Action.NONE.mask)
-            throw new IllegalArgumentException("invalid actions mask");
+            throw MESSAGES.invalidActionMask();
 
         if ((cpath = getName()) == null)
-            throw new NullPointerException("name can't be null");
+            throw new NullPointerException(MESSAGES.cannotBeNull("name"));
 
         this.mask = mask;
 
@@ -398,7 +400,7 @@ public final class JndiPermission extends Permission
             String key = s.toLowerCase();
             action = Action.forName(key);
             if (action == null) {
-                throw new IllegalArgumentException("invalid permission, unknown action: " + s);
+                throw MESSAGES.invalidPermissionAction(s);
             }
             int i = action.mask;
             mask |= i;
@@ -570,9 +572,9 @@ final class JndiPermissionCollection extends PermissionCollection implements
 
     public void add(Permission permission) {
         if (!(permission instanceof JndiPermission))
-            throw new IllegalArgumentException("invalid permission: " + permission);
+            throw MESSAGES.invalidPermission(permission);
         if (isReadOnly())
-            throw new SecurityException("attempt to add a Permission to a readonly PermissionCollection");
+            throw MESSAGES.cannotAddToReadOnlyPermissionCollection();
 
         synchronized (this) {
             perms.add((JndiPermission) permission);
