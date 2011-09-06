@@ -114,6 +114,29 @@ public class HttpRequest {
                 final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
+                conn.setRequestMethod("PUT");
+                final OutputStream out = conn.getOutputStream();
+                try {
+                    write(out, message);
+                    return processResponse(conn);
+                }
+                finally {
+                    out.close();
+                }
+            }
+        };
+        return execute(task, timeout, unit);
+    }
+
+    public static String post(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+        final URL url = new URL(spec);
+        Callable<String> task = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                conn.setRequestMethod("POST");
                 final OutputStream out = conn.getOutputStream();
                 try {
                     write(out, message);
