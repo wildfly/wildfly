@@ -533,7 +533,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.common</groupId>
             <artifactId>hibernate-commons-annotations</artifactId>
         </dependency>
 
