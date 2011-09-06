@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 
@@ -807,8 +808,21 @@ public class GlobalOperationHandlers {
                     // in the valid attribute "foo" not being readable
                     final AccessType accessType = access == null ? AccessType.READ_ONLY : access.getAccessType();
                     final Storage storage = access == null ? Storage.CONFIGURATION : access.getStorageType();
-                    nodeDescription.get(ATTRIBUTES, attr, ACCESS_TYPE).set(accessType.toString()); //TODO i18n
-                    nodeDescription.get(ATTRIBUTES, attr, STORAGE).set(storage.toString());
+                    final ModelNode attrNode = nodeDescription.get(ATTRIBUTES, attr);
+                    attrNode.get(ACCESS_TYPE).set(accessType.toString()); //TODO i18n
+                    attrNode.get(STORAGE).set(storage.toString());
+                    if (accessType == AccessType.READ_WRITE) {
+                        Set<AttributeAccess.Flag> flags = access.getFlags();
+                        if (flags.contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
+                            attrNode.get(RESTART_REQUIRED).set("all-services");
+                        } else if (flags.contains(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)) {
+                            attrNode.get(RESTART_REQUIRED).set("resource-services");
+                        } else if (flags.contains(AttributeAccess.Flag.RESTART_JVM)) {
+                            attrNode.get(RESTART_REQUIRED).set("jvm");
+                        } else {
+                            attrNode.get(RESTART_REQUIRED).set("no-services");
+                        }
+                    }
                 }
             }
 

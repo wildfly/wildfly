@@ -742,11 +742,23 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
+        }
+
+        @Override
         public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, Storage storage) {
         }
 
         @Override
+        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
+        }
+
+        @Override
         public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
+        }
+
+        @Override
+        public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         }
 
         @Override

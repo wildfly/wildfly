@@ -185,21 +185,42 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     @Override
     public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler)) != null) {
+        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null)) != null) {
+            throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
+        }
+    }
+
+    @Override
+    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
+        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
+        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, flags)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
     public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, AttributeAccess.Storage storage) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null)) != null) {
+        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null)) != null) {
+            throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
+        }
+    }
+
+    @Override
+    public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
+        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
+        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
 
     @Override
     public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null)) != null) {
+        registerMetric(attributeName, metricHandler, null);
+    }
+
+    @Override
+    public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
+        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, flags)) != null) {
             throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
         }
     }
@@ -289,7 +310,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
                 // in the valid attribute "foo" not being readable
                 final ModelNode desc = descriptionProvider.getModelDescription(null);
                 if (desc.has(ATTRIBUTES) && desc.get(ATTRIBUTES).keys().contains(attributeName)) {
-                    access = new AttributeAccess(AccessType.READ_ONLY, Storage.CONFIGURATION, null, null);
+                    access = new AttributeAccess(AccessType.READ_ONLY, Storage.CONFIGURATION, null, null, null);
                 }
             }
             return access;

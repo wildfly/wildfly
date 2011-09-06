@@ -142,6 +142,22 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage);
 
     /**
+     * Records that the given attribute can be both read from and written to, and
+     * provides operation handlers for the read and the write. The attribute is assumed to be
+     * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
+     * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
+     *
+     * @param attributeName the name of the attribute. Cannot be {@code null}
+     * @param readHandler the handler for attribute reads. May be {@code null}
+     *                    in which case the default handling is used
+     * @param writeHandler the handler for attribute writes. Cannot be {@code null}
+     * @param flags additional flags describing this attribute
+     * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
+     */
+    void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler,
+                                    EnumSet<AttributeAccess.Flag> flags);
+
+    /**
      * Records that the given attribute can be read from but not written to, and
      * optionally provides an operation handler for the read.
      *
@@ -154,6 +170,20 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, AttributeAccess.Storage storage);
 
     /**
+     * Records that the given attribute can be read from but not written to, and
+     * optionally provides an operation handler for the read. The attribute is assumed to be
+     * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
+     * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
+     *
+     * @param attributeName the name of the attribute. Cannot be {@code null}
+     * @param readHandler the handler for attribute reads. May be {@code null}
+     *                    in which case the default handling is used
+     * @param flags additional flags describing this attribute
+     * @throws IllegalArgumentException if {@code attributeName} is {@code null}
+     */
+    void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags);
+
+    /**
      * Records that the given attribute is a metric.
      *
      * @param attributeName the name of the attribute. Cannot be {@code null}
@@ -162,6 +192,17 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
      */
     void registerMetric(String attributeName, OperationStepHandler metricHandler);
+
+    /**
+     * Records that the given attribute is a metric.
+     *
+     * @param attributeName the name of the attribute. Cannot be {@code null}
+     * @param metricHandler the handler for attribute reads. Cannot be {@code null}
+     * @param flags additional flags describing this attribute
+     *
+     * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
+     */
+    void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags);
 
     /**
      * Register a proxy controller.
