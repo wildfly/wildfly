@@ -23,8 +23,11 @@
 package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.server.deployment.Attachments.ANNOTATION_INDEX;
+import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
 import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINT_HANDLERS_MAPPING_KEY;
+import static org.jboss.as.ee.structure.DeploymentType.EAR;
+import static org.jboss.as.ee.structure.DeploymentTypeMarker.isType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,11 +75,9 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
-        if (resourceRoots == null) {
-            return;
-        }
+        if (isType(EAR, unit)) return;
 
+        final Set<ResourceRoot> resourceRoots = getResourceRoots(unit);
         final WSEndpointHandlersMapping mapping = new WSEndpointHandlersMapping();
         Index index = null;
         for (final ResourceRoot resourceRoot : resourceRoots) {
@@ -94,6 +95,17 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
     @Override
     public void undeploy(final DeploymentUnit context) {
         // noop
+    }
+
+    private static Set<ResourceRoot> getResourceRoots(final DeploymentUnit unit) {
+        final Set<ResourceRoot> retVal = new HashSet<ResourceRoot>();
+        final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);
+        retVal.add(root);
+        final AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
+        if (resourceRoots != null) {
+            retVal.addAll(resourceRoots);
+        }
+        return retVal;
     }
 
     private static void processHandlerChainAnnotations(final ResourceRoot resourceRoot, final Index index, final WSEndpointHandlersMapping mapping)  throws DeploymentUnitProcessingException {
