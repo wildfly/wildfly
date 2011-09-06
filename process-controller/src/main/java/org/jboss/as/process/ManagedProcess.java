@@ -31,19 +31,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.SimpleClassResolver;
+
+import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 /**
  * A managed process.
@@ -57,7 +51,7 @@ final class ManagedProcess {
     private final List<String> command;
     private final Map<String, String> env;
     private final String workingDirectory;
-    private final Logger log;
+    private final ProcessLogger log;
     private final Object lock;
 
     private final ProcessController processController;
@@ -91,28 +85,28 @@ final class ManagedProcess {
 
     ManagedProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, final Object lock, final ProcessController controller, final byte[] authKey, final boolean initial) {
         if (processName == null) {
-            throw new IllegalArgumentException("processName is null");
+            throw MESSAGES.nullVar("processName");
         }
         if (command == null) {
-            throw new IllegalArgumentException("command is null");
+            throw MESSAGES.nullVar("command");
         }
         if (env == null) {
-            throw new IllegalArgumentException("env is null");
+            throw MESSAGES.nullVar("env");
         }
         if (workingDirectory == null) {
-            throw new IllegalArgumentException("workingDirectory is null");
+            throw MESSAGES.nullVar("workingDirectory");
         }
         if (lock == null) {
-            throw new IllegalArgumentException("lock is null");
+            throw MESSAGES.nullVar("lock");
         }
         if (controller == null) {
-            throw new IllegalArgumentException("controller is null");
+            throw MESSAGES.nullVar("controller");
         }
         if (authKey == null) {
-            throw new IllegalArgumentException("authKey is null");
+            throw MESSAGES.nullVar("authKey");
         }
         if (authKey.length != 16) {
-            throw new IllegalArgumentException("authKey length is invalid");
+            throw MESSAGES.invalidLength("authKey");
         }
         this.processName = processName;
         this.command = command;
@@ -122,7 +116,7 @@ final class ManagedProcess {
         processController = controller;
         this.authKey = authKey;
         isInitial = initial;
-        log = Logger.getLogger("org.jboss.as.process." + processName + ".status");
+        log = Logger.getMessageLogger(ProcessLogger.class, "org.jboss.as.process." + processName + ".status");
     }
 
     public String getProcessName() {
@@ -144,7 +138,7 @@ final class ManagedProcess {
             StreamUtils.copyStream(msg, stdin);
             stdin.flush();
         } catch (IOException e) {
-            log.errorf(e, "Failed to send data bytes to process '%s' input stream", processName);
+            log.failedToSendDataBytes(e, processName);
         }
     }
 
@@ -155,7 +149,7 @@ final class ManagedProcess {
             StreamUtils.writeInt(stdin, port);
             stdin.flush();
         } catch (IOException e) {
-            log.errorf(e, "Failed to send reconnect message to process '%s' input stream", processName);
+            log.failedToSendReconnect(e, processName);
         }
     }
 
@@ -165,7 +159,7 @@ final class ManagedProcess {
             //Add the restart flag to the HC process if we are respawning it
             command.add(CommandLineConstants.RESTART_HOST_CONTROLLER);
         }
-        log.infof("Starting process '%s'", processName);
+        log.startingProcess(processName);
         log.debugf("Process name='%s' command='%s' workingDirectory='%s'", processName, command, workingDirectory);
         final ProcessBuilder builder = new ProcessBuilder(command);
         builder.environment().putAll(env);
@@ -174,7 +168,7 @@ final class ManagedProcess {
         try {
             process = builder.start();
         } catch (IOException e) {
-            log.errorf(e, "Failed to start process '%s'", processName);
+            log.failedToStartProcess(processName);
             return;
         }
         final long startTime = System.currentTimeMillis();
@@ -194,7 +188,7 @@ final class ManagedProcess {
             stdin.write(authKey);
             stdin.flush();
         } catch (Exception e) {
-            log.warnf("Failed to send authentication key to process '%s': %s", processName, e);
+            log.failedToSendAuthKey(processName, e);
         }
         state = State.STARTED;
         this.process = process;
@@ -209,7 +203,7 @@ final class ManagedProcess {
                 log.debugf("Attempted to stop already-stopping or down process '%s'", processName);
                 return;
             }
-            log.infof("Stopping process '%s'", processName);
+            log.stoppingProcess(processName);
             StreamUtils.safeClose(stdin);
             state = State.STOPPING;
         }
@@ -219,7 +213,7 @@ final class ManagedProcess {
         synchronized (lock) {
             shutdown = true;
             if (state == State.STARTED) {
-                log.infof("Stopping process '%s'", processName);
+                log.stoppingProcess(processName);
                 StreamUtils.safeClose(stdin);
             }
             state = State.STOPPING;
@@ -241,7 +235,7 @@ final class ManagedProcess {
             int exitCode;
             for (;;) try {
                 exitCode = process.waitFor();
-                log.infof("Process '%s' finished with an exit status of %d", processName, Integer.valueOf(exitCode));
+                log.processFinished(processName, Integer.valueOf(exitCode));
                 break;
             } catch (InterruptedException e) {
                 // ignore
@@ -300,7 +294,7 @@ final class ManagedProcess {
                 }
                 source.close();
             } catch (IOException e) {
-                log.error("Stream processing failed for process '%s': %s", processName, e);
+                log.streamProcessingFailed(processName, e);
             } finally {
                 StreamUtils.safeClose(source);
             }

@@ -23,6 +23,8 @@ package org.jboss.as.process;
 
 import java.io.File;
 
+import static org.jboss.as.process.ProcessMessages.MESSAGES;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -50,18 +52,18 @@ public class DefaultJvmUtils {
     public static String findJavaExecutable(String javaHome) {
         File file = new File(javaHome);
         if (!file.exists()) {
-            throw new IllegalStateException("Java home '" + file.getAbsolutePath() + "' does not exist.");
+            throw MESSAGES.invalidJavaHome(file.getAbsolutePath());
         }
         file = new File(file, "bin");
         if (!file.exists()) {
-            throw new IllegalStateException("Java home's bin '" + file.getAbsolutePath() + "' does not exist. The home directory was determined to be " + file.getParentFile().getAbsolutePath() + ".");
+            throw MESSAGES.invalidJavaHomeBin(file.getAbsolutePath(), file.getParentFile().getAbsolutePath());
         }
         File java = new File(file, "java");
         if (!java.exists()) {
             java = new File(file, "java.exe");
         }
         if (!java.exists()) {
-            throw new IllegalStateException("Could not find java executable under " + file.getAbsolutePath());
+            throw MESSAGES.cannotFindJavaExe(file.getAbsolutePath());
         }
         return java.getAbsolutePath();
     }
