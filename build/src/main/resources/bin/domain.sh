@@ -1,7 +1,7 @@
 #!/bin/sh
 
-DIRNAME=`dirname $0`
-PROGNAME=`basename $0`
+DIRNAME=`dirname "$0"`
+PROGNAME=`basename "$0"`
 GREP="grep"
 
 # Use the maximum available, or set MAX_FD != -1 to use that
@@ -61,7 +61,7 @@ fi
 # Setup JBOSS_HOME
 if [ "x$JBOSS_HOME" = "x" ]; then
     # get the full path (without any relative bits)
-    JBOSS_HOME=`cd $DIRNAME/..; pwd`
+    JBOSS_HOME=`cd "$DIRNAME/.."; pwd`
 fi
 export JBOSS_HOME
 
