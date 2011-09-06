@@ -182,7 +182,8 @@ public class ManagementClient {
     }
 
     private String getInterface(String name) {
-        return rootNode.get("interface").get(name).get("criteria").asList().get(0).get("inet-address").asString();
+        ModelNode node = rootNode.get("interface").get(name).get("criteria").asList().get(0).get("inet-address");
+        return node.resolve().asString();
     }
 
 
