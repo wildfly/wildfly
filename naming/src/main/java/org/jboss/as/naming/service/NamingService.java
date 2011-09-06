@@ -26,12 +26,14 @@ import javax.naming.NamingException;
 
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Naming Server.
@@ -40,7 +42,6 @@ import org.jboss.msc.service.StopContext;
  */
 public class NamingService implements Service<NamingStore> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming");
-    private static final Logger log = Logger.getLogger("org.jboss.as.naming");
     private final NamingStore namingStore;
 
     /**
@@ -59,11 +60,11 @@ public class NamingService implements Service<NamingStore> {
      * @throws StartException If any errors occur setting up the naming server
      */
     public synchronized void start(StartContext context) throws StartException {
-        log.info("Starting Naming Service ");
+        ROOT_LOGGER.startingService();
         try {
             NamingContext.setActiveNamingStore(namingStore);
         } catch (Throwable t) {
-            throw new StartException("Failed to start naming server", t);
+            throw new StartException(MESSAGES.failedToStart("naming service"), t);
         }
     }
 

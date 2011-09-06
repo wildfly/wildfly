@@ -24,6 +24,8 @@ package org.jboss.as.naming.deployment;
 
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * @author John Bailey
  */
@@ -278,7 +280,7 @@ public class ContextNames {
             parentContextName = JAVA_CONTEXT_SERVICE_NAME;
             bindName = bindName.substring(1);
         } else {
-            throw new RuntimeException("Illegal context in name: " + jndiName);
+            throw MESSAGES.illegalContextInName(jndiName);
         }
         return new BindInfo(parentContextName, bindName);
     }

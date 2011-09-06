@@ -28,10 +28,8 @@ import javax.naming.NamingException;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.naming.InMemoryNamingStore;
 import org.jboss.as.naming.InitialContextFactoryService;
 import org.jboss.as.naming.NamingContext;
-import org.jboss.as.naming.NamingEventCoordinator;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
@@ -43,14 +41,12 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-import javax.management.MBeanServer;
 import java.util.List;
+
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -58,8 +54,6 @@ import java.util.List;
  * @author John Bailey
  */
 public class NamingSubsystemAdd extends AbstractAddStepHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.naming");
     private static final CompositeName EMPTY_NAME = new CompositeName();
 
     static final NamingSubsystemAdd INSTANCE = new NamingSubsystemAdd();
@@ -70,7 +64,7 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
-        log.info("Activating Naming Subsystem");
+        ROOT_LOGGER.activatingSubsystem();
 
         NamingContext.initializeNamingManager();
 
