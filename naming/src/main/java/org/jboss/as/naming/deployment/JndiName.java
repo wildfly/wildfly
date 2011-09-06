@@ -24,6 +24,8 @@ package org.jboss.as.naming.deployment;
 
 import java.io.Serializable;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * Utility object used to easily manged the construction and management of JNDI names.
  *
@@ -90,7 +92,7 @@ public class JndiName implements Serializable, Comparable<JndiName> {
      * @return The JndiName representation
      */
     public static JndiName of(final String name) {
-        if(name == null || name.isEmpty()) throw new IllegalArgumentException("A valid JNDI name must be provided: " + name);
+        if(name == null || name.isEmpty()) throw MESSAGES.invalidJndiName(name);
         final String[] parts = name.split(ENTRY_SEPARATOR);
         JndiName current = null;
         for(String part : parts) {

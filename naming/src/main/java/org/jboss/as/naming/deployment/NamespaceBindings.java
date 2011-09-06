@@ -28,6 +28,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * Configuration object used to managed a collection a JNDI namespace bindings for a deployment.  This is primarily used
  * to detect duplicate namespace bindings.
@@ -65,12 +67,7 @@ public class NamespaceBindings {
     public boolean addBinding(final JndiName name, final Object value) throws DuplicateBindingException {
         final Object existing = bindings.putIfAbsent(name, value);
         if (existing != null && !existing.equals(value)) {
-            final StringBuilder builder = new StringBuilder("Duplicate JNDI bindings for '")
-                    .append(name)
-                    .append("' are not compatible.  [")
-                    .append(existing).append("] != [")
-                    .append(value).append("]");
-            throw new DuplicateBindingException(builder.toString());
+            throw new DuplicateBindingException(MESSAGES.duplicateBinding(name, existing, value));
         }
         return existing == null;
     }

@@ -34,6 +34,8 @@ import org.jboss.msc.value.InjectedValue;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * Service responsible for providing the {@link InitialContext} as OSGi service.
  *
@@ -61,7 +63,7 @@ public class InitialContextFactoryService extends AbstractService<InitialContext
         try {
             return new InitialContext();
         } catch (NamingException ex) {
-            throw new IllegalStateException("Cannot obtain InitialContext", ex);
+            throw MESSAGES.cannotObtain(ex, "InitialContext");
         }
     }
 }

@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import org.jboss.as.naming.util.FastCopyHashMap;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -54,7 +56,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
 
     public V put(C instance, K key, V value) {
         if (key == null) {
-            throw new IllegalArgumentException("key is null");
+            throw MESSAGES.nullVar("key");
         }
         for (;;) {
             final Map<K, V> oldMap = updater.get(instance);
@@ -96,7 +98,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
      */
     public V putAtomic(C instance, K key, V value, Map<K, V> snapshot) {
         if (key == null) {
-            throw new IllegalArgumentException("key is null");
+            throw MESSAGES.nullVar("key");
         }
         final Map<K, V> newMap;
         final int oldSize = snapshot.size();
@@ -124,7 +126,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
 
     public V putIfAbsent(C instance, K key, V value) {
         if (key == null) {
-            throw new IllegalArgumentException("key is null");
+            throw MESSAGES.nullVar("key");
         }
         for (;;) {
             final Map<K, V> oldMap = updater.get(instance);
