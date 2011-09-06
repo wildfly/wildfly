@@ -21,9 +21,9 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!-- 
-  Set these VM properties in your IDE debugger 
-  
+<!--
+  Set these VM properties in your IDE debugger
+
   -Dmodule.path=${workspace_loc:jboss-as-osgi/target/test-modules}
   -Djava.util.logging.config.file=${workspace_loc:jboss-as-osgi/src/test/resources}/console-logging.properties
 -->
@@ -66,6 +66,21 @@
             <artifactId>jboss-modules</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-generator</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.osgi.deployment</groupId>
             <artifactId>jbosgi-deployment</artifactId>
         </dependency>
@@ -101,7 +116,7 @@
             <artifactId>jbosgi-vfs30</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
@@ -143,6 +158,15 @@
                             <value>org.jboss.logmanager.LogManager</value>
                         </property>
                     </systemProperties>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>
+                        -AgeneratedTranslationFilesPath=${project.build.directory}/generated-translation-files
+                    </compilerArgument>
                 </configuration>
             </plugin>
         </plugins>

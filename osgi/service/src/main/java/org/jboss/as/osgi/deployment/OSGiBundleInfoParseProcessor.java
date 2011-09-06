@@ -37,6 +37,8 @@ import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.vfs.VirtualFile;
 import org.osgi.framework.BundleException;
 
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
 /**
  * Processes deployments that contain a valid OSGi manifest.
  *
@@ -69,7 +71,7 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
             info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName);
             BundleInfoAttachment.attachBundleInfo(deploymentUnit, info);
         } catch (BundleException ex) {
-            throw new DeploymentUnitProcessingException("Cannot create bundle deployment from: " + deploymentUnit);
+            throw new DeploymentUnitProcessingException(MESSAGES.cannotCreateBundleDeployment(deploymentUnit));
         }
     }
 

@@ -33,9 +33,10 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
-import org.jboss.logging.Logger;
 import org.jboss.osgi.testing.OSGiDeployerClient;
 import org.jboss.osgi.testing.OSGiRuntime;
+
+import static org.jboss.as.osgi.plugin.OSGiPluginLogger.ROOT_LOGGER;
 
 /**
  * An abstract deployer for the {@link OSGiRuntime}
@@ -44,9 +45,6 @@ import org.jboss.osgi.testing.OSGiRuntime;
  * @since 09-Nov-2010
  */
 public class DeployerClientImpl implements OSGiDeployerClient {
-
-    // Provide logging
-    private static final Logger log = Logger.getLogger(DeployerClientImpl.class);
 
     private ServerDeploymentManager deploymentManager;
 
@@ -81,7 +79,7 @@ public class DeployerClientImpl implements OSGiDeployerClient {
             Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
             future.get();
         } catch (Throwable ex) {
-            log.warn("Cannot undeploy: " + uniqueName, ex);
+            ROOT_LOGGER.cannotUndeploy(ex, uniqueName);
         }
     }
 
