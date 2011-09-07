@@ -22,6 +22,8 @@
 package org.jboss.as.clustering.web.infinispan;
 
 import org.infinispan.Cache;
+import org.infinispan.config.Configuration;
+import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.msc.service.ServiceRegistry;
@@ -43,6 +45,10 @@ public class JvmRouteCacheSource implements CacheSource {
     @Override
     public <K, V> Cache<K, V> getCache(ServiceRegistry registry, LocalDistributableSessionManager manager) {
         EmbeddedCacheManager container = (EmbeddedCacheManager) registry.getRequiredService(this.provider.getServiceName(manager.getReplicationConfig())).getValue();
+        String cacheName = manager.getEngineName();
+        if (!container.cacheExists(cacheName)) {
+            container.defineConfiguration(manager.getEngineName(), CacheContainer.DEFAULT_CACHE_NAME, new Configuration());
+        }
         return container.getCache(manager.getEngineName());
     }
 }

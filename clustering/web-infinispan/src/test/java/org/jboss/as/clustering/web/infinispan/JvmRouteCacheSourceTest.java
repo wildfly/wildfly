@@ -27,6 +27,8 @@ import static org.mockito.Mockito.when;
 import static org.junit.Assert.*;
 
 import org.infinispan.Cache;
+import org.infinispan.config.Configuration;
+import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
@@ -62,8 +64,11 @@ public class JvmRouteCacheSourceTest {
         when((ServiceController<EmbeddedCacheManager>) registry.getRequiredService(name)).thenReturn(controller);
         when(controller.getValue()).thenReturn(container);
         when(manager.getEngineName()).thenReturn(engine);
+        when(container.cacheExists(engine)).thenReturn(false, true);
         when(container.getCache(engine)).thenReturn(cache);
+        when(container.defineConfiguration(engine, CacheContainer.DEFAULT_CACHE_NAME, new Configuration())).thenReturn(new Configuration()).thenThrow(new AssertionError());
 
+        assertSame(cache, source.getCache(registry, manager));
         assertSame(cache, source.getCache(registry, manager));
     }
 }
