@@ -285,7 +285,6 @@
         <socket-binding name="jmx-connector-server" port="1091"/>
         <socket-binding name="jndi" port="1099"/>
         <socket-binding name="osgi-http" interface="management" port="8090"/>
-        <socket-binding name="osgi-http" port="8090"/>
         <socket-binding name="remoting" port="4447"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
