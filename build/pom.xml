@@ -1214,6 +1214,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.spec.javax.management.j2ee</groupId>
+            <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.spec.javax.resource</groupId>
             <artifactId>jboss-connector-api_1.6_spec</artifactId>
         </dependency>
