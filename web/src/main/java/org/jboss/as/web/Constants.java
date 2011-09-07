@@ -112,4 +112,12 @@ interface Constants {
     String WELCOME_FILE = "welcome-file";
     String X_POWERED_BY = "x-powered-by";
 
+    /* Connect stats attributes */
+    String BYTES_SENT = "bytesSent";
+    String BYTES_RECEIVED = "bytesReceived";
+    String PROCESSING_TIME = "processingTime";
+    String ERROR_COUNT = "errorCount";
+    String MAX_TIME = "maxTime";
+    String REQUEST_COUNT = "requestCount";
+
 }
