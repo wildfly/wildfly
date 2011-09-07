@@ -44,9 +44,11 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.ClassConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -112,13 +114,13 @@ public final class WSJndiBindingsDeploymentUnitProcessor implements DeploymentUn
         final DotName endpointBeanName = DotName.createSimple(endpointBean);
         // propagate inherited JNDI bindings
         final Queue<DotName> predecessors = getPredecessors(endpointBeanName, unit, false);
-        propagateBindingsAcrossDeployments(endpointBeanName, predecessors, unit);
+        propagateBindingsAcrossDeployments(endpointBeanName, predecessors, unit, true);
         // propagate handler JNDI bindings
         final Set<String> handlers = getHandlers(endpointBean, unit);
         for (final String handler : handlers) {
             final DotName handlerBeanName = DotName.createSimple(handler);
             final Queue<DotName> handlerAndItsPredecessors = getPredecessors(handlerBeanName, unit, true);
-            propagateBindingsAcrossDeployments(endpointBeanName, handlerAndItsPredecessors, unit);
+            propagateBindingsAcrossDeployments(endpointBeanName, handlerAndItsPredecessors, unit, false);
         }
     }
 
@@ -141,9 +143,9 @@ public final class WSJndiBindingsDeploymentUnitProcessor implements DeploymentUn
         return predecessors;
     }
 
-    private static void propagateBindingsAcrossDeployments(final DotName endpointName, final Collection<DotName> predecessors, final DeploymentUnit unit) {
+    private static void propagateBindingsAcrossDeployments(final DotName endpointName, final Collection<DotName> predecessors, final DeploymentUnit unit, final boolean includeInjectionConfigurators) {
         if (predecessors.size() == 0) return;
-        final EEModuleClassDescription sessionBeanDescription = getDescription(endpointName, unit, true);
+        final EEModuleClassDescription classDescription = getDescription(endpointName, unit, true);
         DeploymentUnit predecessorUnit = null;
         EEModuleClassDescription predecessorDescription = null;
         for (final DotName predecessorName : predecessors) {
@@ -152,7 +154,15 @@ public final class WSJndiBindingsDeploymentUnitProcessor implements DeploymentUn
                 predecessorDescription = getDescription(predecessorName, predecessorUnit, false);
                 if (predecessorDescription != null) {
                     final Deque<ClassConfigurator> predecessorConfigurators = predecessorDescription.getConfigurators();
-                    sessionBeanDescription.getConfigurators().addAll(predecessorConfigurators);
+                    for (final ClassConfigurator configurator : predecessorConfigurators) {
+                        if (configurator instanceof BindingConfigurator) {
+                            classDescription.getConfigurators().add(configurator);
+                        } else if (configurator instanceof InjectionConfigurator) {
+                            if (includeInjectionConfigurators) {
+                                classDescription.getConfigurators().add(configurator);
+                            }
+                        }
+                    }
                 }
             }
         }
