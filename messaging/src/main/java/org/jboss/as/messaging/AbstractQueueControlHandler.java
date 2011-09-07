@@ -23,7 +23,6 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
-import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 
 import java.util.EnumSet;
 import java.util.Locale;
@@ -44,6 +43,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -53,6 +53,8 @@ import org.jboss.msc.service.ServiceController;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnlyHandler {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
     public static final String LIST_MESSAGES = "list-messages";
     public static final String LIST_MESSAGES_AS_JSON = "list-messages-as-json";
@@ -282,6 +284,8 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         DelegatingQueueControl<T> control = getQueueControl(hqServer, queueName);
 
+        boolean reversible = false;
+        Object handback = null;
         try {
             if (LIST_MESSAGES.equals(operationName)) {
                 singleOptionalFilterValidator.validate(operation);
@@ -363,15 +367,18 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                 context.getResult(); // undefined
             } else if (PAUSE.equals(operationName)) {
                 control.pause();
+                reversible = true;
                 context.getResult(); // undefined
             } else if (RESUME.equals(operationName)) {
                 control.resume();
+                reversible = true;
                 context.getResult(); // undefined
             } else if (LIST_CONSUMERS_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listConsumersAsJSON());
             } else {
                 // TODO LIST_MESSAGE_COUNTER, LIST_MESSAGE_COUNTER_HISTORY, LIST_CONSUMERS
-                handleAdditonalOperation(operationName, operation, context, control.getDelegate());
+                handback = handleAdditonalOperation(operationName, operation, context, control.getDelegate());
+                reversible = handback == null;
             }
         } catch (RuntimeException e) {
             throw e;
@@ -379,13 +386,31 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             context.getFailureDescription().set(e.toString());
         }
 
-        context.completeStep();
+        if (context.completeStep() != OperationContext.ResultAction.KEEP && reversible) {
+            try {
+                if (PAUSE.equals(operationName)) {
+                    control.resume();
+                } else if (RESUME.equals(operationName)) {
+                    control.pause();
+                } else {
+                    revertAdditonalOperation(operationName, operation, context, control.getDelegate(), handback);
+                }
+            } catch (Exception e) {
+                log.errorf(e, String.format("%s caught exception attempting to revert operation %s at address %s",
+                        getClass().getSimpleName(),
+                        operation.require(ModelDescriptionConstants.OP).asString(),
+                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR))));
+            }
+        }
     }
 
     protected abstract DelegatingQueueControl<T> getQueueControl(HornetQServer hqServer, String queueName);
 
-    protected abstract void handleAdditonalOperation(final String operationName, final ModelNode operation,
+    protected abstract Object handleAdditonalOperation(final String operationName, final ModelNode operation,
                                                      final OperationContext context, T queueControl) throws OperationFailedException;
+
+    protected abstract void revertAdditonalOperation(final String operationName, final ModelNode operation,
+                                                     final OperationContext context, T queueControl, Object handback);
 
     protected abstract boolean isJMS();
 

@@ -82,7 +82,10 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler, De
                     if (!context.hasFailureDescription()) {
                         context.getResult();
                     }
-                    context.completeStep();
+
+                    if (context.completeStep() != OperationContext.ResultAction.KEEP) {
+                        // TODO is it possible to revert?
+                    }
                 }
             }, OperationContext.Stage.RUNTIME);
         }

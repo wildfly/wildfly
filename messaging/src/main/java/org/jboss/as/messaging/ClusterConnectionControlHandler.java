@@ -102,7 +102,7 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
     }
 
     @Override
-    protected void handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected Object handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
         if (GET_STATIC_CONNECTORS_AS_JSON.equals(operationName)) {
             ClusterConnectionControl control = getHornetQComponentControl(context, operation, false);
             try {
@@ -125,5 +125,7 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
         } else {
             unsupportedOperation(operationName);
         }
+
+        return null;
     }
 }

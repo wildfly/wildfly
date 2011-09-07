@@ -26,6 +26,7 @@ package org.jboss.as.messaging;
 import java.util.EnumSet;
 
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -63,18 +64,29 @@ class AddressSettingsWriteHandler implements OperationStepHandler {
         }
         def.getValidator().validateParameter(ModelDescriptionConstants.VALUE, operation);
         resource.getModel().get(attribute).set(operation.get(ModelDescriptionConstants.VALUE));
+
         if(context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final HornetQServer server = AddressSettingAdd.getServer(context);
+                    PathAddress address = null;
+                    HierarchicalRepository<AddressSettings> repository = null;
+                    AddressSettings existingSettings = null;
                     if(server != null) {
                         final ModelNode model = resource.getModel();
-                        final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+                        address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
                         final AddressSettings settings = AddressSettingAdd.createSettings(model);
-                        server.getAddressSettingsRepository().addMatch(address.getLastElement().getValue(), settings);
+                        repository = server.getAddressSettingsRepository();
+                        String match = address.getLastElement().getValue();
+                        existingSettings = repository.getMatch(match);
+                        repository.addMatch(match, settings);
                     }
-                    context.completeStep();
+
+                    if (context.completeStep() != OperationContext.ResultAction.KEEP && existingSettings != null) {
+                        // Restore the old settings
+                        repository.addMatch(address.getLastElement().getValue(), existingSettings);
+                    }
                 }
             }, OperationContext.Stage.RUNTIME);
         }

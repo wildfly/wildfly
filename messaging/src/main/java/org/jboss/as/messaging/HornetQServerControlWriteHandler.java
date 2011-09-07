@@ -84,48 +84,74 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
         AttributeDefinition attr = runtimeAttributes.get(attributeName);
-        if (attr != null) {
+        if (attr == null) {
+            // Not a runtime attribute; restart required
+            return true;
+        } else {
+            ServiceRegistry registry = context.getServiceRegistry(true);
+            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            if (hqService == null) {
+                // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
+                return false;
+            } else if (hqService.getState() != ServiceController.State.UP) {
+                // Service is installed but not up?
+                //throw new IllegalStateException(String.format("Cannot apply attribue %s to runtime; service %s is not in state %s, it is in state %s",
+                //            attributeName, MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
+                // No, don't barf; just let the update apply to the model and put the server in a reload-required state
+                return true;
+            } else {
+                applyOperationToHornetQService(operation, attributeName, hqService);
+                return false;
+
+            }
+
+        }
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                         final String attributeName, final ModelNode valueToRestore,
+                                         final ModelNode valueToRevert) throws OperationFailedException {
+
+        if (runtimeAttributes.containsKey(attributeName)) {
             ServiceRegistry registry = context.getServiceRegistry(true);
             ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
             if (hqService != null && hqService.getState() == ServiceController.State.UP) {
+                // Create and execute a write-attribute operation that uses the valueToRestore
+                ModelNode revertOp = operation.clone();
+                revertOp.get(attributeName).set(valueToRestore);
+                applyOperationToHornetQService(revertOp, attributeName, hqService);
+            }
+        }
+    }
 
-                HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
-                try {
-                    if (attributeName.equals(CommonAttributes.FAILOVER_ON_SHUTDOWN.getName()))  {
-                        serverControl.setFailoverOnServerShutdown(newValue.resolve().asBoolean());
-                    } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD.getName())) {
-                        serverControl.setMessageCounterSamplePeriod(newValue.resolve().asLong());
-                    } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY.getName())) {
-                        serverControl.setMessageCounterMaxDayCount(newValue.resolve().asInt());
-                    } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_ENABLED.getName())) {
-                        boolean enabled = newValue.resolve().asBoolean();
-                        if (enabled) {
-                            serverControl.enableMessageCounters();
-                        } else {
-                            serverControl.disableMessageCounters();
-                        }
-                    } else {
-                        // Bug! Someone added the attribute to the set but did not implement
-                        throw new UnsupportedOperationException(String.format("Runtime handling for %s is not implemented", attributeName));
-                    }
-
-                } catch (RuntimeException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+    private void applyOperationToHornetQService(ModelNode operation, String attributeName, ServiceController<?> hqService) {
+        HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
+        try {
+            if (attributeName.equals(CommonAttributes.FAILOVER_ON_SHUTDOWN.getName()))  {
+                serverControl.setFailoverOnServerShutdown(CommonAttributes.FAILOVER_ON_SHUTDOWN.validateResolvedOperation(operation).asBoolean());
+            } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD.getName())) {
+                serverControl.setMessageCounterSamplePeriod(CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD.validateResolvedOperation(operation).asLong());
+            } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY.getName())) {
+                serverControl.setMessageCounterMaxDayCount(CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY.validateResolvedOperation(operation).asInt());
+            } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_ENABLED.getName())) {
+                boolean enabled = CommonAttributes.MESSAGE_COUNTER_ENABLED.validateResolvedOperation(operation).asBoolean();
+                if (enabled) {
+                    serverControl.enableMessageCounters();
+                } else {
+                    serverControl.disableMessageCounters();
                 }
-
-                return false;
-
             } else {
-                throw new IllegalStateException(String.format("Cannot apply attribute %s to runtime; service %s is not in state %s, it is in state %s",
-                            attributeName, MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
+                // Bug! Someone added the attribute to the set but did not implement
+                throw new UnsupportedOperationException(String.format("Runtime handling for %s is not implemented", attributeName));
             }
 
-        } else {
-            // Not a runtime attribute; restart required
-            return true;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+
     }
 
 }

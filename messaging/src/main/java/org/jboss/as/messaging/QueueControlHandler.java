@@ -75,24 +75,32 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     }
 
     @Override
-    protected void handleAdditonalOperation(String operationName, ModelNode operation, OperationContext context,
+    protected Object handleAdditonalOperation(String operationName, ModelNode operation, OperationContext context,
                                             QueueControl queueControl) throws OperationFailedException {
         try {
-        if (LIST_SCHEDULED_MESSAGES.equals(operationName)) {
-            String json = queueControl.listScheduledMessagesAsJSON();
-            context.getResult().set(ModelNode.fromJSONString(json));
-        } else if (LIST_SCHEDULED_MESSAGES_AS_JSON.equals(operationName)) {
-            context.getResult().set(queueControl.listScheduledMessagesAsJSON());
-        } else {
-            // Bug
-            throwUnimplementedOperationException(operationName);
-        }
+            if (LIST_SCHEDULED_MESSAGES.equals(operationName)) {
+                String json = queueControl.listScheduledMessagesAsJSON();
+                context.getResult().set(ModelNode.fromJSONString(json));
+            } else if (LIST_SCHEDULED_MESSAGES_AS_JSON.equals(operationName)) {
+                context.getResult().set(queueControl.listScheduledMessagesAsJSON());
+            } else {
+                // Bug
+                throwUnimplementedOperationException(operationName);
+            }
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             context.getFailureDescription().set(e.toString());
         }
+
+        return null;
     }
+
+    @Override
+    protected void revertAdditonalOperation(String operationName, ModelNode operation, OperationContext context, QueueControl queueControl, Object handback) {
+        // no-op
+    }
+
 
     @Override
     public boolean isJMS() {

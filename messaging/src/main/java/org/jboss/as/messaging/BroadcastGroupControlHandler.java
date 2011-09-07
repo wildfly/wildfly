@@ -76,7 +76,7 @@ public class BroadcastGroupControlHandler extends AbstractHornetQComponentContro
     }
 
     @Override
-    protected void handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected Object handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
         if (GET_CONNECTOR_PAIRS_AS_JSON.equals(operationName)) {
             BroadcastGroupControl control = getHornetQComponentControl(context, operation, false);
             try {
@@ -87,5 +87,7 @@ public class BroadcastGroupControlHandler extends AbstractHornetQComponentContro
         } else {
             unsupportedOperation(operationName);
         }
+
+        return null;
     }
 }
