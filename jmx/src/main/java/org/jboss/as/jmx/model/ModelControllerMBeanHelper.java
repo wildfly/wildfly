@@ -72,6 +72,7 @@ class ModelControllerMBeanHelper {
 
     static final String CLASS_NAME = ModelController.class.getName();
     private final ModelController controller;
+    private final PathAddress CORE_SERVICE_PLATFORM_MBEAN = PathAddress.pathAddress(PathElement.pathElement("core-service", "platform-mbean"));
 
     ModelControllerMBeanHelper(ModelController controller) {
         this.controller = controller;
@@ -80,8 +81,12 @@ class ModelControllerMBeanHelper {
     int getMBeanCount() {
         return new RootResourceIterator<Integer>(getRootResourceAndRegistration().getResource(), new ResourceAction<Integer>() {
             int count;
-            public void onResource(PathAddress address) {
+            public boolean onResource(PathAddress address) {
+                if (isExcludeAddress(address)) {
+                    return false;
+                }
                 count++;
+                return true;
             }
 
             public Integer getResult() {
@@ -95,13 +100,16 @@ class ModelControllerMBeanHelper {
             Set<ObjectInstance> set = new HashSet<ObjectInstance>();
 
             @Override
-            public void onResource(PathAddress address) {
-                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(address);
-                if (name != null && !name.apply(resourceName)) {
-                    return;
+            public boolean onResource(PathAddress address) {
+                if (isExcludeAddress(address)) {
+                    return false;
                 }
-                //TODO check query
-                set.add(new ObjectInstance(resourceName, CLASS_NAME));
+                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(address);
+                if (name == null || name.apply(resourceName)) {
+                    //TODO check query
+                    set.add(new ObjectInstance(resourceName, CLASS_NAME));
+                }
+                return true;
             }
 
             @Override
@@ -116,14 +124,16 @@ class ModelControllerMBeanHelper {
             Set<ObjectName> set = new HashSet<ObjectName>();
 
             @Override
-            public void onResource(PathAddress address) {
-                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(address);
-                if (name != null && !name.apply(resourceName)) {
-                    return;
+            public boolean onResource(PathAddress address) {
+                if (isExcludeAddress(address)) {
+                    return false;
                 }
-                //TODO check query
-                set.add(resourceName);
-
+                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(address);
+                if (name == null || name.apply(resourceName)) {
+                    //TODO check query
+                    set.add(resourceName);
+                }
+                return true;
             }
 
             @Override
@@ -387,5 +397,9 @@ class ModelControllerMBeanHelper {
             }
         }
         throw new IllegalArgumentException("Could not find any attribute matching: " + attributeName);
+    }
+
+    private boolean isExcludeAddress(PathAddress pathAddress) {
+        return pathAddress.equals(CORE_SERVICE_PLATFORM_MBEAN);
     }
 }
