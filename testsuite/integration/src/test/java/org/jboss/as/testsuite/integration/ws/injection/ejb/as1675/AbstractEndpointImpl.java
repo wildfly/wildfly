@@ -20,14 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.as1675;
+package org.jboss.as.testsuite.integration.ws.injection.ejb.as1675;
+
+import org.jboss.as.testsuite.integration.ws.injection.ejb.as1675.shared.BeanIface;
+import org.jboss.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.xml.ws.WebServiceException;
-import org.jboss.logging.Logger;
-import org.jboss.as.testsuite.integration.as1675.shared.BeanIface;
 
 /**
  * Abstract endpoint implementation.
@@ -42,7 +43,7 @@ public abstract class AbstractEndpointImpl implements EndpointIface {
    private BeanIface testBean2;
    private Boolean boolean1;
 
-   @EJB(name = "as1675/BeanImpl/local-org.jboss.as.testsuite.integration.as1675.shared.BeanIface")
+   @EJB(name = "as1675/BeanImpl/local-org.jboss.as.testsuite.integration.ws.injection.ejb.as1675.shared.BeanIface")
    private void setBean(BeanIface bean) {
       this.testBean1 = bean;
    }

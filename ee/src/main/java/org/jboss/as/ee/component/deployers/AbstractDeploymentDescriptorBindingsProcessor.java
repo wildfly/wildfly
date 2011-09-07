@@ -75,7 +75,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
 
         if (environment != null) {
             final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
-            handleLazyBindings(description, bindings);
+            handleLazyBindings(applicationClasses, bindings);
             description.getConfigurators().add(new EEModuleConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, EEModuleDescription description, EEModuleConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -86,14 +86,14 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
                 final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, componentDescription, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
-                handleLazyBindings(description, bindings);
+                handleLazyBindings(applicationClasses, bindings);
                 componentDescription.getBindingConfigurations().addAll(bindings);
             }
         }
 
     }
 
-    private void handleLazyBindings(final EEModuleDescription description, final List<BindingConfiguration> bindings) {
+    private void handleLazyBindings(final EEApplicationClasses description, final List<BindingConfiguration> bindings) {
         for (final BindingConfiguration binding : bindings) {
             String name = binding.getName();
             if (!name.startsWith("java:")) {

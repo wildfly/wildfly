@@ -20,30 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.as1675;
+package org.jboss.as.testsuite.integration.ws.injection.ejb.as1675.shared;
 
 import javax.ejb.Stateless;
-import javax.jws.WebService;
-import org.jboss.ws.api.annotation.WebContext;
 
 /**
- * EJB3 bean published as WebService injecting other EJB3 bean and resources.
+ * Shared EJB3 implementation.
  *
  * @author <a href="mailto:richard.opalka@jboss.org">Richard Opalka</a>
  */
 @Stateless
-@WebService(
-   name="EJB3",
-   serviceName = "EJB3Service", 
-   targetNamespace = "http://jbossws.org/as1675", 
-   endpointInterface="org.jboss.as.testsuite.integration.as1675.EndpointIface"
-)
-@WebContext (
-   urlPattern = "/EJB3Service",
-   contextRoot = "/as1675"
-)
-public class EJB3Bean extends AbstractEndpointImpl {
-   public String echo(String msg) {
-      return super.echo(msg) + ":EJB3Bean";
+public class BeanImpl implements BeanIface {
+   public String printString() {
+      return "Injected hello message";
    }
 }
