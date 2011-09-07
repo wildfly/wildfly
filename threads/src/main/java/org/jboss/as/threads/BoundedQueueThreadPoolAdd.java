@@ -92,7 +92,7 @@ public class BoundedQueueThreadPoolAdd implements OperationStepHandler, Descript
         if (params.getQueueLength() != null) {
             model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
         } else {
-            throw new OperationFailedException(new ModelNode().set("Parameter " + QUEUE_LENGTH + " may not be null "));
+            throw new OperationFailedException(new ModelNode().set("Parameter " + QUEUE_LENGTH + " may not be null."));
         }
 
         if (params.getCoreThreads() != null) {

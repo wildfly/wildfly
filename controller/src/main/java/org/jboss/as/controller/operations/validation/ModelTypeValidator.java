@@ -122,7 +122,7 @@ public class ModelTypeValidator implements ParameterValidator {
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         if (!value.isDefined()) {
             if (!nullable)
-                throw new OperationFailedException(new ModelNode().set(parameterName + " may not be null ")); //TODO i18n
+                throw new OperationFailedException(new ModelNode().set(parameterName + " may not be null.")); //TODO i18n
         } else  {
             boolean matched = false;
             if (strictType) {
