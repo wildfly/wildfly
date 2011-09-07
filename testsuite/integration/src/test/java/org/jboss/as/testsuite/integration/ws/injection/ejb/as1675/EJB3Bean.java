@@ -20,20 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.as1675;
+package org.jboss.as.testsuite.integration.ws.injection.ejb.as1675;
 
-import javax.jws.WebMethod;
+import org.jboss.ws.api.annotation.WebContext;
+
+import javax.ejb.Stateless;
 import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
 
 /**
- * An endpoint interface.
+ * EJB3 bean published as WebService injecting other EJB3 bean and resources.
  *
  * @author <a href="mailto:richard.opalka@jboss.org">Richard Opalka</a>
  */
-@WebService
-@SOAPBinding(style = SOAPBinding.Style.RPC)
-public interface EndpointIface {
-   @WebMethod
-   String echo(String s);
+@Stateless
+@WebService(
+   name="EJB3",
+   serviceName = "EJB3Service", 
+   targetNamespace = "http://jbossws.org/as1675", 
+   endpointInterface="org.jboss.as.testsuite.integration.ws.injection.ejb.as1675.EndpointIface"
+)
+@WebContext (
+   urlPattern = "/EJB3Service",
+   contextRoot = "/as1675"
+)
+public class EJB3Bean extends AbstractEndpointImpl {
+   public String echo(String msg) {
+      return super.echo(msg) + ":EJB3Bean";
+   }
 }

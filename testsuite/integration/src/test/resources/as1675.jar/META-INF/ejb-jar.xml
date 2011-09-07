@@ -7,7 +7,7 @@
     <session>
 
       <ejb-name>EJB3Bean</ejb-name>
-      <ejb-class>org.jboss.as.testsuite.integration.as1675.EJB3Bean</ejb-class>
+      <ejb-class>org.jboss.as.testsuite.integration.ws.injection.ejb.as1675.EJB3Bean</ejb-class>
 
       <env-entry>
         <env-entry-name>boolean1</env-entry-name>

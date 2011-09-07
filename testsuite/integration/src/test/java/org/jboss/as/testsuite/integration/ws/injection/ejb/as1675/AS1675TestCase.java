@@ -20,27 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.as1675;
-
-import java.net.URL;
-
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
+package org.jboss.as.testsuite.integration.ws.injection.ejb.as1675;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.integration.as1675.shared.BeanIface;
-import org.jboss.as.testsuite.integration.as1675.shared.BeanImpl;
+import org.jboss.as.testsuite.integration.ws.injection.ejb.as1675.shared.BeanIface;
+import org.jboss.as.testsuite.integration.ws.injection.ejb.as1675.shared.BeanImpl;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.as.testsuite.integration.as1675.EndpointIface;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import java.net.URL;
 
 /**
  * [AS7-1675] Problem with @Resource lookups on EJBs
@@ -50,7 +47,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
-@Ignore
+@RunAsClient
 public class AS1675TestCase {
 
     @Deployment
