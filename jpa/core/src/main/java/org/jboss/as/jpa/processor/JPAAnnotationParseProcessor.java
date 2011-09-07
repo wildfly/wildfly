@@ -24,7 +24,8 @@ package org.jboss.as.jpa.processor;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.BindingConfigurator;
+import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -152,26 +153,14 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
             // add the binding configuration to the class description
-            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
-                    configuration.getBindingConfigurations().add(bindingConfiguration);
-                }
-            });
+            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
 
             // setup the injection target
             final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString());
             // source is always local ENC jndi
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
-            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
-                    configuration.getInjectionConfigurations().add(injectionConfiguration);
-                }
-            });
+            eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
         }
     }
 
@@ -200,27 +189,14 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
             // setup the binding configuration in the class description
-            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
-                    configuration.getBindingConfigurations().add(bindingConfiguration);
-                }
-            });
-
+            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
             // setup the injection configuration
             final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
             // source is always local ENC jndi name
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
 
-            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
-                    configuration.getInjectionConfigurations().add(injectionConfiguration);
-                }
-            });
+            eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
         }
     }
 
@@ -238,13 +214,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, bindingSource);
             // setup the binding configuration in the class description
-            eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
-                    configuration.getBindingConfigurations().add(bindingConfiguration);
-                }
-            });
+            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
         }
     }
 

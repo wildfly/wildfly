@@ -22,14 +22,14 @@
 package org.jboss.as.webservices.deployers;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ClassConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEApplicationDescription;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
+import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
@@ -159,14 +159,8 @@ public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitPr
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
         // TODO: class hierarchies? shared bindings?
-        classDescription.getConfigurators().add(new ClassConfigurator() {
-            public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getBindingConfigurations().add(bindingConfiguration);
-                if (injectionConfiguration != null) {
-                    configuration.getInjectionConfigurations().add(injectionConfiguration);
-                }
-            }
-        });
+        classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+        classDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
     }
 
     private UnifiedServiceRefMetaData getServiceReference(final DeploymentUnit deploymentUnit, final String name, final String type, final String value, final String wsdlLocation) {
