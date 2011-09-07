@@ -35,11 +35,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -53,6 +55,8 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
 
     private static final String STOP = "stop";
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
+
     private ParametersValidator readAttributeValidator = new ParametersValidator();
 
     protected AbstractHornetQComponentControlHandler() {
@@ -64,37 +68,58 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
 
         final String operationName = operation.require(OP).asString();
 
+        HornetQComponentControl control = null;
+        boolean appliedToRuntime = false;
+        Object handback = null;
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
             readAttributeValidator.validate(operation);
             final String name = operation.require(NAME).asString();
             if (STARTED.equals(name)) {
-                HornetQComponentControl control = getHornetQComponentControl(context, operation, false);
+                control = getHornetQComponentControl(context, operation, false);
                 context.getResult().set(control.isStarted());
             } else {
                 handleReadAttribute(name, context, operation);
             }
         } else if (START.equals(operationName)) {
-            HornetQComponentControl control = getHornetQComponentControl(context, operation, true);
+            control = getHornetQComponentControl(context, operation, true);
             try {
                 control.start();
+                appliedToRuntime = true;
                 context.getResult();
             } catch (Exception e) {
                 context.getFailureDescription().set(e.toString());
             }
 
         } else if (STOP.equals(operationName)) {
-            HornetQComponentControl control = getHornetQComponentControl(context, operation, true);
+            control = getHornetQComponentControl(context, operation, true);
             try {
                 control.stop();
+                appliedToRuntime = true;
                 context.getResult();
             } catch (Exception e) {
                 context.getFailureDescription().set(e.toString());
             }
         } else {
-            throw new IllegalStateException(String.format("Unknown operation %s", operationName));
+            handback = handleOperation(operationName, context, operation);
+            appliedToRuntime = handback != null;
         }
 
-        context.completeStep();
+        if (context.completeStep() != OperationContext.ResultAction.KEEP && appliedToRuntime) {
+            try {
+                if (START.equals(operationName)) {
+                    control.stop();
+                } else if (STOP.equals(operationName)) {
+                    control.start();
+                } else {
+                    handleRevertOperation(operationName, context, operation, handback);
+                }
+            } catch (Exception e) {
+                log.errorf(e, String.format("%s caught exception attempting to revert operation %s at address %s",
+                        getClass().getSimpleName(),
+                        operation.require(ModelDescriptionConstants.OP).asString(),
+                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR))));
+            }
+        }
     }
 
     public void register(final ManagementResourceRegistration registry) {
@@ -155,10 +180,30 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      * @param operationName the name of the operation
      * @param context the operation context
      * @param operation the operation
+     *
+     * @return an object that can be passed back in {@link #handleRevertOperation(String, org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, Object)}
+     *         if the operation should be reverted. A value of {@code null} is an indication that no reversible
+     *         modification was made
      * @throws OperationFailedException
      */
-    protected void handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected Object handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
         unsupportedOperation(operationName);
+        throw new IllegalStateException("unreachable statement");
+    }
+
+    /**
+     * Hook to allow subclasses to handle revert changes made in
+     * {@link #handleOperation(String, org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode)}.
+     * <p>
+     * This default implementation does nothing.
+     * </p>
+     *
+     *
+     * @param operationName the name of the operation
+     * @param context the operation context
+     * @param operation the operation
+     */
+    protected void handleRevertOperation(String operationName, OperationContext context, ModelNode operation, Object handback) {
     }
 
     /**
@@ -170,7 +215,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      * @param attributeName the name of the attribute
      * @throws IllegalStateException an exception with a message indicating a bug in this handler
      */
-    protected void unsupportedAttribute(final String attributeName) {
+    protected final void unsupportedAttribute(final String attributeName) {
         // Bug
         throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", attributeName));
     }
