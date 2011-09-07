@@ -41,23 +41,26 @@ class RootResourceIterator<T> {
     }
 
     private void doIterate(final Resource current, final PathAddress address) {
+        boolean handleChildren = false;
         if (action != null) {
-            action.onResource(address);
+            handleChildren = action.onResource(address);
         }
-        for (String type : current.getChildTypes()) {
-            if (current.hasChildren(type)) {
-                for (ResourceEntry entry : current.getChildren(type)) {
-                    final PathElement pathElement = entry.getPathElement();
-                    final Resource child = current.getChild(pathElement);
-                    final PathAddress childAddress = address.append(pathElement);
-                    doIterate(child, childAddress);
+        if (handleChildren) {
+            for (String type : current.getChildTypes()) {
+                if (current.hasChildren(type)) {
+                    for (ResourceEntry entry : current.getChildren(type)) {
+                        final PathElement pathElement = entry.getPathElement();
+                        final Resource child = current.getChild(pathElement);
+                        final PathAddress childAddress = address.append(pathElement);
+                        doIterate(child, childAddress);
+                    }
                 }
             }
         }
     }
 
     interface ResourceAction<T> {
-        void onResource(PathAddress address);
+        boolean onResource(PathAddress address);
         T getResult();
     }
 }
