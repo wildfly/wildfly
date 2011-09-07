@@ -384,8 +384,8 @@ class DataSourceModelNodeUtil {
             Map<String, String> exceptionSorterProperty = null;
             if (dataSourceNode.hasDefined(propertyName)) {
                 exceptionSorterProperty = new HashMap<String, String>(dataSourceNode.get(propertyName).asList().size());
-                for (ModelNode property : dataSourceNode.get(propertyName).asList()) {
-                    exceptionSorterProperty.put(property.asProperty().getName(), property.asProperty().getValue().asString());
+                for (Property property : dataSourceNode.get(propertyName).asPropertyList()) {
+                    exceptionSorterProperty.put(property.getName(), property.getValue().asString());
                 }
             }
 
