@@ -22,14 +22,15 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.RequestGroupInfo;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -41,17 +42,13 @@ class WebConnectorMetrics implements OperationStepHandler {
     static WebConnectorMetrics INSTANCE = new WebConnectorMetrics();
 
     static final String[] NO_LOCATION = new String[0];
-    private static final String BYTES_SENT = "bytesSent";
-    private static final String BYTES_RECEIVED = "bytesReceived";
-    private static final String PROCESSING_TIME = "processingTime";
-    private static final String ERROR_COUNT = "errorCount";
-    private static final String MAX_TIME = "maxTime";
-    private static final String REQUEST_COUNT = "requestCount";
-    static final String[] ATTRIBUTES = new String[] {BYTES_SENT, BYTES_RECEIVED, PROCESSING_TIME, ERROR_COUNT, MAX_TIME, REQUEST_COUNT};
+    static final String[] ATTRIBUTES = new String[] {Constants.BYTES_SENT, Constants.BYTES_RECEIVED, Constants.PROCESSING_TIME, Constants.ERROR_COUNT, Constants.MAX_TIME, Constants.REQUEST_COUNT};
 
+    @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
+                @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String name = address.getLastElement().getValue();
@@ -65,17 +62,17 @@ class WebConnectorMetrics implements OperationStepHandler {
                             final ModelNode result = context.getResult();
                             if (connector.getProtocolHandler() != null && connector.getProtocolHandler().getRequestGroupInfo() != null) {
                                 RequestGroupInfo info = connector.getProtocolHandler().getRequestGroupInfo();
-                                if (BYTES_SENT.equals(attributeName)) {
+                                if (Constants.BYTES_SENT.equals(attributeName)) {
                                     result.set("" + info.getBytesSent());
-                                } else if (BYTES_RECEIVED.equals(attributeName)) {
+                                } else if (Constants.BYTES_RECEIVED.equals(attributeName)) {
                                     result.set("" + info.getBytesReceived());
-                                } else if (PROCESSING_TIME.equals(attributeName)) {
+                                } else if (Constants.PROCESSING_TIME.equals(attributeName)) {
                                     result.set("" + info.getProcessingTime());
-                                } else if (ERROR_COUNT.equals(attributeName)) {
+                                } else if (Constants.ERROR_COUNT.equals(attributeName)) {
                                     result.set("" + info.getErrorCount());
-                                } else if (MAX_TIME.equals(attributeName)) {
+                                } else if (Constants.MAX_TIME.equals(attributeName)) {
                                     result.set("" + info.getMaxTime());
-                                } else if (REQUEST_COUNT.equals(attributeName)) {
+                                } else if (Constants.REQUEST_COUNT.equals(attributeName)) {
                                     result.set("" + info.getRequestCount());
                                 }
                             }
