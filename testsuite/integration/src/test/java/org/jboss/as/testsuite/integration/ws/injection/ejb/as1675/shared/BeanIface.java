@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.as1675.shared;
+package org.jboss.as.testsuite.integration.ws.injection.ejb.as1675.shared;
 
 /**
  * Shared EJB3 interface.

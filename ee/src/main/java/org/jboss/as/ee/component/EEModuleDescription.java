@@ -41,11 +41,7 @@ public final class EEModuleDescription {
     private volatile String moduleName;
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
-    /**
-     * Resource injections that only get installed if a binding is set up
-     * See EE 5.4.1.3
-     */
-    private final Map<String, List<LazyResourceInjection>> lazyResourceInjections = new HashMap<String, List<LazyResourceInjection>>();
+
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
 
@@ -60,35 +56,6 @@ public final class EEModuleDescription {
     public EEModuleDescription(final String applicationName, final String moduleName) {
         this.applicationName = applicationName;
         this.moduleName = moduleName;
-    }
-
-    public void addLazyResourceInjection(LazyResourceInjection injection) {
-        //TODO: lazy binding and comp/module aliasing is not really compatible
-        String name = injection.getLocalContextName();
-        //we store all the bindings as absolute bindings
-        if (!name.startsWith("java:")) {
-            //there is the potential for both java:comp and java:module bindings to satisfy these injections
-            List<LazyResourceInjection> list = lazyResourceInjections.get("java:comp/env/" + name);
-            if (list == null) {
-                lazyResourceInjections.put("java:comp/env/" + name, list = new ArrayList<LazyResourceInjection>(1));
-            }
-            list.add(injection);
-            list = lazyResourceInjections.get("java:module/env/" + name);
-            if (list == null) {
-                lazyResourceInjections.put("java:module/env/" + name, list = new ArrayList<LazyResourceInjection>(1));
-            }
-            list.add(injection);
-        } else {
-            List<LazyResourceInjection> list = lazyResourceInjections.get(name);
-            if (list == null) {
-                lazyResourceInjections.put(name, list = new ArrayList<LazyResourceInjection>(1));
-            }
-            list.add(injection);
-        }
-    }
-
-    public Map<String, List<LazyResourceInjection>> getLazyResourceInjections() {
-        return lazyResourceInjections;
     }
 
     /**

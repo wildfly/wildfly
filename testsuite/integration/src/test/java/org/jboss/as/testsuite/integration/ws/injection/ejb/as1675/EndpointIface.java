@@ -20,18 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.as1675.shared;
+package org.jboss.as.testsuite.integration.ws.injection.ejb.as1675;
 
-import javax.ejb.Stateless;
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 
 /**
- * Shared EJB3 implementation.
+ * An endpoint interface.
  *
  * @author <a href="mailto:richard.opalka@jboss.org">Richard Opalka</a>
  */
-@Stateless
-public class BeanImpl implements BeanIface {
-   public String printString() {
-      return "Injected hello message";
-   }
+@WebService
+@SOAPBinding(style = SOAPBinding.Style.RPC)
+public interface EndpointIface {
+   @WebMethod
+   String echo(String s);
 }
