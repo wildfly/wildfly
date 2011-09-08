@@ -21,43 +21,41 @@
  */
 package org.jboss.as.cli.parsing.command;
 
-
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
-import org.jboss.as.cli.parsing.OutputTargetState;
+import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
-
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class CommandState extends DefaultParsingState {
+public class AddressCommandSeparatorState extends DefaultParsingState {
 
-    public static final CommandState INSTANCE = new CommandState();
-    public static final String ID = "CMD";
+    public static final AddressCommandSeparatorState INSTANCE = new AddressCommandSeparatorState();
 
-    CommandState() {
-        this(AddressCommandSeparatorState.INSTANCE, ArgumentListState.INSTANCE, OutputTargetState.INSTANCE);
+    public AddressCommandSeparatorState() {
+        this(CommandNameState.INSTANCE);
     }
 
-    CommandState(AddressCommandSeparatorState cmdName, ArgumentListState argList, OutputTargetState outputRedirect) {
-        super(ID);
-        setEnterHandler(new EnterStateCharacterHandler(cmdName));
-        setDefaultHandler(new EnterStateCharacterHandler(argList));
-        this.setReturnHandler(new CharacterHandler() {
+    public AddressCommandSeparatorState(final CommandNameState opName) {
+        super("ADDR_OP_SEP");
+        setEnterHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.isEndOfContent()) {
-                    return;
-                }
-                final CharacterHandler handler = getHandler(ctx.getCharacter());
-                if(handler != null) {
-                    handler.handle(ctx);
+                final char ch = ctx.getCharacter();
+                if(!Character.isWhitespace(ch)) {
+                    final CharacterHandler handler = getHandler(ch);
+                    if(handler != null) {
+                        handler.handle(ctx);
+                    }
                 }
             }});
-        enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outputRedirect);
+        setDefaultHandler(new EnterStateCharacterHandler(opName));
+        setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        setIgnoreWhitespaces(true);
     }
+
 }

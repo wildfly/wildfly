@@ -24,12 +24,16 @@ package org.jboss.as.cli.operation;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.cli.CommandLineFormat;
+
 
 /**
 *
 * @author Alexey Loubyansky
 */
 public interface ParsedCommandLine {
+
+    String getOriginalLine();
 
     boolean isRequestComplete();
 
@@ -74,4 +78,6 @@ public interface ParsedCommandLine {
     String getLastParsedPropertyValue();
 
     String getOutputTarget();
+
+    CommandLineFormat getFormat();
 }

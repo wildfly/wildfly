@@ -19,29 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.parsing.operation;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.as.cli.CommandArgument;
-import org.jboss.as.cli.CommandContext;
-
+import org.jboss.as.cli.CommandLineFormat;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class SimpleArgumentTabCompleter extends BaseArgumentTabCompleter {
+public class OperationFormat implements CommandLineFormat {
 
-    private final List<CommandArgument> allArgs = new ArrayList<CommandArgument>();
+    public static final OperationFormat INSTANCE = new OperationFormat();
 
-    public void addArgument(CommandArgument arg) {
-        allArgs.add(arg);
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.CommandLineFormat#getPropertyListStart()
+     */
+    @Override
+    public String getPropertyListStart() {
+        return "(";
     }
 
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.CommandLineFormat#getPropertyListEnd()
+     */
     @Override
-    protected Iterable<CommandArgument> getAllArguments(CommandContext ctx) {
-        return allArgs;
+    public String getPropertyListEnd() {
+        return ")";
     }
 }
