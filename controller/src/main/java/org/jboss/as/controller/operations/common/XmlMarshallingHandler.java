@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.Resource;
@@ -76,7 +77,12 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
             }
             String xml = new String(baos.toByteArray());
             context.getResult().set(xml);
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
+            // Log this
+            log.errorf(e, "Failed executing operation %s at address %s", operation.require(ModelDescriptionConstants.OP),
+                    PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
             context.getFailureDescription().set(e.toString());
         }
         context.completeStep();
