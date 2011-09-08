@@ -23,6 +23,7 @@ package org.jboss.as.webservices.metadata;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
+import org.jboss.metadata.javaee.spec.EnvironmentEntriesMetaData;
 
 /**
  * A minimum web service meta data representation that offers a generic
@@ -38,6 +39,14 @@ public interface WebServiceDeclaration {
     * @return
     */
    String getContainerName();
+
+   /**
+    * Returns JNDI EJB component service name.
+    * @return JNDI EJB component service name.
+    */
+   String compContextServiceName();
+
+   EnvironmentEntriesMetaData getEnvironmentEntriesMetaData();
 
    /**
     * An identifier within a deployment.

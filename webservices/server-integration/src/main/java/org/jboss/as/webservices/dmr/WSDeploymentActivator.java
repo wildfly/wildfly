@@ -26,9 +26,11 @@ import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
+import org.jboss.as.webservices.deployers.WSJndiBindingsDeploymentUnitProcessor;
 import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
 import org.jboss.as.webservices.deployers.WSDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSEJBIntegrationProcessor;
+import org.jboss.as.webservices.deployers.WSHandlerChainAnnotationProcessor;
 import org.jboss.as.webservices.deployers.WSJMSIntegrationProcessor;
 import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSTypeDeploymentProcessor;
@@ -50,11 +52,13 @@ final class WSDeploymentActivator {
     static void activate(final DeploymentProcessorTarget processorTarget) {
 
         processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WSDescriptorDeploymentProcessor());
+        processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WS_HANDLER_CHAIN_ANNOTATION, new WSHandlerChainAnnotationProcessor());
         processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WS_EJB_INTEGRATION, new WSEJBIntegrationProcessor());
         processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
         processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_JMS_INTEGRATION, new WSJMSIntegrationProcessor());
         //processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
         processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_TYPE_DETECTOR, new WSTypeDeploymentProcessor());
+        processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_WS_JNDI_BINDINGS, new WSJndiBindingsDeploymentUnitProcessor());
         processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_UNIVERSAL_META_DATA_MODEL, new WSModelDeploymentProcessor());
 
         addDeploymentProcessors(processorTarget, Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_ASPECTS);

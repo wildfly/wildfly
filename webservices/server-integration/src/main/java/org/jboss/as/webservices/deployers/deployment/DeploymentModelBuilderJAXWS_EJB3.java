@@ -51,7 +51,7 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        this.getAndPropagateAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY, WebServiceDeployment.class, unit, dep);
+        this.getAndPropagateAttachment(WSAttachmentKeys.WS_EJB_DEPLOYMENT_KEY, WebServiceDeployment.class, unit, dep);
         //this.getAndPropagateAttachment(JBossMetaData.class, unit, dep); // TODO: propagate?
 
         this.log.debug("Creating JAXWS EJB3 endpoints meta data model");
@@ -63,6 +63,7 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
 
             final Endpoint ep = this.newHttpEndpoint(ejbClass, ejbName, dep);
             ep.setProperty(ASHelper.CONTAINER_NAME, container.getContainerName());
+            ep.setProperty(ASHelper.COMP_SERVICE_NAME, container.compContextServiceName());
         }
     }
 }

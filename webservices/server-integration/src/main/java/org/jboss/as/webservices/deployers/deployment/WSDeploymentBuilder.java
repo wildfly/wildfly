@@ -70,7 +70,7 @@ public final class WSDeploymentBuilder {
      * @param unit deployment unit
      */
     public void build(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
+        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.WS_DEPLOYMENT_TYPE_KEY);
 
         if (deploymentType != null) {
             WSDeploymentBuilder.builders.get(deploymentType).newDeploymentModel(unit);

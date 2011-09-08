@@ -68,7 +68,7 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
             }
         }
 
-        final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+        final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.WS_JMS_ENDPOINT_METADATA_KEY);
         if (jmsEndpointsMD != null) {
             dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
             for (JMSEndpointMetaData endpoint : jmsEndpointsMD.getEndpointsMetaData()) {

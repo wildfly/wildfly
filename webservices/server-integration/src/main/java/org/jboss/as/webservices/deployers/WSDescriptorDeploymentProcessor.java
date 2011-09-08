@@ -47,7 +47,7 @@ public class WSDescriptorDeploymentProcessor implements DeploymentUnitProcessor 
         UnifiedVirtualFile uvf = new VirtualFileAdaptor(deploymentRoot.getRoot());
         WebservicesMetaData wsmd = WebservicesFactory.loadFromVFSRoot(uvf);
         if (wsmd != null) {
-            deploymentUnit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, wsmd);
+            deploymentUnit.putAttachment(WSAttachmentKeys.WS_METADATA_KEY, wsmd);
         }
     }
 

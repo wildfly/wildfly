@@ -56,7 +56,7 @@ final class DeploymentModelBuilderJAXRPC_JSE extends AbstractDeploymentModelBuil
         if (webMetaData != null) {
             dep.addAttachment(JBossWebMetaData.class, webMetaData);
         }
-        final WebservicesMetaData wsMetaData = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
+        final WebservicesMetaData wsMetaData = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.WS_METADATA_KEY);
         if (wsMetaData != null) {
             dep.addAttachment(WebservicesMetaData.class, wsMetaData);
         }

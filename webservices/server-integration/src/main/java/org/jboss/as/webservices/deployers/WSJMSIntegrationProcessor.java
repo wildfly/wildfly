@@ -21,7 +21,7 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_JMS_ENDPOINT_METADATA_KEY;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -133,7 +133,7 @@ public final class WSJMSIntegrationProcessor implements DeploymentUnitProcessor 
             }
 
             if (!endpointsMetaData.getEndpointsMetaData().isEmpty()) {
-                unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, endpointsMetaData);
+                unit.putAttachment(WS_JMS_ENDPOINT_METADATA_KEY, endpointsMetaData);
             }
         }
     }

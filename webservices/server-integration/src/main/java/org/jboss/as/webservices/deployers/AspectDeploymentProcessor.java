@@ -74,7 +74,7 @@ public final class AspectDeploymentProcessor extends TCCLDeploymentProcessor imp
                 }
             }
             log.debug(this.aspect + " start: " + unit.getName());
-            final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
+            final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.WS_DEPLOYMENT_KEY);
             dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
             aspect.start(dep);
             dep.removeAttachment(ServiceTarget.class);
@@ -85,7 +85,7 @@ public final class AspectDeploymentProcessor extends TCCLDeploymentProcessor imp
     public void internalUndeploy(org.jboss.as.server.deployment.DeploymentUnit context) {
         if (ASHelper.isWebServiceDeployment(context)) {
             log.debug(this.aspect + " stop: " + context.getName());
-            final Deployment dep = ASHelper.getRequiredAttachment(context, WSAttachmentKeys.DEPLOYMENT_KEY);
+            final Deployment dep = ASHelper.getRequiredAttachment(context, WSAttachmentKeys.WS_DEPLOYMENT_KEY);
             aspect.stop(dep);
         }
     }

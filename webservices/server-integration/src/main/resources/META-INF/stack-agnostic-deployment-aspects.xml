@@ -83,6 +83,12 @@
     <property name="provides" class="java.lang.String">EndpointRecordProcessors</property>
   </deploymentAspect>
 
+  <deploymentAspect class="org.jboss.as.webservices.injection.InjectionMetaDataDeploymentAspect">
+    <property name="requires" class="java.lang.String">WebMetaData</property>
+    <property name="provides" class="java.lang.String">InjectionMetaData</property>
+    <!--property name="ejbReferenceResolver"><inject bean="org.jboss.ejb3.ejbref.resolver.EjbReferenceResolver"/></property--> <!-- TODO: replace -->
+  </deploymentAspect>
+
   <!--
 
   <deploymentAspect class="org.jboss.ws.common.deployment.VirtualHostDeploymentAspect">
@@ -93,12 +99,6 @@
   <deploymentAspect class="org.jboss.as.webservices.weld.WeldDeploymentAspect">
     <property name="requires" class="java.lang.String">StackEndpointHandler</property>
     <property name="provides" class="java.lang.String">CDIInjection</property>
-  </deploymentAspect>
-
-  <deploymentAspect class="org.jboss.as.webservices.injection.InjectionMetaDataDeploymentAspect">
-    <property name="requires" class="java.lang.String">WebMetaData</property>
-    <property name="provides" class="java.lang.String">InjectionMetaData</property>
-    <property name="ejbReferenceResolver"><inject bean="org.jboss.ejb3.ejbref.resolver.EjbReferenceResolver"/></property>
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.as.webservices.security.JACCPermissionsDeploymentAspect">

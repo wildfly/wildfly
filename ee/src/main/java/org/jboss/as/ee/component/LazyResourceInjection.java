@@ -21,9 +21,6 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-
 /**
  * Represents an @Resource injection that has no source defined. If a binding for the corresponding
  * name is defined using an env-entry in a deployment descriptor then these resource injections are installed.
@@ -50,7 +47,7 @@ public class LazyResourceInjection {
     public void install() {
         if(!installed) {
             final ResourceInjectionConfiguration resource = new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(localContextName));
-            classDescription.getConfigurators().add(new InjectionConfigrator(resource));
+            classDescription.getConfigurators().add(new InjectionConfigurator(resource));
             installed = true;
         }
     }
@@ -59,18 +56,4 @@ public class LazyResourceInjection {
         return localContextName;
     }
 
-    private static class InjectionConfigrator implements ClassConfigurator {
-
-        private final ResourceInjectionConfiguration injectionConfiguration;
-
-        public InjectionConfigrator(final ResourceInjectionConfiguration injectionConfiguration) {
-            this.injectionConfiguration = injectionConfiguration;
-        }
-
-
-        @Override
-        public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-            configuration.getInjectionConfigurations().add(injectionConfiguration);
-        }
-    }
 }

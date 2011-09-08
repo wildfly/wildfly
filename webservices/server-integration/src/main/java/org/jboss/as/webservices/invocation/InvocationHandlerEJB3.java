@@ -25,6 +25,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import javax.naming.Context;
+import javax.naming.CompositeName;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.WebServiceException;
@@ -32,6 +34,7 @@ import javax.xml.ws.WebServiceException;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
@@ -50,8 +53,6 @@ import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
-   /** EJB3 JNDI context. */
-   private static final String EJB3_JNDI_PREFIX = "java:env/";
 
    /** MC kernel controller. */
    private final IoCContainerProxy iocContainer;
@@ -59,8 +60,13 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    /** EJB3 container name. */
    private String ejbName;
 
+   /** EJB3 container JNDI name. */
+   private String ejbCompServiceName;
+
    /** EJB3 container. */
    private volatile ComponentViewInstance ejbComponentViewInstance;
+
+   private volatile Context ejbComponentJNDIContext;
 
    /**
     * Constructor.
@@ -81,6 +87,11 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
 
       if (ejbName == null) {
          throw new IllegalArgumentException("Container name cannot be null");
+      }
+
+      ejbCompServiceName = (String) endpoint.getProperty(ASHelper.COMP_SERVICE_NAME);
+      if (ejbCompServiceName == null) {
+         throw new IllegalArgumentException("Container JNDI service name cannot be null");
       }
    }
 
@@ -151,9 +162,21 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    }
 
    public Context getJNDIContext(final Endpoint ep) throws NamingException {
-      return null; // TODO: implement
-//      final EJBContainer ejb3Container = (EJBContainer) getComponentViewInstance();
-//      return (Context) ejb3Container.getEnc().lookup(EJB3_JNDI_PREFIX);
+      if (ejbComponentJNDIContext == null) {
+         synchronized (this) {
+            if (ejbComponentJNDIContext == null) {
+               final NamingStore namingStore = iocContainer.getBean(ejbCompServiceName, NamingStore.class);
+               if (namingStore != null) {
+                   // regular EJBs
+                   ejbComponentJNDIContext = (Context) namingStore.lookup(new CompositeName("env/"));
+               } else {
+                   // EJBs in WAR support
+                   ejbComponentJNDIContext = (Context) new InitialContext().lookup("java:comp/env/");
+               }
+            }
+         }
+      }
+      return ejbComponentJNDIContext;
    }
 
    /**
@@ -185,7 +208,6 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     */
    private WebServiceContext getWebServiceContext(final Invocation invocation) {
       final InvocationContext invocationContext = invocation.getInvocationContext();
-
       return invocationContext.getAttachment(WebServiceContext.class);
    }
 
