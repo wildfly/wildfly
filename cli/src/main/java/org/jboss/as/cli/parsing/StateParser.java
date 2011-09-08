@@ -49,17 +49,6 @@ public class StateParser {
         }
 
         int i = 0;
-        while(i < str.length()) {
-            if(!Character.isWhitespace(str.charAt(i))) {
-                break;
-            }
-            ++i;
-        }
-
-        if(i == str.length()) {
-            return;
-        }
-
         ParsingContextImpl ctx = new ParsingContextImpl();
         ctx.initialState = initialState;
         ctx.callbackHandler = callbackHandler;
@@ -88,6 +77,7 @@ public class StateParser {
             ctx.leaveState();
             state = ctx.getState();
         }
+        initialState.getEndContentHandler().handle(ctx);
         initialState.getLeaveHandler().handle(ctx);
     }
 

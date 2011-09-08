@@ -19,40 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.handlers;
+package org.jboss.as.cli.parsing.command;
 
-import java.util.List;
-
-import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.CommandLineFormat;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class SimpleTabCompleterWithDelegate extends SimpleTabCompleter {
+public class CommandFormat implements CommandLineFormat {
 
-    private final CommandLineCompleter delegate;
+    public static final CommandFormat INSTANCE = new CommandFormat();
 
-    public SimpleTabCompleterWithDelegate(String[] candidates, CommandLineCompleter delegate) {
-        super(candidates);
-        if(delegate == null) {
-            throw new IllegalStateException("delegate can't be null");
-        }
-        this.delegate = delegate;
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.CommandLineFormat#getPropertyListStart()
+     */
+    @Override
+    public String getPropertyListStart() {
+        return "";
     }
 
+    /* (non-Javadoc)
+     * @see org.jboss.as.cli.CommandLineFormat#getPropertyListEnd()
+     */
     @Override
-    public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-        int result = super.complete(ctx, buffer, cursor, candidates);
-        if(/*candidates.isEmpty() && */delegate != null) {
-            int delegateResult = delegate.complete(ctx, buffer, result, candidates);
-            if(delegateResult < 0) {
-                return result;
-            } else {
-                return delegateResult;
-            }
-        }
-        return result;
+    public String getPropertyListEnd() {
+        return "";
     }
 }

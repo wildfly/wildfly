@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineFormat;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -66,6 +67,10 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     private String lastPropName;
     private String lastPropValue;
 
+    private CommandLineFormat format;
+
+    private String originalLine;
+
     public DefaultCallbackHandler() {
     }
 
@@ -78,6 +83,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         if(initialAddress != null) {
             address = new DefaultOperationRequestAddress(initialAddress);
         }
+        this.originalLine = argsStr;
         ParserUtil.parse(argsStr, this);
     }
 
@@ -86,6 +92,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         if(prefix != null) {
             address = new DefaultOperationRequestAddress(prefix);
         }
+        this.originalLine = argsStr;
         ParserUtil.parseOperationRequest(argsStr, this);
     }
 
@@ -100,6 +107,13 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         lastPropValue = null;
         lastSeparatorIndex = -1;
         lastChunkIndex = 0;
+        format = null;
+        originalLine = null;
+    }
+
+    @Override
+    public String getOriginalLine() {
+        return originalLine;
     }
 
     public List<String> getOtherProperties() {
@@ -441,5 +455,15 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         }
 
         return request;
+    }
+
+    @Override
+    public void setFormat(CommandLineFormat format) {
+        this.format = format;
+    }
+
+    @Override
+    public CommandLineFormat getFormat() {
+        return format;
     }
 }

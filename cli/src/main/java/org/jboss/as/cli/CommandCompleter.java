@@ -22,6 +22,7 @@
 package org.jboss.as.cli;
 
 
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.impl.CommandCandidatesProvider;
@@ -59,26 +60,19 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
     @Override
     public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
-        if(cursor != buffer.length()) {
+/*        if(cursor != buffer.length()) {
             return -1;
         }
-
-        int cmdFirstIndex = 0;
-        while(cmdFirstIndex < buffer.length()) {
-            if(!Character.isWhitespace(buffer.charAt(cmdFirstIndex))) {
-                break;
-            }
-            ++cmdFirstIndex;
-        }
-
-        if(cmdFirstIndex == buffer.length()) {
+*/
+        if(buffer.isEmpty()) {
             for(String cmd : cmdRegistry.getTabCompletionCommands()) {
                 CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
                 if(handler.isAvailable(ctx)) {
                     candidates.add(cmd);
                 }
             }
-            return cmdFirstIndex;
+            Collections.sort(candidates);
+            return 0;
         }
 
         final DefaultCallbackHandler parsedCmd = (DefaultCallbackHandler) ctx.getParsedCommandLine();
@@ -91,56 +85,23 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
         }
 
         final OperationCandidatesProvider candidatesProvider;
-        char firstChar = buffer.charAt(cmdFirstIndex);
-        if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
-            candidatesProvider = ctx.getOperationCandidatesProvider();
-        } else {
+        if(buffer.isEmpty()) {
             candidatesProvider = cmdProvider;
-        }
-
-        return OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
-
-/*        char firstChar = buffer.charAt(cmdFirstIndex);
-        if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
-            return OperationRequestCompleter.INSTANCE.complete(ctx, buffer, cursor, candidates);
-        }
-
-        int cmdLastIndex = cmdFirstIndex + 1;
-        while(cmdLastIndex < buffer.length() && !Character.isWhitespace(buffer.charAt(cmdLastIndex))) {
-            ++cmdLastIndex;
-        }
-
-        final String cmd = parsedCmd.getOperationName();
-        if(cmdLastIndex < buffer.length()) {
-            CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
-            if (handler != null) {
-                CommandLineCompleter argsCompleter = handler.getArgumentCompleter();
-                if (argsCompleter != null) {
-
-                    int nextCharIndex = cmdLastIndex + 1;
-                    while (nextCharIndex < buffer.length()) {
-                        if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                            break;
-                        }
-                        ++nextCharIndex;
-                    }
-
-                    return argsCompleter.complete(ctx, buffer, nextCharIndex, candidates);
+        } else {
+            int cmdFirstIndex = 0;
+            while(cmdFirstIndex < buffer.length()) {
+                if(!Character.isWhitespace(buffer.charAt(cmdFirstIndex))) {
+                    break;
                 }
+                ++cmdFirstIndex;
+            }
+            final char firstChar = buffer.charAt(cmdFirstIndex);
+            if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
+                candidatesProvider = ctx.getOperationCandidatesProvider();
+            } else {
+                candidatesProvider = cmdProvider;
             }
         }
-
-        for(String command : cmdRegistry.getTabCompletionCommands()) {
-            if (!command.startsWith(cmd)) {
-                continue;
-            }
-
-            CommandHandler handler = cmdRegistry.getCommandHandler(command);
-            if(handler.isAvailable(ctx)) {
-                candidates.add(command);
-            }
-        }
-        Collections.sort(candidates);
-        return buffer.length() - cmd.length();
-*/    }
+        return OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
+    }
 }
