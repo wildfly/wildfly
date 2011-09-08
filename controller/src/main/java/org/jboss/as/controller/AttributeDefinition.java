@@ -245,7 +245,7 @@ public abstract class AttributeDefinition {
      */
     public ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix, final ModelNode resourceDescription) {
         final ModelNode attr = new ModelNode();
-        attr.get(ModelDescriptionConstants.TYPE).set(attr.getType());
+        attr.get(ModelDescriptionConstants.TYPE).set(type);
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         attr.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
         attr.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
