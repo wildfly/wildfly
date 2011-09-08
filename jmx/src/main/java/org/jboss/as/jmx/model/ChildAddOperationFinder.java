@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
@@ -45,7 +44,7 @@ class ChildAddOperationFinder {
             final Map<String, OperationEntry> registeredOps = childReg.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, false);
             final OperationEntry childAdd = registeredOps.get(ADD);
             if (childAdd != null) {
-                operations.put(childElement, new ChildAddOperationEntry(childAdd.getDescriptionProvider(), childElement));
+                operations.put(childElement, new ChildAddOperationEntry(childAdd, childElement));
             }
         }
         return operations;
@@ -58,7 +57,7 @@ class ChildAddOperationFinder {
             final OperationEntry childAdd = registeredOps.get(ADD);
             if (childAdd != null) {
                 if (NameConverter.createValidAddOperationName(childElement).equals(addName)) {
-                    return new ChildAddOperationEntry(childAdd.getDescriptionProvider(), childElement);
+                    return new ChildAddOperationEntry(childAdd, childElement);
                 }
             }
         }
@@ -66,16 +65,16 @@ class ChildAddOperationFinder {
     }
 
     static class ChildAddOperationEntry {
-        private final DescriptionProvider provider;
+        private final OperationEntry op;
         private final PathElement element;
 
-        public ChildAddOperationEntry(DescriptionProvider provider, PathElement element) {
-            this.provider = provider;
+        public ChildAddOperationEntry(OperationEntry op, PathElement element) {
+            this.op = op;
             this.element = element;
         }
 
-        public DescriptionProvider getDescriptionProvider() {
-            return provider;
+        public OperationEntry getOperationEntry() {
+            return op;
         }
 
         public PathElement getElement() {

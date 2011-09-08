@@ -71,11 +71,23 @@ import org.jboss.dmr.ModelNode;
 class ModelControllerMBeanHelper {
 
     static final String CLASS_NAME = ModelController.class.getName();
+    private final boolean standalone;
     private final ModelController controller;
     private final PathAddress CORE_SERVICE_PLATFORM_MBEAN = PathAddress.pathAddress(PathElement.pathElement("core-service", "platform-mbean"));
 
     ModelControllerMBeanHelper(ModelController controller) {
         this.controller = controller;
+
+        ModelNode op = new ModelNode();
+        op.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        op.get(OP_ADDR).setEmptyList();
+        op.get(NAME).set("launch-type");
+        final ModelNode result = execute(op);
+        String error = getFailureDescription(result);
+        if (error != null) {
+            throw new IllegalStateException(error);
+        }
+        standalone = result.require(RESULT).asString().equals("STANDALONE");
     }
 
     int getMBeanCount() {
@@ -156,7 +168,7 @@ class ModelControllerMBeanHelper {
             throw createInstanceNotFoundException(name);
         }
 
-        return MBeanInfoFactory.createMBeanInfo(address, getMBeanRegistration(address, reg));
+        return MBeanInfoFactory.createMBeanInfo(standalone, address, getMBeanRegistration(address, reg));
     }
 
     Object getAttribute(final ObjectName name, final String attribute)  throws AttributeNotFoundException, InstanceNotFoundException, ReflectionException {
@@ -245,6 +257,10 @@ class ModelControllerMBeanHelper {
         final ModelNode description = provider.getModelDescription(null);
         final String attributeName = findAttributeName(description.get(ATTRIBUTES), attribute.getName());
 
+        if (!standalone) {
+            throw new AttributeNotFoundException("Attribute " + attribute + " is not writable");
+        }
+
         ModelNode op = new ModelNode();
         op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         op.get(OP_ADDR).set(address.toModelNode());
@@ -291,22 +307,22 @@ class ModelControllerMBeanHelper {
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
 
         String realOperationName = null;
-        DescriptionProvider provider = registration.getOperationDescription(PathAddress.EMPTY_ADDRESS, operationName);
+        OperationEntry opEntry = registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
 
-        if (provider != null) {
+        if (opEntry != null) {
             realOperationName = operationName;
         } else {
             Map<String, OperationEntry> ops = registration.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, false);
             for (Map.Entry<String, OperationEntry> entry : ops.entrySet()) {
                 if (operationName.equals(NameConverter.convertToCamelCase(entry.getKey()))) {
-                    provider = entry.getValue().getDescriptionProvider();
+                    opEntry = entry.getValue();
                     realOperationName = entry.getKey();
                     break;
                 }
             }
         }
 
-        if (provider == null) {
+        if (opEntry == null) {
             ChildAddOperationEntry entry = ChildAddOperationFinder.findAddChildOperation(reg.getRegistration().getSubModel(address), operationName);
             if (entry == null) {
                 throw new MBeanException(null, "No operation called '" + operationName + "' at " + address);
@@ -321,14 +337,17 @@ class ModelControllerMBeanHelper {
                 System.arraycopy(params, 1, newParams, 0, newParams.length);
                 params = newParams;
             }
-            return invoke(entry.getDescriptionProvider(), ADD, address.append(element), params);
+            return invoke(entry.getOperationEntry(), ADD, address.append(element), params);
         }
-        return invoke(provider, realOperationName, address, params);
+        return invoke(opEntry, realOperationName, address, params);
     }
 
-    private Object invoke(final DescriptionProvider provider, final String operationName, PathAddress address, Object[] params)  throws InstanceNotFoundException, MBeanException, ReflectionException {
+    private Object invoke(final OperationEntry entry, final String operationName, PathAddress address, Object[] params)  throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if (!standalone && !entry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
+            throw new InstanceNotFoundException("No operation called " + operationName);
+        }
 
-        final ModelNode description = provider.getModelDescription(null);
+        final ModelNode description = entry.getDescriptionProvider().getModelDescription(null);
         ModelNode op = new ModelNode();
         op.get(OP).set(operationName);
         op.get(OP_ADDR).set(address.toModelNode());
@@ -387,7 +406,7 @@ class ModelControllerMBeanHelper {
         return null;
     }
 
-    private String findAttributeName(ModelNode attributes, String attributeName) {
+    private String findAttributeName(ModelNode attributes, String attributeName) throws AttributeNotFoundException{
         if (attributes.hasDefined(attributeName)) {
             return attributeName;
         }
@@ -396,7 +415,7 @@ class ModelControllerMBeanHelper {
                 return key;
             }
         }
-        throw new IllegalArgumentException("Could not find any attribute matching: " + attributeName);
+        throw new AttributeNotFoundException("Could not find any attribute matching: " + attributeName);
     }
 
     private boolean isExcludeAddress(PathAddress pathAddress) {
