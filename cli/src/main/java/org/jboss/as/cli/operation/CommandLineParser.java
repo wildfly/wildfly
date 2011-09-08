@@ -22,6 +22,7 @@
 package org.jboss.as.cli.operation;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineFormat;
 
 
 /**
@@ -68,6 +69,8 @@ public interface CommandLineParser {
         void nodeTypeOrName(int index, String typeOrName) throws OperationFormatException;
 
         void outputTarget(int index, String outputTarget) throws CommandFormatException;
+
+        void setFormat(CommandLineFormat format);
     }
 
     void parse(String operationRequest, CallbackHandler handler) throws OperationFormatException;

@@ -33,7 +33,6 @@ import java.util.Map;
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
@@ -72,8 +71,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     // help arguments
     protected final ArgumentWithoutValue helpProperties;
     protected final ArgumentWithoutValue helpCommands;
-
-    protected final CommandLineCompleter genericCompleter;
 
     // these are caching vars
     private final List<CommandArgument> staticArgs = new ArrayList<CommandArgument>();
@@ -218,13 +215,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         staticArgs.add(profile);
         staticArgs.add(name);
         staticArgs.add(operation);
-
-        genericCompleter = new BaseArgumentTabCompleter(){
-            @Override
-            protected Iterable<CommandArgument> getAllArguments(CommandContext ctx) {
-                    return getArguments(ctx);
-                }
-            };
     }
 
     @Override
@@ -298,15 +288,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     @Override
     public boolean hasArgument(int index) {
         return true;
-    }
-
-    @Override
-    public CommandLineCompleter getArgumentCompleter() {
-        return genericCompleter;
-    }
-
-    protected BaseArgumentTabCompleter initArgumentCompleter() {
-        return null;
     }
 
     public void addArgument(CommandArgument arg) {

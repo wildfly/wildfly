@@ -190,13 +190,31 @@ public class CommandTestCase {
     }
 
     @Test
+    public void testEmptyString() throws Exception {
+
+        DefaultCallbackHandler cmd = parse("");
+        assertFalse(cmd.hasOperationName());
+        assertFalse(cmd.hasProperties());
+        assertNull(cmd.getOutputTarget());
+        assertFalse(cmd.endsOnSeparator());
+        assertFalse(cmd.endsOnAddressOperationNameSeparator());
+        assertFalse(cmd.endsOnPropertyListStart());
+        assertFalse(cmd.endsOnPropertySeparator());
+        assertFalse(cmd.endsOnPropertyValueSeparator());
+        assertTrue(cmd.getPropertyNames().isEmpty());
+        assertTrue(cmd.getOtherProperties().isEmpty());
+        assertEquals(0, cmd.getLastChunkIndex());
+    }
+
+    @Test
     public void testWhitespaces() throws Exception {
 
         DefaultCallbackHandler cmd = parse("   ");
         assertFalse(cmd.hasOperationName());
         assertFalse(cmd.hasProperties());
         assertNull(cmd.getOutputTarget());
-        assertFalse(cmd.endsOnSeparator());
+        assertTrue(cmd.endsOnSeparator());
+        assertTrue(cmd.endsOnAddressOperationNameSeparator());
         assertFalse(cmd.endsOnPropertyListStart());
         assertFalse(cmd.endsOnPropertySeparator());
         assertFalse(cmd.endsOnPropertyValueSeparator());

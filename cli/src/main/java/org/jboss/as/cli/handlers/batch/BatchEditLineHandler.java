@@ -30,6 +30,8 @@ import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
+import org.jboss.as.cli.impl.ArgumentWithValue;
+
 
 /**
  *
@@ -37,99 +39,77 @@ import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
  */
 public class BatchEditLineHandler extends CommandHandlerWithHelp {
 
-    private final CommandLineCompleter argCompleter;
+    private ArgumentWithValue ln;
 
     public BatchEditLineHandler() {
         super("batch-edit-line");
 
-        argCompleter = new CommandLineCompleter() {
-            @Override
-            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+            ln = new ArgumentWithValue(this, 0, "--line-number");
+            ln.addCantAppearAfter(helpArg);
 
-                final BatchManager batchManager = ctx.getBatchManager();
-                if(!batchManager.isBatchActive()) {
-                    return -1;
-                }
-
-                int nextCharIndex = 0;
-                while (nextCharIndex < buffer.length()) {
-                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                        break;
+            ArgumentWithValue line = new ArgumentWithValue(this, new CommandLineCompleter() {
+                @Override
+                public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+                    final String lnStr = ln.getValue(ctx.getParsedCommandLine());
+                    if(lnStr == null) {
+                        return -1;
                     }
-                    ++nextCharIndex;
-                }
 
-                if(nextCharIndex == buffer.length()) {
-                    candidates.add("--help");
-                    return nextCharIndex;
-                }
-
-                int nextWsIndex = nextCharIndex + 1;
-                while(nextWsIndex < buffer.length()) {
-                    if(Character.isWhitespace(buffer.charAt(nextWsIndex))) {
-                        break;
-                    }
-                    ++nextWsIndex;
-                }
-
-                if(nextWsIndex == buffer.length()) {
-                    return -1;
-                }
-
-                String lineNumberStr = buffer.substring(nextCharIndex, nextWsIndex);
-                if("--help".startsWith(lineNumberStr)) {
-                    candidates.add("--help");
-                    return nextCharIndex;
-                }
-
-                final int lineNumber;
-                try {
-                    lineNumber = Integer.parseInt(lineNumberStr);
-                } catch(NumberFormatException e) {
-                    return -1;
-                }
-
-                final Batch batch = batchManager.getActiveBatch();
-                int batchSize = batch.size();
-
-                if(lineNumber < 1 || lineNumber > batchSize) {
-                    return -1;
-                }
-
-                nextCharIndex = nextWsIndex + 1;
-                while (nextCharIndex < buffer.length()) {
-                    if (!Character.isWhitespace(buffer.charAt(nextCharIndex))) {
-                        break;
-                    }
-                    ++nextCharIndex;
-                }
-
-                String cmd = buffer.substring(nextCharIndex);
-                if("--help".startsWith(cmd)) {
-                    candidates.add("--help");
-                }
-
-                int cmdResult = ctx.getDefaultCommandCompleter().complete(ctx, cmd, 0, candidates);
-
-                final String batchedCmd = batch.getCommands().get(lineNumber - 1).getCommand();
-                if(cmd.isEmpty() || batchedCmd.startsWith(cmd)) {
-                    if(cmdResult > -1) {
-                        candidates.add(batchedCmd.substring(cmdResult).trim());
+                    final String originalLine = ctx.getParsedCommandLine().getOriginalLine();
+                    boolean skipWS;
+                    int wordCount;
+                    if(Character.isWhitespace(originalLine.charAt(0))) {
+                        skipWS = true;
+                        wordCount = 0;
                     } else {
-                        candidates.add(batchedCmd);
+                        skipWS = false;
+                        wordCount = 1;
                     }
-                }
+                    int cmdStart = 1;
+                    while(cmdStart < originalLine.length()) {
+                        if(skipWS) {
+                            if(!Character.isWhitespace(originalLine.charAt(cmdStart))) {
+                                skipWS = false;
+                                ++wordCount;
+                                if(wordCount == 3) {
+                                    break;
+                                }
+                            }
+                        } else if(Character.isWhitespace(originalLine.charAt(cmdStart))) {
+                            skipWS = true;
+                        }
+                        ++cmdStart;
+                    }
 
-                if(cmdResult < 0) {
-                    return candidates.isEmpty() ? -1 : nextCharIndex;
-                }
-                return nextCharIndex + cmdResult;
-            }};
-    }
+                    final String cmd;
+                    if(wordCount == 2) {
+                        cmd = "";
+                    } else if(wordCount != 3) {
+                        return -1;
+                    } else {
+                        cmd = originalLine.substring(cmdStart);
+                    }
 
-    @Override
-    public CommandLineCompleter getArgumentCompleter() {
-        return argCompleter;
+                    int cmdResult = ctx.getDefaultCommandCompleter().complete(ctx, cmd, 0, candidates);
+                    if(cmdResult < 0) {
+                        return cmdResult;
+                    }
+
+                    // escaping index correction
+                    int escapeCorrection = 0;
+                    int start = originalLine.length() - 1 - buffer.length();
+                    while(start - escapeCorrection >= 0) {
+                        final char ch = originalLine.charAt(start - escapeCorrection);
+                        if(Character.isWhitespace(ch) || ch == '=') {
+                            break;
+                        }
+                        ++escapeCorrection;
+                    }
+
+                    return buffer.length() + escapeCorrection - (cmd.length() - cmdResult);
+                }}, Integer.MAX_VALUE, "--line") {
+            };
+            line.addRequiredPreceding(ln);
     }
 
     @Override
@@ -196,6 +176,12 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
         if(editedLine.length() == 0) {
             ctx.printLine("Missing the new command line after the index.");
             return;
+        }
+
+        if(editedLine.charAt(0) == '"') {
+            if(editedLine.length() > 1 && editedLine.charAt(editedLine.length() - 1) == '"') {
+                editedLine = editedLine.substring(1, editedLine.length() - 1);
+            }
         }
 
         try {

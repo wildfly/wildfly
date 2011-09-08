@@ -28,7 +28,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.CommandLineCompleter;
+
 
 /**
  *
@@ -39,7 +39,6 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
     //private Set<String> argumentNames = Collections.emptySet();
     //private int maxArgumentIndex = -1;
     private List<CommandArgument> args = Collections.emptyList();
-    private SimpleArgumentTabCompleter argCompleter = new SimpleArgumentTabCompleter();
 
     public void addArgument(CommandArgument arg) {
 /*        if(arg.getIndex() > -1) {
@@ -61,7 +60,7 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
             args = new ArrayList<CommandArgument>();
         }
         args.add(arg);
-        argCompleter.addArgument(arg);
+        //argCompleter.addArgument(arg);
     }
 
     @Override
@@ -74,11 +73,6 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
     public boolean hasArgument(int index) {
         //return index <= maxArgumentIndex;
         throw new UnsupportedOperationException("not used yet");
-    }
-
-    @Override
-    public CommandLineCompleter getArgumentCompleter() {
-        return argCompleter;
     }
 
     @Override

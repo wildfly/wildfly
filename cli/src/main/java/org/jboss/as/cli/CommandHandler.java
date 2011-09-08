@@ -40,12 +40,6 @@ public interface CommandHandler {
     boolean isAvailable(CommandContext ctx);
 
     /**
-     * The tab-completer for the argument value.
-     * @return  the tab-completer for the argument value or null if the completer is not available for the argument.
-     */
-    CommandLineCompleter getArgumentCompleter();
-
-    /**
      * Whether the command supports batch mode or not.
      */
     boolean isBatchMode();

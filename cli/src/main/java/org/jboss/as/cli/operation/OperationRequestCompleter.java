@@ -28,6 +28,7 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.CommandLineFormat;
 import org.jboss.as.cli.EscapeSelector;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
@@ -79,7 +80,10 @@ public class OperationRequestCompleter implements CommandLineCompleter {
 
             final List<CommandArgument> allArgs = candidatesProvider.getProperties(ctx, parsedCmd.getOperationName(), ctx.getPrefix());
             if (allArgs.isEmpty()) {
-                candidates.add(")");
+                final CommandLineFormat format = parsedCmd.getFormat();
+                if(format != null && format.getPropertyListEnd() != null) {
+                    candidates.add(format.getPropertyListEnd());
+                }
                 return buffer.length();
             }
 
@@ -139,7 +143,10 @@ public class OperationRequestCompleter implements CommandLineCompleter {
                                 break;
                             }
                         }
-                        candidates.add(")");
+                        final CommandLineFormat format = parsedCmd.getFormat();
+                        if(format != null && format.getPropertyListEnd() != null) {
+                            candidates.add(format.getPropertyListEnd());
+                        }
                         return buffer.length();
                     }
                 } else {
@@ -191,7 +198,10 @@ public class OperationRequestCompleter implements CommandLineCompleter {
 
             if (candidates.isEmpty()) {
                 if (chunk == null && !parsedCmd.endsOnSeparator()) {
-                    candidates.add(")");
+                    final CommandLineFormat format = parsedCmd.getFormat();
+                    if(format != null && format.getPropertyListEnd() != null) {
+                        candidates.add(format.getPropertyListEnd());
+                    }
                 }
             } else {
                 Collections.sort(candidates);
@@ -277,31 +287,20 @@ public class OperationRequestCompleter implements CommandLineCompleter {
     }
 
     protected CommandLineCompleter getValueCompleter(CommandContext ctx, Iterable<CommandArgument> allArgs, final String argName) {
-
-        if(argName != null) {
-            for(CommandArgument arg : allArgs) {
-                if(argName.equals(arg.getFullName())) {
-                    return arg.getValueCompleter();
-                }
-            }
-            return null;
-        }
-
+        CommandLineCompleter result = null;
         for (CommandArgument arg : allArgs) {
-            try {
-                if (arg.getIndex() >= 0 && arg.canAppearNext(ctx)) {
-                    return arg.getValueCompleter();
-                }
-            } catch (CommandFormatException e) {
-                return null;
+            if (arg.getFullName().equals(argName)) {
+                return arg.getValueCompleter();
+            } else if(arg.getIndex() == Integer.MAX_VALUE) {
+                result = arg.getValueCompleter();
             }
         }
-        return null;
+        return result;
     }
 
     protected CommandLineCompleter getValueCompleter(CommandContext ctx, Iterable<CommandArgument> allArgs, int index) {
         for (CommandArgument arg : allArgs) {
-            if (arg.getIndex() == index) {
+            if (arg.getIndex() == index || arg.getIndex() == Integer.MAX_VALUE) {
                 return arg.getValueCompleter();
             }
         }
