@@ -260,8 +260,8 @@ public abstract class AttributeDefinition {
                 attr.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
             }
         }
-        resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
-        return attr;
+        final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
+        return result;
     }
 
     /**
@@ -289,8 +289,8 @@ public abstract class AttributeDefinition {
                 param.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
             }
         }
-        operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
-        return param;
+        final ModelNode result = operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
+        return result;
     }
 
     public String getAttributeTextDescription(final ResourceBundle bundle, final String prefix) {
