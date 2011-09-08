@@ -65,6 +65,7 @@ import static org.jboss.as.messaging.CommonAttributes.LIVE_CONNECTOR_REF;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
 import static org.jboss.as.messaging.CommonAttributes.MANAGE_XML_NAME;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
+import static org.jboss.as.messaging.CommonAttributes.PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
@@ -1152,7 +1153,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
             }
         }
-        transportConfig.get(PARAM).set(params);
+        transportConfig.get(PARAMS).set(params);
     }
 
     static void parseDirectory(final XMLExtendedStreamReader reader, final String name, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
@@ -1337,10 +1338,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         writeAcceptors(writer, node);
-        if (has(node, ADDRESS_SETTING)) {
+        if (node.hasDefined(ADDRESS_SETTING)) {
             writeAddressSettings(writer, node.get(ADDRESS_SETTING));
         }
-        if (has(node.get(ModelDescriptionConstants.PATH), BINDINGS_DIRECTORY)) {
+        final ModelNode paths = node.get(ModelDescriptionConstants.PATH);
+        if (paths.hasDefined(BINDINGS_DIRECTORY)) {
             writeDirectory(writer, Element.BINDINGS_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
         }
         writeConnectors(writer, node);
@@ -1362,19 +1364,19 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         if (node.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
             writeGroupingHandler(writer, node.get(GROUPING_HANDLER));
         }
-        if (has(node.get(ModelDescriptionConstants.PATH), CommonAttributes.JOURNAL_DIRECTORY)) {
+        if (paths.hasDefined(CommonAttributes.JOURNAL_DIRECTORY)) {
             writeDirectory(writer, Element.JOURNAL_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
         }
-        if (has(node.get(ModelDescriptionConstants.PATH), CommonAttributes.LARGE_MESSAGES_DIRECTORY)) {
+        if (paths.hasDefined(CommonAttributes.LARGE_MESSAGES_DIRECTORY)) {
             writeDirectory(writer, Element.LARGE_MESSAGES_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
         }
-        if (has(node.get(ModelDescriptionConstants.PATH), CommonAttributes.PAGING_DIRECTORY)) {
+        if (paths.hasDefined(CommonAttributes.PAGING_DIRECTORY)) {
             writeDirectory(writer, Element.PAGING_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
         }
-        if (has(node, CommonAttributes.SECURITY_SETTING)) {
+        if (node.hasDefined(CommonAttributes.SECURITY_SETTING)) {
             writeSecuritySettings(writer, node.get(CommonAttributes.SECURITY_SETTING));
         }
-        if (has(node, CommonAttributes.QUEUE)) {
+        if (node.hasDefined(CommonAttributes.QUEUE)) {
             writeQueues(writer, node.get(CommonAttributes.QUEUE));
         }
         if (node.hasDefined(CommonAttributes.CONNECTOR_SERVICE)) {
@@ -1569,17 +1571,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
         final ModelNode value = property.getValue();
 
-        if (has(value, SOCKET_BINDING.getName())) {
+        if (value.hasDefined(SOCKET_BINDING.getName())) {
             writeAttribute(writer, Attribute.SOCKET_BINDING, value.get(SOCKET_BINDING.getName()));
         }
-        if (has(value, SERVER_ID.getName())) {
+        if (value.hasDefined(SERVER_ID.getName())) {
             writeAttribute(writer, Attribute.SERVER_ID, value.get(SERVER_ID.getName()));
         }
 
-        if (has(value, FACTORY_CLASS.getName())) {
+        if (value.hasDefined(FACTORY_CLASS.getName())) {
             writeSimpleElement(writer, Element.FACTORY_CLASS, value);
         }
-        if (has(value, PARAM)) {
+        if (value.hasDefined(PARAM)) {
             for(final Property parameter : value.get(PARAM).asPropertyList()) {
                 writer.writeStartElement(Element.PARAM.getLocalName());
                 writer.writeAttribute(Attribute.KEY.getLocalName(), parameter.getName());
@@ -1817,7 +1819,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(node, writer);
             writer.writeEndElement();
         }
-        if (has(factory, CONNECTOR)) {
+        if (factory.hasDefined(CONNECTOR)) {
             writer.writeStartElement(Element.CONNECTORS.getLocalName());
             for (Property connProp : factory.get(CONNECTOR).asPropertyList()) {
                 writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
@@ -1831,12 +1833,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             writer.writeEndElement();
         }
         JndiEntriesAttribute.CONNECTION_FACTORY.marshallAsElement(factory, writer);
-        if(has(factory, TRANSACTION)) {
+        if(factory.hasDefined(TRANSACTION)) {
             writer.writeStartElement(Element.TRANSACTION.getLocalName());
             writeTransactionTypeAttribute(writer, Element.MODE, factory.get(TRANSACTION));
             writer.writeEndElement();
         }
-        if(has(factory, INBOUND_CONFIG)) {
+        if(factory.hasDefined(INBOUND_CONFIG)) {
             final ModelNode inboundConfigs = factory.get(INBOUND_CONFIG);
             if (inboundConfigs.getType() == ModelType.LIST) {
                 writer.writeStartElement(Element.INBOUND_CONFIG.getLocalName());
@@ -1926,10 +1928,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             txSupport = CommonAttributes.XA;
         }
         writer.writeAttribute(attr.getLocalName(), txSupport);
-    }
-
-    static boolean has(ModelNode node, String name) {
-        return node.has(name) && node.get(name).isDefined();
     }
 
     static void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
