@@ -45,4 +45,8 @@ public final class EJBViewConfiguration extends ViewConfiguration {
         return methodIntf;
     }
 
+    @Override
+    public boolean isRemote() {
+        return methodIntf.equals(MethodIntf.REMOTE) || methodIntf.equals(MethodIntf.HOME);
+    }
 }

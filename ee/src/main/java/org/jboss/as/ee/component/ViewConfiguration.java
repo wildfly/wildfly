@@ -103,6 +103,11 @@ public class ViewConfiguration {
         return container.getSortedItems();
     }
 
+    // TODO: not really a good name and needs doc
+    public boolean isRemote() {
+        return false;
+    }
+
     /**
      * Adds an interceptor factory to all methods of a view
      *
