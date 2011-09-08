@@ -40,7 +40,7 @@ import javax.naming.InitialContext;
  */
 @RunWith(Arquillian.class)
 public class InvokeRemoteViewTestCase {
-    @Deployment
+    @Deployment(name = "as7_1658-a", testable = false)
     public static Archive<?> createA() {
         return ShrinkWrap.create(JavaArchive.class, "as7_1658-a.jar")
                 .addPackage(ABean.class.getPackage());
