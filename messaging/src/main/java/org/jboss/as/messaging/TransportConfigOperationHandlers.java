@@ -281,8 +281,8 @@ class TransportConfigOperationHandlers {
             // Process acceptor/connector type specific properties
             process(subModel, operation);
             // The transport-config parameters
-            if(operation.hasDefined(CommonAttributes.PARAM)) {
-                for(Property property : operation.get(CommonAttributes.PARAM).asPropertyList()) {
+            if(operation.hasDefined(CommonAttributes.PARAMS)) {
+                for(Property property : operation.get(CommonAttributes.PARAMS).asPropertyList()) {
                     final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(CommonAttributes.PARAM, property.getName())));
                     final ModelNode value = property.getValue();
                     if(! value.isDefined()) {

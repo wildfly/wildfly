@@ -511,6 +511,7 @@ public interface CommonAttributes {
     String PAGE_MAX_CACHE_SIZE = "page-max-cache-size";
     String PAGING_DIRECTORY ="paging-directory";
     String PARAM ="param";
+    String PARAMS ="param";
     String PAUSED ="paused";
     String PERMISSION_ELEMENT_NAME ="permission";
     String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";

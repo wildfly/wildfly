@@ -38,7 +38,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -81,6 +80,7 @@ import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_C
 import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_BYTES_PER_PAGE;
 import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
+import static org.jboss.as.messaging.CommonAttributes.PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
@@ -184,21 +184,11 @@ public class MessagingDescriptions {
         node.get(CHILDREN, CommonAttributes.CONNECTOR_SERVICE, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.CONNECTOR_SERVICE, MODEL_DESCRIPTION);
 
-        node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, DESCRIPTION).set(bundle.getString("bindings.directory"));
-        node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, MIN_OCCURS).set(0);
-        node.get(CHILDREN, CommonAttributes.BINDINGS_DIRECTORY, MODEL_DESCRIPTION);
-
-        node.get(CHILDREN, CommonAttributes.JOURNAL_DIRECTORY, DESCRIPTION).set(bundle.getString("journal.directory"));
-        node.get(CHILDREN, CommonAttributes.JOURNAL_DIRECTORY, MIN_OCCURS).set(0);
-        node.get(CHILDREN, CommonAttributes.JOURNAL_DIRECTORY, MODEL_DESCRIPTION);
-
-        node.get(CHILDREN, CommonAttributes.LARGE_MESSAGES_DIRECTORY, DESCRIPTION).set(bundle.getString("large.messages.directory"));
-        node.get(CHILDREN, CommonAttributes.LARGE_MESSAGES_DIRECTORY, MIN_OCCURS).set(0);
-        node.get(CHILDREN, CommonAttributes.LARGE_MESSAGES_DIRECTORY, MODEL_DESCRIPTION);
-
-        node.get(CHILDREN, CommonAttributes.PAGING_DIRECTORY, DESCRIPTION).set(bundle.getString("paging.directory"));
-        node.get(CHILDREN, CommonAttributes.PAGING_DIRECTORY, MIN_OCCURS).set(0);
-        node.get(CHILDREN, CommonAttributes.PAGING_DIRECTORY, MODEL_DESCRIPTION);
+        String path = CommonAttributes.PATH.getName();
+        node.get(CHILDREN, path, DESCRIPTION).set(bundle.getString("path"));
+        node.get(CHILDREN, path, MIN_OCCURS).set(4);
+        node.get(CHILDREN, path, MAX_OCCURS).set(4);
+        node.get(CHILDREN, path, MODEL_DESCRIPTION);
 
         //jms stuff
         node.get(CHILDREN, CommonAttributes.CONNECTION_FACTORY, DESCRIPTION).set(bundle.getString("connection-factory"));
@@ -1251,17 +1241,14 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, "connector-service.param");
     }
 
-    private static ModelNode getPathDescription(final String description, final ResourceBundle bundle) {
-        final ModelNode node = new ModelNode();
+    private static ModelNode addParamsParameterDescription(ModelNode operation, final String description, final ResourceBundle bundle) {
+
+        final ModelNode node = operation.get(REQUEST_PROPERTIES, PARAMS);
 
         node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString(description));
-        node.get(ATTRIBUTES, PATH, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, PATH, DESCRIPTION).set(bundle.getString("path.path"));
-        node.get(ATTRIBUTES, PATH, REQUIRED).set(false);
-        node.get(ATTRIBUTES, RELATIVE_TO, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, RELATIVE_TO, DESCRIPTION).set(bundle.getString("path.relative-to"));
-        node.get(ATTRIBUTES, RELATIVE_TO, REQUIRED).set(false);
+        node.get(REQUIRED).set(false);
+        node.get(VALUE_TYPE).set(ModelType.STRING);
 
         return node;
     }
@@ -1286,11 +1273,13 @@ public class MessagingDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
+
         for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
-        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
-        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
+
+        addParamsParameterDescription(op, "acceptor.add.params", bundle);
+
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -1347,8 +1336,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
-        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
-        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
+
+        addParamsParameterDescription(op, "acceptor.add.params", bundle);
+
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -1373,8 +1363,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
-        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
-        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
+
+        addParamsParameterDescription(op, "acceptor.add.params", bundle);
+
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -1399,8 +1390,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
-        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
-        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
+
+        addParamsParameterDescription(op, "connector.add.params", bundle);
+
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -1429,8 +1421,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
-        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
-        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
+
+        addParamsParameterDescription(op, "connector.add.params", bundle);
+
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -1455,8 +1448,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addOperationParameterDescription(bundle, null, op);
         }
-        op.get(REQUEST_PROPERTIES, PARAM, TYPE).set(ModelType.OBJECT);
-        op.get(REQUEST_PROPERTIES, PARAM, REQUIRED).set(false);
+
+        addParamsParameterDescription(op, "connector.add.params", bundle);
+
         op.get(REPLY_PROPERTIES).setEmptyObject();
         return op;
     }
@@ -1490,14 +1484,19 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, "transport-config.param");
     }
 
-    public static ModelNode getPathResource(Locale locale) {
+    public static ModelNode getPathResource(Locale locale, String pathType) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("path"));
+        root.get(DESCRIPTION).set(bundle.getString(pathType + ".path"));
         for (AttributeDefinition attr : MessagingPathHandlers.ATTRIBUTES) {
             attr.addResourceAttributeDescription(bundle, "path", root);
         }
+
+        root.get(OPERATIONS); // placeholder
+
+        root.get(CHILDREN).setEmptyObject();
+
         return root;
     }
 

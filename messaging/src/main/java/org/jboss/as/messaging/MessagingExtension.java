@@ -242,7 +242,8 @@ public class MessagingExtension implements Extension {
 
         // Messaging paths
         for(final String path : CommonAttributes.PATHS) {
-            ManagementResourceRegistration bindings = rootRegistration.registerSubModel(PathElement.pathElement(PATH, path), MessagingSubsystemProviders.PATH);
+            ManagementResourceRegistration bindings = rootRegistration.registerSubModel(PathElement.pathElement(PATH, path),
+                    new MessagingSubsystemProviders.PathProvider(path));
             MessagingPathHandlers.register(bindings);
         }
 
