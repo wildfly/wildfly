@@ -882,10 +882,16 @@ public class CommandLineMain {
             }
 
             final DefaultCallbackHandler originalParsedArguments = this.parsedCmd;
+            try {
+                this.parsedCmd = new DefaultCallbackHandler();
+                resetArgs(line);
+            } catch(CommandFormatException e) {
+                this.parsedCmd = originalParsedArguments;
+                throw e;
+            }
+
             if(isOperation(line)) {
                 try {
-                    this.parsedCmd = new DefaultCallbackHandler();
-                    resetArgs(line);
                     ModelNode request = this.parsedCmd.toOperationRequest();
                     StringBuilder op = new StringBuilder();
                     op.append(prefixFormatter.format(parsedCmd.getAddress()));
@@ -896,28 +902,15 @@ public class CommandLineMain {
                 }
             }
 
-            //TODO this could be just parsed
-            String cmd = line;
-            String cmdArgs = null;
-            for (int i = 0; i < cmd.length(); ++i) {
-                if (Character.isWhitespace(cmd.charAt(i))) {
-                    cmdArgs = cmd.substring(i + 1).trim();
-                    cmd = cmd.substring(0, i);
-                    break;
-                }
-            }
-
-            CommandHandler handler = cmdRegistry.getCommandHandler(cmd.toLowerCase());
+            CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
             if(handler == null) {
-                throw new OperationFormatException("No command handler for '" + cmd + "'.");
+                throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
             }
             if(!(handler instanceof OperationCommand)) {
                 throw new OperationFormatException("The command is not allowed in a batch.");
             }
 
             try {
-                this.parsedCmd = new DefaultCallbackHandler();
-                resetArgs(cmdArgs);
                 ModelNode request = ((OperationCommand)handler).buildRequest(this);
                 return new DefaultBatchedCommand(line, request);
             } finally {

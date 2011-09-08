@@ -23,13 +23,17 @@ package org.jboss.as.cli.parsing;
 
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineFormat;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.parsing.command.ArgumentListState;
 import org.jboss.as.cli.parsing.command.ArgumentState;
 import org.jboss.as.cli.parsing.command.ArgumentValueState;
+import org.jboss.as.cli.parsing.command.CommandFormat;
 import org.jboss.as.cli.parsing.command.CommandNameState;
+import org.jboss.as.cli.parsing.command.CommandState;
 import org.jboss.as.cli.parsing.operation.NodeState;
+import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.cli.parsing.operation.OperationRequestState;
 import org.jboss.as.cli.parsing.operation.PropertyListState;
 
@@ -40,7 +44,7 @@ import org.jboss.as.cli.parsing.operation.PropertyListState;
 public class ParserUtil {
 
     public static void parse(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
-        if(commandLine == null || commandLine.isEmpty()) {
+        if(commandLine == null) {
             return;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
@@ -48,7 +52,7 @@ public class ParserUtil {
     }
 
     public static void parseOperationRequest(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
-        if(commandLine == null || commandLine.isEmpty()) {
+        if(commandLine == null) {
             return;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
@@ -56,7 +60,7 @@ public class ParserUtil {
     }
 
     public static void parseCommandArgs(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
-        if(commandLine == null || commandLine.isEmpty()) {
+        if(commandLine == null) {
             return;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
@@ -97,6 +101,10 @@ public class ParserUtil {
                         name = buffer.toString().trim();
                         buffer.setLength(0);
                     }
+                } else if(id.equals(CommandState.ID)) {
+                    handler.setFormat(CommandFormat.INSTANCE);
+                } else if(id.equals(OperationRequestState.ID)) {
+                    handler.setFormat(OperationFormat.INSTANCE);
                 }
             }
 
@@ -148,7 +156,10 @@ public class ParserUtil {
                     }
                     inValue = false;
                 } else if (CommandNameState.ID.equals(id)) {
-                    handler.operationName(bufferStartIndex, buffer.toString().trim());
+                    final String opName = buffer.toString().trim();
+                    if(!opName.isEmpty()) {
+                        handler.operationName(bufferStartIndex, opName);
+                    }
                     buffer.setLength(0);
                 } else if (NodeState.ID.equals(id)) {
                     char ch = ctx.getCharacter();
@@ -239,7 +250,6 @@ public class ParserUtil {
                     @Override
                     public void start(String operationString) {
                         // TODO Auto-generated method stub
-
                     }
 
                     @Override
@@ -266,7 +276,6 @@ public class ParserUtil {
                     @Override
                     public void nodeTypeNameSeparator(int index) {
                         // TODO Auto-generated method stub
-
                     }
 
                     @Override
@@ -278,19 +287,16 @@ public class ParserUtil {
                     @Override
                     public void nodeSeparator(int index) {
                         // TODO Auto-generated method stub
-
                     }
 
                     @Override
                     public void addressOperationSeparator(int index) {
                         // TODO Auto-generated method stub
-
                     }
 
                     @Override
                     public void propertyListStart(int index) {
                         // TODO Auto-generated method stub
-
                     }
 
                     @Override
@@ -303,26 +309,27 @@ public class ParserUtil {
                     @Override
                     public void propertyNameValueSeparator(int index) {
                         // TODO Auto-generated method stub
-
                     }
 
                     @Override
                     public void propertySeparator(int index) {
                         // TODO Auto-generated method stub
-
                     }
 
                     @Override
                     public void propertyListEnd(int index) {
                         // TODO Auto-generated method stub
-
                     }
 
                     @Override
                     public void nodeTypeOrName(int index, String typeOrName)
                             throws OperationFormatException {
                         // TODO Auto-generated method stub
+                    }
 
+                    @Override
+                    public void setFormat(CommandLineFormat format) {
+                        // TODO Auto-generated method stub
                     }});
     }
 }

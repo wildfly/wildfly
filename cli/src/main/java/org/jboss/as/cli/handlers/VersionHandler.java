@@ -28,7 +28,6 @@ import java.util.List;
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandHandler;
-import org.jboss.as.cli.CommandLineCompleter;
 
 
 /**
@@ -45,14 +44,6 @@ public class VersionHandler implements CommandHandler {
     @Override
     public boolean isAvailable(CommandContext ctx) {
         return true;
-    }
-
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandHandler#getArgumentCompleter()
-     */
-    @Override
-    public CommandLineCompleter getArgumentCompleter() {
-        return null;
     }
 
     /* (non-Javadoc)
