@@ -77,24 +77,26 @@ import org.jboss.dmr.Property;
  */
 public class MBeanInfoFactory {
 
-    private final OpenMBeanParameterInfo[] EMPTY_PARAMETERS = new OpenMBeanParameterInfo[0];
+    private static final OpenMBeanParameterInfo[] EMPTY_PARAMETERS = new OpenMBeanParameterInfo[0];
+    private final boolean standalone;
     private final ImmutableManagementResourceRegistration resourceRegistration;
     private final ModelNode providedDescription;
     private final PathAddress pathAddress;
 
-    private MBeanInfoFactory(final PathAddress address, final ImmutableManagementResourceRegistration resourceRegistration) {
+    private MBeanInfoFactory(final boolean standalone, final PathAddress address, final ImmutableManagementResourceRegistration resourceRegistration) {
+        this.standalone = standalone;
         this.resourceRegistration = resourceRegistration;
         DescriptionProvider provider = resourceRegistration.getModelDescription(PathAddress.EMPTY_ADDRESS);
         providedDescription = provider != null ? provider.getModelDescription(null) : new ModelNode();
         this.pathAddress = address;
     }
 
-    private static MBeanInfoFactory createFactory(final PathAddress address, final ImmutableManagementResourceRegistration resourceRegistration) throws InstanceNotFoundException{
-        return new MBeanInfoFactory(address, resourceRegistration);
+    private static MBeanInfoFactory createFactory(final boolean standalone, final PathAddress address, final ImmutableManagementResourceRegistration resourceRegistration) throws InstanceNotFoundException{
+        return new MBeanInfoFactory(standalone, address, resourceRegistration);
     }
 
-    static MBeanInfo createMBeanInfo(final PathAddress address, final ImmutableManagementResourceRegistration resourceRegistration) throws InstanceNotFoundException{
-        return createFactory(address, resourceRegistration).createMBeanInfo();
+    static MBeanInfo createMBeanInfo(final boolean standalone, final PathAddress address, final ImmutableManagementResourceRegistration resourceRegistration) throws InstanceNotFoundException{
+        return createFactory(standalone, address, resourceRegistration).createMBeanInfo();
     }
 
     private MBeanInfo createMBeanInfo() {
@@ -127,15 +129,20 @@ public class MBeanInfoFactory {
         final String escapedName = NameConverter.convertToCamelCase(name);
         ModelNode attribute = providedDescription.require(ATTRIBUTES).require(name);
         AttributeAccess access = resourceRegistration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
+        final boolean writable;
+        if (!standalone) {
+            writable = false;
+        } else {
+            writable = access != null ? access.getAccessType() == AccessType.READ_WRITE : false;
+        }
         return new OpenMBeanAttributeInfoSupport(
                 escapedName,
                 attribute.hasDefined(DESCRIPTION) ? attribute.get(DESCRIPTION).asString() : "-",
                 TypeConverter.convertToMBeanType(attribute),
                 true,
-                access != null ? access.getAccessType() == AccessType.READ_WRITE : false,
+                writable,
                 false);
     }
-
 
     private OpenMBeanConstructorInfo[] getConstructors() {
         //This can be left empty
@@ -165,7 +172,10 @@ public class MBeanInfoFactory {
                     continue;
                 }
             }
-            ops.add(getOperation(NameConverter.convertToCamelCase(entry.getKey()), null, entry.getValue().getDescriptionProvider()));
+            final OperationEntry opEntry = entry.getValue();
+            if (standalone ? true : opEntry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
+                ops.add(getOperation(NameConverter.convertToCamelCase(entry.getKey()), null, opEntry));
+            }
         }
         addChildAddOperations(ops, resourceRegistration);
         return ops.toArray(new OpenMBeanOperationInfo[ops.size()]);
@@ -178,12 +188,12 @@ public class MBeanInfoFactory {
                 addWildcardChildName = new OpenMBeanParameterInfoSupport("name", "The name of the " + entry.getValue().getElement().getKey() + " to add.", SimpleType.STRING);
             }
 
-            ops.add(getOperation(NameConverter.createValidAddOperationName(entry.getKey()), addWildcardChildName, entry.getValue().getDescriptionProvider()));
+            ops.add(getOperation(NameConverter.createValidAddOperationName(entry.getKey()), addWildcardChildName, entry.getValue().getOperationEntry()));
         }
     }
 
-    private OpenMBeanOperationInfo getOperation(String name, OpenMBeanParameterInfo addWildcardChildName, DescriptionProvider provider) {
-        ModelNode opNode = provider.getModelDescription(null);
+    private OpenMBeanOperationInfo getOperation(String name, OpenMBeanParameterInfo addWildcardChildName, OperationEntry entry) {
+        ModelNode opNode = entry.getDescriptionProvider().getModelDescription(null);
         OpenMBeanParameterInfo[] params = getParameterInfos(opNode);
         if (addWildcardChildName != null) {
             OpenMBeanParameterInfo[] newParams = new OpenMBeanParameterInfo[params.length + 1];
