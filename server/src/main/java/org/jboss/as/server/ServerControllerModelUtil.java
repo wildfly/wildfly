@@ -56,6 +56,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.controller.operations.common.ExtensionAddHandler;
@@ -131,6 +132,8 @@ import org.jboss.as.server.services.net.BindingPortHandler;
 import org.jboss.as.server.services.net.BindingRemoveHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
+import org.jboss.as.server.services.security.VaultAddHandler;
+import org.jboss.as.server.services.security.VaultRemoveHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -255,6 +258,12 @@ public class
         ManagementResourceRegistration paths = root.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
         paths.registerOperationHandler(SpecifiedPathAddHandler.OPERATION_NAME, SpecifiedPathAddHandler.INSTANCE, SpecifiedPathAddHandler.INSTANCE, false);
         paths.registerOperationHandler(SpecifiedPathRemoveHandler.OPERATION_NAME, SpecifiedPathRemoveHandler.INSTANCE, SpecifiedPathRemoveHandler.INSTANCE, false);
+
+
+        //vault
+        ManagementResourceRegistration vault = root.registerSubModel(PathElement.pathElement(VAULT), CommonProviders.VAULT_PROVIDER);
+        vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, VaultAddHandler.VAULT_INSTANCE, VaultAddHandler.VAULT_INSTANCE, false);
+        vault.registerOperationHandler(VaultRemoveHandler.OPERATION_NAME, VaultRemoveHandler.INSTANCE, VaultRemoveHandler.INSTANCE, false);
 
         // Interfaces
         ManagementResourceRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);

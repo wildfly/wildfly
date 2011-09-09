@@ -44,7 +44,9 @@ public class ConfigurationPersisterFactory {
 
     public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {
         HostXml hostXml = new HostXml(Module.getBootModuleLoader());
-        return new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
+        BackupXmlConfigurationPersister persister =  new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
+        persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_1.getUriString(), "host"), hostXml);
+        return persister;
     }
 
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {

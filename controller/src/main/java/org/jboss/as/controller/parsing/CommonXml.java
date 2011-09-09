@@ -87,6 +87,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTION;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
@@ -375,18 +376,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             final boolean requirePath) throws XMLStreamException {
         final Set<String> pathNames = new HashSet<String>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case PATH: {
-                            parsePath(reader, address, list, requirePath, pathNames);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PATH: {
+                    parsePath(reader, address, list, requirePath, pathNames);
                     break;
                 }
                 default: {
@@ -405,41 +398,36 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode managementAddress = address.clone().add(CORE_SERVICE, MANAGEMENT);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case SECURITY_REALMS: {
-                            if (++securityRealmsCount > 1) {
-                                throw unexpectedElement(reader);
-                            }
-                            parseSecurityRealms(reader, managementAddress, list);
+            Namespace ns = Namespace.forUri(reader.getNamespaceURI());
+            if( ns == Namespace.UNKNOWN)
+                throw unexpectedElement(reader);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SECURITY_REALMS: {
+                    if (++securityRealmsCount > 1) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseSecurityRealms(reader, managementAddress, list);
 
-                            break;
-                        }
-                        case OUTBOUND_CONNECTIONS: {
-                            if (++connectionsCount > 1) {
-                                throw unexpectedElement(reader);
-                            }
-                            parseConnections(reader, managementAddress, list);
-                            break;
-                        }
-                        case MANAGEMENT_INTERFACES: {
-                            if (allowInterfaces) {
-                                if (++managementInterfacesCount > 1) {
-                                    throw unexpectedElement(reader);
-                                }
-                                parseManagementInterfaces(reader, managementAddress, list);
-                            } else {
-                                String msg = String.format("Element %s is not supported in a domain.xml file",
-                                        element.getLocalName());
-                                log.warn(ParseUtils.getWarningMessage(msg, reader.getLocation()));
-                            }
-                            break;
-                        }
-                        default: {
+                    break;
+                }
+                case OUTBOUND_CONNECTIONS: {
+                    if (++connectionsCount > 1) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseConnections(reader, managementAddress, list);
+                    break;
+                }
+                case MANAGEMENT_INTERFACES: {
+                    if (allowInterfaces) {
+                        if (++managementInterfacesCount > 1) {
                             throw unexpectedElement(reader);
                         }
+                        parseManagementInterfaces(reader, managementAddress, list);
+                    } else {
+                        String msg = String.format("Element %s is not supported in a domain.xml file",
+                                element.getLocalName());
+                        log.warn(ParseUtils.getWarningMessage(msg, reader.getLocation()));
                     }
                     break;
                 }
@@ -453,19 +441,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected void parseConnections(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case LDAP: {
-                            parseLdapConnection(reader, address, list);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case LDAP: {
+                    parseLdapConnection(reader, address, list);
 
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
                     break;
                 }
                 default: {
@@ -549,18 +529,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected void parseSecurityRealms(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case SECURITY_REALM: {
-                            parseSecurityRealm(reader, address, list);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            Namespace ns = Namespace.forUri(reader.getNamespaceURI());
+            if( ns == Namespace.UNKNOWN)
+                throw unexpectedElement(reader);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SECURITY_REALM: {
+                    parseSecurityRealm(reader, address, list);
                     break;
                 }
                 default: {
@@ -582,21 +558,17 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         add.get(OP).set(ADD);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case SERVER_IDENTITIES:
-                            parseServerIdentities(reader, add);
-                            break;
-                        case AUTHENTICATION: {
-                            parseAuthentication(reader, add);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            Namespace ns = Namespace.forUri(reader.getNamespaceURI());
+            if( ns == Namespace.UNKNOWN)
+                throw unexpectedElement(reader);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SERVER_IDENTITIES:
+                    parseServerIdentities(reader, add);
+                    break;
+                case AUTHENTICATION: {
+                    parseAuthentication(reader, add);
                     break;
                 }
                 default: {
@@ -613,22 +585,18 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         ModelNode serverIdentities = securityRealmAdd.get(SERVER_IDENTITIES);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case SECRET: {
-                            parseSecret(reader, serverIdentities);
-                            break;
-                        }
-                        case SSL: {
-                            parseSSL(reader, serverIdentities);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            Namespace ns = Namespace.forUri(reader.getNamespaceURI());
+            if( ns == Namespace.UNKNOWN)
+                throw unexpectedElement(reader);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SECRET: {
+                    parseSecret(reader, serverIdentities);
+                    break;
+                }
+                case SSL: {
+                    parseSSL(reader, serverIdentities);
                     break;
                 }
                 default: {
@@ -697,18 +665,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case KEYSTORE: {
-                            parseKeystore(reader, ssl);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case KEYSTORE: {
+                    parseKeystore(reader, ssl);
                     break;
                 }
                 default: {
@@ -780,36 +740,29 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         int userCount = 0;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    // Only a single user element within the authentication element is currently supported.
-                    if (++userCount > 1) {
-                        throw unexpectedElement(reader);
-                    }
-                    switch (element) {
-                        case LDAP: {
-                            parseLdapAuthentication(reader, authentication);
-                            break;
-                        }
-                        case PROPERTIES: {
-                            parsePropertiesAuthentication(reader, authentication);
-                            break;
-                        }
-                        case USERS: {
-                            parseUsersAuthentication(reader, authentication);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            // Only a single user element within the authentication element is currently supported.
+            if (++userCount > 1) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case LDAP: {
+                    parseLdapAuthentication(reader, authentication);
+                    break;
+                }
+                case PROPERTIES: {
+                    parsePropertiesAuthentication(reader, authentication);
+                    break;
+                }
+                case USERS: {
+                    parseUsersAuthentication(reader, authentication);
                     break;
                 }
                 default: {
                     throw unexpectedElement(reader);
                 }
             }
+
         }
     }
 
@@ -930,18 +883,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         ModelNode userDomain = authentication.get(USERS);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case USER: {
-                            parseUser(reader, userDomain);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case USER: {
+                    parseUser(reader, userDomain);
                     break;
                 }
                 default: {
@@ -960,19 +905,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         ModelNode user = userDomain.get(USER, userName);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case PASSWORD: {
-                            String password = reader.getElementText();
-                            user.get(PASSWORD).set(password);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PASSWORD: {
+                    String password = reader.getElementText();
+                    user.get(PASSWORD).set(password);
                     break;
                 }
                 default: {
@@ -985,22 +922,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     protected void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address,
             final List<ModelNode> list) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case NATIVE_INTERFACE: {
-                            parseNativeManagementInterface(reader, address, list);
-                            break;
-                        }
-                        case HTTP_INTERFACE: {
-                            parseHttpManagementInterface(reader, address, list);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case NATIVE_INTERFACE: {
+                    parseNativeManagementInterface(reader, address, list);
+                    break;
+                }
+                case HTTP_INTERFACE: {
+                    parseHttpManagementInterface(reader, address, list);
                     break;
                 }
                 default: {
@@ -1400,54 +1329,47 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         boolean hasJvmOptions = false;
         boolean hasEnvironmentVariables = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case HEAP: {
-                            parseHeap(reader, address, updates);
-                            break;
-                        }
-                        case PERMGEN: {
-                            parsePermgen(reader, address, updates);
-                            break;
-                        }
-                        case STACK: {
-                            parseStack(reader, address, updates);
-                            break;
-                        }
-                        case AGENT_LIB: {
-                            parseAgentLib(reader, address, updates);
-                            break;
-                        }
-                        case AGENT_PATH: {
-                            parseAgentPath(reader, address, updates);
-                            break;
-                        }
-                        case JAVA_AGENT: {
-                            parseJavaagent(reader, address, updates);
-                            break;
-                        }
-                        case ENVIRONMENT_VARIABLES: {
-                            if (hasEnvironmentVariables) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            updates.add(Util.getWriteAttributeOperation(address, JVMHandlers.JVM_ENV_VARIABLES,
-                                    parseProperties(reader)));
-                            hasEnvironmentVariables = true;
-                            break;
-                        }
-                        case JVM_OPTIONS: {
-                            if (hasJvmOptions) {
-                                throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
-                            }
-                            parseJvmOptions(reader, address, updates);
-                            hasJvmOptions = true;
-                            break;
-                        }
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case HEAP: {
+                    parseHeap(reader, address, updates);
+                    break;
+                }
+                case PERMGEN: {
+                    parsePermgen(reader, address, updates);
+                    break;
+                }
+                case STACK: {
+                    parseStack(reader, address, updates);
+                    break;
+                }
+                case AGENT_LIB: {
+                    parseAgentLib(reader, address, updates);
+                    break;
+                }
+                case AGENT_PATH: {
+                    parseAgentPath(reader, address, updates);
+                    break;
+                }
+                case JAVA_AGENT: {
+                    parseJavaagent(reader, address, updates);
+                    break;
+                }
+                case ENVIRONMENT_VARIABLES: {
+                    if (hasEnvironmentVariables) {
+                        throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                     }
+                    updates.add(Util.getWriteAttributeOperation(address, JVMHandlers.JVM_ENV_VARIABLES,
+                            parseProperties(reader)));
+                    hasEnvironmentVariables = true;
+                    break;
+                }
+                case JVM_OPTIONS: {
+                    if (hasJvmOptions) {
+                        throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
+                    }
+                    parseJvmOptions(reader, address, updates);
+                    hasJvmOptions = true;
                     break;
                 }
                 default:
@@ -1674,49 +1596,42 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         // Handle elements
         boolean optionSet = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case DOMAIN_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (element == Element.OPTION) {
-                        // Handle attributes
-                        String option = null;
-                        final int count = reader.getAttributeCount();
-                        for (int i = 0; i < count; i++) {
-                            final String attrValue = reader.getAttributeValue(i);
-                            if (!isNoNamespaceAttribute(reader, i)) {
-                                throw ParseUtils.unexpectedAttribute(reader, i);
-                            } else {
-                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                                switch (attribute) {
-                                    case VALUE: {
-                                        option = attrValue;
-                                        break;
-                                    }
-                                    default:
-                                        throw ParseUtils.unexpectedAttribute(reader, i);
-                                }
-                            }
-                        }
-                        if (option == null) {
-                            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-                        }
-
-                        // PropertyAdd
-                        final ModelNode update = new ModelNode();
-                        update.get(OP_ADDR).set(address);
-                        update.get(OP).set(JVMHandlers.ADD_JVM_OPTION);
-                        update.get(JVMHandlers.JVM_OPTION).set(option);
-                        updates.add(update);
-                        optionSet = true;
-                        // Handle elements
-                        ParseUtils.requireNoContent(reader);
+            final Element element = Element.forName(reader.getLocalName());
+            if (element == Element.OPTION) {
+                // Handle attributes
+                String option = null;
+                final int count = reader.getAttributeCount();
+                for (int i = 0; i < count; i++) {
+                    final String attrValue = reader.getAttributeValue(i);
+                    if (!isNoNamespaceAttribute(reader, i)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                     } else {
-                        throw ParseUtils.unexpectedElement(reader);
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case VALUE: {
+                                option = attrValue;
+                                break;
+                            }
+                            default:
+                                throw ParseUtils.unexpectedAttribute(reader, i);
+                        }
                     }
-                    break;
                 }
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
+                if (option == null) {
+                    throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+                }
+
+                // PropertyAdd
+                final ModelNode update = new ModelNode();
+                update.get(OP_ADDR).set(address);
+                update.get(OP).set(JVMHandlers.ADD_JVM_OPTION);
+                update.get(JVMHandlers.JVM_OPTION).set(option);
+                updates.add(update);
+                optionSet = true;
+                // Handle elements
+                ParseUtils.requireNoContent(reader);
+            } else {
+                throw ParseUtils.unexpectedElement(reader);
             }
         }
         if (!optionSet) {
@@ -1730,7 +1645,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         if (reader.nextTag() == END_ELEMENT) {
             return;
         }
-        if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+        Namespace ns = Namespace.forUri(reader.getNamespaceURI());
+        if (ns != Namespace.DOMAIN_1_0 && ns != Namespace.DOMAIN_1_1) {
             throw unexpectedElement(reader);
         }
         Element element = Element.forName(reader.getLocalName());
@@ -1809,7 +1725,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
      */
     protected void parseSimpleInterfaceCriterion(final XMLExtendedStreamReader reader, final ModelNode criteria)
             throws XMLStreamException {
-        if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+        Namespace ns = Namespace.forUri(reader.getNamespaceURI());
+        if ( (ns != Namespace.DOMAIN_1_0 && ns != Namespace.DOMAIN_1_1)) {
             throw unexpectedElement(reader);
         }
         final Element element = Element.forName(reader.getLocalName());
@@ -2141,7 +2058,38 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseVault(final XMLExtendedStreamReader reader, final ModelNode vault) throws XMLStreamException {
+    protected void parseVault(final XMLExtendedStreamReader reader, final ModelNode address,final List<ModelNode> list) throws XMLStreamException {
+        final int vaultAttribCount = reader.getAttributeCount();
+
+        ModelNode vault = new ModelNode();
+        String code = null;
+
+        if(vaultAttribCount > 1) {
+            throw unexpectedAttribute(reader, vaultAttribCount);
+        }
+
+        for (int i = 0; i < vaultAttribCount; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case CODE: {
+                    code = value;
+                    vault.get(Attribute.CODE.getLocalName()).set(code);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        ModelNode vaultAddress = address.clone();
+        vaultAddress.add(VAULT,ADD);
+        if(code != null){
+            vault.get(Attribute.CODE.getLocalName()).set(code);
+        }
+        vault.get(OP_ADDR).set(vaultAddress);
+        vault.get(OP).set(ADD);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
@@ -2153,6 +2101,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
         }
+        list.add(vault);
     }
 
     protected void parseModuleOption(XMLExtendedStreamReader reader, ModelNode moduleOptions) throws XMLStreamException {
