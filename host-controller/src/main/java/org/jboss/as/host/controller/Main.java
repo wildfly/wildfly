@@ -308,8 +308,32 @@ public final class Main {
                         name = arg.substring(2, idx);
                         value = arg.substring(idx + 1, arg.length());
                     }
-                    System.setProperty(name, value);
+                    SecurityActions.setSystemProperty(name, value);
                     hostSystemProperties.put(name, value);
+                } else if (arg.startsWith("-b")) {
+
+                    int idx = arg.indexOf('=');
+                    if (idx == arg.length() - 1) {
+                        System.err.printf("Argument expected for option %s\n", arg);
+                        usage();
+                        return null;
+                    }
+                    String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
+
+                    String logicalName = null;
+                    if (idx < 0) {
+                        // -b xxx -bmanagement xxx
+                        logicalName = arg.length() == 2 ? "public" : arg.substring(2);
+                    } else if (idx == 2) {
+                        // -b=xxx
+                        logicalName = "public";
+                    } else {
+                        // -bmanagement=xxx
+                        logicalName = arg.substring(2, idx);
+                    }
+                    String propertyName = HostControllerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + logicalName;
+                    hostSystemProperties.put(propertyName, value);
+                    SecurityActions.setSystemProperty(propertyName, value);
                 } else {
                     System.err.printf("Invalid option '%s'\n", arg);
                     usage();
@@ -341,7 +365,7 @@ public final class Main {
          URL url = null;
          try {
              url = makeURL(urlSpec);
-             Properties props = System.getProperties();
+             Properties props = SecurityActions.getSystemProperties();
              props.load(url.openConnection().getInputStream());
              return true;
          } catch (MalformedURLException e) {
