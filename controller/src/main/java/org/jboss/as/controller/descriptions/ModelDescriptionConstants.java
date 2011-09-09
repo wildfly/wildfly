@@ -120,6 +120,7 @@ public class ModelDescriptionConstants {
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MAX_THREADS = "max-threads";
+    public static final String MAX_VALUE = "max-value";
     public static final String MIN = "min";
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";
@@ -181,6 +182,7 @@ public class ModelDescriptionConstants {
     public static final String REQUIRED = "required";
     public static final String RESPONSE = "response";
     public static final String RESPONSE_HEADERS = "response-headers";
+    public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";

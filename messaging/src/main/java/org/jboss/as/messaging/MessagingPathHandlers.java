@@ -33,6 +33,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import java.util.EnumSet;
+
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -71,6 +74,12 @@ class MessagingPathHandlers {
                 CommonAttributes.PATH.getValidator().validateParameter(name, value);
             }
         }
+
+        @Override
+        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                               ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+            return true;
+        }
     };
 
     static final OperationStepHandler PATH_REMOVE = new OperationStepHandler() {
@@ -87,7 +96,7 @@ class MessagingPathHandlers {
         registration.registerOperationHandler(ADD, PATH_ADD, MessagingSubsystemProviders.PATH_ADD);
         registration.registerOperationHandler(REMOVE, PATH_REMOVE, MessagingSubsystemProviders.PATH_REMOVE);
         for(final AttributeDefinition def : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(def.getName(), null, PATH_ATTR, AttributeAccess.Storage.CONFIGURATION);
+            registration.registerReadWriteAttribute(def.getName(), null, PATH_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
         }
     }
 

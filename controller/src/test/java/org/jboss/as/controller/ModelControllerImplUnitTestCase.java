@@ -526,7 +526,7 @@ public class ModelControllerImplUnitTestCase {
             model.get("attr1").set(1);
             model.get("attr2").set(2);
 
-            context.createResource(PathAddress.EMPTY_ADDRESS).getModel().set(model);
+            context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().set(model);
 
             final ModelNode child1 = new ModelNode();
             child1.get("attribute1").set(1);

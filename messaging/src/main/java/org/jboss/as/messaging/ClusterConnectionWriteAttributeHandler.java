@@ -22,12 +22,15 @@
 
 package org.jboss.as.messaging;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -44,6 +47,13 @@ public class ClusterConnectionWriteAttributeHandler extends ServerWriteAttribute
     private ClusterConnectionWriteAttributeHandler() {
         for (AttributeDefinition attr : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
             attributes.put(attr.getName(), attr);
+        }
+    }
+
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        for (AttributeDefinition attr : CommonAttributes.CLUSTER_CONNECTION_ATTRIBUTES) {
+            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
         }
     }
 

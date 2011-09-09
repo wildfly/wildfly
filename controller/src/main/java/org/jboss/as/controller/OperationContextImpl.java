@@ -793,8 +793,14 @@ final class OperationContextImpl implements OperationContext {
         return resource;
     }
 
-    public Resource createResource(PathAddress requestAddress) {
-        final PathAddress address = modelAddress.append(requestAddress);
+    public Resource createResource(PathAddress relativeAddress) {
+        final Resource toAdd = Resource.Factory.create();
+        addResource(relativeAddress, toAdd);
+        return toAdd;
+    }
+
+    public void addResource(PathAddress relativeAddress, Resource toAdd) {
+        final PathAddress absoluteAddress = modelAddress.append(relativeAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -803,13 +809,16 @@ final class OperationContextImpl implements OperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
+        if (absoluteAddress.size() == 0) {
+            throw new IllegalStateException("Duplicate resource " + absoluteAddress);
+        }
         if (affectsModel.size() == 0) {
             takeWriteLock();
             model = model.clone();
         }
-        affectsModel.add(address);
+        affectsModel.add(absoluteAddress);
         Resource model = this.model;
-        final Iterator<PathElement> i = address.iterator();
+        final Iterator<PathElement> i = absoluteAddress.iterator();
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
@@ -818,23 +827,21 @@ final class OperationContextImpl implements OperationContext {
             if (! i.hasNext()) {
                 final String key = element.getKey();
                 if(model.hasChild(element)) {
-                    throw new IllegalStateException("duplicate resource " + address);
+                    throw new IllegalStateException("Duplicate resource " + absoluteAddress);
                 } else {
-                    final PathAddress parent = address.subAddress(0, address.size() -1);
+                    final PathAddress parent = absoluteAddress.subAddress(0, absoluteAddress.size() -1);
                     final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
                     if(!childrenNames.contains(key)) {
                         throw new IllegalStateException("no child-type " + key);
                     }
                     // TODO check cardinality
-                    final Resource newModel = Resource.Factory.create();
-                    model.registerChild(element, newModel);
-                    model = newModel;
+                    model.registerChild(element, toAdd);
+                    model = toAdd;
                 }
             } else {
                 model = model.requireChild(element);
             }
         }
-        return model;
     }
 
     public Resource removeResource(final PathAddress requestAddress) {

@@ -22,21 +22,10 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
-import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
-import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
+import java.util.Locale;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
 
 /**
  * @author Emanuel Muckenhuber
@@ -249,10 +238,16 @@ class MessagingSubsystemProviders {
         }
     };
 
-    public static final DescriptionProvider PATH = new DescriptionProvider() {
+    public static class PathProvider implements DescriptionProvider  {
+        final String pathType;
+
+        public PathProvider(String pathType) {
+            this.pathType = pathType;
+        }
+
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getPathResource(locale);
+            return MessagingDescriptions.getPathResource(locale, pathType);
         }
     };
 
@@ -358,6 +353,13 @@ class MessagingSubsystemProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return MessagingDescriptions.getSecuritySettingResource(locale);
+        }
+    };
+
+    public static final DescriptionProvider CORE_ADDRESS = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getCoreAddressResource(locale);
         }
     };
 }

@@ -54,25 +54,52 @@ public class JMSAdminOperations {
         }
     }
 
+    public void close() {
+        try {
+            modelControllerClient.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ModelControllerClient getModelControllerClient() {
+        return modelControllerClient;
+    }
+
     public void createJmsQueue(final String queueName, final String jndiName) {
+        createJmsDestination("jms-queue", queueName, jndiName);
+    }
+
+    public void createJmsTopic(final String topicName, final String jndiName) {
+        createJmsDestination("jms-topic", topicName, jndiName);
+    }
+
+    private void createJmsDestination(final String destinationType, final String destinationName, final String jndiName) {
         final ModelNode createJmsQueueOperation = new ModelNode();
         createJmsQueueOperation.get(ClientConstants.OP).set(ClientConstants.ADD);
         createJmsQueueOperation.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
-        createJmsQueueOperation.get(ClientConstants.OP_ADDR).add("jms-queue", queueName);
+        createJmsQueueOperation.get(ClientConstants.OP_ADDR).add(destinationType, destinationName);
         createJmsQueueOperation.get("entries").add(jndiName);
         try {
             this.applyUpdate(createJmsQueueOperation);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public void removeJmsQueue(final String queueName) {
+        removeJmsDestination("jms-queue", queueName);
+    }
+
+    public void removeJmsTopic(final String topicName) {
+        removeJmsDestination("jms-topic", topicName);
+    }
+
+    private void removeJmsDestination(final String destinationType, final String destinationName) {
         final ModelNode removeJmsQueue = new ModelNode();
         removeJmsQueue.get(ClientConstants.OP).set("remove");
         removeJmsQueue.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
-        removeJmsQueue.get(ClientConstants.OP_ADDR).add("jms-queue", queueName);
+        removeJmsQueue.get(ClientConstants.OP_ADDR).add(destinationType, destinationName);
         try {
             this.applyUpdate(removeJmsQueue);
         } catch (Exception e) {

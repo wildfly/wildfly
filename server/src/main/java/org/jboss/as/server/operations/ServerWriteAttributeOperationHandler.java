@@ -24,20 +24,22 @@ package org.jboss.as.server.operations;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAttributeOperationHandler;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * Abstract superclass for write-attribute operation handlers that run on the
  * server.
- * <p/>
- * TODO Get ServerOperationContext and BootOperationHandler concepts into
- * the controller module so the same handlers can apply to domain/host attributes.
  *
  * @author Brian Stansberry
  */
 public abstract class ServerWriteAttributeOperationHandler extends WriteAttributeOperationHandler {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private final ParameterValidator resolvedValueValidator;
 
@@ -59,10 +61,10 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
     }
 
     /**
-     * Creates a handler that users the given {@code valueValidator}
+     * Creates a handler that uses the given {@code valueValidator}
      * to validate values before applying them to the model, and a separate
-     * validator to validate the {@link ModelNode#resolve() resolved value} it
-     * after it has been applied to the mode.
+     * validator to validate the {@link ModelNode#resolve() resolved value}
+     * after it has been applied to the model.
      * <p/>
      * Typically if this constructor is used the {@code valueValidator} would
      * allow expressions, while the {@code resolvedValueValidator} would not.
@@ -80,17 +82,30 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
                                 final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
         boolean restartRequired = false;
-        if (context.getType() == OperationContext.Type.SERVER) {
+        boolean applyToRuntime = context.getType() == OperationContext.Type.SERVER;
+        ModelNode resolvedValue = null;
+        if (applyToRuntime) {
             validateResolvedValue(attributeName, newValue);
-            ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
+            resolvedValue = newValue.resolve();
             restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue);
             if (restartRequired) {
                 context.reloadRequired();
             }
         }
 
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && restartRequired) {
-            context.revertReloadRequired();
+        if (context.completeStep() != OperationContext.ResultAction.KEEP && applyToRuntime) {
+            ModelNode valueToRestore = currentValue.resolve();
+            try {
+                revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue);
+            } catch (Exception e) {
+                log.errorf(e, String.format("%s caught exception attempting to revert operation %s at address %s",
+                        getClass().getSimpleName(),
+                        operation.require(ModelDescriptionConstants.OP).asString(),
+                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR))));
+            }
+            if (restartRequired) {
+                context.revertReloadRequired();
+            }
         }
     }
 
@@ -110,7 +125,7 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
      * should be implemented by calling {@link org.jboss.as.controller.OperationContext#addStep(org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationContext.Stage) adding a new step}
      * with {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME}.
      * <p>
-     * This default implementation simply returns {@code false}.
+     * This default implementation simply returns {@code true}.
      * </p>
      *
      * @param context the context of the operation
@@ -124,7 +139,26 @@ public abstract class ServerWriteAttributeOperationHandler extends WriteAttribut
      */
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-        return false;
+        return true;
+    }
+
+    /**
+     * Hook to allow subclasses to revert runtime changes made in
+     * {@link #applyUpdateToRuntime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, String, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)}.
+     * <p>
+     * This default implementation simply does nothing.
+     * </p>
+     *
+     * @param context the context of the operation
+     * @param operation the operation
+     * @param attributeName the name of the attribute being modified
+     * @param valueToRestore the previous value for the attribute, before this operation was executed
+     * @param valueToRevert the new value for the attribute that should be reverted
+     */
+    protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                         final String attributeName, final ModelNode valueToRestore,
+                                         final ModelNode valueToRevert) throws OperationFailedException {
+
     }
 
 

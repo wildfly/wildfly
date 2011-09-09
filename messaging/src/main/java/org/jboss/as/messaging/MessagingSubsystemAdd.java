@@ -22,14 +22,8 @@
 
 package org.jboss.as.messaging;
 
-import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.core.cluster.DiscoveryGroup;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
-import org.hornetq.core.server.cluster.BroadcastGroup;
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import org.jboss.as.controller.registry.Resource;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
@@ -92,27 +86,32 @@ import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 
-import javax.management.MBeanServer;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.MBeanServer;
+
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.jms.JMSService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
@@ -132,7 +131,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class MessagingSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class MessagingSubsystemAdd implements OperationStepHandler, DescriptionProvider {
 
     private static final String DEFAULT_PATH = "messaging";
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
@@ -148,21 +147,45 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
     private MessagingSubsystemAdd() {
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.setEmptyObject();
+    /** {@inheritDoc */
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+
+        // We use a custom Resource impl so we can expose runtime HQ components (e.g. AddressControl) as child resources
+        final HornetQServerResource resource = new HornetQServerResource();
+        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+        final ModelNode model = resource.getModel();
 
         for (final AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
 
-        model.get(QUEUE);
+        model.get(QUEUE).setEmptyObject();
         model.get(CONNECTION_FACTORY).setEmptyObject();
         model.get(JMS_QUEUE).setEmptyObject();
         model.get(JMS_TOPIC).setEmptyObject();
         model.get(POOLED_CONNECTION_FACTORY).setEmptyObject();
+
+        if (context.getType() == OperationContext.Type.SERVER) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                    performRuntime(context, resource, verificationHandler, controllers);
+
+                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        for(ServiceController<?> controller : controllers) {
+                            context.removeService(controller.getName());
+                        }
+                    }
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+        context.completeStep();
     }
 
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+    private void performRuntime(final OperationContext context, final HornetQServerResource resource,
                                   final ServiceVerificationHandler verificationHandler,
                                   final List<ServiceController<?>> newControllers) throws OperationFailedException {
         // Add a RUNTIME step to actually install the HQ Service. This will execute after the runtime step
@@ -173,7 +196,6 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 final ServiceTarget serviceTarget = context.getServiceTarget();
 
                 // Transform the configuration based on the recursive model
-                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                 final ModelNode model = Resource.Tools.readModel(resource);
                 final Configuration configuration = transformConfig(model);
 
@@ -227,7 +249,11 @@ class MessagingSubsystemAdd extends AbstractAddStepHandler implements Descriptio
                 serviceBuilder.addListener(verificationHandler);
 
                 // Install the HornetQ Service
-                newControllers.add(serviceBuilder.install());
+                ServiceController<HornetQServer> hqServerServiceController = serviceBuilder.install();
+                // Provide our custom Resource impl a ref to the HornetQServer so it can create child runtime resources
+                resource.setHornetQServerServiceController(hqServerServiceController);
+
+                newControllers.add(hqServerServiceController);
                 newControllers.add(JMSService.addService(serviceTarget, verificationHandler));
 
                 context.completeStep();

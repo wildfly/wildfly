@@ -22,12 +22,15 @@
 
 package org.jboss.as.messaging.jms;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
@@ -45,6 +48,14 @@ public class PooledConnectionFactoryWriteAttributeHandler extends ServerWriteAtt
     private PooledConnectionFactoryWriteAttributeHandler() {
         for (AttributeDefinition attr : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
             attributes.put(attr.getName(), attr);
+        }
+    }
+
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        // TODO can any of these be applied to the runtime?
+        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        for (AttributeDefinition attr : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
+            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
         }
     }
 

@@ -133,16 +133,16 @@ public abstract class AbstractControllerTestBase {
         final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
         final Set<String> children = registration.getChildNames(base);
         final ModelNode current = new ModelNode();
-
+        final Resource resource = base.size() == 0 ? context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS) : context.createResource(base);
         if(node.getType() == ModelType.OBJECT) {
             for(final String key : node.keys()) {
                 if(! children.contains(key)) {
                     current.get(key).set(node.get(key));
                 }
             }
-            context.createResource(base).getModel().set(current);
+            resource.getModel().set(current);
         } else {
-            context.createResource(base).getModel().set(node);
+            resource.getModel().set(node);
             return;
         }
         if(children != null && ! children.isEmpty()) {
