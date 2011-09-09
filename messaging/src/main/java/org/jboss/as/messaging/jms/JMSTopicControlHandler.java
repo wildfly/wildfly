@@ -27,7 +27,6 @@ import static org.jboss.as.messaging.CommonAttributes.*;
 import java.util.EnumSet;
 import java.util.Locale;
 
-import apple.awt.ClientPropertyApplicator;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.server.HornetQServer;
