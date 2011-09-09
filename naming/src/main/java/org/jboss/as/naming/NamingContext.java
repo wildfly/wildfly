@@ -181,7 +181,9 @@ public class NamingContext implements EventContext {
             final Object resolvedObject = resolveResult.getResolvedObj();
 
             Object context;
-            if (resolvedObject instanceof LinkRef) {
+            if (resolvedObject instanceof Context){
+                context = resolvedObject;
+            } else if (resolvedObject instanceof LinkRef) {
                 context = resolveLink(resolvedObject);
             } else {
                 context = getObjectInstance(resolvedObject, absoluteName, environment);
@@ -255,6 +257,13 @@ public class NamingContext implements EventContext {
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             return continuationContext.list(cpe.getRemainingName());
+        }  catch (RequireResolveException r) {
+            final Object o = lookup(r.getResolve());
+            if (o instanceof Context) {
+                return ((Context)o).list(name.getSuffix(r.getResolve().size()));
+            }
+
+            throw notAContextException(r.getResolve());
         }
     }
 
@@ -270,6 +279,13 @@ public class NamingContext implements EventContext {
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             return continuationContext.listBindings(cpe.getRemainingName());
+        } catch (RequireResolveException r) {
+            final Object o = lookup(r.getResolve());
+            if (o instanceof Context) {
+                return ((Context)o).listBindings(name.getSuffix(r.getResolve().size()));
+            }
+
+            throw notAContextException(r.getResolve());
         }
     }
 
