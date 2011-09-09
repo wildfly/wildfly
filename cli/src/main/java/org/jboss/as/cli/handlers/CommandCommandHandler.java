@@ -57,6 +57,8 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
 
     private final CommandRegistry cmdRegistry;
 
+    private DefaultCallbackHandler callback;
+
     public CommandCommandHandler(CommandRegistry cmdRegistry) {
         super("command", true);
         this.cmdRegistry = cmdRegistry;
@@ -133,6 +135,9 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         idProperty.addRequiredPreceding(nodePath);
 
         commandName = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
+
+            private final DefaultCallbackHandler callback = new DefaultCallbackHandler();
+
             @Override
             public List<String> getAllCandidates(CommandContext ctx) {
 
@@ -147,14 +152,14 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                       return Collections.emptyList();
                    }
 
-                   DefaultCallbackHandler handler = new DefaultCallbackHandler();
+                   callback.reset();
                    try {
-                       ParserUtil.parseOperationRequest(thePath, handler);
+                       ParserUtil.parseOperationRequest(thePath, callback);
                    } catch (CommandFormatException e) {
                        return Collections.emptyList();
                    }
 
-                   OperationRequestAddress typeAddress = handler.getAddress();
+                   OperationRequestAddress typeAddress = callback.getAddress();
                    if (!typeAddress.endsOnType()) {
                        return Collections.emptyList();
                    }
@@ -284,14 +289,18 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
         }
 
         final String type = nodePath.getValue(ctx.getParsedCommandLine());
-        DefaultCallbackHandler handler = new DefaultCallbackHandler();
+        if(callback == null) {
+            callback = new DefaultCallbackHandler();
+        } else {
+            callback.reset();
+        }
         try {
-            ParserUtil.parseOperationRequest(type, handler);
+            ParserUtil.parseOperationRequest(type, callback);
         } catch (CommandFormatException e) {
             throw new IllegalArgumentException("Failed to parse nodeType: " + e.getMessage());
         }
 
-        OperationRequestAddress typeAddress = handler.getAddress();
+        OperationRequestAddress typeAddress = callback.getAddress();
         if(!typeAddress.endsOnType()) {
             return null;
         }
@@ -313,15 +322,20 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             address.add("profile", profileName);
         }
 
-        DefaultCallbackHandler handler = new DefaultCallbackHandler();
+        if(callback == null) {
+            callback = new DefaultCallbackHandler();
+        } else {
+            callback.reset();
+        }
+
         try {
-            ParserUtil.parseOperationRequest(typePath, handler);
+            ParserUtil.parseOperationRequest(typePath, callback);
         } catch (CommandFormatException e) {
             ctx.printLine("Failed to validate input: " + e.getLocalizedMessage());
             return false;
         }
 
-        OperationRequestAddress typeAddress = handler.getAddress();
+        OperationRequestAddress typeAddress = callback.getAddress();
         if(!typeAddress.endsOnType()) {
             ctx.printLine("Node path '" + typePath + "' doesn't appear to end on a type.");
             return false;

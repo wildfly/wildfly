@@ -874,6 +874,7 @@ public class CommandLineMain {
             return batchManager;
         }
 
+        private final DefaultCallbackHandler tmpBatched = new DefaultCallbackHandler();
         @Override
         public BatchedCommand toBatchedCommand(String line) throws CommandFormatException {
 
@@ -883,7 +884,7 @@ public class CommandLineMain {
 
             final DefaultCallbackHandler originalParsedArguments = this.parsedCmd;
             try {
-                this.parsedCmd = new DefaultCallbackHandler();
+                this.parsedCmd = tmpBatched;
                 resetArgs(line);
             } catch(CommandFormatException e) {
                 this.parsedCmd = originalParsedArguments;
