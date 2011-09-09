@@ -24,6 +24,8 @@ package org.jboss.as.txn;
 
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Thomas.Diesler@jboss.com
@@ -53,7 +55,7 @@ public final class TxnServices {
     public static final ServiceName JBOSS_TXN_SYNCHRONIZATION_REGISTRY = JBOSS_TXN.append("TransactionSynchronizationRegistry");
 
     public static <T> T notNull(T value) {
-        if (value == null) throw new IllegalStateException("Service not started");
+        if (value == null) throw MESSAGES.serviceNotStarted();
         return value;
     }
 
