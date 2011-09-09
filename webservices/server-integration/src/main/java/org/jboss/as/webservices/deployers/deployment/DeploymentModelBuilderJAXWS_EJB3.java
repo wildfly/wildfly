@@ -27,6 +27,7 @@ import org.jboss.as.webservices.util.WSAttachmentKeys;
 //import org.jboss.metadata.ejb.jboss.JBossMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.Endpoint.EndpointType;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 
@@ -61,7 +62,7 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
             final String ejbClass = container.getComponentClassName();
             this.log.debug("EJB3 class: " + ejbClass);
 
-            final Endpoint ep = this.newHttpEndpoint(ejbClass, ejbName, dep);
+            final Endpoint ep = this.newHttpEndpoint(ejbClass, ejbName, dep, EndpointType.JAXWS_EJB3);
             ep.setProperty(ASHelper.CONTAINER_NAME, container.getContainerName());
         }
     }

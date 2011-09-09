@@ -58,10 +58,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.Endpoint.EndpointType;
 import org.jboss.wsf.spi.deployment.WSFServlet;
 import org.jboss.wsf.spi.publish.Context;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
@@ -96,7 +96,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         Deployment dep = null;
         try {
             SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
-            WSDeploymentBuilder.getInstance().build(unit);
+            WSDeploymentBuilder.getInstance().build(unit, EndpointType.JAXWS_JSE);
             dep = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
             dep.addAttachment(ServiceTarget.class, target);
             DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
@@ -251,8 +251,6 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
                 addEndpoint(jbossWebMetaData, urlPatternToClassName.get(urlPattern), urlPattern);
             }
             this.putAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY, jbossWebMetaData);
-
-            this.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JSE);
             this.putAttachment(WSAttachmentKeys.CLASSLOADER_KEY, loader);
         }
 
