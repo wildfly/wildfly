@@ -22,11 +22,10 @@
 
 package org.jboss.as.txn;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  * @author Emanuel Muckenhuber

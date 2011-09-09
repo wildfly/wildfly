@@ -23,13 +23,8 @@
 package org.jboss.as.txn;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Transaction logger. Uses id's 10100 to 10199.
