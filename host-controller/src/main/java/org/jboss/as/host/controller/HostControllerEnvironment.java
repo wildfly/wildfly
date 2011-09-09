@@ -97,6 +97,11 @@ public class HostControllerEnvironment {
      */
     public static final String DOMAIN_TEMP_DIR = "jboss.domain.temp.dir";
 
+    /**
+     * Prefix for the system property used to store bind address information from the command-line (-b).
+     */
+    public static final String JBOSS_BIND_ADDRESS_PREFIX = "jboss.bind.address.";
+
     private final Map<String, String> hostSystemProperties;
     private final String processName;
     private final InetAddress processControllerAddress;

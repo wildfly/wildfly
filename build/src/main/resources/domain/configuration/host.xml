@@ -45,10 +45,10 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="127.0.0.1"/>
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
         </interface>
         <interface name="public">
-           <inet-address value="127.0.0.1"/>
+           <inet-address value="${jboss.bind.address.public:127.0.0.1}"/>
         </interface>
     </interfaces>
 
