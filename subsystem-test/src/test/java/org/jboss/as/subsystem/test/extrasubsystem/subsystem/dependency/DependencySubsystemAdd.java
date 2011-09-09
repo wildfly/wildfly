@@ -7,7 +7,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -18,8 +17,6 @@ import org.jboss.msc.service.ServiceController;
 class DependencySubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final DependencySubsystemAdd INSTANCE = new DependencySubsystemAdd();
-
-    private final Logger log = Logger.getLogger(DependencySubsystemAdd.class);
 
     private DependencySubsystemAdd() {
     }

@@ -1,6 +1,9 @@
 package org.jboss.as.subsystem.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -76,6 +79,8 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
+import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationFailure;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -323,9 +328,10 @@ public abstract class AbstractSubsystemTest {
             throw svc.error;
         }
 
+        validateDescriptionProviders(additionalInit, kernelServices);
+
         return kernelServices;
     }
-
 
     /**
      * Checks that the result was successful and gets the real result contents
@@ -434,6 +440,39 @@ public abstract class AbstractSubsystemTest {
         if (additionalParsers != null && !addedExtraParsers) {
             additionalParsers.addParsers(parsingContext);
             addedExtraParsers = true;
+        }
+    }
+
+
+    private void validateDescriptionProviders(AdditionalInitialization additionalInit, KernelServices kernelServices) {
+        ValidationConfiguration arbitraryDescriptors = additionalInit.getModelValidationConfiguration();
+        ModelNode address = new ModelNode();
+        address.setEmptyList();
+        address.add("subsystem", mainSubsystemName);
+
+        ModelNode op = new ModelNode();
+        op.get(OP).set("read-resource-description");
+        //op.get(OP_ADDR).setEmptyList();
+        op.get(OP_ADDR).set(address);
+        op.get("recursive").set(true);
+        op.get("inherited").set(false);
+        op.get("operations").set(true);
+        ModelNode result = kernelServices.executeOperation(op);
+        if (result.hasDefined(FAILURE_DESCRIPTION)) {
+            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+        }
+        ModelNode model = result.get(RESULT);
+
+        ModelDescriptionValidator validator = new ModelDescriptionValidator(address, model, arbitraryDescriptors);
+        List<ValidationFailure> validationMessages = validator.validateResource();
+        if (validationMessages.size() > 0) {
+            System.out.println("VALIDATION ERRORS IN MODEL:");
+            for (ValidationFailure failure :validationMessages) {
+                System.out.println(failure);
+            }
+            if (arbitraryDescriptors != null) {
+                Assert.fail("Failed due to validation errors in the model. Please fix :-)");
+            }
         }
     }
 

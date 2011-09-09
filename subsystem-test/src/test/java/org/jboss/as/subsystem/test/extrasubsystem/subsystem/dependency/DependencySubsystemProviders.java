@@ -1,8 +1,10 @@
 package org.jboss.as.subsystem.test.extrasubsystem.subsystem.dependency;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 
 import java.util.Locale;
@@ -43,6 +45,7 @@ class DependencySubsystemProviders {
             //The locale is passed in so you can internationalize the strings used in the descriptions
 
             final ModelNode subsystem = new ModelNode();
+            subsystem.get(OPERATION_NAME).set(ADD);
             subsystem.get(DESCRIPTION).set("Adds my subsystem");
 
             return subsystem;

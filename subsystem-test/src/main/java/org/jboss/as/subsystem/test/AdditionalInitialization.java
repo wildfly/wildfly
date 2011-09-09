@@ -5,6 +5,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -34,6 +35,17 @@ public class AdditionalInitialization extends AdditionalParsers {
     protected boolean isValidateOperations() {
         return true;
     }
+
+    /**
+     * Create a registry for extra configuration that should be taken into account when validating the description providers for the subsystem
+     * in the controller. The default is an empty registry.
+     *
+     * @return An ArbitraryDescriptors instance containing the arbitrary descriptors, or {@code null} to not validate the description providers.
+     */
+    protected ModelDescriptionValidator.ValidationConfiguration getModelValidationConfiguration() {
+        return new ValidationConfiguration();
+    }
+
 
     /**
      * Creates the controller initializer.
