@@ -54,6 +54,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.EnumSet;
@@ -118,6 +119,8 @@ import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
+import org.jboss.as.server.services.security.VaultAddHandler;
+import org.jboss.as.server.services.security.VaultRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -247,6 +250,11 @@ public class HostModelUtil {
         ManagementResourceRegistration paths = hostRegistration.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
         paths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
         paths.registerOperationHandler(PathRemoveHandler.OPERATION_NAME, PathRemoveHandler.INSTANCE, PathRemoveHandler.INSTANCE, false);
+
+        //vault
+        ManagementResourceRegistration vault = hostRegistration.registerSubModel(PathElement.pathElement(VAULT), CommonProviders.VAULT_PROVIDER);
+        vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, VaultAddHandler.VAULT_INSTANCE, VaultAddHandler.VAULT_INSTANCE, false);
+        vault.registerOperationHandler(VaultRemoveHandler.OPERATION_NAME, VaultRemoveHandler.INSTANCE, VaultRemoveHandler.INSTANCE, false);
 
         //interface
         ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);

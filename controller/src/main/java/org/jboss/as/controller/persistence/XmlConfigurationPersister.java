@@ -55,6 +55,8 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
     private final File fileName;
     private final QName rootElement;
     private final XMLElementReader<List<ModelNode>> rootParser;
+    private QName additionalRootElement;
+    private XMLElementReader<List<ModelNode>> additionalParser;
 
     /**
      * Construct a new instance.
@@ -69,6 +71,11 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
         this.fileName = fileName;
         this.rootElement = rootElement;
         this.rootParser = rootParser;
+    }
+
+    public void registerAdditionalRootElement(final QName anotherRoot, final XMLElementReader<List<ModelNode>> parser){
+        additionalRootElement = anotherRoot;
+        additionalParser = parser;
     }
 
     /** {@inheritDoc} */
@@ -98,6 +105,9 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
     public List<ModelNode> load() throws ConfigurationPersistenceException {
         final XMLMapper mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(rootElement, rootParser);
+        if(additionalRootElement != null){
+            mapper.registerRootElement(additionalRootElement, additionalParser);
+        }
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         try {
             final FileInputStream fis = new FileInputStream(fileName);

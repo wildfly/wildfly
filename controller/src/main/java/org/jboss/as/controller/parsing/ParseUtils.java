@@ -50,7 +50,8 @@ public final class ParseUtils {
         if (reader.nextTag() == END_ELEMENT) {
             return null;
         }
-        if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
+        Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
+        if ( !(readerNS == Namespace.DOMAIN_1_0 || readerNS == Namespace.DOMAIN_1_1 )) {
             throw unexpectedElement(reader);
         }
         return Element.forName(reader.getLocalName());

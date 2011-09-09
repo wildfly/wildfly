@@ -55,6 +55,10 @@ public class BackupXmlConfigurationPersister extends XmlConfigurationPersister {
         this.configurationFile = file;
     }
 
+    public void registerAdditionalRootElement(final QName anotherRoot, final XMLElementReader<List<ModelNode>> parser){
+        super.registerAdditionalRootElement(anotherRoot, parser);
+    }
+
     @Override
     public void successfulBoot() throws ConfigurationPersistenceException {
         if(successfulBoot.compareAndSet(false, true)) {
