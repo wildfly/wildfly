@@ -35,6 +35,8 @@ public interface OperationStepHandler {
      * If the operation succeeded, {@link OperationContext#getResult() context.getResult()} should
      * be called and the result populated with the outcome, after which {@link OperationContext#completeStep() context.completeStep()}
      * must be called.
+     * <p>When this method is invoked the {@link Thread#getContextClassLoader() thread context classloader} will
+     * be set to be the defining class loader of the class that implements this interface.</p>
      *
      * @param context the operation context
      * @param operation the operation being executed
