@@ -26,9 +26,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
+import org.jboss.wsf.spi.deployment.Endpoint.EndpointType;
 
 /**
  * Detects Web Service deployment type.
@@ -36,24 +37,29 @@ import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-public final class WSTypeDeploymentProcessor implements DeploymentUnitProcessor {
+public final class WSTypeDeploymentProcessor extends TCCLDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void internalDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         if (this.isJaxwsJseDeployment(unit)) {
-            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_JSE);
-        } else if (this.isJaxwsEjbDeployment(unit)) {
-            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXWS_EJB3);
-        } else if (this.isJaxrpcJseDeployment(unit)) {
-            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_JSE);
-        } else if (this.isJaxrpcEjbDeployment(unit)) {
-            unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_TYPE_KEY, DeploymentType.JAXRPC_EJB21);
+            //JAXWS_JSE and JAXWS_JMS type endpoint is built with same DeploymentBuilder
+            WSDeploymentBuilder.getInstance().build(unit, EndpointType.JAXWS_JSE);
+        }
+        if (this.isJaxwsEjbDeployment(unit)) {
+            WSDeploymentBuilder.getInstance().build(unit, EndpointType.JAXWS_EJB3);
+        }
+        //TODO: look at if this two jaxprc types can be in one archive and deployed
+        if (this.isJaxrpcJseDeployment(unit) && !isJaxwsJseDeployment(unit) && !isJaxwsEjbDeployment(unit)) {
+            WSDeploymentBuilder.getInstance().build(unit, EndpointType.JAXRPC_JSE);
+        }
+        if (this.isJaxrpcEjbDeployment(unit)  && !isJaxwsJseDeployment(unit) && !isJaxwsEjbDeployment(unit)) {
+            WSDeploymentBuilder.getInstance().build(unit, EndpointType.JAXRPC_EJB21);
         }
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void internalUndeploy(DeploymentUnit context) {
         //NOOP
     }
 
