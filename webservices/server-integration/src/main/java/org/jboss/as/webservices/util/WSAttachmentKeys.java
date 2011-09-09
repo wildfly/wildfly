@@ -25,7 +25,6 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
@@ -39,7 +38,6 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 public final class WSAttachmentKeys {
 
     public static final AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
-    public static final AttachmentKey<DeploymentType> DEPLOYMENT_TYPE_KEY = AttachmentKey.create(DeploymentType.class);
     public static final AttachmentKey<JBossAppMetaData> JBOSS_APP_METADATA_KEY = AttachmentKey.create(JBossAppMetaData.class);
     public static final AttachmentKey<JMSEndpointsMetaData> JMS_ENDPOINT_METADATA_KEY = AttachmentKey.create(JMSEndpointsMetaData.class);
     public static final AttachmentKey<WebServiceDeployment> WEBSERVICE_DEPLOYMENT_KEY = AttachmentKey.create(WebServiceDeployment.class);

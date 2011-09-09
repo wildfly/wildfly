@@ -27,7 +27,7 @@ import java.util.Map;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
+import org.jboss.wsf.spi.deployment.Endpoint.EndpointType;
 
 /**
  * JBossWS deployment model builder.
@@ -39,13 +39,13 @@ public final class WSDeploymentBuilder {
     private static final WSDeploymentBuilder SINGLETON = new WSDeploymentBuilder();
 
     /** Builders registry. */
-    private static final Map<DeploymentType, DeploymentModelBuilder> builders = new HashMap<DeploymentType, DeploymentModelBuilder>();;
+    private static final Map<EndpointType, DeploymentModelBuilder> builders = new HashMap<EndpointType, DeploymentModelBuilder>();;
 
     static {
-        WSDeploymentBuilder.builders.put(DeploymentType.JAXWS_JSE, new DeploymentModelBuilderJAXWS_JSE());
-        WSDeploymentBuilder.builders.put(DeploymentType.JAXRPC_JSE, new DeploymentModelBuilderJAXRPC_JSE());
-        WSDeploymentBuilder.builders.put(DeploymentType.JAXWS_EJB3, new DeploymentModelBuilderJAXWS_EJB3());
-        WSDeploymentBuilder.builders.put(DeploymentType.JAXRPC_EJB21, new DeploymentModelBuilderJAXRPC_EJB21());
+        WSDeploymentBuilder.builders.put(EndpointType.JAXWS_JSE, new DeploymentModelBuilderJAXWS_JSE());
+        WSDeploymentBuilder.builders.put(EndpointType.JAXRPC_JSE, new DeploymentModelBuilderJAXRPC_JSE());
+        WSDeploymentBuilder.builders.put(EndpointType.JAXWS_EJB3, new DeploymentModelBuilderJAXWS_EJB3());
+        WSDeploymentBuilder.builders.put(EndpointType.JAXRPC_EJB21, new DeploymentModelBuilderJAXRPC_EJB21());
     }
 
     /**
@@ -69,11 +69,10 @@ public final class WSDeploymentBuilder {
      *
      * @param unit deployment unit
      */
-    public void build(final DeploymentUnit unit) {
-        final DeploymentType deploymentType = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
+    public void build(final DeploymentUnit unit, final EndpointType endpointType) {
 
-        if (deploymentType != null) {
-            WSDeploymentBuilder.builders.get(deploymentType).newDeploymentModel(unit);
+        if (endpointType != null) {
+            WSDeploymentBuilder.builders.get(endpointType).newDeploymentModel(unit);
         }
     }
 }

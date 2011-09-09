@@ -88,7 +88,7 @@ public final class ASHelper {
      * @return true if JAXWS JSE, JAXRPC JSE, JAXWS EJB or JAXRPC EJB deployment, false otherwise.
      */
     public static boolean isWebServiceDeployment(final DeploymentUnit unit) {
-        return ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY) != null;
+        return ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY) != null;
     }
 
     /**
