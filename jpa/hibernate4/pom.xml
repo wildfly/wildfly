@@ -49,6 +49,11 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-controller</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-controller-client</artifactId>
         </dependency>
 
@@ -60,6 +65,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-ejb3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jpa-util</artifactId>
         </dependency>
 
         <dependency>

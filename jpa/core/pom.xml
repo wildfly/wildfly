@@ -61,15 +61,15 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-ejb3</artifactId>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jpa-hibernate4</artifactId>
-        </dependency>
--->
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-jpa-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jpa-util</artifactId>
         </dependency>
 
         <dependency>

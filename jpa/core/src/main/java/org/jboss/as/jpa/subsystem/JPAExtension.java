@@ -21,24 +21,14 @@
  */
 package org.jboss.as.jpa.subsystem;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -46,11 +36,31 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.jpa.processor.PersistenceProviderAdaptorLoader;
+import org.jboss.as.jpa.spi.ManagementAdaptor;
+import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 /**
  * Domain extension used to initialize the JPA subsystem element handlers.
@@ -89,6 +99,34 @@ public class JPAExtension implements Extension {
         nodeRegistration.registerReadWriteAttribute(CommonAttributes.DEFAULT_DATASOURCE, null, JPADefaultDatasourceWriteHandler.INSTANCE, Storage.CONFIGURATION);
         registration.registerXMLElementWriter(parser);
 
+        try {
+            // load the default persistence provider adaptor
+            PersistenceProviderAdaptor provider = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(null);
+            final ManagementAdaptor managementAdaptor = (ManagementAdaptor)provider.getManagementAdaptor();
+            if (managementAdaptor != null) {
+                DescriptionProvider JPA_SUBSYSTEM = new DescriptionProvider() {
+                    @Override
+                    public ModelNode getModelDescription(Locale locale) {
+                        ModelNode subsystem = new ModelNode();
+                        subsystem.get(org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION).set("Runtime information about JPA use in the deployment.");
+                        subsystem.get(ATTRIBUTES).setEmptyObject();
+                        subsystem.get("operations"); // placeholder
+
+                        subsystem.get(CHILDREN, managementAdaptor.getIdentificationLabel(),
+                            org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION).
+                            set("Runtime information about " + managementAdaptor.getIdentificationLabel() + " use in the deployment.");
+
+                        subsystem.get(CHILDREN, managementAdaptor.getIdentificationLabel(), MIN_OCCURS).set(0);
+                        return subsystem;
+                    }
+                };
+                final ManagementResourceRegistration jpaSubsystemDeployments = registration.registerDeploymentModel(JPA_SUBSYSTEM);
+
+                managementAdaptor.register(jpaSubsystemDeployments);
+            }
+        } catch (ModuleLoadException e) {
+            JPA_LOGGER.errorPreloadingDefaultProviderAdaptor(e);
+        }
     }
 
     @Override

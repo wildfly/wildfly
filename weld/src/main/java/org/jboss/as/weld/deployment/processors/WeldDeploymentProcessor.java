@@ -25,7 +25,7 @@ import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.service.PersistenceUnitService;
+import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
@@ -217,7 +217,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             final PersistenceUnitMetadataHolder persistenceUnits = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
             if (persistenceUnits != null && persistenceUnits.getPersistenceUnits() != null) {
                 for (final PersistenceUnitMetadata pu : persistenceUnits.getPersistenceUnits()) {
-                    final ServiceName serviceName = PersistenceUnitService.getPUServiceName(pu);
+                    final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
                     jpaServices.add(serviceName);
                 }
             }

@@ -24,7 +24,7 @@ package org.jboss.as.weld.services.bootstrap;
 
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
-import org.jboss.as.jpa.service.PersistenceUnitService;
+import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceController;
@@ -57,12 +57,12 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
             throw new RuntimeException("Could not find @PersistenceContext annotation on " + injectionPoint.getMember());
         }
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
-        final ServiceName persistenceUnitServiceName = PersistenceUnitService.getPUServiceName(scopedPuName);
+        final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
 
         final ServiceController<?> serviceController = serviceRegistry.getRequiredService(persistenceUnitServiceName);
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
-        PersistenceUnitService persistenceUnitService = (PersistenceUnitService)serviceController.getValue();
+        PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl)serviceController.getValue();
         return new TransactionScopedEntityManager(scopedPuName,new HashMap<Object,Object>(), persistenceUnitService.getEntityManagerFactory());
     }
 
@@ -74,12 +74,12 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
             throw new RuntimeException("Could not find @PersistenceUnit annotation on " + injectionPoint.getMember());
         }
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
-        final ServiceName persistenceUnitServiceName = PersistenceUnitService.getPUServiceName(scopedPuName);
+        final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
 
         final ServiceController<?> serviceController = serviceRegistry.getRequiredService(persistenceUnitServiceName);
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
-        PersistenceUnitService persistenceUnitService = (PersistenceUnitService)serviceController.getValue();
+        PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl)serviceController.getValue();
         return persistenceUnitService.getEntityManagerFactory();
     }
 

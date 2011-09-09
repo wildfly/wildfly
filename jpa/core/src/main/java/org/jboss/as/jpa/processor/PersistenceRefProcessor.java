@@ -35,7 +35,7 @@ import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.container.SFSBXPCMap;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
-import org.jboss.as.jpa.service.PersistenceUnitService;
+import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -230,7 +230,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
     private ServiceName getPuServiceName(String scopedPuName)
         throws DeploymentUnitProcessingException {
 
-        return PersistenceUnitService.getPUServiceName(scopedPuName);
+        return PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
     }
 
     private boolean isEmpty(String string) {

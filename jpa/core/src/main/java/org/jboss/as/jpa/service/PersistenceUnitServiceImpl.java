@@ -24,6 +24,8 @@ package org.jboss.as.jpa.service;
 
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.jpa.spi.PersistenceUnitService;
+import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -47,9 +49,8 @@ import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
  *
  * @author Scott Marlow
  */
-public class PersistenceUnitService implements Service<PersistenceUnitService> {
+public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServiceImpl>, PersistenceUnitService {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("persistenceunit");
 
     private final InjectedValue<Map> properties = new InjectedValue<Map>();
 
@@ -62,7 +63,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     private volatile EntityManagerFactory entityManagerFactory;
 
-    public PersistenceUnitService(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor, final PersistenceProvider persistenceProvider) {
+    public PersistenceUnitServiceImpl(final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor persistenceProviderAdaptor, final PersistenceProvider persistenceProvider) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.persistenceProvider = persistenceProvider;
@@ -91,7 +92,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     }
 
     @Override
-    public PersistenceUnitService getValue() throws IllegalStateException, IllegalArgumentException {
+    public PersistenceUnitServiceImpl getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -100,6 +101,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
      *
      * @return the entity manager factory
      */
+    @Override
     public EntityManagerFactory getEntityManagerFactory() {
         return entityManagerFactory;
     }
@@ -124,11 +126,11 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
      * @return
      */
     public static ServiceName getPUServiceName(PersistenceUnitMetadata pu) {
-        return PersistenceUnitService.SERVICE_NAME.append(pu.getScopedPersistenceUnitName());
+        return JPAServiceNames.getPUServiceName(pu.getScopedPersistenceUnitName());
     }
 
     public static ServiceName getPUServiceName(String scopedPersistenceUnitName) {
-        return PersistenceUnitService.SERVICE_NAME.append(scopedPersistenceUnitName);
+        return JPAServiceNames.getPUServiceName(scopedPersistenceUnitName);
     }
 
     /**

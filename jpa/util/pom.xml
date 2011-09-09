@@ -29,30 +29,50 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-jpa-parent</artifactId>
         <version>7.1.0.Alpha2-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-jpa-parent</artifactId>
+    <artifactId>jboss-as-jpa-util</artifactId>
     <version>7.1.0.Alpha2-SNAPSHOT</version>
-    <packaging>pom</packaging>
 
-    <name>JBoss Application Server: JPA Subsystem</name>
-
-    <modules>
-        <module>core</module>
-        <module>util</module>
-        <module>spi</module>
-        <module>hibernate4</module>
-        <module>hibernate3</module>
-    </modules>
+    <name>JBoss Application Server: JPA UTIL</name>
 
     <dependencies>
+        <!-- Internal -->
+
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-connector</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-ee</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-naming</artifactId>
+        </dependency>
+
+        <!-- External -->
+
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+        </dependency>
+
     </dependencies>
 </project>
