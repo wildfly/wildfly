@@ -450,10 +450,10 @@ public interface JpaMessages {
      *
      * @param adapterModule the adapter module name.
      *
-     * @return a {@link DeploymentUnitProcessingException} for the error.
+     * @return a {@link RuntimeException} for the error.
      */
     @Message(id = 11456, value = "Persistence provider adapter module (%s) has more than one adapter")
-    DeploymentUnitProcessingException multipleAdapters(String adapterModule);
+    RuntimeException multipleAdapters(String adapterModule);
 
     /**
      * Creates an exception indicating more than one thread is invoking the stateful session bean at the same time.

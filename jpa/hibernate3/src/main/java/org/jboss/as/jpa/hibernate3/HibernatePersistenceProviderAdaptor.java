@@ -130,5 +130,10 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         }
     }
 
+    @Override
+    public Object getManagementAdaptor() {
+        return null;
+    }
+
 }
 

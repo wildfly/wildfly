@@ -70,5 +70,13 @@ public interface PersistenceProviderAdaptor {
      */
     void afterCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu);
 
+    /**
+     * Get the management adaptor
+     *
+     * @return ManagementAdaptor or null
+     */
+    Object /*ManagementAdaptor*/ getManagementAdaptor();
+
+
 }
 

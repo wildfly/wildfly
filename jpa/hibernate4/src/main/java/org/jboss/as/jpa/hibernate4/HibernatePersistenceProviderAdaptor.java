@@ -24,6 +24,7 @@ package org.jboss.as.jpa.hibernate4;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
+import org.jboss.as.jpa.hibernate4.management.HibernateManagementAdaptor;
 import org.jboss.as.jpa.spi.JtaManager;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
@@ -42,7 +43,8 @@ import java.util.Map;
 public class HibernatePersistenceProviderAdaptor implements PersistenceProviderAdaptor {
 
 
-    private JBossAppServerJtaPlatform appServerJtaPlatform;
+    private volatile JBossAppServerJtaPlatform appServerJtaPlatform;
+    private final HibernateManagementAdaptor hibernateManagementAdaptor = new HibernateManagementAdaptor();
 
     @Override
     public void injectJtaManager(JtaManager jtaManager) {
@@ -105,6 +107,11 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     public void afterCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu) {
         // clear backdoor annotation scanner access to pu
         HibernateAnnotationScanner.clearThreadLocalPersistenceUnitMetadata();
+    }
+
+    @Override
+    public Object getManagementAdaptor() {
+        return hibernateManagementAdaptor;
     }
 
 }

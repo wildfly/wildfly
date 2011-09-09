@@ -23,13 +23,13 @@
 package org.jboss.as.jpa;
 
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
-import javax.persistence.spi.PersistenceProvider;
-
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -94,4 +94,16 @@ public interface JpaLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 11403, value = "Stopping %s Service '%s'")
     void stoppingService(String serviceName, String name);
+
+    /**
+     * Logs an error message indicating an exception occurred while preloading the default persistence provider module.
+     * Initialization continues after logging the error.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11404, value = "Could not load default persistence provider adaptor module.  Management attributes will not be registered for the adaptor")
+    void errorPreloadingDefaultProviderAdaptor(@Cause Throwable cause);
+
+
 }

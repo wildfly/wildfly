@@ -23,6 +23,7 @@
 package org.jboss.as.jpa.service;
 
 import org.jboss.as.jpa.transaction.TransactionUtil;
+import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.TransactionSynchronizationRegistryService;
 import org.jboss.msc.inject.CastingInjector;
@@ -47,7 +48,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
  */
 public class JPAService implements Service<Void> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jpa");
+    public static final ServiceName SERVICE_NAME = JPAServiceNames.getJPAServiceName();
 
     private static String defaultDataSourceName = null;
 
