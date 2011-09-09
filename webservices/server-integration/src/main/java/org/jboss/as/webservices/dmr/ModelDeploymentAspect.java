@@ -68,7 +68,7 @@ public final class ModelDeploymentAspect extends AbstractDeploymentAspect {
                 op.get(ENDPOINT_NAME).set(getName(endpoint));
                 op.get(ENDPOINT_CONTEXT).set(getContext(endpoint));
                 op.get(ENDPOINT_CLASS).set(endpoint.getTargetBeanName());
-                op.get(ENDPOINT_TYPE).set(getType(endpoint));
+                op.get(ENDPOINT_TYPE).set(endpoint.getType().toString());
                 op.get(ENDPOINT_WSDL).set(endpoint.getAddress() + "?wsdl");
             }
         }
@@ -79,9 +79,6 @@ public final class ModelDeploymentAspect extends AbstractDeploymentAspect {
         //
     }
 
-    private String getType(final Endpoint endpoint) {
-        return endpoint.getService().getDeployment().getType().toString();
-    }
 
     private String getName(final Endpoint endpoint) {
         return endpoint.getName().getKeyProperty(Endpoint.SEPID_PROPERTY_ENDPOINT);
