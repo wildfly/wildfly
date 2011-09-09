@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 
 /**
  * Utility class to create a interface criteria based on a {@link ModelNode} description
@@ -45,6 +47,8 @@ import org.jboss.dmr.Property;
  * @author Brian Stansberry
  */
 public final class ParsedInterfaceCriteria {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.server");
 
     private static final ParsedInterfaceCriteria EMPTY = new ParsedInterfaceCriteria();
     private static final ParsedInterfaceCriteria ANY = new ParsedInterfaceCriteria(false, false, true);
@@ -111,44 +115,58 @@ public final class ParsedInterfaceCriteria {
                 String crit = criteria.asString();
                 if (ANY_ADDRESS.equals(crit)) {
                     parsed = ParsedInterfaceCriteria.ANY;
-                }
-                else if (ANY_IPV4_ADDRESS.equals(crit)) {
+                } else if (ANY_IPV4_ADDRESS.equals(crit)) {
                     parsed = ParsedInterfaceCriteria.V4;
-                }
-                else if (ANY_IPV6_ADDRESS.equals(crit)) {
+                } else if (ANY_IPV6_ADDRESS.equals(crit)) {
                     parsed = ParsedInterfaceCriteria.V6;
+                } else {
+                    return new ParsedInterfaceCriteria(String.format(
+                            "Illegal interface criteria %s; must be %s, %s or %s or a list of criteria elements", crit,
+                            ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS));
                 }
-                else {
-                    return new ParsedInterfaceCriteria(String.format("Illegal interface criteria %s; must be %s, %s or %s or a list of criteria elements", crit, ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS));
-                }
-            }
-            else if (criteria.getType() == ModelType.LIST) {
+            } else if (criteria.getType() == ModelType.LIST) {
                 try {
                     Set<InterfaceCriteria> criteriaSet = new HashSet<InterfaceCriteria>();
-                    for (ModelNode node : criteria.asList()) {
+                    List<ModelNode> nodes = criteria.asList();
+                    for (ModelNode node : nodes) {
+                        InterfaceCriteria criterion = null;
                         if (node.getType() == ModelType.STRING) {
-                            criteriaSet.add(parseStringCriteria(node));
+                            criterion = parseStringCriteria(node);
+                        } else if (node.getType() == ModelType.PROPERTY) {
+                            criterion = parsePropertyCriteria(node);
+                        } else {
+                            return new ParsedInterfaceCriteria(String.format(
+                                    "Illegal interface criteria list element type %s; must be %s or %s", node.getType(),
+                                    ModelType.STRING, ModelType.PROPERTY));
                         }
-                        else if (node.getType() == ModelType.PROPERTY) {
-                            criteriaSet.add(parsePropertyCriteria(node));
+                        if (criterion instanceof WildcardInetAddressInterfaceCriteria) {
+                            // AS7-1668: stop processing and just return the any binding.
+                            if (nodes.size() > 1) {
+                                log.warn("Wildcard address detected - will ignore other interface criteria.");
+                            }
+                            WildcardInetAddressInterfaceCriteria wc = (WildcardInetAddressInterfaceCriteria) criterion;
+                            switch(wc.getVersion()) {
+                                case V4: return ParsedInterfaceCriteria.V4;
+                                case V6: return ParsedInterfaceCriteria.V6;
+                                default: return ParsedInterfaceCriteria.ANY;
+                            }
                         }
                         else {
-                            return new ParsedInterfaceCriteria(String.format("Illegal interface criteria list element type %s; must be %s or %s", node.getType(), ModelType.STRING, ModelType.PROPERTY));
+                            criteriaSet.add(criterion);
                         }
                     }
                     return new ParsedInterfaceCriteria(criteriaSet);
-                }
-                catch (ParsingException p) {
+                } catch (ParsingException p) {
                     return new ParsedInterfaceCriteria(p.msg);
                 }
-            }
-            else {
-                return new ParsedInterfaceCriteria(String.format("Illegal interface criteria type %s; must be %s or %s", criteria.getType(), ModelType.STRING, ModelType.LIST));
+            } else {
+                return new ParsedInterfaceCriteria(String.format("Illegal interface criteria type %s; must be %s or %s",
+                        criteria.getType(), ModelType.STRING, ModelType.LIST));
             }
         }
 
-        if (specified && parsed.getFailureMessage() == null && !parsed.isAnyLocal()
-                && !parsed.isAnyLocalV4() && !parsed.isAnyLocalV6() && parsed.getCriteria().size() ==  0) {
+        if (specified && parsed.getFailureMessage() == null && !parsed.isAnyLocal() && !parsed.isAnyLocalV4()
+                && !parsed.isAnyLocalV6() && parsed.getCriteria().size() == 0) {
             parsed = new ParsedInterfaceCriteria("No interface criteria was provided");
         }
         return parsed;
@@ -191,7 +209,20 @@ public final class ParsedInterfaceCriteria {
             }
             case INET_ADDRESS: {
                 checkStringType(prop.getValue(), element.getLocalName(), true);
-                return new InetAddressMatchInterfaceCriteria(prop.getValue());
+                try {
+                    String rawAddress = prop.getValue().resolve().asString();
+                    InetAddress address = InetAddress.getByName(rawAddress);
+                    if (address.isAnyLocalAddress()) {
+                        // they've entered a wildcard address
+                        return new WildcardInetAddressInterfaceCriteria(address);
+                    } else {
+                        return new InetAddressMatchInterfaceCriteria(prop.getValue());
+                    }
+                } catch (UnknownHostException e) {
+                    throw new ParsingException(String.format("Invalid address %s (%s)", prop.getValue().asString(),
+                            e.getLocalizedMessage()));
+                }
+
             }
             case LOOPBACK_ADDRESS: {
                 checkStringType(prop.getValue(), element.getLocalName(), true);
@@ -207,7 +238,8 @@ public final class ParsedInterfaceCriteria {
                     Pattern pattern = Pattern.compile(prop.getValue().asString());
                     return new NicMatchInterfaceCriteria(pattern);
                 } catch (PatternSyntaxException e) {
-                    throw new ParsingException(String.format("Invalid pattern %s for interface criteria %s", prop.getValue().asString(), element.getLocalName()));
+                    throw new ParsingException(String.format("Invalid pattern %s for interface criteria %s", prop.getValue()
+                            .asString(), element.getLocalName()));
                 }
             }
             case SUBNET_MATCH: {
@@ -217,7 +249,8 @@ public final class ParsedInterfaceCriteria {
                     value = prop.getValue().asString();
                     split = value.split("/");
                     if (split.length != 2) {
-                        throw new ParsingException(String.format("Invalid 'value' %s -- must be of the form address/mask", value));
+                        throw new ParsingException(String.format("Invalid 'value' %s -- must be of the form address/mask",
+                                value));
                     }
                     // todo - possible DNS hit here
                     final InetAddress addr = InetAddress.getByName(split[0]);
@@ -225,14 +258,11 @@ public final class ParsedInterfaceCriteria {
                     final byte[] net = addr.getAddress();
                     final int mask = Integer.parseInt(split[1]);
                     return new SubnetMatchInterfaceCriteria(net, mask);
-                }
-                catch (final ParsingException e) {
+                } catch (final ParsingException e) {
                     throw e;
-                }
-                catch (final NumberFormatException e) {
+                } catch (final NumberFormatException e) {
                     throw new ParsingException(String.format("Invalid mask %s (%s)", split[0], e.getLocalizedMessage()));
-                }
-                catch (final UnknownHostException e) {
+                } catch (final UnknownHostException e) {
                     throw new ParsingException(String.format("Invalid address %s (%s)", split[1], e.getLocalizedMessage()));
                 }
             }
@@ -247,18 +277,18 @@ public final class ParsedInterfaceCriteria {
             for (ModelNode element : value.asList()) {
                 if (element.getType() == ModelType.STRING) {
                     nested.add(parseStringCriteria(element));
-                }
-                else if (element.getType() == ModelType.PROPERTY) {
+                } else if (element.getType() == ModelType.PROPERTY) {
                     nested.add(parsePropertyCriteria(element));
-                }
-                else {
-                    throw new ParsingException(String.format("Illegal interface criteria list element type %s; must be %s or %s", value.getType(), ModelType.STRING, ModelType.PROPERTY));
+                } else {
+                    throw new ParsingException(String.format(
+                            "Illegal interface criteria list element type %s; must be %s or %s", value.getType(),
+                            ModelType.STRING, ModelType.PROPERTY));
                 }
             }
             return any ? new AnyInterfaceCriteria(nested) : new NotInterfaceCriteria(nested);
-        }
-        else  {
-            throw new ParsingException(String.format("Illegal child type %s for criteria type %s; must be %s", value.getType(), any ? ANY : NOT, ModelType.LIST));
+        } else {
+            throw new ParsingException(String.format("Illegal child type %s for criteria type %s; must be %s", value.getType(),
+                    any ? ANY : NOT, ModelType.LIST));
         }
     }
 
@@ -267,8 +297,9 @@ public final class ParsedInterfaceCriteria {
     }
 
     private static void checkStringType(ModelNode node, String id, boolean allowExpressions) {
-        if (node.getType() != ModelType.STRING  && (!allowExpressions || node.getType() != ModelType.EXPRESSION)) {
-            throw new ParsingException(String.format("Illegal value %s for interface criteria %; must be %s", node.getType(), id, ModelType.STRING));
+        if (node.getType() != ModelType.STRING && (!allowExpressions || node.getType() != ModelType.EXPRESSION)) {
+            throw new ParsingException(String.format("Illegal value %s for interface criteria %; must be %s", node.getType(),
+                    id, ModelType.STRING));
         }
     }
 

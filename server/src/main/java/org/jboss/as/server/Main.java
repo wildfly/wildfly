@@ -23,7 +23,6 @@
 package org.jboss.as.server;
 
 import static org.jboss.as.process.Main.getVersionString;
-import static org.jboss.as.process.Main.usage;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.version.Version;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
@@ -176,6 +174,10 @@ public final class Main {
                     }
                     systemProperties.setProperty(name, value);
                     SecurityActions.setSystemProperty(name, value);
+                } else if (arg.startsWith("-b")) {
+                    String value = args[++i];
+                    String logicalName = "-b".equals(arg) ? "public" : arg.substring(2);
+                    SecurityActions.setSystemProperty(ServerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + logicalName, value);
                 } else {
                     System.err.printf("Invalid option '%s'\n", arg);
                     usage();
