@@ -35,6 +35,7 @@ import org.junit.Test;
 public class ValidationTestCase {
 
     private final CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
+    private final DefaultCallbackHandler callback = new DefaultCallbackHandler();
 
     @Test
     public void testNodeTypes() {
@@ -123,6 +124,7 @@ public class ValidationTestCase {
     }
 
     protected void parse(String input) throws OperationFormatException {
-        parser.parse(input, new DefaultCallbackHandler());
+        callback.reset();
+        parser.parse(input, callback);
     }
 }
