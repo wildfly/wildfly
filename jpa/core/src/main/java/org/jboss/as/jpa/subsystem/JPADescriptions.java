@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -66,8 +65,7 @@ public class JPADescriptions {
         subsystem.get(ATTRIBUTES, CommonAttributes.DEFAULT_DATASOURCE, TYPE).set(ModelType.STRING);
         subsystem.get(ATTRIBUTES, CommonAttributes.DEFAULT_DATASOURCE, REQUIRED).set(true);
         subsystem.get(ATTRIBUTES, CommonAttributes.DEFAULT_DATASOURCE, MIN_LENGTH).set(0);
-        subsystem.get(OPERATIONS);
-        subsystem.get(CHILDREN);
+        subsystem.get(CHILDREN).setEmptyObject();
         return subsystem;
     }
 

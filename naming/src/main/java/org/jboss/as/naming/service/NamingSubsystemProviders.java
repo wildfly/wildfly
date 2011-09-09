@@ -22,7 +22,6 @@
 
 package org.jboss.as.naming.service;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
@@ -34,6 +33,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.naming.management.JndiViewOperation;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -77,7 +78,7 @@ class NamingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode op = new ModelNode();
-            op.get(ModelDescriptionConstants.OPERATION_NAME).set(OPERATION_NAME);
+            op.get(ModelDescriptionConstants.OPERATION_NAME).set(JndiViewOperation.OPERATION_NAME);
             op.get(DESCRIPTION).set(bundle.getString("naming.jndi-view"));
 
             return op;

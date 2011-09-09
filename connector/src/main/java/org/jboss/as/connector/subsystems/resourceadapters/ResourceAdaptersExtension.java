@@ -124,11 +124,13 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class ResourceAdaptersExtension implements Extension {
 
+    public static final String SUBSYSTEM_NAME = RESOURCEADAPTERS_NAME;
+
     @Override
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_RA_LOGGER.debugf("Initializing ResourceAdapters Extension");
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(RESOURCEADAPTERS_NAME);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
 
         registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
 

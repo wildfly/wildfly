@@ -22,14 +22,15 @@
 
 package org.jboss.as.subsystem.test;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * A test routine every subsystem should go through.

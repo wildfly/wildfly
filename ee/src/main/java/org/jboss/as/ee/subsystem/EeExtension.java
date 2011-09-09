@@ -75,7 +75,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class EeExtension implements Extension {
 
     public static final String NAMESPACE = "urn:jboss:domain:ee:1.0";
-    private static final String SUBSYSTEM_NAME = "ee";
+    public static final String SUBSYSTEM_NAME = "ee";
     private static final EESubsystemParser parser = new EESubsystemParser();
 
     /**

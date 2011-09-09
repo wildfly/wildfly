@@ -44,8 +44,6 @@ import org.jboss.jca.common.api.metadata.ds.XaDataSource;
  */
 class Constants {
 
-    static final String DATASOURCES_SUBSYTEM = "datasources-subsystem";
-
     static final String DATASOURCES = "datasources";
 
     static final String DATA_SOURCE = "data-source";

@@ -26,12 +26,11 @@ import java.util.Collections;
 import java.util.List;
 
 import junit.framework.Assert;
-import org.jboss.as.controller.OperationContext;
+
+import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.messaging.MessagingSubsystemParser;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -52,7 +51,7 @@ public class SubsystemDescriptionsUnitTestCase extends AbstractSubsystemTest {
     public void testSubsystemDescriptions() throws Exception {
 
         List<ModelNode> empty = Collections.emptyList();
-        KernelServices servicesA = super.installInController(null, empty);
+        KernelServices servicesA = super.installInController(new MessagingAdditionalInitialization(Type.SERVER), empty);
 
         final ModelNode operation = createReadResourceDescriptionOperation();
         final ModelNode result = servicesA.executeOperation(operation);

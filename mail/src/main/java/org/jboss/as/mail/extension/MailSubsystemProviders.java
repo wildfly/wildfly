@@ -1,14 +1,27 @@
 package org.jboss.as.mail.extension;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.threads.CommonAttributes;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.mail.extension.ModelKeys.MAIL_SESSION;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.threads.CommonAttributes;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Contains the mail system description providers.
@@ -24,14 +37,16 @@ class MailSubsystemProviders {
      */
     public static DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
         public ModelNode getModelDescription(Locale locale) {
-            //The locale is passed in so you can internationalize the strings used in the descriptions
+            final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode subsystem = new ModelNode();
-            subsystem.get(DESCRIPTION).set("Mail subsystem");
+            subsystem.get(DESCRIPTION).set(bundle.getString("mail"));
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
 
+            subsystem.get(CHILDREN, MAIL_SESSION, DESCRIPTION).set(bundle.getString("mail.sessions.description"));
+            subsystem.get(CHILDREN, MAIL_SESSION, MIN_OCCURS).set(1);
             return subsystem;
         }
     };
@@ -72,14 +87,17 @@ class MailSubsystemProviders {
             node.get(ATTRIBUTES, ModelKeys.DEBUG, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, ModelKeys.DEBUG, REQUIRED).set(false);
 
-            node.get(CHILDREN, ModelKeys.SMTP_SERVER, DESCRIPTION).set(bundle.getString("smtp-server"));
-            node.get(CHILDREN, ModelKeys.SMTP_SERVER, REQUIRED).set(false);
+            node.get(ATTRIBUTES, ModelKeys.SMTP_SERVER, DESCRIPTION).set(bundle.getString("smtp-server"));
+            node.get(ATTRIBUTES, ModelKeys.SMTP_SERVER, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ModelKeys.SMTP_SERVER, REQUIRED).set(false);
 
-            node.get(CHILDREN, ModelKeys.IMAP_SERVER, DESCRIPTION).set(bundle.getString("imap-server"));
-            node.get(CHILDREN, ModelKeys.IMAP_SERVER, REQUIRED).set(false);
+            node.get(ATTRIBUTES, ModelKeys.IMAP_SERVER, DESCRIPTION).set(bundle.getString("imap-server"));
+            node.get(ATTRIBUTES, ModelKeys.IMAP_SERVER, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ModelKeys.IMAP_SERVER, REQUIRED).set(false);
 
-            node.get(CHILDREN, ModelKeys.POP3_SERVER, DESCRIPTION).set(bundle.getString("pop3-server"));
-            node.get(CHILDREN, ModelKeys.POP3_SERVER, REQUIRED).set(false);
+            node.get(ATTRIBUTES, ModelKeys.POP3_SERVER, DESCRIPTION).set(bundle.getString("pop3-server"));
+            node.get(ATTRIBUTES, ModelKeys.POP3_SERVER, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, ModelKeys.POP3_SERVER, REQUIRED).set(false);
 
 
             return node;

@@ -26,8 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -66,14 +64,10 @@ public class JMXSubsystemProviders {
             subsystem.get(ATTRIBUTES, REGISTRY_BINDING, DESCRIPTION).set(bundle.getString("registry.binding"));
             subsystem.get(ATTRIBUTES, REGISTRY_BINDING, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, REGISTRY_BINDING, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, REGISTRY_BINDING, MIN_OCCURS).set(1);
-            subsystem.get(ATTRIBUTES, REGISTRY_BINDING, MAX_OCCURS).set(1);
 
             subsystem.get(ATTRIBUTES, SERVER_BINDING, DESCRIPTION).set(bundle.getString("server.binding"));
             subsystem.get(ATTRIBUTES, SERVER_BINDING, TYPE).set(ModelType.STRING);
             subsystem.get(ATTRIBUTES, SERVER_BINDING, REQUIRED).set(true);
-            subsystem.get(ATTRIBUTES, SERVER_BINDING, MIN_OCCURS).set(1);
-            subsystem.get(ATTRIBUTES, SERVER_BINDING, MAX_OCCURS).set(1);
 
             return subsystem;
         }
@@ -105,14 +99,10 @@ public class JMXSubsystemProviders {
             op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, DESCRIPTION).set(bundle.getString("registry.binding"));
             op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, REQUIRED).set(true);
-            op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, MIN_OCCURS).set(1);
-            op.get(REQUEST_PROPERTIES, REGISTRY_BINDING, MAX_OCCURS).set(1);
 
             op.get(REQUEST_PROPERTIES, SERVER_BINDING, DESCRIPTION).set(bundle.getString("server.binding"));
             op.get(REQUEST_PROPERTIES, SERVER_BINDING, TYPE).set(ModelType.STRING);
             op.get(REQUEST_PROPERTIES, SERVER_BINDING, REQUIRED).set(true);
-            op.get(REQUEST_PROPERTIES, SERVER_BINDING, MIN_OCCURS).set(1);
-            op.get(REQUEST_PROPERTIES, SERVER_BINDING, MAX_OCCURS).set(1);
 
             op.get(REPLY_PROPERTIES).setEmptyObject();
 
