@@ -141,7 +141,7 @@ public abstract class AttributeDefinition {
      * @return the value
      * @throws OperationFailedException if the value is not valid
      */
-    public final ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
+    public ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
 
         ModelNode node = new ModelNode();
         if (operationObject.has(name)) {
@@ -182,7 +182,7 @@ public abstract class AttributeDefinition {
      *              this attribute's name
      * @throws OperationFailedException if the value is not valid
      */
-    public final ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
+    public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
         ModelNode node = new ModelNode();
         if (operationObject.has(name)) {
             node.set(operationObject.get(name));

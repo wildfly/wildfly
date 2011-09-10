@@ -36,12 +36,15 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
+import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collections;
@@ -54,6 +57,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
@@ -79,9 +83,22 @@ public class EeExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(EeSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, EeSubsystemAdd.INSTANCE, EeSubsystemProviders.SUBSYSTEM_ADD, false);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DescriptionProvider() {
+
+            public ModelNode getModelDescription(final Locale locale) {
+                return EeSubsystemDescriptions.getSubsystemDescription(locale);
+            }
+        });
+        final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor = new DefaultEarSubDeploymentsIsolationProcessor();
+        final GlobalModuleDependencyProcessor moduleDependencyProcessor = new GlobalModuleDependencyProcessor();
+        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor);
+        registration.registerOperationHandler(ADD, subsystemAdd, subsystemAdd, false);
+        registration.registerOperationHandler(REMOVE, EeSubsystemRemove.INSTANCE, EeSubsystemRemove.INSTANCE, false,
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
         registration.registerOperationHandler(DESCRIBE, EESubsystemDescribeHandler.INSTANCE, EESubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        EeWriteAttributeHandler writeHandler = new EeWriteAttributeHandler(isolationProcessor, moduleDependencyProcessor);
+        writeHandler.registerAttributes(registration);
+
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -111,25 +128,10 @@ public class EeExtension implements Extension {
             //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
             //context.startSubsystemElement(NewEeExtension.NAMESPACE, true);
             context.startSubsystemElement(EeExtension.NAMESPACE, false);
+
             ModelNode eeSubSystem = context.getModelNode();
-            // write the ear subdeployment isolation attribute
-            if (eeSubSystem.hasDefined(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName())) {
-                writer.writeStartElement(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName());
-                final ModelNode earSubDeploymentsIsolated = eeSubSystem.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName());
-                writer.writeCharacters(earSubDeploymentsIsolated.asString());
-                writer.writeEndElement();
-            }
-            if (eeSubSystem.hasDefined(CommonAttributes.GLOBAL_MODULES)) {
-                writer.writeStartElement(Element.GLOBAL_MODULES.getLocalName());
-                final ModelNode globalModules = eeSubSystem.get(CommonAttributes.GLOBAL_MODULES);
-                for (ModelNode module : globalModules.asList()) {
-                    writer.writeStartElement(Element.MODULE.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), module.get(CommonAttributes.NAME).asString());
-                    writer.writeAttribute(Attribute.SLOT.getLocalName(), module.get(CommonAttributes.SLOT).asString());
-                    writer.writeEndElement();
-                }
-                writer.writeEndElement();
-            }
+            CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.marshallAsElement(eeSubSystem, writer);
+            GlobalModulesDefinition.INSTANCE.marshallAsElement(eeSubSystem, writer);
 
             writer.writeEndElement();
 
@@ -163,11 +165,10 @@ public class EeExtension implements Extension {
                                 break;
                             }
                             case EAR_SUBDEPLOYMENTS_ISOLATED: {
-                                final Boolean earSubDeploymentsIsolated = this.parseEarSubDeploymentsIsolatedElement(reader);
+                                Location location = reader.getLocation();
+                                final String earSubDeploymentsIsolated = this.parseEarSubDeploymentsIsolatedElement(reader);
                                 // set the ear subdeployment isolation on the subsystem operation
-                                if (earSubDeploymentsIsolated != null) {
-                                    eeSubSystem.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()).set(earSubDeploymentsIsolated.booleanValue());
-                                }
+                                CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.parseAndSetParameter(earSubDeploymentsIsolated, eeSubSystem, location);
                                 break;
                             }
                             default: {
@@ -237,7 +238,7 @@ public class EeExtension implements Extension {
             return globalModules;
         }
 
-        static Boolean parseEarSubDeploymentsIsolatedElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+        static String parseEarSubDeploymentsIsolatedElement(XMLExtendedStreamReader reader) throws XMLStreamException {
 
             // we don't expect any attributes for this element.
             requireNoAttributes(reader);
@@ -246,7 +247,7 @@ public class EeExtension implements Extension {
             if (value == null || value.trim().isEmpty()) {
                 throw new XMLStreamException("Invalid value: " + value + " for '" + Element.EAR_SUBDEPLOYMENTS_ISOLATED + "' element", reader.getLocation());
             }
-            return Boolean.parseBoolean(value.trim());
+            return value.trim();
         }
     }
 

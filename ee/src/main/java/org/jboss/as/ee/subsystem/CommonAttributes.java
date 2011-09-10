@@ -21,13 +21,21 @@
  */
 package org.jboss.as.ee.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
 /**
  * @author Stuart Douglas
  */
-public interface CommonAttributes {
+public class CommonAttributes {
 
-    String NAME = "name";
-    String SLOT = "slot";
-    String GLOBAL_MODULES = "global-modules";
+    public static final String NAME = "name";
+    public static final String SLOT = "slot";
+    public static final String GLOBAL_MODULES = "global-modules";
 
+    public static final SimpleAttributeDefinition EAR_SUBDEPLOYMENTS_ISOLATED =
+            new SimpleAttributeDefinition("ear-subdeployments-isolated", "ear-subdeployments-isolated",
+                    new ModelNode().set(false), ModelType.BOOLEAN, true, true, null);
 }

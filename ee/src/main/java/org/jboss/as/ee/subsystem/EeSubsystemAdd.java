@@ -24,7 +24,9 @@ package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
@@ -65,6 +67,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Handler for adding the ee subsystem.
@@ -72,38 +75,48 @@ import java.util.List;
  * @author Weston M. Price
  * @author Emanuel Muckenhuber
  */
-public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
+public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     private static final Logger logger = Logger.getLogger("org.jboss.as.ee");
 
-    static final EeSubsystemAdd INSTANCE = new EeSubsystemAdd();
+    private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor;
+    private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
 
-    private EeSubsystemAdd() {
-        //
+    public EeSubsystemAdd(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
+                          final GlobalModuleDependencyProcessor moduleDependencyProcessor) {
+        this.isolationProcessor = isolationProcessor;
+        this.moduleDependencyProcessor = moduleDependencyProcessor;
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        final ModelNode globalModules = operation.get(CommonAttributes.GLOBAL_MODULES);
-        if (globalModules.isDefined()) {
-            model.get(CommonAttributes.GLOBAL_MODULES).set(globalModules.clone());
-        }
+    @Override
+    public ModelNode getModelDescription(final Locale locale) {
+        return EeSubsystemDescriptions.getSubsystemAdd(locale);
     }
 
-    protected void performBoottime(OperationContext context, final ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        GlobalModulesDefinition.INSTANCE.validateAndSet(operation, model);
+        CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.validateAndSet(operation,  model);
+    }
+
+    protected void performBoottime(OperationContext context, final ModelNode operation, final ModelNode model,
+                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final EEJndiViewExtension extension = new EEJndiViewExtension();
         context.getServiceTarget().addService(EEJndiViewExtension.SERVICE_NAME, extension)
                 .addDependency(JndiViewExtensionRegistry.SERVICE_NAME, JndiViewExtensionRegistry.class, extension.getRegistryInjector())
                 .addListener(verificationHandler)
                 .install();
 
+        final ModelNode globalModules = GlobalModulesDefinition.INSTANCE.validateResolvedOperation(model);
+        // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
+        // they can see each other's classes.
+        final boolean earSubDeploymentsIsolated = CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.validateResolvedOperation(model).asBoolean();
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                final ModelNode globalModules = operation.get(CommonAttributes.GLOBAL_MODULES);
-                // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
-                // they can see each other's classes.
-                final Boolean earSubDeploymentsIsolated = operation.hasDefined(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName())
-                        ? operation.get(Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName()).asBoolean()
-                        : Boolean.FALSE;
+
+                moduleDependencyProcessor.setGlobalModules(globalModules);
+                isolationProcessor.setEarSubDeploymentsIsolated(earSubDeploymentsIsolated);
 
                 logger.info("Activating EE subsystem");
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_DEPLOYMENT_INIT, new EarInitializationProcessor());
@@ -120,11 +133,11 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_INTERCEPTORS_ANNOTATION, new InterceptorsAnnotationParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_LIEFCYCLE_ANNOTATION, new LifecycleAnnotationParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDINVOKE_ANNOTATION, new AroundInvokeAnnotationParsingProcessor());
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT, new DefaultEarSubDeploymentsIsolationProcessor(earSubDeploymentsIsolated));
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT, isolationProcessor);
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION_ANNOTATION, new DataSourceDefinitionAnnotationParser());
 
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new JavaEEDependencyProcessor());
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_GLOBAL_MODULES, new GlobalModuleDependencyProcessor(globalModules));
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_GLOBAL_MODULES, moduleDependencyProcessor);
 
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_VALIDATOR_FACTORY, new BeanValidationFactoryDeployer());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EAR_DEPENDENCY, new EarDependencyProcessor());

@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -76,7 +77,7 @@ public class ConnectorRefsAttribute extends ListAttributeDefinition {
     }
 
     @Override
-    protected void addValueTypeDescription(ModelNode node) {
+    protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
         node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 }

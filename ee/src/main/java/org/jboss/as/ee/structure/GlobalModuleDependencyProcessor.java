@@ -41,10 +41,9 @@ import org.jboss.modules.ModuleIdentifier;
  */
 public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor {
 
-    private final ModelNode globalModules;
+    private volatile ModelNode globalModules = new ModelNode();
 
-    public GlobalModuleDependencyProcessor(final ModelNode globalModules) {
-        this.globalModules = globalModules;
+    public GlobalModuleDependencyProcessor() {
     }
 
     @Override
@@ -52,13 +51,12 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-        if (globalModules.isDefined()) {
-            for (final ModelNode module : globalModules.asList()) {
+        final ModelNode globalMods = this.globalModules;
+
+        if (globalMods.isDefined()) {
+            for (final ModelNode module : globalMods.asList()) {
                 final String name = module.get(CommonAttributes.NAME).asString();
-                String slot = module.get(CommonAttributes.SLOT).asString();
-                if (slot == null) {
-                    slot = "main";
-                }
+                String slot = module.hasDefined(CommonAttributes.SLOT) ? module.get(CommonAttributes.SLOT).asString() : "main";
                 final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
                 moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, true));
             }
@@ -68,5 +66,9 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
     @Override
     public void undeploy(final DeploymentUnit context) {
 
+    }
+
+    public void setGlobalModules(final ModelNode globalModules) {
+        this.globalModules = globalModules;
     }
 }
