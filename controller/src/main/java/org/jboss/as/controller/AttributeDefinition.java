@@ -252,7 +252,7 @@ public abstract class AttributeDefinition {
         if (defaultValue != null && defaultValue.isDefined()) {
             attr.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
         }
-        if (measurementUnit != MeasurementUnit.NONE) {
+        if (measurementUnit != null) {
             attr.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
         }
         if (alternatives != null) {
@@ -281,7 +281,7 @@ public abstract class AttributeDefinition {
         param.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
         param.get(ModelDescriptionConstants.REQUIRED).set(!isAllowNull());
         param.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
-        if (measurementUnit != MeasurementUnit.NONE) {
+        if (measurementUnit != null) {
             param.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
         }
         if (alternatives != null) {
