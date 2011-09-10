@@ -23,6 +23,7 @@
 package org.jboss.as.ee.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
@@ -56,6 +57,9 @@ class EeSubsystemDescriptions {
         subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
         subsystem.get(NAMESPACE).set(EeExtension.NAMESPACE);
 
+        CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.addResourceAttributeDescription(bundle, "ee", subsystem);
+        GlobalModulesDefinition.INSTANCE.addResourceAttributeDescription(bundle, "ee", subsystem);
+
         subsystem.get(OPERATIONS); // placeholder
 
         subsystem.get(CHILDREN).setEmptyObject();
@@ -69,6 +73,9 @@ class EeSubsystemDescriptions {
         final ModelNode op = new ModelNode();
         op.get(OPERATION_NAME).set(ADD);
         op.get(DESCRIPTION).set(bundle.getString("ee.add"));
+
+        CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.addOperationParameterDescription(bundle, "ee", op);
+        GlobalModulesDefinition.INSTANCE.addOperationParameterDescription(bundle, "ee", op);
 
         op.get(REPLY_PROPERTIES).setEmptyObject();
 

@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelType;
 public class SimpleAttributeDefinition extends AttributeDefinition {
 
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull) {
-        this(name, name, null, type, allowNull, false, MeasurementUnit.NONE);
+        this(name, name, null, type, allowNull, false, null);
     }
 
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, final MeasurementUnit measurementUnit) {
@@ -51,7 +51,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
     }
 
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull) {
-        this(name, name, defaultValue, type, allowNull, false, MeasurementUnit.NONE);
+        this(name, name, defaultValue, type, allowNull, false, null);
     }
 
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final MeasurementUnit measurementUnit) {
