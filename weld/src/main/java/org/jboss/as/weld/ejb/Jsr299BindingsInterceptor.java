@@ -61,29 +61,36 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
     private final InterceptionType interceptionType;
 
 
-    protected Jsr299BindingsInterceptor(final BeanManagerImpl beanManager, final String ejbName, final InterceptorFactoryContext context, final InterceptionType interceptionType) {
+    protected Jsr299BindingsInterceptor(final BeanManagerImpl beanManager, final String ejbName, final InterceptorFactoryContext context, final InterceptionType interceptionType, final ClassLoader classLoader) {
+        final ClassLoader tccl = SecurityActions.getContextClassLoader();
+        try {
+            //this is not always called with the deployments TCCL set
+            //which causes weld to blow up
+            SecurityActions.setContextClassLoader(classLoader);
+            this.beanManager = beanManager;
+            this.ejbName = ejbName;
+            this.interceptionType = interceptionType;
+            EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(this.ejbName);
+            SessionBean<Object> bean = beanManager.getBean(descriptor);
+            InterceptorInstances instances = (InterceptorInstances) context.getContextData().get(InterceptorInstances.class);
 
-        this.beanManager = beanManager;
-        this.ejbName = ejbName;
-        this.interceptionType = interceptionType;
-        EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(this.ejbName);
-        SessionBean<Object> bean = beanManager.getBean(descriptor);
-        InterceptorInstances instances = (InterceptorInstances) context.getContextData().get(InterceptorInstances.class);
-
-        if (instances == null) {
-            creationalContext = beanManager.createCreationalContext(bean);
-            interceptorInstances = new HashMap<String, SerializableContextualInstance<Interceptor<Object>, Object>>();
-            InterceptorBindings interceptorBindings = getInterceptorBindings(this.ejbName);
-            if (interceptorBindings != null) {
-                for (Interceptor<?> interceptor : interceptorBindings.getAllInterceptors()) {
-                    addInterceptorInstance((Interceptor<Object>) interceptor, beanManager, interceptorInstances);
+            if (instances == null) {
+                creationalContext = beanManager.createCreationalContext(bean);
+                interceptorInstances = new HashMap<String, SerializableContextualInstance<Interceptor<Object>, Object>>();
+                InterceptorBindings interceptorBindings = getInterceptorBindings(this.ejbName);
+                if (interceptorBindings != null) {
+                    for (Interceptor<?> interceptor : interceptorBindings.getAllInterceptors()) {
+                        addInterceptorInstance((Interceptor<Object>) interceptor, beanManager, interceptorInstances);
+                    }
                 }
+                instances = new InterceptorInstances(creationalContext, interceptorInstances);
+                context.getContextData().put(InterceptorInstances.class, instances);
+            } else {
+                creationalContext = instances.creationalContext;
+                interceptorInstances = instances.interceptorInstances;
             }
-            instances = new InterceptorInstances(creationalContext, interceptorInstances);
-            context.getContextData().put(InterceptorInstances.class, instances);
-        } else {
-            creationalContext = instances.creationalContext;
-            interceptorInstances = instances.interceptorInstances;
+        } finally {
+            SecurityActions.setContextClassLoader(tccl);
         }
 
     }
@@ -176,16 +183,18 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
         private final String beanArchiveId;
         private final String ejbName;
         private final InterceptionType interceptionType;
+        private final ClassLoader classLoader;
 
-        public Factory(final String beanArchiveId, final String ejbName, final InterceptionType interceptionType) {
+        public Factory(final String beanArchiveId, final String ejbName, final InterceptionType interceptionType, final ClassLoader classLoader) {
             this.beanArchiveId = beanArchiveId;
             this.ejbName = ejbName;
             this.interceptionType = interceptionType;
+            this.classLoader = classLoader;
         }
 
         @Override
         public org.jboss.invocation.Interceptor create(final InterceptorFactoryContext context) {
-            return new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType);
+            return new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType, classLoader);
         }
 
         public InjectedValue<WeldContainer> getWeldContainer() {
