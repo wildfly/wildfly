@@ -48,10 +48,9 @@ public class DefaultEarSubDeploymentsIsolationProcessor implements DeploymentUni
 
     private static final Logger logger = Logger.getLogger(DefaultEarSubDeploymentsIsolationProcessor.class);
 
-    private final boolean earSubDeploymentsIsolated;
+    private volatile boolean earSubDeploymentsIsolated;
 
-    public DefaultEarSubDeploymentsIsolationProcessor(final boolean earSubDeploymentsIsolated) {
-        this.earSubDeploymentsIsolated = earSubDeploymentsIsolated;
+    public DefaultEarSubDeploymentsIsolationProcessor() {
     }
 
     @Override
@@ -70,4 +69,10 @@ public class DefaultEarSubDeploymentsIsolationProcessor implements DeploymentUni
     public void undeploy(DeploymentUnit context) {
 
     }
+
+    public void setEarSubDeploymentsIsolated(boolean earSubDeploymentsIsolated) {
+        this.earSubDeploymentsIsolated = earSubDeploymentsIsolated;
+    }
+
+
 }

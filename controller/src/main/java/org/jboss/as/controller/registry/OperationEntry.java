@@ -42,7 +42,17 @@ public final class OperationEntry {
         /** Operation only reads, does not modify */
         READ_ONLY,
         /** Operation only performs a deployment upload */
-        DEPLOYMENT_UPLOAD
+        DEPLOYMENT_UPLOAD,
+        /** The operation modifies the configuration and can be applied to the runtime without requiring a restart */
+        RESTART_NONE,
+        /** The operation modifies the configuration but can only be applied to the runtime via a full jvm restart */
+        RESTART_JVM,
+        /** The operation modifies the configuration but can only be applied to the runtime via a restart of all services;
+         *  however it does not require a full jvm restart */
+        RESTART_ALL_SERVICES,
+        /** The operation modifies the configuration but can only be applied to the runtime via a restart of services,
+         *  associated with the affected resource, but does not require a restart of all services or a full jvm restart */
+        RESTART_RESOURCE_SERVICES
     }
 
     private final OperationStepHandler operationHandler;

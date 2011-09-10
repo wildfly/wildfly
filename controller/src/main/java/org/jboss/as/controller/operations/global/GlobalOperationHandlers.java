@@ -714,7 +714,17 @@ public class GlobalOperationHandlers {
             } else {
                 final ModelNode result = operationEntry.getDescriptionProvider().getModelDescription(getLocale(operation));
                 Set<OperationEntry.Flag> flags = operationEntry.getFlags();
-                result.get(READ_ONLY).set(flags.contains(OperationEntry.Flag.READ_ONLY));
+                boolean readOnly = flags.contains(OperationEntry.Flag.READ_ONLY);
+                result.get(READ_ONLY).set(readOnly);
+                if (!readOnly) {
+                    if (flags.contains(OperationEntry.Flag.RESTART_ALL_SERVICES)) {
+                        result.get(RESTART_REQUIRED).set("all-services");
+                    } else if (flags.contains(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)) {
+                        result.get(RESTART_REQUIRED).set("resource-services");
+                    } else if (flags.contains(OperationEntry.Flag.RESTART_JVM)) {
+                        result.get(RESTART_REQUIRED).set("jvm");
+                    }
+                }
 
                 context.getResult().set(result);
             }

@@ -95,16 +95,16 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     @Override
     public ModelNode addResourceAttributeDescription(ResourceBundle bundle, String prefix, ModelNode resourceDescription) {
         final ModelNode result = super.addResourceAttributeDescription(bundle, prefix, resourceDescription);
-        addValueTypeDescription(result);
+        addValueTypeDescription(result, bundle);
         return result;
     }
 
     @Override
     public ModelNode addOperationParameterDescription(ResourceBundle bundle, String prefix, ModelNode operationDescription) {
         final ModelNode result = super.addOperationParameterDescription(bundle, prefix, operationDescription);
-        addValueTypeDescription(result);
+        addValueTypeDescription(result, bundle);
         return result;
     }
 
-    protected abstract void addValueTypeDescription(final ModelNode node);
+    protected abstract void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle);
 }

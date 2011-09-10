@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.jboss.as.controller.ListAttributeDefinition;
@@ -83,7 +84,7 @@ public class JndiEntriesAttribute extends ListAttributeDefinition {
     }
 
     @Override
-    protected void addValueTypeDescription(ModelNode node) {
+    protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
         node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 
