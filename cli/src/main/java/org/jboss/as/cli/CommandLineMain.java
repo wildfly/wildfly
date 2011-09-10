@@ -258,8 +258,9 @@ public class CommandLineMain {
                     }
                     final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
                     commands = new String[]{value};
-                }
-                else {
+                } else if(arg.equals("--help") || arg.equals("-h")) {
+                    commands = new String[]{"help"};
+                } else {
                     // assume it's commands
                     if(file != null) {
                         argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
