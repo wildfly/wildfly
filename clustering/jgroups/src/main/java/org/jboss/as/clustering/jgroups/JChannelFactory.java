@@ -151,7 +151,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
         TransportConfiguration transport = this.configuration.getTransport();
         org.jgroups.conf.ProtocolConfiguration config = this.createProtocol(transport);
         Map<String, String> properties = config.getProperties();
-        
+
         if (transport.isShared()) {
             properties.put(Global.SINGLETON_NAME, this.configuration.getName());
         }
