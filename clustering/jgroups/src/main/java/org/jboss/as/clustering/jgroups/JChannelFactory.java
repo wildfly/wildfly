@@ -65,7 +65,6 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
     @Override
     public Channel createChannel(String id) throws Exception {
-
         JChannel channel = new JChannel(this);
 
         // We need to synchronize on shared transport,
@@ -79,7 +78,10 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             this.init(transport);
         }
 
-        channel.setName(id);
+        // Get hostname without triggering reverse dns lookup
+        String address = transport.getBindAddressAsInetAddress().toString();
+        int index = address.indexOf("/");
+        channel.setName(InetSocketAddress.createUnresolved((index > 0) ? address.substring(0, index) : address.substring(1), transport.getBindPort()).toString());
 
         MBeanServer server = this.configuration.getMBeanServer();
         if (server != null) {
@@ -147,10 +149,10 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
     public List<org.jgroups.conf.ProtocolConfiguration> getProtocolStack() {
         List<org.jgroups.conf.ProtocolConfiguration> configs = new ArrayList<org.jgroups.conf.ProtocolConfiguration>(this.configuration.getProtocols().size() + 1);
         TransportConfiguration transport = this.configuration.getTransport();
-        Map<String, String> properties = transport.getProperties();
-        org.jgroups.conf.ProtocolConfiguration config = this.createProtocol(this.configuration.getTransport());
+        org.jgroups.conf.ProtocolConfiguration config = this.createProtocol(transport);
+        Map<String, String> properties = config.getProperties();
 
-        if (transport.isShared() && !transport.getProperties().containsKey(Global.SINGLETON_NAME)) {
+        if (transport.isShared()) {
             properties.put(Global.SINGLETON_NAME, this.configuration.getName());
         }
 
@@ -280,26 +282,61 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
         @Override
         public void connect(final String clusterName, final boolean useFlushIfPresent) throws ChannelException {
-            TP transport = this.getProtocolStack().getTransport();
-            if (transport.isSingleton()) {
-                synchronized (transport) {
-                    super.connect(clusterName, useFlushIfPresent);
+            ConnectTask connectTask = new ConnectTask() {
+                @Override
+                public void connect() throws ChannelException {
+                    JChannel.super.connect(clusterName, useFlushIfPresent);
                 }
-            } else {
-                super.connect(clusterName, useFlushIfPresent);
-            }
+            };
+            this.connect(connectTask);
         }
 
         @Override
-        public void connect(String clusterName, Address target, String stateId, long timeout, boolean useFlushIfPresent) throws ChannelException {
+        public void connect(final String clusterName) throws ChannelException {
+            ConnectTask connectTask = new ConnectTask() {
+                @Override
+                public void connect() throws ChannelException {
+                    JChannel.super.connect(clusterName);
+                }
+            };
+            this.connect(connectTask);
+        }
+
+        @Override
+        public void connect(final String clusterName, final Address target, final String stateId, final long timeout) throws ChannelException {
+            ConnectTask connectTask = new ConnectTask() {
+                @Override
+                public void connect() throws ChannelException {
+                    JChannel.super.connect(clusterName, target, stateId, timeout);
+                }
+            };
+            this.connect(connectTask);
+        }
+
+        @Override
+        public void connect(final String clusterName, final Address target, final String stateId, final long timeout, final boolean useFlushIfPresent) throws ChannelException {
+            ConnectTask connectTask = new ConnectTask() {
+                @Override
+                public void connect() throws ChannelException {
+                    JChannel.super.connect(clusterName, target, stateId, timeout, useFlushIfPresent);
+                }
+            };
+            this.connect(connectTask);
+        }
+
+        private void connect(ConnectTask connectTask) throws ChannelException {
             TP transport = this.getProtocolStack().getTransport();
             if (transport.isSingleton()) {
                 synchronized (transport) {
-                    super.connect(clusterName, target, stateId, timeout, useFlushIfPresent);
+                    connectTask.connect();
                 }
             } else {
-                super.connect(clusterName, target, stateId, timeout, useFlushIfPresent);
+                connectTask.connect();
             }
+        }
+
+        private interface ConnectTask {
+            void connect() throws ChannelException;
         }
     }
 }

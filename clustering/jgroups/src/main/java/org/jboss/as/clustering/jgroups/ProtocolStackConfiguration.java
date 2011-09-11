@@ -33,8 +33,6 @@ public interface ProtocolStackConfiguration {
 
     String getName();
 
-//    ServerEnvironment getEnvironment();
-
     ProtocolDefaults getDefaults();
 
     MBeanServer getMBeanServer();
