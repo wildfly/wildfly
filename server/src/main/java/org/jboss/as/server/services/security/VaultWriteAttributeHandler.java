@@ -26,6 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -46,13 +48,9 @@ public class VaultWriteAttributeHandler extends ServerWriteAttributeOperationHan
     }
 
     public void registerAttributes(ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(CODE, null, this, AttributeAccess.Storage.CONFIGURATION);
-        // TODO rebase this branch to pick up latest code and replace the above line with...
-        //registry.registerReadWriteAttribute(CODE, null, this, EnumSet.of(AttributeAccess.FLAG.RESTART_ALL_SERVICES));
+        registry.registerReadWriteAttribute(CODE, null, this, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
 
-        registry.registerReadWriteAttribute(VAULT_OPTIONS, null, this, AttributeAccess.Storage.CONFIGURATION);
-        // TODO rebase this branch to pick up latest code and replace the above line with...
-        //registry.registerReadWriteAttribute(VAULT_OPTIONS, null, this, EnumSet.of(AttributeAccess.FLAG.RESTART_ALL_SERVICES));
+        registry.registerReadWriteAttribute(VAULT_OPTIONS, null, this, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
     }
 
     @Override
