@@ -32,6 +32,8 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+
 /**
  * Utility class providing methods for common management tasks.
  *
@@ -51,7 +53,7 @@ public class    ProtocolUtils {
         try {
             return unmarshaller.readObject(expectedType);
         } catch (ClassNotFoundException e) {
-            throw new IOException("Failed to read object", e);
+            throw MESSAGES.failedToReadObject(e);
         }
     }
 
@@ -73,7 +75,7 @@ public class    ProtocolUtils {
 
     public static void expectHeader(final byte actual, int expected) throws IOException {
         if (actual != (byte) expected) {
-            throw new IOException("Invalid byte token.  Expecting '" + expected + "' received '" + actual + "'");
+            throw MESSAGES.invalidByteToken(expected, actual);
         }
     }
 }

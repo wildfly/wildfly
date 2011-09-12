@@ -33,14 +33,14 @@ import java.util.concurrent.ThreadFactory;
 import javax.net.ServerSocketFactory;
 
 import org.jboss.as.protocol.old.Connection.ClosedCallback;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.protocol.ProtocolLogger.CLIENT_LOGGER;
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProtocolServer {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.protocol.server");
 
     private final ThreadFactory threadFactory;
     private final ServerSocketFactory socketFactory;
@@ -65,10 +65,10 @@ public final class ProtocolServer {
         readExecutor = configuration.getReadExecutor();
         callback = configuration.getClosedCallback();
         if (bindAddress == null) {
-            throw new IllegalArgumentException("bindAddress is null");
+            throw MESSAGES.nullVar("bindAddress");
         }
         if (connectionHandler == null) {
-            throw new IllegalArgumentException("connectionHandler is null");
+            throw MESSAGES.nullVar("connectionHandler");
         }
     }
 
@@ -92,7 +92,7 @@ public final class ProtocolServer {
                                     try {
                                         socket.close();
                                     } catch (IOException e) {
-                                        log.errorf(e, "Failed to close a socket");
+                                        CLIENT_LOGGER.failedToCloseSocket(e);
                                     }
                                 }
                             }
@@ -101,10 +101,10 @@ public final class ProtocolServer {
                             if (!stop) {
                                 // we do not log if service is stopped, we assume the exception was caused by closing the
                                 // ServerSocket
-                                log.errorf(e, "Failed to accept a connection");
+                                CLIENT_LOGGER.failedToAcceptConnection(e);
                             }
                         } catch (IOException e) {
-                            log.errorf(e, "Failed to accept a connection");
+                            CLIENT_LOGGER.failedToAcceptConnection(e);
                         }
 
                     }
@@ -114,7 +114,7 @@ public final class ProtocolServer {
             }
         });
         if (thread == null) {
-            throw new IOException("Failed to create server thread");
+            throw MESSAGES.failedToCreateServerThread();
         }
         thread.setName("Accept thread");
         serverSocket.setReuseAddress(true);
@@ -141,19 +141,19 @@ public final class ProtocolServer {
             connection.setMessageHandler(connectionHandler.handleConnected(connection));
             final Thread thread = threadFactory.newThread(connection.getReadTask());
             if (thread == null) {
-                throw new IllegalStateException("Thread creation was refused");
+                throw MESSAGES.threadCreationRefused();
             }
             thread.setName("Read thread for " + socket.getRemoteSocketAddress());
             thread.start();
             ok = true;
         } catch (IOException e) {
-            log.errorf(e, "Failed to handle incoming connection");
+            CLIENT_LOGGER.failedToHandleIncomingConnection(e);
         } finally {
             if (! ok) {
                 try {
                     socket.close();
                 } catch (IOException e) {
-                    log.errorf(e, "Failed to close socket");
+                    CLIENT_LOGGER.failedToCloseSocket(e);
                 }
             }
         }

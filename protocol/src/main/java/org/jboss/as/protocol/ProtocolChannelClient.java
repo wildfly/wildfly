@@ -21,8 +21,8 @@
  */
 package org.jboss.as.protocol;
 
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
-import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -30,7 +30,6 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessController;
@@ -86,7 +85,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
     public static <T extends ProtocolChannel> ProtocolChannelClient<T> create(final Configuration<T> configuration) throws IOException, URISyntaxException {
         if (configuration == null) {
-            throw new IllegalArgumentException("Null configuration");
+            throw MESSAGES.nullVar("configuration");
         }
         configuration.validate();
 
@@ -105,11 +104,11 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
     public Connection connect(CallbackHandler handler) throws IOException {
         if (connection != null) {
-            throw new IllegalStateException("Already connected");
+            throw MESSAGES.alreadyConnected();
         }
 
         // TODO - do we need better way to decide this?
-        OptionMap map = OptionMap.create(SASL_POLICY_NOANONYMOUS, Boolean.FALSE, SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
+        OptionMap map = OptionMap.create(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         IoFuture<Connection> future;
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
@@ -142,7 +141,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
             if (cancel == true) {
                 future.cancel();
-                throw new ConnectException("Could not connect to remote server at " + connectTimeout + " within " + connectTimeout + "ms");
+                throw MESSAGES.couldNotConnect(connectTimeout);
             }
         }
 
@@ -152,7 +151,7 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
     public T openChannel(String channelName) throws IOException {
         if (connection == null) {
-            throw new IllegalStateException("Not connected");
+            throw MESSAGES.notConnected();
         }
         Channel channel = connection.openChannel(channelName, OptionMap.EMPTY).get();
         T wrapped = channelFactory.create(channelName, channel);
@@ -202,24 +201,24 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
         void validate() {
             if (endpointName == null && endpoint == null) {
-                throw new IllegalArgumentException("Null endpoint name and null endpoing");
+                throw MESSAGES.nullParameters("endpointName", "endpoint");
             }
             if (optionMap == null) {
-                throw new IllegalArgumentException("Null option map");
+                throw MESSAGES.nullVar("optionMap");
             }
             if (uriScheme == null && endpoint == null) {
-                throw new IllegalArgumentException("Null uriScheme name");
+                throw MESSAGES.nullVar("uriScheme");
             }
             if (uriScheme != null && endpoint != null) {
-                throw new IllegalArgumentException("Can't set uriScheme with specified endpoint");
+                throw MESSAGES.cannotSetUriScheme();
             }
             if (uri == null) {
-                throw new IllegalArgumentException("Null uri");
+                throw MESSAGES.nullVar("uri");
             }
             if (endpoint != null){
                 //The below does not work so just hard code it for now
                 if (!uri.getScheme().equals("remote")) {
-                    throw new IllegalArgumentException("Only 'remote' is a valid url");
+                    throw MESSAGES.invalidUrl("remote");
                 }
                 /*try {
                     endpoint.getConnectionProviderInterface(uri.getScheme(), ConnectionProviderFactory.class);
@@ -228,20 +227,20 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
                 }*/
             } else {
                 if (!uriScheme.equals(uri.getScheme())) {
-                    throw new IllegalArgumentException("Scheme " + uriScheme + " does not match uri " + uri);
+                    throw MESSAGES.unmatchedScheme(uriScheme, uri);
                 }
             }
             if (endpoint != null && executor != null) {
-                throw new IllegalArgumentException("Don't need an executor when specified endpoint");
+                throw MESSAGES.executorUnneeded();
             }
             if (endpoint == null && executor == null) {
-                throw new IllegalArgumentException("Need an executor when endpoint is not specified");
+                throw MESSAGES.executorNeeded();
             }
             if (channelFactory == null) {
-                throw new IllegalArgumentException("Null channel factory");
+                throw MESSAGES.nullVar("channelFactory");
             }
             if (connectTimeout != -1 && connectTimeoutProperty != null) {
-                throw new IllegalArgumentException("Can't use both a connect timeout and a connect timeout property");
+                throw MESSAGES.cannotSpecifyMultipleTimeouts();
             }
             if (connectTimeoutProperty != null) {
                 connectTimeout = AccessController.doPrivileged(new PrivilegedAction<Long>() {

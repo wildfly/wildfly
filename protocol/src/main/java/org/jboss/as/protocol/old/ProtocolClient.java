@@ -29,9 +29,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.protocol.old.Connection.ClosedCallback;
-import org.jboss.logging.Logger;
 
 import javax.net.SocketFactory;
+
+import static org.jboss.as.protocol.ProtocolLogger.CLIENT_LOGGER;
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * A protocol client for management commands, which can also asynchronously receive protocol messages.
@@ -39,7 +41,6 @@ import javax.net.SocketFactory;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProtocolClient {
-    private static final Logger log = Logger.getLogger("org.jboss.as.protocol.client");
 
     private final ThreadFactory threadFactory;
     private final SocketFactory socketFactory;
@@ -62,36 +63,36 @@ public final class ProtocolClient {
         readExecutor = configuration.getReadExecutor();
         callback = configuration.getClosedCallback();
         if (threadFactory == null) {
-            throw new IllegalArgumentException("threadFactory is null");
+            throw MESSAGES.nullVar("threadFactory");
         }
         if (socketFactory == null) {
-            throw new IllegalArgumentException("factory is null");
+            throw MESSAGES.nullVar("factory");
         }
         if (serverAddress == null) {
-            throw new IllegalArgumentException("serverAddress is null");
+            throw MESSAGES.nullVar("serverAddress");
         }
         if (messageHandler == null) {
-            throw new IllegalArgumentException("handler is null");
+            throw MESSAGES.nullVar("handler");
         }
         if (readExecutor == null) {
-            throw new IllegalArgumentException("readExecutor is null");
+            throw MESSAGES.nullVar("readExecutor");
         }
     }
 
     public Connection connect() throws IOException {
-        log.tracef("Creating connection to %s", serverAddress);
+        CLIENT_LOGGER.tracef("Creating connection to %s", serverAddress);
         final Socket socket = socketFactory.createSocket();
         final ConnectionImpl connection = new ConnectionImpl(socket, messageHandler, readExecutor, callback);
         final Thread thread = threadFactory.newThread(connection.getReadTask());
         if (thread == null) {
-            throw new IllegalStateException("Thread creation was refused");
+            throw MESSAGES.threadCreationRefused();
         }
         if (bindAddress != null) socket.bind(bindAddress);
         if (readTimeout != 0) socket.setSoTimeout(readTimeout);
         socket.connect(serverAddress, connectTimeout);
         thread.setName("Read thread for " + serverAddress);
         thread.start();
-        log.tracef("Connected to %s", serverAddress);
+        CLIENT_LOGGER.tracef("Connected to %s", serverAddress);
         return connection;
     }
 
