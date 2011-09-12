@@ -18,6 +18,8 @@
  */
 package org.jboss.as.protocol.mgmt;
 
+import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
@@ -76,7 +78,7 @@ public class ManagementChannel extends ProtocolChannel {
         if(!byeByeSent.compareAndSet(false, true)) {
             return;
         }
-        log.tracef("Closing %s by sending bye bye", this);
+        ROOT_LOGGER.tracef("Closing %s by sending bye bye", this);
         pinger.removeChannel(this);
         ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
 
@@ -89,7 +91,7 @@ public class ManagementChannel extends ProtocolChannel {
                 IoUtils.safeClose(out);
             }
         } finally {
-            log.tracef("Invoking close on %s", this);
+            ROOT_LOGGER.tracef("Invoking close on %s", this);
             super.close();
         }
     }
@@ -100,7 +102,7 @@ public class ManagementChannel extends ProtocolChannel {
 
     @Override
     protected void doHandle(final MessageInputStream message) {
-        log.tracef("%s handling incoming data", this);
+        ROOT_LOGGER.tracef("%s handling incoming data", this);
         final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
         Exception error = null;
         ManagementRequestHeader requestHeader = null;
@@ -120,23 +122,23 @@ public class ManagementChannel extends ProtocolChannel {
                 responseReceiver.handleResponse((ManagementResponseHeader)header, input);
                 break;
             case ManagementProtocol.TYPE_BYE_BYE:
-                log.tracef("Received bye bye on %s, closing", this);
+                ROOT_LOGGER.tracef("Received bye bye on %s, closing", this);
                 close();
                 break;
             case ManagementProtocol.TYPE_PING:
                 wasPing = true;
-                log.tracef("Received ping on %s", this);
+                ROOT_LOGGER.tracef("Received ping on %s", this);
                 break;
             case ManagementProtocol.TYPE_PONG:
-                log.tracef("Received pong on %s", this);
+                ROOT_LOGGER.tracef("Received pong on %s", this);
                 gotIncomingResponse();
                 break;
             }
         } catch (Exception e) {
             error = e;
-            log.tracef(e, "%s error handling incoming data", this);
+            ROOT_LOGGER.tracef(e, "%s error handling incoming data", this);
         } finally {
-            log.tracef("%s done handling incoming data", this);
+            ROOT_LOGGER.tracef("%s done handling incoming data", this);
             try {
                 //Consume the rest of the output if any
                 while (input.read() != -1) {
@@ -158,20 +160,18 @@ public class ManagementChannel extends ProtocolChannel {
             }
 
             if (error != null) {
-                log.tracef(error, "Error processing request %s", this);
-                //TODO temporary debug stack
-                error.printStackTrace();
+                ROOT_LOGGER.tracef(error, "Error processing request %s", this);
             }
             requestReceiver.writeResponse(requestHeader, requestHandler, error);
         } else if (wasPing) {
-            log.tracef("Sending pong on %s", this);
+            ROOT_LOGGER.tracef("Sending pong on %s", this);
             ManagementPongHeader pongHeader = new ManagementPongHeader(ManagementProtocol.VERSION);
             sendHeaderAndCloseOnError(pongHeader);
         }
     }
 
     private void gotIncomingResponse() {
-        log.tracef("Resetting ping/response status on %s", this);
+        ROOT_LOGGER.tracef("Resetting ping/response status on %s", this);
         lastResponseReceived = System.currentTimeMillis();
         awaitingPong.set(false);
     }
@@ -220,13 +220,13 @@ public class ManagementChannel extends ProtocolChannel {
             if (System.currentTimeMillis() - lastResponseReceived > timeOut) {
                 try {
                     //We received no ping within the timeout
-                    log.tracef("Closing %s did not receive any pong within %dms", this, timeOut);
+                    ROOT_LOGGER.tracef("Closing %s did not receive any pong within %dms", this, timeOut);
                     close();
                 } catch (IOException ignore) {
                 }
             }
         } else {
-            log.tracef("No data received recently on %s, pinging to determine if the other end is alive", this);
+            ROOT_LOGGER.tracef("No data received recently on %s, pinging to determine if the other end is alive", this);
             awaitingPong.set(true);
             ManagementPingHeader pingHeader = new ManagementPingHeader(ManagementProtocol.VERSION);
             sendHeaderAndCloseOnError(pingHeader);
@@ -246,7 +246,7 @@ public class ManagementChannel extends ProtocolChannel {
         } catch (IOException ingore) {
         } finally {
             if (!ok) {
-                log.tracef("Error sending 0x%X on %s, closing channel", header.getType(), this);
+                ROOT_LOGGER.tracef("Error sending 0x%X on %s, closing channel", header.getType(), this);
                 IoUtils.safeClose(this);
             }
         }
@@ -256,7 +256,7 @@ public class ManagementChannel extends ProtocolChannel {
         private volatile ManagementOperationHandler operationHandler;
 
         private ManagementRequestHandler readRequest(final ManagementRequestHeader header, final DataInput input) throws IOException {
-            log.tracef("%s reading request %d(%d)", ManagementChannel.this, header.getBatchId(), header.getRequestId());
+            ROOT_LOGGER.tracef("%s reading request %d(%d)", ManagementChannel.this, header.getBatchId(), header.getRequestId());
             Exception error = null;
             try {
                 final ManagementRequestHandler requestHandler;
@@ -268,31 +268,31 @@ public class ManagementChannel extends ProtocolChannel {
                 return requestHandler;
             } finally {
                 if (error == null) {
-                    log.tracef("%s finished reading request %d", ManagementChannel.this, header.getBatchId());
+                    ROOT_LOGGER.tracef("%s finished reading request %d", ManagementChannel.this, header.getBatchId());
                 } else {
-                    log.tracef(error, "%s finished reading request %d with error", ManagementChannel.this, header.getBatchId());
+                    ROOT_LOGGER.tracef(error, "%s finished reading request %d with error", ManagementChannel.this, header.getBatchId());
                 }
             }
         }
 
         private void processRequest(ManagementRequestHeader requestHeader, ManagementRequestHandler requestHandler) throws RequestProcessingException {
-            log.tracef("%s processing request %d", ManagementChannel.this, requestHeader.getBatchId());
+            ROOT_LOGGER.tracef("%s processing request %d", ManagementChannel.this, requestHeader.getBatchId());
             try {
                 requestHandler.processRequest();
-                log.tracef("%s finished processing request %d", ManagementChannel.this, requestHeader.getBatchId());
+                ROOT_LOGGER.tracef("%s finished processing request %d", ManagementChannel.this, requestHeader.getBatchId());
             } catch (Exception e) {
-                log.tracef(e, "%s finished processing request %d with error", ManagementChannel.this, requestHeader.getBatchId());
+                ROOT_LOGGER.tracef(e, "%s finished processing request %d with error", ManagementChannel.this, requestHeader.getBatchId());
             }
         }
 
 
         private void writeResponse(ManagementRequestHeader requestHeader, ManagementRequestHandler requestHandler, Exception error) {
-            log.tracef("%s writing response %d", ManagementChannel.this, requestHeader.getBatchId());
+            ROOT_LOGGER.tracef("%s writing response %d", ManagementChannel.this, requestHeader.getBatchId());
             final FlushableDataOutputImpl output;
             try {
                 output = FlushableDataOutputImpl.create(writeMessage());
             } catch (Exception e) {
-                log.tracef(e, "%s could not open output stream for request %d", ManagementChannel.this, requestHeader.getBatchId());
+                ROOT_LOGGER.tracef(e, "%s could not open output stream for request %d", ManagementChannel.this, requestHeader.getBatchId());
                 return;
             }
             try {
@@ -303,9 +303,9 @@ public class ManagementChannel extends ProtocolChannel {
                 }
                 output.writeByte(ManagementProtocol.RESPONSE_END);
             } catch (Exception e) {
-                log.tracef(e, "%s finished writing response %d with error", ManagementChannel.this, requestHeader.getBatchId());
+                ROOT_LOGGER.tracef(e, "%s finished writing response %d with error", ManagementChannel.this, requestHeader.getBatchId());
             } finally {
-                log.tracef("%s finished writing response %d", ManagementChannel.this, requestHeader.getBatchId());
+                ROOT_LOGGER.tracef("%s finished writing response %d", ManagementChannel.this, requestHeader.getBatchId());
                 IoUtils.safeClose(output);
             }
         }
@@ -314,15 +314,14 @@ public class ManagementChannel extends ProtocolChannel {
             try {
                 ManagementOperationHandler operationHandler = this.operationHandler;
                 if (operationHandler == null) {
-                    throw new IOException("No operation handler set");
+                    throw MESSAGES.operationHandlerNotSet();
                 }
                 ManagementRequestHandler requestHandler = operationHandler.getRequestHandler(header.getOperationId());
                 if (requestHandler == null) {
-                    throw new IOException("No request handler found with id " + header.getOperationId() + " in operation handler " + operationHandler);
+                    throw MESSAGES.requestHandlerIdNotFound(header.getOperationId(), operationHandler);
                 }
                 return requestHandler;
             } catch (IOException e) {
-                e.printStackTrace();//TODO remove
                 throw e;
             } catch (Exception e) {
                 throw new IOException(e);
@@ -338,7 +337,7 @@ public class ManagementChannel extends ProtocolChannel {
             } catch (IOException e) {
                 throw e;
             } catch (Throwable t) {
-                throw new IOException("Failed to write management response headers", t);
+                throw MESSAGES.failedToWriteManagementResponseHeaders(t);
             }
         }
 
@@ -360,15 +359,15 @@ public class ManagementChannel extends ProtocolChannel {
 
         private void registerResponseHandler(final int requestId, final ManagementResponseHandler<?> handler) throws IOException {
             if (responseHandlers.put(requestId, handler) != null) {
-                throw new IOException("Response handler already registered for request");
+                throw MESSAGES.responseHandlerAlreadyRegistered();
             }
         }
 
         private void handleResponse(ManagementResponseHeader header, DataInput input) throws IOException {
-            log.tracef("%s handling response %d", ManagementChannel.this, header.getResponseId());
+            ROOT_LOGGER.tracef("%s handling response %d", ManagementChannel.this, header.getResponseId());
             ManagementResponseHandler<?> responseHandler = responseHandlers.remove(header.getResponseId());
             if (responseHandler == null) {
-                throw new IOException("No response handler for request " + header.getResponseId());
+                throw MESSAGES.responseHandlerNotFound(header.getResponseId());
             }
             try {
                 responseHandler.setContextInfo(header, ManagementChannel.this);
@@ -378,7 +377,7 @@ public class ManagementChannel extends ProtocolChannel {
                 throwFormattedException(e);
             } finally {
                 responseHandler.removeCloseHandler();
-                log.tracef("%s handled response %d", ManagementChannel.this, header.getResponseId());
+                ROOT_LOGGER.tracef("%s handled response %d", ManagementChannel.this, header.getResponseId());
             }
         }
     }

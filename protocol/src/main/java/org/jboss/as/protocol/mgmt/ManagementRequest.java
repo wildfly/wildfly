@@ -28,11 +28,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.protocol.ProtocolChannel;
-import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
+
+import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * Base management request used for remote requests.  Provides the basic mechanism for connecting to a remote host controller
@@ -43,8 +45,6 @@ import org.jboss.threads.AsyncFutureTask;
  * @author Kabir Khan
  */
 public abstract class ManagementRequest<T> {
-
-    private final Logger log = Logger.getLogger("org.jboss.as.protocol");
 
     private static final AtomicInteger requestId = new AtomicInteger();
     private final int currentRequestId = requestId.incrementAndGet();
@@ -92,19 +92,19 @@ public abstract class ManagementRequest<T> {
      * @return A future to retrieve the result when the request is complete
      */
     public AsyncFuture<T> execute(final ExecutorService executor, final ManagementClientChannelStrategy channelStrategy) {
-        log.tracef("Scheduling request %s with future %s - %d (%d)", this, future, getBatchId(), getCurrentRequestId());
+        ROOT_LOGGER.tracef("Scheduling request %s with future %s - %d (%d)", this, future, getBatchId(), getCurrentRequestId());
         executor.execute(new Runnable() {
             @Override
             public void run() {
 
                 try {
                     final ManagementChannel channel = channelStrategy.getChannel();
-                    log.tracef("Got channel %s from request %s for %d", channel, ManagementRequest.this, getCurrentRequestId());
+                    ROOT_LOGGER.tracef("Got channel %s from request %s for %d", channel, ManagementRequest.this, getCurrentRequestId());
 
                     //Ends up in writeRequest(ProtocolChannel, FlushableDataOutput)
                     channel.executeRequest(ManagementRequest.this, new DelegatingResponseHandler(channelStrategy));
                 } catch (Exception e) {
-                    log.tracef(e, "Could not get channel for request %s, failing %s for %d", ManagementRequest.this, future, getCurrentRequestId());
+                    ROOT_LOGGER.tracef(e, "Could not get channel for request %s, failing %s for %d", ManagementRequest.this, future, getCurrentRequestId());
                     future.failed(e);
                 }
             }
@@ -161,7 +161,7 @@ public abstract class ManagementRequest<T> {
         protected T readResponse(DataInput input) {
             final String error = getResponseHeader().getError();
             if (error != null) {
-                future.failed(new IOException("A problem happened executing on the server: " + error));
+                future.failed(MESSAGES.serverError(error));
                 return null;
             }
 
