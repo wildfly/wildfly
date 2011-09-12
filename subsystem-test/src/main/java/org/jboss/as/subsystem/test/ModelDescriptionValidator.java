@@ -111,11 +111,11 @@ public class ModelDescriptionValidator {
         paramAndAttributeKeys.put(DEFAULT, NullDescriptorValidator.INSTANCE); //TODO Validate same type as target type
         paramAndAttributeKeys.put(ALLOWED, NullDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(UNIT, NumericDescriptorValidator.INSTANCE);
+        paramAndAttributeKeys.put(EXPRESSIONS_ALLOWED, BooleanDescriptorValidator.INSTANCE);
 
         Map<String, AttributeOrParameterArbitraryDescriptorValidator> validAttributeKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
         validAttributeKeys.putAll(paramAndAttributeKeys);
         validAttributeKeys.put(ACCESS_TYPE, AccessTypeDescriptorValidator.INSTANCE);
-        validAttributeKeys.put(EXPRESSIONS_ALLOWED, BooleanDescriptorValidator.INSTANCE);
         validAttributeKeys.put(HEAD_COMMENT_ALLOWED, BooleanDescriptorValidator.INSTANCE);
         validAttributeKeys.put(TAIL_COMMENT_ALLOWED, BooleanDescriptorValidator.INSTANCE);
         validAttributeKeys.put(STORAGE, StorageDescriptorValidator.INSTANCE);
@@ -124,7 +124,6 @@ public class ModelDescriptionValidator {
 
         Map<String, ArbitraryDescriptorValidator> validOperationKeys = new HashMap<String, ArbitraryDescriptorValidator>();
         validOperationKeys.put(DESCRIPTION, NullDescriptorValidator.INSTANCE);
-        validOperationKeys.put(EXPRESSIONS_ALLOWED, BooleanDescriptorValidator.INSTANCE);
         validOperationKeys.put(OPERATION_NAME, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(REQUEST_PROPERTIES, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(REPLY_PROPERTIES, NullDescriptorValidator.INSTANCE);
@@ -383,20 +382,23 @@ public class ModelDescriptionValidator {
                         currentType != ModelType.DOUBLE && currentType != ModelType.INT && currentType != ModelType.LONG) {
                     return "Unecessary '" + descriptor + "' for non-numeric type=" + currentType;
                 }
-                try {
-                    if (currentType == ModelType.BIG_DECIMAL) {
-                        currentNode.get(descriptor).asBigDecimal();
-                    } else if (currentType == ModelType.BIG_INTEGER) {
-                        currentNode.get(descriptor).asBigInteger();
-                    } else if (currentType == ModelType.DOUBLE) {
-                        currentNode.get(descriptor).asDouble();
-                    } else if (currentType == ModelType.INT) {
-                        currentNode.get(descriptor).asInt();
-                    } else if (currentType == ModelType.LONG) {
-                        currentNode.get(descriptor).asLong();
+                if (!descriptor.equals(UNIT)) {
+                    try {
+                        if (currentType == ModelType.BIG_DECIMAL) {
+                            currentNode.get(descriptor).asBigDecimal();
+                        } else if (currentType == ModelType.BIG_INTEGER) {
+                            currentNode.get(descriptor).asBigInteger();
+                        } else if (currentType == ModelType.DOUBLE) {
+                            currentNode.get(descriptor).asDouble();
+                        } else if (currentType == ModelType.INT) {
+                            currentNode.get(descriptor).asInt();
+                        } else if (currentType == ModelType.LONG) {
+                            currentNode.get(descriptor).asLong();
+                        }
+                    } catch (Exception e) {
+                        return "'" + descriptor + "' is not a " + currentType;
+
                     }
-                } catch (Exception e) {
-                    return "'" + descriptor + "' is not a " + currentType;
                 }
             }
             return null;
