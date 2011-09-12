@@ -121,6 +121,10 @@ public class HostXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
+        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(VAULT)) {
+            writeVault(writer, modelNode.get(CORE_SERVICE, VAULT));
+        }
+
         if (modelNode.hasDefined(VAULT)) {
             ModelNode vault = modelNode.get(VAULT);
             writer.writeStartElement(Element.VAULT.getLocalName());

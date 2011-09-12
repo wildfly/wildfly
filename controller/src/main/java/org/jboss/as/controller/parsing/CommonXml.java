@@ -89,6 +89,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -2084,7 +2085,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         ModelNode vaultAddress = address.clone();
-        vaultAddress.add(VAULT,ADD);
+        vaultAddress.add(CORE_SERVICE, VAULT);
         if(code != null){
             vault.get(Attribute.CODE.getLocalName()).set(code);
         }
@@ -2096,7 +2097,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case VAULT_OPTION: {
-                    parseModuleOption(reader, vault.get(VAULT_OPTION));
+                    parseModuleOption(reader, vault.get(VAULT_OPTIONS));
                     break;
                 }
             }
@@ -2570,4 +2571,21 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
+    protected void writeVault(XMLExtendedStreamWriter writer, ModelNode vault) throws XMLStreamException {
+        writer.writeStartElement(Element.VAULT.getLocalName());
+        String code = vault.hasDefined(Attribute.CODE.getLocalName()) ? vault.get(Attribute.CODE.getLocalName()).asString() : null;
+        if (code != null && !code.isEmpty()) {
+            writer.writeAttribute(Attribute.CODE.getLocalName(), code);
+        }
+
+        if (vault.hasDefined(VAULT_OPTION)) {
+            ModelNode properties = vault.get(VAULT_OPTION);
+            for (Property prop : properties.asPropertyList()) {
+                writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
+            }
+        }
+        writer.writeEndElement();
+    }
 }

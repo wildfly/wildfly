@@ -93,6 +93,10 @@ public class Util {
         return value != null && value.startsWith("${") && value.endsWith("}");
     }
 
+    /**
+     * @deprecated Horrible idea, as it promotes copying random stuff from an operation into the model.
+     */
+    @Deprecated
     public static void copyParamsToModel(final ModelNode operation, final ModelNode model) {
         Set<String> keys = new HashSet<String>(operation.keys());
         // Remove general operation params

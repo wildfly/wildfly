@@ -254,12 +254,12 @@ public final class CommonProviders {
         }
     };
     /**
-     * Provider for a sub-model that defines the JVM configuration.
+     * Provider for a resource that defines the core security vault.
      */
     public static final DescriptionProvider VAULT_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return VaultDescriptions.getVaultAddDescription(locale);
+            return VaultDescriptions.getVaultDescription(locale);
         }
     };
 }
