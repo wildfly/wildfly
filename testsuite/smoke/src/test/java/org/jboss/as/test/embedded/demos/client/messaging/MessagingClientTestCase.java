@@ -85,6 +85,7 @@ public class MessagingClientTestCase {
             ModelNode op = new ModelNode();
             op.get("operation").set("add");
             op.get("address").add("subsystem", "messaging");
+            op.get("address").add("server", "default");
             op.get("address").add("queue", queueName);
             op.get("queue-address").set(queueName);
             applyUpdate(op, client);
@@ -117,6 +118,7 @@ public class MessagingClientTestCase {
             op = new ModelNode();
             op.get("operation").set("remove");
             op.get("address").add("subsystem", "messaging");
+            op.get("address").add("server", "default");
             op.get("address").add("queue", queueName);
             applyUpdate(op, client);
 

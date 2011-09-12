@@ -317,6 +317,7 @@ public class CoreQueueManagementTestCase {
     private ModelNode getQueueOperation(String operationName) {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "messaging");
+        address.add("hornetq-server", "default");
         address.add("queue", getQueueName());
         return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
     }

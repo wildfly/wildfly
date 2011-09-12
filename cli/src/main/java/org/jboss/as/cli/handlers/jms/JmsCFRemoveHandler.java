@@ -98,6 +98,7 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
     public ModelNode buildRequest(CommandContext ctx) throws CommandFormatException {
 
         final String name = this.name.getValue(ctx.getParsedCommandLine(), true);
+        String serverName = "default"; // TODO read server name from props
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         if(ctx.isDomainMode()) {
@@ -108,6 +109,7 @@ public class JmsCFRemoveHandler extends BatchModeCommandHandler {
             builder.addNode("profile", profile);
         }
         builder.addNode("subsystem", "messaging");
+        builder.addNode("hornetq-server", serverName);
         builder.addNode("connection-factory", name);
         builder.setOperationName("remove");
 

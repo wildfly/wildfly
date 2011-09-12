@@ -55,6 +55,7 @@ public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
 
         //String target = null;
         String jndiName = null;
+        String serverName = "default"; // TODO read server name from props
 
         String[] args = ctx.getArgumentsString().split("\\s+");
         int i = 0;
@@ -87,6 +88,7 @@ public class DeleteJmsResourceHandler extends BatchModeCommandHandler {
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         builder.addNode("subsystem", "messaging");
+        builder.addNode("hornetq-server", serverName);
         builder.addNode(resource, jndiName);
         builder.setOperationName("remove");
         return builder.buildRequest();

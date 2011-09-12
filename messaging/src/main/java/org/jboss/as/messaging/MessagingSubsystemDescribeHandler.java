@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
 import java.util.Locale;
 
@@ -33,8 +34,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSTopicAdd;
@@ -55,20 +57,41 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
 
     /** {@inheritDoc} */
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = Resource.Tools.readModel(resource);
+
         final ModelNode subsystemAdd = new ModelNode();
-        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
         subsystemAdd.get(OP).set(ADD);
         subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
+
+        final ModelNode result = context.getResult();
+        result.add(subsystemAdd);
+
+
+        if (subModel.hasDefined(CommonAttributes.HORNETQ_SERVER)) {
+            for (Property prop : subModel.get(CommonAttributes.HORNETQ_SERVER).asPropertyList()) {
+                ModelNode serverAdd = new ModelNode();
+                serverAdd.get(OP).set(ADD);
+                PathAddress serverAddress = rootAddress.append(PathElement.pathElement(CommonAttributes.HORNETQ_SERVER, prop.getName()));
+                serverAdd.get(OP_ADDR).set(serverAddress.toModelNode());
+                addHornetQServer(prop.getValue(), serverAdd, serverAddress, result);
+            }
+        }
+
+        context.completeStep();
+    }
+
+    private void addHornetQServer(final ModelNode subModel, final ModelNode serverAdd, final PathAddress rootAddress, final ModelNode result) {
         //
         for(final AttributeDefinition attribute : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             String attrName = attribute.getName();
             if(subModel.hasDefined(attrName)) {
-                subsystemAdd.get(attrName).set(subModel.get(attrName));
+                serverAdd.get(attrName).set(subModel.get(attrName));
             }
         }
-        final ModelNode result = context.getResult();
-        result.add(subsystemAdd);
+
+        result.add(serverAdd);
 
         // acceptors / connectors
         for(final String transport : TRANSPORT) {
@@ -219,8 +242,6 @@ class MessagingSubsystemDescribeHandler implements OperationStepHandler, Descrip
                 }
             }
         }
-
-        context.completeStep();
     }
 
     public ModelNode getModelDescription(Locale locale) {

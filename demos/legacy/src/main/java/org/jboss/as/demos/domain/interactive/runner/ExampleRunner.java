@@ -21,42 +21,21 @@
  */
 package org.jboss.as.demos.domain.interactive.runner;
 
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.domain.DeploymentActionsCompleteBuilder;
-import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
-import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
-import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
-import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.demos.DemoAuthentication;
-import org.jboss.as.demos.DomainDeploymentUtils;
-import org.jboss.as.demos.fakejndi.FakeJndi;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.TextMessage;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -80,7 +59,42 @@ import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.TextMessage;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.helpers.domain.DeploymentActionsCompleteBuilder;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
+import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.demos.DemoAuthentication;
+import org.jboss.as.demos.DomainDeploymentUtils;
+import org.jboss.as.demos.fakejndi.FakeJndi;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Demonstration of basic aspects of administering servers via the domain management API.
@@ -965,6 +979,7 @@ public class ExampleRunner implements Runnable {
         final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.PROFILE, "default");
         address.add(ModelDescriptionConstants.SUBSYSTEM, "messaging");
+        address.add("hornetq-server", "default");
         address.add("jms-queue", queueName);
 
         final ModelNode queueAddOperation = new ModelNode();

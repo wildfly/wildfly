@@ -528,6 +528,7 @@ public interface CommonAttributes {
     String SECURITY_SETTING ="security-setting";
     String SECURITY_SETTINGS ="security-settings";
     String SEND_XML_NAME ="send";
+    String HORNETQ_SERVER = "hornetq-server";
     String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";
     String STRING ="string";
@@ -591,5 +592,6 @@ public interface CommonAttributes {
     AttributeDefinition[] CONNECTOR_SERVICE_ATTRIBUTES = { FACTORY_CLASS };
 
     String[] PATHS = new String[] {CommonAttributes.BINDINGS_DIRECTORY, CommonAttributes.JOURNAL_DIRECTORY, CommonAttributes.LARGE_MESSAGES_DIRECTORY, CommonAttributes.PAGING_DIRECTORY};
+
 
 }
