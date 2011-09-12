@@ -23,12 +23,14 @@ package org.jboss.as.protocol;
 
 import java.io.IOException;
 
-import org.jboss.logging.Logger;
 import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
+
+import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * A wrapper around the {@link Channel} that handles repeated receives on the Channel.
@@ -41,8 +43,6 @@ import org.jboss.remoting3.MessageOutputStream;
  * @version $Revision: 1.1 $
  */
 public abstract class ProtocolChannel implements Channel, Channel.Receiver {
-
-    protected final Logger log = Logger.getLogger("org.jboss.as.protocol");
 
     private final String name;
     private final Channel channel;
@@ -62,7 +62,7 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
         if (!start) {
             start = true;
         } else {
-            throw new IllegalStateException("Channel and receiver already started");
+            throw MESSAGES.alreadyStarted();
         }
 
         channel.receiveMessage(this);
@@ -135,18 +135,18 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
 
     @Override
     public void handleError(Channel channel, IOException error) {
-        log.tracef(error, "Handling error, closing channel %s", this);
+        ROOT_LOGGER.tracef(error, "Handling error, closing channel %s", this);
         if (channel != this.channel) {
-            log.warn("Received error for wrong channel!");
+            ROOT_LOGGER.receivedWrongChannel();
         }
         ended(channel);
     }
 
     @Override
     public void handleEnd(Channel channel) {
-        log.tracef("Handling end, closing channel %s", this);
+        ROOT_LOGGER.tracef("Handling end, closing channel %s", this);
         if (channel != this.channel) {
-            log.warn("Received end for wrong channel!");
+            ROOT_LOGGER.receivedWrongChannel();
         }
         ended(channel);
     }
@@ -166,7 +166,7 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
         try {
             close();
         } catch (IOException e) {
-            log.warnf("Got error closing channel %s", e.getMessage());
+            ROOT_LOGGER.errorClosingChannel(e.getMessage());
         }
     }
 }

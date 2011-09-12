@@ -27,6 +27,8 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -161,7 +163,7 @@ final class Pipe {
             final Object lock = Pipe.this.lock;
             synchronized (lock) {
                 if (writeClosed) {
-                    throw new IOException("Stream closed");
+                    throw MESSAGES.streamClosed();
                 }
                 final byte[] buffer = Pipe.this.buffer;
                 final int bufLen = buffer.length;
@@ -169,7 +171,7 @@ final class Pipe {
                     try {
                         lock.wait();
                         if (writeClosed) {
-                            throw new IOException("Stream closed");
+                            throw MESSAGES.streamClosed();
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -188,7 +190,7 @@ final class Pipe {
             final Object lock = Pipe.this.lock;
             synchronized (lock) {
                 if (writeClosed) {
-                    throw new IOException("Stream closed");
+                    throw MESSAGES.streamClosed();
                 }
                 final byte[] buffer = Pipe.this.buffer;
                 final int bufLen = buffer.length;
@@ -200,7 +202,7 @@ final class Pipe {
                         try {
                             lock.wait();
                             if (writeClosed) {
-                                throw new IOException("Stream closed");
+                                throw MESSAGES.streamClosed();
                             }
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();

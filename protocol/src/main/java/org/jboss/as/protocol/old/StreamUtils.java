@@ -27,15 +27,16 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UTFDataFormatException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
 
 import javax.xml.stream.XMLStreamWriter;
+
+import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -44,8 +45,6 @@ public final class StreamUtils {
 
     private StreamUtils() {
     }
-
-    private static final String INVALID_BYTE = "Invalid byte";
 
     public static int readChar(final InputStream input) throws IOException {
         final int a = input.read();
@@ -57,13 +56,13 @@ public final class StreamUtils {
         } else if (a < 0x80) {
             return (char)a;
         } else if (a < 0xc0) {
-            throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
         } else if (a < 0xe0) {
             final int b = input.read();
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-                throw new UTFDataFormatException(INVALID_BYTE + ":" + (char)a + "(" + a + ")");
+                throw MESSAGES.invalidByte((char)a, a);
             }
             return (a & 0x1f) << 6 | b & 0x3f;
         } else if (a < 0xf0) {
@@ -71,17 +70,17 @@ public final class StreamUtils {
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-                throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
             }
             final int c = input.read();
             if (c == -1) {
                 throw new EOFException();
             } else if ((c & 0xc0) != 0x80) {
-                throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
             }
             return (a & 0x0f) << 12 | (b & 0x3f) << 6 | c & 0x3f;
         } else {
-            throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
         }
     }
 
@@ -134,7 +133,7 @@ public final class StreamUtils {
         while (n < len) {
             int count = in.read(b, off + n, len - n);
             if (count < 0)
-            throw new EOFException("Read " + n + " bytes");
+                throw MESSAGES.readBytes(n);
             n += count;
         }
     }
@@ -251,13 +250,13 @@ public final class StreamUtils {
         } else if (a < 0x80) {
             return (char)a;
         } else if (a < 0xc0) {
-            throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
         } else if (a < 0xe0) {
             final int b = input.read();
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-                throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
             }
             return (a & 0x1f) << 6 | b & 0x3f;
         } else if (a < 0xf0) {
@@ -265,17 +264,17 @@ public final class StreamUtils {
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-                throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
             }
             final int c = input.read();
             if (c == -1) {
                 throw new EOFException();
             } else if ((c & 0xc0) != 0x80) {
-                throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
             }
             return (a & 0x0f) << 12 | (b & 0x3f) << 6 | c & 0x3f;
         } else {
-            throw new UTFDataFormatException(INVALID_BYTE);
+            throw MESSAGES.invalidByte();
         }
     }
 
@@ -287,13 +286,11 @@ public final class StreamUtils {
         outputStream.write(0);
     }
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.protocol");
-
     public static void safeClose(final Closeable closeable) {
         if (closeable != null) try {
             closeable.close();
         } catch (Throwable t) {
-            log.errorf(t, "Failed to close resource %s", closeable);
+            ROOT_LOGGER.failedToCloseResource(t, closeable);
         }
     }
 
@@ -301,7 +298,7 @@ public final class StreamUtils {
         if (socket != null) try {
             socket.close();
         } catch (Throwable t) {
-            log.errorf(t, "Failed to close resource %s", socket);
+            ROOT_LOGGER.failedToCloseResource(t, socket);
         }
     }
 
@@ -309,7 +306,7 @@ public final class StreamUtils {
         if (serverSocket != null) try {
             serverSocket.close();
         } catch (IOException e) {
-            log.errorf(e, "Failed to close the server socket %s", serverSocket);
+            ROOT_LOGGER.failedToCloseServerSocket(e, serverSocket);
         }
     }
 
@@ -317,7 +314,7 @@ public final class StreamUtils {
         if (marshaller != null) try {
             marshaller.finish();
         } catch (IOException e) {
-            log.errorf(e, "Failed to finish the marshaller %s", marshaller);
+            ROOT_LOGGER.failedToFinishMarshaller(e, marshaller);
         }
     }
 
@@ -325,7 +322,7 @@ public final class StreamUtils {
         if (unmarshaller != null) try {
             unmarshaller.finish();
         } catch (IOException e) {
-            log.errorf(e, "Failed to finish the unmarshaller %s", unmarshaller);
+            ROOT_LOGGER.failedToFinishUnmarshaller(e, unmarshaller);
         }
     }
 
@@ -333,7 +330,7 @@ public final class StreamUtils {
         if (writer != null) try {
             writer.close();
         } catch (Throwable t) {
-            log.errorf(t, "Failed to close resource %s", writer);
+            ROOT_LOGGER.failedToCloseResource(t, writer);
         }
     }
 }
