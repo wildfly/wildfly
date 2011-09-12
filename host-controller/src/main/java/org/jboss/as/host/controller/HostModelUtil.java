@@ -121,6 +121,7 @@ import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.server.services.security.VaultRemoveHandler;
+import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -191,6 +192,12 @@ public class HostModelUtil {
         sysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
         sysProps.registerReadWriteAttribute(BOOT_TIME, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
 
+        //vault
+        ManagementResourceRegistration vault = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, VAULT), CommonProviders.VAULT_PROVIDER);
+        vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, VaultAddHandler.VAULT_INSTANCE, VaultAddHandler.VAULT_INSTANCE, false);
+        vault.registerOperationHandler(VaultRemoveHandler.OPERATION_NAME, VaultRemoveHandler.INSTANCE, VaultRemoveHandler.INSTANCE, false);
+        VaultWriteAttributeHandler.INSTANCE.registerAttributes(vault);
+
         // Central Management
         ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
         ManagementResourceRegistration securityRealm = management.registerSubModel(PathElement.pathElement(SECURITY_REALM), CommonProviders.MANAGEMENT_SECURITY_REALM_PROVIDER);
@@ -250,11 +257,6 @@ public class HostModelUtil {
         ManagementResourceRegistration paths = hostRegistration.registerSubModel(PathElement.pathElement(PATH), CommonProviders.SPECIFIED_PATH_PROVIDER);
         paths.registerOperationHandler(PathAddHandler.OPERATION_NAME, PathAddHandler.SPECIFIED_INSTANCE, PathAddHandler.SPECIFIED_INSTANCE, false);
         paths.registerOperationHandler(PathRemoveHandler.OPERATION_NAME, PathRemoveHandler.INSTANCE, PathRemoveHandler.INSTANCE, false);
-
-        //vault
-        ManagementResourceRegistration vault = hostRegistration.registerSubModel(PathElement.pathElement(VAULT), CommonProviders.VAULT_PROVIDER);
-        vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, VaultAddHandler.VAULT_INSTANCE, VaultAddHandler.VAULT_INSTANCE, false);
-        vault.registerOperationHandler(VaultRemoveHandler.OPERATION_NAME, VaultRemoveHandler.INSTANCE, VaultRemoveHandler.INSTANCE, false);
 
         //interface
         ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);

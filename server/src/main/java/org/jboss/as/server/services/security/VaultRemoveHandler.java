@@ -18,14 +18,13 @@
  */
 package org.jboss.as.server.services.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.VaultDescriptions;
 import org.jboss.dmr.ModelNode;
@@ -34,22 +33,16 @@ import org.jboss.dmr.ModelNode;
  * Handler for the vault remove operation.
  *
  * @author Anil Saldhana
+ * @author Brian Stansberry
  */
 public class VaultRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
-    public static ModelNode getRemovePathOperation(ModelNode address) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(OPERATION_NAME);
-        op.get(OP_ADDR).set(address);
-        return op;
-    }
-
     public static final VaultRemoveHandler INSTANCE = new VaultRemoveHandler();
 
     /**
-     * Create the PathRemoveHandler
+     * Create the VaultRemoveHandler
      */
     protected VaultRemoveHandler() {
     }
@@ -62,5 +55,16 @@ public class VaultRemoveHandler extends AbstractRemoveStepHandler implements Des
     @Override
     protected boolean requiresRuntime(OperationContext context) {
         return context.getType() == OperationContext.Type.HOST || context.getType() == OperationContext.Type.SERVER;
+    }
+
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        // Let's not try to remove a core service without a reload
+        context.reloadRequired();
+    }
+
+    @Override
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        context.revertReloadRequired();
     }
 }

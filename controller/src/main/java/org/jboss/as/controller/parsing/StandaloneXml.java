@@ -378,23 +378,8 @@ public class StandaloneXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH));
         }
 
-        if (modelNode.hasDefined(VAULT)) {
-            ModelNode vault = modelNode.get(VAULT);
-            writer.writeStartElement(Element.VAULT.getLocalName());
-            String code = vault.get(Attribute.CODE.getLocalName()).asString();
-            if (code != null && !code.isEmpty() && !code.equals("undefined")) {
-                writer.writeAttribute(Attribute.CODE.getLocalName(), code);
-            }
-
-            //TODO: not sure why the vault option is coming under ADD
-            ModelNode addNode = vault.get(ADD);
-            ModelNode properties = addNode.get(VAULT_OPTION);
-            for (Property prop : properties.asPropertyList()) {
-                writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
-                writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
-            }
-            writer.writeEndElement();
+        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(VAULT)) {
+            writeVault(writer, modelNode.get(CORE_SERVICE, VAULT));
         }
 
         if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {

@@ -52,6 +52,7 @@ public class ModelDescriptionConstants {
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
+    public static final String CODE = "code";
     /** @deprecated operation responses will no longer include the compensating operation */
     @Deprecated
     public static final String COMPENSATING_OPERATION = "compensating-operation";
@@ -244,6 +245,7 @@ public class ModelDescriptionConstants {
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
     public static final String VAULT = "vault";
     public static final String VAULT_OPTION = "vault-option";
+    public static final String VAULT_OPTIONS = "vault-options";
 
     private ModelDescriptionConstants() {
     }
