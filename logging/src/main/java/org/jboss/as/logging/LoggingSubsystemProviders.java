@@ -39,30 +39,33 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.CATEGORY;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.HANDLER;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
+import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
+import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
+import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.VALUE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
-import static org.jboss.as.logging.CommonAttributes.VALUE;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -114,7 +117,7 @@ class LoggingSubsystemProviders {
         }
     };
 
-    static final DescriptionProvider SET_ROOT_LOGGER = new DescriptionProvider() {
+        static final DescriptionProvider SET_ROOT_LOGGER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
@@ -122,14 +125,7 @@ class LoggingSubsystemProviders {
             node.get(OPERATION_NAME).set("set-root-logger");
             node.get(DESCRIPTION).set(bundle.getString("root.logger.set"));
 
-            node.get(REQUEST_PROPERTIES, LEVEL, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, LEVEL, DESCRIPTION).set(bundle.getString("logger.level"));
-            node.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(true);
-
-            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, TYPE).set(ModelType.LIST);
-            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, VALUE_TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
-            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, REQUIRED).set(true);
+            addCommonLoggerRequestProperties(node, bundle);
 
             node.get(REPLY_PROPERTIES).setEmptyObject();
             return node;
@@ -211,6 +207,15 @@ class LoggingSubsystemProviders {
 
             final ModelNode node = new ModelNode();
             node.get(DESCRIPTION).set(bundle.getString("logger"));
+
+            addCommonLoggerAttributes(node, bundle);
+
+            node.get(ATTRIBUTES, USE_PARENT_HANDLERS, TYPE).set(ModelType.BOOLEAN);
+            node.get(ATTRIBUTES, USE_PARENT_HANDLERS, DESCRIPTION).set(bundle.getString("logger.use.parent.handlers"));
+
+            node.get(ATTRIBUTES, CATEGORY, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, CATEGORY, DESCRIPTION).set(bundle.getString("logger.category"));
+
             return node;
         }
     };
@@ -224,18 +229,7 @@ class LoggingSubsystemProviders {
             node.get(OPERATION_NAME).set(ADD);
             node.get(DESCRIPTION).set(bundle.getString("logger.add"));
 
-            node.get(REQUEST_PROPERTIES, LEVEL, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, LEVEL, DESCRIPTION).set(bundle.getString("logger.level"));
-            node.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(true);
-
-            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, TYPE).set(ModelType.LIST);
-            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, VALUE_TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
-            node.get(REQUEST_PROPERTIES, CommonAttributes.HANDLERS, REQUIRED).set(false);
-
-            node.get(REQUEST_PROPERTIES, ENCODING, TYPE).set(ModelType.STRING);
-            node.get(REQUEST_PROPERTIES, ENCODING, DESCRIPTION).set(bundle.getString("logger.level"));
-            node.get(REQUEST_PROPERTIES, ENCODING, REQUIRED).set(true);
+            addCommonLoggerRequestProperties(node, bundle);
 
             return node;
         }
@@ -317,6 +311,34 @@ class LoggingSubsystemProviders {
     };
 
 
+    private static void addCommonLoggerAttributes(final ModelNode modelNode, final ResourceBundle bundle) {
+        modelNode.get(ATTRIBUTES, LEVEL, TYPE).set(ModelType.STRING);
+        modelNode.get(ATTRIBUTES, LEVEL, DESCRIPTION).set(bundle.getString("handler.level"));
+
+        modelNode.get(ATTRIBUTES, FILTER, TYPE).set(ModelType.STRING);
+        modelNode.get(ATTRIBUTES, FILTER, DESCRIPTION).set(bundle.getString("handler.filter"));
+
+        modelNode.get(ATTRIBUTES, HANDLERS, TYPE).set(ModelType.LIST);
+        modelNode.get(ATTRIBUTES, HANDLERS, VALUE_TYPE).set(ModelType.STRING);
+        modelNode.get(ATTRIBUTES, HANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
+    }
+
+
+    private static void addCommonLoggerRequestProperties(final ModelNode modelNode, final ResourceBundle bundle) {
+        modelNode.get(REQUEST_PROPERTIES, LEVEL, TYPE).set(ModelType.STRING);
+        modelNode.get(REQUEST_PROPERTIES, LEVEL, DESCRIPTION).set(bundle.getString("handler.level"));
+        modelNode.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(true);
+
+        modelNode.get(REQUEST_PROPERTIES, FILTER, TYPE).set(ModelType.STRING);
+        modelNode.get(REQUEST_PROPERTIES, FILTER, DESCRIPTION).set(bundle.getString("handler.filter"));
+        modelNode.get(REQUEST_PROPERTIES, LEVEL, REQUIRED).set(false);
+
+        modelNode.get(REQUEST_PROPERTIES, HANDLERS, TYPE).set(ModelType.LIST);
+        modelNode.get(REQUEST_PROPERTIES, HANDLERS, VALUE_TYPE).set(ModelType.STRING);
+        modelNode.get(REQUEST_PROPERTIES, HANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
+        modelNode.get(REQUEST_PROPERTIES, HANDLERS, REQUIRED).set(false);
+    }
+
     private static void addCommonHandlerAttributes(final ModelNode modelNode, final ResourceBundle bundle) {
         modelNode.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
         modelNode.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("handler.name"));
@@ -332,9 +354,6 @@ class LoggingSubsystemProviders {
 
         modelNode.get(ATTRIBUTES, FORMATTER, TYPE).set(ModelType.STRING);
         modelNode.get(ATTRIBUTES, FORMATTER, DESCRIPTION).set(bundle.getString("handler.formatter"));
-
-        modelNode.get(ATTRIBUTES, AUTOFLUSH, TYPE).set(ModelType.BOOLEAN);
-        modelNode.get(ATTRIBUTES, AUTOFLUSH, DESCRIPTION).set(bundle.getString("handler.autoflush"));
     }
 
     private static void addCommonHandlerRequestProperties(final ModelNode modelNode, final ResourceBundle bundle) {
@@ -357,10 +376,6 @@ class LoggingSubsystemProviders {
         modelNode.get(REQUEST_PROPERTIES, FORMATTER, TYPE).set(ModelType.STRING);
         modelNode.get(REQUEST_PROPERTIES, FORMATTER, DESCRIPTION).set(bundle.getString("handler.formatter"));
         modelNode.get(REQUEST_PROPERTIES, FORMATTER, REQUIRED).set(true);
-
-        modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, TYPE).set(ModelType.BOOLEAN);
-        modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, DESCRIPTION).set(bundle.getString("handler.autoflush"));
-        modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, REQUIRED).set(false);
     }
 
     private static void addCommonHandlerUpdateRequestProperties(final ModelNode modelNode, final ResourceBundle bundle) {
@@ -379,12 +394,30 @@ class LoggingSubsystemProviders {
         modelNode.get(REQUEST_PROPERTIES, FORMATTER, TYPE).set(ModelType.STRING);
         modelNode.get(REQUEST_PROPERTIES, FORMATTER, DESCRIPTION).set(bundle.getString("handler.formatter"));
         modelNode.get(REQUEST_PROPERTIES, FORMATTER, REQUIRED).set(true);
+    }
+
+    private static void addCommonHandlerOutputStreamAttributes(final ModelNode modelNode, final ResourceBundle bundle) {
+        addCommonHandlerAttributes(modelNode, bundle);
+
+        modelNode.get(ATTRIBUTES, AUTOFLUSH, TYPE).set(ModelType.BOOLEAN);
+        modelNode.get(ATTRIBUTES, AUTOFLUSH, DESCRIPTION).set(bundle.getString("handler.autoflush"));
+    }
+
+    private static void addCommonHandlerOutputStreamRequestProperties(final ModelNode modelNode, final ResourceBundle bundle) {
+        addCommonHandlerRequestProperties(modelNode, bundle);
 
         modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, TYPE).set(ModelType.BOOLEAN);
         modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, DESCRIPTION).set(bundle.getString("handler.autoflush"));
         modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, REQUIRED).set(false);
     }
 
+    private static void addCommonHandlerOutputStreamUpdateRequestProperties(final ModelNode modelNode, final ResourceBundle bundle) {
+        addCommonHandlerUpdateRequestProperties(modelNode, bundle);
+
+        modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, TYPE).set(ModelType.BOOLEAN);
+        modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, DESCRIPTION).set(bundle.getString("handler.autoflush"));
+        modelNode.get(REQUEST_PROPERTIES, AUTOFLUSH, REQUIRED).set(false);
+    }
 
     static final DescriptionProvider ASYNC_HANDLER = new DescriptionProvider() {
         @Override
@@ -396,15 +429,19 @@ class LoggingSubsystemProviders {
 
             addCommonHandlerAttributes(node, bundle);
 
-            node.get(ATTRIBUTES, HANDLER, TYPE).set(ModelType.LIST);
-            node.get(ATTRIBUTES, HANDLER, VALUE_TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, HANDLER, DESCRIPTION).set(bundle.getString("logger.handlers"));
+            // Remove attributes not used on the AYSNC handler
+            node.get(ATTRIBUTES).remove(ENCODING);
+            node.get(ATTRIBUTES).remove(FORMATTER);
 
-            node.get(ATTRIBUTES, QUEUE_LENGTH, TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, QUEUE_LENGTH, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, QUEUE_LENGTH, DESCRIPTION).set(bundle.getString("async.queue-length"));
 
             node.get(ATTRIBUTES, OVERFLOW_ACTION, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, OVERFLOW_ACTION, DESCRIPTION).set(bundle.getString("async.overflow-action"));
+
+            node.get(ATTRIBUTES, SUBHANDLERS, TYPE).set(ModelType.LIST);
+            node.get(ATTRIBUTES, SUBHANDLERS, VALUE_TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, SUBHANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
 
             return node;
         }
@@ -421,9 +458,22 @@ class LoggingSubsystemProviders {
 
             addCommonHandlerRequestProperties(operation, bundle);
 
+            // Remove REQUEST_PROPERTIES not used on the AYSNC handler
+            operation.get(REQUEST_PROPERTIES).remove(ENCODING);
+            operation.get(REQUEST_PROPERTIES).remove(FORMATTER);
+
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, TYPE).set(ModelType.INT);
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, DESCRIPTION).set(bundle.getString("async.queue-length"));
-            operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, REQUIRED).set(false);
+
+            operation.get(REQUEST_PROPERTIES, OVERFLOW_ACTION, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, OVERFLOW_ACTION, DESCRIPTION).set(bundle.getString("async.overflow-action"));
+            operation.get(REQUEST_PROPERTIES, OVERFLOW_ACTION, REQUIRED).set(false);
+
+            operation.get(REQUEST_PROPERTIES, SUBHANDLERS, TYPE).set(ModelType.LIST);
+            operation.get(REQUEST_PROPERTIES, SUBHANDLERS, VALUE_TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, SUBHANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
+            operation.get(REQUEST_PROPERTIES, SUBHANDLERS, REQUIRED).set(false);
 
             return operation;
         }
@@ -440,9 +490,22 @@ class LoggingSubsystemProviders {
 
             addCommonHandlerUpdateRequestProperties(operation, bundle);
 
+            // Remove REQUEST_PROPERTIES not used on the AYSNC handler
+            operation.get(REQUEST_PROPERTIES).remove(ENCODING);
+            operation.get(REQUEST_PROPERTIES).remove(FORMATTER);
+
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, TYPE).set(ModelType.INT);
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, DESCRIPTION).set(bundle.getString("async.queue-length"));
-            operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, REQUIRED).set(false);
+
+            operation.get(REQUEST_PROPERTIES, OVERFLOW_ACTION, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, OVERFLOW_ACTION, DESCRIPTION).set(bundle.getString("async.overflow-action"));
+            operation.get(REQUEST_PROPERTIES, OVERFLOW_ACTION, REQUIRED).set(false);
+
+            operation.get(REQUEST_PROPERTIES, SUBHANDLERS, TYPE).set(ModelType.LIST);
+            operation.get(REQUEST_PROPERTIES, SUBHANDLERS, VALUE_TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, SUBHANDLERS, DESCRIPTION).set(bundle.getString("logger.handlers"));
+            operation.get(REQUEST_PROPERTIES, SUBHANDLERS, REQUIRED).set(false);
 
             return operation;
         }
@@ -488,7 +551,7 @@ class LoggingSubsystemProviders {
             final ModelNode node = new ModelNode();
             node.get(DESCRIPTION).set(bundle.getString("console.handler"));
 
-            addCommonHandlerAttributes(node, bundle);
+            addCommonHandlerOutputStreamAttributes(node, bundle);
 
             node.get(ATTRIBUTES, TARGET, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, TARGET, DESCRIPTION).set(bundle.getString("console.handler.target"));
@@ -505,7 +568,7 @@ class LoggingSubsystemProviders {
             operation.get(OPERATION_NAME).set(ADD);
             operation.get(DESCRIPTION).set(bundle.getString("console.handler"));
 
-            addCommonHandlerRequestProperties(operation, bundle);
+            addCommonHandlerOutputStreamRequestProperties(operation, bundle);
 
             operation.get(REQUEST_PROPERTIES, TARGET, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, TARGET, DESCRIPTION).set(bundle.getString("console.handler.target"));
@@ -523,7 +586,7 @@ class LoggingSubsystemProviders {
             operation.get(OPERATION_NAME).set(ConsoleHandlerUpdateProperties.OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("console.handler.update"));
 
-            addCommonHandlerUpdateRequestProperties(operation, bundle);
+            addCommonHandlerOutputStreamUpdateRequestProperties(operation, bundle);
 
             operation.get(REQUEST_PROPERTIES, TARGET, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, TARGET, DESCRIPTION).set(bundle.getString("console.handler.target"));
@@ -534,7 +597,7 @@ class LoggingSubsystemProviders {
     };
 
     private static void addCommonFileHandlerAttributes(final ModelNode model, final ResourceBundle bundle) {
-        addCommonHandlerAttributes(model, bundle);
+        addCommonHandlerOutputStreamAttributes(model, bundle);
         model.get(ATTRIBUTES, APPEND, TYPE).set(ModelType.BOOLEAN);
         model.get(ATTRIBUTES, APPEND, DESCRIPTION).set(bundle.getString("file.handler.append"));
 
@@ -546,7 +609,7 @@ class LoggingSubsystemProviders {
     }
 
     private static void addCommonFileHandlerRequestProperties(final ModelNode model, final ResourceBundle bundle) {
-        addCommonHandlerRequestProperties(model, bundle);
+        addCommonHandlerOutputStreamRequestProperties(model, bundle);
         model.get(REQUEST_PROPERTIES, APPEND, TYPE).set(ModelType.BOOLEAN);
         model.get(REQUEST_PROPERTIES, APPEND, DESCRIPTION).set(bundle.getString("file.handler.append"));
         model.get(REQUEST_PROPERTIES, APPEND, REQUIRED).set(false);
@@ -561,7 +624,7 @@ class LoggingSubsystemProviders {
     }
 
     private static void addCommonFileHandlerUpdateRequestProperties(final ModelNode model, final ResourceBundle bundle) {
-        addCommonHandlerUpdateRequestProperties(model, bundle);
+        addCommonHandlerOutputStreamUpdateRequestProperties(model, bundle);
         model.get(REQUEST_PROPERTIES, APPEND, TYPE).set(ModelType.BOOLEAN);
         model.get(REQUEST_PROPERTIES, APPEND, DESCRIPTION).set(bundle.getString("file.handler.append"));
         model.get(REQUEST_PROPERTIES, APPEND, REQUIRED).set(false);
@@ -743,10 +806,10 @@ class LoggingSubsystemProviders {
             node.get(ATTRIBUTES, MODULE, DESCRIPTION).set(bundle.getString("custom.handler.module"));
 
             node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.LIST);
-            node.get(ATTRIBUTES, PROPERTIES, DESCRIPTION).set(bundle.getString("custom.handler.properties"));
-            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("custom.handler.properties.name"));
+            node.get(ATTRIBUTES, PROPERTIES, DESCRIPTION).set(bundle.getString("handler.properties"));
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("handler.properties.name"));
             node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("custom.handler.properties.value"));
+            node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("handler.properties.value"));
             node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
 
             return node;
@@ -757,31 +820,31 @@ class LoggingSubsystemProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(ADD);
-            operation.get(DESCRIPTION).set(bundle.getString("custom.handler"));
+            final ModelNode node = new ModelNode();
+            node.get(OPERATION_NAME).set(ADD);
+            node.get(DESCRIPTION).set(bundle.getString("custom.handler"));
 
-            addCommonHandlerRequestProperties(operation, bundle);
+            addCommonHandlerRequestProperties(node, bundle);
 
-            operation.get(REQUEST_PROPERTIES, CLASS, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, CLASS, DESCRIPTION).set(bundle.getString("custom.handler.class"));
-            operation.get(REQUEST_PROPERTIES, CLASS, REQUIRED).set(true);
+            node.get(REQUEST_PROPERTIES, CLASS, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, CLASS, DESCRIPTION).set(bundle.getString("custom.handler.class"));
+            node.get(REQUEST_PROPERTIES, CLASS, REQUIRED).set(true);
 
-            operation.get(REQUEST_PROPERTIES, MODULE, TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, MODULE, DESCRIPTION).set(bundle.getString("custom.handler.module"));
-            operation.get(REQUEST_PROPERTIES, MODULE, REQUIRED).set(true);
+            node.get(REQUEST_PROPERTIES, MODULE, TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, MODULE, DESCRIPTION).set(bundle.getString("custom.handler.module"));
+            node.get(REQUEST_PROPERTIES, MODULE, REQUIRED).set(true);
 
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.LIST);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("custom.handler.properties"));
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("custom.handler.properties.name"));
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, REQUIRED).set(true);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("custom.handler.properties.value"));
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, REQUIRED).set(true);
+            node.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.LIST);
+            node.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("handler.properties"));
+            node.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
+            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("handler.properties.name"));
+            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, REQUIRED).set(true);
+            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("handler.properties.value"));
+            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
+            node.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, REQUIRED).set(true);
 
-            return operation;
+            return node;
         }
     };
 
@@ -802,16 +865,6 @@ class LoggingSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, MODULE, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, MODULE, DESCRIPTION).set(bundle.getString("custom.handler.module"));
             operation.get(REQUEST_PROPERTIES, MODULE, REQUIRED).set(true);
-
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.LIST);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, DESCRIPTION).set(bundle.getString("custom.handler.properties"));
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, DESCRIPTION).set(bundle.getString("custom.handler.properties.name"));
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, VALUE_TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, NAME, REQUIRED).set(true);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, DESCRIPTION).set(bundle.getString("custom.handler.properties.value"));
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, VALUE_TYPE).set(ModelType.STRING);
-            operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE, VALUE, REQUIRED).set(true);
 
             return operation;
         }
