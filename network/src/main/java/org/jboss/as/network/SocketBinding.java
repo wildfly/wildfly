@@ -32,6 +32,7 @@ import java.net.SocketException;
 
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.as.network.NetworkMessages.MESSAGES;
 
 /**
  * An encapsulation of socket binding related information.
@@ -108,7 +109,7 @@ public final class SocketBinding {
      */
     public InetSocketAddress getMulticastSocketAddress() {
         if (multicastAddress == null) {
-            throw new IllegalStateException("no multicast binding: " + name);
+            throw MESSAGES.noMulticastBinding(name);
         }
         return new InetSocketAddress(multicastAddress, multicastPort);
     }
@@ -235,7 +236,7 @@ public final class SocketBinding {
 
     void checkNotBound() {
         if(isBound()) {
-            throw new IllegalStateException("cannot change value while the socket is bound.");
+            throw MESSAGES.cannotChangeWhileBound();
         }
     }
 

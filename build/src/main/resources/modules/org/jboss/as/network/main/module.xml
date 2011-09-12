@@ -31,5 +31,6 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging" />
     </dependencies>
 </module>
