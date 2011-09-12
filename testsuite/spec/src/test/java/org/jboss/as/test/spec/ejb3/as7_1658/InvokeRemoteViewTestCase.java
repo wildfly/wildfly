@@ -27,6 +27,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.spec.ejb3.as7_1658.a.ABean;
 import org.jboss.as.test.spec.ejb3.as7_1658.a.ARemote;
 import org.jboss.as.test.spec.ejb3.as7_1658.b.BBean;
+import org.jboss.as.test.spec.ejb3.as7_1658.b.CBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -55,7 +56,15 @@ public class InvokeRemoteViewTestCase {
 
     @Test
     @OperateOnDeployment("as7_1658-b")
-    public void testInvoke() throws Exception {
+    public void testInjected() throws Exception {
+        final InitialContext ctx = new InitialContext();
+        final CBean bean = (CBean) ctx.lookup("java:global/as7_1658-b/CBean");
+        bean.doNothing();
+    }
+
+    @Test
+    @OperateOnDeployment("as7_1658-b")
+    public void testLookup() throws Exception {
         final InitialContext ctx = new InitialContext();
         final BBean bean = (BBean) ctx.lookup("java:global/as7_1658-b/BBean");
         bean.doNothing();
