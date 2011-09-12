@@ -56,10 +56,7 @@ public class RemoveMethodMergingProcessor extends AbstractMergingProcessor<State
         if (clazz != null) {
             ClassAnnotationInformation<Remove, Boolean> annotations = clazz.getAnnotationInformation(Remove.class);
             if (annotations != null) {
-                if (annotations.getMethodLevelAnnotations().size() > 1) {
-                    throw new DeploymentUnitProcessingException("More than one @Remove method found on class " + componentClass);
-                } else if (!annotations.getMethodLevelAnnotations().isEmpty()) {
-                    final Map.Entry<MethodIdentifier, List<Boolean>> entry = annotations.getMethodLevelAnnotations().entrySet().iterator().next();
+                for(Map.Entry<MethodIdentifier, List<Boolean>> entry : annotations.getMethodLevelAnnotations().entrySet()) {
                     final Boolean retainIfException = entry.getValue().get(0);
                     componentConfiguration.addRemoveMethod(entry.getKey(), retainIfException);
                 }
