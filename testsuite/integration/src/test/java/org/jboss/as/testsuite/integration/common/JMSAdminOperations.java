@@ -78,6 +78,7 @@ public class JMSAdminOperations {
         final ModelNode createJmsQueueOperation = new ModelNode();
         createJmsQueueOperation.get(ClientConstants.OP).set(ClientConstants.ADD);
         createJmsQueueOperation.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
+        createJmsQueueOperation.get(ClientConstants.OP_ADDR).add("hornetq-server", "default");
         createJmsQueueOperation.get(ClientConstants.OP_ADDR).add(destinationType, destinationName);
         createJmsQueueOperation.get("entries").add(jndiName);
         try {
@@ -99,6 +100,7 @@ public class JMSAdminOperations {
         final ModelNode removeJmsQueue = new ModelNode();
         removeJmsQueue.get(ClientConstants.OP).set("remove");
         removeJmsQueue.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
+        removeJmsQueue.get(ClientConstants.OP_ADDR).add("hornetq-server", "default");
         removeJmsQueue.get(ClientConstants.OP_ADDR).add(destinationType, destinationName);
         try {
             this.applyUpdate(removeJmsQueue);

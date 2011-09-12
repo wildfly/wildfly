@@ -128,8 +128,33 @@ public class MessagingDescriptions {
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("messaging"));
 
+        node.get(ATTRIBUTES).setEmptyObject();
+
+        node.get(OPERATIONS);   // placeholder
+
+        node.get(CHILDREN, CommonAttributes.HORNETQ_SERVER, DESCRIPTION).set(bundle.getString("messaging.servers"));
+        node.get(CHILDREN, CommonAttributes.HORNETQ_SERVER, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.HORNETQ_SERVER, MODEL_DESCRIPTION);
+
+        return node;
+    }
+
+    public static ModelNode getSubsystemAdd(Locale locale) {
+        return getDescriptionOnlyOperation(locale, ADD, "messaging");
+    }
+
+    public static ModelNode getSubsystemRemove(Locale locale) {
+        return getDescriptionOnlyOperation(locale, REMOVE, "messaging");
+    }
+
+    public static ModelNode getHornetQServerResource(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("server"));
+
         for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle,  "messaging", node);
+            attr.addResourceAttributeDescription(bundle,  "server", node);
         }
 
         node.get(OPERATIONS);   // placeholder
@@ -233,22 +258,22 @@ public class MessagingDescriptions {
         return node;
     }
 
-    public static ModelNode getSubsystemAdd(Locale locale) {
+    public static ModelNode getHornetQServerAdd(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("messaging.add"));
+        node.get(DESCRIPTION).set(bundle.getString("server.add"));
 
         for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "messaging", node);
+            attr.addOperationParameterDescription(bundle, "server", node);
         }
 
         return node;
     }
 
-    public static ModelNode getSubsystemRemove(Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, "messaging");
+    public static ModelNode getHornetQServerRemove(Locale locale) {
+        return getDescriptionOnlyOperation(locale, REMOVE, "server");
     }
 
     public static ModelNode getGetLastSentMessageId(Locale locale) {

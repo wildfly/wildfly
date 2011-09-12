@@ -130,7 +130,11 @@ public class JmsCFAddHandler extends BatchModeCommandHandler {
             builder.addNode("profile",profile);
         }
 
+
+        String serverName = "default"; // TODO read server name from props
+
         builder.addNode("subsystem", "messaging");
+        builder.addNode("hornetq-server", serverName);
         builder.setOperationName("add");
 
         final String name = this.name.getValue(args, true);

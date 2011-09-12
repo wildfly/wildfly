@@ -61,6 +61,13 @@ class MessagingSubsystemProviders {
         }
     };
 
+    public static final DescriptionProvider SERVER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return MessagingDescriptions.getHornetQServerResource(locale);
+        }
+    };
+
     static final DescriptionProvider QUEUE_RESOURCE = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {

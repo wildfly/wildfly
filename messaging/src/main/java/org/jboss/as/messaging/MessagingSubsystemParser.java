@@ -77,22 +77,22 @@ import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SEND_XML_NAME;
+import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
-import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING_ALTERNATIVE;
-import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING_OPTIONAL;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
@@ -143,9 +143,27 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         address.add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
         address.protect();
 
+        final ModelNode subsystemAdd = new ModelNode();
+        subsystemAdd.get(OP).set(ADD);
+        subsystemAdd.get(OP_ADDR).set(address);
+        list.add(subsystemAdd);
+
+        // TODO deal with child "server" elements in a 1.1 xsd
+
+        processHornetQServer(reader, address, list);
+
+    }
+
+    private void processHornetQServer(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list) throws XMLStreamException {
+
+        final ModelNode address = subsystemAddress.clone();
+        // TODO parse the server name from the xml
+        address.add(HORNETQ_SERVER, "default");
+        address.protect();
+
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
+        operation.get(OP_ADDR).set(address);
         list.add(operation);
 
         EnumSet<Element> seen = EnumSet.noneOf(Element.class);
@@ -1333,6 +1351,27 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         final ModelNode node = context.getModelNode();
 
+        final ModelNode servers = node.require(HORNETQ_SERVER);
+        boolean barf = false;
+        for (Property prop : servers.asPropertyList()) {
+            if (barf) {
+                // TODO deal with multiple servers and remove this
+                throw new UnsupportedOperationException("Multiple HornetQ server resources not yet implemented");
+            }
+            barf = true;
+            writeHornetQServer(writer, prop.getName(), prop.getValue());
+        }
+
+
+        writer.writeEndElement();
+    }
+
+    private void writeHornetQServer(final XMLExtendedStreamWriter writer, final String serverName, final ModelNode node) throws XMLStreamException {
+
+        // TODO start element and write server name
+//        writer.writeStartElement(Element.HORNETQ_SERVER.getLocalName());
+//        writer.writeAttribute(Attribute.NAME.getLocalName(), serverName);
+
         for (AttributeDefinition simpleAttribute : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             simpleAttribute.marshallAsElement(node, writer);
         }
@@ -1403,8 +1442,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
            writer.writeEndElement();
         }
 
-
-        writer.writeEndElement();
+        // TODO write end element
+//        writer.writeEndElement();
     }
 
     private void writeConnectorServices(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {

@@ -102,8 +102,10 @@ public class JmsQueueAddHandler extends BatchModeCommandHandler {
         }
 
         final String name = this.name.getValue(args, true);
+        String serverName = "default"; // TODO read server name from props
 
         builder.addNode("subsystem", "messaging");
+        builder.addNode("hornetq-server", serverName);
         builder.addNode("jms-queue", name);
         builder.setOperationName("add");
 
