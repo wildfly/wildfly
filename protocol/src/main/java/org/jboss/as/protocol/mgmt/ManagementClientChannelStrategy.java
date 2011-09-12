@@ -39,6 +39,8 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.sasl.JBossSaslProvider;
 import org.xnio.IoUtils;
 
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -125,8 +127,7 @@ public abstract class ManagementClientChannelStrategy {
                 try {
                     client.connect(callbackHandler);
                 } catch (ConnectException e) {
-                    throw new ConnectException("Could not connect to " + configuration.getUri() + " in " + configuration.getConnectTimeout() + "ms. " +
-                              "Make sure the server is running and/or consider setting a longer timeout by setting -D" + CONNECT_TIME_OUT_PROPERTY + "=<timeout in ms>.");
+                    throw MESSAGES.couldNotConnect(configuration.getUri(), configuration.getConnectTimeout(), CONNECT_TIME_OUT_PROPERTY);
                 }
                 channel = client.openChannel("management");
                 channel.setOperationHandler(handler);

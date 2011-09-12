@@ -27,6 +27,8 @@ import java.io.InputStream;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.Marshalling;
 
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+
 /**
  * Byte input implementation that reads bytes in chunks.  Each chunk is started with a {@code CHUNK_START} header followed
  * by the length of the chunk.  At the end of all the chunks it will run into a {@code END} byte, which will appear as the end
@@ -150,7 +152,7 @@ public class ChunkyByteInput extends InputStream implements ByteInput {
                 finished = true;
                 break;
             default:
-                throw new IOException("Invalid start chunk start [" + current + "]");
+                throw MESSAGES.invalidStartChunk(current);
         }
     }
 
