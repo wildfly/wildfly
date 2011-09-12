@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.Valve;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.core.StandardHost;
@@ -71,13 +72,13 @@ public class WebVirtualHostService implements Service<VirtualHost> {
             host.addAlias(alias);
         }
         if(accessLog != null) {
-            host.addValve(createAccessLogValve(accessLogPathInjector.getValue(), accessLog));
+            host.addValve(createAccessLogValve(host, accessLogPathInjector.getValue(), accessLog));
         }
         if(rewrite != null) {
-            host.addValve(createRewriteValve(rewrite));
+            host.addValve(createRewriteValve(host, rewrite));
         }
         if(sso != null) {
-            host.addValve(createSsoValve(sso));
+            host.addValve(createSsoValve(host, sso));
         }
         if (defaultWebModule != null) {
             host.setDefaultWebapp(defaultWebModule);
@@ -141,7 +142,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         return webServer;
     }
 
-    static Valve createAccessLogValve(final String logDirectory, final ModelNode element) {
+    static Valve createAccessLogValve(final Container container, final String logDirectory, final ModelNode element) {
         boolean extended = false;
         if (element.hasDefined(Constants.EXTENDED)) {
             extended = element.get(Constants.EXTENDED).asBoolean();
@@ -164,21 +165,30 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         return log;
     }
 
-    static Valve createRewriteValve(final ModelNode element) throws StartException {
+    static Valve createRewriteValve(final Container container, final ModelNode element) throws StartException {
         final RewriteValve rewriteValve = new RewriteValve();
+        rewriteValve.setContainer(container);
         StringBuffer configuration = new StringBuffer();
         for (final ModelNode rewrite : element.asList()) {
             if (rewrite.has(Constants.CONDITION)) {
                 for (final ModelNode condition : rewrite.get(Constants.CONDITION).asList()) {
                     configuration.append("RewriteCond ")
                     .append(condition.get(Constants.TEST).asString())
-                    .append(" ").append(condition.get(Constants.PATTERN).asString())
-                    .append(" [").append(condition.get(Constants.FLAGS).asString()).append("]\r\n");
+                    .append(" ").append(condition.get(Constants.PATTERN).asString());
+                    if (condition.hasDefined(Constants.FLAGS)) {
+                        configuration.append(" [").append(condition.get(Constants.FLAGS).asString()).append("]\r\n");
+                    } else {
+                        configuration.append("\r\n");
+                    }
                 }
-                configuration.append("RewriteRule ")
-                .append(rewrite.get(Constants.PATTERN).asString())
-                .append(" ").append(rewrite.get(Constants.SUBSTITUTION).asString())
-                .append(" [").append(rewrite.get(Constants.FLAGS).asString()).append("]\r\n");
+            }
+            configuration.append("RewriteRule ")
+            .append(rewrite.get(Constants.PATTERN).asString())
+            .append(" ").append(rewrite.get(Constants.SUBSTITUTION).asString());
+            if (rewrite.hasDefined(Constants.FLAGS)) {
+                configuration.append(" [").append(rewrite.get(Constants.FLAGS).asString()).append("]\r\n");
+            } else {
+                configuration.append("\r\n");
             }
         }
         try {
@@ -189,7 +199,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         return rewriteValve;
     }
 
-    static Valve createSsoValve(final ModelNode element) throws StartException {
+    static Valve createSsoValve(final Container container, final ModelNode element) throws StartException {
         // FIXME: Add clustered SSO support
         final SingleSignOn ssoValve = new SingleSignOn();
         if (element.hasDefined(Constants.DOMAIN)) ssoValve.setCookieDomain(element.get(Constants.DOMAIN).asString());

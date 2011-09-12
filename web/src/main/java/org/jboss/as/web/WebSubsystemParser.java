@@ -657,6 +657,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             throw unexpectedAttribute(reader, i);
                         }
                     }
+                    requireNoContent(reader);
                     rewrite.get(CONDITION).add(condition);
                     break;
                 default:
