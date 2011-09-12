@@ -84,8 +84,7 @@ public class MessageDrivenComponent extends EJBComponent implements MessageDrive
 
             @Override
             public void destroy(MessageDrivenComponentInstance obj) {
-                throw new RuntimeException("NYI");
-                //destroyInstance(obj);
+                obj.destroy();
             }
         };
         final PoolConfig poolConfig = ejbComponentCreateService.getPoolConfig();

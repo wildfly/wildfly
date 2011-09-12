@@ -17,10 +17,11 @@
 
 package org.jboss.as.weld.ejb;
 
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.SessionBean;
@@ -177,7 +178,7 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
     }
 
 
-    public static class Factory implements InterceptorFactory {
+    public static class Factory extends ComponentInstanceInterceptorFactory {
 
         private final InjectedValue<WeldContainer> weldContainer = new InjectedValue<WeldContainer>();
         private final String beanArchiveId;
@@ -193,7 +194,7 @@ public class Jsr299BindingsInterceptor implements Serializable, org.jboss.invoca
         }
 
         @Override
-        public org.jboss.invocation.Interceptor create(final InterceptorFactoryContext context) {
+        public org.jboss.invocation.Interceptor create(final Component component, final InterceptorFactoryContext context) {
             return new Jsr299BindingsInterceptor((BeanManagerImpl) weldContainer.getValue().getBeanManager(beanArchiveId), ejbName, context, interceptionType, classLoader);
         }
 
