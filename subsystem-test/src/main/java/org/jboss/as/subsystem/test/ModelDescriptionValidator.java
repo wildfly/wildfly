@@ -23,6 +23,7 @@ package org.jboss.as.subsystem.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
@@ -92,7 +93,7 @@ public class ModelDescriptionValidator {
         validChildTypeKeys.put(MODEL_DESCRIPTION, NullDescriptorValidator.INSTANCE);
         validChildTypeKeys.put(MIN_OCCURS, SimpleIntDescriptorValidator.INSTANCE);
         validChildTypeKeys.put(MAX_OCCURS, SimpleIntDescriptorValidator.INSTANCE);
-        validChildTypeKeys.put(ALLOWED, NullDescriptorValidator.INSTANCE);
+        validChildTypeKeys.put(ALLOWED, StringListValidator.INSTANCE);
         VALID_CHILD_TYPE_KEYS = Collections.unmodifiableMap(validChildTypeKeys);
 
 
@@ -104,12 +105,13 @@ public class ModelDescriptionValidator {
         paramAndAttributeKeys.put(VALUE_TYPE, NullDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(TYPE, NullDescriptorValidator.INSTANCE);
         //Arbitrary
+        paramAndAttributeKeys.put(ALTERNATIVES, StringListValidator.INSTANCE);
         paramAndAttributeKeys.put(MIN, NumericDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(MAX, NumericDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(MIN_LENGTH, LengthDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(MAX_LENGTH, LengthDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(DEFAULT, NullDescriptorValidator.INSTANCE); //TODO Validate same type as target type
-        paramAndAttributeKeys.put(ALLOWED, NullDescriptorValidator.INSTANCE);
+        paramAndAttributeKeys.put(ALLOWED, StringListValidator.INSTANCE);
         paramAndAttributeKeys.put(UNIT, NumericDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(EXPRESSIONS_ALLOWED, BooleanDescriptorValidator.INSTANCE);
 
@@ -486,6 +488,36 @@ public class ModelDescriptionValidator {
 
         @Override
         public String validate(ModelNode currentNode, String descriptor) {
+            return null;
+        }
+    }
+
+    private static class StringListValidator implements ArbitraryDescriptorValidator, AttributeOrParameterArbitraryDescriptorValidator {
+        static final StringListValidator INSTANCE = new StringListValidator();
+
+        @Override
+        public String validate(ModelType currentType, ModelNode currentNode, String descriptor) {
+            return validate(currentNode, descriptor);
+        }
+
+        @Override
+        public String validate(ModelNode currentNode, String descriptor) {
+            if (currentNode.hasDefined(descriptor)) {
+                List<ModelNode> list;
+                try {
+                    list = currentNode.asList();
+                } catch (Exception e) {
+                    return "'" + descriptor + "' is not a list";
+                }
+                for (ModelNode entry : list) {
+                    try {
+                        String s = entry.asString();
+                    } catch (Exception e) {
+                        return "'" + descriptor + "' is not a string";
+                    }
+
+                }
+            }
             return null;
         }
     }
