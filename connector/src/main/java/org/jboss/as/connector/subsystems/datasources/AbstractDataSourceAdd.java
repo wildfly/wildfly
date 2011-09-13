@@ -33,6 +33,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -66,7 +67,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        boolean enabled = !operation.hasDefined(ENABLED) || operation.get(ENABLED).asBoolean();
+        boolean enabled = !operation.hasDefined(ENABLED.getName()) || operation.get(ENABLED.getName()).asBoolean();
 
         AbstractDataSourceService dataSourceService = createDataSourceService(jndiName);
 
@@ -84,7 +85,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         controllers.add(startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, jndiName, serviceTarget, operation));
 
-        ModelNode node = operation.require(DATASOURCE_DRIVER);
+        ModelNode node = operation.require(DATASOURCE_DRIVER.getName());
         final String driverName = node.asString();
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
         if (driverServiceName != null) {
@@ -161,14 +162,14 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
     protected abstract AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException;
 
     static void populateAddModel(final ModelNode existingModel, final ModelNode newModel,
-            final String connectionPropertiesProp, final AttributeDefinition[] attributes) {
+            final String connectionPropertiesProp, final SimpleAttributeDefinition[] attributes) {
         if (existingModel.hasDefined(connectionPropertiesProp)) {
 
             for (Property property : existingModel.get(connectionPropertiesProp).asPropertyList()) {
                 newModel.get(connectionPropertiesProp, property.getName()).set(property.getValue().asString());
             }
         }
-        for (final AttributeDefinition attribute : attributes) {
+        for (final SimpleAttributeDefinition attribute : attributes) {
             if (existingModel.hasDefined(attribute.getName())) {
                 newModel.get(attribute.getName()).set(existingModel.get(attribute.getName()));
             }

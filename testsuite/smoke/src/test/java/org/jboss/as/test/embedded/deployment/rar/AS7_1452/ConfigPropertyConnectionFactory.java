@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.embedded.deployment.rar.AS7_1452;
 
-package org.jboss.as.connector.subsystems.resourceadapters;
+import java.io.Serializable;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
-
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.dmr.ModelNode;
+import javax.resource.Referenceable;
+import javax.resource.ResourceException;
 
 /**
- * Handler for adding the datasource subsystem.
+ * ConfigPropertyConnectionFactory
  *
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
- * @author John Bailey
+ * @version $Revision: $
  */
-class ResourceAdaptersSubSystemAdd extends AbstractAddStepHandler {
-
-    static final ResourceAdaptersSubSystemAdd INSTANCE = new ResourceAdaptersSubSystemAdd();
-
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.setEmptyObject();
-        model.get(RESOURCEADAPTER_NAME);
-    }
-
-    protected boolean requiresRuntime(OperationContext context) {
-        return false;
-    }
+public interface ConfigPropertyConnectionFactory extends Serializable, Referenceable
+{
+   /** 
+    * Get connection from factory
+    *
+    * @return ConfigPropertyConnection instance
+    * @exception javax.resource.ResourceException Thrown if a connection can't be obtained
+    */
+   public ConfigPropertyConnection getConnection() throws ResourceException;
 }

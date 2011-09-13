@@ -24,6 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -84,5 +85,5 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         // TODO:  RE-ADD SERVICES
     }
 
-    protected abstract AttributeDefinition[] getModelProperties();
+    protected abstract SimpleAttributeDefinition[] getModelProperties();
 }

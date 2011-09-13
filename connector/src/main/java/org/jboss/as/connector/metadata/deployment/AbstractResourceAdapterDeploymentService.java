@@ -236,7 +236,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
-
             final BinderService binderService = new BinderService(bindInfo.getBindName());
 
             serviceTarget
@@ -247,17 +246,20 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             binderService.getNamingStoreInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName))
                     .addListener(new AbstractServiceListener<Object>() {
-                        public void serviceStarted(ServiceController<?> controller) {
-                            log.infof("Bound JCA ConnectionFactory [%s]", jndi);
-                        }
-
-                        public void serviceStopped(ServiceController<?> serviceController) {
-                            log.infof("Unbound JCA ConnectionFactory [%s]", jndi);
-                        }
-
-                        public void serviceRemoved(ServiceController<?> serviceController) {
-                            log.debugf("Removed JCA ConnectionFactory [%s]", jndi);
-                            serviceController.removeListener(this);
+                         public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                            switch (transition) {
+                                case STARTING_to_UP: {
+                                    log.infof("Bound JCA ConnectionFactory [%s]", jndi);
+                                    break;
+                                }
+                                case STOPPING_to_DOWN: {
+                                    log.infof("Unbound JCA ConnectionFactory [%s]", jndi);
+                                    break;
+                                }
+                                case REMOVING_to_REMOVED: {
+                                    log.debugf("Removed JCA ConnectionFactory [%s]", jndi);
+                                }
+                            }
                         }
                     }).setInitialMode(ServiceController.Mode.ACTIVE).install();
 

@@ -193,12 +193,25 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(true, true);
     }
 
+    @Test
+    public void testStandaloneJcaXml() throws Exception {
+        standaloneXmlTest("standalone-jca.xml");
+    }
+
     private void standaloneXmlTest(boolean preview, boolean ha) throws Exception {
+
+        String profile = preview ? (ha ? "standalone-preview-ha.xml" : "standalone-preview.xml")
+                                 : (ha ? "standalone-ha.xml" : "standalone.xml");
+        standaloneXmlTest(profile);
+    }
+
+    private void standaloneXmlTest(String profile) throws Exception {
+
         File file = new File("target/standalone-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalStandaloneXml(preview, ha), file);
+        copyFile(getOriginalStandaloneXml(profile), file);
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
 
@@ -542,12 +555,7 @@ public class ParseAndMarshalModelsTestCase {
         }
     }
 
-    private File getOriginalStandaloneXml(boolean preview, boolean ha) {
-        //Get the standalone.xml from the build/src directory, since the one in the
-        //built server could have changed during running of tests
-
-        String profile = preview ? (ha ? "standalone-preview-ha.xml" : "standalone-preview.xml")
-                                 : (ha ? "standalone-ha.xml" : "standalone.xml");
+    private File getOriginalStandaloneXml(String profile) {
         File f = new File(".").getAbsoluteFile();
         f = f.getParentFile().getParentFile().getParentFile();
         Assert.assertTrue(f.exists());

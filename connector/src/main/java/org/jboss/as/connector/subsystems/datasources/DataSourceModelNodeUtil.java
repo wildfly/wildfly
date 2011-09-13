@@ -24,15 +24,14 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
-import static org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATIONMINUTES_REMOVE;
 import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
 import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY;
 import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL_REMOVE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
@@ -40,11 +39,10 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
@@ -71,7 +69,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLOATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLATION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
@@ -83,7 +81,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNE
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 
 import java.util.Collections;
@@ -91,6 +89,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
@@ -124,198 +123,18 @@ import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
  */
 class DataSourceModelNodeUtil {
 
-    static void fillFrom(final ModelNode dataSourceModel, final DataSource dataSource) {
-        for (Map.Entry<String, String> entry : dataSource.getConnectionProperties().entrySet()) {
-            dataSourceModel.get(CONNECTION_PROPERTIES, entry.getKey()).set(entry.getValue());
-        }
-        setStringIfNotNull(dataSourceModel, CONNECTION_URL, dataSource.getConnectionUrl());
-        setStringIfNotNull(dataSourceModel, DATASOURCE_DRIVER_CLASS, dataSource.getDriverClass());
-        setStringIfNotNull(dataSourceModel, DATASOURCE_CLASS, dataSource.getDataSourceClass());
-        setStringIfNotNull(dataSourceModel, JNDINAME, dataSource.getJndiName());
-        setStringIfNotNull(dataSourceModel, DATASOURCE_DRIVER, dataSource.getDriver());
-        setStringIfNotNull(dataSourceModel, NEW_CONNECTION_SQL, dataSource.getNewConnectionSql());
-        setStringIfNotNull(dataSourceModel, POOLNAME, dataSource.getPoolName());
-        setStringIfNotNull(dataSourceModel, URL_DELIMITER, dataSource.getUrlDelimiter());
-        setStringIfNotNull(dataSourceModel, URL_SELECTOR_STRATEGY_CLASS_NAME, dataSource.getUrlSelectorStrategyClassName());
-        setBooleanIfNotNull(dataSourceModel, USE_JAVA_CONTEXT, dataSource.isUseJavaContext());
-        setBooleanIfNotNull(dataSourceModel, ENABLED, dataSource.isEnabled());
-        setBooleanIfNotNull(dataSourceModel, JTA, dataSource.isJTA());
-
-        CommonPool pool = dataSource.getPool();
-        if (pool != null) {
-            setIntegerIfNotNull(dataSourceModel, MAX_POOL_SIZE, pool.getMaxPoolSize());
-            setIntegerIfNotNull(dataSourceModel, MIN_POOL_SIZE, pool.getMinPoolSize());
-            setBooleanIfNotNull(dataSourceModel, POOL_PREFILL, pool.isPrefill());
-            setBooleanIfNotNull(dataSourceModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
-            if (pool.getFlushStrategy() != null) {
-                setStringIfNotNull(dataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().getName());
-            }
-        }
-        DsSecurity security = dataSource.getSecurity();
-        if (security != null) {
-            setStringIfNotNull(dataSourceModel, USERNAME, security.getUserName());
-            setStringIfNotNull(dataSourceModel, PASSWORD, security.getPassword());
-            setStringIfNotNull(dataSourceModel, SECURITY_DOMAIN, security.getSecurityDomain());
-            setExtensionIfNotNull(dataSourceModel, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES, security.getReauthPlugin());
-        }
-        Statement statement = dataSource.getStatement();
-        if (statement != null) {
-            setLongIfNotNull(dataSourceModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
-            setBooleanIfTrue(dataSourceModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
-            if (statement.getTrackStatements() != null) {
-                setStringIfNotNull(dataSourceModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
-            }
-        }
-        TimeOut timeout = dataSource.getTimeOut();
-        if (timeout != null) {
-            setIntegerIfNotNull(dataSourceModel, ALLOCATION_RETRY, timeout.getAllocationRetry());
-            setLongIfNotNull(dataSourceModel, ALLOCATION_RETRY_WAIT_MILLIS, timeout.getAllocationRetryWaitMillis());
-            setLongIfNotNull(dataSourceModel, BLOCKING_TIMEOUT_WAIT_MILLIS, timeout.getBlockingTimeoutMillis());
-            setLongIfNotNull(dataSourceModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
-            setLongIfNotNull(dataSourceModel, QUERYTIMEOUT, timeout.getQueryTimeout());
-            setLongIfNotNull(dataSourceModel, USETRYLOCK, timeout.getUseTryLock());
-            setBooleanIfTrue(dataSourceModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
-        }
-        if (dataSource.getTransactionIsolation() != null) {
-            setStringIfNotNull(dataSourceModel, TRANSACTION_ISOLOATION, dataSource.getTransactionIsolation().name());
-        }
-
-        if (dataSource.isSpy()) {
-            setBooleanIfNotNull(dataSourceModel, SPY, dataSource.isSpy());
-        }
-
-        if (dataSource.isUseCcm()) {
-            setBooleanIfNotNull(dataSourceModel, USE_CCM, dataSource.isUseCcm());
-        }
-
-        Validation validation = dataSource.getValidation();
-        if (validation != null) {
-            setStringIfNotNull(dataSourceModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-            setExtensionIfNotNull(dataSourceModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
-                    validation.getExceptionSorter());
-            setExtensionIfNotNull(dataSourceModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
-                    validation.getStaleConnectionChecker());
-            setExtensionIfNotNull(dataSourceModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
-                    validation.getValidConnectionChecker());
-            setLongIfNotNull(dataSourceModel, BACKGROUNDVALIDATIONMINUTES_REMOVE, validation.getBackgroundValidationMillis());
-            setLongIfNotNull(dataSourceModel, BACKGROUNDVALIDATIONMILLIS, validation.getBackgroundValidationMillis());
-            setBooleanIfNotNull(dataSourceModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
-            setBooleanIfNotNull(dataSourceModel, USE_FAST_FAIL_REMOVE, validation.isUseFastFail());
-            setBooleanIfNotNull(dataSourceModel, USE_FAST_FAIL, validation.isUseFastFail());
-            setBooleanIfNotNull(dataSourceModel, VALIDATEONMATCH, validation.isValidateOnMatch());
-        }
-    }
-
-    static void fillFrom(final ModelNode xaDataSourceModel, final XaDataSource xaDataSource) {
-        for (Map.Entry<String, String> entry : xaDataSource.getXaDataSourceProperty().entrySet()) {
-            xaDataSourceModel.get(XADATASOURCEPROPERTIES).add(entry.getKey(), entry.getValue());
-        }
-        setStringIfNotNull(xaDataSourceModel, XADATASOURCECLASS, xaDataSource.getXaDataSourceClass());
-        setStringIfNotNull(xaDataSourceModel, JNDINAME, xaDataSource.getJndiName());
-        setStringIfNotNull(xaDataSourceModel, DATASOURCE_DRIVER, xaDataSource.getDriver());
-        setStringIfNotNull(xaDataSourceModel, NEW_CONNECTION_SQL, xaDataSource.getNewConnectionSql());
-        setStringIfNotNull(xaDataSourceModel, POOLNAME, xaDataSource.getPoolName());
-        setStringIfNotNull(xaDataSourceModel, URL_DELIMITER, xaDataSource.getUrlDelimiter());
-        setStringIfNotNull(xaDataSourceModel, URL_SELECTOR_STRATEGY_CLASS_NAME, xaDataSource.getUrlSelectorStrategyClassName());
-        setBooleanIfNotNull(xaDataSourceModel, USE_JAVA_CONTEXT, xaDataSource.isUseJavaContext());
-        setBooleanIfNotNull(xaDataSourceModel, ENABLED, xaDataSource.isEnabled());
-        final CommonXaPool pool = xaDataSource.getXaPool();
-        if (pool != null) {
-            setIntegerIfNotNull(xaDataSourceModel, MAX_POOL_SIZE, pool.getMaxPoolSize());
-            setIntegerIfNotNull(xaDataSourceModel, MIN_POOL_SIZE, pool.getMinPoolSize());
-            setBooleanIfNotNull(xaDataSourceModel, POOL_PREFILL, pool.isPrefill());
-            setBooleanIfNotNull(xaDataSourceModel, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
-            if (pool.getFlushStrategy() != null) {
-                setStringIfNotNull(xaDataSourceModel, FLUSH_STRATEGY, pool.getFlushStrategy().getName());
-            }
-            setBooleanIfNotNull(xaDataSourceModel, INTERLEAVING, pool.isInterleaving());
-            setBooleanIfNotNull(xaDataSourceModel, NOTXSEPARATEPOOL, pool.isNoTxSeparatePool());
-            setBooleanIfNotNull(xaDataSourceModel, PAD_XID, pool.isPadXid());
-            setBooleanIfNotNull(xaDataSourceModel, SAME_RM_OVERRIDE, pool.isSameRmOverride());
-            setBooleanIfNotNull(xaDataSourceModel, WRAP_XA_RESOURCE, pool.isWrapXaDataSource());
-        }
-        final DsSecurity security = xaDataSource.getSecurity();
-        if (security != null) {
-            setStringIfNotNull(xaDataSourceModel, USERNAME, security.getUserName());
-            setStringIfNotNull(xaDataSourceModel, PASSWORD, security.getPassword());
-            setStringIfNotNull(xaDataSourceModel, SECURITY_DOMAIN, security.getSecurityDomain());
-            setExtensionIfNotNull(xaDataSourceModel, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES,
-                    security.getReauthPlugin());
-        }
-        final Statement statement = xaDataSource.getStatement();
-        if (statement != null) {
-            setLongIfNotNull(xaDataSourceModel, PREPAREDSTATEMENTSCACHESIZE, statement.getPreparedStatementsCacheSize());
-            setBooleanIfNotNull(xaDataSourceModel, SHAREPREPAREDSTATEMENTS, statement.isSharePreparedStatements());
-            if (statement.getTrackStatements() != null) {
-                setStringIfNotNull(xaDataSourceModel, TRACKSTATEMENTS, statement.getTrackStatements().name());
-            }
-        }
-        final TimeOut timeout = xaDataSource.getTimeOut();
-        if (timeout != null) {
-            setIntegerIfNotNull(xaDataSourceModel, ALLOCATION_RETRY, timeout.getAllocationRetry());
-            setLongIfNotNull(xaDataSourceModel, ALLOCATION_RETRY_WAIT_MILLIS, timeout.getAllocationRetryWaitMillis());
-            setLongIfNotNull(xaDataSourceModel, BLOCKING_TIMEOUT_WAIT_MILLIS, timeout.getBlockingTimeoutMillis());
-            setLongIfNotNull(xaDataSourceModel, IDLETIMEOUTMINUTES, timeout.getIdleTimeoutMinutes());
-            setLongIfNotNull(xaDataSourceModel, QUERYTIMEOUT, timeout.getQueryTimeout());
-            setLongIfNotNull(xaDataSourceModel, USETRYLOCK, timeout.getUseTryLock());
-            setBooleanIfTrue(xaDataSourceModel, SETTXQUERYTIMEOUT, timeout.isSetTxQueryTimeout());
-            setIntegerIfNotNull(xaDataSourceModel, XA_RESOURCE_TIMEOUT, timeout.getXaResourceTimeout());
-        }
-        if (xaDataSource.getTransactionIsolation() != null) {
-            setStringIfNotNull(xaDataSourceModel, TRANSACTION_ISOLOATION, xaDataSource.getTransactionIsolation().name());
-        }
-
-        if (xaDataSource.isSpy()) {
-            setBooleanIfNotNull(xaDataSourceModel, SPY, xaDataSource.isSpy());
-        }
-
-        if (xaDataSource.isUseCcm()) {
-            setBooleanIfNotNull(xaDataSourceModel, USE_CCM, xaDataSource.isUseCcm());
-        }
-
-        final Validation validation = xaDataSource.getValidation();
-        if (xaDataSource.getValidation() != null) {
-            setStringIfNotNull(xaDataSourceModel, CHECKVALIDCONNECTIONSQL, validation.getCheckValidConnectionSql());
-            setExtensionIfNotNull(xaDataSourceModel, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES,
-                    validation.getExceptionSorter());
-            setExtensionIfNotNull(xaDataSourceModel, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES,
-                    validation.getStaleConnectionChecker());
-            setExtensionIfNotNull(xaDataSourceModel, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES,
-                    validation.getValidConnectionChecker());
-            setLongIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATIONMINUTES_REMOVE, validation.getBackgroundValidationMillis());
-            setLongIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATIONMILLIS, validation.getBackgroundValidationMillis());
-            setBooleanIfNotNull(xaDataSourceModel, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
-            setBooleanIfNotNull(xaDataSourceModel, USE_FAST_FAIL_REMOVE, validation.isUseFastFail());
-            setBooleanIfNotNull(xaDataSourceModel, USE_FAST_FAIL, validation.isUseFastFail());
-            setBooleanIfNotNull(xaDataSourceModel, VALIDATEONMATCH, validation.isValidateOnMatch());
-        }
-
-        if (xaDataSource.getRecovery() != null) {
-            final Recovery recovery = xaDataSource.getRecovery();
-            setStringIfNotNull(xaDataSourceModel, RECOVERY_USERNAME, recovery.getCredential() != null ? recovery
-                    .getCredential().getUserName() : null);
-            setStringIfNotNull(xaDataSourceModel, RECOVERY_PASSWORD, recovery.getCredential() != null ? recovery
-                    .getCredential().getPassword() : null);
-            setStringIfNotNull(xaDataSourceModel, RECOVERY_SECURITY_DOMAIN, recovery.getCredential() != null ? recovery
-                    .getCredential().getSecurityDomain() : null);
-            setExtensionIfNotNull(xaDataSourceModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES,
-                    recovery.getRecoverPlugin());
-            setBooleanIfNotNull(xaDataSourceModel, NO_RECOVERY, recovery.getNoRecovery());
-        }
-    }
-
     static DataSource from(final ModelNode dataSourceNode) throws ValidateException {
         final Map<String, String> connectionProperties;
-        if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES)) {
-            connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES).asList().size());
-            for (Property property : dataSourceNode.get(CONNECTION_PROPERTIES).asPropertyList()) {
+        if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES.getName())) {
+            connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES.getName()).asList().size());
+            for (Property property : dataSourceNode.get(CONNECTION_PROPERTIES.getName()).asPropertyList()) {
                 connectionProperties.put(property.getName(), property.getValue().asString());
             }
         } else {
             connectionProperties = Collections.emptyMap();
         }
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
-        final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER_CLASS, null);
+        final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DRIVER_CLASS, null);
         final String dataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_CLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
         final String driver = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);
@@ -331,8 +150,8 @@ class DataSourceModelNodeUtil {
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, null);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, false);
         final boolean useStrictMin = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_USE_STRICT_MIN, false);
-        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.forName(dataSourceNode
-                .get(FLUSH_STRATEGY).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
+        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(dataSourceNode
+                .get(POOL_FLUSH_STRATEGY.getName()).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
 
         final CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
 
@@ -346,8 +165,8 @@ class DataSourceModelNodeUtil {
 
         final boolean sharePreparedStatements = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, false);
         final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(dataSourceNode, PREPAREDSTATEMENTSCACHESIZE, null);
-        final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS) ? Statement.TrackStatementsEnum
-                .valueOf(dataSourceNode.get(TRACKSTATEMENTS).asString()) : Statement.TrackStatementsEnum.NOWARN;
+        final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS.getName()) ? Statement.TrackStatementsEnum
+                .valueOf(dataSourceNode.get(TRACKSTATEMENTS.getName()).asString()) : Statement.TrackStatementsEnum.NOWARN;
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY, null);
@@ -360,8 +179,8 @@ class DataSourceModelNodeUtil {
         final boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERYTIMEOUT, false);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
-        final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLOATION) ? TransactionIsolation
-                .valueOf(dataSourceNode.get(TRANSACTION_ISOLOATION).asString()) : null;
+        final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
+                .valueOf(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
         final String checkValidConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
 
         final Extension exceptionSorter = extractExtension(dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
@@ -370,11 +189,9 @@ class DataSourceModelNodeUtil {
         final Extension validConnectionChecker = extractExtension(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
                 VALIDCONNECTIONCHECKER_PROPERTIES);
 
-        Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES_REMOVE, null);
-        backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
+        Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
         final boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, false);
-        boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL_REMOVE, false);
-        useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
+        boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
         final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, false);
         final boolean useCcm = getBooleanIfSetOrGetDefault(dataSourceNode, USE_CCM, true);
@@ -388,7 +205,7 @@ class DataSourceModelNodeUtil {
     }
 
     static XaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {
-        List<Property> propertyList = dataSourceNode.get(XADATASOURCEPROPERTIES).asPropertyList();
+        List<Property> propertyList = dataSourceNode.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList();
         final Map<String, String> xaDataSourceProperty = new HashMap<String, String>(propertyList.size());
         for (Property property : propertyList) {
             xaDataSourceProperty.put(property.getName(), property.getValue().asString());
@@ -412,8 +229,8 @@ class DataSourceModelNodeUtil {
         final boolean padXid = getBooleanIfSetOrGetDefault(dataSourceNode, PAD_XID, false);
         final boolean isSameRmOverride = getBooleanIfSetOrGetDefault(dataSourceNode, SAME_RM_OVERRIDE, false);
         final boolean wrapXaDataSource = getBooleanIfSetOrGetDefault(dataSourceNode, WRAP_XA_RESOURCE, true);
-        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(FLUSH_STRATEGY) ? FlushStrategy.forName(dataSourceNode
-                .get(FLUSH_STRATEGY).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
+        final FlushStrategy flushStrategy = dataSourceNode.hasDefined(POOL_FLUSH_STRATEGY.getName()) ? FlushStrategy.forName(dataSourceNode
+                .get(POOL_FLUSH_STRATEGY.getName()).asString()) : FlushStrategy.FAILING_CONNECTION_ONLY;
 
         final CommonXaPool xaPool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy,
                 isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
@@ -426,11 +243,11 @@ class DataSourceModelNodeUtil {
 
         final DsSecurity security = new DsSecurityImpl(username, password, securityDomain, reauthPlugin);
 
-        final boolean sharePreparedStatements = dataSourceNode.hasDefined(SHAREPREPAREDSTATEMENTS) ? dataSourceNode.get(
-                SHAREPREPAREDSTATEMENTS).asBoolean() : false;
+        final boolean sharePreparedStatements = dataSourceNode.hasDefined(SHAREPREPAREDSTATEMENTS.getName()) ? dataSourceNode.get(
+                SHAREPREPAREDSTATEMENTS.getName()).asBoolean() : false;
         final Long preparedStatementsCacheSize = getLongIfSetOrGetDefault(dataSourceNode, PREPAREDSTATEMENTSCACHESIZE, null);
-        final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS) ? Statement.TrackStatementsEnum
-                .valueOf(dataSourceNode.get(TRACKSTATEMENTS).asString()) : Statement.TrackStatementsEnum.NOWARN;
+        final Statement.TrackStatementsEnum trackStatements = dataSourceNode.hasDefined(TRACKSTATEMENTS.getName()) ? Statement.TrackStatementsEnum
+                .valueOf(dataSourceNode.get(TRACKSTATEMENTS.getName()).asString()) : Statement.TrackStatementsEnum.NOWARN;
         final Statement statement = new StatementImpl(sharePreparedStatements, preparedStatementsCacheSize, trackStatements);
 
         final Integer allocationRetry = getIntIfSetOrGetDefault(dataSourceNode, ALLOCATION_RETRY, null);
@@ -443,8 +260,8 @@ class DataSourceModelNodeUtil {
         final boolean setTxQuertTimeout = getBooleanIfSetOrGetDefault(dataSourceNode, SETTXQUERYTIMEOUT, false);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQuertTimeout, queryTimeout, useTryLock);
-        final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLOATION) ? TransactionIsolation
-                .valueOf(dataSourceNode.get(TRANSACTION_ISOLOATION).asString()) : null;
+        final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
+                .valueOf(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
         final String checkValidConnectionSql = getStringIfSetOrGetDefault(dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
 
         final Extension exceptionSorter = extractExtension(dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
@@ -453,11 +270,9 @@ class DataSourceModelNodeUtil {
         final Extension validConnectionChecker = extractExtension(dataSourceNode, VALIDCONNECTIONCHECKERCLASSNAME,
                 VALIDCONNECTIONCHECKER_PROPERTIES);
 
-        Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMINUTES_REMOVE, null);
-        backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
+        Long backgroundValidationMillis = getLongIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATIONMILLIS, null);
         final boolean backgroundValidation = getBooleanIfSetOrGetDefault(dataSourceNode, BACKGROUNDVALIDATION, false);
-        boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL_REMOVE, false);
-        useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
+        boolean useFastFail = getBooleanIfSetOrGetDefault(dataSourceNode, USE_FAST_FAIL, false);
         final boolean validateOnMatch = getBooleanIfSetOrGetDefault(dataSourceNode, VALIDATEONMATCH, false);
         final boolean spy = getBooleanIfSetOrGetDefault(dataSourceNode, SPY, false);
         final boolean useCcm = getBooleanIfSetOrGetDefault(dataSourceNode, USE_CCM, true);
@@ -521,51 +336,51 @@ class DataSourceModelNodeUtil {
 
     }
 
-    private static Long getLongIfSetOrGetDefault(final ModelNode dataSourceNode, final String key, final Long defaultValue) {
-        if (dataSourceNode.hasDefined(key)) {
-            return dataSourceNode.get(key).asLong();
+    private static Long getLongIfSetOrGetDefault(final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final Long defaultValue) {
+        if (dataSourceNode.hasDefined(key.getName())) {
+            return dataSourceNode.get(key.getName()).asLong();
         } else {
             return defaultValue;
         }
     }
 
-    private static Integer getIntIfSetOrGetDefault(final ModelNode dataSourceNode, final String key, final Integer defaultValue) {
-        if (dataSourceNode.hasDefined(key)) {
-            return dataSourceNode.get(key).asInt();
+    private static Integer getIntIfSetOrGetDefault(final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final Integer defaultValue) {
+        if (dataSourceNode.hasDefined(key.getName())) {
+            return dataSourceNode.get(key.getName()).asInt();
         } else {
             return defaultValue;
         }
     }
 
-    private static boolean getBooleanIfSetOrGetDefault(final ModelNode dataSourceNode, final String key,
+    private static boolean getBooleanIfSetOrGetDefault(final ModelNode dataSourceNode, final SimpleAttributeDefinition key,
             final boolean defaultValue) {
-        if (dataSourceNode.hasDefined(key)) {
-            return dataSourceNode.get(key).asBoolean();
+        if (dataSourceNode.hasDefined(key.getName())) {
+            return dataSourceNode.get(key.getName()).asBoolean();
         } else {
             return defaultValue;
         }
     }
 
-    private static String getStringIfSetOrGetDefault(final ModelNode dataSourceNode, final String key, final String defaultValue) {
-        if (dataSourceNode.hasDefined(key)) {
-            return dataSourceNode.get(key).asString();
+    private static String getStringIfSetOrGetDefault(final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) {
+        if (dataSourceNode.hasDefined(key.getName())) {
+            return dataSourceNode.get(key.getName()).asString();
         } else {
             return defaultValue;
         }
     }
 
-    private static Extension extractExtension(final ModelNode dataSourceNode, final String className, final String propertyName)
+    private static Extension extractExtension(final ModelNode dataSourceNode, final SimpleAttributeDefinition className, final SimpleAttributeDefinition propertyName)
             throws ValidateException {
-        if (dataSourceNode.hasDefined(className)) {
-            String exceptionSorterClassName = dataSourceNode.get(className).asString();
+        if (dataSourceNode.hasDefined(className.getName())) {
+            String exceptionSorterClassName = dataSourceNode.get(className.getName()).asString();
 
             getStringIfSetOrGetDefault(dataSourceNode, className, null);
 
             Map<String, String> exceptionSorterProperty = null;
-            if (dataSourceNode.hasDefined(propertyName)) {
-                exceptionSorterProperty = new HashMap<String, String>(dataSourceNode.get(propertyName).asList().size());
-                for (ModelNode property : dataSourceNode.get(propertyName).asList()) {
-                    exceptionSorterProperty.put(property.asProperty().getName(), property.asString());
+            if (dataSourceNode.hasDefined(propertyName.getName())) {
+                exceptionSorterProperty = new HashMap<String, String>(dataSourceNode.get(propertyName.getName()).asList().size());
+                for (Property property : dataSourceNode.get(propertyName.getName()).asPropertyList()) {
+                    exceptionSorterProperty.put(property.getName(), property.getValue().asString());
                 }
             }
 

@@ -60,7 +60,7 @@ public class RaAdd extends AbstractRaOperation implements OperationStepHandler {
         // Compensating is remove
         final ModelNode address = operation.require(OP_ADDR);
         final String archive = PathAddress.pathAddress(address).getLastElement().getValue();
-        operation.get(ARCHIVE).set(archive);
+        operation.get(ARCHIVE.getName()).set(archive);
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
