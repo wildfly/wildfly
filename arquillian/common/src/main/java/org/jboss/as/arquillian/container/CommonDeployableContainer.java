@@ -58,7 +58,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
                 config.getManagementAddress(),
                 config.getManagementPort());
 
-        managementClient = new ManagementClient(modelControllerClient);
+        managementClient = new ManagementClient(modelControllerClient, config.getManagementAddress().getHostAddress());
 
         archiveDeployerInst.set(new ArchiveDeployer(
                 ServerDeploymentManager.Factory.create(modelControllerClient)));
