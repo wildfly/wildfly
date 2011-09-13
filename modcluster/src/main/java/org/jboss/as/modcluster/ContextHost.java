@@ -7,6 +7,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
+import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
+
 public class ContextHost {
     String webcontext = null;
     String webhost = null;
@@ -30,7 +32,7 @@ public class ContextHost {
             }
         }
         if (webcontext == null || webhost == null)
-            throw new OperationFailedException(new ModelNode().set("need context and host"));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.needContextAndHost()));
 
         webcontext = RemoveQuotes(webcontext);
         webhost = RemoveQuotes(webhost);

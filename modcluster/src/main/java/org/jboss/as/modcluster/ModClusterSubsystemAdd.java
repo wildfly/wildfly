@@ -34,10 +34,11 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 /**
  * The managed subsystem add update.
@@ -47,7 +48,6 @@ import org.jboss.msc.service.ServiceController.Mode;
 class ModClusterSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
-    private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
 
     protected void populateModel(ModelNode operation, ModelNode model) {
@@ -76,7 +76,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
 
             newControllers.add(serviceBuilder.install());
         } catch (Throwable t) {
-            log.error("Error: " + t);
+            ROOT_LOGGER.debugf("Error: %s", t);
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
     }

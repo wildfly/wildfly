@@ -39,7 +39,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.config.ModClusterConfig;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
@@ -64,14 +63,14 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+
 /**
  * Service configuring and starting modcluster.
  *
  * @author Jean-Frederic Clere
  */
 class ModClusterService implements ModCluster, Service<ModCluster> {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
     static final ServiceName NAME = ServiceName.JBOSS.append("mod-cluster");
 
@@ -94,7 +93,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        log.debugf("Starting Mod_cluster Extension");
+        ROOT_LOGGER.debugf("Starting Mod_cluster Extension");
 
         config = new ModClusterConfig();
         // Set the configuration.
@@ -132,7 +131,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
                 config.setAdvertiseGroupAddress(binding.getMulticastSocketAddress().getHostName());
                 config.setAdvertiseInterface(binding.getSocketAddress().getAddress().getHostAddress());
                 if (!defaultavert)
-                    log.error("Mod_cluster requires Advertise but Multicast interface is not available");
+                    ROOT_LOGGER.multicastInterfaceNotAvailable();
                 config.setAdvertise(true);
             }
         }
@@ -237,7 +236,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
 
         if (load == null) {
             // Use a default one...
-            log.info("Mod_cluster uses default load balancer provider");
+            ROOT_LOGGER.useDefaultLoadBalancer();
             SimpleLoadBalanceFactorProvider myload = new SimpleLoadBalanceFactorProvider();
             myload.setLoadBalanceFactor(1);
             load = myload;
@@ -247,8 +246,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
         try {
             adapter.start();
         } catch (JMException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            ROOT_LOGGER.startFailure(e, "ModClusterService");
         }
     }
 
@@ -260,8 +258,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             try {
                 adapter.stop();
             } catch (JMException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                ROOT_LOGGER.stopFailure(e, "ModClusterService");
             }
         adapter = null;
     }
@@ -310,8 +307,7 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
                 try {
                     loadMetricClass = (Class<? extends LoadMetric>) this.getClass().getClassLoader().loadClass(className);
                 } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    ROOT_LOGGER.errorAddingMetrics(e);
                 }
             }
 
@@ -322,11 +318,9 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
                     metric.setWeight(weight);
                     metrics.add(metric);
                 } catch (InstantiationException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    ROOT_LOGGER.errorAddingMetrics(e);
                 } catch (IllegalAccessException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    ROOT_LOGGER.errorAddingMetrics(e);
                 }
             }
         }
