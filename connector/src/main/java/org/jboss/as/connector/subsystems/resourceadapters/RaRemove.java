@@ -22,14 +22,15 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.ConnectorServices;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
@@ -45,16 +46,16 @@ public class RaRemove extends AbstractRaOperation implements OperationStepHandle
         final ModelNode opAddr = operation.require(OP_ADDR);
         final String archive = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
-        operation.get(ARCHIVE).set(archive);
+        operation.get(ARCHIVE.getName()).set(archive);
 
         // Compensating is add
         final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
         final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
 
-        if (model.hasDefined(RESOURCEADAPTERS)) {
-            for (ModelNode raNode : model.get(RESOURCEADAPTERS).asList()) {
+        if (model.hasDefined(RESOURCEADAPTERS_NAME)) {
+            for (ModelNode raNode : model.get(RESOURCEADAPTERS_NAME).asList()) {
                 ModelNode raCompensatingNode = raNode.clone();
-                compensating.get(RESOURCEADAPTERS).add(raCompensatingNode);
+                compensating.get(RESOURCEADAPTERS_NAME).add(raCompensatingNode);
             }
         }
         context.removeResource(PathAddress.EMPTY_ADDRESS);

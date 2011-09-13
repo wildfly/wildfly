@@ -29,15 +29,20 @@ import static org.jboss.as.connector.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS
 import static org.jboss.as.connector.pool.Constants.IDLETIMEOUTMINUTES;
 import static org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE;
 import static org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY;
+import static org.jboss.as.connector.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
@@ -46,9 +51,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_STRATEGY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
@@ -61,8 +65,11 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDST
 import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERYTIMEOUT;
@@ -71,7 +78,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLOATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLATION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
@@ -83,7 +90,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNE
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCEPROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -94,8 +101,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.connector.util.AbstractParser;
 import org.jboss.as.connector.util.ParserException;
@@ -115,6 +122,7 @@ import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Messages;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * A DsParser.
@@ -128,7 +136,7 @@ public class DsParser extends AbstractParser {
     private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
 
-    public void parse(final XMLStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
+    public void parse(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
 
         DataSources dataSources = null;
 
@@ -165,7 +173,7 @@ public class DsParser extends AbstractParser {
 
     }
 
-    private void parseDataSources(final XMLStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
+    private void parseDataSources(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
         boolean driversMatched = false;
         while (reader.hasNext()) {
@@ -203,7 +211,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseDriver(final XMLStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
+    private void parseDriver(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
         final ModelNode driverAddress = parentAddress.clone();
         final ModelNode operation = new ModelNode();
@@ -214,30 +222,34 @@ public class DsParser extends AbstractParser {
             switch (attribute) {
 
                 case NAME: {
-                    driverName = attributeAsString(reader, attribute.getLocalName());
-                    if (driverName != null && driverName.trim().length()!=0) operation.get(DRIVER_NAME).set(driverName);
+                    final Location location = reader.getLocation();
+                    driverName = rawAttributeText(reader, DRIVER_NAME.getXmlName());
+                    DRIVER_NAME.parseAndSetParameter(driverName, operation, location);
                     break;
                 }
                 case MAJOR_VERSION: {
-                    final Integer value = attributeAsInt(reader, attribute.getLocalName());
-                    if (value != null) operation.get(DRIVER_MAJOR_VERSION).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, DRIVER_MAJOR_VERSION.getXmlName());
+                    DRIVER_MAJOR_VERSION.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case MINOR_VERSION: {
-                    final Integer value = attributeAsInt(reader, attribute.getLocalName());
-                    if (value != null) operation.get(DRIVER_MINOR_VERSION).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, DRIVER_MINOR_VERSION.getXmlName());
+                    DRIVER_MINOR_VERSION.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case MODULE: {
-                    final String value = attributeAsString(reader, attribute.getLocalName());
-                    if (value != null && value.trim().length() != 0) operation.get(DRIVER_MODULE_NAME).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, DRIVER_MODULE_NAME.getXmlName());
+                    DRIVER_MODULE_NAME.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 default:
                     break;
             }
         }
-        driverAddress.add(JDBC_DRIVER, driverName);
+        driverAddress.add(JDBC_DRIVER_NAME, driverName);
         driverAddress.protect();
 
         operation.get(OP_ADDR).set(driverAddress);
@@ -260,15 +272,21 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (Driver.Tag.forName(reader.getLocalName())) {
                         case DATASOURCE_CLASS: {
-                            operation.get(DRIVER_DATASOURCE_CLASS_NAME).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            DRIVER_MAJOR_VERSION.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case XA_DATASOURCE_CLASS: {
-                            operation.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            DRIVER_XA_DATASOURCE_CLASS_NAME.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case DRIVER_CLASS: {
-                            operation.get(DRIVER_CLASS_NAME).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            DRIVER_CLASS_NAME.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         default:
@@ -281,7 +299,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseXADataSource(XMLStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
+    private void parseXADataSource(XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
 
         String jndiName = null;
@@ -291,46 +309,45 @@ public class DsParser extends AbstractParser {
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-                        operation.get(ENABLED).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, ENABLED.getXmlName());
+                    ENABLED.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case JNDI_NAME: {
-                    jndiName = attributeAsString(reader, attribute.getLocalName());
-                    if (jndiName != null && jndiName.trim().length() != 0) operation.get(JNDINAME).set(jndiName);
+                    final Location location = reader.getLocation();
+                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    JNDINAME.parseAndSetParameter(jndiName, operation, location);
                     break;
                 }
                 case POOL_NAME: {
-                    final String value = attributeAsString(reader, attribute.getLocalName());
-                    if (value != null && value.trim().length() != 0)
-                        operation.get(POOLNAME).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, POOLNAME.getXmlName());
+                    POOLNAME.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case USE_JAVA_CONTEXT: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-
-                        operation.get(USE_JAVA_CONTEXT).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, USE_JAVA_CONTEXT.getXmlName());
+                    USE_JAVA_CONTEXT.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case SPY: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-                        operation.get(SPY).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, SPY.getXmlName());
+                    SPY.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case USE_CCM: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-
-                        operation.get(USE_CCM).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, USE_CCM.getXmlName());
+                    USE_CCM.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case JTA: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-                        operation.get(JTA).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, JTA.getXmlName());
+                    JTA.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 default:
@@ -362,15 +379,23 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (XaDataSource.Tag.forName(reader.getLocalName())) {
                         case XA_DATASOURCE_PROPERTY: {
-                            operation.get(XADATASOURCEPROPERTIES, attributeAsString(reader, "name")).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String name = rawAttributeText(reader, "name");
+                            String value = rawElementText(reader);
+                            ModelNode node = XADATASOURCE_PROPERTIES.parse(value, location);
+                            operation.get(XADATASOURCE_PROPERTIES.getName(), name).set(node);
                             break;
                         }
                         case XA_DATASOURCE_CLASS: {
-                            operation.get(XADATASOURCECLASS).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            XADATASOURCECLASS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case DRIVER: {
-                            operation.get(DATASOURCE_DRIVER).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            DATASOURCE_DRIVER.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case XA_POOL: {
@@ -378,19 +403,27 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case NEW_CONNECTION_SQL: {
-                            operation.get(NEW_CONNECTION_SQL).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            NEW_CONNECTION_SQL.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case URL_DELIMITER: {
-                            operation.get(URL_DELIMITER).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            URL_DELIMITER.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case URL_SELECTOR_STRATEGY_CLASS_NAME: {
-                            operation.get(URL_SELECTOR_STRATEGY_CLASS_NAME).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            URL_SELECTOR_STRATEGY_CLASS_NAME.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case TRANSACTION_ISOLATION: {
-                            operation.get(TRANSACTION_ISOLOATION).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            TRANSACTION_ISOLATION.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case SECURITY: {
@@ -423,7 +456,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseDsSecurity(XMLStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseDsSecurity(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {
@@ -444,15 +477,21 @@ public class DsParser extends AbstractParser {
                     DsSecurity.Tag tag = DsSecurity.Tag.forName(reader.getLocalName());
                     switch (tag) {
                         case PASSWORD: {
-                            operation.get(PASSWORD).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            PASSWORD.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case USER_NAME: {
-                            operation.get(USERNAME).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            USERNAME.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case SECURITY_DOMAIN: {
-                            operation.get(SECURITY_DOMAIN).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            SECURITY_DOMAIN.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case REAUTH_PLUGIN: {
@@ -469,7 +508,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseDataSource(final XMLStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
+    private void parseDataSource(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
 
         String jndiName = null;
@@ -479,43 +518,45 @@ public class DsParser extends AbstractParser {
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null) operation.get(ENABLED).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, ENABLED.getXmlName());
+                    ENABLED.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case JNDI_NAME: {
-                    jndiName = attributeAsString(reader, attribute.getLocalName());
-                    if (jndiName != null && jndiName.trim().length() != 0) operation.get(JNDINAME).set(jndiName);
+                    final Location location = reader.getLocation();
+                    jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
+                    JNDINAME.parseAndSetParameter(jndiName, operation, location);
                     break;
                 }
                 case POOL_NAME: {
-                    final String
-                            value = attributeAsString(reader, attribute.getLocalName());
-                    if (value != null && value.trim().length() != 0) operation.get(POOLNAME).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, POOLNAME.getXmlName());
+                    POOLNAME.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case USE_JAVA_CONTEXT: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-                        operation.get(USE_JAVA_CONTEXT).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, USE_JAVA_CONTEXT.getXmlName());
+                    USE_JAVA_CONTEXT.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case SPY: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-                        operation.get(SPY).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, SPY.getXmlName());
+                    SPY.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case USE_CCM: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-                        operation.get(USE_CCM).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, USE_CCM.getXmlName());
+                    USE_CCM.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case JTA: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                    if (value != null)
-                        operation.get(JTA).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, JTA.getXmlName());
+                    JTA.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 default:
@@ -548,23 +589,35 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (DataSource.Tag.forName(reader.getLocalName())) {
                         case CONNECTION_PROPERTY: {
-                            operation.get(Constants.CONNECTION_PROPERTIES, attributeAsString(reader, "name")).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String name = rawAttributeText(reader, "name");
+                            String value = rawElementText(reader);
+                            ModelNode node = CONNECTION_PROPERTIES.parse(value, location);
+                            operation.get(CONNECTION_PROPERTIES.getName(), name).set(node);
                             break;
                         }
                         case CONNECTION_URL: {
-                            operation.get(Constants.CONNECTION_URL).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            CONNECTION_URL.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case DRIVER_CLASS: {
-                            operation.get(Constants.DRIVER_CLASS_NAME).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            DRIVER_CLASS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case DATASOURCE_CLASS: {
-                            operation.get(Constants.DATASOURCE_CLASS).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            DATASOURCE_CLASS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case DRIVER: {
-                            operation.get(DATASOURCE_DRIVER).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            DATASOURCE_DRIVER.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case POOL: {
@@ -572,19 +625,27 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case NEW_CONNECTION_SQL: {
-                            operation.get(NEW_CONNECTION_SQL).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            NEW_CONNECTION_SQL.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case URL_DELIMITER: {
-                            operation.get(URL_DELIMITER).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            URL_DELIMITER.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case URL_SELECTOR_STRATEGY_CLASS_NAME: {
-                            operation.get(URL_SELECTOR_STRATEGY_CLASS_NAME).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            URL_SELECTOR_STRATEGY_CLASS_NAME.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case TRANSACTION_ISOLATION: {
-                            operation.get(TRANSACTION_ISOLOATION).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            TRANSACTION_ISOLATION.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case SECURITY: {
@@ -614,7 +675,7 @@ public class DsParser extends AbstractParser {
     }
 
 
-    private void parsePool(XMLStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parsePool(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {
@@ -634,24 +695,34 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (CommonPool.Tag.forName(reader.getLocalName())) {
                         case MAX_POOL_SIZE: {
-                            operation.get(MAX_POOL_SIZE).set(elementAsInteger(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            MAX_POOL_SIZE.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case MIN_POOL_SIZE: {
-                            operation.get(MIN_POOL_SIZE).set(elementAsInteger(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            MIN_POOL_SIZE.parseAndSetParameter(value, operation, location);
                             break;
                         }
 
                         case PREFILL: {
-                            operation.get(DATASOURCE_DRIVER).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            POOL_PREFILL.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case USE_STRICT_MIN: {
-                            operation.get(POOL_USE_STRICT_MIN).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            POOL_USE_STRICT_MIN.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case FLUSH_STRATEGY: {
-                            operation.get(FLUSH_STRATEGY).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            POOL_FLUSH_STRATEGY.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         default:
@@ -665,7 +736,7 @@ public class DsParser extends AbstractParser {
     }
 
 
-    private void parseXaPool(XMLStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseXaPool(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {
@@ -686,44 +757,64 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (CommonXaPool.Tag.forName(reader.getLocalName())) {
                         case MAX_POOL_SIZE: {
-                            operation.get(MAX_POOL_SIZE).set(elementAsInteger(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            MAX_POOL_SIZE.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case MIN_POOL_SIZE: {
-                            operation.get(MIN_POOL_SIZE).set(elementAsInteger(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            MIN_POOL_SIZE.parseAndSetParameter(value, operation, location);
                             break;
                         }
 
                         case PREFILL: {
-                            operation.get(DATASOURCE_DRIVER).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            POOL_PREFILL.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case USE_STRICT_MIN: {
-                            operation.get(POOL_USE_STRICT_MIN).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            POOL_USE_STRICT_MIN.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case FLUSH_STRATEGY: {
-                            operation.get(FLUSH_STRATEGY).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            POOL_FLUSH_STRATEGY.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case INTERLEAVING: {
-                            operation.get(INTERLEAVING).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            INTERLEAVING.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case IS_SAME_RM_OVERRIDE: {
-                            operation.get(SAME_RM_OVERRIDE).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            SAME_RM_OVERRIDE.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case NO_TX_SEPARATE_POOLS: {
-                            operation.get(NOTXSEPARATEPOOL).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            NOTXSEPARATEPOOL.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case PAD_XID: {
-                            operation.get(PAD_XID).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            PAD_XID.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case WRAP_XA_RESOURCE: {
-                            operation.get(WRAP_XA_RESOURCE).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            WRAP_XA_RESOURCE.parseAndSetParameter(value, operation, location);
                             break;
                         }
 
@@ -738,16 +829,15 @@ public class DsParser extends AbstractParser {
     }
 
 
-    private void parseRecovery(XMLStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseRecovery(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         for (Recovery.Attribute attribute : Recovery.Attribute.values()) {
             switch (attribute) {
                 case NO_RECOVERY: {
-                    final Boolean value = attributeAsBoolean(reader, attribute.getLocalName());
-                                        if (value != null)
-
-                    operation.get(NO_RECOVERY).set(value);
+                    final Location location = reader.getLocation();
+                    String value = rawAttributeText(reader, NO_RECOVERY.getXmlName());
+                    NO_RECOVERY.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 default:
@@ -775,7 +865,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case RECOVER_PLUGIN: {
-                            parseExtension(reader, tag.getLocalName(), operation, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
+                            parseExtension(reader, tag.getLocalName(), operation, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
                             break;
                         }
                         default:
@@ -788,7 +878,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseCredential(XMLStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseCredential(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {
@@ -808,15 +898,21 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (Credential.Tag.forName(reader.getLocalName())) {
                         case PASSWORD: {
-                            operation.get(PASSWORD).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            RECOVERY_PASSWORD.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case USER_NAME: {
-                            operation.get(USERNAME).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            RECOVERY_USERNAME.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case SECURITY_DOMAIN: {
-                            operation.get(SECURITY_DOMAIN).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            RECOVERY_SECURITY_DOMAIN.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         default:
@@ -829,7 +925,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseValidationSetting(XMLStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseValidationSetting(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {
@@ -850,15 +946,21 @@ public class DsParser extends AbstractParser {
                     Validation.Tag currTag = Validation.Tag.forName(reader.getLocalName());
                     switch (currTag) {
                         case BACKGROUND_VALIDATION: {
-                            operation.get(BACKGROUNDVALIDATION).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            BACKGROUNDVALIDATION.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case BACKGROUND_VALIDATION_MILLIS: {
-                            operation.get(BACKGROUNDVALIDATIONMILLIS).set(elementAsLong(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            BACKGROUNDVALIDATIONMILLIS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case CHECK_VALID_CONNECTION_SQL: {
-                            operation.get(CHECKVALIDCONNECTIONSQL).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            CHECKVALIDCONNECTIONSQL.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case EXCEPTION_SORTER: {
@@ -870,11 +972,15 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case USE_FAST_FAIL: {
-                            operation.get(USE_FAST_FAIL).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            USE_FAST_FAIL.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case VALIDATE_ON_MATCH: {
-                            operation.get(VALIDATEONMATCH).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            VALIDATEONMATCH.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case VALID_CONNECTION_CHECKER: {
@@ -892,7 +998,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseTimeOutSettings(XMLStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseTimeOutSettings(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {
@@ -911,35 +1017,51 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (TimeOut.Tag.forName(reader.getLocalName())) {
                         case ALLOCATION_RETRY: {
-                            operation.get(ALLOCATION_RETRY).set(elementAsInteger(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            ALLOCATION_RETRY.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case ALLOCATION_RETRY_WAIT_MILLIS: {
-                            operation.get(ALLOCATION_RETRY_WAIT_MILLIS).set(elementAsLong(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            ALLOCATION_RETRY_WAIT_MILLIS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case BLOCKING_TIMEOUT_MILLIS: {
-                            operation.get(BLOCKING_TIMEOUT_WAIT_MILLIS).set(elementAsLong(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            BLOCKING_TIMEOUT_WAIT_MILLIS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case IDLE_TIMEOUT_MINUTES: {
-                            operation.get(IDLETIMEOUTMINUTES).set(elementAsLong(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            IDLETIMEOUTMINUTES.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case QUERY_TIMEOUT: {
-                            operation.get(QUERYTIMEOUT).set(elementAsLong(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            QUERYTIMEOUT.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case SET_TX_QUERY_TIMEOUT: {
-                            operation.get(SETTXQUERYTIMEOUT).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            SETTXQUERYTIMEOUT.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case USE_TRY_LOCK: {
-                            operation.get(USETRYLOCK).set(elementAsLong(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            USETRYLOCK.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case XA_RESOURCE_TIMEOUT: {
-                            operation.get(XA_RESOURCE_TIMEOUT).set(elementAsInteger(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            XA_RESOURCE_TIMEOUT.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         default:
@@ -952,7 +1074,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseStatementSettings(XMLStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseStatementSettings(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {
@@ -971,15 +1093,21 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (Statement.Tag.forName(reader.getLocalName())) {
                         case PREPARED_STATEMENT_CACHE_SIZE: {
-                            operation.get(PREPAREDSTATEMENTSCACHESIZE).set(elementAsLong(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            PREPAREDSTATEMENTSCACHESIZE.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case TRACK_STATEMENTS: {
-                            operation.get(TRACKSTATEMENTS).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            TRACKSTATEMENTS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case SHARE_PREPARED_STATEMENTS: {
-                            operation.get(SHAREPREPAREDSTATEMENTS).set(elementAsBoolean(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            SHAREPREPAREDSTATEMENTS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         default:

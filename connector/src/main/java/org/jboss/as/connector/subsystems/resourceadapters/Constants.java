@@ -21,111 +21,227 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.jca.common.api.metadata.Defaults;
+import org.jboss.jca.common.api.metadata.common.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.CommonIronJacamar;
+import org.jboss.jca.common.api.metadata.common.CommonSecurity;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.jca.common.api.metadata.ds.Driver;
+import org.jboss.jca.common.api.metadata.ds.DsSecurity;
+import org.jboss.jca.common.api.metadata.ds.Statement;
+import org.jboss.jca.common.api.metadata.ds.TimeOut;
+import org.jboss.jca.common.api.metadata.ds.Validation;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+
+
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
 class Constants {
 
-    static final String RESOURCEADAPTER = "resource-adapter";
+    static final String RESOURCEADAPTER_NAME = "resource-adapter";
 
-    static final String RESOURCEADAPTERS = "resource-adapters";
+    static final String RESOURCEADAPTERS_NAME = "resource-adapters";
 
-    static final String CONNECTIONDEFINITIONS = "connection-definitions";
+    static final String CONNECTIONDEFINITIONS_NAME = "connection-definitions";
 
-    static final String CLASS_NAME = "class-name";
+    private static final String CLASS_NAME_NAME = "class-name";
 
-    static final String JNDI_NAME = "jndi-name";
+    private static final String JNDI_NAME_NAME = "jndi-name";
 
-    static final String POOL_NAME = "pool-name";
+    private static final String POOL_NAME_NAME = "pool-name";
 
-    static final String NEW_CONNECTION_SQL = "new-connection-sql";
+    private static final String NEW_CONNECTION_SQL_NAME = "new-connection-sql";
 
-    static final String TRANSACTION_ISOLOATION = "transaction-isolation";
+    private static final String TRANSACTION_ISOLOATION_NAME = "transaction-isolation";
 
-    static final String URL_DELIMITER = "url-delimiter";
+    private static final String URL_DELIMITER_NAME = "url-delimiter";
 
-    static final String URL_SELECTOR_STRATEGY_CLASS_NAME = "url-selector-strategy-class-name";
+    private static final String URL_SELECTOR_STRATEGY_CLASS_NAME_NAME = "url-selector-strategy-class-name";
 
-    static final String USE_JAVA_CONTEXT = "use-java-context";
+    private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
 
-    static final String ENABLED = "enabled";
+    private static final String ENABLED_NAME = "enabled";
 
-    static final String JNDINAME = "jndi-name";
+    private static final String JNDINAME_NAME = "jndi-name";
 
-    static final String URLDELIMITER = "url-delimiter";
+    private static final String URLDELIMITER_NAME = "url-delimiter";
 
-    static final String FLUSH_STRATEGY = "flush-strategy";
+    private static final String FLUSH_STRATEGY_NAME = "flush-strategy";
 
-    static final String ALLOCATION_RETRY = "allocation-retry";
+    private static final String ALLOCATION_RETRY_NAME = "allocation-retry";
 
-    static final String ALLOCATION_RETRY_WAIT_MILLIS = "allocation-retry-wait-millis";
+    private static final String ALLOCATION_RETRY_WAIT_MILLIS_NAME = "allocation-retry-wait-millis";
 
-    static final String SETTXQUERTTIMEOUT = "set-tx-quert-timeout";
+    private static final String SETTXQUERTTIMEOUT_NAME = "set-tx-quert-timeout";
 
-    static final String XA_RESOURCE_TIMEOUT = "xa-resource-timeout";
+    private static final String XA_RESOURCE_TIMEOUT_NAME = "xa-resource-timeout";
 
-    static final String QUERYTIMEOUT = "query-timeout";
+    private static final String QUERYTIMEOUT_NAME = "query-timeout";
 
-    static final String USETRYLOCK = "use-try-lock";
+    private static final String USETRYLOCK_NAME = "use-try-lock";
 
-    static final String SECURITY_DOMAIN_AND_APPLICATION = "security-domain-and-application";
+    private static final String SECURITY_DOMAIN_AND_APPLICATION_NAME = "security-domain-and-application";
 
-    static final String SECURITY_DOMAIN = "security-domain";
+    private static final String SECURITY_DOMAIN_NAME = "security-domain";
 
-    static final String APPLICATION = "security-application";
+    private static final String APPLICATION_NAME = "security-application";
 
-    static final String SHAREPREPAREDSTATEMENTS = "share-prepared-statements";
+    private static final String SHAREPREPAREDSTATEMENTS_NAME = "share-prepared-statements";
 
-    static final String PREPAREDSTATEMENTSCACHESIZE = "prepared-statements-cacheSize";
+    private static final String PREPAREDSTATEMENTSCACHESIZE_NAME = "prepared-statements-cacheSize";
 
-    static final String TRACKSTATEMENTS = "track-statements";
+    private static final String TRACKSTATEMENTS_NAME = "track-statements";
 
-    static final String VALIDCONNECTIONCHECKERCLASSNAME = "valid-connection-checker-class-name";
+    private static final String VALIDCONNECTIONCHECKERCLASSNAME_NAME = "valid-connection-checker-class-name";
 
-    static final String CHECKVALIDCONNECTIONSQL = "check-valid-connection-sql";
+    private static final String CHECKVALIDCONNECTIONSQL_NAME = "check-valid-connection-sql";
 
-    static final String VALIDATEONMATCH = "validate-on-match";
+    private static final String VALIDATEONMATCH_NAME = "validate-on-match";
 
-    static final String STALECONNECTIONCHECKERCLASSNAME = "stale-connection-checker-class-name";
+    private static final String STALECONNECTIONCHECKERCLASSNAME_NAME = "stale-connection-checker-class-name";
 
-    static final String USE_CCM = "use-ccm";
+    private static final String USE_CCM_NAME = "use-ccm";
 
-    static final String CONFIG_PROPERTIES = "config-properties";
+    private static final String CONFIG_PROPERTIES_NAME = "config-properties";
 
-    static final String ARCHIVE = "archive";
+    private static final String ARCHIVE_NAME = "archive";
 
-    static final String BOOTSTRAPCONTEXT = "bootstrapcontext";
+    private static final String BOOTSTRAPCONTEXT_NAME = "bootstrapcontext";
 
-    static final String TRANSACTIONSUPPORT = "transaction-support";
+    private static final String TRANSACTIONSUPPORT_NAME = "transaction-support";
 
-    static final String BEANVALIDATIONGROUPS = "beanvalidationgroups";
+    private static final String BEANVALIDATIONGROUPS_NAME = "beanvalidationgroups";
 
-    static final String EXCEPTIONSORTERCLASSNAME = "exception-sorter-class-name";
+    private static final String EXCEPTIONSORTERCLASSNAME_NAME = "exception-sorter-class-name";
 
-    static final String ADMIN_OBJECTS = "admin-objects";
+    static final String ADMIN_OBJECTS_NAME = "admin-objects";
 
-    static final String INTERLEAVING = "interleaving";
+    private static final String INTERLEAVING_NAME = "interleaving";
 
-    static final String NOTXSEPARATEPOOL = "no-tx-separate-pool";
+    private static final String NOTXSEPARATEPOOL_NAME = "no-tx-separate-pool";
 
-    static final String PAD_XID = "pad-xid";
+    private static final String PAD_XID_NAME = "pad-xid";
 
-    static final String SAME_RM_OVERRIDE = "same-rm-override";
+    private static final String SAME_RM_OVERRIDE_NAME = "same-rm-override";
 
-    static final String WRAP_XA_RESOURCE = "wrap-xa-resource";
+    private static final String WRAP_XA_RESOURCE_NAME = "wrap-xa-resource";
 
-    static final String RECOVERY_USERNAME = "recovery-username";
+    private static final String RECOVERY_USERNAME_NAME = "recovery-username";
 
-    static final String RECOVERY_PASSWORD = "recovery-password";
+    private static final String RECOVERY_PASSWORD_NAME = "recovery-password";
 
-    static final String RECOVERY_SECURITY_DOMAIN = "recovery-security-domain";
+    private static final String RECOVERY_SECURITY_DOMAIN_NAME = "recovery-security-domain";
 
-    static final String RECOVERLUGIN_CLASSNAME = "recovery-plugin-properties";
+    private static final String RECOVERLUGIN_CLASSNAME_NAME = "recovery-plugin-properties";
 
-    static final String RECOVERLUGIN_PROPERTIES = "recovery-plugin-properties";
+    private static final String RECOVERLUGIN_PROPERTIES_NAME = "recovery-plugin-properties";
 
-    static final String NO_RECOVERY = "no-recovery";
+    private static final String NO_RECOVERY_NAME = "no-recovery";
 
-    static final String NAME = "name";
+    private static final String NAME_NAME = "name";
+
+
+
+    static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinition(CLASS_NAME_NAME, CommonConnDef.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition POOL_NAME = new SimpleAttributeDefinition(POOL_NAME_NAME, CommonConnDef.Attribute.POOL_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, CommonConnDef.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition CONFIG_PROPERTIES = new SimpleAttributeDefinition(CONFIG_PROPERTIES_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition ARCHIVE = new SimpleAttributeDefinition(ARCHIVE_NAME, ResourceAdapter.Tag.ARCHIVE.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition BOOTSTRAPCONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition TRANSACTIONSUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition BEANVALIDATIONGROUPS = new SimpleAttributeDefinition(BEANVALIDATIONGROUPS_NAME, ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+
+    static SimpleAttributeDefinition NEW_CONNECTION_SQL = new SimpleAttributeDefinition(NEW_CONNECTION_SQL_NAME, DataSource.Tag.NEW_CONNECTION_SQL.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition URL_DELIMITER = new SimpleAttributeDefinition(URL_DELIMITER_NAME, DataSource.Tag.URL_DELIMITER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition URL_SELECTOR_STRATEGY_CLASS_NAME = new SimpleAttributeDefinition(URL_SELECTOR_STRATEGY_CLASS_NAME_NAME, DataSource.Tag.URL_SELECTOR_STRATEGY_CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinition(USE_JAVA_CONTEXT_NAME, DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName(), new ModelNode().set(Defaults.USE_JAVA_CONTEXT), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinition(ENABLED_NAME, DataSource.Attribute.ENABLED.getLocalName(), new ModelNode().set(Defaults.ENABLED), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinition(SECURITY_DOMAIN_NAME, CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition SECURITY_DOMAIN_AND_APPLICATION = new SimpleAttributeDefinition(SECURITY_DOMAIN_AND_APPLICATION_NAME, CommonSecurity.Tag.SECURITY_DOMAIN_AND_APPLICATION.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition APPLICATION = new SimpleAttributeDefinition(APPLICATION_NAME, CommonSecurity.Tag.APPLICATION.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition PREPAREDSTATEMENTSCACHESIZE = new SimpleAttributeDefinition(PREPAREDSTATEMENTSCACHESIZE_NAME, Statement.Tag.PREPARED_STATEMENT_CACHE_SIZE.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition SHAREPREPAREDSTATEMENTS = new SimpleAttributeDefinition(SHAREPREPAREDSTATEMENTS_NAME, Statement.Tag.SHARE_PREPARED_STATEMENTS.getLocalName(), new ModelNode().set(Defaults.SHARE_PREPARED_STATEMENTS), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition TRACKSTATEMENTS = new SimpleAttributeDefinition(TRACKSTATEMENTS_NAME, Statement.Tag.TRACK_STATEMENTS.getLocalName(), new ModelNode().set(Defaults.TRACK_STATEMENTS.name()), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition ALLOCATION_RETRY = new SimpleAttributeDefinition(ALLOCATION_RETRY_NAME, TimeOut.Tag.ALLOCATION_RETRY.getLocalName(),  new ModelNode(), ModelType.INT, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition ALLOCATION_RETRY_WAIT_MILLIS = new SimpleAttributeDefinition(ALLOCATION_RETRY_WAIT_MILLIS_NAME, TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
+
+
+    static SimpleAttributeDefinition QUERYTIMEOUT = new SimpleAttributeDefinition(QUERYTIMEOUT_NAME, TimeOut.Tag.QUERY_TIMEOUT.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition USETRYLOCK = new SimpleAttributeDefinition(USETRYLOCK_NAME, TimeOut.Tag.USE_TRY_LOCK.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
+
+
+    static SimpleAttributeDefinition CHECKVALIDCONNECTIONSQL = new SimpleAttributeDefinition(CHECKVALIDCONNECTIONSQL_NAME, Validation.Tag.CHECK_VALID_CONNECTION_SQL.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition EXCEPTIONSORTERCLASSNAME = new SimpleAttributeDefinition(EXCEPTIONSORTERCLASSNAME_NAME, Validation.Tag.EXCEPTION_SORTER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+
+    static SimpleAttributeDefinition STALECONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(STALECONNECTIONCHECKERCLASSNAME_NAME, Validation.Tag.STALE_CONNECTION_CHECKER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+
+    static SimpleAttributeDefinition VALIDCONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKERCLASSNAME_NAME, Validation.Tag.VALID_CONNECTION_CHECKER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+
+
+    static SimpleAttributeDefinition VALIDATEONMATCH = new SimpleAttributeDefinition(VALIDATEONMATCH_NAME, Validation.Tag.VALIDATE_ON_MATCH.getLocalName(),new ModelNode().set(Defaults.VALIDATE_ON_MATCH), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+
+    static SimpleAttributeDefinition USE_CCM = new SimpleAttributeDefinition(USE_CCM_NAME, DataSource.Attribute.USE_CCM.getLocalName(), new ModelNode().set(Defaults.USE_CCM), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+
+    static SimpleAttributeDefinition INTERLEAVING = new SimpleAttributeDefinition(INTERLEAVING_NAME, CommonXaPool.Tag.INTERLEAVING.getLocalName(), new ModelNode().set(Defaults.INTERLEAVING), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition NOTXSEPARATEPOOL = new SimpleAttributeDefinition(NOTXSEPARATEPOOL_NAME, CommonXaPool.Tag.NO_TX_SEPARATE_POOLS.getLocalName(), new ModelNode().set(Defaults.NO_TX_SEPARATE_POOL), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition PAD_XID = new SimpleAttributeDefinition(PAD_XID_NAME, CommonXaPool.Tag.PAD_XID.getLocalName(), new ModelNode().set(Defaults.PAD_XID), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition SAME_RM_OVERRIDE = new SimpleAttributeDefinition(SAME_RM_OVERRIDE_NAME, CommonXaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName(), new ModelNode().set(Defaults.IS_SAME_RM_OVERRIDE), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition WRAP_XA_RESOURCE = new SimpleAttributeDefinition(WRAP_XA_RESOURCE_NAME, CommonXaPool.Tag.WRAP_XA_RESOURCE.getLocalName(), new ModelNode().set(Defaults.WRAP_XA_RESOURCE), ModelType.BOOLEAN, false, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition XA_RESOURCE_TIMEOUT = new SimpleAttributeDefinition(XA_RESOURCE_TIMEOUT_NAME, TimeOut.Tag.XA_RESOURCE_TIMEOUT.getLocalName(),  new ModelNode(), ModelType.INT, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinition(RECOVERY_USERNAME_NAME, Recovery.Tag.RECOVER_CREDENTIAL.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinition(RECOVERY_PASSWORD_NAME, Recovery.Tag.RECOVER_CREDENTIAL.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinition(RECOVERY_SECURITY_DOMAIN_NAME, Recovery.Tag.RECOVER_CREDENTIAL.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVERLUGIN_CLASSNAME_NAME, Recovery.Tag.RECOVER_PLUGIN.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleAttributeDefinition(RECOVERLUGIN_PROPERTIES_NAME, Recovery.Tag.RECOVER_PLUGIN.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+
 }
