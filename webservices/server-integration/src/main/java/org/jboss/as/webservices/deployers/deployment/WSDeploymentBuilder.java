@@ -21,32 +21,26 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.jboss.as.webservices.util.ASHelper.isJaxrpcEjbDeployment;
+import static org.jboss.as.webservices.util.ASHelper.isJaxrpcJseDeployment;
+import static org.jboss.as.webservices.util.ASHelper.isJaxwsEjbDeployment;
+import static org.jboss.as.webservices.util.ASHelper.isJaxwsJseDeployment;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.wsf.spi.deployment.EndpointType;
+import org.jboss.logging.Logger;
 
 /**
- * JBossWS deployment model builder.
- *
+ * JBossWS deployment model builder
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class WSDeploymentBuilder {
-    /** Builder instance. */
+    private static final Logger log = Logger.getLogger(WSDeploymentBuilder.class);
     private static final WSDeploymentBuilder SINGLETON = new WSDeploymentBuilder();
 
-    /** Builders registry. */
-    private static final Map<EndpointType, DeploymentModelBuilder> builders = new HashMap<EndpointType, DeploymentModelBuilder>();;
-
-    static {
-        WSDeploymentBuilder.builders.put(EndpointType.JAXWS_JSE, new DeploymentModelBuilderJAXWS_JSE());
-        WSDeploymentBuilder.builders.put(EndpointType.JAXRPC_JSE, new DeploymentModelBuilderJAXRPC_JSE());
-        WSDeploymentBuilder.builders.put(EndpointType.JAXWS_EJB3, new DeploymentModelBuilderJAXWS_EJB3());
-        WSDeploymentBuilder.builders.put(EndpointType.JAXRPC_EJB21, new DeploymentModelBuilderJAXRPC_EJB21());
-    }
+    private static final DeploymentModelBuilder JAXWS_JSE = new DeploymentModelBuilderJAXWS_JSE();
+    private static final DeploymentModelBuilder JAXRPC_JSE = new DeploymentModelBuilderJAXRPC_JSE();
+    private static final DeploymentModelBuilder JAXWS_EJB = new DeploymentModelBuilderJAXWS_EJB3();
+    private static final DeploymentModelBuilder JAXRPC_EJB = new DeploymentModelBuilderJAXRPC_EJB21();
 
     /**
      * Constructor.
@@ -57,7 +51,6 @@ public final class WSDeploymentBuilder {
 
     /**
      * Factory method for obtaining builder instance.
-     *
      * @return builder instance
      */
     public static WSDeploymentBuilder getInstance() {
@@ -66,13 +59,27 @@ public final class WSDeploymentBuilder {
 
     /**
      * Builds JBossWS deployment model if web service deployment is detected.
-     *
      * @param unit deployment unit
      */
-    public void build(final DeploymentUnit unit, final EndpointType endpointType) {
-
-        if (endpointType != null) {
-            WSDeploymentBuilder.builders.get(endpointType).newDeploymentModel(unit);
+    public void build(final DeploymentUnit unit) {
+        boolean isJaxwsDeployment = false;
+        if (isJaxwsJseDeployment(unit)) {
+            log.debug("Detected JAXWS JSE deployment");
+            JAXWS_JSE.newDeploymentModel(unit);
+            isJaxwsDeployment = true;
+        }
+        if (isJaxwsEjbDeployment(unit)) {
+            log.debug("Detected JAXWS EJB3 deployment");
+            JAXWS_EJB.newDeploymentModel(unit);
+            isJaxwsDeployment = true;
+        }
+        if (!isJaxwsDeployment && isJaxrpcJseDeployment(unit)) {
+            log.debug("Detected JAXRPC JSE deployment");
+            JAXRPC_JSE.newDeploymentModel(unit);
+        }
+        if (!isJaxwsDeployment && isJaxrpcEjbDeployment(unit)) {
+            log.debug("Detected JAXRPC EJB21 deployment");
+            JAXRPC_EJB.newDeploymentModel(unit);
         }
     }
 }

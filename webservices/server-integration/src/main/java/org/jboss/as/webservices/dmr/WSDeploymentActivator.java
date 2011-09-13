@@ -30,7 +30,7 @@ import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
 import org.jboss.as.webservices.deployers.WSDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSEJBIntegrationProcessor;
 import org.jboss.as.webservices.deployers.WSJMSIntegrationProcessor;
-import org.jboss.as.webservices.deployers.WSTypeDeploymentProcessor;
+import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WebServiceContextResourceProcessor;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.logging.Logger;
@@ -53,7 +53,7 @@ final class WSDeploymentActivator {
         processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
         processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_JMS_INTEGRATION, new WSJMSIntegrationProcessor());
         //processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
-        processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_TYPE_DETECTOR, new WSTypeDeploymentProcessor());
+        processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WS_UNIVERSAL_META_DATA_MODEL, new WSModelDeploymentProcessor());
 
         addDeploymentProcessors(processorTarget, Phase.INSTALL, Phase.INSTALL_WS_DEPLOYMENT_ASPECTS);
 

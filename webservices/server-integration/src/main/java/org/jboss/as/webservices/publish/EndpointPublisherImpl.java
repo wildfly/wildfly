@@ -96,7 +96,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         Deployment dep = null;
         try {
             SecurityActions.setContextClassLoader(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
-            WSDeploymentBuilder.getInstance().build(unit, EndpointType.JAXWS_JSE);
+            WSDeploymentBuilder.getInstance().build(unit);
             dep = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
             dep.addAttachment(ServiceTarget.class, target);
             DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
