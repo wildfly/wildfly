@@ -79,7 +79,6 @@ import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_BYTES_PER_PAGE;
 import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_PAGES;
-import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PARAMS;
 import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
@@ -139,6 +138,14 @@ public class MessagingDescriptions {
         node.get(CHILDREN, CommonAttributes.ACCEPTOR, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.ACCEPTOR, MODEL_DESCRIPTION);
 
+        node.get(CHILDREN, CommonAttributes.IN_VM_ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor.in-vm"));
+        node.get(CHILDREN, CommonAttributes.IN_VM_ACCEPTOR, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.IN_VM_ACCEPTOR, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.REMOTE_ACCEPTOR, DESCRIPTION).set(bundle.getString("acceptor.remote"));
+        node.get(CHILDREN, CommonAttributes.REMOTE_ACCEPTOR, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.REMOTE_ACCEPTOR, MODEL_DESCRIPTION);
+
         node.get(CHILDREN, CommonAttributes.ADDRESS_SETTING, DESCRIPTION).set(bundle.getString("address-setting"));
         node.get(CHILDREN, CommonAttributes.ADDRESS_SETTING, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.ADDRESS_SETTING, MODEL_DESCRIPTION);
@@ -151,6 +158,14 @@ public class MessagingDescriptions {
         node.get(CHILDREN, CommonAttributes.CONNECTOR, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.CONNECTOR, MODEL_DESCRIPTION);
 
+        node.get(CHILDREN, CommonAttributes.IN_VM_CONNECTOR, DESCRIPTION).set(bundle.getString("connector.in-vm"));
+        node.get(CHILDREN, CommonAttributes.IN_VM_CONNECTOR, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.IN_VM_CONNECTOR, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.REMOTE_CONNECTOR, DESCRIPTION).set(bundle.getString("connector.remote"));
+        node.get(CHILDREN, CommonAttributes.REMOTE_CONNECTOR, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.REMOTE_CONNECTOR, MODEL_DESCRIPTION);
+
         node.get(CHILDREN, CommonAttributes.DISCOVERY_GROUP, DESCRIPTION).set(bundle.getString("discovery-group"));
         node.get(CHILDREN, CommonAttributes.DISCOVERY_GROUP, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.DISCOVERY_GROUP, MODEL_DESCRIPTION);
@@ -162,6 +177,10 @@ public class MessagingDescriptions {
         node.get(CHILDREN, CommonAttributes.QUEUE, DESCRIPTION).set(bundle.getString("queue"));
         node.get(CHILDREN, CommonAttributes.QUEUE, MIN_OCCURS).set(0);
         node.get(CHILDREN, CommonAttributes.QUEUE, MODEL_DESCRIPTION);
+
+        node.get(CHILDREN, CommonAttributes.CORE_ADDRESS, DESCRIPTION).set(bundle.getString("core-address"));
+        node.get(CHILDREN, CommonAttributes.CORE_ADDRESS, MIN_OCCURS).set(0);
+        node.get(CHILDREN, CommonAttributes.CORE_ADDRESS, MODEL_DESCRIPTION);
 
         node.get(CHILDREN, CommonAttributes.GROUPING_HANDLER, DESCRIPTION).set(bundle.getString("grouping-handler"));
         node.get(CHILDREN, CommonAttributes.GROUPING_HANDLER, MIN_OCCURS).set(0);
@@ -237,7 +256,7 @@ public class MessagingDescriptions {
         ModelNode result = MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, JMSServerControlHandler.GET_LAST_SENT_MESSAGE_ID,
                 JMSServerControlHandler.JMS_SERVER, JMSServerControlHandler.SESSION_ID, ModelType.STRING, false, ModelType.STRING, true);
 
-        final ModelNode addr = result.get(REPLY_PROPERTIES, JMSServerControlHandler.ADDRESS_NAME);
+        final ModelNode addr = result.get(REQUEST_PROPERTIES, JMSServerControlHandler.ADDRESS_NAME);
         addr.get(DESCRIPTION).set(bundle.getString("jms-server.address-name"));
         addr.get(TYPE).set(ModelType.STRING);
         addr.get(REQUIRED).set(true);
@@ -336,7 +355,8 @@ public class MessagingDescriptions {
     public static ModelNode getListMessages(Locale locale, boolean forJMS, boolean json) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.LIST_MESSAGES, "queue");
+        String opName = json ? AbstractQueueControlHandler.LIST_MESSAGES_AS_JSON : AbstractQueueControlHandler.LIST_MESSAGES;
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, opName, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -514,7 +534,7 @@ public class MessagingDescriptions {
     public static ModelNode getChangeMessagePriority(Locale locale, boolean forJMS) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.CHANGE_MESSAGE_PRIORITY, "queue");
 
         populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
 
@@ -529,7 +549,7 @@ public class MessagingDescriptions {
     public static ModelNode getChangeMessagesPriority(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.REMOVE_MESSAGES, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.CHANGE_MESSAGES_PRIORITY, "queue");
 
         populateFilterParam(bundle, result.get(REQUEST_PROPERTIES, FILTER.getName()));
 
@@ -552,7 +572,7 @@ public class MessagingDescriptions {
     public static ModelNode getMoveMessage(Locale locale, boolean forJMS) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.EXPIRE_MESSAGE, "queue");
+        final ModelNode result = CommonDescriptions.getDescriptionOnlyOperation(bundle, AbstractQueueControlHandler.MOVE_MESSAGE, "queue");
 
         populateMessageIDParam(bundle, result.get(REQUEST_PROPERTIES, AbstractQueueControlHandler.MESSAGE_ID), forJMS);
 
@@ -1188,11 +1208,15 @@ public class MessagingDescriptions {
 
         root.get(OPERATIONS); // placeholder
 
-        root.get(CHILDREN, CommonAttributes.PARAM, DESCRIPTION).set(bundle.getString("connector-service.param"));
-        root.get(CHILDREN, CommonAttributes.PARAM, MIN_OCCURS).set(0);
-        root.get(CHILDREN, CommonAttributes.PARAM, MODEL_DESCRIPTION);
+        getParamChildrenDescription(bundle, root, "connector-service");
 
         return root;
+    }
+
+    private static void getParamChildrenDescription(final ResourceBundle bundle, final ModelNode parent, final String prefix) {
+        parent.get(CHILDREN, CommonAttributes.PARAM, DESCRIPTION).set(bundle.getString(prefix + ".param"));
+        parent.get(CHILDREN, CommonAttributes.PARAM, MIN_OCCURS).set(0);
+        parent.get(CHILDREN, CommonAttributes.PARAM, MODEL_DESCRIPTION);
     }
 
     public static ModelNode getConnectorServiceAdd(Locale locale) {
@@ -1264,6 +1288,8 @@ public class MessagingDescriptions {
 
         addResourceAttributeDescription(bundle, "acceptor", root.get(ATTRIBUTES), STARTED, ModelType.BOOLEAN, false, null);
 
+        getParamChildrenDescription(bundle, root, "acceptor");
+
         return root;
     }
 
@@ -1324,6 +1350,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
+
+        getParamChildrenDescription(bundle, root, "acceptor");
+
         return root;
     }
 
@@ -1351,6 +1380,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
+
+        getParamChildrenDescription(bundle, root, "acceptor");
+
         return root;
     }
 
@@ -1378,6 +1410,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.GENERIC) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
+
+        getParamChildrenDescription(bundle, root, "connector");
+
         return root;
     }
 
@@ -1409,6 +1444,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.REMOTE) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
+
+        getParamChildrenDescription(bundle, root, "connector");
+
         return root;
     }
 
@@ -1436,6 +1474,9 @@ public class MessagingDescriptions {
         for (AttributeDefinition attr : TransportConfigOperationHandlers.IN_VM) {
             attr.addResourceAttributeDescription(bundle, null, root);
         }
+
+        getParamChildrenDescription(bundle, root, "connector");
+
         return root;
     }
 

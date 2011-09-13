@@ -290,7 +290,7 @@ public class MessagingExtension implements Extension {
 
         final ManagementResourceRegistration securityRole = securitySettings.registerSubModel(SECURITY_ROLE, MessagingSubsystemProviders.SECURITY_ROLE);
         securityRole.registerOperationHandler(ADD, SecurityRoleAdd.INSTANCE, SecurityRoleAdd.INSTANCE);
-        securityRole.registerOperationHandler(REMOVE, SecurityRoleAdd.INSTANCE, SecurityRoleAdd.INSTANCE);
+        securityRole.registerOperationHandler(REMOVE, SecurityRoleRemove.INSTANCE, SecurityRoleRemove.INSTANCE);
         SecurityRoleAttributeHandler.INSTANCE.registerAttributes(securityRole);
     }
 
