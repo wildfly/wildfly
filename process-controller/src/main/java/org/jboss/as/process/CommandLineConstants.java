@@ -27,15 +27,6 @@ package org.jboss.as.process;
  */
 public class CommandLineConstants {
 
-    /** The ProcessController address */
-    public static final String INTERPROCESS_PC_ADDRESS = "--pc-address";
-
-    /** The ProcessController port */
-    public static final String INTERPROCESS_PC_PORT = "--pc-port";
-
-    /** The name of a process started by the process controller */
-    public static final String INTERPROCESS_NAME = "--interprocess-name";
-
     /** The HostController address */
     public static final String OLD_INTERPROCESS_HC_ADDRESS = "-interprocess-hc-address";
     public static final String INTERPROCESS_HC_ADDRESS = "--interprocess-hc-address";
@@ -89,11 +80,11 @@ public class CommandLineConstants {
 
     /** Address on which the process controller listens */
     public static final String OLD_PROCESS_CONTROLLER_BIND_ADDR = "-bind-addr";
-    public static final String PROCESS_CONTROLLER_BIND_ADDR = "--bind-addr";
+    public static final String PROCESS_CONTROLLER_BIND_ADDR = "--pc-address";
 
     /** Port on which the process controller listens */
     public static final String OLD_PROCESS_CONROLLER_BIND_PORT = "-bind-port";
-    public static final String PROCESS_CONTROLLER_BIND_PORT = "--bind-port";
+    public static final String PROCESS_CONTROLLER_BIND_PORT = "--pc-port";
 
     public static final String SYS_PROP = "-D";
 

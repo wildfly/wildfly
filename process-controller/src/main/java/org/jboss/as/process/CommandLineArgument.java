@@ -194,54 +194,6 @@ enum CommandLineArgument {
             return MESSAGES.argHostConfig();
         }
     },
-    PC_ADDRESS {
-        @Override
-        public String argument() {
-            return CommandLineConstants.INTERPROCESS_PC_ADDRESS;
-        }
-
-        @Override
-        public String argumentExample() {
-            return String.format("%s=<address>", argument());
-        }
-
-        @Override
-        public String instructions() {
-            return MESSAGES.argPcAddress();
-        }
-    },
-    PC_PORT {
-        @Override
-        public String argument() {
-            return CommandLineConstants.INTERPROCESS_PC_PORT;
-        }
-
-        @Override
-        public String argumentExample() {
-            return String.format("%s=<port>", argument());
-        }
-
-        @Override
-        public String instructions() {
-            return MESSAGES.argPcPort();
-        }
-    },
-    INTERPROCESS_NAME {
-        @Override
-        public String argument() {
-            return CommandLineConstants.INTERPROCESS_NAME;
-        }
-
-        @Override
-        public String argumentExample() {
-            return String.format("%s=<proc>", argument());
-        }
-
-        @Override
-        public String instructions() {
-            return MESSAGES.argInterProcessName();
-        }
-    },
     INTERPROCESS_HC_ADDRESS {
         @Override
         public String argument() {
@@ -320,6 +272,38 @@ enum CommandLineArgument {
         @Override
         public String instructions() {
             return MESSAGES.argProperties();
+        }
+    },
+    PC_ADDRESS {
+        @Override
+        public String argument() {
+            return CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<address>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argPcAddress();
+        }
+    },
+    PC_PORT {
+        @Override
+        public String argument() {
+            return CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<port>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argPcPort();
         }
     },
     LEGACY_SHORT_VERSION {

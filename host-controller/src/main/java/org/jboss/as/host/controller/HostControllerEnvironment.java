@@ -103,7 +103,6 @@ public class HostControllerEnvironment {
     public static final String JBOSS_BIND_ADDRESS_PREFIX = "jboss.bind.address.";
 
     private final Map<String, String> hostSystemProperties;
-    private final String processName;
     private final InetAddress processControllerAddress;
     private final Integer processControllerPort;
     private final InetAddress hostControllerAddress;
@@ -130,8 +129,8 @@ public class HostControllerEnvironment {
 
 
     public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, InputStream stdin, PrintStream stdout, PrintStream stderr,
-            String processName, InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
-            Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig, boolean backupDomainFiles, boolean useCachedDc) {
+                                     InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
+                                     Integer hostControllerPort, String defaultJVM, String domainConfig, String hostConfig, boolean backupDomainFiles, boolean useCachedDc) {
         if (hostSystemProperties == null) {
             throw new IllegalArgumentException("hostSystemProperties is null");
         }
@@ -152,9 +151,6 @@ public class HostControllerEnvironment {
         }
         this.stderr = stderr;
 
-        if (processName == null) {
-            throw new IllegalArgumentException("processName is null");
-        }
         if (processControllerAddress == null) {
             throw new IllegalArgumentException("processControllerAddress is null");
         }
@@ -167,7 +163,6 @@ public class HostControllerEnvironment {
         if (hostControllerPort == null) {
             throw new IllegalArgumentException("hostControllerPort is null");
         }
-        this.processName = processName;
         this.processControllerPort = processControllerPort;
         this.processControllerAddress = processControllerAddress;
         this.hostControllerAddress = hostControllerAddress;
@@ -283,15 +278,6 @@ public class HostControllerEnvironment {
      */
     public PrintStream getStderr() {
         return stderr;
-    }
-
-    /**
-     * Get the process name of this process, needed to inform the process controller we have started
-     *
-     * @return the process name
-     */
-    public String getProcessName() {
-        return processName;
     }
 
     /**
