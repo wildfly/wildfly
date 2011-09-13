@@ -18,6 +18,7 @@ package org.jboss.as.arquillian.container;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -60,17 +61,19 @@ public class ManagementClient {
     private static final String POSTFIX_WEB = ".war";
     private static final String POSTFIX_EAR = ".ear";
 
-    private ModelControllerClient client;
-    private Map<String, URI> subsystemURICache;
+    private final String mgmtAddress;
+    private final ModelControllerClient client;
+    private final Map<String, URI> subsystemURICache;
 
     // cache static RootNode
     private ModelNode rootNode = null;
 
-    public ManagementClient(ModelControllerClient client) {
+    public ManagementClient(ModelControllerClient client, final String mgmtAddress) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
         this.client = client;
+        this.mgmtAddress = mgmtAddress;
         this.subsystemURICache = new HashMap<String, URI>();
     }
 
@@ -181,9 +184,25 @@ public class ManagementClient {
         return URI.create(socketBinding + "://" + ip + ":" + port);
     }
 
-    private String getInterface(String name) {
-        ModelNode node = rootNode.get("interface").get(name).get("criteria").asList().get(0).get("inet-address");
-        return node.resolve().asString();
+    private String getInterface(final String name) {
+        final ModelNode address = new ModelNode();
+        address.add(INTERFACE, name);
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set("resolved-address");
+
+        try {
+            // Poke the runtime handler to give us the resolved address
+            final String ip = executeForResult(operation).asString();
+            if("0.0.0.0".equals(ip) || "0:0:0:0:0:0:0:0".equals(ip)) {
+                return mgmtAddress;
+            }
+            return ip;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
