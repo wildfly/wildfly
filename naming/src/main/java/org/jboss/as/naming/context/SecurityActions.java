@@ -22,17 +22,49 @@
 
 package org.jboss.as.naming.context;
 
-/**
- * @author John Bailey
- * @deprecated public class with generic privileged actions
- */
-@Deprecated
-public class SecurityActions extends org.jboss.as.naming.util.SecurityActions {
-    static ClassLoader getContextClassLoader() {
-        return org.jboss.as.naming.util.SecurityActions.getContextClassLoaderProtected();
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
+final class SecurityActions {
+
+    private SecurityActions() {
+        // forbidden inheritance
     }
 
-    static void setContextClassLoader(ClassLoader loader) {
-        org.jboss.as.naming.util.SecurityActions.setContextClassLoaderProtected(loader);
+    /**
+     * Gets context classloader.
+     *
+     * @return the current context classloader
+     */
+    static ClassLoader getContextClassLoader() {
+        if (System.getSecurityManager() == null) {
+            return Thread.currentThread().getContextClassLoader();
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
+        }
     }
+
+    /**
+     * Sets context classloader.
+     *
+     * @param classLoader
+     *            the classloader
+     */
+    static void setContextClassLoader(final ClassLoader classLoader) {
+        if (System.getSecurityManager() == null) {
+            Thread.currentThread().setContextClassLoader(classLoader);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    Thread.currentThread().setContextClassLoader(classLoader);
+                    return null;
+                }
+            });
+        }
+    }
+
 }
