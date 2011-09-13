@@ -22,18 +22,14 @@
 
 package org.jboss.as.connector.pool;
 
-import javax.xml.crypto.Data;
-
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.core.connectionmanager.pool.api.Pool;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
