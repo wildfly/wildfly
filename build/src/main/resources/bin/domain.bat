@@ -15,7 +15,7 @@ if "%OS%" == "Windows_NT" (
 )
 
 rem Read an optional configuration file.
-if "x%DOMAIN_CONF%" == "x" (   
+if "x%DOMAIN_CONF%" == "x" (
    set "DOMAIN_CONF=%DIRNAME%domain.conf.bat"
 )
 if exist "%DOMAIN_CONF%" (
@@ -70,6 +70,11 @@ rem Setup JBoss specific properties
 rem Setup the java endorsed dirs
 set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
 
+rem Set default module root paths
+if "x%MODULEPATH%" == "x" (
+  set  "MODULEPATH=%JBOSS_HOME%\modules"
+)
+
 echo ===============================================================================
 echo.
 echo   JBoss Bootstrap Environment
@@ -88,7 +93,7 @@ echo.
  "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\process-controller\log\boot.log" ^
  "-Dlogging.configuration=file:%JBOSS_HOME%/domain/configuration/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-    -mp "%JBOSS_HOME%\modules" ^
+    -mp "%MODULEPATH%" ^
     -logmodule "org.jboss.logmanager" ^
      org.jboss.as.process-controller ^
     -jboss-home "%JBOSS_HOME%" ^
