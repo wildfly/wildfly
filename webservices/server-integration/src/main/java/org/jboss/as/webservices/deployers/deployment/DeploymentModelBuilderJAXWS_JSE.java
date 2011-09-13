@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
+import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
+
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -29,7 +32,6 @@ import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
@@ -43,7 +45,7 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
      * Constructor.
      */
     DeploymentModelBuilderJAXWS_JSE() {
-        super();
+        super(JAXWS, JAXWS_JSE);
     }
 
     /**
@@ -65,7 +67,7 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
                 final String servletClass = ASHelper.getEndpointName(servlet);
                 this.log.debug("JSE class: " + servletClass);
 
-                this.newHttpEndpoint(servletClass, servletName, dep, EndpointType.JAXWS_JSE);
+                this.newHttpEndpoint(servletClass, servletName, dep);
             }
         }
 
@@ -76,7 +78,7 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
                 if (endpoint.getName() == null) {
                     endpoint.setName(endpoint.getImplementor());
                 }
-                this.newJMSEndpoint(endpoint.getImplementor(), endpoint.getName(), endpoint.getSoapAddress(), dep, EndpointType.JAXWS_JSE);
+                this.newJMSEndpoint(endpoint.getImplementor(), endpoint.getName(), endpoint.getSoapAddress(), dep);
             }
         }
     }
