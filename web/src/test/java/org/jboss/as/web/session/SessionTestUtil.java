@@ -29,6 +29,8 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -309,6 +311,17 @@ public class SessionTestUtil {
                 } else {
                     sessionContainer.removeCache(name);
                 }
+            }
+
+            @Override
+            public EmbeddedCacheManager startCaches(String... cacheNames) {
+                Set<String> names = new HashSet<String>();
+                names.addAll(Arrays.asList(cacheNames));
+                if (names.remove(JVM_ROUTE_CACHE_NAME)) {
+                    jvmRouteContainer.startCaches(JVM_ROUTE_CACHE_NAME);
+                }
+                sessionContainer.startCaches(names.toArray(new String[names.size()]));
+                return this;
             }
         };
     }

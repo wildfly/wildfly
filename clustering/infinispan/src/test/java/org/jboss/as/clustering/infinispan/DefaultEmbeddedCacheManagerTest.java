@@ -35,7 +35,9 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +52,8 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 /**
  * @author Paul Ferraro
  */
@@ -381,5 +385,14 @@ public class DefaultEmbeddedCacheManagerTest {
         boolean result = this.subject.isDefaultRunning();
 
         assertTrue(result);
+    }
+    
+    @Test
+    public void startCaches() {
+        when(this.manager.startCaches("other", "default")).thenReturn(this.manager);
+        
+        EmbeddedCacheManager result = this.subject.startCaches("other", CacheContainer.DEFAULT_CACHE_NAME);
+        
+        assertSame(this.subject, result);
     }
 }
