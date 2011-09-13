@@ -34,12 +34,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
 public class ModClusterRemoveCustomMetric implements OperationStepHandler, DescriptionProvider{
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
     static final ModClusterRemoveCustomMetric INSTANCE = new ModClusterRemoveCustomMetric();
 

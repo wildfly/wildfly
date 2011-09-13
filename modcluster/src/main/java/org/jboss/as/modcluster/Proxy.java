@@ -7,6 +7,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
+import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
+
 public class Proxy {
     String host;
     int port;
@@ -26,7 +28,7 @@ public class Proxy {
             }
         }
         if (host == null || port == 0)
-            throw new OperationFailedException(new ModelNode().set("need host and port"));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.needContextAndHost()));
 
         host = ContextHost.RemoveQuotes(host);
     }

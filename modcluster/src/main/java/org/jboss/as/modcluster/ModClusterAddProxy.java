@@ -29,13 +29,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
+
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
 public class ModClusterAddProxy implements OperationStepHandler, DescriptionProvider{
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
     static final ModClusterAddProxy INSTANCE = new ModClusterAddProxy();
 
@@ -53,7 +52,7 @@ public class ModClusterAddProxy implements OperationStepHandler, DescriptionProv
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
                     ModCluster modcluster = (ModCluster) controller.getValue();
-                    log.debug("add-proxy: " + operation);
+                    ROOT_LOGGER.debugf("add-proxy: %s", operation);
 
                     Proxy proxy = new Proxy(operation);
                     modcluster.addProxy(proxy.host, proxy.port);
