@@ -160,7 +160,8 @@ public final class Main {
             final String arg = args[i];
 
             try {
-                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg) || CommandLineConstants.OLD_VERSION.equals(arg)) {
+                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
+                        || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
                     System.out.println("JBoss Application Server " + getVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
@@ -296,7 +297,7 @@ public final class Main {
                     }
                     hostConfig = val;
 
-                } else if (arg.startsWith("-D")) {
+                } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
 
                     // set a system property
                     String name, value;
@@ -310,7 +311,7 @@ public final class Main {
                     }
                     SecurityActions.setSystemProperty(name, value);
                     hostSystemProperties.put(name, value);
-                } else if (arg.startsWith("-b")) {
+                } else if (arg.startsWith(CommandLineConstants.PUBLIC_BIND_ADDRESS)) {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
@@ -323,10 +324,10 @@ public final class Main {
                     String logicalName = null;
                     if (idx < 0) {
                         // -b xxx -bmanagement xxx
-                        logicalName = arg.length() == 2 ? "public" : arg.substring(2);
+                        logicalName = arg.length() == 2 ? CommandLineConstants.DEFAULT_INTERFACE : arg.substring(2);
                     } else if (idx == 2) {
                         // -b=xxx
-                        logicalName = "public";
+                        logicalName = CommandLineConstants.DEFAULT_INTERFACE;
                     } else {
                         // -bmanagement=xxx
                         logicalName = arg.substring(2, idx);

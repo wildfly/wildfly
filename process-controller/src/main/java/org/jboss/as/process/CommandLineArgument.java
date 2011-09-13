@@ -31,8 +31,57 @@ import static org.jboss.as.process.ProcessMessages.MESSAGES;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-enum CliArgument {
+enum CommandLineArgument {
 
+
+    PUBLIC_BIND_ADDRESS {
+        @Override
+        public String argument() {
+            return CommandLineConstants.PUBLIC_BIND_ADDRESS;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<value>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argPublicBindAddress();
+        }
+    },
+    LEGACY_PUBLIC_BIND_ADDRESS {
+        @Override
+        public String argument() {
+            return CommandLineConstants.PUBLIC_BIND_ADDRESS;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s <value>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argPublicBindAddress();
+        }
+    },
+    INTERFACE_BIND_ADDRESS {
+        @Override
+        public String argument() {
+            return CommandLineConstants.PUBLIC_BIND_ADDRESS;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s<interface>=<value>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argInterfaceBindAddress();
+        }
+    },
     BACKUP {
         @Override
         public String argument() {
@@ -68,7 +117,7 @@ enum CliArgument {
     SYSTEM_PROPERTY {
         @Override
         public String argument() {
-            return "-D";
+            return CommandLineConstants.SYS_PROP;
         }
 
         @Override
@@ -241,6 +290,22 @@ enum CliArgument {
             return MESSAGES.argProperties();
         }
     },
+    LEGACY_SHORT_PROPERTIES {
+        @Override
+        public String argument() {
+            return CommandLineConstants.SHORT_PROPERTIES;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s <url>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argProperties();
+        }
+    },
     PROPERTIES {
         @Override
         public String argument() {
@@ -255,6 +320,22 @@ enum CliArgument {
         @Override
         public String instructions() {
             return MESSAGES.argProperties();
+        }
+    },
+    LEGACY_SHORT_VERSION {
+        @Override
+        public String argument() {
+            return CommandLineConstants.OLD_SHORT_VERSION;
+        }
+
+        @Override
+        public String argumentExample() {
+            return argument();
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argVersion();
         }
     },
     SHORT_VERSION {
@@ -326,7 +407,7 @@ enum CliArgument {
         if (USAGE == null) {
             final StringBuilder sb = new StringBuilder();
             sb.append(MESSAGES.argUsage()).append("\n");
-            for (CliArgument arg : CliArgument.values()) {
+            for (CommandLineArgument arg : CommandLineArgument.values()) {
                 sb.append(arg.toString()).append("\n");
             }
             USAGE = sb.toString();

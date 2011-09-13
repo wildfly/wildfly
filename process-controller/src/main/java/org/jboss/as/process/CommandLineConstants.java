@@ -47,7 +47,8 @@ public class CommandLineConstants {
     /** Get the version of the server */
     public static final String OLD_VERSION = "-version";
     public static final String VERSION = "--version";
-    public static final String SHORT_VERSION = "-V";
+    public static final String SHORT_VERSION = "-v";
+    public static final String OLD_SHORT_VERSION = "-V";
 
     /** Configure the file to be used to read properties */
     public static final String OLD_PROPERTIES = "-properties";
@@ -87,12 +88,17 @@ public class CommandLineConstants {
     public static final String SERVER_CONFIG = "--server-config";
 
     /** Address on which the process controller listens */
-    public static final String OLD_BIND_ADDR = "-bind-addr";
-    public static final String BIND_ADDR = "--bind-addr";
+    public static final String OLD_PROCESS_CONTROLLER_BIND_ADDR = "-bind-addr";
+    public static final String PROCESS_CONTROLLER_BIND_ADDR = "--bind-addr";
 
     /** Port on which the process controller listens */
-    public static final String OLD_BIND_PORT = "-bind-port";
-    public static final String BIND_PORT = "--bind-port";
+    public static final String OLD_PROCESS_CONROLLER_BIND_PORT = "-bind-port";
+    public static final String PROCESS_CONTROLLER_BIND_PORT = "--bind-port";
+
+    public static final String SYS_PROP = "-D";
+
+    public static final String PUBLIC_BIND_ADDRESS = "-b";
+    public static final String DEFAULT_INTERFACE = "public";
 
     private CommandLineConstants() {
     }
