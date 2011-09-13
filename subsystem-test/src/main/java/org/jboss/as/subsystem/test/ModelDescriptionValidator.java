@@ -774,6 +774,10 @@ public class ModelDescriptionValidator {
         }
 
         void validateKeys(ModelNode description) {
+            if (!description.isDefined()) {
+                errors.add(createValidationFailure("Missing description for operation"));
+                return;
+            }
             for (String opKey : description.keys()) {
                 ArbitraryDescriptorValidator validator = VALID_OPERATION_KEYS.get(opKey);
                 if (validator == null) {
