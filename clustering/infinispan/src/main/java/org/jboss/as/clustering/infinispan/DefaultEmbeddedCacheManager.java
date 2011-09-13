@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan;
 
 import java.security.AccessController;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -269,6 +270,16 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
     @Override
     public void removeCache(String cacheName) {
         this.container.removeCache(this.getCacheName(cacheName));
+    }
+
+    @Override
+    public EmbeddedCacheManager startCaches(String... names) {
+        Set<String> cacheNames = new LinkedHashSet<String>();
+        for (String name: names) {
+            cacheNames.add(this.getCacheName(name));
+        }
+        this.container.startCaches(cacheNames.toArray(new String[cacheNames.size()]));
+        return this;
     }
 
     private String getCacheName(String name) {
