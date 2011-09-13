@@ -29,7 +29,7 @@ import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.wsf.spi.deployment.Endpoint.EndpointType;
+import org.jboss.wsf.spi.deployment.EndpointType;
 
 /**
  * Detects Web Service deployment type.
