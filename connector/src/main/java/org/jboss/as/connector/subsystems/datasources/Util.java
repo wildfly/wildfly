@@ -43,9 +43,9 @@ public class Util {
      * @return the compliant jndi name
      */
     public static String getJndiName(final ModelNode modelNode) {
-        final String rawJndiName = modelNode.require(JNDINAME).asString();
+        final String rawJndiName = modelNode.require(JNDINAME.getName()).asString();
         final String jndiName;
-        if (!rawJndiName.startsWith("java:") && modelNode.hasDefined(USE_JAVA_CONTEXT) && modelNode.get(USE_JAVA_CONTEXT).asBoolean()) {
+        if (!rawJndiName.startsWith("java:") && modelNode.hasDefined(USE_JAVA_CONTEXT.getName()) && modelNode.get(USE_JAVA_CONTEXT.getName()).asBoolean()) {
             if(rawJndiName.startsWith("jboss/")) {
                 // Bind to java:jboss/ namespace
                 jndiName = "java:" + rawJndiName;

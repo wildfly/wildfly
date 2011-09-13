@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
+
 /**
  * Operation handler responsible for removing a DataSource.
  *
@@ -31,7 +33,7 @@ public class DataSourceRemove extends AbstractDataSourceRemove {
 
     static final DataSourceRemove INSTANCE = new DataSourceRemove();
 
-    protected AttributeDefinition[] getModelProperties() {
+    protected SimpleAttributeDefinition[] getModelProperties() {
         return DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
     }
 }

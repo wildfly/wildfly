@@ -22,7 +22,8 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
@@ -40,7 +41,7 @@ class ResourceAdaptersSubSystemAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();
-        model.get(RESOURCEADAPTER);
+        model.get(RESOURCEADAPTER_NAME);
     }
 
     protected boolean requiresRuntime(OperationContext context) {

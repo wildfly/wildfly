@@ -27,37 +27,27 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.connector.util.AbstractParser;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.MetadataParser;
-
-import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterImpl;
-import org.jboss.jca.common.metadata.resourceadapter.ResourceAdaptersImpl;
 import org.jboss.logging.Messages;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * A ResourceAdapterParserr.
@@ -71,7 +61,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
 
-    public void parse(final XMLStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
+    public void parse(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
 
         ResourceAdapters adapters = null;
 
@@ -109,7 +99,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
     }
 
-    private void parseResourceAdapters(final XMLStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws XMLStreamException, ParserException,
+    private void parseResourceAdapters(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -139,7 +129,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseResourceAdapter(final XMLStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws XMLStreamException, ParserException,
+    private void parseResourceAdapter(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws XMLStreamException, ParserException,
             ValidateException {
         final ModelNode raAddress = parentAddress.clone();
         final ModelNode operation = new ModelNode();
@@ -151,7 +141,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                 case END_ELEMENT: {
                     if (ResourceAdapters.Tag.forName(reader.getLocalName()) == ResourceAdapters.Tag.RESOURCE_ADAPTER) {
                         if (archiveName != null) {
-                            raAddress.add(RESOURCEADAPTER, archiveName);
+                            raAddress.add(RESOURCEADAPTER_NAME, archiveName);
 
                             raAddress.protect();
 
@@ -159,7 +149,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             list.add(operation);
                             return;
                         } else {
-                            throw new ParserException(bundle.requiredElementMissing(ARCHIVE, RESOURCEADAPTER));
+                            throw new ParserException(bundle.requiredElementMissing(ARCHIVE.getName(), RESOURCEADAPTER_NAME));
 
                         }
                     } else {
@@ -187,25 +177,36 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             break;
                         }
                         case BEAN_VALIDATION_GROUP: {
-                            operation.get(BEANVALIDATIONGROUPS).add(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            BEANVALIDATIONGROUPS.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case BOOTSTRAP_CONTEXT: {
-                            operation.get(BOOTSTRAPCONTEXT).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            BOOTSTRAPCONTEXT.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case CONFIG_PROPERTY: {
-                            operation.get(CONFIG_PROPERTIES, attributeAsString(reader, "name")).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String name = rawAttributeText(reader, "name");
+                            String value = rawElementText(reader);
+                            ModelNode node = CONFIG_PROPERTIES.parse(value, location);
+                            operation.get(CONFIG_PROPERTIES.getName(), name).set(node);
                             break;
 
                         }
                         case TRANSACTION_SUPPORT: {
-                            operation.get(TRANSACTIONSUPPORT).set(elementAsString(reader));
+                            final Location location = reader.getLocation();
+                            String value = rawElementText(reader);
+                            TRANSACTIONSUPPORT.parseAndSetParameter(value, operation, location);
                             break;
                         }
                         case ARCHIVE: {
-                            archiveName = elementAsString(reader);
-                            operation.get(ARCHIVE).set(archiveName);
+                            final Location location = reader.getLocation();
+                            archiveName = rawElementText(reader);
+                            ARCHIVE.parseAndSetParameter(archiveName, operation, location);
                             break;
                         }
                         default:

@@ -22,11 +22,11 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import java.sql.Driver;
-import java.util.ServiceLoader;
-
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+
+import java.sql.Driver;
+import java.util.ServiceLoader;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -46,8 +46,8 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
     static final JdbcDriverRemove INSTANCE = new JdbcDriverRemove();
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String driverName = model.get(DRIVER_NAME).asString();
-        final String moduleName = operation.require(DRIVER_MODULE_NAME).asString();
+        final String driverName = model.get(DRIVER_NAME.getName()).asString();
+        final String moduleName = operation.require(DRIVER_MODULE_NAME.getName()).asString();
 
         // Use the module for now.  Would be nice to keep the driver info in the model.
         final Module module;

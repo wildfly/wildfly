@@ -45,7 +45,7 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
     static final DataSourceAdd INSTANCE = new DataSourceAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) {
-        populateAddModel(operation, model, CONNECTION_PROPERTIES, DATASOURCE_ATTRIBUTE);
+        populateAddModel(operation, model, CONNECTION_PROPERTIES.getName(), DATASOURCE_ATTRIBUTE);
     }
 
     protected AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException {

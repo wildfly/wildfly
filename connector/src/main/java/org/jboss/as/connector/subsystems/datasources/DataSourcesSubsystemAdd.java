@@ -23,8 +23,9 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATA_SOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
@@ -45,8 +46,8 @@ class DataSourcesSubsystemAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();
         model.get(DATA_SOURCE);
-        model.get(XA_DATA_SOURCE);
-        model.get(JDBC_DRIVER);
+        model.get(XA_DATASOURCE);
+        model.get(JDBC_DRIVER_NAME);
     }
 
     protected boolean requiresRuntime(OperationContext context) {

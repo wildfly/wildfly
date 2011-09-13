@@ -139,7 +139,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
                         break;
                 }
             }
-        } else if (getDefaultValue().isDefined()) {
+        } else if (getDefaultValue()!= null && getDefaultValue().isDefined()) {
             node = new ModelNode().set(getDefaultValue());
         } else {
             node = new ModelNode();

@@ -15,6 +15,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAM
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
@@ -44,28 +45,28 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                     ModelNode result = context.getResult();
                     for (InstalledDriver driver : driverRegistry.getInstalledDrivers()) {
                         ModelNode driverNode = new ModelNode();
-                        driverNode.get(DRIVER_NAME).set(driver.getDriverName());
+                        driverNode.get(DRIVER_NAME.getName()).set(driver.getDriverName());
                         if (driver.isFromDeployment()) {
                             driverNode.get(DEPLOYMENT_NAME).set(driver.getDriverName());
-                            driverNode.get(DRIVER_MODULE_NAME);
+                            driverNode.get(DRIVER_MODULE_NAME.getName());
                             driverNode.get(MODULE_SLOT);
-                            driverNode.get(DRIVER_DATASOURCE_CLASS_NAME);
-                            driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME);
+                            driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName());
+                            driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName());
 
                         } else {
                             driverNode.get(DEPLOYMENT_NAME);
-                            driverNode.get(DRIVER_MODULE_NAME).set(driver.getModuleName().getName());
+                            driverNode.get(DRIVER_MODULE_NAME.getName()).set(driver.getModuleName().getName());
                             driverNode.get(MODULE_SLOT).set(
                                     driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
-                            driverNode.get(DRIVER_DATASOURCE_CLASS_NAME).set(
+                            driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName()).set(
                                     driver.getDataSourceClassName() != null ? driver.getDataSourceClassName() : "");
-                            driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME).set(
+                            driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).set(
                                     driver.getXaDataSourceClassName() != null ? driver.getXaDataSourceClassName() : "");
 
                         }
-                        driverNode.get(DRIVER_CLASS_NAME).set(driver.getDriverClassName());
-                        driverNode.get(DRIVER_MAJOR_VERSION).set(driver.getMajorVersion());
-                        driverNode.get(DRIVER_MINOR_VERSION).set(driver.getMinorVersion());
+                        driverNode.get(DRIVER_CLASS_NAME.getName()).set(driver.getDriverClassName());
+                        driverNode.get(DRIVER_MAJOR_VERSION.getName()).set(driver.getMajorVersion());
+                        driverNode.get(DRIVER_MINOR_VERSION.getName()).set(driver.getMinorVersion());
                         driverNode.get(JDBC_COMPLIANT).set(driver.isJdbcCompliant());
                         result.add(driverNode);
                     }
