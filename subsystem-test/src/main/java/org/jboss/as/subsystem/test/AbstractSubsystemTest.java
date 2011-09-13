@@ -1,5 +1,6 @@
 package org.jboss.as.subsystem.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -21,6 +22,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -79,6 +81,14 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.deployment.DeploymentAddHandler;
+import org.jboss.as.server.deployment.DeploymentDeployHandler;
+import org.jboss.as.server.deployment.DeploymentRedeployHandler;
+import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.as.server.deployment.DeploymentStatusHandler;
+import org.jboss.as.server.deployment.DeploymentUndeployHandler;
+import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationFailure;
 import org.jboss.dmr.ModelNode;
@@ -569,9 +579,19 @@ public abstract class AbstractSubsystemTest {
             rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true);
             rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
 
+            ManagementResourceRegistration deployments = rootRegistration.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
+            DeploymentAddHandler dah = new DeploymentAddHandler(TestContentRepository.createTestContentRepository());
+            deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
+            deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, DeploymentRemoveHandler.INSTANCE, DeploymentRemoveHandler.INSTANCE, false);
+            deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, DeploymentDeployHandler.INSTANCE, DeploymentDeployHandler.INSTANCE, false);
+            deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, DeploymentUndeployHandler.INSTANCE, DeploymentUndeployHandler.INSTANCE, false);
+            deployments.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, DeploymentRedeployHandler.INSTANCE, DeploymentRedeployHandler.INSTANCE, false);
+            deployments.registerMetric(DeploymentStatusHandler.ATTRIBUTE_NAME, DeploymentStatusHandler.INSTANCE);
+
+
             controllerInitializer.initializeModel(rootResource, rootRegistration);
 
-            ExtensionContext context = new ExtensionContextImpl(rootRegistration, null, persister);
+            ExtensionContext context = new ExtensionContextImpl(rootRegistration, deployments, persister);
             additionalInit.initializeExtraSubystemsAndModel(context, rootResource, rootRegistration);
             mainExtension.initialize(context);
         }
@@ -809,4 +829,33 @@ public abstract class AbstractSubsystemTest {
         }
 
     };
+
+    private static class TestContentRepository extends ContentRepositoryImpl {
+
+        private TestContentRepository(File repoRoot) {
+            // FIXME TestContentRepository constructor
+            super(repoRoot);
+        }
+
+        public static TestContentRepository createTestContentRepository() {
+            File file = new File("target/content-repository");
+            if (file.exists()) {
+                cleanFiles(file);
+            }
+            file.mkdirs();
+            return new TestContentRepository(file);
+        }
+
+        private static void cleanFiles(File file) {
+            if (file.isDirectory()) {
+                for (String name : file.list()) {
+                    File current = new File(file, name);
+                    if (current.isDirectory()) {
+                        cleanFiles(current);
+                    }
+                }
+            }
+            file.delete();
+        }
+    }
 }
