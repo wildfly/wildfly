@@ -38,7 +38,7 @@ interface ProcessMessages {
      */
     ProcessMessages MESSAGES = Messages.getBundle(ProcessMessages.class);
 
-    @Message(value = "Usage: ./domain.sh [args...]%nwhere args include:")
+    @Message(value = "Usage: ./domain.sh [args...]\nwhere args include:")
     String argUsage();
 
     /**
@@ -78,7 +78,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(value = "Address on which this host controller's socket should listen")
+    @Message(value = "Address on which the host controller should listen for communication from the process controller")
     String argInterProcessHcAddress();
 
     /**
@@ -86,16 +86,8 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(value = "Port on which this host controller's socket should listen")
+    @Message(value = "Port on which the host controller should listen for communication from the process controller")
     String argInterProcessHcPort();
-
-    /**
-     * Instructions for the {@link CommandLineArgument#INTERPROCESS_NAME} command line argument.
-     *
-     * @return the message.
-     */
-    @Message(value = "Name of this process, used to register the socket with the server in the process controller")
-    String argInterProcessName();
 
     /**
      * Instructions for the {@link CommandLineArgument#HOST_CONFIG} command line argument.
@@ -110,7 +102,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(value = "Address of process controller socket")
+    @Message(value = "Address on which the process controller listens for communication from processes it controls")
     String argPcAddress();
 
     /**
@@ -118,7 +110,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(value = "Port of process controller socket")
+    @Message(value = "Port on which the process controller listens for communication from processes it controls")
     String argPcPort();
 
     /**
@@ -160,6 +152,14 @@ interface ProcessMessages {
      */
     @Message(value = "Set system property jboss.bind.address.<interface> to the given value")
     String argInterfaceBindAddress();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#INTERFACE_BIND_ADDRESS} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(value = "No value was provided for argument %s")
+    String noArgValue(String argument);
 
     /**
      * Creates an exception indicating the Java executable could not be found.

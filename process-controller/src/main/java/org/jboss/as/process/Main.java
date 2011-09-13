@@ -22,9 +22,10 @@
 
 package org.jboss.as.process;
 
+import static org.jboss.as.process.ProcessMessages.MESSAGES;
+
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.AccessController;
 import java.util.ArrayList;
@@ -42,8 +43,6 @@ import org.jboss.as.version.Version;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.threads.JBossThreadFactory;
-
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 /**
  * The main entry point for the process controller.
@@ -74,17 +73,20 @@ public final class Main {
     public static ProcessController start(String[] args) throws IOException {
         MDC.put("process", "process controller");
 
-        String javaHome = System.getProperty("java.home", ".");
+        String javaHome = SecurityActions.getSystemProperty("java.home", ".");
         String jvmName = javaHome + "/bin/java";
-        String jbossHome = System.getProperty("jboss.home.dir", ".");
+        String jbossHome = SecurityActions.getSystemProperty("jboss.home.dir", ".");
         String modulePath = null;
         String bootJar = null;
         String logModule = "org.jboss.logmanager";
         String jaxpModule = "javax.xml.jaxp-provider";
         String bootModule = HOST_CONTROLLER_MODULE;
-        String bindAddress = "127.0.0.1";
+        boolean preferIPv6 = Boolean.valueOf(SecurityActions.getSystemProperty("java.net.preferIPv6Addresses", "false"));
+        String bindAddress = preferIPv6 ? "::1" : "127.0.0.1";
         int bindPort = 0;
-        String currentWorkingDir = System.getProperty("user.dir");
+        final PCSocketConfig pcSocketConfig = new PCSocketConfig();
+
+        String currentWorkingDir = SecurityActions.getSystemProperty("user.dir");
 
         final List<String> javaOptions = new ArrayList<String>();
         final List<String> smOptions = new ArrayList<String>();
@@ -109,34 +111,6 @@ public final class Main {
                 logModule = args[++i];
             } else if ("-jaxpmodule".equals(arg)) {
                 jaxpModule = args[++i];
-            } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR.equals(arg) || CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR.equals(arg)) {
-                bindAddress = args[++i];
-            } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR)) {
-                String addr = parseValue(arg, CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR);
-                if (addr == null) {
-                    return null;
-                }
-                bindAddress = addr;
-            } else if (arg.startsWith(CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR)) {
-                String addr = parseValue(arg, CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR);
-                if (addr == null) {
-                    return null;
-                }
-                bindAddress = addr;
-            } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
-                String port = parseValue(arg, CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT);
-                if (port == null) {
-                    return null;
-                }
-                bindPort = Integer.parseInt(port);
-            } else if (arg.startsWith(CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT)) {
-                String port = parseValue(arg, CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT);
-                if (port == null) {
-                    return null;
-                }
-                bindPort = Integer.parseInt(port);
-            } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT.equals(arg) || CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT.equals(arg)) {
-                bindPort = Integer.parseInt(args[++i]);
             } else if ("--".equals(arg)) {
                 for (i++; i < args.length; i++) {
                     arg = args[i];
@@ -151,15 +125,35 @@ public final class Main {
                                     || CommandLineConstants.OLD_VERSION.equals(arg)) {
                                 System.out.println("\nJBoss Application Server " + getVersionString());
                                 return null;
+                            } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i, pcSocketConfig)) {
+                                if (pcSocketConfig.isParseFailed()) {
+                                    return null;
+                                }
+                                i += pcSocketConfig.getArgIncrement();
+                            } else {
+                                smOptions.add(arg);
                             }
-                            smOptions.add(arg);
                         }
                         break OUT;
+                    } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i, pcSocketConfig)) {
+                        // This would normally come in via the nested if ("--".equals(arg)) case above, but in case someone tweaks the
+                        // script to set it directly, we've handled it
+                        if (pcSocketConfig.isParseFailed()) {
+                            return null;
+                        }
+                        i += pcSocketConfig.getArgIncrement();
                     } else {
                         javaOptions.add(arg);
                     }
                 }
                 break OUT;
+            } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i, pcSocketConfig)) {
+                // This would normally come in via the if ("--".equals(arg)) cases above, but in case someone tweaks the
+                // script to set it directly, we've handled it
+                if (pcSocketConfig.isParseFailed()) {
+                    return null;
+                }
+                i += pcSocketConfig.getArgIncrement();
             } else {
                 throw MESSAGES.invalidOption(arg);
             }
@@ -167,7 +161,7 @@ public final class Main {
         if (modulePath == null) {
             // if "-mp" (i.e. module path) wasn't part of the command line args, then check the system property.
             // if system property not set, then default to JBOSS_HOME/modules
-            modulePath = System.getProperty("jboss.module.path", jbossHome + File.separator + "modules");
+            modulePath = SecurityActions.getSystemProperty("jboss.module.path", jbossHome + File.separator + "modules");
         }
         if (bootJar == null) {
             // if "-jar" wasn't part of the command line args, then default to JBOSS_HOME/jboss-modules.jar
@@ -191,13 +185,7 @@ public final class Main {
         }
 
         final ProtocolServer.Configuration configuration = new ProtocolServer.Configuration();
-        if (bindAddress != null) {
-            configuration.setBindAddress(new InetSocketAddress(bindAddress, bindPort));
-        } else {
-            configuration.setBindAddress(new InetSocketAddress(bindPort));
-        }
-        // todo better config
-        configuration.setBindAddress(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+        configuration.setBindAddress(new InetSocketAddress(pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort()));
         configuration.setSocketFactory(ServerSocketFactory.getDefault());
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ProcessController-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
         configuration.setThreadFactory(threadFactory);
@@ -218,14 +206,12 @@ public final class Main {
         initialCommand.add("-jaxpmodule");
         initialCommand.add(jaxpModule);
         initialCommand.add(bootModule);
-        initialCommand.add(CommandLineConstants.INTERPROCESS_PC_ADDRESS);
+        initialCommand.add(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR);
         initialCommand.add(boundAddress.getHostName());
-        initialCommand.add(CommandLineConstants.INTERPROCESS_PC_PORT);
+        initialCommand.add(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT);
         initialCommand.add(Integer.toString(boundAddress.getPort()));
         initialCommand.addAll(smOptions);
         initialCommand.add("-D" + "jboss.home.dir=" + jbossHome);
-
-
 
         processController.addProcess(HOST_CONTROLLER_PROCESS_NAME, initialCommand, Collections.<String, String>emptyMap(), currentWorkingDir, true);
         processController.startProcess(HOST_CONTROLLER_PROCESS_NAME);
@@ -245,10 +231,85 @@ public final class Main {
         String value = null;
         int splitPos = key.length();
         if (arg.length() <= splitPos + 1 || arg.charAt(splitPos) != '=') {
+            System.out.println(MESSAGES.noArgValue(key));
             usage();
         } else {
             value = arg.substring(splitPos + 1);
         }
         return value;
+    }
+
+    private static class PCSocketConfig {
+        private String bindAddress;
+        private int bindPort = 0;
+        private int argIncrement = 0;
+        private boolean parseFailed;
+
+        private PCSocketConfig() {
+            boolean preferIPv6 = Boolean.valueOf(SecurityActions.getSystemProperty("java.net.preferIPv6Addresses", "false"));
+            bindAddress = preferIPv6 ? "::1" : "127.0.0.1";
+        }
+
+        private String getBindAddress() {
+            return bindAddress;
+        }
+
+        private int getBindPort() {
+            return bindPort;
+        }
+
+        private int getArgIncrement() {
+            return argIncrement;
+        }
+
+        private boolean isParseFailed() {
+            return parseFailed;
+        }
+
+        private boolean processPCSocketConfigArgument(final String arg, final String[] args, final int index, final PCSocketConfig pcSocketConfig) {
+            boolean isPCSocketArg = true;
+
+            argIncrement = 0;
+
+            if (CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR.equals(arg) || CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR.equals(arg)) {
+                bindAddress = args[index +1];
+                argIncrement = 1;
+            } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR)) {
+                String addr = parseValue(arg, CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR);
+                if (addr == null) {
+                    parseFailed = true;
+                } else {
+                    bindAddress = addr;
+                }
+            } else if (arg.startsWith(CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR)) {
+                String addr = parseValue(arg, CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR);
+                if (addr == null) {
+                    parseFailed = true;
+                } else {
+                    bindAddress = addr;
+                }
+            } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT.equals(arg) || CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT.equals(arg)) {
+                bindPort = Integer.parseInt(args[index + 1]);
+                argIncrement = 1;
+            } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
+                String port = parseValue(arg, CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT);
+                if (port == null) {
+                    parseFailed = true;
+                } else {
+                    bindPort = Integer.parseInt(port);
+                }
+            } else if (arg.startsWith(CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT)) {
+                String port = parseValue(arg, CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT);
+                if (port == null) {
+                    parseFailed = true;
+                } else {
+                    bindPort = Integer.parseInt(port);
+                }
+            } else {
+                isPCSocketArg = false;
+            }
+
+            return isPCSocketArg;
+        }
     }
 }
