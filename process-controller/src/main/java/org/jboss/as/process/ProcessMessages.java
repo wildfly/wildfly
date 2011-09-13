@@ -42,7 +42,7 @@ interface ProcessMessages {
     String argUsage();
 
     /**
-     * Instructions for the {@link CliArgument#BACKUP} command line argument.
+     * Instructions for the {@link CommandLineArgument#BACKUP} command line argument.
      *
      * @return the message.
      */
@@ -50,7 +50,7 @@ interface ProcessMessages {
     String argBackup();
 
     /**
-     * Instructions for the {@link CliArgument#CACHED_DC} command line argument.
+     * Instructions for the {@link CommandLineArgument#CACHED_DC} command line argument.
      *
      * @return the message.
      */
@@ -58,7 +58,7 @@ interface ProcessMessages {
     String argCachedDc();
 
     /**
-     * Instructions for the {@link CliArgument#DOMAIN_CONFIG} command line argument.
+     * Instructions for the {@link CommandLineArgument#DOMAIN_CONFIG} command line argument.
      *
      * @return the message.
      */
@@ -66,7 +66,7 @@ interface ProcessMessages {
     String argDomainConfig();
 
     /**
-     * Instructions for the {@link CliArgument#SHORT_HELP} or {@link CliArgument#HELP} command line argument.
+     * Instructions for the {@link CommandLineArgument#SHORT_HELP} or {@link CommandLineArgument#HELP} command line argument.
      *
      * @return the message.
      */
@@ -74,23 +74,23 @@ interface ProcessMessages {
     String argHelp();
 
     /**
-     * Instructions for the {@link CliArgument#INTERPROCESS_HC_ADDRESS} command line argument.
+     * Instructions for the {@link CommandLineArgument#INTERPROCESS_HC_ADDRESS} command line argument.
      *
      * @return the message.
      */
-    @Message(value = "Address this host controller's socket should listen onr")
+    @Message(value = "Address on which this host controller's socket should listen")
     String argInterProcessHcAddress();
 
     /**
-     * Instructions for the {@link CliArgument#INTERPROCESS_HC_PORT} command line argument.
+     * Instructions for the {@link CommandLineArgument#INTERPROCESS_HC_PORT} command line argument.
      *
      * @return the message.
      */
-    @Message(value = "Port of this host controller's socket  should listen on")
+    @Message(value = "Port on which this host controller's socket should listen")
     String argInterProcessHcPort();
 
     /**
-     * Instructions for the {@link CliArgument#INTERPROCESS_NAME} command line argument.
+     * Instructions for the {@link CommandLineArgument#INTERPROCESS_NAME} command line argument.
      *
      * @return the message.
      */
@@ -98,7 +98,7 @@ interface ProcessMessages {
     String argInterProcessName();
 
     /**
-     * Instructions for the {@link CliArgument#HOST_CONFIG} command line argument.
+     * Instructions for the {@link CommandLineArgument#HOST_CONFIG} command line argument.
      *
      * @return the message.
      */
@@ -106,7 +106,7 @@ interface ProcessMessages {
     String argHostConfig();
 
     /**
-     * Instructions for the {@link CliArgument#PC_ADDRESS} command line argument.
+     * Instructions for the {@link CommandLineArgument#PC_ADDRESS} command line argument.
      *
      * @return the message.
      */
@@ -114,7 +114,7 @@ interface ProcessMessages {
     String argPcAddress();
 
     /**
-     * Instructions for the {@link CliArgument#PC_PORT} command line argument.
+     * Instructions for the {@link CommandLineArgument#PC_PORT} command line argument.
      *
      * @return the message.
      */
@@ -122,7 +122,7 @@ interface ProcessMessages {
     String argPcPort();
 
     /**
-     * Instructions for the {@link CliArgument#SHORT_PROPERTIES} or {@link CliArgument#PROPERTIES} command line argument.
+     * Instructions for the {@link CommandLineArgument#SHORT_PROPERTIES} or {@link CommandLineArgument#PROPERTIES} command line argument.
      *
      * @return the message.
      */
@@ -130,7 +130,7 @@ interface ProcessMessages {
     String argProperties();
 
     /**
-     * Instructions for the {@link CliArgument#SYSTEM_PROPERTY} command line argument.
+     * Instructions for the {@link CommandLineArgument#SYSTEM_PROPERTY} command line argument.
      *
      * @return the message.
      */
@@ -138,12 +138,28 @@ interface ProcessMessages {
     String argSystem();
 
     /**
-     * Instructions for the {@link CliArgument#SHORT_VERSION} or {@link CliArgument#VERSION} command line argument.
+     * Instructions for the {@link CommandLineArgument#SHORT_VERSION}, {@link CommandLineArgument#LEGACY_SHORT_VERSION} or {@link CommandLineArgument#VERSION} command line argument.
      *
      * @return the message.
      */
     @Message(value = "Print version and exit")
     String argVersion();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#PUBLIC_BIND_ADDRESS} or {@link CommandLineArgument#LEGACY_PUBLIC_BIND_ADDRESS} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(value = "Set system property jboss.bind.address.public to the given value")
+    String argPublicBindAddress();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#INTERFACE_BIND_ADDRESS} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(value = "Set system property jboss.bind.address.<interface> to the given value")
+    String argInterfaceBindAddress();
 
     /**
      * Creates an exception indicating the Java executable could not be found.

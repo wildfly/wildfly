@@ -36,7 +36,6 @@ import java.util.logging.Handler;
 import java.util.logging.Logger;
 
 import javax.net.ServerSocketFactory;
-import javax.xml.ws.soap.Addressing;
 
 import org.jboss.as.protocol.old.ProtocolServer;
 import org.jboss.as.version.Version;
@@ -58,7 +57,7 @@ public final class Main {
     }
 
     public static void usage() {
-        CliArgument.printUsage(System.out);
+        CommandLineArgument.printUsage(System.out);
     }
 
     private Main() {
@@ -110,33 +109,33 @@ public final class Main {
                 logModule = args[++i];
             } else if ("-jaxpmodule".equals(arg)) {
                 jaxpModule = args[++i];
-            } else if (CommandLineConstants.BIND_ADDR.equals(arg) || CommandLineConstants.OLD_BIND_ADDR.equals(arg)) {
+            } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR.equals(arg) || CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR.equals(arg)) {
                 bindAddress = args[++i];
-            } else if (arg.startsWith(CommandLineConstants.BIND_ADDR)) {
-                String addr = parseValue(arg, CommandLineConstants.BIND_ADDR);
+            } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR)) {
+                String addr = parseValue(arg, CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR);
                 if (addr == null) {
                     return null;
                 }
                 bindAddress = addr;
-            } else if (arg.startsWith(CommandLineConstants.OLD_BIND_ADDR)) {
-                String addr = parseValue(arg, CommandLineConstants.OLD_BIND_ADDR);
+            } else if (arg.startsWith(CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR)) {
+                String addr = parseValue(arg, CommandLineConstants.OLD_PROCESS_CONTROLLER_BIND_ADDR);
                 if (addr == null) {
                     return null;
                 }
                 bindAddress = addr;
-            } else if (arg.startsWith(CommandLineConstants.BIND_PORT)) {
-                String port = parseValue(arg, CommandLineConstants.BIND_PORT);
+            } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
+                String port = parseValue(arg, CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT);
                 if (port == null) {
                     return null;
                 }
                 bindPort = Integer.parseInt(port);
-            } else if (arg.startsWith(CommandLineConstants.OLD_BIND_PORT)) {
-                String port = parseValue(arg, CommandLineConstants.OLD_BIND_PORT);
+            } else if (arg.startsWith(CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT)) {
+                String port = parseValue(arg, CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT);
                 if (port == null) {
                     return null;
                 }
                 bindPort = Integer.parseInt(port);
-            } else if (CommandLineConstants.BIND_PORT.equals(arg) || CommandLineConstants.OLD_BIND_PORT.equals(arg)) {
+            } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT.equals(arg) || CommandLineConstants.OLD_PROCESS_CONROLLER_BIND_PORT.equals(arg)) {
                 bindPort = Integer.parseInt(args[++i]);
             } else if ("--".equals(arg)) {
                 for (i++; i < args.length; i++) {
