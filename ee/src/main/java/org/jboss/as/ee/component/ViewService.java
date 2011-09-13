@@ -55,7 +55,7 @@ import java.util.WeakHashMap;
 public final class ViewService implements Service<ComponentView> {
     private static final Logger logger = Logger.getLogger(ViewService.class);
     private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
-    private final WeakHashMap<ClassLoader, ProxyFactory<?>> factories;
+    private final WeakHashMap<ClassLoader, MarshallingProxyFactory> factories;
     private final boolean isRemote;
     private final Map<Method, InterceptorFactory> viewInterceptorFactories;
     private final Map<Method, InterceptorFactory> clientInterceptorFactories;
@@ -98,21 +98,20 @@ public final class ViewService implements Service<ComponentView> {
         this.viewInterceptorFactories = viewInterceptorFactories;
         this.clientInterceptorFactories = clientInterceptorFactories;
         allowedMethods = Collections.unmodifiableSet(viewInterceptorFactories.keySet());
-        this.factories = new WeakHashMap<ClassLoader, ProxyFactory<?>>();
+        this.factories = new WeakHashMap<ClassLoader, MarshallingProxyFactory>();
         this.isRemote = viewConfiguration.isRemote();
     }
 
-    private ProxyFactory<?> createFactory(final String proxyName, final ClassLoader classLoader) {
+    private MarshallingProxyFactory createFactory(final String proxyName, final ClassLoader classLoader, final ProxyFactory<?> innerProxyFactory) {
         try {
             final ProxyConfiguration proxyConfiguration = new ProxyConfiguration();
             proxyConfiguration.setProxyName(proxyName);
-            // TODO: keep a weak reference to the class loader
             proxyConfiguration.setClassLoader(classLoader);
             //proxyConfiguration.setProtectionDomain(viewClass.getProtectionDomain());
             //proxyConfiguration.setMetadataSource(proxyReflectionIndex);
             proxyConfiguration.setSuperClass(Object.class);
             proxyConfiguration.addAdditionalInterface(Class.forName(this.viewClass.getName(), true, classLoader));
-            return new ProxyFactory<Object>(proxyConfiguration);
+            return new MarshallingProxyFactory(new ProxyFactory<Object>(proxyConfiguration), innerProxyFactory);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -249,17 +248,17 @@ public final class ViewService implements Service<ComponentView> {
                         // wrap the local proxy
                         final Object localProxy = createLocalProxy();
                         final ClassLoader tccl = currentContextClassLoader();
-                        ProxyFactory<?> factory = factories.get(tccl);
+                        MarshallingProxyFactory factory = factories.get(tccl);
                         if (factory == null) {
                             synchronized (factories) {
                                 factory = factories.get(tccl);
                                 if (factory == null) {
-                                    factory = createFactory(localProxy.getClass().getName() + "Remote", tccl);
+                                    factory = createFactory(localProxy.getClass().getName() + "Remote", tccl, proxyFactory);
                                     factories.put(tccl, factory);
                                 }
                             }
                         }
-                        return factory.newInstance(new MarshallingInvocationHandler(factory, proxyFactory, localProxy));
+                        return factory.newInstance(localProxy);
                     } else {
                         return createLocalProxy();
                     }

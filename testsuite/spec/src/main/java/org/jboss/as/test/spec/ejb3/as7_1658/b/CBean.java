@@ -24,14 +24,16 @@ package org.jboss.as.test.spec.ejb3.as7_1658.b;
 import org.jboss.as.test.spec.ejb3.as7_1658.a.ARemote;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 
 /**
  * Just check whether we can inject a remote.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-@Stateless
+@Singleton
+@Startup
 public class CBean {
     @EJB(mappedName = "java:global/as7_1658-a/ABean!org.jboss.as.test.spec.ejb3.as7_1658.a.ARemote")
     private ARemote bean;

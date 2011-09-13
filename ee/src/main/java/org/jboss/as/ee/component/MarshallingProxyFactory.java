@@ -29,29 +29,33 @@ import org.jboss.marshalling.cloner.ObjectClonerFactory;
 import org.jboss.marshalling.cloner.ObjectCloners;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.IdentityHashMap;
 import java.util.List;
 
 /**
+ * Make sure we keep a weak-reference to anything that goes back to the outer class-loader.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class MarshallingInvocationHandler implements InvocationHandler {
-    private final IdentityHashMap<Method, Method> methodMap;
-    private final Object original;
-    private final ObjectCloner unwrapper;
+class MarshallingProxyFactory {
+    private final WeakReference<IdentityHashMap<Method, Method>> methodMap;
+    private final WeakReference<ProxyFactory<?>> outerProxyFactory;
+    private final WeakReference<ObjectCloner> unwrapper;
     private final ObjectCloner wrapper;
 
-    MarshallingInvocationHandler(final ProxyFactory<?> outerProxyFactory, final ProxyFactory<?> innerProxyFactory, final Object original) {
-        this.methodMap = new IdentityHashMap<Method, Method>();
+    MarshallingProxyFactory(final ProxyFactory<?> outerProxyFactory, final ProxyFactory<?> innerProxyFactory) {
+        this.outerProxyFactory = new WeakReference<ProxyFactory<?>>(outerProxyFactory);
+        final IdentityHashMap<Method, Method> methodMap;
+        this.methodMap = new WeakReference<IdentityHashMap<Method, Method>>(methodMap = new IdentityHashMap<Method, Method>());
         for (final Method innerMethod : innerProxyFactory.getCachedMethods()) {
             methodMap.put(outerMethod(outerProxyFactory.getCachedMethods(), innerMethod), innerMethod);
         }
-        this.original = original;
         final ObjectClonerFactory factory = ObjectCloners.getSerializingObjectClonerFactory();
-        this.unwrapper = factory.createCloner(clonerConfiguration(outerProxyFactory.getClassLoader()));
-        this.wrapper = factory.createCloner(clonerConfiguration(original.getClass().getClassLoader()));
+        this.unwrapper = new WeakReference<ObjectCloner>(factory.createCloner(clonerConfiguration(outerProxyFactory.getClassLoader())));
+        this.wrapper = factory.createCloner(clonerConfiguration(innerProxyFactory.getClassLoader()));
     }
 
     private static boolean arrayNameEquals(final Class<?>[] a, final Class<?>[] a2) {
@@ -74,13 +78,17 @@ class MarshallingInvocationHandler implements InvocationHandler {
         return configuration;
     }
 
-    @Override
-    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-        final Object[] originalMethodArgs = (Object[]) wrap(args);
-        final Method originalMethod = methodMap.get(method);
-        // TODO: skip reflect, go straight to the invocation handler
-        final Object result = originalMethod.invoke(original, originalMethodArgs);
-        return unwrap(result);
+    public Object newInstance(final Object original) throws IllegalAccessException, InstantiationException {
+        return outerProxyFactory.get().newInstance(new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                final Object[] originalMethodArgs = (Object[]) wrap(args);
+                final Method originalMethod = methodMap.get().get(method);
+                // TODO: skip reflect, go straight to the invocation handler
+                final Object result = originalMethod.invoke(original, originalMethodArgs);
+                return unwrap(result);
+            }
+        });
     }
 
     private static Method outerMethod(final List<Method> cachedMethods, final Method innerMethod) {
@@ -106,7 +114,7 @@ class MarshallingInvocationHandler implements InvocationHandler {
 
     private Object unwrap(final Object value) {
         try {
-            return unwrapper.clone(value);
+            return unwrapper.get().clone(value);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
