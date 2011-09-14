@@ -58,7 +58,16 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         ManagedContainerConfiguration config = getContainerConfiguration();
 
         if (!config.isAllowConnectingToRunningServer()) {
-            verifyNoRunningServer();
+            if(isServerRunning()) {
+               throw new LifecycleException(
+                     "The server is already running! " +
+                             "Managed containers does not support connecting to running server instances due to the " +
+                             "possible harmful effect of connecting to the wrong server. Please stop server before running or " +
+                             "change to another type of container.\n" +
+                             "To disable this check and allow Arquillian to connect to a running server, " +
+                             "set allowConnectingToRunningServer to true in the container configuration"
+               );
+            }
         }
 
         try {
@@ -132,8 +141,11 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             long startupTimeout = getContainerConfiguration().getStartupTimeoutInSeconds();
             long timeout = startupTimeout * 1000;
             boolean serverAvailable = false;
+            boolean serverIsRunning = false;
             while (timeout > 0 && serverAvailable == false) {
-                serverAvailable = getManagementClient().isServerInRunningState();
+                // check to see the server is running before we check if it's available
+                serverIsRunning = serverIsRunning ? true:isServerRunning();
+                serverAvailable = serverIsRunning ? getManagementClient().isServerInRunningState():false;
                 if (!serverAvailable) {
                     Thread.sleep(100);
                     timeout -= 100;
@@ -166,14 +178,14 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         }
     }
 
-    private void verifyNoRunningServer() throws LifecycleException {
+    private boolean isServerRunning() throws LifecycleException {
         Socket socket = null;
         try {
             socket = new Socket(
                     getContainerConfiguration().getManagementAddress(),
                     getContainerConfiguration().getManagementPort());
         } catch (Exception ignored) { // nothing is running on defined ports
-            return;
+            return false;
         } finally {
             if (socket != null) {
                 try {
@@ -183,14 +195,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 }
             }
         }
-        throw new LifecycleException(
-                "The server is already running! " +
-                        "Managed containers does not support connecting to running server instances due to the " +
-                        "possible harmful effect of connecting to the wrong server. Please stop server before running or " +
-                        "change to another type of container.\n" +
-                        "To disable this check and allow Arquillian to connect to a running server, " +
-                        "set allowConnectingToRunningServer to true in the container configuration"
-        );
+        return true;
     }
 
     private int destroyProcess() {
@@ -227,6 +232,5 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             } catch (IOException e) {
             }
         }
-
     }
 }
