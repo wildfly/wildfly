@@ -954,6 +954,21 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.jbossts</groupId>
+            <artifactId>jbosstxbridge</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.jbossts</groupId>
+            <artifactId>jbossxts</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.jbossts</groupId>
+            <artifactId>jbossxts-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.jsfunit</groupId>
             <artifactId>jboss-jsfunit-core</artifactId>
         </dependency>

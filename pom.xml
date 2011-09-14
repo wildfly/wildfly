@@ -3605,6 +3605,38 @@
                 <version>${version.org.jboss.jbossts.jbossxts}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>commons-httpclient</groupId>
+                        <artifactId>commons-httpclient</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>emma</groupId>
+                        <artifactId>emma</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>emma</groupId>
+                        <artifactId>emma_ant</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jacorb</groupId>
+                        <artifactId>idl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.integration</groupId>
+                        <artifactId>jboss-corba-ots-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.javaee</groupId>
+                        <artifactId>jboss-transaction-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jbossas</groupId>
+                        <artifactId>jboss-server-manager</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-processor</artifactId>
                     </exclusion>
@@ -3617,12 +3649,12 @@
                         <artifactId>jboss-logging-generator</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-transaction-api</artifactId>
+                        <groupId>org.jboss.remoting</groupId>
+                        <artifactId>jboss-remoting</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>commons-httpclient</groupId>
-                        <artifactId>commons-httpclient</artifactId>
+                        <groupId>tanukisoft</groupId>
+                        <artifactId>wrapper</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3633,6 +3665,30 @@
                 <version>${version.org.jboss.jbossts.jbossxts}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>commons-httpclient</groupId>
+                        <artifactId>commons-httpclient</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>emma</groupId>
+                        <artifactId>emma</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>emma</groupId>
+                        <artifactId>emma_ant</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jacorb</groupId>
+                        <artifactId>idl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.integration</groupId>
+                        <artifactId>jboss-corba-ots-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.jbossas</groupId>
+                        <artifactId>jboss-server-manager</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-processor</artifactId>
                     </exclusion>
@@ -3649,11 +3705,15 @@
                         <artifactId>jboss-transaction-api</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>commons-httpclient</groupId>
-                        <artifactId>commons-httpclient</artifactId>
+                        <groupId>org.jboss.remoting</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>tanukisoft</groupId>
+                        <artifactId>wrapper</artifactId>
                     </exclusion>
                 </exclusions>
-	    </dependency>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.jbossts</groupId>
