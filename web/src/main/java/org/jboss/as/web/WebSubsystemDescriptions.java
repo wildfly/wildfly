@@ -129,8 +129,8 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
         node.get(REQUIRED).set(false);
 
-        getStaticResourcesCommonDescription(node.get(type, Constants.STATIC_RESOURCES), type, bundle);
-        getJSPCommonDescription(node.get(type, Constants.STATIC_RESOURCES), type, bundle);
+        getStaticResourceDescription(node.get(CHILDREN, Constants.STATIC_RESOURCES), type, bundle);
+        getJspConfigurationDescription(node.get(CHILDREN, Constants.JSP_CONFIGURATION), type, bundle);
 
         node.get(type, Constants.MIME_MAPPING, TYPE).set(ModelType.LIST);
         node.get(type, Constants.MIME_MAPPING, DESCRIPTION).set(bundle.getString("web.configuration.mime-mapping"));
@@ -157,10 +157,6 @@ class WebSubsystemDescriptions {
     }
 
     static ModelNode getStaticResourcesCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
-
-        node.get(TYPE).set(ModelType.OBJECT);
-        node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
-        node.get(REQUIRED).set(false);
 
         node.get(type, Constants.LISTINGS, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.LISTINGS, DESCRIPTION).set(bundle.getString("web.configuration.static.listings"));
@@ -681,6 +677,42 @@ class WebSubsystemDescriptions {
 
         return node;
     }
+
+
+    public static ModelNode getJspConfigurationDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.jsp"));
+        node.get(REQUIRED).set(false);
+
+        return getJSPCommonDescription(node, ATTRIBUTES, bundle);
+    }
+    public static ModelNode getJspConfigurationDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.jsp"));
+        node.get(REQUIRED).set(false);
+
+        return getJSPCommonDescription(node, type, bundle);
+    }
+
+    public static ModelNode getStaticResourceDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
+        node.get(REQUIRED).set(false);
+        return getStaticResourcesCommonDescription(node, ATTRIBUTES, bundle);
+    }
+    public static ModelNode getStaticResourceDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
+        node.get(REQUIRED).set(false);
+        return getStaticResourcesCommonDescription(node, type, bundle);
+    }
+
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
