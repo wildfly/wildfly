@@ -56,7 +56,7 @@ class Constants {
 
     private static final String DATASOURCE_DRIVER_CLASS_NAME = "driver-class";
 
-    private static final String DATASOURCE_CLASS_NAME = "data-source-class";
+    private static final String DATASOURCE_CLASS_NAME = "datasource-class";
 
     private static final String DATASOURCE_DRIVER_NAME = "driver-name";
 
@@ -70,17 +70,11 @@ class Constants {
 
     private static final String DRIVER_CLASS_NAME_NAME = "driver-class-name";
 
-    private static final String DRIVER_DATASOURCE_CLASS_NAME_NAME = "driver-data-source-class-name";
+    private static final String DRIVER_DATASOURCE_CLASS_NAME_NAME = "driver-datasource-class-name";
 
-    private static final String DRIVER_XA_DATASOURCE_CLASS_NAME_NAME = "driver-xa-data-source-class-name";
+    private static final String DRIVER_XA_DATASOURCE_CLASS_NAME_NAME = "driver-xa-datasource-class-name";
 
     private static final String CONNECTION_PROPERTIES_NAME = "connection-properties";
-
-    private static final String CONNECTION_PROPERTY_NAME = "connection-property";
-
-    private static final String PROPERTY_NAME_NAME = "property-name";
-
-    private static final String PROPERTY_VALUE_NAME = "property-value";
 
     private static final String NEW_CONNECTION_SQL_NAME = "new-connection-sql";
 
@@ -99,8 +93,6 @@ class Constants {
     private static final String JTA_NAME = "jta";
 
     private static final String JNDINAME_NAME = "jndi-name";
-
-    private static final String URLDELIMITER_NAME = "url-delimiter";
 
     private static final String ALLOCATION_RETRY_NAME = "allocation-retry";
 
@@ -122,7 +114,7 @@ class Constants {
 
     private static final String SHAREPREPAREDSTATEMENTS_NAME = "share-prepared-statements";
 
-    private static final String PREPAREDSTATEMENTSCACHESIZE_NAME = "prepared-statements-cacheSize";
+    private static final String PREPAREDSTATEMENTSCACHESIZE_NAME = "prepared-statements-cache-size";
 
     private static final String TRACKSTATEMENTS_NAME = "track-statements";
 
@@ -140,11 +132,9 @@ class Constants {
 
     private static final String EXCEPTIONSORTERCLASSNAME_NAME = "exception-sorter-class-name";
 
-    private static final String XADATASOURCEPROPERTIES_NAME = "xa-data-source-properties";
+    private static final String XADATASOURCEPROPERTIES_NAME = "xa-datasource-properties";
 
-    private static final String XADATASOURCEPROPERTY_NAME = "xa-data-source-property";
-
-    private static final String XADATASOURCECLASS_NAME = "xa-data-source-class";
+    private static final String XADATASOURCECLASS_NAME = "xa-datasource-class";
 
     private static final String INTERLEAVING_NAME = "interleaving";
 
@@ -161,10 +151,6 @@ class Constants {
     private static final String STALECONNECTIONCHECKER_PROPERTIES_NAME = "stale-connection-checker-properties";
 
     private static final String VALIDCONNECTIONCHECKER_PROPERTIES_NAME = "valid-connection-checker-properties";
-
-    private static final String DATA_SOURCE_NAME = "data-source";
-
-    private static final String XA_DATA_SOURCE_NAME = "xa-data-source";
 
     private static final String REAUTHPLUGIN_CLASSNAME_NAME = "reauth-plugin-class-name";
 
@@ -295,7 +281,6 @@ class Constants {
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition XADATASOURCE_PROPERTIES = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
-
 
     static final SimpleAttributeDefinition DRIVER_NAME = new SimpleAttributeDefinition(DRIVER_NAME_NAME, Driver.Attribute.NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

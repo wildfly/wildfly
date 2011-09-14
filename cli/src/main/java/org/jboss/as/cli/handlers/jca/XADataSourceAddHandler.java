@@ -41,10 +41,10 @@ public class XADataSourceAddHandler extends BaseDataSourceAddHandler {
     @Override
     public RequestParamArgWithValue initRequiredArguments() {
         ArgumentWithoutValue lastRequired = super.initRequiredArguments();
-        RequestParamArgWithValue xaDataSourceClass = new RequiredRequestParamArg("xa-data-source-class", this);
+        RequestParamArgWithValue xaDataSourceClass = new RequiredRequestParamArg("xa-datasource-class", this);
         xaDataSourceClass.addRequiredPreceding(lastRequired);
 
-        RequestParamArgWithValue xaProps = new RequestParamPropertiesArg("xa-data-source-properties", this);
+        RequestParamArgWithValue xaProps = new RequestParamPropertiesArg("xa-datasource-properties", this);
         xaProps.addRequiredPreceding(xaDataSourceClass);
 
         return xaProps;
