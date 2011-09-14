@@ -471,7 +471,15 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                 break;
             }
             case FILE_STORE: {
-                this.parseFileStore(reader, cache.get(ModelKeys.STORE).setEmptyObject());
+                this.parseFileStore(reader, cache.get(ModelKeys.FILE_STORE).setEmptyObject());
+                break;
+            }
+            case JDBC_STORE: {
+                this.parseJDBCStore(reader, cache.get(ModelKeys.JDBC_STORE).setEmptyObject());
+                break;
+            }
+            case REMOTE_STORE: {
+                this.parseRemoteStore(reader, cache.get(ModelKeys.REMOTE_STORE).setEmptyObject());
                 break;
             }
             default: {
@@ -700,6 +708,167 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
         this.parseStoreProperties(reader, store);
     }
 
+    private void parseRemoteStore(XMLExtendedStreamReader reader, ModelNode store) throws XMLStreamException {
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case CACHE: {
+                    store.get(ModelKeys.CACHE).set(value);
+                    break;
+                }
+                case SOCKET_TIMEOUT: {
+                    store.get(ModelKeys.SOCKET_TIMEOUT).set(Long.parseLong(value));
+                    break;
+                }
+                case TCP_NO_DELAY: {
+                    store.get(ModelKeys.TCP_NO_DELAY).set(Boolean.valueOf(value));
+                    break;
+                }
+                default: {
+                    this.parseStoreAttribute(reader, i, attribute, value, store);
+                }
+            }
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case REMOTE_SERVER: {
+                    this.parseRemoteServer(reader, store.get(ModelKeys.REMOTE_SERVER).add());
+                    break;
+                }
+                default: {
+                    this.parseStoreProperty(reader, store);
+                }
+            }
+        }
+
+        if (!store.hasDefined(ModelKeys.REMOTE_SERVER)) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Element.REMOTE_SERVER));
+        }
+    }
+
+    private void parseRemoteServer(XMLExtendedStreamReader reader, ModelNode server) throws XMLStreamException {
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case OUTBOUND_SOCKET_BINDING: {
+                    server.get(ModelKeys.OUTBOUND_SOCKET_BINDING).set(value);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseJDBCStore(XMLExtendedStreamReader reader, ModelNode store) throws XMLStreamException {
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DATASOURCE: {
+                    store.get(ModelKeys.DATASOURCE).set(value);
+                    break;
+                }
+                default: {
+                    this.parseStoreAttribute(reader, i, attribute, value, store);
+                }
+            }
+        }
+
+        if (!store.hasDefined(ModelKeys.DATASOURCE)) {
+            throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.DATASOURCE));
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ENTRY_TABLE: {
+                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.ENTRY_TABLE).setEmptyObject());
+                    break;
+                }
+                case BUCKET_TABLE: {
+                    this.parseJDBCStoreTable(reader, store.get(ModelKeys.BUCKET_TABLE).setEmptyObject());
+                    break;
+                }
+                default: {
+                    this.parseStoreProperty(reader, store);
+                }
+            }
+        }
+    }
+
+    private void parseJDBCStoreTable(XMLExtendedStreamReader reader, ModelNode table) throws XMLStreamException {
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case PREFIX: {
+                    table.get(ModelKeys.PREFIX).set(value);
+                    break;
+                }
+                case FETCH_SIZE: {
+                    table.get(ModelKeys.FETCH_SIZE).set(Integer.parseInt(value));
+                    break;
+                }
+                case BATCH_SIZE: {
+                    table.get(ModelKeys.BATCH_SIZE).set(Integer.parseInt(value));
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ID_COLUMN: {
+                    this.parseJDBCStoreColumn(reader, table.get(ModelKeys.ID_COLUMN).setEmptyObject());
+                    break;
+                }
+                case DATA_COLUMN: {
+                    this.parseJDBCStoreColumn(reader, table.get(ModelKeys.DATA_COLUMN).setEmptyObject());
+                    break;
+                }
+                case TIMESTAMP_COLUMN: {
+                    this.parseJDBCStoreColumn(reader, table.get(ModelKeys.TIMESTAMP_COLUMN).setEmptyObject());
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseJDBCStoreColumn(XMLExtendedStreamReader reader, ModelNode column) throws XMLStreamException {
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    column.get(ModelKeys.NAME).set(value);
+                    break;
+                }
+                case TYPE: {
+                    column.get(ModelKeys.TYPE).set(value);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+    }
+
     private void parseStoreAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode store) throws XMLStreamException {
         switch (attribute) {
             case SHARED: {
@@ -734,34 +903,38 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
 
     private void parseStoreProperties(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case PROPERTY: {
-                    int attributes = reader.getAttributeCount();
-                    String property = null;
-                    for (int i = 0; i < attributes; i++) {
-                        String value = reader.getAttributeValue(i);
-                        Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                        switch (attribute) {
-                            case NAME: {
-                                property = value;
-                                break;
-                            }
-                            default: {
-                                throw ParseUtils.unexpectedAttribute(reader, i);
-                            }
+            this.parseStoreProperty(reader, node);
+        }
+    }
+
+    private void parseStoreProperty(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+        Element element = Element.forName(reader.getLocalName());
+        switch (element) {
+            case PROPERTY: {
+                int attributes = reader.getAttributeCount();
+                String property = null;
+                for (int i = 0; i < attributes; i++) {
+                    String value = reader.getAttributeValue(i);
+                    Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            property = value;
+                            break;
+                        }
+                        default: {
+                            throw ParseUtils.unexpectedAttribute(reader, i);
                         }
                     }
-                    if (property == null) {
-                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-                    }
-                    String value = reader.getElementText();
-                    node.get(ModelKeys.PROPERTY).add(property, value);
-                    break;
                 }
-                default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                if (property == null) {
+                    throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
                 }
+                String value = reader.getElementText();
+                node.get(ModelKeys.PROPERTY).add(property, value);
+                break;
+            }
+            default: {
+                throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
@@ -869,28 +1042,47 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
 
                     if (cache.hasDefined(ModelKeys.STORE)) {
                         ModelNode store = cache.get(ModelKeys.STORE);
-                        if (store.hasDefined(ModelKeys.CLASS)) {
-                            writer.writeStartElement(Element.STORE.getLocalName());
-                            this.writeRequired(writer, Attribute.CLASS, store, ModelKeys.CLASS);
-                        } else {
-                            writer.writeStartElement(Element.FILE_STORE.getLocalName());
-                            this.writeOptional(writer, Attribute.RELATIVE_TO, store, ModelKeys.RELATIVE_TO);
-                            this.writeOptional(writer, Attribute.PATH, store, ModelKeys.PATH);
+                        writer.writeStartElement(Element.STORE.getLocalName());
+                        this.writeRequired(writer, Attribute.CLASS, store, ModelKeys.CLASS);
+                        this.writeStoreAttributes(writer, store);
+                        this.writeStoreProperties(writer, store);
+                        writer.writeEndElement();
+                    }
+
+                    if (cache.hasDefined(ModelKeys.FILE_STORE)) {
+                        ModelNode store = cache.get(ModelKeys.FILE_STORE);
+                        writer.writeStartElement(Element.FILE_STORE.getLocalName());
+                        this.writeOptional(writer, Attribute.RELATIVE_TO, store, ModelKeys.RELATIVE_TO);
+                        this.writeOptional(writer, Attribute.PATH, store, ModelKeys.PATH);
+                        this.writeStoreAttributes(writer, store);
+                        this.writeStoreProperties(writer, store);
+                        writer.writeEndElement();
+                    }
+
+                    if (cache.hasDefined(ModelKeys.JDBC_STORE)) {
+                        ModelNode store = cache.get(ModelKeys.JDBC_STORE);
+                        writer.writeStartElement(Element.JDBC_STORE.getLocalName());
+                        this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
+                        this.writeStoreAttributes(writer, store);
+                        this.writeJDBCStoreTable(writer, Element.ENTRY_TABLE, store, ModelKeys.ENTRY_TABLE);
+                        this.writeJDBCStoreTable(writer, Element.BUCKET_TABLE, store, ModelKeys.BUCKET_TABLE);
+                        this.writeStoreProperties(writer, store);
+                        writer.writeEndElement();
+                    }
+
+                    if (cache.hasDefined(ModelKeys.REMOTE_STORE)) {
+                        ModelNode store = cache.get(ModelKeys.REMOTE_STORE);
+                        writer.writeStartElement(Element.REMOTE_STORE.getLocalName());
+                        this.writeOptional(writer, Attribute.CACHE, store, ModelKeys.CACHE);
+                        this.writeOptional(writer, Attribute.SOCKET_TIMEOUT, store, ModelKeys.SOCKET_TIMEOUT);
+                        this.writeOptional(writer, Attribute.TCP_NO_DELAY, store, ModelKeys.TCP_NO_DELAY);
+                        this.writeStoreAttributes(writer, store);
+                        for (ModelNode remoteServer : store.get(ModelKeys.REMOTE_SERVER).asList()) {
+                            writer.writeStartElement(Element.REMOTE_SERVER.getLocalName());
+                            writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName(), remoteServer.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString());
+                            writer.writeEndElement();
                         }
-                        this.writeOptional(writer, Attribute.SHARED, store, ModelKeys.SHARED);
-                        this.writeOptional(writer, Attribute.PRELOAD, store, ModelKeys.PRELOAD);
-                        this.writeOptional(writer, Attribute.PASSIVATION, store, ModelKeys.PASSIVATION);
-                        this.writeOptional(writer, Attribute.FETCH_STATE, store, ModelKeys.FETCH_STATE);
-                        this.writeOptional(writer, Attribute.PURGE, store, ModelKeys.PURGE);
-                        this.writeOptional(writer, Attribute.SINGLETON, store, ModelKeys.SINGLETON);
-                        if (store.hasDefined(ModelKeys.PROPERTY)) {
-                            for (Property property: store.get(ModelKeys.PROPERTY).asPropertyList()) {
-                                writer.writeStartElement(Element.PROPERTY.getLocalName());
-                                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                                writer.writeCharacters(property.getValue().asString());
-                                writer.writeEndElement();
-                            }
-                        }
+                        this.writeStoreProperties(writer, store);
                         writer.writeEndElement();
                     }
 
@@ -918,6 +1110,50 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
             }
         }
         writer.writeEndElement();
+    }
+
+    private void writeJDBCStoreTable(XMLExtendedStreamWriter writer, Element element, ModelNode store, String key) throws XMLStreamException {
+        if (store.hasDefined(key)) {
+            ModelNode table = store.get(key);
+            writer.writeStartElement(element.getLocalName());
+            this.writeOptional(writer, Attribute.PREFIX, table, ModelKeys.PREFIX);
+            this.writeOptional(writer, Attribute.BATCH_SIZE, table, ModelKeys.BATCH_SIZE);
+            this.writeOptional(writer, Attribute.FETCH_SIZE, table, ModelKeys.FETCH_SIZE);
+            this.writeJDBCStoreColumn(writer, Element.ID_COLUMN, table, ModelKeys.ID_COLUMN);
+            this.writeJDBCStoreColumn(writer, Element.DATA_COLUMN, table, ModelKeys.DATA_COLUMN);
+            this.writeJDBCStoreColumn(writer, Element.TIMESTAMP_COLUMN, table, ModelKeys.TIMESTAMP_COLUMN);
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeJDBCStoreColumn(XMLExtendedStreamWriter writer, Element element, ModelNode table, String key) throws XMLStreamException {
+        if (table.hasDefined(key)) {
+            ModelNode column = table.get(key);
+            writer.writeStartElement(element.getLocalName());
+            this.writeOptional(writer, Attribute.NAME, column, ModelKeys.NAME);
+            this.writeOptional(writer, Attribute.TYPE, column, ModelKeys.TYPE);
+            writer.writeEndElement();
+        }
+    }
+
+    private void writeStoreAttributes(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
+        this.writeOptional(writer, Attribute.SHARED, store, ModelKeys.SHARED);
+        this.writeOptional(writer, Attribute.PRELOAD, store, ModelKeys.PRELOAD);
+        this.writeOptional(writer, Attribute.PASSIVATION, store, ModelKeys.PASSIVATION);
+        this.writeOptional(writer, Attribute.FETCH_STATE, store, ModelKeys.FETCH_STATE);
+        this.writeOptional(writer, Attribute.PURGE, store, ModelKeys.PURGE);
+        this.writeOptional(writer, Attribute.SINGLETON, store, ModelKeys.SINGLETON);
+    }
+
+    private void writeStoreProperties(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
+        if (store.hasDefined(ModelKeys.PROPERTY)) {
+            for (Property property: store.get(ModelKeys.PROPERTY).asPropertyList()) {
+                writer.writeStartElement(Element.PROPERTY.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                writer.writeCharacters(property.getValue().asString());
+                writer.writeEndElement();
+            }
+        }
     }
 
     private void writeOptional(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode model, String key) throws XMLStreamException {
