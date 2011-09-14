@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -75,6 +76,13 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         //
     }
 
+    @Override
+    protected void populateModel(final ModelNode operation, final Resource resource) {
+        final ModelNode model = resource.getModel();
+        populateModel(operation, model);
+        WebConfigurationHandlerUtils.initializeConfiguration(resource, model);
+    }
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
 
         ModelNode ourContainerConfig = new ModelNode();
@@ -115,11 +123,12 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         }
 
         model.get(Constants.CONTAINER_CONFIG).set(ourContainerConfig);
-
         model.get(Constants.CONNECTOR).setEmptyObject();
         model.get(Constants.VIRTUAL_SERVER).setEmptyObject();
     }
 
+
+    @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
                                    ServiceVerificationHandler verificationHandler,
                                    List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -132,6 +141,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 Constants.INSTANCE_ID).asString() : null;
 
         context.addStep(new AbstractDeploymentChainStep() {
+            @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone());
                 final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(config.clone());
@@ -165,6 +175,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
 
     }
 
+    @Override
     protected boolean requiresRuntimeVerification() {
         return false;
     }

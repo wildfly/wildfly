@@ -36,6 +36,7 @@ interface Constants {
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CHECK_INTERVAL = "check-interval";
     String CIPHER_SUITE = "cipher-suite";
+    String CONFIGURATION = "configuration";
     String CONDITION = "condition";
     String CONNECTOR = "connector";
     String CONTAINER_CONFIG = "configuration";
