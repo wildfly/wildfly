@@ -22,7 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -50,35 +50,36 @@ public class SnapshotDescriptions {
 
     public static ModelNode getSnapshotTakeModel(Locale locale) {
         ModelNode node = new ModelNode();
-        node.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        node.get(OPERATION_NAME).set(SnapshotTakeHandler.OPERATION_NAME);
         node.get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.take.description"));
-        node.get(REPLY_PROPERTIES).get(NAME).get(TYPE).set(ModelType.STRING);
-        node.get(REPLY_PROPERTIES).get(NAME).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.take.reply.name"));
+        node.get(REPLY_PROPERTIES).get(TYPE).set(ModelType.STRING);
+        node.get(REPLY_PROPERTIES).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.take.reply.name"));
 
         return node;
     }
 
     public static ModelNode getSnapshotListModel(Locale locale) {
         ModelNode node = new ModelNode();
-        node.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        node.get(OPERATION_NAME).set(SnapshotListHandler.OPERATION_NAME);
         node.get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.list.description"));
-        node.get(REPLY_PROPERTIES).get(DIRECTORY).get(TYPE).set(ModelType.STRING);
-        node.get(REPLY_PROPERTIES).get(DIRECTORY).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.list.reply.dir"));
-        node.get(REPLY_PROPERTIES).get(NAMES).get(TYPE).set(ModelType.LIST);
-        node.get(REPLY_PROPERTIES).get(NAMES).get(VALUE_TYPE).set(ModelType.STRING);
-        node.get(REPLY_PROPERTIES).get(NAMES).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.list.reply.names"));
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
+        node.get(REPLY_PROPERTIES, VALUE_TYPE, DIRECTORY).get(TYPE).set(ModelType.STRING);
+        node.get(REPLY_PROPERTIES, VALUE_TYPE, DIRECTORY).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.list.reply.dir"));
+        node.get(REPLY_PROPERTIES, VALUE_TYPE, NAMES).get(TYPE).set(ModelType.LIST);
+        node.get(REPLY_PROPERTIES, VALUE_TYPE, NAMES).get(VALUE_TYPE).set(ModelType.STRING);
+        node.get(REPLY_PROPERTIES, VALUE_TYPE, NAMES).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.list.reply.names"));
 
         return node;
     }
 
     public static ModelNode getSnapshotDeleteModel(Locale locale) {
         ModelNode node = new ModelNode();
-        node.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        node.get(OPERATION_NAME).set(SnapshotDeleteHandler.OPERATION_NAME);
         node.get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.delete.description"));
         node.get(REQUEST_PROPERTIES).get(NAME).get(TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES).get(NAME).get(REQUIRED).set(true);
         node.get(REQUEST_PROPERTIES).get(NAME).get(DESCRIPTION).set(getResourceBundle(locale).getString("snapshot.delete.name"));
-
+        node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
 

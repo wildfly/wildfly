@@ -229,7 +229,7 @@ public class DeploymentDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(UPLOAD_DEPLOYMENT_STREAM);
         root.get(DESCRIPTION).set(bundle.getString("deployment.upload-stream"));
-        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, TYPE).set(ModelType.INT);
         root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, DESCRIPTION).set(bundle.getString("deployment.inputstream"));
         root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, REQUIRED).set(true);
         root.get(REQUEST_PROPERTIES, INPUT_STREAM_INDEX, MIN).set(0);

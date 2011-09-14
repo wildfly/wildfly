@@ -22,18 +22,13 @@
 
 package org.jboss.as.platform.mbean;
 
-import static org.jboss.as.platform.mbean.PlatformMBeanUtil.escapeMBeanName;
-
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -63,7 +58,7 @@ public class ThreadMXBeanResetPeakThreadCountHandler implements OperationStepHan
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale,
-                PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.RESET_PEAK_THREAD_COUNT);
+        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale, PlatformMBeanConstants.RESET_PEAK_THREAD_COUNT,
+                PlatformMBeanConstants.THREADING);
     }
 }

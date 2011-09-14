@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MOD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -65,6 +66,7 @@ import static org.jboss.as.platform.mbean.PlatformMBeanConstants.CURRENT_THREAD_
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.CURRENT_THREAD_USER_TIME;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.DAEMON_THREAD_COUNT;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.FILE_NAME;
+import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_INFOS;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.HEAP_MEMORY_USAGE;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.IDENTITY_HASH_CODE;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.INIT;
@@ -164,7 +166,7 @@ public class PlatformMBeanDescriptions {
 
         node.get(ATTRIBUTES).setEmptyObject();
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN, TYPE, DESCRIPTION).set(bundle.getString("platform-mbeans.type"));
         node.get(CHILDREN, TYPE, MIN_OCCURS).set(PlatformMBeanConstants.BASE_TYPES.size());
@@ -194,7 +196,7 @@ public class PlatformMBeanDescriptions {
         populateAttribute(attrs, LOADED_CLASS_COUNT, ModelType.INT, true, MeasurementUnit.NONE);
         populateAttribute(attrs, UNLOADED_CLASS_COUNT, ModelType.LONG, true, MeasurementUnit.NONE);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -220,7 +222,7 @@ public class PlatformMBeanDescriptions {
         populateAttribute(attrs, COMPILATION_TIME_MONITORING_SUPPORTED, ModelType.BOOLEAN, true, null);
         populateAttribute(attrs, TOTAL_COMPILATION_TIME, ModelType.LONG, false, MeasurementUnit.MILLISECONDS);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -250,7 +252,7 @@ public class PlatformMBeanDescriptions {
         populateAttribute(attrs, COLLECTION_COUNT, ModelType.LONG, true, MeasurementUnit.NONE);
         populateAttribute(attrs, COLLECTION_TIME, ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -265,7 +267,7 @@ public class PlatformMBeanDescriptions {
 
         node.get(ATTRIBUTES).setEmptyObject();
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN, NAME, DESCRIPTION).set(bundle.getString("garbage-collectors.name"));
         node.get(CHILDREN, NAME, MIN_OCCURS).set(0);
@@ -297,7 +299,7 @@ public class PlatformMBeanDescriptions {
         populateMemoryUsage(nonHeapUsage.get(VALUE_TYPE), bundle);
         populateAttribute(attrs, VERBOSE, ModelType.BOOLEAN, true, null);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -341,7 +343,7 @@ public class PlatformMBeanDescriptions {
         final ModelNode names = populateAttribute(attrs, MEMORY_POOL_NAMES, ModelType.LIST, true, null);
         names.get(VALUE_TYPE).set(ModelType.STRING);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -356,7 +358,7 @@ public class PlatformMBeanDescriptions {
 
         node.get(ATTRIBUTES).setEmptyObject();
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN, NAME, DESCRIPTION).set(bundle.getString("memory-managers.name"));
         node.get(CHILDREN, NAME, MIN_OCCURS).set(0);
@@ -409,7 +411,7 @@ public class PlatformMBeanDescriptions {
         final ModelNode collUsage = populateAttribute(attrs, COLLECTION_USAGE, ModelType.OBJECT, false, null);
         populateMemoryUsage(collUsage.get(VALUE_TYPE), bundle);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -424,7 +426,7 @@ public class PlatformMBeanDescriptions {
 
         node.get(ATTRIBUTES).setEmptyObject();
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN, NAME, DESCRIPTION).set(bundle.getString("memory-pools.name"));
         node.get(CHILDREN, NAME, MIN_OCCURS).set(0);
@@ -455,7 +457,7 @@ public class PlatformMBeanDescriptions {
         populateAttribute(attrs, AVAILABLE_PROCESSORS, ModelType.INT, true, MeasurementUnit.NONE);
         populateAttribute(attrs, SYSTEM_LOAD_AVERAGE, ModelType.DOUBLE, true, MeasurementUnit.PERCENTAGE);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -497,7 +499,7 @@ public class PlatformMBeanDescriptions {
         final ModelNode sysProps = populateAttribute(attrs, SYSTEM_PROPERTIES, ModelType.OBJECT, false, null);
         sysProps.get(VALUE_TYPE).set(ModelType.STRING);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -539,7 +541,7 @@ public class PlatformMBeanDescriptions {
         populateAttribute(attrs, OBJECT_MONITOR_USAGE_SUPPORTED, ModelType.BOOLEAN, true, null);
         populateAttribute(attrs, SYNCHRONIZER_USAGE_SUPPORTED, ModelType.BOOLEAN, true, null);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -549,8 +551,7 @@ public class PlatformMBeanDescriptions {
     public static ModelNode getGetThreadInfoDescripton(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode node = getThreadInfoOperation(bundle, PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.GET_THREAD_INFO);
-
+        final ModelNode node = getThreadInfoOperation(bundle, PlatformMBeanConstants.GET_THREAD_INFO, PlatformMBeanConstants.THREADING);
         node.get(REQUEST_PROPERTIES, PlatformMBeanConstants.MAX_DEPTH, DESCRIPTION).set(bundle.getString(PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.MAX_DEPTH));
         node.get(REQUEST_PROPERTIES, PlatformMBeanConstants.MAX_DEPTH, TYPE).set(ModelType.INT);
         node.get(REQUEST_PROPERTIES, PlatformMBeanConstants.MAX_DEPTH, MIN).set(1);
@@ -570,6 +571,7 @@ public class PlatformMBeanDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(GET_THREAD_INFOS);
         node.get(DESCRIPTION).set(bundle.getString(PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.GET_THREAD_INFOS));
 
         node.get(REQUEST_PROPERTIES, PlatformMBeanConstants.IDS, DESCRIPTION).set(bundle.getString(PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.IDS));
@@ -606,6 +608,7 @@ public class PlatformMBeanDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(PlatformMBeanConstants.DUMP_ALL_THREADS);
         node.get(DESCRIPTION).set(bundle.getString(PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.DUMP_ALL_THREADS));
 
         node.get(REQUEST_PROPERTIES, PlatformMBeanConstants.LOCKED_MONITORS, DESCRIPTION).set(bundle.getString(PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.LOCKED_MONITORS));
@@ -628,7 +631,7 @@ public class PlatformMBeanDescriptions {
     public static ModelNode getThreadCpuTimeOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode node = getThreadInfoOperation(bundle, PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.GET_THREAD_CPU_TIME);
+        final ModelNode node = getThreadInfoOperation(bundle, PlatformMBeanConstants.GET_THREAD_CPU_TIME, PlatformMBeanConstants.THREADING);
 
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LONG);
 
@@ -638,18 +641,19 @@ public class PlatformMBeanDescriptions {
     public static ModelNode getThreadUserTimeOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode node = getThreadInfoOperation(bundle, PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.GET_THREAD_USER_TIME);
+        final ModelNode node = getThreadInfoOperation(bundle, PlatformMBeanConstants.GET_THREAD_USER_TIME, PlatformMBeanConstants.THREADING);
 
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.LONG);
 
         return node;
     }
 
-    public static ModelNode getFindThreadsOperation(final Locale locale, final String descriptionKey) {
+    public static ModelNode getFindThreadsOperation(final Locale locale, final String name, final String descriptionKeyBase) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
+        node.get(OPERATION_NAME).set(name);
+        node.get(DESCRIPTION).set(bundle.getString(descriptionKeyBase + "." + name));
 
         node.get(REQUEST_PROPERTIES).setEmptyObject();
 
@@ -662,10 +666,11 @@ public class PlatformMBeanDescriptions {
         return node;
     }
 
-    private static ModelNode getThreadInfoOperation(final ResourceBundle bundle, final String descriptionKey) {
+    private static ModelNode getThreadInfoOperation(final ResourceBundle bundle, final String name, final String descriptionKeyBase) {
 
         final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
+        node.get(OPERATION_NAME).set(name);
+        node.get(DESCRIPTION).set(bundle.getString(descriptionKeyBase + "." + name));
 
         node.get(REQUEST_PROPERTIES, PlatformMBeanConstants.ID, DESCRIPTION).set(bundle.getString(PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.ID));
         node.get(REQUEST_PROPERTIES, PlatformMBeanConstants.ID, TYPE).set(ModelType.LONG);
@@ -697,7 +702,6 @@ public class PlatformMBeanDescriptions {
         toPopulate.get(BLOCKED_COUNT, DESCRIPTION).set(bundle.getString("threading.thread-info.blocked-count"));
         toPopulate.get(BLOCKED_COUNT, TYPE).set(ModelType.LONG);
         toPopulate.get(BLOCKED_COUNT, NILLABLE).set(true);
-        toPopulate.get(BLOCKED_TIME, UNIT).set(MeasurementUnit.NONE.getName());
         toPopulate.get(WAITED_TIME, DESCRIPTION).set(bundle.getString("threading.thread-info.waited-time"));
         toPopulate.get(WAITED_TIME, TYPE).set(ModelType.LONG);
         toPopulate.get(WAITED_TIME, NILLABLE).set(false);
@@ -705,7 +709,6 @@ public class PlatformMBeanDescriptions {
         toPopulate.get(WAITED_COUNT, DESCRIPTION).set(bundle.getString("threading.thread-info.waited-count"));
         toPopulate.get(WAITED_COUNT, TYPE).set(ModelType.STRING);
         toPopulate.get(WAITED_COUNT, NILLABLE).set(true);
-        toPopulate.get(WAITED_COUNT, UNIT).set(MeasurementUnit.NONE.getName());
         toPopulate.get(LOCK_INFO, DESCRIPTION).set(bundle.getString("threading.thread-info.lock-info"));
         toPopulate.get(LOCK_INFO, TYPE).set(ModelType.OBJECT);
         toPopulate.get(LOCK_INFO, NILLABLE).set(true);
@@ -799,7 +802,7 @@ public class PlatformMBeanDescriptions {
         populateAttribute(attrs, MEMORY_USED, ModelType.LONG, true, MeasurementUnit.BYTES);
         populateAttribute(attrs, TOTAL_CAPACITY, ModelType.LONG, true, MeasurementUnit.BYTES);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -814,7 +817,7 @@ public class PlatformMBeanDescriptions {
 
         node.get(ATTRIBUTES).setEmptyObject();
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN, NAME, DESCRIPTION).set(bundle.getString("buffer-pools.name"));
         node.get(CHILDREN, NAME, MIN_OCCURS).set(0);
@@ -838,7 +841,7 @@ public class PlatformMBeanDescriptions {
         final ModelNode loggers = populateAttribute(attrs, LOGGER_NAMES, ModelType.LIST, true, null);
         loggers.get(VALUE_TYPE).set(ModelType.STRING);
 
-        node.get(OPERATIONS); // placeholder
+        node.get(OPERATIONS).setEmptyObject();
 
         node.get(CHILDREN).setEmptyObject();
 
@@ -897,11 +900,12 @@ public class PlatformMBeanDescriptions {
         param.get(REQUIRED).set(true);
     }
 
-    public static ModelNode getDescriptionOnlyOperation(final Locale locale, final String descriptionKey) {
+    public static ModelNode getDescriptionOnlyOperation(final Locale locale, final String name, final String descriptionKeyBase) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString(descriptionKey));
+        node.get(OPERATION_NAME).set(name);
+        node.get(DESCRIPTION).set(bundle.getString(descriptionKeyBase + "." + name));
 
         node.get(REQUEST_PROPERTIES).setEmptyObject();
         node.get(REPLY_PROPERTIES).setEmptyObject();

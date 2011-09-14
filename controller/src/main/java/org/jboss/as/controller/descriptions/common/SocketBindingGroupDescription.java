@@ -247,7 +247,6 @@ public class SocketBindingGroupDescription {
         root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, TYPE).set(ModelType.INT);
         root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, DESCRIPTION).set(bundle.getString("socket_binding.add.multicast-address"));
         root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, NILLABLE).set(true);
         root.get(REQUEST_PROPERTIES, MULTICAST_PORT, TYPE).set(ModelType.INT);
         root.get(REQUEST_PROPERTIES, MULTICAST_PORT, DESCRIPTION).set(bundle.getString("socket_binding.add.multicast-port"));

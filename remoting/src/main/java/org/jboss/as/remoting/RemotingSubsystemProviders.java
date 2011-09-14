@@ -51,7 +51,6 @@ import static org.jboss.as.remoting.CommonAttributes.REUSE_SESSION;
 import static org.jboss.as.remoting.CommonAttributes.SASL;
 import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
-import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -123,7 +122,9 @@ class RemotingSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, AUTHENTICATION_PROVIDER, DESCRIPTION).set(bundle.getString("remoting.connector.authentication-provider"));
             operation.get(REQUEST_PROPERTIES, AUTHENTICATION_PROVIDER, REQUIRED).set(false);
 
+            //TODO make a child resource rather than a complex attribute AS7-1831
             operation.get(REQUEST_PROPERTIES, SASL).set(getSaslElement(bundle, VALUE_TYPE));
+            operation.get(REQUEST_PROPERTIES, SASL, TYPE).set(ModelType.OBJECT);
 
             return operation;
         }
@@ -137,6 +138,7 @@ class RemotingSubsystemProviders {
 
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set("remove");
+            operation.get(DESCRIPTION).set(bundle.getString("remoting.connector.remove"));
 
             operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("remoting.connector.name"));
@@ -159,7 +161,6 @@ class RemotingSubsystemProviders {
     static ModelNode getConnectorDescription(final ResourceBundle bundle) {
         final ModelNode connector = new ModelNode();
 
-        connector.get(TYPE).set(ModelType.OBJECT);
         connector.get(DESCRIPTION).set(bundle.getString("remoting.connector"));
 
         connector.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
@@ -195,9 +196,7 @@ class RemotingSubsystemProviders {
     private static ModelNode getSaslElement(final ResourceBundle bundle, String propType) {
         final ModelNode sasl = new ModelNode();
 
-        sasl.get(TYPE).set(ModelType.OBJECT);
         sasl.get(DESCRIPTION).set(bundle.getString("remoting.sasl"));
-        sasl.get(REQUIRED).set(false);
 
         sasl.get(propType, REUSE_SESSION, TYPE).set(ModelType.BOOLEAN);
         sasl.get(propType, REUSE_SESSION, DESCRIPTION).set(bundle.getString("remoting.sasl.reuse-session"));
@@ -222,6 +221,7 @@ class RemotingSubsystemProviders {
         sasl.get(propType, POLICY).set(getPolicyElement(bundle));
 
         sasl.get(propType, PROPERTIES, TYPE).set(ModelType.LIST);
+        sasl.get(propType, PROPERTIES, DESCRIPTION).set(bundle.getString("remoting.sasl.properties"));
         sasl.get(propType, PROPERTIES, VALUE_TYPE).set(ModelType.PROPERTY);
 
         return sasl;

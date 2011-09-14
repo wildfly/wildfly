@@ -114,7 +114,6 @@ public class GlobalDescriptions {
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, NILLABLE).set(true);
         node.get(REQUEST_PROPERTIES, INCLUDE_DEFAULTS, DEFAULT).set(true);
         node.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
-        node.get(REPLY_PROPERTIES, VALUE_TYPE).set(bundle.getString("global.read-attribute.reply.type"));
         node.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("global.read-attribute.reply"));
 
         return node;

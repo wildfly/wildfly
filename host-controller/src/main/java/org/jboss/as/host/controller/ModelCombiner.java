@@ -258,7 +258,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private void addNamespaces(Map<String, ModelNode> map, ModelNode namespaces) {
         if (namespaces.isDefined()) {
             for (Property prop : namespaces.asPropertyList()) {
-                map.put(prop.getName(), NamespaceAddHandler.getAddNamespaceOperation(EMPTY, prop));
+                map.put(prop.getName(), NamespaceAddHandler.getAddNamespaceOperation(EMPTY, prop.getName(), prop.getValue().asString()));
             }
         }
     }
@@ -277,7 +277,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private void addSchemaLocations(Map<String, ModelNode> map, ModelNode namespaces) {
         if (namespaces.isDefined()) {
             for (Property prop : namespaces.asPropertyList()) {
-                map.put(prop.getName(), SchemaLocationAddHandler.getAddSchemaLocationOperation(EMPTY, prop));
+                map.put(prop.getName(), SchemaLocationAddHandler.getAddSchemaLocationOperation(EMPTY, prop.getName(), prop.getValue().asString()));
             }
         }
     }

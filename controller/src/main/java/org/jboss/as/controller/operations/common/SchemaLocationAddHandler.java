@@ -19,16 +19,16 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AbstractModelUpdateHandler;
-import org.jboss.as.controller.OperationContext;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URI;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
@@ -36,7 +36,6 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 
 /**
  * Handler for the root resource add-schema-location operation.
@@ -49,15 +48,17 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
 
     public static final SchemaLocationAddHandler INSTANCE = new SchemaLocationAddHandler();
 
-    public static ModelNode getAddSchemaLocationOperation(ModelNode address, Property schemaLocation) {
+    public static ModelNode getAddSchemaLocationOperation(ModelNode address, String schemaUrl, String schemaLocation) {
         ModelNode op = new ModelNode();
         op.get(OP).set(OPERATION_NAME);
         op.get(OP_ADDR).set(address);
+        op.get(URI).set(schemaLocation);
         op.get(SCHEMA_LOCATION).set(schemaLocation);
         return op;
     }
 
-    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.PROPERTY);
+    private final ParameterValidator urlValidator = new ModelTypeValidator(ModelType.STRING);
+    private final ParameterValidator locationValidator = new ModelTypeValidator(ModelType.STRING);
 
     /**
      * Create the AddSchemaLocationHandler
@@ -66,11 +67,11 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
     }
 
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode param = operation.get(SCHEMA_LOCATION);
+        ModelNode uri = operation.get(URI);
+        ModelNode location = operation.get(SCHEMA_LOCATION);
         ModelNode locations = model.get(SCHEMA_LOCATIONS);
-        validate(param, locations);
-        Property loc = param.asProperty();
-        locations.add(loc.getName(), loc.getValue());
+        validate(uri, location, locations);
+        locations.add(uri.asString(), location);
     }
 
     protected boolean requiresRuntime(OperationContext context) {
@@ -82,13 +83,14 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
         return CommonDescriptions.getAddSchemaLocationOperation(locale);
     }
 
-    private void validate(ModelNode param, ModelNode locations) throws OperationFailedException {
-        typeValidator.validateParameter(SCHEMA_LOCATION, param);
+    private void validate(ModelNode uri, ModelNode location, ModelNode locations) throws OperationFailedException {
+        urlValidator.validateParameter(URI, uri);
+        locationValidator.validateParameter(SCHEMA_LOCATION, location);
         if (locations.isDefined()) {
-            String uri = param.asProperty().getName();
+            String uriString = uri.asString();
             for (ModelNode node : locations.asList()) {
-                if (uri.equals(node.asProperty().getName())) {
-                    throw new OperationFailedException(new ModelNode().set("Schema with URI " + uri + " already registered with location " + node.asProperty().getValue().asString()));
+                if (uriString.equals(node.asProperty().getName())) {
+                    throw new OperationFailedException(new ModelNode().set("Schema with URI " + uriString + " already registered with location " + node.asProperty().getValue().asString()));
                 }
             }
         }

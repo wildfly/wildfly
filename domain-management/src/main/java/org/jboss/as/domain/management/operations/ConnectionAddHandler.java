@@ -22,14 +22,6 @@
 
 package org.jboss.as.domain.management.operations;
 
-import java.util.List;
-import java.util.Locale;
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -37,6 +29,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+
+import java.util.List;
+import java.util.Locale;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.domain.management.security.LdapConnectionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -85,8 +88,7 @@ public class ConnectionAddHandler extends AbstractAddStepHandler implements Desc
 
 
     public ModelNode getModelDescription(Locale locale) {
-        // TODO - Complete getModelDescription()
-        return new ModelNode();
+        return ManagementDescription.getAddManagementOutboundConnectionDescription(locale);
     }
 
 }

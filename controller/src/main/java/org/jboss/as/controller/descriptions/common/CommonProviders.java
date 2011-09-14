@@ -240,7 +240,7 @@ public final class CommonProviders {
     public static final DescriptionProvider VALIDATE_ADDRESS_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
+            return CommonDescriptions.getValidateAddressOperation(locale);
         }
     };
 

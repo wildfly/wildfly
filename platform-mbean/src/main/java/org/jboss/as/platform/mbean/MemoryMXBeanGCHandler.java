@@ -53,6 +53,6 @@ public class MemoryMXBeanGCHandler implements OperationStepHandler, DescriptionP
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale, PlatformMBeanConstants.MEMORY + ".gc");
+        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale, "gc", PlatformMBeanConstants.MEMORY);
     }
 }

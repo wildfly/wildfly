@@ -65,7 +65,7 @@ public class ThreadMXBeanFindDeadlockedThreadsHandler implements OperationStepHa
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getFindThreadsOperation(locale,
-                PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.FIND_DEADLOCKED_THREADS);
+        return PlatformMBeanDescriptions.getFindThreadsOperation(locale, PlatformMBeanConstants.FIND_DEADLOCKED_THREADS,
+                PlatformMBeanConstants.THREADING);
     }
 }
