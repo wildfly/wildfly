@@ -146,7 +146,7 @@ public final class Main {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        String procName = "Host Controller";
+        final String procName = "Host Controller";   // final because we have no proper support for changing it
         String defaultJVM = null;
         boolean isRestart = false;
         boolean backupDomainFiles = false;
@@ -160,7 +160,8 @@ public final class Main {
             final String arg = args[i];
 
             try {
-                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg) || CommandLineConstants.OLD_VERSION.equals(arg)) {
+                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
+                        || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
                     System.out.println("JBoss Application Server " + getVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
@@ -187,24 +188,44 @@ public final class Main {
                     if (urlSpec == null || !processProperties(arg, urlSpec)) {
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_PC_PORT.equals(arg)) {
+                } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT.equals(arg)) {
                     final String port = args[++i];
                     try {
                         pmPort = Integer.valueOf(port);
                     } catch (NumberFormatException e) {
-                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.INTERPROCESS_PC_PORT, port);
+                        System.err.printf("Value for %s is not an Integer -- %s\n", CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, port);
                         usage();
                         return null;
                     }
-                } else if (CommandLineConstants.INTERPROCESS_PC_ADDRESS.equals(arg)) {
+                } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
+                    String val = parseValue(arg, CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT);
+                    if (val == null) {
+                        return null;
+                    }
+                    final Integer port = parsePort(val, CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT);
+                    if (port == null) {
+                        return null;
+                    }
+                    pmPort = port;
+                } else if (CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR.equals(arg)) {
                     final String addr = args[++i];
                     try {
                         pmAddress = InetAddress.getByName(addr);
                     } catch (UnknownHostException e) {
-                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.INTERPROCESS_PC_ADDRESS, addr);
+                        System.err.printf("Value for %s is not a known host -- %s\n", CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr);
                         usage();
                         return null;
                     }
+                } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR)) {
+                    final String val = parseValue(arg, CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR);
+                    if (val == null) {
+                        return null;
+                    }
+                    final InetAddress addr = parseAddress(val, arg);
+                    if (addr == null) {
+                        return null;
+                    }
+                    pmAddress = addr;
                 } else if (CommandLineConstants.INTERPROCESS_HC_PORT.equals(arg) || CommandLineConstants.OLD_INTERPROCESS_HC_PORT.equals(arg)) {
                     final Integer port = parsePort(args[++i], arg);
                     if (port == null) {
@@ -257,8 +278,6 @@ public final class Main {
                         return null;
                     }
                     smAddress = addr;
-                } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)) {
-                    procName = args[++i];
                 } else if (CommandLineConstants.RESTART_HOST_CONTROLLER.equals(arg)) {
                     isRestart = true;
                 } else if (CommandLineConstants.BACKUP_DC.equals(arg) || CommandLineConstants.OLD_BACKUP_DC.equals(arg)) {
@@ -296,7 +315,7 @@ public final class Main {
                     }
                     hostConfig = val;
 
-                } else if (arg.startsWith("-D")) {
+                } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
 
                     // set a system property
                     String name, value;
@@ -310,7 +329,7 @@ public final class Main {
                     }
                     SecurityActions.setSystemProperty(name, value);
                     hostSystemProperties.put(name, value);
-                } else if (arg.startsWith("-b")) {
+                } else if (arg.startsWith(CommandLineConstants.PUBLIC_BIND_ADDRESS)) {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
@@ -323,10 +342,10 @@ public final class Main {
                     String logicalName = null;
                     if (idx < 0) {
                         // -b xxx -bmanagement xxx
-                        logicalName = arg.length() == 2 ? "public" : arg.substring(2);
+                        logicalName = arg.length() == 2 ? CommandLineConstants.DEFAULT_INTERFACE : arg.substring(2);
                     } else if (idx == 2) {
                         // -b=xxx
-                        logicalName = "public";
+                        logicalName = CommandLineConstants.DEFAULT_INTERFACE;
                     } else {
                         // -bmanagement=xxx
                         logicalName = arg.substring(2, idx);
@@ -346,7 +365,7 @@ public final class Main {
             }
         }
 
-        return new HostControllerEnvironment(hostSystemProperties, isRestart,  stdin, stdout, stderr, procName, pmAddress, pmPort, smAddress, smPort, defaultJVM,
+        return new HostControllerEnvironment(hostSystemProperties, isRestart,  stdin, stdout, stderr, pmAddress, pmPort, smAddress, smPort, defaultJVM,
                 domainConfig, hostConfig, backupDomainFiles, cachedDc);
     }
 
