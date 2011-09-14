@@ -151,7 +151,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DUPS_OK_BATCH_SIZE = new SimpleAttributeDefinition("dups-ok-batch-size",
             new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE), ModelType.INT, true, MeasurementUnit.NONE);
 
-    SimpleAttributeDefinition DURABLE = new SimpleAttributeDefinition("durable", new ModelNode().set(false), ModelType.BOOLEAN,  true);
+    SimpleAttributeDefinition DURABLE = new SimpleAttributeDefinition("durable", new ModelNode().set(true), ModelType.BOOLEAN,  true);
 
     JndiEntriesAttribute ENTRIES = JndiEntriesAttribute.DESTINATION;
 
