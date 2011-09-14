@@ -28,9 +28,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
@@ -39,12 +44,14 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.interfaces.InetAddressMatchInterfaceCriteria;
+import org.jboss.as.controller.interfaces.InterfaceCriteria;
+import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
- * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
- * and deployment introspection.
+ * A helper class to join management related operations, like extract sub system ip/port (web/jmx) and deployment introspection.
  *
  * @author <a href="aslak@redhat.com">Aslak Knutsen</a>
  */
@@ -63,6 +70,9 @@ public class ManagementClient {
     private ModelControllerClient client;
     private Map<String, URI> subsystemURICache;
 
+    private static final String ANY_IPV4_ADDRESS = "0.0.0.0";
+    private static final String ANY_IPV6_ADDRESS = "::";
+
     // cache static RootNode
     private ModelNode rootNode = null;
 
@@ -74,9 +84,9 @@ public class ManagementClient {
         this.subsystemURICache = new HashMap<String, URI>();
     }
 
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     // Public API -------------------------------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
 
     public ModelControllerClient getControllerClient() {
         return client;
@@ -84,7 +94,7 @@ public class ManagementClient {
 
     public URI getSubSystemURI(String subsystem) {
         URI subsystemURI = subsystemURICache.get(subsystem);
-        if(subsystemURI != null) {
+        if (subsystemURI != null) {
             return subsystemURI;
         }
         subsystemURI = extractSubSystemURI(subsystem);
@@ -124,30 +134,29 @@ public class ManagementClient {
             return SUCCESS.equals(rsp.get(OUTCOME).asString())
                     && !ControlledProcessState.State.STARTING.toString().equals(rsp.get(RESULT).asString())
                     && !ControlledProcessState.State.STOPPING.toString().equals(rsp.get(RESULT).asString());
-        }
-        catch (Exception ignored) {
+        } catch (Exception ignored) {
             return false;
         }
     }
 
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     // Subsystem URI Lookup ---------------------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
 
     private URI extractSubSystemURI(String subsystem) {
         try {
-            if(rootNode == null) {
+            if (rootNode == null) {
                 readRootNode();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        if("web".equals(subsystem)) {
-            String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding").asString();
+        if ("web".equals(subsystem)) {
+            String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding")
+                    .asString();
             return getBinding(socketBinding);
-        }
-        else if("jmx".equals(subsystem)) {
+        } else if ("jmx".equals(subsystem)) {
             String socketBinding = rootNode.get("subsystem").get("jmx").get("registry-binding").asString();
             return getBinding(socketBinding);
         }
@@ -170,10 +179,9 @@ public class ManagementClient {
         String ip = null;
         Integer port = null;
 
-        if(socket.hasDefined("interface")) {
+        if (socket.hasDefined("interface")) {
             ip = getInterface(socket.get("interface").asString());
-        }
-        else {
+        } else {
             ip = getInterface(defaultInterface);
         }
 
@@ -182,14 +190,48 @@ public class ManagementClient {
     }
 
     private String getInterface(String name) {
-        ModelNode node = rootNode.get("interface").get(name).get("criteria").asList().get(0).get("inet-address");
-        return node.resolve().asString();
+        try {
+            ModelNode node = rootNode.get("interface").get(name).get("criteria");
+            ParsedInterfaceCriteria criteria = ParsedInterfaceCriteria.parse(node);
+
+            boolean isAnyIpv4 = false, isAnyIpv6 = false;
+            if (criteria.isAnyLocal()) {
+                // figure out whether IPv4 or IPv6 is preferred by checking localhost, and use that.
+                InetAddress localHost = InetAddress.getLocalHost();
+                if (localHost instanceof Inet4Address) {
+                    isAnyIpv4 = true;
+                }
+                else if (localHost instanceof Inet6Address) {
+                    isAnyIpv6 = true;
+                }
+                else {
+                    throw new IllegalArgumentException("Unrecognized any-address format!");
+                }
+            }
+
+            if (isAnyIpv4 || criteria.isAnyLocalV4()) {
+                return ANY_IPV4_ADDRESS;
+            } else if (isAnyIpv6 || criteria.isAnyLocalV6()) {
+                return ANY_IPV6_ADDRESS;
+            } else {
+                Set<InterfaceCriteria> criteriaSet = criteria.getCriteria();
+                if (criteriaSet.size() != 1) {
+                    throw new IllegalArgumentException("Mangement client supports only one item criteria sets.");
+                }
+                InterfaceCriteria item = criteriaSet.iterator().next();
+                if (!(item instanceof InetAddressMatchInterfaceCriteria)) {
+                    throw new IllegalArgumentException("Mangement client supports only direct internet address mappings.");
+                }
+                return ((InetAddressMatchInterfaceCriteria) item).getAddress().getHostAddress();
+            }
+        } catch (UnknownHostException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
-
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     // Metadata Extraction Operations -----------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
 
     private boolean isEnterpriseArchive(String deploymentName) {
         return deploymentName.endsWith(POSTFIX_EAR);
@@ -235,8 +277,8 @@ public class ManagementClient {
                         }
                     }
                     /*
-                     * This is a WebApp, it has some form of webcontext whether it has a
-                     * Servlet or not. AS7 does not expose jsp / default servlet in mgm api
+                     * This is a WebApp, it has some form of webcontext whether it has a Servlet or not. AS7 does not expose jsp
+                     * / default servlet in mgm api
                      */
                     context.add(new Servlet("default", toContextName(contextName)));
                 }
@@ -250,15 +292,14 @@ public class ManagementClient {
             correctedName = correctedName.substring(1);
         }
         if (correctedName.indexOf(".") != -1) {
-            correctedName = correctedName.substring(0,
-                    correctedName.lastIndexOf("."));
+            correctedName = correctedName.substring(0, correctedName.lastIndexOf("."));
         }
         return correctedName;
     }
 
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     // Common Management API Operations ---------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
 
     private ModelNode readResource(ModelNode address) throws Exception {
         final ModelNode operation = new ModelNode();
@@ -275,11 +316,9 @@ public class ManagementClient {
         return result.get(RESULT);
     }
 
-    private void checkSuccessful(final ModelNode result,
-            final ModelNode operation) throws UnSuccessfulOperationException {
+    private void checkSuccessful(final ModelNode result, final ModelNode operation) throws UnSuccessfulOperationException {
         if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            throw new UnSuccessfulOperationException(result.get(
-                    FAILURE_DESCRIPTION).toString());
+            throw new UnSuccessfulOperationException(result.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
