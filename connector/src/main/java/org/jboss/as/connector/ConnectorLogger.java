@@ -153,24 +153,13 @@ public interface ConnectorLogger extends BasicLogger {
     void registeredConnectionFactory(String jndiName);
 
     /**
-     * Logs an informational message indicating the JCA removed the object represented by the {@code description}
-     * parameter.
-     *
-     * @param description the description of what was removed.
-     * @param jndiName    the JNDI name.
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 10407, value = "Removed JCA %s [%s]")
-    void removedJca(String description, String jndiName);
-
-    /**
      * Logs an informational message indicating the service, represented by the {@code serviceName} parameter, is
      * starting.
      *
      * @param serviceName the name of the service that is starting.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10408, value = "Starting service %s")
+    @Message(id = 10407, value = "Starting service %s")
     void startingService(ServiceName serviceName);
 
     /**
@@ -181,7 +170,7 @@ public interface ConnectorLogger extends BasicLogger {
      * @param version   the version of the subsystem.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10409, value = "Starting %s Subsystem (%s)")
+    @Message(id = 10408, value = "Starting %s Subsystem (%s)")
     void startingSubsystem(String subsystem, String version);
 
     /**
@@ -190,7 +179,7 @@ public interface ConnectorLogger extends BasicLogger {
      * @param jndiName the JNDI name
      */
     @LogMessage(level = INFO)
-    @Message(id = 10410, value = "Unbound data source [%s]")
+    @Message(id = 10409, value = "Unbound data source [%s]")
     void unboundDataSource(String jndiName);
 
     /**
@@ -201,6 +190,6 @@ public interface ConnectorLogger extends BasicLogger {
      * @param jndiName    the JNDI name.
      */
     @LogMessage(level = INFO)
-    @Message(id = 10411, value = "Bound JCA %s [%s]")
+    @Message(id = 10410, value = "Unbound JCA %s [%s]")
     void unboundJca(String description, String jndiName);
 }

@@ -29,7 +29,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOU
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 
 /**
@@ -41,7 +40,6 @@ import org.jboss.logging.Logger;
 class DataSourcesSubsystemAdd extends AbstractAddStepHandler {
 
     static final DataSourcesSubsystemAdd INSTANCE = new DataSourcesSubsystemAdd();
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemAdd");
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();

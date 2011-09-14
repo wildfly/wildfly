@@ -256,7 +256,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                                     break;
                                 }
                                 case REMOVING_to_REMOVED: {
-                                    DEPLOYMENT_CONNECTOR_LOGGER.removedJca("ConnectionFactory", jndi);
+                                    DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA ConnectionFactory [%s]", jndi);
                                 }
                             }
                         }
@@ -310,7 +310,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                                     break;
                                 }
                                 case REMOVING_to_REMOVED: {
-                                    DEPLOYMENT_CONNECTOR_LOGGER.removedJca("AdminObject", jndi);
+                                    DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA AdminObject [%s]", jndi);
                                 }
                             }
                         }

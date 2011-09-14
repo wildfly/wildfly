@@ -85,7 +85,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
         CommonDeployment raDeployment = null;
-        log.debugf("DEPLOYMENT name = %s",deploymentName);
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
         final AS7RaDeployer raDeployer = new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, module.getClassLoader(), cmd,
                 ijmd);
         raDeployer.setConfiguration(config.getValue());
