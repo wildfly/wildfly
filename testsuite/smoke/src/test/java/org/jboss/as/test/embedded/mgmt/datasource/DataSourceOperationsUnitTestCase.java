@@ -339,7 +339,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set(dsName + "_Pool");
 
-        operation.get("xa-data-source-properties", "URL").set("jdbc:h2:mem:test");
+        operation.get("xa-datasource-properties", "URL").set("jdbc:h2:mem:test");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
@@ -383,7 +383,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set(dsName + "_Pool");
 
-        operation.get("xa-data-source-properties", "URL").set("jdbc:h2:mem:test");
+        operation.get("xa-datasource-properties", "URL").set("jdbc:h2:mem:test");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
@@ -436,7 +436,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set(dsName + "_Pool");
 
-        operation.get("xa-data-source-properties", "URL").set("jdbc:h2:mem:test");
+        operation.get("xa-datasource-properties", "URL").set("jdbc:h2:mem:test");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
 
@@ -510,7 +510,7 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("jndi-name").set("java:jboss/xa-datasources/" + xaDs);
         operation.get("driver-name").set("h2");
         operation.get("enabled").set(true);
-        operation.get("xa-data-source-properties", "URL").set("jdbc:h2:mem:test");
+        operation.get("xa-datasource-properties", "URL").set("jdbc:h2:mem:test");
         operation.get("pool-name").set(xaDs + "_Pool");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");

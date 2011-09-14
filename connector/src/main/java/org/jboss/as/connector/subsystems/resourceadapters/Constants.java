@@ -56,17 +56,7 @@ class Constants {
 
     private static final String CLASS_NAME_NAME = "class-name";
 
-    private static final String JNDI_NAME_NAME = "jndi-name";
-
     private static final String POOL_NAME_NAME = "pool-name";
-
-    private static final String NEW_CONNECTION_SQL_NAME = "new-connection-sql";
-
-    private static final String TRANSACTION_ISOLOATION_NAME = "transaction-isolation";
-
-    private static final String URL_DELIMITER_NAME = "url-delimiter";
-
-    private static final String URL_SELECTOR_STRATEGY_CLASS_NAME_NAME = "url-selector-strategy-class-name";
 
     private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
 
@@ -74,19 +64,11 @@ class Constants {
 
     private static final String JNDINAME_NAME = "jndi-name";
 
-    private static final String URLDELIMITER_NAME = "url-delimiter";
-
-    private static final String FLUSH_STRATEGY_NAME = "flush-strategy";
-
     private static final String ALLOCATION_RETRY_NAME = "allocation-retry";
 
     private static final String ALLOCATION_RETRY_WAIT_MILLIS_NAME = "allocation-retry-wait-millis";
 
-    private static final String SETTXQUERTTIMEOUT_NAME = "set-tx-quert-timeout";
-
     private static final String XA_RESOURCE_TIMEOUT_NAME = "xa-resource-timeout";
-
-    private static final String QUERYTIMEOUT_NAME = "query-timeout";
 
     private static final String USETRYLOCK_NAME = "use-try-lock";
 
@@ -95,20 +77,6 @@ class Constants {
     private static final String SECURITY_DOMAIN_NAME = "security-domain";
 
     private static final String APPLICATION_NAME = "security-application";
-
-    private static final String SHAREPREPAREDSTATEMENTS_NAME = "share-prepared-statements";
-
-    private static final String PREPAREDSTATEMENTSCACHESIZE_NAME = "prepared-statements-cacheSize";
-
-    private static final String TRACKSTATEMENTS_NAME = "track-statements";
-
-    private static final String VALIDCONNECTIONCHECKERCLASSNAME_NAME = "valid-connection-checker-class-name";
-
-    private static final String CHECKVALIDCONNECTIONSQL_NAME = "check-valid-connection-sql";
-
-    private static final String VALIDATEONMATCH_NAME = "validate-on-match";
-
-    private static final String STALECONNECTIONCHECKERCLASSNAME_NAME = "stale-connection-checker-class-name";
 
     private static final String USE_CCM_NAME = "use-ccm";
 
@@ -121,8 +89,6 @@ class Constants {
     private static final String TRANSACTIONSUPPORT_NAME = "transaction-support";
 
     private static final String BEANVALIDATIONGROUPS_NAME = "beanvalidationgroups";
-
-    private static final String EXCEPTIONSORTERCLASSNAME_NAME = "exception-sorter-class-name";
 
     static final String ADMIN_OBJECTS_NAME = "admin-objects";
 
@@ -148,9 +114,6 @@ class Constants {
 
     private static final String NO_RECOVERY_NAME = "no-recovery";
 
-    private static final String NAME_NAME = "name";
-
-
 
     static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinition(CLASS_NAME_NAME, CommonConnDef.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
@@ -168,13 +131,6 @@ class Constants {
 
     static final SimpleAttributeDefinition BEANVALIDATIONGROUPS = new SimpleAttributeDefinition(BEANVALIDATIONGROUPS_NAME, ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
-
-    static SimpleAttributeDefinition NEW_CONNECTION_SQL = new SimpleAttributeDefinition(NEW_CONNECTION_SQL_NAME, DataSource.Tag.NEW_CONNECTION_SQL.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
-    static SimpleAttributeDefinition URL_DELIMITER = new SimpleAttributeDefinition(URL_DELIMITER_NAME, DataSource.Tag.URL_DELIMITER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
-    static SimpleAttributeDefinition URL_SELECTOR_STRATEGY_CLASS_NAME = new SimpleAttributeDefinition(URL_SELECTOR_STRATEGY_CLASS_NAME_NAME, DataSource.Tag.URL_SELECTOR_STRATEGY_CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
     static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinition(USE_JAVA_CONTEXT_NAME, DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName(), new ModelNode().set(Defaults.USE_JAVA_CONTEXT), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinition(ENABLED_NAME, DataSource.Attribute.ENABLED.getLocalName(), new ModelNode().set(Defaults.ENABLED), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
@@ -185,39 +141,13 @@ class Constants {
 
     static final SimpleAttributeDefinition APPLICATION = new SimpleAttributeDefinition(APPLICATION_NAME, CommonSecurity.Tag.APPLICATION.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition PREPAREDSTATEMENTSCACHESIZE = new SimpleAttributeDefinition(PREPAREDSTATEMENTSCACHESIZE_NAME, Statement.Tag.PREPARED_STATEMENT_CACHE_SIZE.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
-
-    static SimpleAttributeDefinition SHAREPREPAREDSTATEMENTS = new SimpleAttributeDefinition(SHAREPREPAREDSTATEMENTS_NAME, Statement.Tag.SHARE_PREPARED_STATEMENTS.getLocalName(), new ModelNode().set(Defaults.SHARE_PREPARED_STATEMENTS), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
-
-    static SimpleAttributeDefinition TRACKSTATEMENTS = new SimpleAttributeDefinition(TRACKSTATEMENTS_NAME, Statement.Tag.TRACK_STATEMENTS.getLocalName(), new ModelNode().set(Defaults.TRACK_STATEMENTS.name()), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
     static SimpleAttributeDefinition ALLOCATION_RETRY = new SimpleAttributeDefinition(ALLOCATION_RETRY_NAME, TimeOut.Tag.ALLOCATION_RETRY.getLocalName(),  new ModelNode(), ModelType.INT, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition ALLOCATION_RETRY_WAIT_MILLIS = new SimpleAttributeDefinition(ALLOCATION_RETRY_WAIT_MILLIS_NAME, TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
 
-
-    static SimpleAttributeDefinition QUERYTIMEOUT = new SimpleAttributeDefinition(QUERYTIMEOUT_NAME, TimeOut.Tag.QUERY_TIMEOUT.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
-
     static SimpleAttributeDefinition USETRYLOCK = new SimpleAttributeDefinition(USETRYLOCK_NAME, TimeOut.Tag.USE_TRY_LOCK.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.NONE);
 
-
-    static SimpleAttributeDefinition CHECKVALIDCONNECTIONSQL = new SimpleAttributeDefinition(CHECKVALIDCONNECTIONSQL_NAME, Validation.Tag.CHECK_VALID_CONNECTION_SQL.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
-    static SimpleAttributeDefinition EXCEPTIONSORTERCLASSNAME = new SimpleAttributeDefinition(EXCEPTIONSORTERCLASSNAME_NAME, Validation.Tag.EXCEPTION_SORTER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
-
-    static SimpleAttributeDefinition STALECONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(STALECONNECTIONCHECKERCLASSNAME_NAME, Validation.Tag.STALE_CONNECTION_CHECKER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
-
-    static SimpleAttributeDefinition VALIDCONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKERCLASSNAME_NAME, Validation.Tag.VALID_CONNECTION_CHECKER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
-
-
-
-    static SimpleAttributeDefinition VALIDATEONMATCH = new SimpleAttributeDefinition(VALIDATEONMATCH_NAME, Validation.Tag.VALIDATE_ON_MATCH.getLocalName(),new ModelNode().set(Defaults.VALIDATE_ON_MATCH), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
-
-
     static SimpleAttributeDefinition USE_CCM = new SimpleAttributeDefinition(USE_CCM_NAME, DataSource.Attribute.USE_CCM.getLocalName(), new ModelNode().set(Defaults.USE_CCM), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
-
 
     static SimpleAttributeDefinition INTERLEAVING = new SimpleAttributeDefinition(INTERLEAVING_NAME, CommonXaPool.Tag.INTERLEAVING.getLocalName(), new ModelNode().set(Defaults.INTERLEAVING), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 

@@ -127,7 +127,7 @@ public class DataSourceResourcesUnitTestCase {
             Assert.assertTrue(child.getKey() != null);
             keys.add(child.getKey());
         }
-        Assert.assertTrue(keys.contains("driver-xa-data-source-class-name"));
+        Assert.assertTrue(keys.contains("driver-xa-datasource-class-name"));
         Assert.assertTrue(keys.contains("module-slot"));
         Assert.assertTrue(keys.contains("driver-name"));
     }
