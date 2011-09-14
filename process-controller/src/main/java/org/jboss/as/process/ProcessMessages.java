@@ -142,7 +142,7 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(value = "Set system property jboss.bind.address.public to the given value")
+    @Message(value = "Set system property jboss.bind.address to the given value")
     String argPublicBindAddress();
 
     /**

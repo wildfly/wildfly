@@ -56,8 +56,8 @@ public final class Main {
     public static void usage() {
         System.out.println("Usage: ./standalone.sh [args...]\n");
         System.out.println("where args include:");
-        System.out.println("    -b=<value>                         Set system property jboss.bind.address.public to the given value");
-        System.out.println("    -b <value>                         Set system property jboss.bind.address.public to the given value");
+        System.out.println("    -b=<value>                         Set system property jboss.bind.address to the given value");
+        System.out.println("    -b <value>                         Set system property jboss.bind.address to the given value");
         System.out.println("    -b<interface>=<value>              Set system property jboss.bind.address.<interface> to the given value");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
         System.out.println("    -h                                 Display this message and exit");
@@ -191,18 +191,17 @@ public final class Main {
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
 
-                    String logicalName = null;
+                    String propertyName = null;
                     if (idx < 0) {
                         // -b xxx -bmanagement xxx
-                        logicalName = arg.length() == 2 ? CommandLineConstants.DEFAULT_INTERFACE : arg.substring(2);
+                        propertyName = arg.length() == 2 ? ServerEnvironment.JBOSS_BIND_ADDRESS : ServerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + arg.substring(2);
                     } else if (idx == 2) {
                         // -b=xxx
-                        logicalName = CommandLineConstants.DEFAULT_INTERFACE;
+                        propertyName = ServerEnvironment.JBOSS_BIND_ADDRESS;
                     } else {
                         // -bmanagement=xxx
-                        logicalName = arg.substring(2, idx);
+                        propertyName =  ServerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + arg.substring(2, idx);
                     }
-                    String propertyName = ServerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + logicalName;
                     systemProperties.setProperty(propertyName, value);
                     SecurityActions.setSystemProperty(propertyName, value);
                 } else {
