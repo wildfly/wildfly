@@ -281,31 +281,17 @@
         </xs:annotation>
         <xs:restriction base="xs:string">
 
-            <xs:enumeration value="s"/>
-            <xs:enumeration value="sec"/>
             <xs:enumeration value="seconds"/>
 
-            <xs:enumeration value="m"/>
-            <xs:enumeration value="min"/>
             <xs:enumeration value="minutes"/>
 
-            <xs:enumeration value="ms"/>
             <xs:enumeration value="milliseconds"/>
 
-            <xs:enumeration value="ns"/>
             <xs:enumeration value="nanoseconds"/>
 
-            <xs:enumeration value="h"/>
             <xs:enumeration value="hours"/>
 
-            <xs:enumeration value="d"/>
             <xs:enumeration value="days"/>
-
-            <xs:enumeration value="w"/>
-            <xs:enumeration value="weeks"/>
-
-            <xs:enumeration value="mon"/>
-            <xs:enumeration value="months"/>
 
         </xs:restriction>
     </xs:simpleType>
