@@ -820,6 +820,10 @@
             <maven-resource group="org.jboss.security" artifact="jboss-negotiation"/>
         </module-def>
 
+        <module-def name="org.jboss.security.xacml">
+            <maven-resource group="org.jboss.security" artifact="jbossxacml"/>
+        </module-def>
+
         <module-def name="org.jboss.shrinkwrap.core">
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-api"/>
             <maven-resource group="org.jboss.shrinkwrap" artifact="shrinkwrap-spi"/>
