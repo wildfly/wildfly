@@ -231,7 +231,7 @@ public class ModelDescriptionValidator {
             }
             if (op.hasDefined(REPLY_PROPERTIES)) {
                 ModelNode reply = op.get(REPLY_PROPERTIES);
-                OperationParameterValidationElement parameterValidationElement = new OperationParameterValidationElement(operation, "reply-properties");
+                OperationParameterValidationElement parameterValidationElement = new OperationParameterValidationElement(operation, REPLY_PROPERTIES);
                 validateAttributeOrParameter(parameterValidationElement, reply);
             }
         }
@@ -275,7 +275,7 @@ public class ModelDescriptionValidator {
     }
 
     private void validateAttributeOrParameter(AttributeValidationElement validationElement, ModelNode rawDescription) {
-        boolean reply = validationElement.name.equals("reply-properties");
+        boolean reply = validationElement.name.equals(REPLY_PROPERTIES);
         if (!rawDescription.hasDefined(DESCRIPTION) && !reply) {
             errors.add(validationElement.createValidationFailure("Missing description"));
         }
@@ -321,7 +321,15 @@ public class ModelDescriptionValidator {
                 valueTypeNode.asType();
             } catch (Exception e) {
                 //Complex type
-                for (String key : valueTypeNode.keys()) {
+
+                Set<String> keys;
+                try {
+                    keys = valueTypeNode.keys();
+                } catch (Exception e1) {
+                    errors.add(validationElement.createValidationFailure("Could not get keys for value-type for type=" + type + " " + currentDescription.asString()));
+                    return;
+                }
+                for (String key : keys) {
                     validateAttributeOrParameter(validationElement, rawDescription, valueTypeNode.get(key));
                 }
             }
@@ -527,9 +535,9 @@ public class ModelDescriptionValidator {
      */
     public static class ValidationConfiguration {
         private Map<ModelNode, Set<String>> nullValueTypeAttributes = new HashMap<ModelNode, Set<String>>();
-        private Map<ModelNode, Set<String>> nullValueTypeOperations = new HashMap<ModelNode, Set<String>>();
+        private Map<ModelNode, Map<String, Set<String>>> nullValueTypeOperations = new HashMap<ModelNode, Map<String, Set<String>>>();
         private Map<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>> attributeDescriptors = new HashMap<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>();
-        private Map<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>> operationParameterDescriptors = new HashMap<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>();
+        private Map<ModelNode, Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>> operationParameterDescriptors = new HashMap<ModelNode, Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>>();
 
         /**
          * Allow undefined value-types for a OBJECT or LIST type attribute. This should be used
@@ -539,18 +547,56 @@ public class ModelDescriptionValidator {
          * @param name the name of the attribute
          */
         public void allowNullValueTypeForAttribute(ModelNode address, String name) {
-            registerNullValueType(nullValueTypeAttributes, address, name);
+            Set<String> names = nullValueTypeAttributes.get(address);
+            if (names == null) {
+                names = new HashSet<String>();
+                nullValueTypeAttributes.put(address, names);
+            }
+            names.add(name);
         }
 
         /**
-         * Allow undefined value-types for OBJECT or LIST type parameters and return types for an operation.
+         * Allow undefined value-types for OBJECT or LIST type for all parameters and return types for an operation.
          * This should be used sparingly since an undefined value-type is normally a problem with your model.
          *
          * @param address the address of the operation
-         * @param name the name of the operation
+         * @param operation the name of the operation
          */
-        public void allowNullValueTypeForOperation(ModelNode address, String name) {
-            registerNullValueType(nullValueTypeOperations, address, name);
+        public void allowNullValueTypeForOperation(ModelNode address, String operation) {
+            allowNullValueTypeForOperationParameter(address, operation, "*");
+        }
+
+        /**
+         * Allow undefined value-types for OBJECT or LIST type for an operation's reply-properties.
+         * This should be used sparingly since an undefined value-type is normally a problem with your model.
+         *
+         * @param address the address of the operation
+         * @param operation the name of the operation
+         */
+        public void allowNullValueTypeForOperationReplyProperties(ModelNode address, String operation) {
+            allowNullValueTypeForOperationParameter(address, operation, REPLY_PROPERTIES);
+        }
+
+        /**
+         * Allow undefined value-types for OBJECT or LIST type for an operation's parameter.
+         * This should be used sparingly since an undefined value-type is normally a problem with your model.
+         *
+         * @param address the address of the operation
+         * @param operation the name of the operation
+         * @param param the name of the parameter
+         */
+        public void allowNullValueTypeForOperationParameter(ModelNode address, String operation, String param) {
+            Map<String, Set<String>> names = nullValueTypeOperations.get(address);
+            if (names == null) {
+                names = new HashMap<String, Set<String>>();
+                nullValueTypeOperations.put(address, names);
+            }
+            Set<String> params = names.get(operation);
+            if (params == null) {
+                params = new HashSet<String>();
+                names.put(operation, params);
+            }
+            params.add(param);
         }
 
         /**
@@ -562,27 +608,10 @@ public class ModelDescriptionValidator {
          * @param validator an implementation of a validator, may be {@code null}
          */
         public void registerAttributeArbitraryDescriptor(ModelNode address, String name, String descriptor, AttributeOrParameterArbitraryDescriptorValidator validator) {
-            registerDescriptor(attributeDescriptors, address, name, descriptor, validator);
-        }
-
-        /**
-         * Register an additional arbitrary descriptor for an operation's parameters
-         *
-         * @param address the address of the operation
-         * @param name the name of the operation
-         * @param descriptor the arbitrary descriptor to register for the operation's parameters
-         * @param validator an implementation of a validator, may be {@code null}
-         */
-        public void registerOperationParameterArbitraryDescriptor(ModelNode address, String name, String descriptor, AttributeOrParameterArbitraryDescriptorValidator validator) {
-            registerDescriptor(operationParameterDescriptors, address, name, descriptor, validator);
-        }
-
-        private void registerDescriptor(Map<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>> map,
-                ModelNode address, String name, String descriptor, AttributeOrParameterArbitraryDescriptorValidator validator){
-            Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>> byName = map.get(address);
+            Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>> byName = attributeDescriptors.get(address);
             if (byName == null) {
                 byName = new HashMap<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>();
-                map.put(address, byName);
+                attributeDescriptors.put(address, byName);
             }
             Map<String, AttributeOrParameterArbitraryDescriptorValidator> descriptors = byName.get(name);
             if (descriptors == null) {
@@ -592,25 +621,61 @@ public class ModelDescriptionValidator {
             descriptors.put(descriptor, validator == null ? NullDescriptorValidator.INSTANCE : validator);
         }
 
-        private void registerNullValueType(Map<ModelNode, Set<String>> map, ModelNode address, String name) {
-            Set<String> names = map.get(address);
-            if (names == null) {
-                names = new HashSet<String>();
-                map.put(address, names);
-            }
-            names.add(name);
+        /**
+         * Register an additional arbitrary descriptor for all of an operation's parameters and reply properties
+         *
+         * @param address the address of the operation
+         * @param operation the name of the operation
+         * @param descriptor the arbitrary descriptor to register for the operation's parameters
+         * @param validator an implementation of a validator, may be {@code null}
+         */
+        public void registerArbitraryDescriptorForOperation(ModelNode address, String operation, String descriptor, AttributeOrParameterArbitraryDescriptorValidator validator) {
+            registerArbitraryDescriptorForOperationParameter(address, operation, "*", descriptor, validator);
         }
+
+        /**
+         * Register an additional arbitrary descriptor for an operation's reply properties
+         *
+         * @param address the address of the operation
+         * @param operation the name of the operation
+         * @param descriptor the arbitrary descriptor to register for the operation's parameters
+         * @param validator an implementation of a validator, may be {@code null}
+         */
+        public void registerArbitraryDescriptorForOperationReplyProperties(ModelNode address, String operation, String descriptor, AttributeOrParameterArbitraryDescriptorValidator validator) {
+            registerArbitraryDescriptorForOperationParameter(address, operation, REPLY_PROPERTIES, descriptor, validator);
+        }
+
+        /**
+         * Register an additional arbitrary descriptor for an operation's parameter
+         *
+         * @param address the address of the operation
+         * @param operation the name of the operation
+         * @param parameter the name of the parameter
+         * @param descriptor the arbitrary descriptor to register for the operation's parameters
+         * @param validator an implementation of a validator, may be {@code null}
+         */
+        public void registerArbitraryDescriptorForOperationParameter(ModelNode address, String operation, String parameter, String descriptor, AttributeOrParameterArbitraryDescriptorValidator validator) {
+            Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>> byName = operationParameterDescriptors.get(address);
+            if (byName == null) {
+                byName = new HashMap<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>();
+                operationParameterDescriptors.put(address, byName);
+            }
+            Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>> params = byName.get(operation);
+            if (params == null) {
+                params = new HashMap<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>();
+                byName.put(operation, params);
+            }
+            Map<String, AttributeOrParameterArbitraryDescriptorValidator> descriptors = params.get(parameter);
+            if (descriptors == null) {
+                descriptors = new HashMap<String, ModelDescriptionValidator.AttributeOrParameterArbitraryDescriptorValidator>();
+                params.put(parameter, descriptors);
+            }
+            descriptors.put(descriptor, validator == null ? NullDescriptorValidator.INSTANCE : validator);
+        }
+
 
         private AttributeOrParameterArbitraryDescriptorValidator getAttribibuteValidator(ModelNode address, String name, String descriptor) {
-            return getValidator(attributeDescriptors, address, name, descriptor);
-        }
-
-        private AttributeOrParameterArbitraryDescriptorValidator getOperationParameterValidator(ModelNode address, String name, String descriptor) {
-            return getValidator(operationParameterDescriptors, address, name, descriptor);
-        }
-
-        private AttributeOrParameterArbitraryDescriptorValidator getValidator(Map<ModelNode, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>> map, ModelNode address, String name, String descriptor) {
-            Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>  byName = map.get(address);
+            Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>  byName = attributeDescriptors.get(address);
             if (byName == null) {
                 return null;
             }
@@ -621,16 +686,45 @@ public class ModelDescriptionValidator {
             return descriptors.get(descriptor);
         }
 
-        private boolean isAllowNullValueTypeForOperation(ModelNode address, String name) {
-            return isAllowNullValueType(nullValueTypeOperations, address, name);
+        private AttributeOrParameterArbitraryDescriptorValidator getOperationParameterValidator(ModelNode address, String operation, String parameter, String descriptor) {
+            Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>  byName = operationParameterDescriptors.get(address);
+            if (byName == null) {
+                return null;
+            }
+            Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>> params = byName.get(operation);
+            if (params == null) {
+                return null;
+            }
+            Map<String, AttributeOrParameterArbitraryDescriptorValidator> descriptors = params.get(parameter);
+            if (descriptors != null) {
+                AttributeOrParameterArbitraryDescriptorValidator validator = descriptors.get(descriptor);
+                if (validator != null) {
+                    return validator;
+                }
+            }
+            descriptors = params.get("*");
+            if (descriptors == null) {
+                return null;
+            }
+            return descriptors.get(descriptor);
         }
+
+
+        private boolean isAllowNullValueTypeForOperationParameter(ModelNode address, String operation, String param) {
+            Map<String, Set<String>> operations = nullValueTypeOperations.get(address);
+            if (operations == null) {
+                return false;
+            }
+            Set<String> params = operations.get(operation);
+            if (params == null) {
+                return false;
+            }
+            return params.contains(param) || params.contains("*");
+        }
+
 
         private boolean isAllowNullValueTypeForAttribute(ModelNode address, String name) {
-            return isAllowNullValueType(nullValueTypeAttributes, address, name);
-        }
-
-        private boolean isAllowNullValueType(Map<ModelNode, Set<String>> map, ModelNode address, String name) {
-            Set<String> names = map.get(address);
+            Set<String> names = nullValueTypeAttributes.get(address);
             if (names == null) {
                 return false;
             }
@@ -869,12 +963,12 @@ public class ModelDescriptionValidator {
         }
 
         AttributeOrParameterArbitraryDescriptorValidator getExtraValidator(String key) {
-            return validationConfiguration.getOperationParameterValidator(address, operation.getName(), key);
+            return validationConfiguration.getOperationParameterValidator(address, operation.getName(), name, key);
         }
 
 
         boolean allowNullValueTypeForObject() {
-            return validationConfiguration.isAllowNullValueTypeForOperation(address, operation.getName());
+            return validationConfiguration.isAllowNullValueTypeForOperationParameter(address, operation.getName(), name);
         }
     }
 }

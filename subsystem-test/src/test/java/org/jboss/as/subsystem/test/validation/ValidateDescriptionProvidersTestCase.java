@@ -365,12 +365,48 @@ public class ValidateDescriptionProvidersTestCase {
 
         ValidationConfiguration arbitraryDescriptors = new ValidationConfiguration();
         arbitraryDescriptors.registerAttributeArbitraryDescriptor(ROOT_ADDRESS, ROOT_ATTR, "added", null);
-        arbitraryDescriptors.registerOperationParameterArbitraryDescriptor(ROOT_ADDRESS, ROOT_OP, "added", null);
+        arbitraryDescriptors.registerArbitraryDescriptorForOperation(ROOT_ADDRESS, ROOT_OP, "added", null);
         arbitraryDescriptors.registerAttributeArbitraryDescriptor(CHILD_ADDRESS, CHILD_ATTR, "added", null);
-        arbitraryDescriptors.registerOperationParameterArbitraryDescriptor(CHILD_ADDRESS, CHILD_OP, "added", null);
+        arbitraryDescriptors.registerArbitraryDescriptorForOperation(CHILD_ADDRESS, CHILD_OP, "added", null);
 
         List<ValidationFailure> errors = validate(description, arbitraryDescriptors);
         Assert.assertEquals(0, errors.size());
+    }
+
+    @Test
+    public void testConfiguredOperationParameterArbitraryDescriptors() {
+        ModelNode description = createSubsystemSkeleton(ModelType.STRING, (ModelType)null);
+        description.get(OPERATIONS, ROOT_OP, REQUEST_PROPERTIES, PARAM, "added").set("ok");
+        description.get(OPERATIONS, ROOT_OP, REPLY_PROPERTIES, "added").set("ok");
+        description.get(CHILDREN, CHILD_TYPE, MODEL_DESCRIPTION, CHILD_NAME, OPERATIONS, CHILD_OP, REQUEST_PROPERTIES, PARAM, "added").set("ok");
+        description.get(CHILDREN, CHILD_TYPE, MODEL_DESCRIPTION, CHILD_NAME, OPERATIONS, CHILD_OP, REPLY_PROPERTIES, "added").set("ok");
+
+        ValidationConfiguration arbitraryDescriptors = new ValidationConfiguration();
+        arbitraryDescriptors.registerArbitraryDescriptorForOperationParameter(ROOT_ADDRESS, ROOT_OP, PARAM, "added", null);
+        arbitraryDescriptors.registerArbitraryDescriptorForOperationParameter(CHILD_ADDRESS, CHILD_OP, PARAM, "added", null);
+
+        List<ValidationFailure> errors = validate(description, arbitraryDescriptors);
+        Assert.assertEquals(2, errors.size());
+        assertOperationParameterFailure(errors.get(0), ROOT_ADDRESS, ROOT_OP, REPLY_PROPERTIES);
+        assertOperationParameterFailure(errors.get(1), CHILD_ADDRESS, CHILD_OP, REPLY_PROPERTIES);
+    }
+
+    @Test
+    public void testConfiguredOperationReplyPropertiesArbitraryDescriptors() {
+        ModelNode description = createSubsystemSkeleton(ModelType.STRING, (ModelType)null);
+        description.get(OPERATIONS, ROOT_OP, REQUEST_PROPERTIES, PARAM, "added").set("ok");
+        description.get(OPERATIONS, ROOT_OP, REPLY_PROPERTIES, "added").set("ok");
+        description.get(CHILDREN, CHILD_TYPE, MODEL_DESCRIPTION, CHILD_NAME, OPERATIONS, CHILD_OP, REQUEST_PROPERTIES, PARAM, "added").set("ok");
+        description.get(CHILDREN, CHILD_TYPE, MODEL_DESCRIPTION, CHILD_NAME, OPERATIONS, CHILD_OP, REPLY_PROPERTIES, "added").set("ok");
+
+        ValidationConfiguration arbitraryDescriptors = new ValidationConfiguration();
+        arbitraryDescriptors.registerArbitraryDescriptorForOperationReplyProperties(ROOT_ADDRESS, ROOT_OP, "added", null);
+        arbitraryDescriptors.registerArbitraryDescriptorForOperationReplyProperties(CHILD_ADDRESS, CHILD_OP, "added", null);
+
+        List<ValidationFailure> errors = validate(description, arbitraryDescriptors);
+        Assert.assertEquals(2, errors.size());
+        assertOperationParameterFailure(errors.get(0), ROOT_ADDRESS, ROOT_OP, PARAM);
+        assertOperationParameterFailure(errors.get(1), CHILD_ADDRESS, CHILD_OP, PARAM);
     }
 
     @Test
@@ -384,6 +420,7 @@ public class ValidateDescriptionProvidersTestCase {
         arbitraryDescriptors.allowNullValueTypeForOperation(CHILD_ADDRESS, CHILD_OP);
 
         List<ValidationFailure> errors = validate(description, arbitraryDescriptors);
+        dumpErrors(errors);
         Assert.assertEquals(0, errors.size());
     }
 
@@ -399,6 +436,38 @@ public class ValidateDescriptionProvidersTestCase {
 
         List<ValidationFailure> errors = validate(description, arbitraryDescriptors);
         Assert.assertEquals(0, errors.size());
+    }
+
+    @Test
+    public void testConfiguredAllowNullValueTypeForObjectParameter() {
+        ModelNode description = createSubsystemSkeleton(ModelType.OBJECT, (ModelType)null);
+
+        ValidationConfiguration arbitraryDescriptors = new ValidationConfiguration();
+        arbitraryDescriptors.allowNullValueTypeForAttribute(ROOT_ADDRESS, ROOT_ATTR);
+        arbitraryDescriptors.allowNullValueTypeForOperationParameter(ROOT_ADDRESS, ROOT_OP, PARAM);
+        arbitraryDescriptors.allowNullValueTypeForAttribute(CHILD_ADDRESS, CHILD_ATTR);
+        arbitraryDescriptors.allowNullValueTypeForOperationParameter(CHILD_ADDRESS, CHILD_OP, PARAM);
+
+        List<ValidationFailure> errors = validate(description, arbitraryDescriptors);
+        Assert.assertEquals(2, errors.size());
+        assertOperationParameterFailure(errors.get(0), ROOT_ADDRESS, ROOT_OP, REPLY_PROPERTIES);
+        assertOperationParameterFailure(errors.get(1), CHILD_ADDRESS, CHILD_OP, REPLY_PROPERTIES);
+    }
+
+    @Test
+    public void testConfiguredAllowNullValueTypeForObjectReplyProperties() {
+        ModelNode description = createSubsystemSkeleton(ModelType.OBJECT, (ModelType)null);
+
+        ValidationConfiguration arbitraryDescriptors = new ValidationConfiguration();
+        arbitraryDescriptors.allowNullValueTypeForAttribute(ROOT_ADDRESS, ROOT_ATTR);
+        arbitraryDescriptors.allowNullValueTypeForOperationReplyProperties(ROOT_ADDRESS, ROOT_OP);
+        arbitraryDescriptors.allowNullValueTypeForAttribute(CHILD_ADDRESS, CHILD_ATTR);
+        arbitraryDescriptors.allowNullValueTypeForOperationReplyProperties(CHILD_ADDRESS, CHILD_OP);
+
+        List<ValidationFailure> errors = validate(description, arbitraryDescriptors);
+        Assert.assertEquals(2, errors.size());
+        assertOperationParameterFailure(errors.get(0), ROOT_ADDRESS, ROOT_OP, PARAM);
+        assertOperationParameterFailure(errors.get(1), CHILD_ADDRESS, CHILD_OP, PARAM);
     }
 
     @Test
