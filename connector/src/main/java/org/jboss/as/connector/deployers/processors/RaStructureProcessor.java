@@ -41,6 +41,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * Deployment processor used to determine the structure of RAR deployments.
  *
@@ -88,7 +90,7 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
                 resourceRoot.addToAttachmentList(Attachments.INDEX_IGNORE_PATHS, child.getPathNameRelativeTo(deploymentRoot));
             }
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to process RA child archives for [" + deploymentRoot + "]", e);
+            throw MESSAGES.failedToProcessRaChild(e, deploymentRoot);
         }
     }
 

@@ -6,6 +6,7 @@ package org.jboss.as.connector.subsystems.datasources;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.connector.registry.DriverRegistry;
 import org.jboss.as.connector.registry.InstalledDriver;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
@@ -74,7 +75,7 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
-            context.getResult().set("no metrics available");
+            context.getResult().set(MESSAGES.noMetricsAvailable());
         }
 
         context.completeStep();

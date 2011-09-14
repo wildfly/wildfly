@@ -25,6 +25,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Locale;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * Injection utility which can inject values into objects
  * @author <a href="mailto:jesper.pedersen@comcast.net">Jesper Pedersen</a>
@@ -51,10 +53,10 @@ public class Injection {
     public void inject(String propertyType, String propertyName, String propertyValue, Object object)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (propertyName == null || propertyName.trim().equals(""))
-            throw new IllegalArgumentException("PropertyName is undefined");
+            throw MESSAGES.undefinedVar("PropertyName");
 
         if (object == null)
-            throw new IllegalArgumentException("Object is null");
+            throw new IllegalArgumentException(MESSAGES.nullVar("object"));
 
         String methodName = "set" + propertyName.substring(0, 1).toUpperCase(Locale.US);
         if (propertyName.length() > 1) {
@@ -74,7 +76,7 @@ public class Injection {
         }
 
         if (propertyType == null || propertyType.trim().equals(""))
-            throw new IllegalArgumentException("PropertyType is undefined");
+            throw MESSAGES.undefinedVar("PropertyType");
 
         Class parameterClass = null;
         Object parameterValue = null;
@@ -117,7 +119,7 @@ public class Injection {
             if (substituredValue != null && !substituredValue.trim().equals(""))
                 parameterValue = Character.valueOf(substituredValue.charAt(0));
         } else {
-            throw new IllegalArgumentException("Unknown property type: " + propertyType + " for " + "property " + propertyName);
+            throw MESSAGES.unknownPropertyType(propertyType, propertyName);
         }
 
         Method method = null;

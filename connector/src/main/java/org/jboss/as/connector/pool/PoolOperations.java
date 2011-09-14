@@ -11,18 +11,17 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.connectionmanager.pool.Pool;
 import org.jboss.jca.core.api.management.Connector;
 import org.jboss.jca.core.api.management.DataSource;
 import org.jboss.jca.core.api.management.ManagementRepository;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 public abstract class PoolOperations implements OperationStepHandler {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.datasources");
 
     private final PoolMatcher matcher;
 
@@ -47,7 +46,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             List<Pool> pools = matcher.match(jndiName, repository);
 
                             if (pools.isEmpty()) {
-                                throw new IllegalArgumentException("failed to match pool. Check JndiName: " + jndiName);
+                                throw MESSAGES.failedToMatchPool(jndiName);
                             }
 
                             for (Pool pool : pools) {
@@ -55,8 +54,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             }
 
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set("failed to invoke operation: "
-                                    + e.getMessage()));
+                            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToInvokeOperation(e.getLocalizedMessage())));
                         }
                         if (operationResult != null) {
                             context.getResult().set(operationResult);
@@ -115,7 +113,7 @@ public abstract class PoolOperations implements OperationStepHandler {
         protected ModelNode invokeCommandOn(Pool pool) throws Exception {
             boolean returnedValue = pool.testConnection();
             if (!returnedValue)
-                throw new IllegalStateException("Connection is not valid");
+                throw MESSAGES.invalidConnection();
             ModelNode result = new ModelNode();
             result.add(returnedValue);
             return result;

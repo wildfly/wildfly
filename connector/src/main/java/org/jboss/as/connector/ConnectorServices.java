@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * A ConnectorServices.
  *
@@ -90,7 +92,7 @@ public final class ConnectorServices {
      */
     public static <T> T notNull(T value) {
         if (value == null)
-            throw new IllegalStateException("Service not started");
+            throw MESSAGES.serviceNotStarted();
         return value;
     }
 

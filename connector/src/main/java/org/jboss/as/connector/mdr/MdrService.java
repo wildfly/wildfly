@@ -26,11 +26,12 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.mdr.SimpleMetadataRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import static org.jboss.as.connector.ConnectorLogger.MDR_LOGGER;
 
 /**
  * A MdrService. it provide access to IronJacamar's metadata repository
@@ -39,8 +40,6 @@ import org.jboss.msc.service.StopContext;
 public final class MdrService implements Service<MetadataRepository> {
 
     private final MetadataRepository value;
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.mdr");
 
     /**
      * Create instance
@@ -56,7 +55,7 @@ public final class MdrService implements Service<MetadataRepository> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        log.debugf("Starting sevice MDR");
+        MDR_LOGGER.debugf("Starting sevice MDR");
     }
 
     @Override

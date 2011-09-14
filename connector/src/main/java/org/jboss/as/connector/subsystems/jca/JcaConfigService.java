@@ -22,16 +22,18 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import com.sun.tools.hat.internal.model.Root;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.Version;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A ConnectorConfigService.
@@ -42,8 +44,6 @@ final class JcaConfigService implements Service<JcaSubsystemConfiguration> {
     private final JcaSubsystemConfiguration value;
 
     private final InjectedValue<CloneableBootstrapContext> defaultBootstrapContext = new InjectedValue<CloneableBootstrapContext>();
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
 
     /** create an instance **/
     public JcaConfigService(JcaSubsystemConfiguration value) {
@@ -59,8 +59,8 @@ final class JcaConfigService implements Service<JcaSubsystemConfiguration> {
     @Override
     public void start(StartContext context) throws StartException {
         this.value.setDefaultBootstrapContext(defaultBootstrapContext.getValue());
-        log.infof("Starting JCA Subsystem (%s)", Version.FULL_VERSION);
-        log.tracef("config=%s", value);
+        ROOT_LOGGER.startingSubsystem("JCS", Version.FULL_VERSION);
+        ROOT_LOGGER.tracef("config=%s", value);
     }
 
     @Override

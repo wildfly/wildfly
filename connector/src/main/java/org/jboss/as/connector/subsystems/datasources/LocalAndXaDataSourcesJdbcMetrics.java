@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import java.util.Set;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
@@ -70,7 +71,7 @@ public class LocalAndXaDataSourcesJdbcMetrics implements OperationStepHandler {
                                 }
                             }
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set("failed to get metrics " + e.getMessage()));
+                            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToGetMetrics(e.getLocalizedMessage())));
                         }
                     }
                     context.completeStep();

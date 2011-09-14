@@ -36,19 +36,18 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ServicesAttachment;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.as.connector.ConnectorLogger.DEPLOYER_JDBC_LOGGER;
 
 /**
  * Deploy any JDBC drivers in a deployment unit.
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class DriverProcessor implements DeploymentUnitProcessor {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector.deployers.jdbc");
 
     /** {@inheritDoc} */
     @Override
@@ -68,11 +67,11 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                     final int minorVersion = driver.getMinorVersion();
                     final boolean compliant = driver.jdbcCompliant();
                     if (compliant) {
-                        log.infof("Deploying JDBC-compliant driver %s (version %d.%d)", driverClass,
-                                Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
+                        DEPLOYER_JDBC_LOGGER.deployingCompliantJdbcDriver(driverClass, Integer.valueOf(majorVersion),
+                                Integer.valueOf(minorVersion));
                     } else {
-                        log.infof("Deploying non-JDBC-compliant driver %s (version %d.%d)", driverClass,
-                                Integer.valueOf(majorVersion), Integer.valueOf(minorVersion));
+                        DEPLOYER_JDBC_LOGGER.deployingNonCompliantJdbcDriver(driverClass, Integer.valueOf(majorVersion),
+                                Integer.valueOf(minorVersion));
                     }
                     String driverName = deploymentUnit.getName();
                     InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, null, majorVersion,
@@ -85,7 +84,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                                     driverService.getDriverRegistryServiceInjector()).setInitialMode(Mode.ACTIVE).install();
 
                 } catch (Exception e) {
-                    log.warnf("Unable to instantiate driver class \"%s\": %s", driverClassName, e);
+                    DEPLOYER_JDBC_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
                 }
             }
         }

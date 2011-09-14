@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
@@ -63,8 +64,7 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
             dataSourceConfig = from(operation);
         } catch (ValidateException e) {
             e.printStackTrace();
-            throw new OperationFailedException(e, new ModelNode().set("Failed to create DataSource instance for [" + operation
-                    + "]\n reason:" + e.getLocalizedMessage()));
+            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("DataSource", operation, e.getLocalizedMessage())));
         }
         final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
         final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);

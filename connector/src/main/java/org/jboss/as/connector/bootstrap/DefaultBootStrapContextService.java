@@ -25,7 +25,6 @@ package org.jboss.as.connector.bootstrap;
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.jca.core.api.workmanager.WorkManager;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -34,6 +33,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.jboss.tm.JBossXATerminator;
+
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A DefaultBootStrapContextService Service
@@ -53,12 +54,10 @@ public final class DefaultBootStrapContextService implements Service<CloneableBo
         return workManagerValue;
     }
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
-
     /** create an instance **/
     public DefaultBootStrapContextService(CloneableBootstrapContext value) {
         super();
-        log.debugf("Building DefaultBootstrapContext");
+        ROOT_LOGGER.debugf("Building DefaultBootstrapContext");
         this.value = value;
 
     }
@@ -73,7 +72,7 @@ public final class DefaultBootStrapContextService implements Service<CloneableBo
         this.value.setWorkManager(workManagerValue.getValue());
         this.value.setTransactionSynchronizationRegistry(txManager.getValue().getTransactionSynchronizationRegistry());
         this.value.setXATerminator(xaTerminator.getValue());
-        log.debugf("Starting JCA DefaultBootstrapContext");
+        ROOT_LOGGER.debugf("Starting JCA DefaultBootstrapContext");
     }
 
     @Override

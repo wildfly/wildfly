@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 
@@ -54,7 +55,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
         try {
             module = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(moduleName));
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Failed to load module for driver [" + moduleName + "]"));
+            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToLoadModuleDriver(moduleName)));
         }
 
         final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);

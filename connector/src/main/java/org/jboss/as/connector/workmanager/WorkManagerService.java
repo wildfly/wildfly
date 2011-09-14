@@ -26,7 +26,6 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.security.UsersRoles;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -37,6 +36,8 @@ import org.jboss.threads.BlockingExecutor;
 import org.jboss.tm.JBossXATerminator;
 
 import java.util.concurrent.Executor;
+
+import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A WorkManager Service.
@@ -52,14 +53,12 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     private final InjectedValue<JBossXATerminator> xaTerminator = new InjectedValue<JBossXATerminator>();
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.connector");
-
     private volatile UsersRoles usersRoles;
 
     /** create an instance **/
     public WorkManagerService(WorkManager value) {
         super();
-        log.debugf("Building WorkManager");
+        ROOT_LOGGER.debugf("Building WorkManager");
         this.value = value;
 
     }
@@ -88,11 +87,11 @@ public final class WorkManagerService implements Service<WorkManager> {
 
                 this.value.setCallbackSecurity(usersRoles);
             } catch (Throwable t) {
-                log.debug(t.getMessage(), t);
+                ROOT_LOGGER.debug(t.getMessage(), t);
             }
         }
 
-        log.debugf("Starting JCA WorkManager");
+        ROOT_LOGGER.debugf("Starting JCA WorkManager");
     }
 
     @Override
@@ -103,7 +102,7 @@ public final class WorkManagerService implements Service<WorkManager> {
             if (usersRoles != null)
                 usersRoles.stop();
         } catch (Throwable t) {
-            log.debug(t.getMessage(), t);
+            ROOT_LOGGER.debug(t.getMessage(), t);
         }
     }
 

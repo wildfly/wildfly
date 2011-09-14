@@ -52,6 +52,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import static org.jboss.as.connector.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * A ResourceAdapterDeploymentService.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -60,7 +63,7 @@ import java.util.Set;
 public final class ResourceAdapterDeploymentService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector");
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7RaDeployer.class.getName());
 
     private final Module module;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
@@ -82,7 +85,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         final String deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
         CommonDeployment raDeployment = null;
-        log.debugf("DEPLOYMENT name = %s",deploymentName);
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
         final AS7RaDeployer raDeployer = new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, module.getClassLoader(), cmd,
                 ijmd);
         raDeployer.setConfiguration(config.getValue());
@@ -90,7 +93,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         try {
             raDeployment = raDeployer.doDeploy();
         } catch (Throwable t) {
-            throw new StartException("Failed to start RA deployment [" + deploymentName + "]", t);
+            throw MESSAGES.failedToStartRaDeployment(t, deploymentName);
         }
 
         value = new ResourceAdapterDeployment(raDeployment);
@@ -98,7 +101,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         if (raDeployment.getResourceAdapter() != null) {
             registry.getValue().registerResourceAdapterDeployment(value);
-            log.debugf("Starting sevice %s",
+            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting sevice %s",
                     ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
 
             context.getChildTarget()
@@ -114,7 +117,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
      */
     @Override
     public void stop(StopContext context) {
-        log.debugf("Stopping sevice %s",
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping sevice %s",
                 ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
         managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
@@ -241,8 +244,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         @Override
         protected DeployersLogger getLogger() {
-
-            return Logger.getMessageLogger(DeployersLogger.class, AS7RaDeployer.class.getName());
+            return DEPLOYERS_LOGGER;
         }
     }
 

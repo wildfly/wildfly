@@ -50,7 +50,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import javax.swing.plaf.basic.BasicTreeUI;
+import static org.jboss.as.connector.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -60,7 +61,7 @@ import javax.swing.plaf.basic.BasicTreeUI;
 public final class ResourceAdapterActivatorService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.deployment.connector");
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, ResourceAdapterActivator.class.getName());
 
     private final ClassLoader cl;
     private final Connector cmd;
@@ -95,20 +96,20 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                Thread.currentThread().setContextClassLoader(old);
             }
         } catch (Throwable e) {
-            throw new StartException("Failed to activate resource adapter " + deploymentName, e);
+            throw MESSAGES.failedToStartRaDeployment(e, deploymentName);
         }
 
         value = new ResourceAdapterDeployment(deploymentMD);
         registry.getValue().registerResourceAdapterDeployment(value);
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-        log.debugf("Starting sevice %s",
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting service %s",
                 ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
 
         context.getChildTarget()
                 .addService(ServiceName.of(value.getDeployment().getDeploymentName()),
                         new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                 .install();
-        log.debugf("Starting sevice %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
     }
 
     /**
@@ -116,7 +117,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
      */
     @Override
     public void stop(StopContext context) {
-        log.debugf("Stopping sevice %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
 
     }
 
@@ -241,8 +242,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
         @Override
         protected DeployersLogger getLogger() {
-
-            return Logger.getMessageLogger(DeployersLogger.class, ResourceAdapterActivator.class.getName());
+            return DEPLOYERS_LOGGER;
         }
     }
 

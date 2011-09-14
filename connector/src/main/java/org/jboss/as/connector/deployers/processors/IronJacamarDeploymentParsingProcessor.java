@@ -36,6 +36,8 @@ import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * DeploymentUnitProcessor responsible for parsing a iron-jacamar.xml descriptor
  * and attaching the corresponding IronJacamar metadata. It take care also to
@@ -83,9 +85,9 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
                 IronJacamarXmlDescriptor xmlDescriptor = new IronJacamarXmlDescriptor(result);
                 phaseContext.getDeploymentUnit().putAttachment(IronJacamarXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             } else
-                throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]");
+                throw MESSAGES.failedToParseServiceXml(serviceXmlFile);
         } catch (Exception e) {
-            throw new DeploymentUnitProcessingException("Failed to parse service xml [" + serviceXmlFile + "]", e);
+            throw MESSAGES.failedToParseServiceXml(e, serviceXmlFile);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

@@ -38,6 +38,8 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  *
  * A AnnotationRepositoryImpl.
@@ -61,7 +63,7 @@ public class JandexAnnotationRepositoryImpl implements AnnotationRepository {
      */
     public JandexAnnotationRepositoryImpl(Index backingRepository, ClassLoader cl) throws IllegalArgumentException {
         if (backingRepository == null)
-            throw new IllegalArgumentException("repository cannot be null");
+            throw new IllegalArgumentException(MESSAGES.nullVar("backingRepository"));
         this.backingRepository = backingRepository;
         this.cl = cl;
     }

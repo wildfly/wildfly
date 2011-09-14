@@ -27,18 +27,16 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+
 
 /**
  * Abstract operation handler responsible for removing a DataSource.
  * @author John Bailey
  */
 public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler {
-
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.subsystems.datasources");
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
 

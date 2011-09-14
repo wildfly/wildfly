@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionFactory;
@@ -74,6 +73,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 
+import static org.jboss.as.connector.ConnectorLogger.DS_DEPLOYER_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 /**
  * Base service for managing a data-source.
  * @author John Bailey
@@ -81,9 +83,8 @@ import org.jboss.security.SubjectFactory;
  */
 public abstract class AbstractDataSourceService implements Service<DataSource> {
 
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.deployer.dsdeployer");
-
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source");
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
     private final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
     private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
@@ -104,12 +105,12 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
             CommonDeployment deploymentMD = getDeployer().deploy(container);
             if (deploymentMD.getCfs().length != 1) {
-                throw new StartException("unable to start the ds because it generate more than one cf");
+                throw MESSAGES.cannotStartDs();
             }
             sqlDataSource = (javax.sql.DataSource) deploymentMD.getCfs()[0];
-            log.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
+            DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
         } catch (Throwable t) {
-            throw new StartException("Error during the deployment of " + jndiName, t);
+            throw MESSAGES.deploymentError(t, jndiName);
         }
     }
 
@@ -204,7 +205,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         public CommonDeployment deploy(ServiceContainer serviceContainer) throws DeployException {
             try {
                 if (serviceContainer == null) {
-                    throw new DeployException("ServiceContainer not provided");
+                    throw new DeployException(MESSAGES.nullVar("ServiceContainer"));
                 }
                 this.serviceContainer = serviceContainer;
 
@@ -244,9 +245,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                         "uniqueJdbcLocalId", "uniqueJdbcXAId", dataSources, AbstractDataSourceService.class.getClassLoader());
                 return c;
             } catch (MalformedURLException e) {
-                throw new DeployException("unable to deploy", e);
+                throw MESSAGES.cannotDeploy(e);
             } catch (ValidateException e) {
-                throw new DeployException("unable to validate and deploy ds or xads", e);
+                throw MESSAGES.cannotDeployAndValidate(e);
             }
 
         }
@@ -291,7 +292,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
                 return o;
             } catch (Throwable t) {
-                throw new DeployException("Deployment " + className + " failed", t);
+                throw MESSAGES.deploymentFailed(t, className);
             }
         }
 
@@ -340,7 +341,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 try {
                     xaManagedConnectionFactory.setURLDelimiter(dataSourceConfig.getUrlDelimiter());
                 } catch (ResourceException e) {
-                    throw new DeployException("failed to get url delimiter", e);
+                    throw MESSAGES.failedToGetUrlDelimiter(e);
                 }
             }
             if (xaDataSourceConfig.getXaDataSourceClass() != null) {
@@ -504,8 +505,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         @Override
         protected DeployersLogger getLogger() {
-
-            return Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
+            return DEPLOYERS_LOGGER;
         }
 
     }
