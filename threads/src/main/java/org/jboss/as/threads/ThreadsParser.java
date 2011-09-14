@@ -926,7 +926,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                 writeAttribute(writer, Attribute.TIME, keepalive.get(TIME));
             }
             if (keepalive.hasDefined(UNIT)) {
-                writeAttribute(writer, Attribute.UNIT, keepalive.get(UNIT));
+                writeAttributeLowerCaseValue(writer, Attribute.UNIT, keepalive.get(UNIT));
             }
             writer.writeEndElement();
         }
@@ -954,5 +954,10 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
     private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value)
             throws XMLStreamException {
         writer.writeAttribute(attr.getLocalName(), value.asString());
+    }
+
+    private void writeAttributeLowerCaseValue(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value)
+            throws XMLStreamException {
+        writer.writeAttribute(attr.getLocalName(), value.asString().toLowerCase());
     }
 }
