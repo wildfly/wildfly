@@ -45,12 +45,15 @@ import org.jboss.metadata.web.spec.WelcomeFileListMetaData;
  */
 class SharedWebMetaDataBuilder {
 
-    static final List<String> welcomeFiles = Arrays.asList(new String[] {"index.html", "index.htm", "index.jsp"});
+    static final List<String> welcomeFiles = new ArrayList<String>();
     static final List<MimeMappingMetaData> mimeMappings = new ArrayList<MimeMappingMetaData>();
 
     static {
         // Create the default mappings
         createMappings(mimeMappings);
+        welcomeFiles.add("index.html");
+        welcomeFiles.add("index.htm");
+        welcomeFiles.add("index.jsp");
     }
 
     /** The common container config. */
