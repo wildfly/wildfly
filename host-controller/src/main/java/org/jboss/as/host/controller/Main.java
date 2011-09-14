@@ -339,18 +339,17 @@ public final class Main {
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
 
-                    String logicalName = null;
+                    String propertyName = null;
                     if (idx < 0) {
                         // -b xxx -bmanagement xxx
-                        logicalName = arg.length() == 2 ? CommandLineConstants.DEFAULT_INTERFACE : arg.substring(2);
+                        propertyName = arg.length() == 2 ? HostControllerEnvironment.JBOSS_BIND_ADDRESS : HostControllerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + arg.substring(2);
                     } else if (idx == 2) {
                         // -b=xxx
-                        logicalName = CommandLineConstants.DEFAULT_INTERFACE;
+                        propertyName = HostControllerEnvironment.JBOSS_BIND_ADDRESS;
                     } else {
                         // -bmanagement=xxx
-                        logicalName = arg.substring(2, idx);
+                        propertyName =  HostControllerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + arg.substring(2, idx);
                     }
-                    String propertyName = HostControllerEnvironment.JBOSS_BIND_ADDRESS_PREFIX + logicalName;
                     hostSystemProperties.put(propertyName, value);
                     SecurityActions.setSystemProperty(propertyName, value);
                 } else {
