@@ -41,7 +41,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jgroups.stack.StateTransferInfo;
 
 import java.io.File;
 import java.net.URL;

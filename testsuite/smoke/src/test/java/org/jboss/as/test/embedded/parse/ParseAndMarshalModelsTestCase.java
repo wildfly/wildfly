@@ -140,6 +140,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -193,6 +194,7 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(true, true);
     }
 
+    @Ignore(value="We don't want a test file in the build dir")
     @Test
     public void testStandaloneJcaXml() throws Exception {
         standaloneXmlTest("standalone-jca.xml");
