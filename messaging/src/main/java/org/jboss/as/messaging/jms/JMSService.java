@@ -26,7 +26,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.as.messaging.MessagingServices;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -36,6 +35,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 
 /**
  * The {@code JMSServerManager} service.
@@ -83,7 +84,7 @@ public class JMSService implements Service<JMSServerManager> {
         try {
             jmsServer.stop();
         } catch (Exception e) {
-            Logger.getLogger("org.jboss.messaging").error("exception while stopping jms server", e);
+            MESSAGING_LOGGER.errorStoppingJmsServer(e);
         }
     }
 

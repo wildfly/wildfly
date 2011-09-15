@@ -27,11 +27,13 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Values;
+
+import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * A {@link BindingRegistry} implementation for JBoss AS7.
@@ -40,8 +42,6 @@ import org.jboss.msc.value.Values;
  * @author Jaikiran Pai
  */
 public class AS7BindingRegistry implements BindingRegistry {
-
-    private static final Logger logger = Logger.getLogger(AS7BindingRegistry.class);
 
     private final ServiceContainer container;
 
@@ -69,7 +69,7 @@ public class AS7BindingRegistry implements BindingRegistry {
     @Override
     public boolean bind(String name, Object obj) {
         if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Cannot bind a null or empty string as jndi name");
+            throw MESSAGES.cannotBindJndiName();
         }
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
@@ -78,24 +78,24 @@ public class AS7BindingRegistry implements BindingRegistry {
                 .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-        logger.info("Bound messaging object to jndi name " + bindInfo.getAbsoluteJndiName());
+        ROOT_LOGGER.boundJndiName(bindInfo.getAbsoluteJndiName());
         return true;
     }
 
     @Override
     public void unbind(String name) {
         if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Cannot unbind null or empty jndi name");
+            throw MESSAGES.cannotUnbindJndiName();
         }
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
         ServiceController<?> bindingService = container.getService(bindInfo.getBinderServiceName());
         if (bindingService == null) {
-            logger.debug("Cannot unbind " + name + " since no binding exists with that name");
+            ROOT_LOGGER.debugf("Cannot unbind %s since no binding exists with that name", name);
             return;
         }
         // remove the binding service
         bindingService.setMode(ServiceController.Mode.REMOVE);
-        logger.info("Unbound messaging object from jndi name " + bindInfo.getAbsoluteJndiName());
+        ROOT_LOGGER.unboundJndiName(bindInfo.getAbsoluteJndiName());
     }
 
     @Override
@@ -122,10 +122,10 @@ public class AS7BindingRegistry implements BindingRegistry {
 
         JndiBinding(final ServiceName contextServiceName, final String relativeJndiName) {
             if (contextServiceName == null) {
-                throw new IllegalArgumentException("ServiceName of jndi context cannot be null");
+                throw MESSAGES.nullVar("contextServiceName");
             }
             if (relativeJndiName == null) {
-                throw new IllegalArgumentException("Relative jndi name cannot be null");
+                throw MESSAGES.nullVar("relativeJndiName");
             }
             this.jndiContextServiceName = contextServiceName;
             this.relativeJndiName = relativeJndiName;

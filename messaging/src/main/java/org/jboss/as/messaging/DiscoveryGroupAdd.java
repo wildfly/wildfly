@@ -117,7 +117,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
                             .install();
 
                 } catch (Exception e) {
-                    throw new OperationFailedException(new ModelNode().set(e.getMessage()));
+                    throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
                 }
             }
         }

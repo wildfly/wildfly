@@ -22,13 +22,14 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import java.util.Arrays;
 import java.util.List;
 
 import org.hornetq.core.server.JournalType;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -54,7 +55,7 @@ public class JournalTypeValidator extends ModelTypeValidator {
                 JournalType.valueOf(str);
             } catch (IllegalArgumentException e) {
                 List<JournalType> list = Arrays.asList(JournalType.values());
-                throw new OperationFailedException(new ModelNode().set(String.format("%s is an invalid value for parameter %s. Values must be one of: %s", str, parameterName, list)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidParameterValue(str, parameterName, list)));
             }
         }
     }

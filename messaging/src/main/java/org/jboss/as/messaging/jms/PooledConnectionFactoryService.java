@@ -79,7 +79,6 @@ import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
@@ -100,6 +99,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * A service which translates a pooled connection factory into a resource adapter driven connection pool
@@ -129,7 +130,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static final String SESSION_DEFAULT_TYPE = "SessionDefaultType";
     private static final String TRY_LOCK = "UseTryLock";
     private static final String JMS_MESSAGE_LISTENER = "javax.jms.MessageListener";
-    public static final Logger log = Logger.getLogger("org.jboss.as.connector.hornet");
 
     private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
 
@@ -170,8 +170,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
         ServiceTarget serviceTarget = context.getChildTarget();
         try {
             createService(serviceTarget, context.getController().getServiceContainer());
-        } catch (Exception e) {
-            throw new StartException("failed to create resource adapter", e);
+        }
+        catch (Exception e) {
+            throw new StartException(MESSAGES.failedToCreate("resource adapter"), e);
         }
 
     }
@@ -185,8 +186,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
             StringBuilder connectorParams = new StringBuilder();
             for (String connector : connectors) {
                 TransportConfiguration tc = hornetQService.getValue().getConfiguration().getConnectorConfigurations().get(connector);
-                if (tc == null) {
-                    throw new IllegalStateException("connector " + connector + " not defined");
+                if(tc == null) {
+                    throw MESSAGES.connectorNotDefined(connector);
                 }
                 if (connectorClassname.length() > 0) {
                     connectorClassname.append(",");

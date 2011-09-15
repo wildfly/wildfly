@@ -33,6 +33,7 @@ import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_C
 import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Arrays;
 import java.util.List;
@@ -115,7 +116,7 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(control.isTemporary());
         } else if (METRICS.contains(attributeName) || READ_ATTRIBUTES.contains(attributeName)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", attributeName));
+            throw MESSAGES.unsupportedAttribute(attributeName);
         }
         context.completeStep();
     }

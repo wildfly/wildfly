@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.List;
 import java.util.Locale;
@@ -84,8 +85,7 @@ public class DivertAdd extends AbstractAddStepHandler implements DescriptionProv
 
             // The original subsystem initialization is complete; use the control object to create the divert
             if (hqService.getState() != ServiceController.State.UP) {
-                throw new IllegalStateException(String.format("Service %s is not in state %s, it is in state %s",
-                        MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
+                throw MESSAGES.invalidServiceState(MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState());
             }
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();

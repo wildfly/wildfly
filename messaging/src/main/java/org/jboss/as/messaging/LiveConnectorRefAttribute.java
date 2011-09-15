@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -44,7 +46,7 @@ public class LiveConnectorRefAttribute extends SimpleAttributeDefinition {
 
     @Override
     public void marshallAsAttribute(ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-        throw new UnsupportedOperationException(String.format("%s cannot be marshalled as an attribute; use marshallAsElement", CommonAttributes.LIVE_CONNECTOR_REF_STRING));
+        throw MESSAGES.cannotMarshalAttribute(CommonAttributes.LIVE_CONNECTOR_REF_STRING);
     }
 
     @Override

@@ -28,7 +28,6 @@ import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -39,6 +38,9 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Values;
 
 import java.util.Map;
+
+import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Topic}.
@@ -63,7 +65,7 @@ public class JMSTopicService implements Service<Void> {
         try {
             jmsManager.createTopic(false, name, jndi);
         } catch (Exception e) {
-            throw new StartException("failed to create topic", e);
+            throw new StartException(MESSAGES.failedToCreate("queue"), e);
         }
     }
 
@@ -73,7 +75,7 @@ public class JMSTopicService implements Service<Void> {
         try {
             jmsManager.destroyTopic(name);
         } catch (Exception e) {
-            Logger.getLogger("org.jboss.messaging").warnf(e ,"failed to destroy jms topic: %s", name);
+            MESSAGING_LOGGER.failedToDestroy(e, "jms topic", name);
         }
     }
 

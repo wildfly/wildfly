@@ -25,6 +25,8 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.messaging.CommonAttributes.*;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Locale;
 
@@ -41,7 +43,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -54,8 +55,6 @@ import org.jboss.msc.service.ServiceController;
 public abstract class AbstractHornetQComponentControlHandler<T extends HornetQComponentControl> extends AbstractRuntimeOnlyHandler {
 
     private static final String STOP = "stop";
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
     private ParametersValidator readAttributeValidator = new ParametersValidator();
 
@@ -87,7 +86,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
                 appliedToRuntime = true;
                 context.getResult();
             } catch (Exception e) {
-                context.getFailureDescription().set(e.toString());
+                context.getFailureDescription().set(e.getLocalizedMessage());
             }
 
         } else if (STOP.equals(operationName)) {
@@ -97,7 +96,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
                 appliedToRuntime = true;
                 context.getResult();
             } catch (Exception e) {
-                context.getFailureDescription().set(e.toString());
+                context.getFailureDescription().set(e.getLocalizedMessage());
             }
         } else {
             handback = handleOperation(operationName, context, operation);
@@ -114,10 +113,9 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
                     handleRevertOperation(operationName, context, operation, handback);
                 }
             } catch (Exception e) {
-                log.errorf(e, String.format("%s caught exception attempting to revert operation %s at address %s",
-                        getClass().getSimpleName(),
+                ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(),
                         operation.require(ModelDescriptionConstants.OP).asString(),
-                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR))));
+                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
             }
         }
     }
@@ -188,7 +186,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      */
     protected Object handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
         unsupportedOperation(operationName);
-        throw new IllegalStateException("unreachable statement");
+        throw MESSAGES.unsupportedOperation(operationName);
     }
 
     /**
@@ -217,7 +215,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      */
     protected final void unsupportedAttribute(final String attributeName) {
         // Bug
-        throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", attributeName));
+        throw MESSAGES.unsupportedAttribute(attributeName);
     }
 
     /**
@@ -231,7 +229,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      */
     protected final void unsupportedOperation(final String operationName) {
         // Bug
-        throw new IllegalStateException(String.format("Support for operation %s was not properly implemented", operationName));
+        throw MESSAGES.unsupportedOperation(operationName);
     }
 
     /**
