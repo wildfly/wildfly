@@ -28,6 +28,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -38,12 +39,15 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -51,6 +55,8 @@ import java.util.Set;
 public final class ViewService implements Service<ComponentView> {
     private static final Logger logger = Logger.getLogger(ViewService.class);
     private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
+    private final WeakHashMap<ClassLoader, MarshallingProxyFactory> factories;
+    private final boolean isRemote;
     private final Map<Method, InterceptorFactory> viewInterceptorFactories;
     private final Map<Method, InterceptorFactory> clientInterceptorFactories;
     private final InterceptorFactory viewPostConstruct;
@@ -92,6 +98,35 @@ public final class ViewService implements Service<ComponentView> {
         this.viewInterceptorFactories = viewInterceptorFactories;
         this.clientInterceptorFactories = clientInterceptorFactories;
         allowedMethods = Collections.unmodifiableSet(viewInterceptorFactories.keySet());
+        this.factories = new WeakHashMap<ClassLoader, MarshallingProxyFactory>();
+        this.isRemote = viewConfiguration.isRemote();
+    }
+
+    private MarshallingProxyFactory createFactory(final String proxyName, final ClassLoader classLoader, final ProxyFactory<?> innerProxyFactory) {
+        try {
+            final ProxyConfiguration proxyConfiguration = new ProxyConfiguration();
+            proxyConfiguration.setProxyName(proxyName);
+            proxyConfiguration.setClassLoader(classLoader);
+            //proxyConfiguration.setProtectionDomain(viewClass.getProtectionDomain());
+            //proxyConfiguration.setMetadataSource(proxyReflectionIndex);
+            proxyConfiguration.setSuperClass(Object.class);
+            proxyConfiguration.addAdditionalInterface(Class.forName(this.viewClass.getName(), true, classLoader));
+            return new MarshallingProxyFactory(new ProxyFactory<Object>(proxyConfiguration), innerProxyFactory);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static ClassLoader currentContextClassLoader() {
+        if (System.getSecurityManager() == null)
+            return Thread.currentThread().getContextClassLoader();
+        else {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
+        }
     }
 
     public void start(final StartContext context) throws StartException {
@@ -177,7 +212,7 @@ public final class ViewService implements Service<ComponentView> {
                 return viewClass;
             }
 
-            public Object createProxy() {
+            private Object createLocalProxy() throws IllegalAccessException, InstantiationException {
                 final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
                 factoryContext.getContextData().put(Component.class, component);
                 factoryContext.getContextData().put(ComponentView.class, View.this);
@@ -189,7 +224,7 @@ public final class ViewService implements Service<ComponentView> {
                     clientEntryPoints.put(method, clientInterceptorFactories.get(method).create(factoryContext));
                 }
                 final Interceptor postConstructInterceptor = clientPostConstruct.create(factoryContext);
-                try {
+                {
                     Object object = proxyFactory.newInstance(new ProxyInvocationHandler(clientEntryPoints, component, View.this, this));
                     InterceptorContext interceptorContext = new InterceptorContext();
                     interceptorContext.putPrivateData(ComponentView.class, View.this);
@@ -203,6 +238,30 @@ public final class ViewService implements Service<ComponentView> {
                         throw exception;
                     }
                     return object;
+                }
+            }
+
+            @Override
+            public Object createProxy() {
+                try {
+                    if (isRemote) {
+                        // wrap the local proxy
+                        final Object localProxy = createLocalProxy();
+                        final ClassLoader tccl = currentContextClassLoader();
+                        MarshallingProxyFactory factory = factories.get(tccl);
+                        if (factory == null) {
+                            synchronized (factories) {
+                                factory = factories.get(tccl);
+                                if (factory == null) {
+                                    factory = createFactory(localProxy.getClass().getName() + "Remote", tccl, proxyFactory);
+                                    factories.put(tccl, factory);
+                                }
+                            }
+                        }
+                        return factory.newInstance(localProxy);
+                    } else {
+                        return createLocalProxy();
+                    }
                 } catch (InstantiationException e) {
                     InstantiationError error = new InstantiationError(e.getMessage());
                     Throwable cause = e.getCause();
