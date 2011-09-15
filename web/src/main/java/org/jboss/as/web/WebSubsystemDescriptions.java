@@ -29,8 +29,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -638,10 +641,53 @@ class WebSubsystemDescriptions {
         return node;
     }
 
+    static ModelNode getDeploymentRuntimeDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+
+        node.get(DESCRIPTION).set(bundle.getString("web.deployment"));
+        node.get(ATTRIBUTES).setEmptyObject();
+        node.get(OPERATIONS); // placeholder
+
+        node.get(CHILDREN, "servlet", DESCRIPTION).set(bundle.getString("web.deployment.servlet"));
+        node.get(CHILDREN, "servlet", MIN_OCCURS).set(0);
+        node.get(CHILDREN, "servlet", MODEL_DESCRIPTION);
+
+        return node;
+    }
+
+    static ModelNode getDeploymentServletDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+
+        node.get(DESCRIPTION).set(bundle.getString("web.deployment.servlet"));
+
+        node.get(ATTRIBUTES, "load-time", DESCRIPTION).set(bundle.getString("web.deployment.servlet.load-time"));
+        node.get(ATTRIBUTES, "load-time", TYPE).set(ModelType.LONG);
+        node.get(ATTRIBUTES, "max-time", DESCRIPTION).set(bundle.getString("web.deployment.servlet.max-time"));
+        node.get(ATTRIBUTES, "max-time", TYPE).set(ModelType.LONG);
+        node.get(ATTRIBUTES, "min-time", DESCRIPTION).set(bundle.getString("web.deployment.servlet.min-time"));
+        node.get(ATTRIBUTES, "min-time", TYPE).set(ModelType.LONG);
+        node.get(ATTRIBUTES, "processing-time", DESCRIPTION).set(bundle.getString("web.deployment.servlet.processing-time"));
+        node.get(ATTRIBUTES, "processing-time", TYPE).set(ModelType.LONG);
+        node.get(ATTRIBUTES, "request-count", DESCRIPTION).set(bundle.getString("web.deployment.servlet.request-count"));
+        node.get(ATTRIBUTES, "request-count", TYPE).set(ModelType.INT);
+
+        node.get(OPERATIONS); // placeholder
+
+        node.get(CHILDREN).setEmptyObject();
+
+        return node;
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
+
+
 }

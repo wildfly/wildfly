@@ -93,7 +93,7 @@ public final class DomainDescriptionProviders {
 
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return DeploymentDescription.getDeploymentDescription(locale, false, true);
+            return DeploymentDescription.getDeploymentDescription(locale, false, true, false);
         }
     };
 
@@ -107,7 +107,7 @@ public final class DomainDescriptionProviders {
     public static final DescriptionProvider SERVER_GROUP_DEPLOYMENT = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return DeploymentDescription.getDeploymentDescription(locale, true, false);
+            return DeploymentDescription.getDeploymentDescription(locale, true, false, false);
         }
     };
 

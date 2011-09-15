@@ -44,7 +44,7 @@ import java.util.Locale;
  */
 public class ServletDeploymentStats {
 
-    static final DescriptionProvider provider = new DescriptionProvider() {
+    public static final DescriptionProvider provider = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return new ModelNode();
@@ -109,7 +109,9 @@ public class ServletDeploymentStats {
                         final String name = node.get("servlet-name").asString();
                         final Context webContext = Context.class.cast(controller.getValue());
                         final Wrapper wrapper = Wrapper.class.cast(webContext.findChild(name));
-                        handle(context.getResult(), address.getLastElement().getValue(), wrapper);
+                        final ModelNode response = new ModelNode();
+                        handle(response, address.getLastElement().getValue(), wrapper);
+                        context.getResult().set(response);
                     }
                     context.completeStep();
                 }

@@ -26,8 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -91,6 +94,12 @@ final class WSSubsystemProviders {
     static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
             return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        }
+    };
+
+    static final DescriptionProvider DEPLOYMENT_DESCRIPTION = new DescriptionProvider() {
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getDeploymentDescription(locale);
         }
     };
 
@@ -215,6 +224,21 @@ final class WSSubsystemProviders {
             operation.get(REPLY_PROPERTIES).setEmptyObject();
 
             return operation;
+        }
+
+        static ModelNode getDeploymentDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode node = new ModelNode();
+
+            node.get(DESCRIPTION).set(bundle.getString("deployment"));
+            node.get(ATTRIBUTES).setEmptyObject();
+            node.get(OPERATIONS); // placeholder
+
+            node.get(CHILDREN, ENDPOINT, DESCRIPTION).set(bundle.getString("endpoint"));
+            node.get(CHILDREN, ENDPOINT, MIN_OCCURS).set(0);
+            node.get(CHILDREN, ENDPOINT, MODEL_DESCRIPTION);
+
+            return node;
         }
 
         static ModelNode getEndpointDescription(final Locale locale) {
@@ -471,7 +495,6 @@ final class WSSubsystemProviders {
 
             return op;
         }
-
     }
 
 }
