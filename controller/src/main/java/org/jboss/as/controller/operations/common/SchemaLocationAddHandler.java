@@ -57,8 +57,7 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
         return op;
     }
 
-    private final ParameterValidator urlValidator = new ModelTypeValidator(ModelType.STRING);
-    private final ParameterValidator locationValidator = new ModelTypeValidator(ModelType.STRING);
+    private final ParameterValidator stringValidator = new ModelTypeValidator(ModelType.STRING);
 
     /**
      * Create the AddSchemaLocationHandler
@@ -71,7 +70,7 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
         ModelNode location = operation.get(SCHEMA_LOCATION);
         ModelNode locations = model.get(SCHEMA_LOCATIONS);
         validate(uri, location, locations);
-        locations.add(uri.asString(), location);
+        locations.add(uri.asString(), location.asString());
     }
 
     protected boolean requiresRuntime(OperationContext context) {
@@ -84,8 +83,8 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler impleme
     }
 
     private void validate(ModelNode uri, ModelNode location, ModelNode locations) throws OperationFailedException {
-        urlValidator.validateParameter(URI, uri);
-        locationValidator.validateParameter(SCHEMA_LOCATION, location);
+        stringValidator.validateParameter(URI, uri);
+        stringValidator.validateParameter(SCHEMA_LOCATION, location);
         if (locations.isDefined()) {
             String uriString = uri.asString();
             for (ModelNode node : locations.asList()) {

@@ -36,7 +36,6 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
 
 /**
  * Handler for the root resource add-namespace operation.
@@ -58,7 +57,8 @@ public class NamespaceAddHandler extends AbstractModelUpdateHandler implements D
         return op;
     }
 
-    private final ParameterValidator typeValidator = new ModelTypeValidator(ModelType.PROPERTY);
+    private final ParameterValidator validator = new ModelTypeValidator(ModelType.STRING);
+
 
     /**
      * Create the AddNamespaceHandler
@@ -67,11 +67,11 @@ public class NamespaceAddHandler extends AbstractModelUpdateHandler implements D
     }
 
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode param = operation.get(NAMESPACE);
+        ModelNode ns = operation.get(NAMESPACE);
+        ModelNode uri = operation.get(URI);
         ModelNode namespaces = model.get(NAMESPACES);
-        validate(param, namespaces);
-        Property prop = param.asProperty();
-        namespaces.add(prop.getName(), prop.getValue());
+        validate(ns, uri, namespaces);
+        namespaces.add(ns.asString(), uri.asString());
     }
 
     protected boolean requiresRuntime(OperationContext context) {
@@ -83,13 +83,14 @@ public class NamespaceAddHandler extends AbstractModelUpdateHandler implements D
         return CommonDescriptions.getAddNamespaceOperation(locale);
     }
 
-    private void validate(ModelNode param, ModelNode namespaces) throws OperationFailedException {
-        typeValidator.validateParameter(NAMESPACE, param);
-        String name = param.asProperty().getName();
+    private void validate(ModelNode namespace, ModelNode uri, ModelNode namespaces) throws OperationFailedException {
+        validator.validateParameter(NAMESPACE, namespace);
+        validator.validateParameter(URI, uri);
         if (namespaces.isDefined()) {
+            String namespaceString = namespace.asString();
             for (ModelNode node : namespaces.asList()) {
-                if (name.equals(node.asProperty().getName())) {
-                    throw new OperationFailedException(new ModelNode().set("Namespace with prefix " + name + " already registered with schema URI " + node.asProperty().getValue().asString()));
+                if (namespaceString.equals(node.asProperty().getName())) {
+                    throw new OperationFailedException(new ModelNode().set("Namespace with prefix " + namespaceString + " already registered with schema URI " + node.asProperty().getValue().asString()));
                 }
             }
         }

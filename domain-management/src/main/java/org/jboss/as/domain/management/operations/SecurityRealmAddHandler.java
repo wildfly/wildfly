@@ -134,7 +134,6 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
 
 
     public ModelNode getModelDescription(Locale locale) {
-        System.out.println("--------->");
         return ManagementDescription.getAddManagementSecurityRealmDescription(locale);
     }
 
