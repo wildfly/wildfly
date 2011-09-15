@@ -23,10 +23,8 @@ package org.jboss.as.server.controller.descriptions;
 
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.dmr.ModelNode;
@@ -65,7 +63,7 @@ public final class ServerDescriptionProviders {
 
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return DeploymentDescription.getDeploymentDescription(locale, true, true);
+            return DeploymentDescription.getDeploymentDescription(locale, true, true, true);
         }
     };
 

@@ -33,4 +33,18 @@ class WebSubsystemDescriptionProviders {
         }
     };
 
+    public static final DescriptionProvider DEPLOYMENT = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getDeploymentRuntimeDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider SERVLET = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getDeploymentServletDescription(locale);
+        }
+    };
+
 }

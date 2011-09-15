@@ -223,6 +223,7 @@ public class ModelDescriptionConstants {
     public static final String STEPS = "steps";
     /** The key for {@link AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";
+    public static final String SUBDEPLOYMENT = "subdeployment";
     public static final String SUBSYSTEM = "subsystem";
     public static final String SUCCESS = "success";
     public static final String SYSTEM_PROPERTY = "system-property";

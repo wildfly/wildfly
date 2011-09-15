@@ -303,6 +303,7 @@ public class
         deployments.registerMetric(DeploymentStatusHandler.ATTRIBUTE_NAME, DeploymentStatusHandler.INSTANCE);
 
         // The sub-deployments registry
+        // TODO this does not look correct, as it implies all the ops available at "/deployment=x" are available at /deployment=x/subdeployment=y and that isn't the case
         deployments.registerSubModel(PathElement.pathElement("subdeployment"), deployments);
 
 
