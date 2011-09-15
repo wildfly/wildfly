@@ -37,6 +37,8 @@ import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 /**
  * Base class for handlers that handle an "add-jndi" operation.
  *
@@ -60,7 +62,7 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler, De
         final ModelNode entries = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.ENTRIES.getName());
         for (ModelNode entry : entries.asList()) {
             if (jndiName.equals(entry.asString())) {
-                throw new OperationFailedException(new ModelNode().set(String.format("JNDI name %s is already registered", jndiName)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.jndiNameAlreadyRegistered(jndiName)));
             }
         }
         entries.add(jndiName);

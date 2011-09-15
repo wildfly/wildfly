@@ -55,7 +55,7 @@ public class JMSTopicAddJndiHandler extends AbstractAddJndiHandler {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            context.getFailureDescription().set(e.toString());
+            context.getFailureDescription().set(e.getLocalizedMessage());
         }
     }
 

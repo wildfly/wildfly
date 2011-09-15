@@ -22,27 +22,17 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE_MESSAGE_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGES_ADDED;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
-import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_MESSAGE_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
-import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
-import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -95,7 +85,7 @@ public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHa
             context.getResult().set(control.getInitialMessagePacketSize());
         } else if (READ_ATTRIBUTES.contains(attributeName)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", attributeName));
+            throw MESSAGES.unsupportedAttribute(attributeName);
         }
         context.completeStep();
     }

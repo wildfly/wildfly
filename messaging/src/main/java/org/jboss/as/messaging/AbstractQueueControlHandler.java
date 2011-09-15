@@ -23,6 +23,8 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.Locale;
@@ -43,7 +45,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -53,8 +54,6 @@ import org.jboss.msc.service.ServiceController;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnlyHandler {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.messaging");
 
     public static final String LIST_MESSAGES = "list-messages";
     public static final String LIST_MESSAGES_AS_JSON = "list-messages-as-json";
@@ -383,7 +382,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            context.getFailureDescription().set(e.toString());
+            context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
         if (context.completeStep() != OperationContext.ResultAction.KEEP && reversible) {
@@ -396,10 +395,9 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
                     revertAdditonalOperation(operationName, operation, context, control.getDelegate(), handback);
                 }
             } catch (Exception e) {
-                log.errorf(e, String.format("%s caught exception attempting to revert operation %s at address %s",
-                        getClass().getSimpleName(),
+                ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(),
                         operation.require(ModelDescriptionConstants.OP).asString(),
-                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR))));
+                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
             }
         }
     }
@@ -416,7 +414,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
     protected final void throwUnimplementedOperationException(final String operationName) {
         // Bug
-        throw new IllegalStateException(String.format("Support for operation %s was not properly implemented", operationName));
+        throw MESSAGES.unsupportedOperation(operationName);
     }
 
     /**

@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -50,7 +52,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public void writeModel(ModelNode newModel) {
-        throw new UnsupportedOperationException("Resource is immutable");
+        throw MESSAGES.immutableResource();
     }
 
     @Override
@@ -100,7 +102,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        throw new UnsupportedOperationException("Resource is immutable");
+        throw MESSAGES.immutableResource();
     }
 
     @Override

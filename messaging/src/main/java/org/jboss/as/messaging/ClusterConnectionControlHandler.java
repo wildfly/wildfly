@@ -108,7 +108,7 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
             try {
                 context.getResult().set(control.getStaticConnectorsAsJSON());
             } catch (Exception e) {
-                context.getFailureDescription().set(e.toString());
+                context.getFailureDescription().set(e.getLocalizedMessage());
             }
         } else if (GET_NODES.equals(operationName)) {
             ClusterConnectionControl control = getHornetQComponentControl(context, operation, false);
@@ -120,7 +120,7 @@ public class ClusterConnectionControlHandler extends AbstractHornetQComponentCon
                     result.get(entry.getKey()).set(entry.getValue());
                 }
             } catch (Exception e) {
-                context.getFailureDescription().set(e.toString());
+                context.getFailureDescription().set(e.getLocalizedMessage());
             }
         } else {
             unsupportedOperation(operationName);

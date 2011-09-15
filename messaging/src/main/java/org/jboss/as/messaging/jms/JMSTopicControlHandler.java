@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.messaging.CommonAttributes.*;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.Locale;
@@ -240,12 +241,12 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(control.removeMessages(filter));
             } else {
                 // Bug
-                throw new IllegalStateException(String.format("Support for operation %s was not properly implemented", operationName));
+                throw MESSAGES.unsupportedOperation(operationName);
             }
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            context.getFailureDescription().set(e.toString());
+            context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
         context.completeStep();

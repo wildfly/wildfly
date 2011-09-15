@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,7 +73,7 @@ public class BroadcastGroupWriteAttributeHandler extends ServerWriteAttributeOpe
                 final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                 if(attr.hasAlternative(resource.getModel())) {
                     context.setRollbackOnly();
-                    throw new OperationFailedException(new ModelNode().set(String.format("Alternative attribute of (%s) is already defined."), attributeName));
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
                 }
             }
         }, OperationContext.Stage.VERIFY);

@@ -43,6 +43,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 /**
  * Write attribute handler for attributes that update a JMS connection factory configuration.
  *
@@ -203,7 +205,7 @@ public class ConnectionFactoryWriteAttributeHandler extends ServerWriteAttribute
                 control.setConnectionLoadBalancingPolicyClassName(CommonAttributes.LOAD_BALANCING_CLASS_NAME.validateResolvedOperation(operation).asString());
             } else {
                 // Bug! Someone added the attribute to the set but did not implement
-                throw new UnsupportedOperationException(String.format("Runtime handling for %s is not implemented", attributeName));
+                throw MESSAGES.unsupportedRuntimeAttribute(attributeName);
             }
 
         } catch (RuntimeException e) {

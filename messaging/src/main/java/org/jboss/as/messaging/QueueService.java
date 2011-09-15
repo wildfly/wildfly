@@ -22,10 +22,12 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.server.HornetQServer;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -45,7 +47,7 @@ class QueueService implements Service<Void> {
 
     public QueueService(final CoreQueueConfiguration queueConfiguration, final boolean temporary) {
         if(queueConfiguration == null) {
-            throw new IllegalArgumentException("null queue configuration");
+            throw MESSAGES.nullVar("queueConfiguration");
         }
         this.queueConfiguration = queueConfiguration;
         this.temporary = temporary;
@@ -71,7 +73,7 @@ class QueueService implements Service<Void> {
             final HornetQServer hornetQService = this.hornetQService.getValue();
             hornetQService.destroyQueue(new SimpleString(queueConfiguration.getName()), null);
         } catch(Exception e) {
-            Logger.getLogger("org.jboss.messaging").warnf(e, "failed to destroy queue (%s)", queueConfiguration.getName());
+            MESSAGING_LOGGER.failedToDestroy("queue", queueConfiguration.getName());
         }
     }
 
