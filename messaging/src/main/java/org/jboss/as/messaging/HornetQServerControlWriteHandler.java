@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -143,7 +145,7 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
                 }
             } else {
                 // Bug! Someone added the attribute to the set but did not implement
-                throw new UnsupportedOperationException(String.format("Runtime handling for %s is not implemented", attributeName));
+                throw MESSAGES.unsupportedRuntimeAttribute(attributeName);
             }
 
         } catch (RuntimeException e) {

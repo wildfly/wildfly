@@ -24,23 +24,18 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -76,9 +71,7 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
 
         final Resource subsystemRootResource = context.getRootResource().navigate(ourAddress.subAddress(0, ourAddress.size() - 1));
         if (subsystemRootResource.hasChildren(CommonAttributes.GROUPING_HANDLER)) {
-            throw new OperationFailedException(new ModelNode().set(String.format("A child resource of type %s already exists; " +
-                    "the messaging subsystem only allows a single resource of type %s",
-                    CommonAttributes.GROUPING_HANDLER, CommonAttributes.GROUPING_HANDLER)));
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.childResourceAlreadyExists(CommonAttributes.GROUPING_HANDLER)));
         }
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();

@@ -49,6 +49,7 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_ID;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.VALUE;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -286,7 +287,7 @@ class TransportConfigOperationHandlers {
                     final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(CommonAttributes.PARAM, property.getName())));
                     final ModelNode value = property.getValue();
                     if(! value.isDefined()) {
-                        throw new OperationFailedException(new ModelNode().set("parameter not defined " + property.getName()));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.parameterNotDefined(property.getName())));
                     }
                     param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
                 }

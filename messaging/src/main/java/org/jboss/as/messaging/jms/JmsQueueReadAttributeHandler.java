@@ -33,6 +33,7 @@ import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Arrays;
 import java.util.List;
@@ -120,7 +121,7 @@ public class JmsQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(control.isTemporary());
         } else if (METRICS.contains(attributeName) || READ_ATTRIBUTES.contains(attributeName)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", attributeName));
+            throw MESSAGES.unsupportedAttribute(attributeName);
         }
         context.completeStep();
     }

@@ -23,12 +23,14 @@
 package org.jboss.as.messaging.jms;
 
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * Service responsible for creating and destroying a {@code javax.jms.Queue}.
@@ -57,7 +59,7 @@ public class JMSQueueService implements Service<Void> {
         try {
             jmsManager.createQueue(false, queueName, selectorString, durable, jndi);
         } catch (Exception e) {
-            throw new StartException("failed to create queue", e);
+            throw new StartException(MESSAGES.failedToCreate("queue"), e);
         }
     }
 
@@ -67,7 +69,7 @@ public class JMSQueueService implements Service<Void> {
         try {
             jmsManager.destroyQueue(queueName);
         } catch (Exception e) {
-            Logger.getLogger("org.jboss.messaging").warnf(e ,"failed to destroy jms queue: %s", queueName);
+            MESSAGING_LOGGER.failedToDestroy(e, "queue", queueName);
         }
     }
 

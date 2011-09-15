@@ -61,6 +61,7 @@ import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_BATCH_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.USE_GLOBAL_POOLS;
 import static org.jboss.as.messaging.CommonAttributes.USE_JNDI;
 import static org.jboss.as.messaging.CommonAttributes.USE_LOCAL_TX;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -305,7 +306,7 @@ public class JMSServices {
                 case STRING:
                     return String.class.getName();
                 default:
-                    throw new IllegalStateException(String.format("Attribute %s has unexpected type %s", def.getName(), def.getType()));
+                    throw MESSAGES.invalidAttributeType(def.getName(), def.getType());
 
             }
         }

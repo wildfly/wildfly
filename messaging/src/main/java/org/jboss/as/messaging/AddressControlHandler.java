@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.messaging.CommonAttributes.*;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.Locale;
@@ -117,12 +118,12 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
                 }
             } else {
                 // Bug
-                throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+                throw MESSAGES.unsupportedAttribute(name);
             }
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            context.getFailureDescription().set(e.toString());
+            context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
         context.completeStep();
@@ -139,7 +140,7 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            context.getFailureDescription().set(e.toString());
+            context.getFailureDescription().set(e.getLocalizedMessage());
         }
     }
 
