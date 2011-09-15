@@ -169,6 +169,25 @@ public class DeploymentDescription {
         return root;
     }
 
+    public static ModelNode getSubDeploymentDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("deployment.subdeployment"));
+
+        root.get(ATTRIBUTES).setEmptyObject();
+        root.get(OPERATIONS); // placeholder
+
+        root.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set(bundle.getString("deployment.subsystem"));
+        root.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
+
+        root.get(CHILDREN, SUBDEPLOYMENT, DESCRIPTION).set(bundle.getString("deployment.subdeployment"));
+        root.get(CHILDREN, SUBDEPLOYMENT, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SUBDEPLOYMENT, MODEL_DESCRIPTION);
+
+        return root;
+    }
+
     public static final ModelNode getUploadDeploymentBytesOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
