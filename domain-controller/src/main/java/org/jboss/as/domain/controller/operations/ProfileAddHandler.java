@@ -40,12 +40,10 @@ public class ProfileAddHandler extends AbstractAddStepHandler implements Descrip
 
     public static final ProfileAddHandler INSTANCE = new ProfileAddHandler();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(final ModelNode operation, final ModelNode model) {
         if (operation.has(INCLUDES)) {
             model.get(INCLUDES).set(operation.get(INCLUDES));
         }
-        model.get(SUBSYSTEM);
-
     }
 
     protected boolean requiresRuntime(OperationContext context) {

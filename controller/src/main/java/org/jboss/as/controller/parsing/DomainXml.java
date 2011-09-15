@@ -497,21 +497,21 @@ public class DomainXml extends CommonXml {
                 writer.writeAttribute(PROFILE, include.asString());
             }
         }
-
-
-        final Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
-        if (subsystemNames.size() > 0) {
-            String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
-            for (String subsystemName : subsystemNames) {
-                try {
-                    ModelNode subsystem = profileNode.get(SUBSYSTEM, subsystemName);
-                    XMLElementWriter<SubsystemMarshallingContext> subsystemWriter = context.getSubsystemWriter(subsystemName);
-                    if (subsystemWriter != null) { // FIXME -- remove when extensions are doing the registration
-                        subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
+        if(profileNode.hasDefined(SUBSYSTEM)) {
+            final Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();
+            if (subsystemNames.size() > 0) {
+                String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
+                for (String subsystemName : subsystemNames) {
+                    try {
+                        ModelNode subsystem = profileNode.get(SUBSYSTEM, subsystemName);
+                        XMLElementWriter<SubsystemMarshallingContext> subsystemWriter = context.getSubsystemWriter(subsystemName);
+                        if (subsystemWriter != null) { // FIXME -- remove when extensions are doing the registration
+                            subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
+                        }
                     }
-                }
-                finally {
-                    writer.setDefaultNamespace(defaultNamespace);
+                    finally {
+                        writer.setDefaultNamespace(defaultNamespace);
+                    }
                 }
             }
         }
