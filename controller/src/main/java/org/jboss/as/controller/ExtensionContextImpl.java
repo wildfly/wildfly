@@ -22,10 +22,17 @@
 
 package org.jboss.as.controller;
 
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.staxmapper.XMLElementWriter;
 
 /**
@@ -34,9 +41,10 @@ import org.jboss.staxmapper.XMLElementWriter;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ExtensionContextImpl implements ExtensionContext {
+
     private final ManagementResourceRegistration profileRegistration;
-    private final ManagementResourceRegistration deploymentOverrideRegistration;
     private final SubsystemXmlWriterRegistry writerRegistry;
+    private final ManagementResourceRegistration subsystemDeploymentRegistration;
 
     /**
      * Construct a new instance.
@@ -57,8 +65,15 @@ public final class ExtensionContextImpl implements ExtensionContext {
             throw new IllegalArgumentException("writerRegistry is null");
         }
         this.profileRegistration = profileRegistration;
-        this.deploymentOverrideRegistration = deploymentOverrideRegistration;
         this.writerRegistry = writerRegistry;
+        if (deploymentOverrideRegistration != null) {
+            PathAddress subdepAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT));
+            final ManagementResourceRegistration subdeployments = deploymentOverrideRegistration.getSubModel(subdepAddress);
+            this.subsystemDeploymentRegistration = subdeployments == null ? deploymentOverrideRegistration
+                    :new DeploymentManagementResourceRegistration(deploymentOverrideRegistration, subdeployments);
+        } else {
+            this.subsystemDeploymentRegistration = null;
+        }
     }
 
     /** {@inheritDoc} */
@@ -81,7 +96,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
-                return deploymentOverrideRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProvider);
+                return subsystemDeploymentRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProvider);
             }
 
             @Override
@@ -89,5 +104,183 @@ public final class ExtensionContextImpl implements ExtensionContext {
                 writerRegistry.registerSubsystemWriter(name, writer);
             }
         };
+    }
+
+    private static class DeploymentManagementResourceRegistration implements ManagementResourceRegistration {
+
+        private final ManagementResourceRegistration deployments;
+        private final ManagementResourceRegistration subdeployments;
+
+        private DeploymentManagementResourceRegistration(final ManagementResourceRegistration deployments,
+                                                         final ManagementResourceRegistration subdeployments) {
+            this.deployments = deployments;
+            this.subdeployments = subdeployments;
+        }
+
+        @Override
+        public boolean isRuntimeOnly() {
+            return deployments.isRuntimeOnly();
+        }
+
+        @Override
+        public boolean isRemote() {
+            return deployments.isRemote();
+        }
+
+        @Override
+        public OperationStepHandler getOperationHandler(PathAddress address, String operationName) {
+            return deployments.getOperationHandler(address, operationName);
+        }
+
+        @Override
+        public DescriptionProvider getOperationDescription(PathAddress address, String operationName) {
+            return deployments.getOperationDescription(address, operationName);
+        }
+
+        @Override
+        public Set<OperationEntry.Flag> getOperationFlags(PathAddress address, String operationName) {
+            return deployments.getOperationFlags(address, operationName);
+        }
+
+        @Override
+        public OperationEntry getOperationEntry(PathAddress address, String operationName) {
+            return deployments.getOperationEntry(address, operationName);
+        }
+
+        @Override
+        public Set<String> getAttributeNames(PathAddress address) {
+            return deployments.getAttributeNames(address);
+        }
+
+        @Override
+        public AttributeAccess getAttributeAccess(PathAddress address, String attributeName) {
+            return deployments.getAttributeAccess(address, attributeName);
+        }
+
+        @Override
+        public Set<String> getChildNames(PathAddress address) {
+            return deployments.getChildNames(address);
+        }
+
+        @Override
+        public Set<PathElement> getChildAddresses(PathAddress address) {
+            return deployments.getChildAddresses(address);
+        }
+
+        @Override
+        public DescriptionProvider getModelDescription(PathAddress address) {
+            return deployments.getModelDescription(address);
+        }
+
+        @Override
+        public Map<String, OperationEntry> getOperationDescriptions(PathAddress address, boolean inherited) {
+            return deployments.getOperationDescriptions(address, inherited);
+        }
+
+        @Override
+        public ProxyController getProxyController(PathAddress address) {
+            return deployments.getProxyController(address);
+        }
+
+        @Override
+        public Set<ProxyController> getProxyControllers(PathAddress address) {
+            return deployments.getProxyControllers(address);
+        }
+
+        @Override
+        public ManagementResourceRegistration getSubModel(PathAddress address) {
+            return deployments.getSubModel(address);
+        }
+
+        @Override
+        public ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider) {
+            ManagementResourceRegistration depl = deployments.registerSubModel(address, descriptionProvider);
+            ManagementResourceRegistration subdepl = subdeployments.registerSubModel(address, descriptionProvider);
+            return new DeploymentManagementResourceRegistration(depl, subdepl);
+        }
+
+        @Override
+        public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
+            deployments.registerSubModel(address, subModel);
+            subdeployments.registerSubModel(address, subModel);
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
+            deployments.registerOperationHandler(operationName, handler, descriptionProvider);
+            subdeployments.registerOperationHandler(operationName, handler, descriptionProvider);
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
+            deployments.registerOperationHandler(operationName, handler, descriptionProvider, flags);
+            subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, flags);
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited) {
+            deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited);
+            subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited);
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType) {
+            deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType);
+            subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType);
+        }
+
+        @Override
+        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
+            deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType, flags);
+            subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType, flags);
+        }
+
+        @Override
+        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
+            deployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
+            subdeployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
+        }
+
+        @Override
+        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
+            deployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, flags);
+            subdeployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, flags);
+        }
+
+        @Override
+        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, AttributeAccess.Storage storage) {
+            deployments.registerReadOnlyAttribute(attributeName, readHandler, storage);
+            subdeployments.registerReadOnlyAttribute(attributeName, readHandler, storage);
+        }
+
+        @Override
+        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
+            deployments.registerReadOnlyAttribute(attributeName, readHandler, flags);
+            subdeployments.registerReadOnlyAttribute(attributeName, readHandler, flags);
+        }
+
+        @Override
+        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
+            deployments.registerMetric(attributeName, metricHandler);
+            subdeployments.registerMetric(attributeName, metricHandler);
+        }
+
+        @Override
+        public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
+            deployments.registerMetric(attributeName, metricHandler, flags);
+            subdeployments.registerMetric(attributeName, metricHandler, flags);
+        }
+
+        @Override
+        public void registerProxyController(PathElement address, ProxyController proxyController) {
+            deployments.registerProxyController(address, proxyController);
+            subdeployments.registerProxyController(address, proxyController);
+        }
+
+        @Override
+        public void unregisterProxyController(PathElement address) {
+            deployments.unregisterProxyController(address);
+            subdeployments.unregisterProxyController(address);
+        }
     }
 }
