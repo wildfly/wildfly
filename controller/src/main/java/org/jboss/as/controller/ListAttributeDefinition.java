@@ -135,6 +135,13 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
         return result;
     }
 
+    @Override
+    public ModelNode createTypeDescription(ResourceBundle bundle, String prefix) {
+        final ModelNode result = super.createTypeDescription(bundle, prefix);
+        addValueTypeDescription(result, bundle);
+        return result;
+    }
+
     protected abstract void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle);
 
     protected abstract void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver,
