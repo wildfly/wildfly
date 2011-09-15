@@ -181,7 +181,9 @@ public class ModelDescriptionValidator {
                         errors.add(new ValidationFailure(error, address));
                     }
                 } else {
-                    errors.add(new ValidationFailure("Empty key '" + key + "'", address));
+                    if (!key.equals(OPERATIONS) && !key.equals(CHILDREN)) {
+                        errors.add(new ValidationFailure("Empty key '" + key + "'", address));
+                    }
                 }
 
             }
@@ -251,7 +253,9 @@ public class ModelDescriptionValidator {
                             errors.add(new ValidationFailure(error, address));
                         }
                     } else {
-                        errors.add(new ValidationFailure("Empty key '" + key + "' found for child type '" + type + "'", address));
+                        if (!key.equals(MODEL_DESCRIPTION)) {
+                            errors.add(new ValidationFailure("Empty key '" + key + "' found for child type '" + type + "'", address));
+                        }
                     }
                 }
             }
