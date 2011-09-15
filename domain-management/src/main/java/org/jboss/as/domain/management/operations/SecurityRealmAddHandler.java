@@ -21,16 +21,6 @@
  */
 package org.jboss.as.domain.management.operations;
 
-import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
-
-import java.util.List;
-import java.util.Locale;
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
@@ -43,7 +33,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.security.DomainCallbackHandler;
@@ -133,8 +134,8 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
 
 
     public ModelNode getModelDescription(Locale locale) {
-        // TODO - Complete getModelDescription()
-        return new ModelNode();
+        System.out.println("--------->");
+        return ManagementDescription.getAddManagementSecurityRealmDescription(locale);
     }
 
     protected boolean requiresRuntimeVerification() {

@@ -18,17 +18,16 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.SnapshotDescriptions;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
 
 /**
  * An operation that takes a snapshot of the current configuration
@@ -51,7 +50,7 @@ public class SnapshotTakeHandler implements OperationStepHandler, DescriptionPro
         try {
             String name = persister.snapshot();
             ModelNode result = context.getResult();
-            result.get(ModelDescriptionConstants.NAME).set(name);
+            result.get().set(name);
             context.completeStep();
         } catch (ConfigurationPersistenceException e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));

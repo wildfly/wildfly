@@ -27,11 +27,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
@@ -455,8 +455,8 @@ public class MessagingDescriptions {
         priority.get(DESCRIPTION).set(bundle.getString("queue.message.priority"));
         priority.get(TYPE).set(ModelType.INT);
         priority.get(NILLABLE).set(false);
-        priority.get(MIN_VALUE).set(0);
-        priority.get(MAX_VALUE).set(9);
+        priority.get(MIN).set(0);
+        priority.get(MAX).set(9);
     }
 
     public static ModelNode getCountMessages(Locale locale) {
@@ -590,8 +590,8 @@ public class MessagingDescriptions {
         priority.get(DESCRIPTION).set(bundle.getString("queue.change-message-priority.new-priority"));
         priority.get(TYPE).set(ModelType.INT);
         priority.get(REQUIRED).set(true);
-        priority.get(MIN_VALUE).set(0);
-        priority.get(MAX_VALUE).set(9);
+        priority.get(MIN).set(0);
+        priority.get(MAX).set(9);
     }
 
     public static ModelNode getMoveMessage(Locale locale, boolean forJMS) {

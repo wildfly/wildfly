@@ -63,7 +63,7 @@ public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandl
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale, PlatformMBeanConstants.MEMORY_POOL + ".reset-peak-usage");
+        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale, "reset-peak-usage", PlatformMBeanConstants.MEMORY_POOL);
     }
 
     private MemoryPoolMXBean getMemoryPoolMXBean(ModelNode operation) throws OperationFailedException {

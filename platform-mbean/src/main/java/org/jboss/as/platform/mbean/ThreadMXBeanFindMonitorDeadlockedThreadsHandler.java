@@ -65,7 +65,7 @@ public class ThreadMXBeanFindMonitorDeadlockedThreadsHandler implements Operatio
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getFindThreadsOperation(locale,
-                PlatformMBeanConstants.THREADING + "." + PlatformMBeanConstants.FIND_MONITOR_DEADLOCKED_THREADS);
+        return PlatformMBeanDescriptions.getFindThreadsOperation(locale, PlatformMBeanConstants.FIND_MONITOR_DEADLOCKED_THREADS,
+                PlatformMBeanConstants.THREADING);
     }
 }

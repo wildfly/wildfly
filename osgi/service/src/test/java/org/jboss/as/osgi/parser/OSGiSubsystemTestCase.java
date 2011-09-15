@@ -26,14 +26,15 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -189,6 +190,13 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
             protected Type getType() {
                 return Type.MANAGEMENT;
             }
+
+            @Override
+            protected ValidationConfiguration getModelValidationConfiguration() {
+                //TODO fix validation https://issues.jboss.org/browse/AS7-1786
+                return null;
+            }
+
         }, SUBSYSTEM_XML_1);
         ModelNode model = services.readWholeModel();
 
@@ -203,6 +211,12 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
             protected Type getType() {
                 return Type.MANAGEMENT;
             }
+
+            @Override
+            protected ValidationConfiguration getModelValidationConfiguration() {
+                //TODO fix validation https://issues.jboss.org/browse/AS7-1786
+                return null;
+            }
         }, SUBSYSTEM_XML_1);
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
@@ -216,6 +230,12 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
             @Override
             public Type getType() {
                 return Type.MANAGEMENT;
+            }
+
+            @Override
+            protected ValidationConfiguration getModelValidationConfiguration() {
+                //TODO fix validation https://issues.jboss.org/browse/AS7-1786
+                return null;
             }
         }, operations);
         ModelNode modelB = servicesB.readWholeModel();
@@ -241,4 +261,21 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(addrVal, pe.getValue());
         Assert.assertEquals(value, node.get(valKey).asString());
     }
+
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization(){
+            @Override
+            protected OperationContext.Type getType() {
+                return OperationContext.Type.MANAGEMENT;
+            }
+
+
+            @Override
+            protected ValidationConfiguration getModelValidationConfiguration() {
+                //TODO fix validation https://issues.jboss.org/browse/AS7-1786
+                return null;
+            }
+        };
+    }
+
 }

@@ -84,5 +84,10 @@
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-spi</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

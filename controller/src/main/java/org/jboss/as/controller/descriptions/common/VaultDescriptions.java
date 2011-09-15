@@ -35,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -77,13 +76,14 @@ public class VaultDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("jvm.add"));
-        node.get(REQUEST_PROPERTIES, TYPE, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, TYPE, DESCRIPTION).set(bundle.getString("jvm.type"));
-        node.get(REQUEST_PROPERTIES, TYPE, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), DESCRIPTION).set(bundle.getString("vault.code"));
+        node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), REQUIRED).set(false);
 
-        node.get(REQUEST_PROPERTIES, VAULT, DESCRIPTION).set(bundle.getString("vault"));
-        node.get(REQUEST_PROPERTIES, VAULT, TYPE).set(ModelType.OBJECT);
-        node.get(REQUEST_PROPERTIES, VAULT, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, Element.VAULT_OPTION.getLocalName(), DESCRIPTION).set(bundle.getString("vault.option"));
+        node.get(REQUEST_PROPERTIES, Element.VAULT_OPTION.getLocalName(), TYPE).set(ModelType.OBJECT);
+        node.get(REQUEST_PROPERTIES, Element.VAULT_OPTION.getLocalName(), VALUE_TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, Element.VAULT_OPTION.getLocalName(), REQUIRED).set(false);
 
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;

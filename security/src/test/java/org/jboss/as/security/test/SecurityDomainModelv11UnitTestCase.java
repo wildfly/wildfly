@@ -20,17 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.security.test;
- 
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
 public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
-    
+
     public SecurityDomainModelv11UnitTestCase() {
         super(SecurityExtension.SUBSYSTEM_NAME, new SecurityExtension());
     }
@@ -44,6 +45,12 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
             @Override
             protected OperationContext.Type getType() {
                 return OperationContext.Type.MANAGEMENT;
+            }
+
+            @Override
+            protected ValidationConfiguration getModelValidationConfiguration() {
+                //TODO get rid of this method https://issues.jboss.org/browse/AS7-1763
+                return null;
             }
         };
 
@@ -61,5 +68,5 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemTest {
 
         //Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);
-    } 
+    }
 }

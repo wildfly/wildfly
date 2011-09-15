@@ -26,8 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
@@ -38,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URI;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
@@ -50,6 +49,7 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -91,10 +91,12 @@ public class CommonDescriptions {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(NamespaceAddHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("namespaces.add"));
-        root.get(REQUEST_PROPERTIES, NAMESPACE, TYPE).set(ModelType.PROPERTY);
-        root.get(REQUEST_PROPERTIES, NAMESPACE, VALUE_TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAMESPACE, DESCRIPTION).set(bundle.getString("namespaces.add.namespace"));
+        root.get(REQUEST_PROPERTIES, NAMESPACE, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, NAMESPACE, DESCRIPTION).set(bundle.getString("namespaces.add.prefix"));
         root.get(REQUEST_PROPERTIES, NAMESPACE, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, URI, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, URI, DESCRIPTION).set(bundle.getString("namespaces.add.uri"));
+        root.get(REQUEST_PROPERTIES, URI, REQUIRED).set(true);
         root.get(REPLY_PROPERTIES).setEmptyObject();
 
         return root;
@@ -117,8 +119,10 @@ public class CommonDescriptions {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(SchemaLocationAddHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("schema-locations.add"));
-        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, TYPE).set(ModelType.PROPERTY);
-        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, VALUE_TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, URI, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, URI, DESCRIPTION).set(bundle.getString("schema-locations.add.uri"));
+        root.get(REQUEST_PROPERTIES, URI, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, DESCRIPTION).set(bundle.getString("schema-locations.add.schema-location"));
         root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, REQUIRED).set(true);
         root.get(REPLY_PROPERTIES).setEmptyObject();
@@ -132,9 +136,9 @@ public class CommonDescriptions {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(SchemaLocationRemoveHandler.OPERATION_NAME);
         root.get(DESCRIPTION).set(bundle.getString("schema-locations.remove"));
-        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, DESCRIPTION).set(bundle.getString("schema-locations.remove.schema-location"));
-        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, URI, TYPE).set(ModelType.STRING);
+        root.get(REQUEST_PROPERTIES, URI, DESCRIPTION).set(bundle.getString("schema-locations.remove.schema-uri"));
+        root.get(REQUEST_PROPERTIES, URI, REQUIRED).set(true);
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
@@ -196,6 +200,16 @@ public class CommonDescriptions {
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(READ_CONFIG_AS_XML + ".response"));
+        return root;
+    }
+
+    public static ModelNode getValidateAddressOperation(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(GlobalOperationHandlers.VALIDATE_ADDRESS_OPERATION_NAME);
+        root.get(DESCRIPTION).set(bundle.getString("validate-address"));
+        root.get(REQUEST_PROPERTIES).setEmptyObject();
+        root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
 

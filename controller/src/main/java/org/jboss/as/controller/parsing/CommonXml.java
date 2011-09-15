@@ -51,7 +51,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
@@ -67,7 +66,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
@@ -192,11 +190,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             String prefix = reader.getNamespacePrefix(i);
             // FIXME - remove once STXM-8 is released
             if (prefix != null && prefix.length() > 0) {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP_ADDR).set(address);
-                operation.get(OP).set(NamespaceAddHandler.OPERATION_NAME);
-                operation.get(NAMESPACE).set(prefix, reader.getNamespaceURI(i));
-                nodes.add(operation);
+                nodes.add(NamespaceAddHandler.getAddNamespaceOperation(address, prefix, reader.getNamespaceURI(i)));
             }
         }
     }
@@ -228,11 +222,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             String key = it.next();
             String val = it.next();
             if (key.length() > 0 && val.length() > 0) {
-                final ModelNode update = new ModelNode();
-                update.get(OP_ADDR).set(address);
-                update.get(OP).set(SchemaLocationAddHandler.OPERATION_NAME);
-                update.get(SCHEMA_LOCATION).set(key, val);
-                updateList.add(update);
+                updateList.add(SchemaLocationAddHandler.getAddSchemaLocationOperation(address, key, val));
             }
         }
     }

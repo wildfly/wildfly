@@ -78,7 +78,7 @@ public class InterfaceDescription {
         root.get(ATTRIBUTES, NAME, HEAD_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, NAME, TAIL_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, CRITERIA, TYPE).set(ModelType.OBJECT);
-        // FIXME need a value-type or something similar
+        // AS7-1830 FIXME need a value-type or something similar
         root.get(ATTRIBUTES, CRITERIA, DESCRIPTION).set(bundle.getString("interface.criteria"));
         root.get(ATTRIBUTES, CRITERIA, REQUIRED).set(specified);
         root.get(ATTRIBUTES, CRITERIA, HEAD_COMMENT_ALLOWED).set(true);
@@ -91,6 +91,7 @@ public class InterfaceDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(ADD);
         root.get(DESCRIPTION).set(bundle.getString("interface.add"));
+        // AS7-1830 FIXME need a value-type or something similar
         root.get(REQUEST_PROPERTIES, CRITERIA, TYPE).set(ModelType.OBJECT);
         root.get(REQUEST_PROPERTIES, CRITERIA, DESCRIPTION).set(bundle.getString("interface.add.criteria"));
         root.get(REQUEST_PROPERTIES, CRITERIA, REQUIRED).set(false);
@@ -100,6 +101,7 @@ public class InterfaceDescription {
 
     public static ModelNode getSpecifiedInterfaceAddOperation(final Locale locale) {
         final ModelNode root = getNamedInterfaceAddOperation(locale);
+        root.get(OPERATION_NAME).set(ADD);
         root.get(REQUEST_PROPERTIES, CRITERIA, REQUIRED).set(true);
         return root;
     }

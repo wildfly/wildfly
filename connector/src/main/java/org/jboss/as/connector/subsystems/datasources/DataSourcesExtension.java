@@ -181,12 +181,14 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class DataSourcesExtension implements Extension {
 
+    public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
+
     @Override
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_DATASOURCES_LOGGER.debugf("Initializing Datasources Extension");
 
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(DATASOURCES);
+        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
 
         registration.registerXMLElementWriter(NewDataSourceSubsystemParser.INSTANCE);
 

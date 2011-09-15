@@ -52,8 +52,8 @@ import java.util.Locale;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -76,7 +76,7 @@ import org.jboss.logging.Logger;
 public class ThreadsExtension implements Extension {
     private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
-    private static String SUBSYSTEM_NAME = "threads";
+    public static String SUBSYSTEM_NAME = "threads";
 
     @Override
     public void initialize(final ExtensionContext context) {

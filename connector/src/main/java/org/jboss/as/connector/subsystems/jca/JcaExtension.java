@@ -87,7 +87,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class JcaExtension implements Extension {
 
-    private static String SUBSYSTEM_NAME = "jca";
+    public static String SUBSYSTEM_NAME = "jca";
 
     @Override
     public void initialize(final ExtensionContext context) {

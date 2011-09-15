@@ -26,6 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -84,21 +86,25 @@ public class ThreadsSubsystemProviders {
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.THREADS_1_0.getUriString());
 
-            // Should this be an attribute instead
             subsystem.get(CHILDREN, THREAD_FACTORY, DESCRIPTION).set(bundle.getString("threadfactories"));
-            subsystem.get(CHILDREN, THREAD_FACTORY, REQUIRED).set(false);
+            subsystem.get(CHILDREN, THREAD_FACTORY, MIN_OCCURS).set(0);
+            subsystem.get(CHILDREN, THREAD_FACTORY, MAX_OCCURS).set(Integer.MAX_VALUE);
 
             subsystem.get(CHILDREN, UNBOUNDED_QUEUE_THREAD_POOL, DESCRIPTION).set(bundle.getString("threadpool.unbounded"));
-            subsystem.get(CHILDREN, UNBOUNDED_QUEUE_THREAD_POOL, REQUIRED).set(false);
+            subsystem.get(CHILDREN, UNBOUNDED_QUEUE_THREAD_POOL, MIN_OCCURS).set(0);
+            subsystem.get(CHILDREN, UNBOUNDED_QUEUE_THREAD_POOL, MAX_OCCURS).set(Integer.MAX_VALUE);
 
             subsystem.get(CHILDREN, BOUNDED_QUEUE_THREAD_POOL, DESCRIPTION).set(bundle.getString("threadpool.bounded"));
-            subsystem.get(CHILDREN, BOUNDED_QUEUE_THREAD_POOL, REQUIRED).set(false);
+            subsystem.get(CHILDREN, BOUNDED_QUEUE_THREAD_POOL, MIN_OCCURS).set(0);
+            subsystem.get(CHILDREN, BOUNDED_QUEUE_THREAD_POOL, MAX_OCCURS).set(Integer.MAX_VALUE);
 
             subsystem.get(CHILDREN, QUEUELESS_THREAD_POOL, DESCRIPTION).set(bundle.getString("threadpool.queueless"));
-            subsystem.get(CHILDREN, QUEUELESS_THREAD_POOL, REQUIRED).set(false);
+            subsystem.get(CHILDREN, QUEUELESS_THREAD_POOL, MIN_OCCURS).set(0);
+            subsystem.get(CHILDREN, QUEUELESS_THREAD_POOL, MAX_OCCURS).set(Integer.MAX_VALUE);
 
             subsystem.get(CHILDREN, SCHEDULED_THREAD_POOL, DESCRIPTION).set(bundle.getString("threadpool.scheduled"));
-            subsystem.get(CHILDREN, SCHEDULED_THREAD_POOL, REQUIRED).set(false);
+            subsystem.get(CHILDREN, SCHEDULED_THREAD_POOL, MIN_OCCURS).set(0);
+            subsystem.get(CHILDREN, SCHEDULED_THREAD_POOL, MAX_OCCURS).set(Integer.MAX_VALUE);
 
             return subsystem;
         }

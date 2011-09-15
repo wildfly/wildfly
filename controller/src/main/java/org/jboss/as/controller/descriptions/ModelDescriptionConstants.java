@@ -121,11 +121,9 @@ public class ModelDescriptionConstants {
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MAX_THREADS = "max-threads";
-    public static final String MAX_VALUE = "max-value";
     public static final String MIN = "min";
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";
-    public static final String MIN_VALUE = "min-value";
     public static final String MODEL_DESCRIPTION = "model-description";
     public static final String MULTICAST_ADDRESS = "multicast-address";
     public static final String MULTICAST_PORT = "multicast-port";
@@ -236,6 +234,7 @@ public class ModelDescriptionConstants {
     public static final String UPLOAD_DEPLOYMENT_URL = "upload-deployment-url";
     public static final String UPLOAD_DEPLOYMENT_STREAM = "upload-deployment-stream";
     public static final String UNIT = "unit";
+    public static final String URI = "uri";
     public static final String URL = "url";
     public static final String USER = "user";
     public static final String USER_DN = "user-dn";

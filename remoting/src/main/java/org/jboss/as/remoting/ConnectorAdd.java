@@ -72,6 +72,7 @@ public class ConnectorAdd extends AbstractAddStepHandler implements DescriptionP
         if (operation.hasDefined(AUTHENTICATION_PROVIDER)) {
             model.get(AUTHENTICATION_PROVIDER).set(operation.get(AUTHENTICATION_PROVIDER));
         }
+        //
         if (operation.hasDefined(SASL)) {
             model.get(SASL).set(operation.get(SASL));
         }

@@ -22,17 +22,25 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.concurrent.TimeUnit;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CORE_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
@@ -46,6 +54,16 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Static utilities containing subsystem resource and operation descriptions. Separated from the
@@ -142,7 +160,7 @@ public class EJB3SubsystemDescriptions {
         description.get(ATTRIBUTES, CORE_THREADS, TYPE).set(ModelType.INT);
         description.get(ATTRIBUTES, CORE_THREADS, REQUIRED).set(false);
         description.get(ATTRIBUTES, CORE_THREADS, DEFAULT).set(0);
-        description.get(ATTRIBUTES, CORE_THREADS, MIN_VALUE).set(0);
+        description.get(ATTRIBUTES, CORE_THREADS, MIN).set(0);
 
         description.get(ATTRIBUTES, PATH, DESCRIPTION).set(bundle.getString("ejb3.timerservice.path"));
         description.get(ATTRIBUTES, PATH, TYPE).set(ModelType.STRING);
@@ -165,6 +183,7 @@ public class EJB3SubsystemDescriptions {
     static ModelNode getTimerServiceAddDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode description = new ModelNode();
+        description.get(OPERATION_NAME).set(ADD);
         // set the description of this operation
         description.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("ejb3.timerservice.add"));
 
@@ -193,6 +212,7 @@ public class EJB3SubsystemDescriptions {
     static ModelNode getTimerServiceRemoveDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode description = new ModelNode();
+        description.get(OPERATION_NAME).set(REMOVE);
         // setup the description
         description.get(DESCRIPTION).set(bundle.getString("ejb3.timerservice.remove"));
         return description;
@@ -236,6 +256,7 @@ public class EJB3SubsystemDescriptions {
     static ModelNode getStrictMaxPoolAddDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode description = new ModelNode();
+        description.get(OPERATION_NAME).set(ADD);
         // set the description of this operation
         description.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool.add"));
 
@@ -267,6 +288,7 @@ public class EJB3SubsystemDescriptions {
     static ModelNode getStrictMaxPoolRemoveDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode description = new ModelNode();
+        description.get(OPERATION_NAME).set(REMOVE);
         // setup the description
         description.get(DESCRIPTION).set(bundle.getString("ejb3.strict-max-bean-instance-pool.remove"));
 

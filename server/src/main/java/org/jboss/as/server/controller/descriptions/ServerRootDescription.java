@@ -20,7 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.server.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DUMP_SERVICES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.LAUNCH_TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
@@ -118,6 +148,11 @@ public class ServerRootDescription {
         root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("server.deployment"));
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION);
+
+        root.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set(bundle.getString("server.subsystem"));
+        root.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
+
 
         return root;
     }

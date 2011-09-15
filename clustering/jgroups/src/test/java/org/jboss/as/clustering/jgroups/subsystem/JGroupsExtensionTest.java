@@ -27,12 +27,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.jboss.as.clustering.jgroups.subsystem.Namespace;
 import org.jboss.as.clustering.subsystem.AbstractExtensionTest;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 
 public class JGroupsExtensionTest extends AbstractExtensionTest {
@@ -71,4 +72,21 @@ public class JGroupsExtensionTest extends AbstractExtensionTest {
         }
         return model;
     }
+
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization(){
+            @Override
+            protected OperationContext.Type getType() {
+                return OperationContext.Type.MANAGEMENT;
+            }
+
+
+            @Override
+            protected ValidationConfiguration getModelValidationConfiguration() {
+                //TODO fix validation https://issues.jboss.org/browse/AS7-1786
+                return null;
+            }
+        };
+    }
+
 }
