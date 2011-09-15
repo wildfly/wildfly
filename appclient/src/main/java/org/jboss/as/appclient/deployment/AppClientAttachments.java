@@ -19,8 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.structure;
+package org.jboss.as.appclient.deployment;
 
-public enum DeploymentType {
-    EAR, WAR, EJB_JAR, APPLICATION_CLIENT;
+import org.jboss.as.server.deployment.AttachmentKey;
+
+/**
+ * @author Stuart Douglas
+ */
+public class AppClientAttachments {
+
+    public static final AttachmentKey<Class<?>> MAIN_CLASS = AttachmentKey.create(Class.class);
+
+    public static final AttachmentKey<Boolean> START_APP_CLIENT = AttachmentKey.create(Boolean.class);
+
+    private AppClientAttachments() {
+    }
 }

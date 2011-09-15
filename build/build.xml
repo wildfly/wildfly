@@ -45,6 +45,9 @@
                 <include name="standalone/**"/>
             </fileset>
             <fileset dir="src/main/resources">
+                <include name="appclient/**"/>
+            </fileset>
+            <fileset dir="src/main/resources">
                 <include name="welcome-content/**"/>
             </fileset>
         </copy>
@@ -429,6 +432,10 @@
         </module-def>
 
         <module-def name="org.jboss.as.aggregate" />
+
+        <module-def name="org.jboss.as.appclient">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-appclient"/>
+        </module-def>
 
         <module-def name="org.jboss.as.cli">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>

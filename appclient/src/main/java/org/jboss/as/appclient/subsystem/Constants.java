@@ -19,8 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.structure;
+package org.jboss.as.appclient.subsystem;
 
-public enum DeploymentType {
-    EAR, WAR, EJB_JAR, APPLICATION_CLIENT;
+/**
+ * @author Stuart Douglas
+ */
+class Constants {
+
+    public static final String SUBSYSTEM_NAME = "appclient";
+
+    public static final String FILE = "file";
+    public static final String DEPLOYMENT = "deployment";
+    public static final String PARAMETERS = "arguments";
+
 }

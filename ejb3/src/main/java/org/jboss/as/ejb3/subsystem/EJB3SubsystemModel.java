@@ -31,6 +31,9 @@ public interface EJB3SubsystemModel {
     String LITE = "lite";
     String NAME = "name";
 
+    //only set if this is a cut-down app client boot
+    String APPCLIENT = "appclient";
+
     String CONNECTOR_REF = "connector-ref";
 
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";

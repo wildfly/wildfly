@@ -190,7 +190,8 @@ public enum Phase {
     public static final int STRUCTURE_SERVICE_MODULE_LOADER             = 0x0A00;
     public static final int STRUCTURE_ANNOTATION_INDEX                  = 0x0B00;
     public static final int STRUCTURE_EJB_JAR_IN_EAR                    = 0x0C00;
-    public static final int STRUCTURE_MANAGED_BEAN_JAR_IN_EAR           = 0x0C01;
+    public static final int STRUCTURE_APPLICATION_CLIENT_IN_EAR         = 0x0C01;
+    public static final int STRUCTURE_MANAGED_BEAN_JAR_IN_EAR           = 0x0C02;
     public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x0D00;
     public static final int STRUCTURE_ADDITIONAL_MANIFEST               = 0x0E00;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x0F00;
@@ -334,6 +335,8 @@ public enum Phase {
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
     public static final int POST_MODULE_EJB_CLIENT_CONTEXT_SETUP        = 0x1D00;
     public static final int POST_MODULE_LOCAL_HOME                      = 0x1E00;
+    public static final int POST_MODULE_APPLICATION_CLIENT_MANIFEST     = 0x1F00;
+    public static final int POST_MODULE_APPLICATION_CLIENT_ACTIVE       = 0x2000;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
@@ -371,8 +374,9 @@ public enum Phase {
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
-    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1F00;
-    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x2000;
+    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1E00;
+    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x1F00;
+    public static final int INSTALL_APPLICATION_CLIENT                  = 0x2000;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;

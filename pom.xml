@@ -231,6 +231,7 @@
 
     <modules>
         <module>api</module>
+        <module>appclient</module>
         <module>build</module>
         <module>build-config</module>
         <module>arquillian</module>
@@ -562,6 +563,12 @@
         <dependencies>
 
             <!-- Modules in this project -->
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-appclient</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
