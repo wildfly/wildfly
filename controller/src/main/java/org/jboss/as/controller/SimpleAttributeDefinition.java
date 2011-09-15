@@ -35,6 +35,10 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource}, with utility
  * methods for conversion to and from xml and for validation.
@@ -238,6 +242,78 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
             writer.writeCharacters(resourceModel.get(getName()).asString());
             writer.writeEndElement();
         }
+    }
+
+
+    public static class Builder {
+
+        public static Builder create(final String name) {
+            return new Builder(name);
+        }
+
+        protected final String name;
+
+        protected String xmlName;
+        protected ModelType type= ModelType.UNDEFINED;
+        protected boolean allowNull = false;
+        protected boolean allowExpression = false;
+        protected ModelNode defaultValue = null;
+        protected MeasurementUnit measurementUnit = MeasurementUnit.NONE;
+        protected List<String> alternatives = new ArrayList<String>();
+        protected ParameterValidator validator;
+
+        Builder(String name) {
+            this.name = name;
+            this.xmlName = name;
+        }
+
+        public Builder setXmlName(final String xmlName) {
+            this.xmlName = xmlName;
+            return this;
+        }
+
+        public Builder setType(ModelType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder setAllowNull(boolean allowNull) {
+            this.allowNull = allowNull;
+            return this;
+        }
+
+        public Builder setAllowExpression(boolean allowExpression) {
+            this.allowExpression = allowExpression;
+            return this;
+        }
+
+        public Builder setDefaultValue(ModelNode defaultValue) {
+            this.defaultValue = defaultValue;
+            return this;
+        }
+
+        public Builder setMeasurementUnit(MeasurementUnit measurementUnit) {
+            this.measurementUnit = measurementUnit;
+            return this;
+        }
+
+        public Builder addAlternatives(String... alternatives) {
+            this.alternatives.addAll(Arrays.asList(alternatives));
+            return this;
+        }
+
+        public Builder setValidator(ParameterValidator validator) {
+            this.validator = validator;
+            return this;
+        }
+
+        public SimpleAttributeDefinition create() {
+            final String xmlName = this.xmlName != null ? this.xmlName : name;
+            final String[] alternatives = this.alternatives.toArray(new String[this.alternatives.size()]);
+            final ParameterValidator validator = this.validator != null ? this.validator : SimpleAttributeDefinition.createParameterValidator(type, allowNull, allowExpression);
+            return new SimpleAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, validator, alternatives);
+        }
+
     }
 
 
