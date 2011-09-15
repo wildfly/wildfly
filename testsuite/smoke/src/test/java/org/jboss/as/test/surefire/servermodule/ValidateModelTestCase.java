@@ -78,6 +78,7 @@ public class ValidateModelTestCase {
 
     @Test
     public void testValidateModel() throws Exception {
+
         ModelNode description = getDescription();
 
         removeSubsystems(description);
@@ -87,7 +88,10 @@ public class ValidateModelTestCase {
         //TODO should be possible to validate the operations executed...
 
         //TODO get rid of this to test the deployment section AS7-1832
-        description.get(CHILDREN).remove(DEPLOYMENT);
+        description.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION, "*", CHILDREN, "subdeployment", MODEL_DESCRIPTION, "*", CHILDREN).remove("subdeployment");
+
+        System.out.println(description);
+
 
         //Exclude the operations where reply-properties is known to have {type=OBJECT,value-type=UNDEFINED}
         final ModelNode ROOT_ADDR = new ModelNode().setEmptyList();
@@ -149,7 +153,6 @@ public class ValidateModelTestCase {
             subsystemDescriptions.remove(remove);
         }
 
-        System.out.println(description);
     }
 
     protected static ModelNode getDescription() throws Exception {
