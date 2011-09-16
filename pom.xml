@@ -406,11 +406,6 @@
                                             <exclude>jboss.web:servlet-api</exclude>
                                             <exclude>net.sf.kxml:kxml2</exclude>
                                             <exclude>org.apache.aries.jmx:org.apache.aries.jmx.api</exclude>
-                                            <exclude>org.apache.maven:maven-aether-provider</exclude>
-                                            <exclude>org.apache.maven:maven-settings-builder</exclude>
-                                            <exclude>org.apache.maven.wagon:wagon-file</exclude>
-                                            <exclude>org.apache.maven.wagon:wagon-http-lightweight</exclude>
-                                            <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
                                             <exclude>org.apache.xalan:serializer</exclude>
                                             <exclude>org.apache.xalan:xalan</exclude>
                                             <exclude>org.hibernate:ejb3-persistence</exclude>
@@ -442,9 +437,6 @@
                                             <exclude>org.slf4j:slf4j-jdk14</exclude>
                                             <exclude>org.slf4j:slf4j-log4j12</exclude>
                                             <exclude>org.slf4j:slf4j-log4j13</exclude>
-                                            <exclude>org.sonatype.aether:aether-api</exclude>
-                                            <exclude>org.sonatype.aether:aether-connector-wagon</exclude>
-                                            <exclude>org.sonatype.aether:aether-util</exclude>
                                             <exclude>oro:oro</exclude>
                                             <exclude>sun-jaxb:jaxb-api</exclude>
                                             <exclude>trove:trove</exclude>
@@ -4340,38 +4332,6 @@
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.maven</groupId>
-                        <artifactId>maven-aether-provider</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.maven</groupId>
-                        <artifactId>maven-settings-builder</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.maven.wagon</groupId>
-                        <artifactId>wagon-file</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.maven.wagon</groupId>
-                        <artifactId>wagon-http-lightweight</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.maven.wagon</groupId>
-                        <artifactId>wagon-provider-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.sonatype.aether</groupId>
-                        <artifactId>aether-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.sonatype.aether</groupId>
-                        <artifactId>aether-connector-wagon</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.sonatype.aether</groupId>
-                        <artifactId>aether-util</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
