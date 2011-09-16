@@ -43,27 +43,105 @@ import org.jboss.modules.ModuleLoader;
 class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
-        try {
-            return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
-                public ModuleClassLoader run() throws ModuleLoadException {
-                    ModuleLoader loader = Module.getCallerModuleLoader();
-                    ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
-                    return loader.loadModule(identifier).getClassLoader();
-                }
-            });
-        } catch (PrivilegedActionException pae) {
-            throw new ModuleLoadException(pae);
+        if (System.getSecurityManager() != null) {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
+                    public ModuleClassLoader run() throws ModuleLoadException {
+                        ModuleLoader loader = Module.getCallerModuleLoader();
+                        ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
+                        return loader.loadModule(identifier).getClassLoader();
+                    }
+                });
+            } catch (PrivilegedActionException pae) {
+                throw new ModuleLoadException(pae);
+            }
+        } else {
+            ModuleLoader loader = Module.getCallerModuleLoader();
+            ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
+            return loader.loadModule(identifier).getClassLoader();
         }
     }
 
     static void setSecurityProperty(final String key, final String value) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+        if (System.getSecurityManager() != null) {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                public Void run() {
+                    Security.setProperty(key, value);
+                    return null;
+                }
+            });
+        } else {
+            Security.setProperty(key, value);
+        }
+    }
 
-            @Override
-            public Void run() {
-                Security.setProperty(key, value);
-                return null;
+    static String getSystemProperty(final String name, final String defaultValue) {
+        if (System.getSecurityManager() != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<String>() {
+                public String run() {
+                    return System.getProperty(name, defaultValue);
+                }
+            });
+        } else {
+            return System.getProperty(name, defaultValue);
+        }
+    }
+
+    static ClassLoader getContextClassLoader() {
+        if (System.getSecurityManager() != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
+        } else {
+            return Thread.currentThread().getContextClassLoader();
+        }
+    }
+
+    static Class<?> loadClass(final String name) throws ClassNotFoundException {
+        if (System.getSecurityManager() != null) {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
+                    public Class<?> run() throws ClassNotFoundException {
+                        ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
+                                getContextClassLoader(), // User defined classes
+                                ClassLoader.getSystemClassLoader() // System loader, usually has app class path
+                        };
+                        ClassNotFoundException e = null;
+                        for (ClassLoader cl : cls) {
+                            if (cl == null)
+                                continue;
+
+                            try {
+                                return cl.loadClass(name);
+                            } catch (ClassNotFoundException ce) {
+                                e = ce;
+                            }
+                        }
+                        throw e != null ? e : new ClassNotFoundException(name);
+                    }
+                });
+            } catch (PrivilegedActionException pae) {
+                throw new ClassNotFoundException(name, pae);
             }
-        });
+        } else {
+            ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
+                    getContextClassLoader(), // User defined classes
+                    ClassLoader.getSystemClassLoader() // System loader, usually has app class path
+            };
+            ClassNotFoundException e = null;
+            for (ClassLoader cl : cls) {
+                if (cl == null)
+                    continue;
+
+                try {
+                    return cl.loadClass(name);
+                } catch (ClassNotFoundException ce) {
+                    e = ce;
+                }
+            }
+            throw e != null ? e : new ClassNotFoundException(name);
+        }
     }
 }

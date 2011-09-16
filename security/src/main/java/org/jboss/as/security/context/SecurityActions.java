@@ -32,7 +32,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 
-
 /**
  * Privileged blocks for this package
  *
@@ -41,16 +40,22 @@ import org.jboss.modules.ModuleLoader;
 class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader() throws ModuleLoadException {
-        try {
-            return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
-                public ModuleClassLoader run() throws ModuleLoadException {
-                    ModuleLoader loader = Module.getCallerModuleLoader();
-                    ModuleIdentifier identifier = ModuleIdentifier.create("org.jboss.as.security", "main");
-                    return loader.loadModule(identifier).getClassLoader();
-                }
-            });
-        } catch (PrivilegedActionException pae) {
-            throw new ModuleLoadException(pae);
+        if (System.getSecurityManager() != null) {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
+                    public ModuleClassLoader run() throws ModuleLoadException {
+                        ModuleLoader loader = Module.getCallerModuleLoader();
+                        ModuleIdentifier identifier = ModuleIdentifier.create("org.jboss.as.security", "main");
+                        return loader.loadModule(identifier).getClassLoader();
+                    }
+                });
+            } catch (PrivilegedActionException pae) {
+                throw new ModuleLoadException(pae);
+            }
+        } else {
+            ModuleLoader loader = Module.getCallerModuleLoader();
+            ModuleIdentifier identifier = ModuleIdentifier.create("org.jboss.as.security", "main");
+            return loader.loadModule(identifier).getClassLoader();
         }
     }
 

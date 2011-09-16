@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.security.processors;
+package org.jboss.as.security.deployment;
 
 import org.jboss.as.security.ModuleName;
 import org.jboss.as.server.deployment.Attachments;
