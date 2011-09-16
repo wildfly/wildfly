@@ -181,10 +181,6 @@ public class DeploymentDescription {
         root.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(0);
         root.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
 
-        root.get(CHILDREN, SUBDEPLOYMENT, DESCRIPTION).set(bundle.getString("deployment.subdeployment"));
-        root.get(CHILDREN, SUBDEPLOYMENT, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SUBDEPLOYMENT, MODEL_DESCRIPTION);
-
         return root;
     }
 
