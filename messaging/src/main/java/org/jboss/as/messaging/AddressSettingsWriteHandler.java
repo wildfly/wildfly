@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
 
@@ -60,7 +61,7 @@ class AddressSettingsWriteHandler implements OperationStepHandler {
         final String attribute = operation.require(ModelDescriptionConstants.NAME).asString();
         final AttributeDefinition def = getAttributeDefinition(attribute);
         if(def == null) {
-            context.getFailureDescription().set(new ModelNode().set(String.format("no such attribute (%s) ", attribute)));
+            context.getFailureDescription().set(new ModelNode().set(MESSAGES.unknownAttribute(attribute)));
         }
         def.getValidator().validateParameter(ModelDescriptionConstants.VALUE, operation);
         resource.getModel().get(attribute).set(operation.get(ModelDescriptionConstants.VALUE));

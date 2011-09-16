@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.*;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +34,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -42,7 +42,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Implements the {@code read-attribute} operation for runtime attributes exposed by a HornetQ
@@ -100,7 +99,7 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(control.isTemporary());
         } else if (METRICS.contains(attributeName) || READ_ATTRIBUTES.contains(attributeName)) {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", attributeName));
+            throw MESSAGES.unsupportedAttribute(attributeName);
         }
 
         context.completeStep();

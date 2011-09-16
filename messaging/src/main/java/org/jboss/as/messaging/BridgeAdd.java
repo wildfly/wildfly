@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,10 +76,10 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
         boolean hasStatic = operation.hasDefined(ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName());
         boolean hasDiscGroup = operation.hasDefined(CommonAttributes.DISCOVERY_GROUP_NAME.getName());
         if (!hasStatic && !hasDiscGroup) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Operation must include parameter %s or parameter %s",
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOperationParameters(
                     ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
         } else if (hasStatic && hasDiscGroup) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Operation cannot include both parameter %s and parameter %s",
+            throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotIncludeOperationParameters(
                     ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
         }
 
@@ -101,8 +102,7 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
 
             // The original subsystem initialization is complete; use the control object to create the divert
             if (hqService.getState() != ServiceController.State.UP) {
-                throw new IllegalStateException(String.format("Service %s is not in state %s, it is in state %s",
-                        MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
+                throw MESSAGES.invalidServiceState(MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState());
             }
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();

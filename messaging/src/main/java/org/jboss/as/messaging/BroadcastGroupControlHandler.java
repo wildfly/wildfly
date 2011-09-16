@@ -82,7 +82,7 @@ public class BroadcastGroupControlHandler extends AbstractHornetQComponentContro
             try {
                 context.getResult().set(control.getConnectorPairsAsJSON());
             } catch (Exception e) {
-                context.getFailureDescription().set(e.toString());
+                context.getFailureDescription().set(e.getLocalizedMessage());
             }
         } else {
             unsupportedOperation(operationName);

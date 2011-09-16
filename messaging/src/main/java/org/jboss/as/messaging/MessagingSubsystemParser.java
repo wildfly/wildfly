@@ -83,6 +83,7 @@ import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -267,7 +268,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                             handleElementText(reader, element, operation);
                         } else {
                             // These should be handled in specific case blocks above, e.g. case REMOTING_INTERCEPTORS:
-                            throw new UnsupportedOperationException(String.format("Implement support for element %s", element.getLocalName()));
+                            throw MESSAGES.unsupportedElement(element.getLocalName());
                         }
                     } else {
                         throw ParseUtils.unexpectedElement(reader);
@@ -388,15 +389,13 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case STATIC_CONNECTORS:
                     if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
-                        throw new XMLStreamException(String.format("Illegal element %s: cannot be used when %s is used",
-                                STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.illegalElement(STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
                     }
                     processStaticConnectors(reader, bridgeAdd, true);
                     break;
                 case DISCOVERY_GROUP_REF: {
                     if (seen.contains(Element.STATIC_CONNECTORS)) {
-                        throw new XMLStreamException(String.format("Illegal element %s: cannot be used when %s is used",
-                                DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
                     }
                     final Location location = reader.getLocation();
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
@@ -474,15 +473,13 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case STATIC_CONNECTORS:
                     if (seen.contains(Element.DISCOVERY_GROUP_REF)) {
-                        throw new XMLStreamException(String.format("Illegal element %s: cannot be used when %s is used",
-                                STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.illegalElement(STATIC_CONNECTORS, DISCOVERY_GROUP_REF), reader.getLocation());
                     }
                     processStaticConnectors(reader, bridgeAdd, false);
                     break;
                 case DISCOVERY_GROUP_REF: {
                     if (seen.contains(Element.STATIC_CONNECTORS)) {
-                        throw new XMLStreamException(String.format("Illegal element %s: cannot be used when %s is used",
-                                DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
                     }
                     final Location location = reader.getLocation();
                     final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
@@ -496,7 +493,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         if (!seen.contains(Element.STATIC_CONNECTORS) && !seen.contains(Element.DISCOVERY_GROUP_REF)) {
-            throw new XMLStreamException(String.format("Either %s or %s is required", Element.STATIC_CONNECTORS.getLocalName(),
+            throw new XMLStreamException(MESSAGES.required(Element.STATIC_CONNECTORS.getLocalName(),
                     Element.DISCOVERY_GROUP_REF.getLocalName()), reader.getLocation());
         }
 
@@ -1274,7 +1271,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
 
     static void unhandledElement(XMLExtendedStreamReader reader, Element element) throws XMLStreamException {
-        throw new XMLStreamException(String.format("Ignoring unhandled element: %s, at: %s", element, reader.getLocation().toString()));
+        throw MESSAGES.ignoringUnhandledElement(element, reader.getLocation().toString());
     }
 
     static void handleElementText(final XMLExtendedStreamReader reader, final Element element, final ModelNode node) throws XMLStreamException {
@@ -1336,14 +1333,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                             toSet.set(modelValue.asString());
                             break;
                         default:
-                            throw new XMLStreamException(String.format("Illegal value %s for element %s", value, element.getLocalName()), location);
+                            throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName()), location);
                     }
                 } catch (IllegalArgumentException iae) {
-                    throw new XMLStreamException(String.format("Illegal value %s for element %s as it could not be converted to required type %s", value, element.getLocalName(), expectedType), location);
+                    throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName(), expectedType), location);
                 }
             }
         } else if (!allowNull) {
-            throw new XMLStreamException(String.format("Illegal value %s for element %s", value, element.getLocalName()), location);
+            throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName()), location);
         }
     }
 
@@ -1542,7 +1539,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         boolean wroteHandler = false;
         for (Property handler : node.asPropertyList()) {
             if (wroteHandler) {
-                throw new IllegalStateException(String.format("Multiple %s children found; only one is allowed", GROUPING_HANDLER));
+                throw MESSAGES.multipleChildrenFound(GROUPING_HANDLER);
             }
             writer.writeStartElement(Element.GROUPING_HANDLER.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), handler.getName());

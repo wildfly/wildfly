@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.messaging.CommonAttributes.STARTED;
 import static org.jboss.as.messaging.CommonAttributes.VERSION;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.Locale;
@@ -190,12 +191,12 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult();
             } else {
                 // Bug
-                throw new IllegalStateException(String.format("Support for operation %s was not properly implemented", operationName));
+                throw MESSAGES.unsupportedOperation(operationName);
             }
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            context.getFailureDescription().set(e.toString());
+            context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
         context.completeStep();
@@ -364,7 +365,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(version);
         } else {
             // Bug
-            throw new IllegalStateException(String.format("Read support for attribute %s was not properly implemented", name));
+            throw MESSAGES.unsupportedAttribute(name);
         }
     }
 

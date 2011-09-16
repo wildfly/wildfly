@@ -5,14 +5,11 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 
-import java.util.logging.Logger;
-
 /**
  * @author scott.stark@jboss.org
  * @version $Revision:$
  */
 class ElementUtils {
-    static Logger log = Logger.getLogger("org.jboss.as.messaging");
 
     enum StaxEvent {
         START_ELEMENT(1),
