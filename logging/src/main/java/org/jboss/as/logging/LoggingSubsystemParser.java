@@ -81,6 +81,7 @@ import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
  * @author Emanuel Muckenhuber
@@ -425,7 +426,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 case TARGET: {
                     target = readStringAttributeElement(reader, "name");
                     if (!(target.equals("System.out") || target.equals("System.err"))) {
-                        throw new XMLStreamException("Invalid value for target name", reader.getLocation());
+                        throw new XMLStreamException(MESSAGES.invalidTargetName(), reader.getLocation());
                     }
                     break;
                 }
@@ -886,7 +887,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         String formatterSpec = null;
         if (reader.nextTag() != START_ELEMENT) {
-            throw new XMLStreamException("Missing required nested filter element", reader.getLocation());
+            throw new XMLStreamException(MESSAGES.missingRequiredNestedFilterElement(), reader.getLocation());
         }
         switch (Namespace.forUri(reader.getNamespaceURI())) {
             case LOGGING_1_0:

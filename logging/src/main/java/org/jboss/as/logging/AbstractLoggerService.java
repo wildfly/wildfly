@@ -28,6 +28,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -67,7 +69,7 @@ public abstract class AbstractLoggerService implements Service<Logger> {
     }
 
     private static <T> T notNull(T value) {
-        if (value == null) throw new IllegalStateException("Service not started");
+        if (value == null) throw MESSAGES.serviceNotStarted();
         return value;
     }
 }

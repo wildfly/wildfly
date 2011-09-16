@@ -23,7 +23,6 @@
 package org.jboss.as.logging;
 
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -40,8 +39,8 @@ import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
 import static org.jboss.as.logging.LogHandlerPropertiesConfigurator.setProperties;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
  * Service for custom handlers.
@@ -51,7 +50,6 @@ import static org.jboss.as.logging.LogHandlerPropertiesConfigurator.setPropertie
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public final class CustomHandlerService implements Service<Handler> {
-    private static final Logger ROOT_LOGGER = Logger.getLogger(CustomHandlerService.class.getPackage().getName());
     private final String className;
     private final String moduleName;
     private final List<Property> properties;
@@ -83,16 +81,16 @@ public final class CustomHandlerService implements Service<Handler> {
             if (Handler.class.isAssignableFrom(handlerClass)) {
                 handler = (Handler) handlerClass.newInstance();
             } else {
-                throw new StartException(String.format("%s %s is not a valid %s.", CUSTOM_HANDLER, className, Handler.class.getName()));
+                throw MESSAGES.invalidType(className, Handler.class);
             }
         } catch (ClassNotFoundException e) {
-            throw new StartException(String.format("Class %s could not be found.", className), e);
+            throw MESSAGES.classNotFound(e, className);
         } catch (ModuleLoadException e) {
-            throw new StartException(String.format("Could not load module %s.", moduleName), e);
+            throw MESSAGES.cannotLoadModule(e, moduleName);
         } catch (InstantiationException e) {
-            throw new StartException(String.format("Could not instantiate %s.", className), e);
+            throw MESSAGES.cannotInstantiateClass(e, className);
         } catch (IllegalAccessException e) {
-            throw new StartException(String.format("Could not access %s.", className), e);
+            throw MESSAGES.cannotAccessClass(e, className);
         }
         formatterSpec.apply(handler);
         if (level != null) handler.setLevel(level);
