@@ -44,51 +44,79 @@ import org.jboss.security.SecurityContextAssociation;
 class SecurityActions {
 
     static ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
-        try {
-            return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
-                public ModuleClassLoader run() throws ModuleLoadException {
-                    ModuleLoader loader = Module.getCallerModuleLoader();
-                    ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
-                    return loader.loadModule(identifier).getClassLoader();
-                }
-            });
-        } catch (PrivilegedActionException pae) {
-            throw new ModuleLoadException(pae);
+        if (System.getSecurityManager() != null) {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<ModuleClassLoader>() {
+                    public ModuleClassLoader run() throws ModuleLoadException {
+                        ModuleLoader loader = Module.getCallerModuleLoader();
+                        ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
+                        return loader.loadModule(identifier).getClassLoader();
+                    }
+                });
+            } catch (PrivilegedActionException pae) {
+                throw new ModuleLoadException(pae);
+            }
+        } else {
+            ModuleLoader loader = Module.getCallerModuleLoader();
+            ModuleIdentifier identifier = ModuleIdentifier.fromString(moduleSpec);
+            return loader.loadModule(identifier).getClassLoader();
         }
     }
 
     static SecurityContext getSecurityContext() {
-        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-            public SecurityContext run() {
-                return SecurityContextAssociation.getSecurityContext();
-            }
-        });
+        if (System.getSecurityManager() != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
+                public SecurityContext run() {
+                    return SecurityContextAssociation.getSecurityContext();
+                }
+            });
+        } else {
+            return SecurityContextAssociation.getSecurityContext();
+        }
     }
 
     static Principal getPrincipal() {
-        return AccessController.doPrivileged(new PrivilegedAction<Principal>() {
-            public Principal run() {
-                Principal principal = null;
-                SecurityContext sc = getSecurityContext();
-                if (sc != null) {
-                    principal = sc.getUtil().getUserPrincipal();
+        if (System.getSecurityManager() != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<Principal>() {
+                public Principal run() {
+                    Principal principal = null;
+                    SecurityContext sc = getSecurityContext();
+                    if (sc != null) {
+                        principal = sc.getUtil().getUserPrincipal();
+                    }
+                    return principal;
                 }
-                return principal;
+            });
+        } else {
+            Principal principal = null;
+            SecurityContext sc = getSecurityContext();
+            if (sc != null) {
+                principal = sc.getUtil().getUserPrincipal();
             }
-        });
+            return principal;
+        }
     }
 
     static Object getCredential() {
-        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            public Object run() {
-                Object credential = null;
-                SecurityContext sc = getSecurityContext();
-                if (sc != null) {
-                    credential = sc.getUtil().getCredential();
+        if (System.getSecurityManager() != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    Object credential = null;
+                    SecurityContext sc = getSecurityContext();
+                    if (sc != null) {
+                        credential = sc.getUtil().getCredential();
+                    }
+                    return credential;
                 }
-                return credential;
+            });
+        } else {
+            Object credential = null;
+            SecurityContext sc = getSecurityContext();
+            if (sc != null) {
+                credential = sc.getUtil().getCredential();
             }
-        });
+            return credential;
+        }
     }
 
 }

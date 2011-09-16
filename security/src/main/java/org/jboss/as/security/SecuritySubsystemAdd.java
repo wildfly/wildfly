@@ -49,7 +49,8 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
-import org.jboss.as.security.processors.SecurityDependencyProcessor;
+import org.jboss.as.security.deployment.JaccEarDeploymentProcessor;
+import org.jboss.as.security.deployment.SecurityDependencyProcessor;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.security.service.SecurityManagementService;
@@ -319,6 +320,13 @@ class SecuritySubsystemAdd implements OperationStepHandler {
                         if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                             context.removeService(JaasConfigurationService.SERVICE_NAME);
                         }
+                    }
+                }, OperationContext.Stage.RUNTIME);
+                // add processor for EAR JACC
+                context.addStep(new AbstractDeploymentChainStep() {
+                    protected void execute(DeploymentProcessorTarget processorTarget) {
+                        processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT,
+                                new JaccEarDeploymentProcessor());
                     }
                 }, OperationContext.Stage.RUNTIME);
             }
