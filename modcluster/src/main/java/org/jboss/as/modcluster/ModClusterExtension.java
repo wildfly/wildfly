@@ -23,6 +23,7 @@
 package org.jboss.as.modcluster;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 import java.util.Locale;
 
@@ -44,7 +45,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
 
 /**
  * Domain extension used to initialize the mod_cluster subsystem element handlers.
@@ -52,8 +52,6 @@ import org.jboss.logging.Logger;
  * @author Jean-Frederic Clere
  */
 public class ModClusterExtension implements XMLStreamConstants, Extension {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
     public static final String SUBSYSTEM_NAME = "modcluster";
     public static final String NAMESPACE = "urn:jboss:domain:modcluster:1.0";
@@ -71,7 +69,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     @Override
     public void initialize(ExtensionContext context) {
 
-        log.debugf("Activating Mod_cluster Extension");
+        ROOT_LOGGER.debugf("Activating Mod_cluster Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ModClusterSubsystemDescriptionProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, ModClusterSubsystemAdd.INSTANCE, ModClusterSubsystemAdd.INSTANCE, false);

@@ -31,13 +31,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
+
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
 public class ModClusterGetProxyConfiguration implements OperationStepHandler, DescriptionProvider{
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
     static final ModClusterGetProxyConfiguration INSTANCE = new ModClusterGetProxyConfiguration();
 
@@ -56,7 +55,7 @@ public class ModClusterGetProxyConfiguration implements OperationStepHandler, De
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
                     ModCluster modcluster = (ModCluster) controller.getValue();
                     Map<InetSocketAddress, String> map = modcluster.getProxyConfiguration();
-                    log.debugf("Mod_cluster ProxyConfiguration " + map);
+                    ROOT_LOGGER.debugf("Mod_cluster ProxyConfiguration %s", map);
                     if (!map.isEmpty()) {
                         final ModelNode result = new ModelNode();
                         Object[] addr = map.keySet().toArray();

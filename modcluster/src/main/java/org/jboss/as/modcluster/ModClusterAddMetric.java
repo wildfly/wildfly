@@ -34,12 +34,11 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
 public class ModClusterAddMetric implements OperationStepHandler, DescriptionProvider{
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.modcluster");
 
     static final ModClusterAddMetric INSTANCE = new ModClusterAddMetric();
 
@@ -74,7 +73,7 @@ public class ModClusterAddMetric implements OperationStepHandler, DescriptionPro
                         }
                     }
                     if (!metric.get("type").isDefined()) {
-                        throw new OperationFailedException(new ModelNode().set("A type attribute is needed for add-metric"));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.typeAttributeRequired("add-metric")));
                     }
                     if (!dynamicLoadProvider.isDefined()) {
                         // Create a default one.
