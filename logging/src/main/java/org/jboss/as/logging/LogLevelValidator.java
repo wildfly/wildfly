@@ -29,6 +29,7 @@ import org.jboss.dmr.ModelNode;
 import java.util.logging.Level;
 
 import static org.jboss.dmr.ModelType.EXPRESSION;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
  * Checks the value to see if it's a valid {@link Level}.
@@ -51,7 +52,7 @@ final class LogLevelValidator implements ParameterValidator {
             try {
                 Level.parse(level);
             } catch (IllegalArgumentException e) {
-                throw new OperationFailedException(new ModelNode().set(String.format("Log level %s is invalid.", level)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(level)));
             }
         }
     }

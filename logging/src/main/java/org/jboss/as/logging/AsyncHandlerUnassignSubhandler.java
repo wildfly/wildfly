@@ -35,6 +35,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 
 /**
@@ -73,7 +74,7 @@ public class AsyncHandlerUnassignSubhandler extends AbstractModelUpdateHandler {
 
         ModelNode assignedHandlers = model.get(CommonAttributes.SUBHANDLERS);
         if (!assignedHandlers.isDefined() || !assignedHandlers.asList().contains(handlerNameNode)) {
-            opFailed("Can not unassign handler.  Handler " + handlerName + " is not assigned.");
+            opFailed(MESSAGES.cannotUnassignHandler(handlerName));
         }
 
         List<ModelNode> newList = new ArrayList<ModelNode>();

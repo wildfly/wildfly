@@ -35,6 +35,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.InjectedValue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 
 /**
@@ -71,7 +72,7 @@ public class AsyncHandlerAssignSubhandler extends AbstractModelUpdateHandler {
         String handlerName = operation.get(CommonAttributes.NAME).asString();
         ModelNode assignedHandlers = model.get(CommonAttributes.SUBHANDLERS);
         if (assignedHandlers.isDefined() && assignedHandlers.asList().contains(operation.get(CommonAttributes.NAME)))
-            opFailed("Handler " + handlerName + " is already assigned.");
+            opFailed(MESSAGES.handlerAlreadyDefined(handlerName));
         assignedHandlers.add(handlerName);
     }
 
@@ -87,7 +88,7 @@ public class AsyncHandlerAssignSubhandler extends AbstractModelUpdateHandler {
         ServiceController<Handler> handlerToAssignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToAssign));
 
         if (handlerToAssignController == null) {
-            opFailed("Handler " + handlerNameToAssign + " not found.");
+            opFailed(MESSAGES.handlerNotFound(handlerNameToAssign));
         }
 
         AsyncHandlerService service = (AsyncHandlerService)asyncHandlerController.getService();

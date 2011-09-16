@@ -23,7 +23,6 @@
 package org.jboss.as.logging;
 
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -37,6 +36,9 @@ import java.util.TimeZone;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+
 /**
  * Date: 15.08.2011
  *
@@ -44,7 +46,6 @@ import java.util.logging.Level;
  */
 class LogHandlerPropertiesConfigurator {
 
-    private static final Logger ROOT_LOGGER = Logger.getLogger(LogHandlerPropertiesConfigurator.class.getPackage().getName());
     private final Handler handler;
     private final Map<String, Method> methods;
 
@@ -84,10 +85,10 @@ class LogHandlerPropertiesConfigurator {
                 method.invoke(handler, arg);
                 ROOT_LOGGER.debugf("Set property '%s' with value of '%s' on handler '%s'.", property.getName(), property.getValue().asString(), handler.getClass().getName());
             } else {
-                ROOT_LOGGER.warnf("Unknown property '%s' on '%s'.", property.getName(), handler.getClass().getName());
+                ROOT_LOGGER.unknownProperty(property.getName(), handler.getClass().getName());
             }
         } catch (final Throwable t) {
-            ROOT_LOGGER.warnf(t, "An error occurred trying to set the property '%s' on handler '%s'.", property.getName(), handler.getClass().getName());
+            ROOT_LOGGER.errorSettingProperty(t, property.getName(), handler.getClass().getName());
         }
     }
 
@@ -137,7 +138,7 @@ class LogHandlerPropertiesConfigurator {
         } else if (paramType.isEnum()) {
             argument = Enum.valueOf(paramType.asSubclass(Enum.class), propValue);
         } else {
-            throw new IllegalArgumentException(String.format("Unknown parameter type for property %s on %s", propertyName, objClass));
+            throw MESSAGES.unknownParameterType(paramType, propertyName, objClass);
         }
         return argument;
     }

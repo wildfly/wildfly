@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Level;
 import org.jboss.msc.service.ServiceController;
@@ -83,7 +84,7 @@ public abstract class HandlerUpdateProperties implements OperationStepHandler {
                             try {
                                 handler.setEncoding(operation.get(ENCODING).asString());
                             } catch (UnsupportedEncodingException e) {
-                                throw new OperationFailedException(e, new ModelNode().set("Failed to set handler encoding."));
+                                throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
                             }
                         }
                         updateRuntime(operation, handler);

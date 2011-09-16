@@ -33,6 +33,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -67,7 +68,7 @@ public class LoggerAssignHandler extends AbstractModelUpdateHandler {
         final String handlerName = getHandlerName(operation);
         ModelNode assignedHandlers = getAssignedHandlers(model);
         if (assignedHandlers.isDefined() && assignedHandlers.asList().contains(operation.get(CommonAttributes.NAME)))
-            opFailed("Handler " + handlerName + " is already assigned.");
+            opFailed(MESSAGES.handlerAlreadyDefined(handlerName));
         assignedHandlers.add(handlerName);
     }
 
@@ -101,10 +102,10 @@ public class LoggerAssignHandler extends AbstractModelUpdateHandler {
         final ServiceController<Handler> handlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerName));
 
         if (loggerHandlerController != null) {
-            opFailed("Handler " + handlerName + " is already assigned.");
+            opFailed(MESSAGES.handlerAlreadyDefined(handlerName));
         }
 
-        if (handlerController == null) opFailed("Handler " + handlerName + " not found.");
+        if (handlerController == null) opFailed(MESSAGES.handlerNotFound(handlerName));
 
         ServiceTarget target = context.getServiceTarget();
         LoggerHandlerService service = new LoggerHandlerService(loggerName);
