@@ -41,6 +41,7 @@
                     <path name="sun/nio/ch"/>
                     <path name="sun/util"/>
                     <path name="sun/util/calendar"/>
+                    <path name="sun/security/provider"/>
                     <path name="META-INF/services"/>
                 </include-set>
             </exports>

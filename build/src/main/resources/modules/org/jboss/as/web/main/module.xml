@@ -55,5 +55,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.common-core"/>
         <module name="org.picketbox"/>
+        <module name="javax.security.jacc.api"/>
     </dependencies>
 </module>
