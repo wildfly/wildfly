@@ -21,14 +21,18 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class ChainedParameterValidator extends AbstractParameterValidator {
+public class ChainedParameterValidator extends AbstractParameterValidator implements MinMaxValidator, AllowedValuesValidator {
     private final ParameterValidator[] validators;
+
 
     public ChainedParameterValidator(final ParameterValidator... validators) {
         assert validators != null : "validators is null";
@@ -43,5 +47,60 @@ public class ChainedParameterValidator extends AbstractParameterValidator {
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         for (final ParameterValidator validator : validators)
             validator.validateParameter(parameterName, value);
+    }
+
+    @Override
+    public Long getMin() {
+        Long valMin = null;
+        for (ParameterValidator validator : validators) {
+            if (validator instanceof MinMaxValidator) {
+                MinMaxValidator minMax = (MinMaxValidator) validator;
+                Long val = minMax.getMin();
+                if (val != null && (valMin == null || val.longValue() > valMin.longValue())) {
+                    valMin = val;
+                }
+            }
+        }
+        return valMin;
+    }
+
+    @Override
+    public Long getMax() {
+        Long valMax = null;
+        for (ParameterValidator validator : validators) {
+            if (validator instanceof MinMaxValidator) {
+                MinMaxValidator minMax = (MinMaxValidator) validator;
+                Long val = minMax.getMax();
+                if (val != null && (valMax == null || val.longValue() < valMax.longValue())) {
+                    valMax = val;
+                }
+            }
+        }
+        return valMax;
+    }
+
+    @Override
+    public List<ModelNode> getAllowedValues() {
+        List<ModelNode> allowed = null;
+        for (ParameterValidator validator : validators) {
+            if (validator instanceof AllowedValuesValidator) {
+                AllowedValuesValidator avv = (AllowedValuesValidator) validator;
+                List<ModelNode> val = avv.getAllowedValues();
+                if (val != null) {
+                    if (allowed == null) {
+                        allowed = val;
+                    } else {
+                        List<ModelNode> copy = new ArrayList<ModelNode>();
+                        for (ModelNode existing : allowed) {
+                            if (val.contains(existing)) {
+                                copy.add(existing);
+                            }
+                        }
+                        allowed = copy;
+                    }
+                }
+            }
+        }
+        return allowed;
     }
 }

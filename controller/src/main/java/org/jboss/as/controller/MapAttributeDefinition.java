@@ -22,47 +22,46 @@
 
 package org.jboss.as.controller;
 
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.ListValidator;
+import org.jboss.as.controller.operations.validation.MapValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Defining characteristics of an {@link ModelType#LIST} attribute in a {@link org.jboss.as.controller.registry.Resource}, with utility
- * methods for conversion to and from xml and for validation.
+ * Defining characteristics of an {@link ModelType#OBJECT} attribute in a {@link org.jboss.as.controller.registry.Resource},
+ * where all children of the object have values of the same type; i.e. the attribute represents a logical map of
+ * arbitrary key value pairs.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class ListAttributeDefinition extends AttributeDefinition {
+public abstract class MapAttributeDefinition extends AttributeDefinition {
 
     private final ParameterValidator elementValidator;
 
-    public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator) {
-        this(name, name, allowNull, 0, Integer.MAX_VALUE, elementValidator, null, null);
+    public MapAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator) {
+        this(name, name, allowNull, 0, Integer.MAX_VALUE, elementValidator);
     }
 
-    public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
-                                   final int minSize, final int maxSize, final ParameterValidator elementValidator) {
+    public MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
+                                  final int minSize, final int maxSize, final ParameterValidator elementValidator) {
         this(name, xmlName, allowNull, minSize, maxSize, elementValidator, null, null);
     }
 
-    public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
-                                   final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                   final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.LIST, allowNull, false, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), alternatives, requires, flags);
+    public MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
+                                  final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                  final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.LIST, allowNull, false, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), alternatives, requires, flags);
         this.elementValidator = elementValidator;
     }
 
     /**
-     * Creates and returns a {@link org.jboss.dmr.ModelNode} using the given {@code value} after first validating the node
+     * Creates and returns a {@link ModelNode} using the given {@code value} after first validating the node
      * against {@link #getValidator() this object's validator}.
      * <p>
      * If {@code value} is {@code null} and a {@link #getDefaultValue() default value} is available, the value of that
@@ -75,7 +74,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
      *
      * @return {@code ModelNode} representing the parsed value
      *
-     * @throws javax.xml.stream.XMLStreamException if {@code value} is not valid
+     * @throws XMLStreamException if {@code value} is not valid
      */
     public ModelNode parse(final String value, final Location location) throws XMLStreamException {
 
@@ -96,31 +95,15 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
         return node;
     }
 
-    public void parseAndAddParameterElement(final String value, final ModelNode operation, final Location location) throws XMLStreamException {
+    public void parseAndAddParameterElement(final String key, final String value, final ModelNode operation, final Location location) throws XMLStreamException {
         ModelNode paramVal = parse(value, location);
-        operation.get(getName()).add(paramVal);
+        operation.get(getName()).get(key).set(paramVal);
     }
 
     @Override
     public ModelNode addResourceAttributeDescription(ResourceBundle bundle, String prefix, ModelNode resourceDescription) {
         final ModelNode result = super.addResourceAttributeDescription(bundle, prefix, resourceDescription);
         addValueTypeDescription(result, bundle);
-        return result;
-    }
-
-    @Override
-    public ModelNode addResourceAttributeDescription(ModelNode resourceDescription, ResourceDescriptionResolver resolver,
-                                                     Locale locale, ResourceBundle bundle) {
-        final ModelNode result = super.addResourceAttributeDescription(resourceDescription, resolver, locale, bundle);
-        addAttributeValueTypeDescription(result, resolver, locale, bundle);
-        return result;
-    }
-
-    @Override
-    public ModelNode addOperationParameterDescription(ModelNode resourceDescription, String operationName,
-                                                      ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        final ModelNode result = super.addOperationParameterDescription(resourceDescription, operationName, resolver, locale, bundle);
-        addOperationParameterValueTypeDescription(result, operationName, resolver, locale, bundle);
         return result;
     }
 
@@ -132,11 +115,4 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     }
 
     protected abstract void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle);
-
-    protected abstract void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver,
-                                                             final Locale locale, final ResourceBundle bundle);
-
-    protected abstract void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName,
-                                                                      final ResourceDescriptionResolver resolver,
-                                                                      final Locale locale, final ResourceBundle bundle);
 }

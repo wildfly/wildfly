@@ -24,6 +24,7 @@ package org.jboss.as.controller.registry;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 
 /**
@@ -113,15 +114,17 @@ public final class AttributeAccess {
     private final OperationStepHandler readHandler;
     private final OperationStepHandler writeHandler;
     private final EnumSet<Flag> flags;
+    private final AttributeDefinition definition;
 
     AttributeAccess(final AccessType access, final Storage storage, final OperationStepHandler readHandler,
-                           final OperationStepHandler writeHandler, final EnumSet<Flag> flags) {
+                    final OperationStepHandler writeHandler, AttributeDefinition definition, final EnumSet<Flag> flags) {
         assert access != null : "access is null";
         assert storage != null : "storage is null";
         this.access = access;
         this.readHandler = readHandler;
         this.writeHandler = writeHandler;
         this.storage = storage;
+        this.definition = definition;
         if(access == AccessType.READ_WRITE && writeHandler == null) {
             throw new IllegalArgumentException("writeHandler is null");
         }
@@ -174,6 +177,10 @@ public final class AttributeAccess {
      */
     public OperationStepHandler getWriteHandler() {
         return writeHandler;
+    }
+
+    public AttributeDefinition getAttributeDefinition() {
+        return definition;
     }
 
     /**

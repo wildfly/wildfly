@@ -31,9 +31,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 
 /**
  * A registry of values within a specific key type.
@@ -65,7 +65,7 @@ final class NodeSubregistry {
         return new HashSet<String>(snapshot.keySet());
     }
 
-    ManagementResourceRegistration register(final String elementValue, final DescriptionProvider provider, boolean runtimeOnly) {
+    ManagementResourceRegistration register(final String elementValue, final DescriptionProviderFactory provider, boolean runtimeOnly) {
         final AbstractResourceRegistration newRegistry = new ConcreteResourceRegistration(elementValue, this, provider, runtimeOnly);
         register(elementValue, newRegistry);
         return newRegistry;
@@ -119,16 +119,12 @@ final class NodeSubregistry {
         final AbstractResourceRegistration childRegistry = snapshot.get(child);
         final AbstractResourceRegistration wildcardRegistry = snapshot.get("*");
         if (wildcardRegistry == null) {
-            if (childRegistry == null) {
-                return;
-            } else {
+            if (childRegistry != null) {
                 childRegistry.getOperationDescriptions(iterator, providers, inherited);
-                return;
             }
         } else {
             if (childRegistry == null) {
                 wildcardRegistry.getOperationDescriptions(iterator, providers, inherited);
-                return;
             } else {
                 wildcardRegistry.getOperationDescriptions(iterator, providers, inherited);
                 childRegistry.getOperationDescriptions(iterator, providers, inherited);

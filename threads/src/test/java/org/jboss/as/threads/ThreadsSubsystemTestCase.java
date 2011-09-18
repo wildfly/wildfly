@@ -104,12 +104,14 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -805,8 +807,21 @@ public class ThreadsSubsystemTestCase {
                     if (descriptionProvider == null) {
                         throw new IllegalArgumentException("descriptionProvider is null");
                     }
+                    return registerSubsystemModel(new DescriptionProviderFactory() {
+                        @Override
+                        public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+                            return descriptionProvider;
+                        }
+                    });
+                }
+
+                @Override
+                public ManagementResourceRegistration registerSubsystemModel(DescriptionProviderFactory descriptionProviderFactory) {
+                    if (descriptionProviderFactory == null) {
+                        throw new IllegalArgumentException("descriptionProviderFactory is null");
+                    }
                     createdRegistration = testProfileRegistration.registerSubModel(PathElement.pathElement("subsystem", name),
-                            descriptionProvider);
+                            descriptionProviderFactory);
                     Assert.assertEquals("threads", name);
                     return createdRegistration;
                 }
@@ -814,6 +829,12 @@ public class ThreadsSubsystemTestCase {
                 @Override
                 public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
                     throw new IllegalStateException("Not implemented");
+                }
+
+                @Override
+                public ManagementResourceRegistration registerDeploymentModel(DescriptionProviderFactory descriptionProviderFactory) {
+                    //TODO implement registerDeploymentModel
+                    throw new UnsupportedOperationException("Not implemented");
                 }
 
                 @Override

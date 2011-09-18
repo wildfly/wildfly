@@ -48,8 +48,8 @@ public class EeWriteAttributeHandler extends ServerWriteAttributeOperationHandle
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(GlobalModulesDefinition.INSTANCE.getName(), null, this, AttributeAccess.Storage.CONFIGURATION);
-        registry.registerReadWriteAttribute(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.getName(), null, this, AttributeAccess.Storage.CONFIGURATION);
+        registry.registerReadWriteAttribute(GlobalModulesDefinition.INSTANCE, null, this);
+        registry.registerReadWriteAttribute(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED, null, this);
     }
 
     @Override

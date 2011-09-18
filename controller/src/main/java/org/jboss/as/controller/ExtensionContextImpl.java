@@ -27,10 +27,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -51,6 +53,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
      *
      * @param profileRegistration the profile registration
      * @param deploymentOverrideRegistration the deployment override registration
+     * @param writerRegistry the registry for extension xml marshallers
      */
     public ExtensionContextImpl(final ManagementResourceRegistration profileRegistration,
             final ManagementResourceRegistration deploymentOverrideRegistration,
@@ -88,7 +91,20 @@ public final class ExtensionContextImpl implements ExtensionContext {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
-                return profileRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProvider);
+                return registerSubsystemModel(new DescriptionProviderFactory() {
+                    @Override
+                    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+                        return descriptionProvider;
+                    }
+                });
+            }
+
+            @Override
+            public ManagementResourceRegistration registerSubsystemModel(DescriptionProviderFactory descriptionProviderFactory) {
+                if (descriptionProviderFactory == null) {
+                    throw new IllegalArgumentException("descriptionProviderFactory is null");
+                }
+                return profileRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProviderFactory);
             }
 
             @Override
@@ -96,7 +112,20 @@ public final class ExtensionContextImpl implements ExtensionContext {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
-                return subsystemDeploymentRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProvider);
+                return registerDeploymentModel(new DescriptionProviderFactory() {
+                    @Override
+                    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+                        return descriptionProvider;
+                    }
+                });
+            }
+
+            @Override
+            public ManagementResourceRegistration registerDeploymentModel(DescriptionProviderFactory descriptionProviderFactory) {
+                if (descriptionProviderFactory == null) {
+                    throw new IllegalArgumentException("descriptionProviderFactory is null");
+                }
+                return subsystemDeploymentRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProviderFactory);
             }
 
             @Override
@@ -200,6 +229,13 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProviderFactory descriptionProviderFactory) {
+            ManagementResourceRegistration depl = deployments.registerSubModel(address, descriptionProviderFactory);
+            ManagementResourceRegistration subdepl = subdeployments.registerSubModel(address, descriptionProviderFactory);
+            return new DeploymentManagementResourceRegistration(depl, subdepl);
+        }
+
+        @Override
         public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
             deployments.registerSubModel(address, subModel);
             subdeployments.registerSubModel(address, subModel);
@@ -248,6 +284,12 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
+            deployments.registerReadWriteAttribute(definition, readHandler, writeHandler);
+            subdeployments.registerReadWriteAttribute(definition, readHandler, writeHandler);
+        }
+
+        @Override
         public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, AttributeAccess.Storage storage) {
             deployments.registerReadOnlyAttribute(attributeName, readHandler, storage);
             subdeployments.registerReadOnlyAttribute(attributeName, readHandler, storage);
@@ -260,9 +302,21 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
+        public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
+            deployments.registerReadOnlyAttribute(definition, readHandler);
+            subdeployments.registerReadOnlyAttribute(definition, readHandler);
+        }
+
+        @Override
         public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
             deployments.registerMetric(attributeName, metricHandler);
             subdeployments.registerMetric(attributeName, metricHandler);
+        }
+
+        @Override
+        public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
+            deployments.registerMetric(definition, metricHandler);
+            subdeployments.registerMetric(definition, metricHandler);
         }
 
         @Override

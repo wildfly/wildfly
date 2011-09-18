@@ -24,6 +24,7 @@ package org.jboss.as.ee.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.xml.stream.XMLStreamException;
@@ -31,6 +32,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -78,15 +80,23 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
 
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-        final ModelNode valueType = node.get(VALUE_TYPE);
-        final ModelNode name = valueType.get(CommonAttributes.NAME);
-        name.get(DESCRIPTION).set(bundle.getString("ee.global-module.name"));
-        name.get(TYPE).set(ModelType.STRING);
-        name.get(NILLABLE).set(false);
-        final ModelNode slot = valueType.get(CommonAttributes.SLOT);
-        slot.get(DESCRIPTION).set(bundle.getString("ee.global-module.slot"));
-        slot.get(TYPE).set(ModelType.STRING);
-        slot.get(NILLABLE).set(true);
+        final ModelNode valueType = getNoTextValueTypeDescription(node);
+        valueType.get(CommonAttributes.NAME, DESCRIPTION).set(bundle.getString("ee.global-modules.name"));
+        valueType.get(CommonAttributes.SLOT, DESCRIPTION).set(bundle.getString("ee.global-modules.slot"));
+    }
+
+    @Override
+    protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+        final ModelNode valueType = getNoTextValueTypeDescription(node);
+        valueType.get(CommonAttributes.NAME, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, CommonAttributes.NAME));
+        valueType.get(CommonAttributes.SLOT, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, CommonAttributes.SLOT));
+    }
+
+    @Override
+    protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+        final ModelNode valueType = getNoTextValueTypeDescription(node);
+        valueType.get(CommonAttributes.NAME, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CommonAttributes.NAME));
+        valueType.get(CommonAttributes.SLOT, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CommonAttributes.SLOT));
     }
 
     @Override
@@ -103,5 +113,19 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
             }
             writer.writeEndElement();
         }
+    }
+
+    private ModelNode getNoTextValueTypeDescription(final ModelNode parent) {
+        final ModelNode valueType = parent.get(VALUE_TYPE);
+        final ModelNode name = valueType.get(CommonAttributes.NAME);
+        name.get(DESCRIPTION); // placeholder
+        name.get(TYPE).set(ModelType.STRING);
+        name.get(NILLABLE).set(false);
+        final ModelNode slot = valueType.get(CommonAttributes.SLOT);
+        slot.get(DESCRIPTION);  // placeholder
+        slot.get(TYPE).set(ModelType.STRING);
+        slot.get(NILLABLE).set(true);
+
+        return valueType;
     }
 }

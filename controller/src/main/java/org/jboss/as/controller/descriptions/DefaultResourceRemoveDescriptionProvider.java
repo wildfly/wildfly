@@ -20,36 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.subsystem;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.dmr.ModelNode;
+package org.jboss.as.controller.descriptions;
 
 /**
- * Handler for removing the ee subsystem.
+ * Default provider for a resource "remove" operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class EeSubsystemRemove extends AbstractRemoveStepHandler {
+public class DefaultResourceRemoveDescriptionProvider extends DefaultOperationDescriptionProvider {
 
-    public static final EeSubsystemRemove INSTANCE = new EeSubsystemRemove();
-
-    private EeSubsystemRemove() {
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        // This subsystem registers DUPs, so we can't remove it from the runtime without a reload
-        context.reloadRequired();
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        context.revertReloadRequired();
+    public DefaultResourceRemoveDescriptionProvider(final ResourceDescriptionResolver descriptionResolver) {
+        super(ModelDescriptionConstants.REMOVE, descriptionResolver);
     }
 }

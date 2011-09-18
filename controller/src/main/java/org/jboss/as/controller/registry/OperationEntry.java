@@ -28,7 +28,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
- * Information about a registered {@code NewStepHandler}.
+ * Information about a registered {@code OperationStepHandler}.
  *
  * @author Emanuel Muckenhuber
  */

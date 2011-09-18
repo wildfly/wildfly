@@ -28,11 +28,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.messaging.Attribute;
 import org.jboss.as.messaging.CommonAttributes;
@@ -85,6 +87,20 @@ public class JndiEntriesAttribute extends ListAttributeDefinition {
 
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
+        setValueType(node);
+    }
+
+    @Override
+    protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+        setValueType(node);
+    }
+
+    @Override
+    protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+        setValueType(node);
+    }
+
+    private void setValueType(ModelNode node) {
         node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 

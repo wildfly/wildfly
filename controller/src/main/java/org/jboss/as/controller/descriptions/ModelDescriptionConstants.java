@@ -179,6 +179,7 @@ public class ModelDescriptionConstants {
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
+    public static final String REQUIRES = "requires";
     public static final String RESPONSE = "response";
     public static final String RESPONSE_HEADERS = "response-headers";
     public static final String RESTART_REQUIRED = "restart-required";

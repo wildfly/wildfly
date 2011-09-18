@@ -27,7 +27,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class IntRangeValidator extends ModelTypeValidator {
+public class IntRangeValidator extends ModelTypeValidator implements MinMaxValidator {
     protected final int min;
     protected final int max;
 
@@ -60,6 +60,16 @@ public class IntRangeValidator extends ModelTypeValidator {
                 throw new OperationFailedException(new ModelNode().set(val + " is an invalid value for parameter " + parameterName + ". A maximum value of " + max + " is required"));
             }
         }
+    }
+
+    @Override
+    public Long getMin() {
+        return Long.valueOf(min);
+    }
+
+    @Override
+    public Long getMax() {
+        return Long.valueOf(max);
     }
 
 }

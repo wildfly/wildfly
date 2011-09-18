@@ -30,11 +30,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 
@@ -73,63 +75,78 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
-    public ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+    public ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProviderFactory descriptionProviderFactory) {
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerSubModel(final PathElement address, final ManagementResourceRegistration subModel) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, AttributeAccess.Storage storage) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerMetric(final String attributeName, final OperationStepHandler metricHandler) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
     }
 
     @Override
     public void registerProxyController(final PathElement address, final ProxyController proxyController) throws IllegalArgumentException {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
     }
 
     @Override
     public void unregisterProxyController(final PathElement address) throws IllegalArgumentException {
-        throw new IllegalArgumentException("A proxy handler is already registered at location '" + getLocationString() + "'");
+        throw alreadyRegistered();
     }
 
     @Override
@@ -193,5 +210,9 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
         //TODO
         //return proxyController.execute(operation, handler, control, attachments);
         return new ModelNode();
+    }
+
+    private IllegalArgumentException alreadyRegistered() {
+        return new IllegalArgumentException(String.format("A proxy handler is already registered at location '%s'", getLocationString()));
     }
 }

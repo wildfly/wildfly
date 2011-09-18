@@ -27,7 +27,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StringLengthValidator extends ModelTypeValidator {
+public class StringLengthValidator extends ModelTypeValidator implements MinMaxValidator {
     protected final int min;
     protected final int max;
 
@@ -60,6 +60,16 @@ public class StringLengthValidator extends ModelTypeValidator {
                 throw new OperationFailedException(new ModelNode().set("\"" + str + "\" is an invalid value for parameter " + parameterName + ". Values must have a maximum length of " + max + " characters"));
             }
         }
+    }
+
+    @Override
+    public Long getMin() {
+        return Long.valueOf(min);
+    }
+
+    @Override
+    public Long getMax() {
+        return Long.valueOf(max);
     }
 
 }

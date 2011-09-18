@@ -49,8 +49,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.as.controller.AbstractControllerService;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -62,6 +62,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -767,6 +768,11 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProviderFactory descriptionProviderFactory) {
+            return MOCK_RESOURCE_REG;
+        }
+
+        @Override
         public void registerSubModel(PathElement address, ManagementResourceRegistration subModel) {
         }
 
@@ -805,6 +811,10 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
+        }
+
+        @Override
         public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, Storage storage) {
         }
 
@@ -813,7 +823,15 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
+        public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
+        }
+
+        @Override
         public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
+        }
+
+        @Override
+        public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
         }
 
         @Override

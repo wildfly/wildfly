@@ -21,13 +21,15 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import java.util.List;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class ParametersOfValidator implements ParameterValidator {
+public class ParametersOfValidator implements ParameterValidator, MinMaxValidator, AllowedValuesValidator {
     private final ParametersValidator delegate;
 
     public ParametersOfValidator(final ParametersValidator delegate) {
@@ -53,5 +55,20 @@ public class ParametersOfValidator implements ParameterValidator {
         } catch (OperationFailedException e) {
             throw new OperationFailedException(e.getMessage(), e.getCause(), new ModelNode().set(parameterName + ": " + e.getFailureDescription().asString()));
         }
+    }
+
+    @Override
+    public Long getMin() {
+        return (delegate instanceof MinMaxValidator) ? ((MinMaxValidator) delegate).getMin() : null;
+    }
+
+    @Override
+    public Long getMax() {
+        return (delegate instanceof MinMaxValidator) ? ((MinMaxValidator) delegate).getMax() : null;
+    }
+
+    @Override
+    public List<ModelNode> getAllowedValues() {
+        return (delegate instanceof AllowedValuesValidator) ? ((AllowedValuesValidator) delegate).getAllowedValues() : null;
     }
 }

@@ -25,10 +25,12 @@ package org.jboss.as.messaging;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -78,6 +80,20 @@ public class ConnectorRefsAttribute extends ListAttributeDefinition {
 
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
+        setValueType(node);
+    }
+
+    @Override
+    protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+        setValueType(node);
+    }
+
+    @Override
+    protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+        setValueType(node);
+    }
+
+    private void setValueType(ModelNode node) {
         node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
     }
 }

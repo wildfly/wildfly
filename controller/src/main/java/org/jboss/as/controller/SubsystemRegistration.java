@@ -23,6 +23,7 @@
 package org.jboss.as.controller;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -38,16 +39,36 @@ public interface SubsystemRegistration {
     /**
      * Get the model node registration for this subsystem.
      *
+     * @param descriptionProvider provider of the description of the subsystem's root management resource
+     *
      * @return the subsystem-level model node registration
      */
     ManagementResourceRegistration registerSubsystemModel(DescriptionProvider descriptionProvider);
 
     /**
+     * Get the model node registration for this subsystem.
+     *
+     * @param descriptionProviderFactory  factory for the provider of the description of the subsystem's root management resource
+     * @return the subsystem-level model node registration
+     */
+    ManagementResourceRegistration registerSubsystemModel(DescriptionProviderFactory descriptionProviderFactory);
+
+    /**
      * Get the deployment model node registration for this subsystem.
      *
+     * @param descriptionProvider  provider of the description of the subsystem's root deployment-level management resource
      * @return the deployment-level model node registration
      */
     ManagementResourceRegistration registerDeploymentModel(DescriptionProvider descriptionProvider);
+
+    /**
+     * Get the deployment model node registration for this subsystem.
+     *
+     * @param descriptionProviderFactory factory for the provider of the description of the subsystem's root deployment-level management resource
+     * @return the deployment-level model node registration
+     */
+    ManagementResourceRegistration registerDeploymentModel(DescriptionProviderFactory descriptionProviderFactory);
+
 
     /**
      * Registers the {@link XMLElementWriter} that can handle marshalling

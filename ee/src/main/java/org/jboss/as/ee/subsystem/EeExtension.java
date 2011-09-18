@@ -51,8 +51,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
+import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -77,6 +82,7 @@ public class EeExtension implements Extension {
     public static final String NAMESPACE = "urn:jboss:domain:ee:1.0";
     public static final String SUBSYSTEM_NAME = "ee";
     private static final EESubsystemParser parser = new EESubsystemParser();
+    static final String RESOURCE_NAME = EeExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     /**
      * {@inheritDoc}
@@ -84,21 +90,27 @@ public class EeExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DescriptionProvider() {
 
-            public ModelNode getModelDescription(final Locale locale) {
-                return EeSubsystemDescriptions.getSubsystemDescription(locale);
-            }
-        });
+        // Create a standard ResourceBundle-based resolver for localizing text descriptions for our root resource
+        final ResourceDescriptionResolver rootResolver = new StandardResourceDescriptionResolver(SUBSYSTEM_NAME, RESOURCE_NAME, getClass().getClassLoader(), true, false);
+        // Create the root subsystem resource, using a standard resource description provider.
+        final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(DescriptionProviderFactory.DefaultFactory.create(rootResolver));
+        // Our different operation handlers manipulate the state of the subsystem's DUPs, so they need to share a ref
         final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor = new DefaultEarSubDeploymentsIsolationProcessor();
         final GlobalModuleDependencyProcessor moduleDependencyProcessor = new GlobalModuleDependencyProcessor();
-        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor);
-        registration.registerOperationHandler(ADD, subsystemAdd, subsystemAdd, false);
-        registration.registerOperationHandler(REMOVE, EeSubsystemRemove.INSTANCE, EeSubsystemRemove.INSTANCE, false,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
-        registration.registerOperationHandler(DESCRIBE, EESubsystemDescribeHandler.INSTANCE, EESubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        // Root resource attributes
         EeWriteAttributeHandler writeHandler = new EeWriteAttributeHandler(isolationProcessor, moduleDependencyProcessor);
-        writeHandler.registerAttributes(registration);
+        writeHandler.registerAttributes(rootResource);
+
+        // Add and remove the root resource
+        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor);
+        final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResource, rootResolver);
+        rootResource.registerOperationHandler(ADD, subsystemAdd, subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
+        final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
+        rootResource.registerOperationHandler(REMOVE, EeSubsystemRemove.INSTANCE, subsystemRemoveDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
+
+        // Mandatory describe operation
+        rootResource.registerOperationHandler(DESCRIBE, EESubsystemDescribeHandler.INSTANCE, EESubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         subsystem.registerXMLElementWriter(parser);
     }

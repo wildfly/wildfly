@@ -33,10 +33,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
@@ -51,7 +53,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     private volatile Map<String, OperationEntry> operations;
 
     @SuppressWarnings("unused")
-    private volatile DescriptionProvider descriptionProvider;
+    private volatile DescriptionProviderFactory descriptionProviderFactory;
 
     @SuppressWarnings("unused")
     private volatile Map<String, AttributeAccess> attributes;
@@ -61,9 +63,9 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "operations"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "attributes"));
-    private static final AtomicReferenceFieldUpdater<ConcreteResourceRegistration, DescriptionProvider> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, DescriptionProvider.class, "descriptionProvider");
+    private static final AtomicReferenceFieldUpdater<ConcreteResourceRegistration, DescriptionProviderFactory> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, DescriptionProviderFactory.class, "descriptionProviderFactory");
 
-    ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProvider provider, final boolean runtimeOnly) {
+    ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProviderFactory provider, final boolean runtimeOnly) {
         super(valueString, parent);
         childrenUpdater.clear(this);
         operationsUpdater.clear(this);
@@ -83,11 +85,11 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
+    public ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProviderFactory descriptionProviderFactory) {
         if (address == null) {
             throw new IllegalArgumentException("address is null");
         }
-        if (descriptionProvider == null) {
+        if (descriptionProviderFactory == null) {
             throw new IllegalArgumentException("descriptionProvider is null");
         }
         if (runtimeOnly) {
@@ -95,7 +97,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
-        return child.register(address.getValue(), descriptionProvider, false);
+        return child.register(address.getValue(), descriptionProviderFactory, false);
     }
 
     @Override
@@ -172,44 +174,70 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @Override
     public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType) {
         if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType)) != null) {
-            throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
+            throw alreadyRegistered("operation handler", operationName);
         }
     }
 
     @Override
     public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
         if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType, flags)) != null) {
-            throw new IllegalArgumentException("A handler named '" + operationName + "' is already registered at location '" + getLocationString() + "'");
+            throw alreadyRegistered("operation handler", operationName);
         }
     }
 
     @Override
     public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null)) != null) {
-            throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
+        AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null, null);
+        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
+            throw alreadyRegistered("attribute", attributeName);
         }
     }
 
     @Override
     public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
         AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, flags)) != null) {
-            throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
+        AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null, flags);
+        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
+            throw alreadyRegistered("attribute", attributeName);
+        }
+    }
+
+    @Override
+    public void registerReadWriteAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler, final OperationStepHandler writeHandler) {
+        final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();
+        final String attributeName = definition.getName();
+        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
+        AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, definition, flags);
+        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
+            throw alreadyRegistered("attribute", attributeName);
         }
     }
 
     @Override
     public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, AttributeAccess.Storage storage) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null)) != null) {
-            throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
+        AttributeAccess aa = new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null, null);
+        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
+            throw alreadyRegistered("attribute", attributeName);
         }
     }
 
     @Override
     public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
         AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null)) != null) {
-            throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
+        AttributeAccess aa = new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null, null);
+        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
+            throw alreadyRegistered("attribute", attributeName);
+        }
+    }
+
+    @Override
+    public void registerReadOnlyAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler) {
+        final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();
+        final String attributeName = definition.getName();
+        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
+        AttributeAccess aa = new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, definition, flags);
+        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
+            throw alreadyRegistered("attribute", attributeName);
         }
     }
 
@@ -220,8 +248,17 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     @Override
     public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-        if (attributesUpdater.putIfAbsent(this, attributeName, new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, flags)) != null) {
-            throw new IllegalArgumentException("An attribute named '" + attributeName + "' is already registered at location '" + getLocationString() + "'");
+        AttributeAccess aa = new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, null, flags);
+        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
+            throw alreadyRegistered("attribute", attributeName);
+        }
+    }
+
+    @Override
+    public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
+        AttributeAccess aa = new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, definition, definition.getFlags());
+        if (attributesUpdater.putIfAbsent(this, definition.getName(), aa) != null) {
+            throw alreadyRegistered("attribute", definition.getName());
         }
     }
 
@@ -269,7 +306,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
             }
             return subregistry.getModelDescription(iterator, next.getValue());
         } else {
-            return descriptionProvider;
+            return descriptionProviderFactory.getDescriptionProvider(this);
         }
     }
 
@@ -308,9 +345,9 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
                 // an unexpected undefined value returned. But it removes the possibility of a
                 // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
                 // in the valid attribute "foo" not being readable
-                final ModelNode desc = descriptionProvider.getModelDescription(null);
+                final ModelNode desc = descriptionProviderFactory.getDescriptionProvider(this).getModelDescription(null);
                 if (desc.has(ATTRIBUTES) && desc.get(ATTRIBUTES).keys().contains(attributeName)) {
-                    access = new AttributeAccess(AccessType.READ_ONLY, Storage.CONFIGURATION, null, null, null);
+                    access = new AttributeAccess(AccessType.READ_ONLY, Storage.CONFIGURATION, null, null, null, null);
                 }
             }
             return access;
@@ -413,6 +450,10 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         }
     }
 
+    private IllegalArgumentException alreadyRegistered(final String type, final String name) {
+        return new IllegalArgumentException(String.format("An %s named '%s' is already registered at location '%s'",
+                type, name, getLocationString()));
+    }
 
 }
 

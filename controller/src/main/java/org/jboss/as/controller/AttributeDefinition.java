@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.xml.stream.XMLStreamException;
@@ -29,7 +32,11 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
+import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -49,11 +56,14 @@ public abstract class AttributeDefinition {
     private final ModelNode defaultValue;
     private final MeasurementUnit measurementUnit;
     private final String[] alternatives;
+    private final String[] requires;
     private final ParameterValidator validator;
+    private final EnumSet<AttributeAccess.Flag> flags;
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
-                               final ParameterValidator validator, final String[] alternatives) {
+                               final ParameterValidator validator, final String[] alternatives, final String[] requires,
+                               final AttributeAccess.Flag... flags) {
         this.name = name;
         this.xmlName = xmlName;
         this.type = type;
@@ -66,7 +76,15 @@ public abstract class AttributeDefinition {
         this.defaultValue.protect();
         this.measurementUnit = measurementUnit;
         this.alternatives = alternatives;
+        this.requires = requires;
         this.validator = validator;
+        if (flags == null || flags.length == 0) {
+            this.flags = EnumSet.noneOf(AttributeAccess.Flag.class);
+        } else if (flags.length == 0) {
+            this.flags = EnumSet.of(flags[0]);
+        } else {
+            this.flags = EnumSet.of(flags[0], flags);
+        }
     }
 
     public String getName() {
@@ -103,6 +121,14 @@ public abstract class AttributeDefinition {
 
     public String[] getAlternatives() {
         return alternatives;
+    }
+
+    public String[] getRequires() {
+        return alternatives;
+    }
+
+    public EnumSet<AttributeAccess.Flag> getFlags() {
+        return EnumSet.copyOf(flags);
     }
 
     /**
@@ -244,22 +270,28 @@ public abstract class AttributeDefinition {
      * @return  the attribute description node
      */
     public ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix, final ModelNode resourceDescription) {
-        final ModelNode attr = new ModelNode();
-        attr.get(ModelDescriptionConstants.TYPE).set(type);
+        final ModelNode attr = getNoTextDescription(false);
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
-        attr.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
-        attr.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
-        if (defaultValue != null && defaultValue.isDefined()) {
-            attr.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
-        }
-        if (measurementUnit != null && measurementUnit != MeasurementUnit.NONE) {
-            attr.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
-        }
-        if (alternatives != null) {
-            for(final String alternative : alternatives) {
-                attr.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
-            }
-        }
+        final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
+        return result;
+    }
+
+    /**
+     * Creates a returns a basic model node describing the attribute, after attaching it to the given overall resource
+     * description model node.  The node describing the attribute is returned to make it easy to perform further
+     * modification.
+     *
+     * @param resourceDescription  the overall resource description
+     * @param resolver provider of localized text descriptions
+     * @param locale locale to pass to the resolver
+     * @param bundle bundle to pass to the resolver
+     * @return  the attribute description node
+     */
+    public ModelNode addResourceAttributeDescription(final ModelNode resourceDescription, final ResourceDescriptionResolver resolver,
+                                                     final Locale locale, final ResourceBundle bundle) {
+        final ModelNode attr = getNoTextDescription(false);
+        final String description = resolver.getResourceAttributeDescription(getName(), locale, bundle);
+        attr.get(ModelDescriptionConstants.DESCRIPTION).set(description);
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
         return result;
     }
@@ -275,26 +307,100 @@ public abstract class AttributeDefinition {
      * @return  the attribute description node
      */
     public ModelNode addOperationParameterDescription(final ResourceBundle bundle, final String prefix, final ModelNode operationDescription) {
-        final ModelNode param = new ModelNode();
-        param.get(ModelDescriptionConstants.TYPE).set(type);
+        final ModelNode param = getNoTextDescription(true);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
-        param.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
-        param.get(ModelDescriptionConstants.REQUIRED).set(!isAllowNull());
-        param.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
-        if (measurementUnit != null && measurementUnit != MeasurementUnit.NONE) {
-            param.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
-        }
-        if (alternatives != null) {
-            for(final String alternative : alternatives) {
-                param.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
-            }
-        }
         final ModelNode result = operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
+        return result;
+    }
+
+    /**
+     * Creates a returns a basic model node describing a parameter that sets this attribute, after attaching it to the
+     * given overall operation description model node.  The node describing the parameter is returned to make it easy
+     * to perform further modification.
+     *
+     * @param resourceDescription  the overall resource description
+     * @param operationName the operation name
+     * @param resolver provider of localized text descriptions
+     * @param locale locale to pass to the resolver
+     * @param bundle bundle to pass to the resolver
+     * @return  the attribute description node
+     */
+    public ModelNode addOperationParameterDescription(final ModelNode resourceDescription, final String operationName,
+                                                      final ResourceDescriptionResolver resolver,
+                                                      final Locale locale, final ResourceBundle bundle) {
+        final ModelNode param = getNoTextDescription(true);
+        final String description = resolver.getOperationParameterDescription(operationName, getName(), locale, bundle);
+        param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
+        final ModelNode result = resourceDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
         return result;
     }
 
     public String getAttributeTextDescription(final ResourceBundle bundle, final String prefix) {
         final String bundleKey = prefix == null ? name : (prefix + "." + name);
         return bundle.getString(bundleKey);
+    }
+
+    private ModelNode getNoTextDescription(boolean forOperation) {
+        final ModelNode result = new ModelNode();
+        result.get(ModelDescriptionConstants.TYPE).set(type);
+        result.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
+        result.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(isAllowExpression());
+        if (forOperation) {
+            result.get(ModelDescriptionConstants.REQUIRED).set(!isAllowNull());
+        }
+        result.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
+        if (!forOperation && defaultValue != null && defaultValue.isDefined()) {
+            result.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
+        }
+        if (measurementUnit != null && measurementUnit != MeasurementUnit.NONE) {
+            result.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
+        }
+        if (alternatives != null) {
+            for(final String alternative : alternatives) {
+                result.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
+            }
+        }
+        if (requires != null) {
+            for(final String required : requires) {
+                result.get(ModelDescriptionConstants.REQUIRES).add(required);
+            }
+        }
+        if (validator instanceof MinMaxValidator) {
+            MinMaxValidator minMax = (MinMaxValidator) validator;
+            Long min = minMax.getMin();
+            if (min != null) {
+                switch (this.type) {
+                    case STRING:
+                    case LIST:
+                    case OBJECT:
+                        result.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
+                        break;
+                    default:
+                        result.get(ModelDescriptionConstants.MIN).set(min);
+                }
+            }
+            Long max = minMax.getMax();
+            if (max != null) {
+                switch (this.type) {
+                    case STRING:
+                    case LIST:
+                    case OBJECT:
+                        result.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
+                        break;
+                    default:
+                        result.get(ModelDescriptionConstants.MAX).set(max);
+                }
+            }
+        }
+        if (validator instanceof AllowedValuesValidator) {
+            AllowedValuesValidator avv = (AllowedValuesValidator) validator;
+            List<ModelNode> allowed = avv.getAllowedValues();
+            if (allowed != null) {
+                for (ModelNode ok : allowed) {
+                    result.get(ModelDescriptionConstants.ALLOWED).add(ok);
+                }
+            }
+        }
+        return result;
     }
 }

@@ -26,7 +26,9 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
@@ -75,22 +77,18 @@ import java.util.Locale;
  * @author Weston M. Price
  * @author Emanuel Muckenhuber
  */
-public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final Logger logger = Logger.getLogger("org.jboss.as.ee");
 
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor;
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
 
+
     public EeSubsystemAdd(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
                           final GlobalModuleDependencyProcessor moduleDependencyProcessor) {
         this.isolationProcessor = isolationProcessor;
         this.moduleDependencyProcessor = moduleDependencyProcessor;
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return EeSubsystemDescriptions.getSubsystemAdd(locale);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {

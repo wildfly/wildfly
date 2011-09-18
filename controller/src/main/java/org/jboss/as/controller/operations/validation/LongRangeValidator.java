@@ -27,7 +27,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class LongRangeValidator extends ModelTypeValidator {
+public class LongRangeValidator extends ModelTypeValidator implements MinMaxValidator {
     protected final long min;
     protected final long max;
 
@@ -62,4 +62,13 @@ public class LongRangeValidator extends ModelTypeValidator {
         }
     }
 
+    @Override
+    public Long getMin() {
+        return Long.valueOf(min);
+    }
+
+    @Override
+    public Long getMax() {
+        return Long.valueOf(max);
+    }
 }

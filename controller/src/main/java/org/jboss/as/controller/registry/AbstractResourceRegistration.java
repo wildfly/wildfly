@@ -35,6 +35,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 
 /**
@@ -54,7 +55,18 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     /** {@inheritDoc} */
     @Override
-    public abstract ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider);
+    public final ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProvider descriptionProvider) {
+        return registerSubModel(address, new DescriptionProviderFactory() {
+            @Override
+            public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+                return descriptionProvider;
+            }
+        });
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProviderFactory descriptionProviderFactory);
 
     /** {@inheritDoc} */
     @Override

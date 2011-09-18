@@ -168,7 +168,7 @@ public interface ImmutableManagementResourceRegistration {
     /**
      * Get a sub model registration.
      *
-     * @param address the address
+     * @param address the address, relative to this node
      * @return the node registration, <code>null</code> if there is none
      */
     ImmutableManagementResourceRegistration getSubModel(PathAddress address);
