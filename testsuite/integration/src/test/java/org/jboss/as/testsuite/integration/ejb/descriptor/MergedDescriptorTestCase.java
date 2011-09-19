@@ -40,17 +40,15 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @RunWith(Arquillian.class)
-public class CustomDescriptorTestCase extends AbstractCustomDescriptorTests {
+public class MergedDescriptorTestCase extends AbstractCustomDescriptorTests {
     @Deployment
     public static Archive<?> deployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-descriptor-test.jar")
             .addPackage(DescriptorGreeterBean.class.getPackage())
-            .addAsManifestResource("ejb/descriptor/jboss-ejb3.xml", "jboss-ejb3.xml");
+            .addAsManifestResource("ejb/descriptor/jboss-ejb3.xml", "jboss-ejb3.xml")
+            .addAsManifestResource("ejb/descriptor/ejb-jar.xml", "ejb-jar.xml");
         return jar;
     }
-
-//    @EJB
-//    private DescriptorGreeterBean bean;
 
     @Test
     public void testAnnotated() throws NamingException {
@@ -60,6 +58,19 @@ public class CustomDescriptorTestCase extends AbstractCustomDescriptorTests {
             final String name = "testAnnotated";
             final String result = bean.greet(name);
             assertEquals("Hi testAnnotated", result);
+        } catch (NameNotFoundException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSpec() throws NamingException {
+        final InitialContext ctx = new InitialContext();
+        try {
+            final DescriptorGreeterBean bean = (DescriptorGreeterBean) ctx.lookup("java:global/ejb-descriptor-test/SpecGreeter");
+            final String name = "testSpec";
+            final String result = bean.greet(name);
+            assertEquals("Hi testSpec", result);
         } catch (NameNotFoundException e) {
             fail(e.getMessage());
         }
