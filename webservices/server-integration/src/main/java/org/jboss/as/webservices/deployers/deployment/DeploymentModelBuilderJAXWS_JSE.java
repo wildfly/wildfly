@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
+import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
+
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,7 +45,7 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
      * Constructor.
      */
     DeploymentModelBuilderJAXWS_JSE() {
-        super();
+        super(JAXWS, JAXWS_JSE);
     }
 
     /**

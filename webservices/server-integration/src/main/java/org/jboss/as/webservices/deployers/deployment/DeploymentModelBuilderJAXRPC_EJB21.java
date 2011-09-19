@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
+import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_EJB21;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
@@ -34,11 +37,12 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class DeploymentModelBuilderJAXRPC_EJB21 extends AbstractDeploymentModelBuilder {
+
     /**
      * Constructor.
      */
     DeploymentModelBuilderJAXRPC_EJB21() {
-        super();
+        super(JAXRPC, JAXRPC_EJB21);
     }
 
     /**

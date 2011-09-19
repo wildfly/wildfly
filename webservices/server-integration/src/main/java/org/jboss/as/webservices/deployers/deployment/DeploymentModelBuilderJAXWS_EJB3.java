@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
+import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
@@ -40,7 +43,7 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
      * Constructor.
      */
     DeploymentModelBuilderJAXWS_EJB3() {
-        super();
+        super(JAXWS, JAXWS_EJB3);
     }
 
     /**

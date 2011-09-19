@@ -21,6 +21,9 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
+import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_JSE;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
@@ -41,7 +44,7 @@ final class DeploymentModelBuilderJAXRPC_JSE extends AbstractDeploymentModelBuil
      * Constructor.
      */
     DeploymentModelBuilderJAXRPC_JSE() {
-        super();
+        super(JAXRPC, JAXRPC_JSE);
     }
 
     /**

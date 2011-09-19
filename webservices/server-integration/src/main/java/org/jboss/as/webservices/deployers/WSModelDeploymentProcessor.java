@@ -39,10 +39,7 @@ public final class WSModelDeploymentProcessor extends TCCLDeploymentProcessor im
     @Override
     public void internalDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        if (ASHelper.isWebServiceDeployment(unit)) {
-            //create new Web Service deployment and register it with deployment unit
-            WSDeploymentBuilder.getInstance().build(unit);
-        }
+        WSDeploymentBuilder.getInstance().build(unit);
     }
 
     @Override

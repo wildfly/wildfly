@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_KEY;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -33,19 +35,18 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
-import org.jboss.ws.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
+import org.jboss.wsf.spi.deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 
 /**
@@ -64,15 +65,23 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
     /** Deployment model factory. */
     private final DeploymentModelFactory deploymentModelFactory;
 
+    /** Deployment type this builder creates. */
+    private final DeploymentType deploymentType;
+
+    /** Endpoint type this builder creates. */
+    private final EndpointType endpointType;
+
     /**
      * Constructor.
      */
-    protected AbstractDeploymentModelBuilder() {
+    protected AbstractDeploymentModelBuilder(final DeploymentType deploymentType, final EndpointType endpointType) {
         super();
 
         // deployment factory
         final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
         this.deploymentModelFactory = spiProvider.getSPI(DeploymentModelFactory.class);
+        this.deploymentType = deploymentType;
+        this.endpointType = endpointType;
     }
 
     /**
@@ -82,16 +91,19 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
      */
     public final void newDeploymentModel(final DeploymentUnit unit) {
         final ArchiveDeployment dep;
-        try {
-            dep = this.newDeployment(unit);
-        } catch (DeploymentUnitProcessingException e) {
-            throw new RuntimeException(e);
+        if (unit.hasAttachment(DEPLOYMENT_KEY)) {
+            dep = (ArchiveDeployment) unit.getAttachment(DEPLOYMENT_KEY);
+        } else {
+            try {
+                dep = this.newDeployment(unit);
+            } catch (DeploymentUnitProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            dep.addAttachment(DeploymentUnit.class, unit);
+            unit.putAttachment(DEPLOYMENT_KEY, dep);
         }
 
         this.build(dep, unit);
-
-        dep.addAttachment(DeploymentUnit.class, unit);
-        unit.putAttachment(WSAttachmentKeys.DEPLOYMENT_KEY, dep);
     }
 
     /**
@@ -121,6 +133,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
 
         final Endpoint endpoint = this.deploymentModelFactory.newHttpEndpoint(endpointClass);
         endpoint.setShortName(endpointName);
+        endpoint.setType(endpointType);
         dep.getService().addEndpoint(endpoint);
 
         return endpoint;
@@ -146,6 +159,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         final Endpoint endpoint = this.deploymentModelFactory.newJMSEndpoint(endpointClass);
         endpoint.setAddress(soapAddress);
         endpoint.setShortName(endpointName);
+        endpoint.setType(endpointType);
         dep.getService().addEndpoint(endpoint);
 
         return endpoint;
@@ -160,31 +174,24 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
     private ArchiveDeployment newDeployment(final DeploymentUnit unit) throws DeploymentUnitProcessingException {
         this.log.debug("Creating new WS deployment model for: " + unit);
         final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile root = deploymentRoot != null ? deploymentRoot.getRoot() : null;
-        final ClassLoader classLoader;
+        final VirtualFile root = deploymentRoot.getRoot();
         final Module module = unit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            classLoader = unit.getAttachment(WSAttachmentKeys.CLASSLOADER_KEY);
-            if (classLoader == null) {
-                throw new DeploymentUnitProcessingException("failed to resolve module / classloader for deployment " + unit);
-            }
-        } else {
-            classLoader = module.getClassLoader();
+            throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + deploymentRoot);
         }
+        final ClassLoader classLoader = module.getClassLoader();
         final ArchiveDeployment dep = this.newDeployment(unit.getName(), classLoader);
 
-        if (root != null) {
-            try {
-                List<VirtualFile> virtualFiles = root.getChildrenRecursively(WS_FILE_FILTER);
-                final Set<UnifiedVirtualFile> uVirtualFiles = new HashSet<UnifiedVirtualFile>();
-                for (VirtualFile vf : virtualFiles) {
-                    // Adding the roots of the virtual files.
-                    uVirtualFiles.add(new VirtualFileAdaptor(vf));
-                }
-                dep.setMetadataFiles(new LinkedList<UnifiedVirtualFile>(uVirtualFiles));
-            } catch (IOException e) {
-                this.log.warn("Could not load metadata files for deployment root " + root, e);
+        try {
+            List<VirtualFile> virtualFiles = root.getChildrenRecursively(WS_FILE_FILTER);
+            final Set<UnifiedVirtualFile> uVirtualFiles = new HashSet<UnifiedVirtualFile>();
+            for (VirtualFile vf : virtualFiles) {
+                // Adding the roots of the virtual files.
+                uVirtualFiles.add(new VirtualFileAdaptor(vf));
             }
+            dep.setMetadataFiles(new LinkedList<UnifiedVirtualFile>(uVirtualFiles));
+        } catch (IOException e) {
+            this.log.warn("Could not load metadata files for deployment root " + root, e);
         }
 
         if (unit.getParent() != null) {
@@ -192,7 +199,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             final Module parentModule = unit.getParent().getAttachment(Attachments.MODULE);
             if (parentModule == null) {
                 throw new DeploymentUnitProcessingException("failed to resolve module for parent of deployment "
-                        + unit);
+                        + deploymentRoot);
             }
             final ClassLoader parentClassLoader = parentModule.getClassLoader();
 
@@ -201,13 +208,8 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             dep.setParent(parentDep);
         }
 
-        if (root != null) {
-            dep.setRootFile(new VirtualFileAdaptor(root));
-        } else {
-            dep.setRootFile(new ResourceLoaderAdapter(classLoader));
-        }
+        dep.setRootFile(new VirtualFileAdaptor(root));
         dep.setRuntimeClassLoader(classLoader);
-        final DeploymentType deploymentType = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_TYPE_KEY);
         dep.setType(deploymentType);
 
         return dep;
