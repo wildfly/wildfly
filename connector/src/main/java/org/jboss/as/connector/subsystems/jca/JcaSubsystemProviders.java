@@ -104,7 +104,6 @@ class JcaSubsystemProviders {
             subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DEFAULT).set(false);
 
             subsystem.get(CHILDREN, THREAD_POOL, DESCRIPTION).set(bundle.getString("threadpool"));
-            subsystem.get(CHILDREN, THREAD_POOL, REQUIRED).set(false);
 
             return subsystem;
         }

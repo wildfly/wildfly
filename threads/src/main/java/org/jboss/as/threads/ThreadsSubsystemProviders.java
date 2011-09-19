@@ -427,6 +427,10 @@ public class ThreadsSubsystemProviders {
         final ModelNode operation = new ModelNode();
         operation.get(OPERATION_NAME).set(operationName);
         operation.get(DESCRIPTION).set(description);
+        operation.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("threadpool.common.name"));
+        operation.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
+        operation.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(false);
+
         operation.get(REQUEST_PROPERTIES, THREAD_FACTORY, DESCRIPTION).set(bundle.getString("threadpool.common.threadfactory"));
         operation.get(REQUEST_PROPERTIES, THREAD_FACTORY, TYPE).set(ModelType.STRING);
         operation.get(REQUEST_PROPERTIES, THREAD_FACTORY, REQUIRED).set(false);

@@ -63,25 +63,5 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
             "</subsystem>";
     }
 
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
 
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1789
-                return null;
-            }
-
-            @Override
-            protected boolean isValidateOperations() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1789
-                return false;
-            }
-        };
-    }
 }
