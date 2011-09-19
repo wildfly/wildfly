@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class HornetQServerRemove implements OperationStepHandler, DescriptionProvider {
+class HornetQServerRemove implements OperationStepHandler {
 
     static final HornetQServerRemove INSTANCE = new HornetQServerRemove();
 
@@ -99,10 +99,5 @@ class HornetQServerRemove implements OperationStepHandler, DescriptionProvider {
         context.removeService(HornetQServerAdd.PATH_BASE.append(HornetQServerAdd.DEFAULT_JOURNAL_DIR));
         context.removeService(HornetQServerAdd.PATH_BASE.append(HornetQServerAdd.DEFAULT_LARGE_MESSSAGE_DIR));
         context.removeService(HornetQServerAdd.PATH_BASE.append(HornetQServerAdd.DEFAULT_PAGING_DIR));
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getHornetQServerRemove(locale);
     }
 }

@@ -40,7 +40,7 @@ import java.util.Set;
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class MessagingSubsystemRemove implements OperationStepHandler, DescriptionProvider {
+class MessagingSubsystemRemove implements OperationStepHandler {
 
     static final MessagingSubsystemRemove INSTANCE = new MessagingSubsystemRemove();
 
@@ -69,10 +69,5 @@ class MessagingSubsystemRemove implements OperationStepHandler, DescriptionProvi
         }, OperationContext.Stage.RUNTIME);
 
         context.completeStep();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getSubsystemRemove(locale);
     }
 }

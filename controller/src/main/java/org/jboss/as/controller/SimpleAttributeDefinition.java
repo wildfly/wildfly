@@ -47,21 +47,47 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
         this(name, name, null, type, allowNull, false, null);
     }
 
+    public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, final AttributeAccess.Flag... flags) {
+        this(name, name, null, type, allowNull, false, null, flags);
+    }
+
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, final MeasurementUnit measurementUnit) {
         this(name, name, null, type, allowNull, false, measurementUnit);
+    }
+
+    public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull,
+                                     final MeasurementUnit measurementUnit, final AttributeAccess.Flag... flags) {
+        this(name, name, null, type, allowNull, false, measurementUnit, flags);
     }
 
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull) {
         this(name, name, defaultValue, type, allowNull, false, null);
     }
 
+    public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type,
+                                     final boolean allowNull, final AttributeAccess.Flag... flags) {
+        this(name, name, defaultValue, type, allowNull, false, null, flags);
+    }
+
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final MeasurementUnit measurementUnit) {
         this(name, name, defaultValue, type, allowNull, false, measurementUnit);
+    }
+
+    public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull,
+                                     final MeasurementUnit measurementUnit, final AttributeAccess.Flag... flags) {
+        this(name, name, defaultValue, type, allowNull, false, measurementUnit, flags);
     }
 
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, createParameterValidator(type, allowNull, allowExpression), null, null);
+    }
+
+    public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
+                                     final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                                     final AttributeAccess.Flag... flags) {
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                createParameterValidator(type, allowNull, allowExpression), null, null, flags);
     }
 
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,

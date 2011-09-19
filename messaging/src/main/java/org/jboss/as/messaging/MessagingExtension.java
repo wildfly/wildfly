@@ -23,21 +23,36 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 
 import java.util.EnumSet;
+import java.util.Locale;
 
+import org.jboss.annotation.javaee.Description;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
+import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
+import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
@@ -61,6 +76,7 @@ import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryWriteAttributeHandler;
 import org.jboss.as.messaging.jms.JMSTopicConfigurationWriteHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Domain extension that integrates HornetQ.
@@ -72,6 +88,8 @@ import org.jboss.as.messaging.jms.JMSTopicConfigurationWriteHandler;
 public class MessagingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
+
+    private static final String RESOURCE_NAME = MessagingDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final PathElement SUBSYSTEM_PATH  = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
@@ -104,15 +122,35 @@ public class MessagingExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         subsystem.registerXMLElementWriter(MessagingSubsystemParser.getInstance());
 
-        final ManagementResourceRegistration rootRegistration = subsystem.registerSubsystemModel(MessagingSubsystemProviders.SUBSYSTEM);
+        // Root resource
+        final ResourceDescriptionResolver rootResolver = new StandardResourceDescriptionResolver(SUBSYSTEM_NAME, RESOURCE_NAME, getClass().getClassLoader());
+        final ManagementResourceRegistration rootRegistration = subsystem.registerSubsystemModel(DescriptionProviderFactory.DefaultFactory.create(rootResolver));
 
-        rootRegistration.registerOperationHandler(ADD, MessagingSubsystemAdd.INSTANCE, MessagingSubsystemAdd.INSTANCE, false);
-        rootRegistration.registerOperationHandler(REMOVE, MessagingSubsystemRemove.INSTANCE, MessagingSubsystemRemove.INSTANCE);
+        rootRegistration.registerOperationHandler(ADD, MessagingSubsystemAdd.INSTANCE, new DefaultResourceAddDescriptionProvider(rootRegistration, rootResolver));
+        rootRegistration.registerOperationHandler(REMOVE, MessagingSubsystemRemove.INSTANCE, new DefaultResourceRemoveDescriptionProvider(rootResolver));
         rootRegistration.registerOperationHandler(DESCRIBE, MessagingSubsystemDescribeHandler.INSTANCE, MessagingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(HORNETQ_SERVER_PATH, MessagingSubsystemProviders.SERVER);
-        serverRegistration.registerOperationHandler(ADD, HornetQServerAdd.INSTANCE, HornetQServerAdd.INSTANCE, false);
-        serverRegistration.registerOperationHandler(REMOVE, HornetQServerRemove.INSTANCE, HornetQServerRemove.INSTANCE, false);
+        // HQ servers
+        final ResourceDescriptionResolver serverResolver = new StandardResourceDescriptionResolver(CommonAttributes.HORNETQ_SERVER, RESOURCE_NAME, getClass().getClassLoader(), true, true);
+        // The resource description has a small tweak from the standard
+        final DescriptionProviderFactory serverDescriptionFactory = new DescriptionProviderFactory() {
+            @Override
+            public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+                return new DefaultResourceDescriptionProvider(resourceRegistration, serverResolver) {
+                    @Override
+                    public ModelNode getModelDescription(Locale locale) {
+                        ModelNode result = super.getModelDescription(locale);
+                        String path = CommonAttributes.PATH.getName();
+                        result.get(CHILDREN, path, MIN_OCCURS).set(4);
+                        result.get(CHILDREN, path, MAX_OCCURS).set(4);
+                        return result;
+                    }
+                };
+            }
+        };
+        final ManagementResourceRegistration serverRegistration = rootRegistration.registerSubModel(HORNETQ_SERVER_PATH, serverDescriptionFactory);
+        serverRegistration.registerOperationHandler(ADD, HornetQServerAdd.INSTANCE, new DefaultResourceAddDescriptionProvider(serverRegistration, serverResolver));
+        serverRegistration.registerOperationHandler(REMOVE, HornetQServerRemove.INSTANCE, new DefaultResourceRemoveDescriptionProvider(serverResolver));
         HornetQServerControlWriteHandler.INSTANCE.registerAttributes(serverRegistration);
         HornetQServerControlHandler.INSTANCE.register(serverRegistration);
         // runtime operations exposed by HornetQServerControl

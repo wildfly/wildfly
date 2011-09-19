@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,25 +48,17 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
 
     public static final HornetQServerControlWriteHandler INSTANCE = new HornetQServerControlWriteHandler();
 
-    private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
-    private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
     private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
-    private final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
+
     private HornetQServerControlWriteHandler() {
         for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             attributes.put(attr.getName(), attr);
-        }
-        for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES) {
-            runtimeAttributes.put(attr.getName(), attr);
         }
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
         for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            String attrName = attr.getName();
-            EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
-            registry.registerReadWriteAttribute(attrName, null, this, flags);
+            registry.registerReadWriteAttribute(attr, null, this);
         }
     }
 
@@ -85,9 +76,9 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
-        AttributeDefinition attr = runtimeAttributes.get(attributeName);
-        if (attr == null) {
-            // Not a runtime attribute; restart required
+        AttributeDefinition attr = attributes.get(attributeName);
+        if (attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
+            // Restart required
             return true;
         } else {
             ServiceRegistry registry = context.getServiceRegistry(true);
@@ -115,7 +106,8 @@ public class HornetQServerControlWriteHandler extends ServerWriteAttributeOperat
                                          final String attributeName, final ModelNode valueToRestore,
                                          final ModelNode valueToRevert) throws OperationFailedException {
 
-        if (runtimeAttributes.containsKey(attributeName)) {
+        AttributeDefinition attr = attributes.get(attributeName);
+        if (!attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
             ServiceRegistry registry = context.getServiceRegistry(true);
             ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
             if (hqService != null && hqService.getState() == ServiceController.State.UP) {

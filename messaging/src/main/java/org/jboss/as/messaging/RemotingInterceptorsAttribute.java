@@ -33,6 +33,7 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -46,7 +47,8 @@ public class RemotingInterceptorsAttribute extends ListAttributeDefinition {
     public static final RemotingInterceptorsAttribute INSTANCE = new RemotingInterceptorsAttribute();
 
     private RemotingInterceptorsAttribute() {
-        super(CommonAttributes.REMOTING_INTERCEPTORS_STRING, CommonAttributes.REMOTING_INTERCEPTORS_STRING, true, 1, Integer.MAX_VALUE, new StringLengthValidator(1));
+        super(CommonAttributes.REMOTING_INTERCEPTORS_STRING, CommonAttributes.REMOTING_INTERCEPTORS_STRING, true, 1,
+                Integer.MAX_VALUE, new StringLengthValidator(1), null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
     }
 
     @Override

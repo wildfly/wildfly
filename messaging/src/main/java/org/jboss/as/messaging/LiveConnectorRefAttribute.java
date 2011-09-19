@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -41,7 +42,7 @@ public class LiveConnectorRefAttribute extends SimpleAttributeDefinition {
     public static final LiveConnectorRefAttribute INSTANCE = new LiveConnectorRefAttribute();
 
     private LiveConnectorRefAttribute() {
-        super(CommonAttributes.LIVE_CONNECTOR_REF_STRING, ModelType.STRING, true);
+        super(CommonAttributes.LIVE_CONNECTOR_REF_STRING, ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
     }
 
     @Override

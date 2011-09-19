@@ -61,6 +61,6 @@ public class JMSTopicAddJndiHandler extends AbstractAddJndiHandler {
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getAddJndiOperation(locale, "topic");
+        return MessagingDescriptions.getAddJndiOperation(locale, "jms-topic");
     }
 }

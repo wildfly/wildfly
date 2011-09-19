@@ -72,7 +72,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     public static final String DROP_ALL_SUBSCRIPTIONS = "drop-all-subscriptions";
     public static final String REMOVE_MESSAGES = "remove-messages";
 
-    private static final String TOPIC = "topic";
+    private static final String TOPIC = "jms-topic";
 
     private final ParametersValidator listMessagesForSubscriptionValidator = new ParametersValidator();
     private final ParametersValidator countMessagesForSubscriptionValidator = new ParametersValidator();

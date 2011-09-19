@@ -29,6 +29,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -47,16 +48,18 @@ public interface CommonAttributes {
             new ModelNode().set(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()), ModelType.STRING, true);
 
     SimpleAttributeDefinition ALLOW_FAILBACK = new SimpleAttributeDefinition("allow-failback",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = new SimpleAttributeDefinition("async-connection-execution-enabled",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED), ModelType.BOOLEAN,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition AUTO_GROUP = new SimpleAttributeDefinition("auto-group",
             new ModelNode().set(HornetQClient.DEFAULT_AUTO_GROUP), ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition BACKUP = new SimpleAttributeDefinition("backup",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_BACKUP), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_BACKUP), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition BLOCK_ON_ACK = new SimpleAttributeDefinition("block-on-acknowledge",
             new ModelNode().set(HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE), ModelType.BOOLEAN, true);
@@ -90,7 +93,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CLIENT_ID = new SimpleAttributeDefinition("client-id",  ModelType.STRING, true);
 
     SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinition("clustered",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTERED), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTERED), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition CLUSTER_CONNECTION_ADDRESS = new SimpleAttributeDefinition("cluster-connection-address", "address",
             null, ModelType.STRING, false, false, MeasurementUnit.NONE);
@@ -102,10 +105,12 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_DUPLICATE_DETECTION), ModelType.BOOLEAN,  true);
 
     SimpleAttributeDefinition CLUSTER_PASSWORD = new SimpleAttributeDefinition("cluster-password",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition CLUSTER_USER = new SimpleAttributeDefinition("cluster-user",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER), ModelType.STRING, true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition COMPRESS_LARGE_MESSAGES = new SimpleAttributeDefinition("compress-large-messages",
             new ModelNode().set(HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES), ModelType.BOOLEAN,  true);
@@ -128,7 +133,8 @@ public interface CommonAttributes {
             new ModelNode().set(HornetQClient.DEFAULT_CONNECTION_TTL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = new SimpleAttributeDefinition("connection-ttl-override",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE), ModelType.LONG,  true,
+            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition CONNECTOR_REF = new SimpleAttributeDefinition("connector-ref", ModelType.STRING, false);
 
@@ -139,10 +145,10 @@ public interface CommonAttributes {
             new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
     SimpleAttributeDefinition CREATE_BINDINGS_DIR = new SimpleAttributeDefinition("create-bindings-dir",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition CREATE_JOURNAL_DIR = new SimpleAttributeDefinition("create-journal-dir",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition DEAD_LETTER_ADDRESS = new SimpleAttributeDefinition("dead-letter-address", ModelType.STRING, true);
 
@@ -169,7 +175,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition EXPIRY_ADDRESS = new SimpleAttributeDefinition("expiry-address", ModelType.STRING, true);
 
     SimpleAttributeDefinition FAILBACK_DELAY = new SimpleAttributeDefinition("failback-delay",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_FAILBACK_DELAY), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_FAILBACK_DELAY), ModelType.LONG,  true,
+            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition FAILOVER_ON_INITIAL_CONNECTION =  new SimpleAttributeDefinition("failover-on-initial-connection",
             new ModelNode().set(HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION), ModelType.BOOLEAN, true);
@@ -198,45 +205,56 @@ public interface CommonAttributes {
     SimpleAttributeDefinition HA = new SimpleAttributeDefinition("ha", new ModelNode().set(HornetQClient.DEFAULT_HA),  ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition ID_CACHE_SIZE = new SimpleAttributeDefinition("id-cache-size",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE), ModelType.INT,  true,
+            MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition INITIAL_WAIT_TIMEOUT = new SimpleAttributeDefinition("initial-wait-timeout",
             new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition JMX_DOMAIN = new SimpleAttributeDefinition("jmx-domain",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_DOMAIN), ModelType.STRING, true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_DOMAIN), ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = new SimpleAttributeDefinition("jmx-management-enabled",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED), ModelType.BOOLEAN,  true);
+            new ModelNode().set(false), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JNDI_PARAMS = new SimpleAttributeDefinition("jndi-params", ModelType.STRING, true);
 
-    SimpleAttributeDefinition JOURNAL_BUFFER_SIZE = new SimpleAttributeDefinition("journal-buffer-size", ModelType.LONG,  true, MeasurementUnit.BYTES);
+    SimpleAttributeDefinition JOURNAL_BUFFER_SIZE = new SimpleAttributeDefinition("journal-buffer-size", ModelType.LONG,
+            true, MeasurementUnit.BYTES, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition JOURNAL_BUFFER_TIMEOUT = new SimpleAttributeDefinition("journal-buffer-timeout", ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+    SimpleAttributeDefinition JOURNAL_BUFFER_TIMEOUT = new SimpleAttributeDefinition("journal-buffer-timeout", ModelType.LONG,
+            true, MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JOURNAL_COMPACT_MIN_FILES = new SimpleAttributeDefinition("journal-compact-min-files",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES), ModelType.INT,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES), ModelType.INT,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JOURNAL_COMPACT_PERCENTAGE = new SimpleAttributeDefinition("journal-compact-percentage",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE), ModelType.INT,  true, MeasurementUnit.PERCENTAGE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE), ModelType.INT,  true,
+            MeasurementUnit.PERCENTAGE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JOURNAL_FILE_SIZE = new SimpleAttributeDefinition("journal-file-size",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE), ModelType.LONG,  true, MeasurementUnit.BYTES);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE), ModelType.LONG,  true,
+            MeasurementUnit.BYTES, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition JOURNAL_MAX_IO = new SimpleAttributeDefinition("journal-max-io", ModelType.INT,  true, MeasurementUnit.NONE);
+    SimpleAttributeDefinition JOURNAL_MAX_IO = new SimpleAttributeDefinition("journal-max-io", ModelType.INT,  true,
+            MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JOURNAL_MIN_FILES = new SimpleAttributeDefinition("journal-min-files",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES), ModelType.INT,  true, MeasurementUnit.NONE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES), ModelType.INT,  true,
+            MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JOURNAL_SYNC_NON_TRANSACTIONAL = new SimpleAttributeDefinition("journal-sync-non-transactional",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL), ModelType.BOOLEAN,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JOURNAL_SYNC_TRANSACTIONAL = new SimpleAttributeDefinition("journal-sync-transactional",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL), ModelType.BOOLEAN,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition JOURNAL_TYPE = new SimpleAttributeDefinition("journal-type", "journal-type",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()), ModelType.STRING,  true, false, MeasurementUnit.NONE, JournalTypeValidator.INSTANCE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()), ModelType.STRING,  true, false,
+            MeasurementUnit.NONE, JournalTypeValidator.INSTANCE, null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     LiveConnectorRefAttribute LIVE_CONNECTOR_REF = LiveConnectorRefAttribute.INSTANCE;
 
@@ -250,16 +268,19 @@ public interface CommonAttributes {
             new String[] {"socket-binding"});
 
     SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = new SimpleAttributeDefinition("log-journal-write-rate",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition LVQ = new SimpleAttributeDefinition("last-value-queue",
             new ModelNode().set(AddressSettings.DEFAULT_LAST_VALUE_QUEUE), ModelType.BOOLEAN, true);
 
     SimpleAttributeDefinition MANAGEMENT_ADDRESS = new SimpleAttributeDefinition("management-address",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString()), ModelType.STRING, true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS.toString()), ModelType.STRING, true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleAttributeDefinition("management-notification-address",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString()), ModelType.STRING, true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString()), ModelType.STRING, true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition MAX_HOPS = new SimpleAttributeDefinition("max-hops",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_MAX_HOPS), ModelType.INT,  true);
@@ -274,10 +295,12 @@ public interface CommonAttributes {
             new ModelNode().set(AddressSettings.DEFAULT_MAX_SIZE_BYTES), ModelType.INT, true);
 
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = new SimpleAttributeDefinition("memory-measure-interval",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL), ModelType.LONG,  true,
+            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition MEMORY_WARNING_THRESHOLD = new SimpleAttributeDefinition("memory-warning-threshold",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD), ModelType.INT,  true, MeasurementUnit.PERCENTAGE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD), ModelType.INT,  true,
+            MeasurementUnit.PERCENTAGE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition MESSAGE_COUNTER_ENABLED = new SimpleAttributeDefinition("message-counter-enabled",
             new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED), ModelType.BOOLEAN,  true);
@@ -292,15 +315,17 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition MESSAGE_EXPIRY_SCAN_PERIOD = new SimpleAttributeDefinition("message-expiry-scan-period",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD), ModelType.LONG,  true,
+            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition MESSAGE_EXPIRY_THREAD_PRIORITY = new SimpleAttributeDefinition("message-expiry-thread-priority",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY), ModelType.INT,  true, MeasurementUnit.NONE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY), ModelType.INT,  true,
+            MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition MIN_LARGE_MESSAGE_SIZE = new SimpleAttributeDefinition("min-large-message-size",
             new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE), ModelType.INT,  true, MeasurementUnit.BYTES);
 
-    SimpleAttributeDefinition NAME_OPTIONAL = new SimpleAttributeDefinition("name", ModelType.STRING, true);
+    SimpleAttributeDefinition NAME_OPTIONAL = new SimpleAttributeDefinition("name", ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinition("password",
             new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD),  ModelType.STRING, true);
@@ -311,16 +336,18 @@ public interface CommonAttributes {
     SimpleAttributeDefinition PATH = new SimpleAttributeDefinition("path", ModelType.STRING, false);
 
     SimpleAttributeDefinition PERF_BLAST_PAGES = new SimpleAttributeDefinition("perf-blast-pages",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES), ModelType.INT,  true, MeasurementUnit.NONE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES), ModelType.INT,  true,
+            MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = new SimpleAttributeDefinition("persist-delivery-count-before-delivery",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY), ModelType.BOOLEAN,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition PERSISTENCE_ENABLED = new SimpleAttributeDefinition("persistence-enabled",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition PERSIST_ID_CACHE = new SimpleAttributeDefinition("persist-id-cache",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition PRE_ACK = new SimpleAttributeDefinition("pre-acknowledge",
             new ModelNode().set(HornetQClient.DEFAULT_PRE_ACKNOWLEDGE), ModelType.BOOLEAN,  true);
@@ -357,16 +384,19 @@ public interface CommonAttributes {
     SimpleAttributeDefinition ROUTING_NAME = new SimpleAttributeDefinition("routing-name", ModelType.STRING, true);
 
     SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = new SimpleAttributeDefinition("run-sync-speed-test",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_RUN_SYNC_SPEED_TEST), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_RUN_SYNC_SPEED_TEST), ModelType.BOOLEAN,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("scheduled-thread-pool-max-size",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition SECURITY_ENABLED = new SimpleAttributeDefinition("security-enabled",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_SECURITY_ENABLED), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SECURITY_ENABLED), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition SECURITY_INVALIDATION_INTERVAL = new SimpleAttributeDefinition("security-invalidation-interval",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition SELECTOR = new SimpleAttributeDefinition("selector", ModelType.STRING, true);
 
@@ -376,14 +406,15 @@ public interface CommonAttributes {
     SimpleAttributeDefinition SERVER_ID = new SimpleAttributeDefinition("server-id", ModelType.INT, false);
 
     SimpleAttributeDefinition SERVER_DUMP_INTERVAL = new SimpleAttributeDefinition("server-dump-interval",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL), ModelType.LONG,  true,
+            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition SETUP_ATTEMPTS = new SimpleAttributeDefinition("setup-attempts", ModelType.INT, true, MeasurementUnit.NONE);
 
     SimpleAttributeDefinition SETUP_INTERVAL = new SimpleAttributeDefinition("setup-interval", ModelType.LONG, true, MeasurementUnit.MILLISECONDS);
 
     SimpleAttributeDefinition SHARED_STORE = new SimpleAttributeDefinition("shared-store",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_SHARED_STORE), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_SHARED_STORE), ModelType.BOOLEAN,  true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinition("socket-binding", ModelType.STRING, false);
 
@@ -393,7 +424,8 @@ public interface CommonAttributes {
             new String[] {"group-address", "group-port"});
 
     SimpleAttributeDefinition THREAD_POOL_MAX_SIZE = new SimpleAttributeDefinition("thread-pool-max-size",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE), ModelType.INT,  true, MeasurementUnit.NONE,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition TIMEOUT =  new SimpleAttributeDefinition("timeout",
             new ModelNode().set(GroupingHandlerConfiguration.DEFAULT_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
@@ -405,10 +437,12 @@ public interface CommonAttributes {
             new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE), ModelType.INT,  true, MeasurementUnit.NONE);
 
     SimpleAttributeDefinition TRANSACTION_TIMEOUT = new SimpleAttributeDefinition("transaction-timeout",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT), ModelType.LONG,  true,
+            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition TRANSACTION_TIMEOUT_SCAN_PERIOD = new SimpleAttributeDefinition("transaction-timeout-scan-period",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD), ModelType.LONG,  true, MeasurementUnit.MILLISECONDS);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD), ModelType.LONG,  true,
+            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = new SimpleAttributeDefinition("transformer-class-name", ModelType.STRING, true);
 
@@ -428,7 +462,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition VALUE = new SimpleAttributeDefinition("value", ModelType.STRING, false);
 
     SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = new SimpleAttributeDefinition("wild-card-routing-enabled",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED), ModelType.BOOLEAN,  true);
+            new ModelNode().set(ConfigurationImpl.DEFAULT_WILDCARD_ROUTING_ENABLED), ModelType.BOOLEAN,  true,
+            AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
     String ACCEPTOR ="acceptor";
     String ACCEPTORS ="acceptors";

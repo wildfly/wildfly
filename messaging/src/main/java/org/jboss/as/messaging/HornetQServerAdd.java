@@ -132,7 +132,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class HornetQServerAdd implements OperationStepHandler, DescriptionProvider {
+class HornetQServerAdd implements OperationStepHandler {
 
     private static final String DEFAULT_PATH = "messaging";
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
@@ -413,11 +413,6 @@ class HornetQServerAdd implements OperationStepHandler, DescriptionProvider {
                 }
             }
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return MessagingDescriptions.getHornetQServerAdd(locale);
     }
 
     /**
