@@ -24,7 +24,6 @@ package org.jboss.as.threads;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
-import org.jboss.as.controller.OperationStepHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -93,25 +92,26 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -807,21 +807,16 @@ public class ThreadsSubsystemTestCase {
                     if (descriptionProvider == null) {
                         throw new IllegalArgumentException("descriptionProvider is null");
                     }
-                    return registerSubsystemModel(new DescriptionProviderFactory() {
-                        @Override
-                        public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-                            return descriptionProvider;
-                        }
-                    });
+                    PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
+                    return registerSubsystemModel(new SimpleResourceDefinition(pe, descriptionProvider));
                 }
 
                 @Override
-                public ManagementResourceRegistration registerSubsystemModel(DescriptionProviderFactory descriptionProviderFactory) {
-                    if (descriptionProviderFactory == null) {
-                        throw new IllegalArgumentException("descriptionProviderFactory is null");
+                public ManagementResourceRegistration registerSubsystemModel(ResourceDefinition resourceDefinition) {
+                    if (resourceDefinition == null) {
+                        throw new IllegalArgumentException("resourceDefinition is null");
                     }
-                    createdRegistration = testProfileRegistration.registerSubModel(PathElement.pathElement("subsystem", name),
-                            descriptionProviderFactory);
+                    createdRegistration = testProfileRegistration.registerSubModel(resourceDefinition);
                     Assert.assertEquals("threads", name);
                     return createdRegistration;
                 }
@@ -832,8 +827,7 @@ public class ThreadsSubsystemTestCase {
                 }
 
                 @Override
-                public ManagementResourceRegistration registerDeploymentModel(DescriptionProviderFactory descriptionProviderFactory) {
-                    //TODO implement registerDeploymentModel
+                public ManagementResourceRegistration registerDeploymentModel(ResourceDefinition resourceDefinition) {
                     throw new UnsupportedOperationException("Not implemented");
                 }
 

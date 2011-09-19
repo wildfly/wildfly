@@ -32,8 +32,8 @@ import java.util.Map;
  */
 enum Attribute {
     UNKNOWN(null),
-    NAME("name"),
-    SLOT("slot"),
+    NAME(GlobalModulesDefinition.NAME),
+    SLOT(GlobalModulesDefinition.SLOT),
     ;
     private final String name;
 

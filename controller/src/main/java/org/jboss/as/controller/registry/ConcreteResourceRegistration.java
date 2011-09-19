@@ -37,8 +37,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
@@ -53,7 +53,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     private volatile Map<String, OperationEntry> operations;
 
     @SuppressWarnings("unused")
-    private volatile DescriptionProviderFactory descriptionProviderFactory;
+    private volatile ResourceDefinition resourceDefinition;
 
     @SuppressWarnings("unused")
     private volatile Map<String, AttributeAccess> attributes;
@@ -63,9 +63,9 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "operations"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "attributes"));
-    private static final AtomicReferenceFieldUpdater<ConcreteResourceRegistration, DescriptionProviderFactory> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, DescriptionProviderFactory.class, "descriptionProviderFactory");
+    private static final AtomicReferenceFieldUpdater<ConcreteResourceRegistration, ResourceDefinition> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, ResourceDefinition.class, "resourceDefinition");
 
-    ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final DescriptionProviderFactory provider, final boolean runtimeOnly) {
+    ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final ResourceDefinition provider, final boolean runtimeOnly) {
         super(valueString, parent);
         childrenUpdater.clear(this);
         operationsUpdater.clear(this);
@@ -85,19 +85,23 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public ManagementResourceRegistration registerSubModel(final PathElement address, final DescriptionProviderFactory descriptionProviderFactory) {
-        if (address == null) {
-            throw new IllegalArgumentException("address is null");
+    public ManagementResourceRegistration registerSubModel(final ResourceDefinition resourceDefinition) {
+        if (resourceDefinition == null) {
+            throw new IllegalArgumentException("resourceDefinition is null");
         }
-        if (descriptionProviderFactory == null) {
-            throw new IllegalArgumentException("descriptionProvider is null");
+        final PathElement address = resourceDefinition.getPathElement();
+        if (address == null) {
+            throw new IllegalArgumentException("Cannot register submodels with a null PathElement");
         }
         if (runtimeOnly) {
             throw new IllegalStateException("Cannot register non-runtime-only submodels with a runtime-only parent");
         }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
-        return child.register(address.getValue(), descriptionProviderFactory, false);
+        final ManagementResourceRegistration resourceRegistration = child.register(address.getValue(), resourceDefinition, false);
+        resourceDefinition.registerAttributes(resourceRegistration);
+        resourceDefinition.registerOperations(resourceRegistration);
+        return resourceRegistration;
     }
 
     @Override
@@ -306,7 +310,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
             }
             return subregistry.getModelDescription(iterator, next.getValue());
         } else {
-            return descriptionProviderFactory.getDescriptionProvider(this);
+            return resourceDefinition.getDescriptionProvider(this);
         }
     }
 
@@ -345,7 +349,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
                 // an unexpected undefined value returned. But it removes the possibility of a
                 // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
                 // in the valid attribute "foo" not being readable
-                final ModelNode desc = descriptionProviderFactory.getDescriptionProvider(this).getModelDescription(null);
+                final ModelNode desc = resourceDefinition.getDescriptionProvider(this).getModelDescription(null);
                 if (desc.has(ATTRIBUTES) && desc.get(ATTRIBUTES).keys().contains(attributeName)) {
                     access = new AttributeAccess(AccessType.READ_ONLY, Storage.CONFIGURATION, null, null, null, null);
                 }

@@ -208,11 +208,14 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         context.completeStep();
     }
 
-    public void register(final ManagementResourceRegistration registry) {
+    public void registerAttributes(final ManagementResourceRegistration registry) {
 
         for (AttributeDefinition attr : ATTRIBUTES) {
             registry.registerReadOnlyAttribute(attr, this);
         }
+    }
+
+    public void registerOperations(final ManagementResourceRegistration registry) {
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
 

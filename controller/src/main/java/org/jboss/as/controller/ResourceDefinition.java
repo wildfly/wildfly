@@ -20,16 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.descriptions;
+package org.jboss.as.controller;
 
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * Factory for a {@link DescriptionProvider}.
+ * Provides essential information defining a management resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface DescriptionProviderFactory {
+public interface ResourceDefinition {
+
+    /**
+     * Gets the path element that describes how to navigate to this resource from its parent resource, or {@code null}
+     * if this is a definition of a root resource.
+     *
+     * @return the path element, or {@code null} if this is a definition of a root resource.
+     */
+    PathElement getPathElement();
 
     /**
      * Gets a {@link DescriptionProvider} for the given resource.
@@ -39,28 +50,17 @@ public interface DescriptionProviderFactory {
      */
     DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration);
 
-    /** A default implementation of this interface */
-    class DefaultFactory implements DescriptionProviderFactory {
-        public static DescriptionProviderFactory create(final String keyPrefix,
-                                                        final String bundleBaseName,
-                                                        final ClassLoader bundleLoader) {
-            StandardResourceDescriptionResolver resolver =
-                    new StandardResourceDescriptionResolver(keyPrefix, bundleBaseName, bundleLoader);
-            return  new DefaultFactory(resolver);
-        }
+    /**
+     * Register operations associated with this resource.
+     *
+     * @param resourceRegistration a {@link ManagementResourceRegistration} created from this definition
+     */
+    void registerOperations(final ManagementResourceRegistration resourceRegistration);
 
-        public static DescriptionProviderFactory create(ResourceDescriptionResolver descriptionResolver) {
-            return  new DefaultFactory(descriptionResolver);
-        }
-
-        final ResourceDescriptionResolver descriptionResolver;
-        private DefaultFactory(final ResourceDescriptionResolver descriptionResolver) {
-            this.descriptionResolver = descriptionResolver;
-        }
-
-        @Override
-        public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-            return new DefaultResourceDescriptionProvider(resourceRegistration, descriptionResolver);
-        }
-    }
+    /**
+     * Register operations associated with this resource.
+     *
+     * @param resourceRegistration a {@link ManagementResourceRegistration} created from this definition
+     */
+    void registerAttributes(final ManagementResourceRegistration resourceRegistration);
 }

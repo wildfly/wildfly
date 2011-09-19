@@ -31,9 +31,9 @@ import java.util.Map;
  */
 enum Element {
 
-    GLOBAL_MODULES("global-modules"),
+    GLOBAL_MODULES(GlobalModulesDefinition.GLOBAL_MODULES),
     MODULE("module"),
-    EAR_SUBDEPLOYMENTS_ISOLATED("ear-subdeployments-isolated"),
+    EAR_SUBDEPLOYMENTS_ISOLATED(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getXmlName()),
     UNKNOWN(null);
 
     private final String name;

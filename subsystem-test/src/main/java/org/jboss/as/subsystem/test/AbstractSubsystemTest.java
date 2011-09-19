@@ -61,8 +61,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -768,7 +768,7 @@ public abstract class AbstractSubsystemTest {
         }
 
         @Override
-        public ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProviderFactory descriptionProviderFactory) {
+        public ManagementResourceRegistration registerSubModel(ResourceDefinition resourceDefinition) {
             return MOCK_RESOURCE_REG;
         }
 

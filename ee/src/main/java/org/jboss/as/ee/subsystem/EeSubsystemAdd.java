@@ -26,9 +26,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
@@ -69,7 +66,6 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Handler for adding the ee subsystem.
@@ -94,7 +90,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
         GlobalModulesDefinition.INSTANCE.validateAndSet(operation, model);
-        CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.validateAndSet(operation,  model);
+        EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.validateAndSet(operation,  model);
     }
 
     protected void performBoottime(OperationContext context, final ModelNode operation, final ModelNode model,
@@ -108,7 +104,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode globalModules = GlobalModulesDefinition.INSTANCE.validateResolvedOperation(model);
         // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
         // they can see each other's classes.
-        final boolean earSubDeploymentsIsolated = CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.validateResolvedOperation(model).asBoolean();
+        final boolean earSubDeploymentsIsolated = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.validateResolvedOperation(model).asBoolean();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

@@ -24,7 +24,6 @@ package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
@@ -49,15 +48,15 @@ public class EeWriteAttributeHandler extends ServerWriteAttributeOperationHandle
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
         registry.registerReadWriteAttribute(GlobalModulesDefinition.INSTANCE, null, this);
-        registry.registerReadWriteAttribute(CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED, null, this);
+        registry.registerReadWriteAttribute(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED, null, this);
     }
 
     @Override
     protected void validateValue(String name, ModelNode value) throws OperationFailedException {
         if (GlobalModulesDefinition.INSTANCE.getName().equals(name)) {
             GlobalModulesDefinition.INSTANCE.getValidator().validateParameter(name, value);
-        } else if (CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(name)) {
-            CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.getValidator().validateParameter(name, value);
+        } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(name)) {
+            EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getValidator().validateParameter(name, value);
         }
     }
 
@@ -65,8 +64,8 @@ public class EeWriteAttributeHandler extends ServerWriteAttributeOperationHandle
     protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
         if (GlobalModulesDefinition.INSTANCE.getName().equals(name)) {
             GlobalModulesDefinition.INSTANCE.getValidator().validateResolvedParameter(name, value);
-        } else if (CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(name)) {
-            CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.getValidator().validateResolvedParameter(name, value);
+        } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(name)) {
+            EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getValidator().validateResolvedParameter(name, value);
         }
     }
 
@@ -90,8 +89,8 @@ public class EeWriteAttributeHandler extends ServerWriteAttributeOperationHandle
         if (GlobalModulesDefinition.INSTANCE.getName().equals(attributeName)) {
             final ModelNode globalMods = GlobalModulesDefinition.INSTANCE.validateResolvedOperation(operation);
             moduleDependencyProcessor.setGlobalModules(globalMods);
-        } else if (CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(attributeName)) {
-            boolean isolate = CommonAttributes.EAR_SUBDEPLOYMENTS_ISOLATED.validateResolvedOperation(operation).asBoolean();
+        } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(attributeName)) {
+            boolean isolate = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.validateResolvedOperation(operation).asBoolean();
             isolationProcessor.setEarSubDeploymentsIsolated(isolate);
         }
     }

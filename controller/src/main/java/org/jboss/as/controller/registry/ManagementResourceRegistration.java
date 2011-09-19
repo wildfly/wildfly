@@ -29,11 +29,11 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 
 /**
- * A registration for a model resource which consists of a resource description plus registered operation handlers.
+ * A registration for a management resource which consists of a resource description plus registered operation handlers.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -52,8 +52,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     ManagementResourceRegistration getSubModel(PathAddress address);
 
     /**
-     * Register the existence of an addressable sub-node of this model node. The submodel is expected to have some
-     * representation in the persistent configuration model.
+     * Register the existence of an addressable sub-resource of this resource.
      *
      * @param address the address of the submodel (may include a wildcard)
      * @param descriptionProvider source for descriptive information describing this
@@ -66,18 +65,19 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
 
     /**
-     * Register the existence of an addressable sub-node of this model node. The submodel is expected to have some
-     * representation in the persistent configuration model.
+     * Register the existence of an addressable sub-resource of this resource. Before this method returns the provided
+     * {@code resourceDefinition} will be given the opportunity to
+     * {@link ResourceDefinition#registerAttributes(ManagementResourceRegistration) register attributes}
+     * and {@link ResourceDefinition#registerOperations(ManagementResourceRegistration) register operations}.
      *
-     * @param address the address of the submodel (may include a wildcard)
-     * @param descriptionProviderFactory source for descriptive information describing this
+     * @param resourceDefinition source for descriptive information describing this
      *                            portion of the model (must not be {@code null})
      * @return a model node registration which may be used to add operations
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
      */
-    ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProviderFactory descriptionProviderFactory);
+    ManagementResourceRegistration registerSubModel(ResourceDefinition resourceDefinition);
 
     /**
      * Register the existence of an addressable sub-node of this model node.
@@ -302,25 +302,42 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
             if (rootModelDescriptionProvider == null) {
                 throw new IllegalArgumentException("rootModelDescriptionProvider is null");
             }
-            return create(new DescriptionProviderFactory() {
+            ResourceDefinition rootResourceDefinition = new ResourceDefinition() {
+
+                @Override
+                public PathElement getPathElement() {
+                    return null;
+                }
+
                 @Override
                 public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
                     return rootModelDescriptionProvider;
                 }
-            });
+
+                @Override
+                public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+                    //  no-op
+                }
+
+                @Override
+                public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+                    //  no-op
+                }
+            };
+            return new ConcreteResourceRegistration(null, null, rootResourceDefinition, false);
         }
 
         /**
          * Create a new root model node registration.
          *
-         * @param rootModelDescriptionProviderFactory the facotry for the model description provider for the root model node
+         * @param resourceDefinition the facotry for the model description provider for the root model node
          * @return the new root model node registration
          */
-        public static ManagementResourceRegistration create(final DescriptionProviderFactory rootModelDescriptionProviderFactory) {
-            if (rootModelDescriptionProviderFactory == null) {
+        public static ManagementResourceRegistration create(final ResourceDefinition resourceDefinition) {
+            if (resourceDefinition == null) {
                 throw new IllegalArgumentException("rootModelDescriptionProviderFactory is null");
             }
-            return new ConcreteResourceRegistration(null, null, rootModelDescriptionProviderFactory, false);
+            return new ConcreteResourceRegistration(null, null, resourceDefinition, false);
         }
     }
 }

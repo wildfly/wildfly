@@ -142,7 +142,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         context.completeStep();
     }
 
-    public void register(final ManagementResourceRegistration registry) {
+    public void registerOperations(final ManagementResourceRegistration registry) {
 
         registry.registerOperationHandler(LIST_CONNECTIONS_AS_JSON, this, new DescriptionProvider() {
             @Override

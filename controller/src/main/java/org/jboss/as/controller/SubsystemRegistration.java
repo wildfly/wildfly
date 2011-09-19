@@ -23,7 +23,6 @@
 package org.jboss.as.controller;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -36,6 +35,7 @@ import org.jboss.staxmapper.XMLElementWriter;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface SubsystemRegistration {
+
     /**
      * Get the model node registration for this subsystem.
      *
@@ -48,10 +48,10 @@ public interface SubsystemRegistration {
     /**
      * Get the model node registration for this subsystem.
      *
-     * @param descriptionProviderFactory  factory for the provider of the description of the subsystem's root management resource
+     * @param resourceDefinition  factory for the provider of the description of the subsystem's root management resource
      * @return the subsystem-level model node registration
      */
-    ManagementResourceRegistration registerSubsystemModel(DescriptionProviderFactory descriptionProviderFactory);
+    ManagementResourceRegistration registerSubsystemModel(ResourceDefinition resourceDefinition);
 
     /**
      * Get the deployment model node registration for this subsystem.
@@ -64,10 +64,10 @@ public interface SubsystemRegistration {
     /**
      * Get the deployment model node registration for this subsystem.
      *
-     * @param descriptionProviderFactory factory for the provider of the description of the subsystem's root deployment-level management resource
+     * @param resourceDefinition factory for the provider of the description of the subsystem's root deployment-level management resource
      * @return the deployment-level model node registration
      */
-    ManagementResourceRegistration registerDeploymentModel(DescriptionProviderFactory descriptionProviderFactory);
+    ManagementResourceRegistration registerDeploymentModel(ResourceDefinition resourceDefinition);
 
 
     /**

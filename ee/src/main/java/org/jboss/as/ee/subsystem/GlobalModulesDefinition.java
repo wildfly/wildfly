@@ -22,7 +22,11 @@
 
 package org.jboss.as.ee.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -47,14 +51,18 @@ import org.jboss.dmr.ModelType;
  */
 public class GlobalModulesDefinition extends ListAttributeDefinition {
 
+    public static final String NAME = "name";
+    public static final String SLOT = "slot";
+    public static final String GLOBAL_MODULES = "global-modules";
+
     private static final ParameterValidator moduleValidator;
 
     public static final String DEFAULT_SLOT = "main";
 
     static {
         final ParametersValidator delegate = new ParametersValidator();
-        delegate.registerValidator(CommonAttributes.NAME, new StringLengthValidator(1));
-        delegate.registerValidator(CommonAttributes.SLOT, new StringLengthValidator(1, true));
+        delegate.registerValidator(NAME, new StringLengthValidator(1));
+        delegate.registerValidator(SLOT, new StringLengthValidator(1, true));
 
         moduleValidator = new ParametersOfValidator(delegate);
     }
@@ -62,7 +70,7 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
     public static final GlobalModulesDefinition INSTANCE = new GlobalModulesDefinition();
 
     private GlobalModulesDefinition() {
-        super(CommonAttributes.GLOBAL_MODULES, true, moduleValidator);
+        super(GLOBAL_MODULES, true, moduleValidator);
     }
 
     @Override
@@ -71,8 +79,8 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
 
         if (result.isDefined()) {
             for (ModelNode module : result.asList()) {
-                if (!module.hasDefined(CommonAttributes.SLOT)) {
-                    module.get(CommonAttributes.SLOT).set(DEFAULT_SLOT);
+                if (!module.hasDefined(SLOT)) {
+                    module.get(SLOT).set(DEFAULT_SLOT);
                 }
             }
         }
@@ -82,23 +90,22 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
 
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-        final ModelNode valueType = getNoTextValueTypeDescription(node);
-        valueType.get(CommonAttributes.NAME, DESCRIPTION).set(bundle.getString("ee.global-modules.name"));
-        valueType.get(CommonAttributes.SLOT, DESCRIPTION).set(bundle.getString("ee.global-modules.slot"));
+        // This method being used indicates a misuse of this class
+        throw new UnsupportedOperationException("Use the ResourceDescriptionResolver variant");
     }
 
     @Override
     protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
         final ModelNode valueType = getNoTextValueTypeDescription(node);
-        valueType.get(CommonAttributes.NAME, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, CommonAttributes.NAME));
-        valueType.get(CommonAttributes.SLOT, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, CommonAttributes.SLOT));
+        valueType.get(NAME, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, NAME));
+        valueType.get(SLOT, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, SLOT));
     }
 
     @Override
     protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
         final ModelNode valueType = getNoTextValueTypeDescription(node);
-        valueType.get(CommonAttributes.NAME, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CommonAttributes.NAME));
-        valueType.get(CommonAttributes.SLOT, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CommonAttributes.SLOT));
+        valueType.get(NAME, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, NAME));
+        valueType.get(SLOT, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, SLOT));
     }
 
     @Override
@@ -108,9 +115,9 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
             final ModelNode globalModules = eeSubSystem.get(getName());
             for (ModelNode module : globalModules.asList()) {
                 writer.writeEmptyElement(Element.MODULE.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), module.get(CommonAttributes.NAME).asString());
-                if (module.hasDefined(CommonAttributes.SLOT)) {
-                    writer.writeAttribute(Attribute.SLOT.getLocalName(), module.get(CommonAttributes.SLOT).asString());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), module.get(NAME).asString());
+                if (module.hasDefined(SLOT)) {
+                    writer.writeAttribute(Attribute.SLOT.getLocalName(), module.get(SLOT).asString());
                 }
             }
             writer.writeEndElement();
@@ -119,11 +126,11 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
 
     private ModelNode getNoTextValueTypeDescription(final ModelNode parent) {
         final ModelNode valueType = parent.get(VALUE_TYPE);
-        final ModelNode name = valueType.get(CommonAttributes.NAME);
+        final ModelNode name = valueType.get(NAME);
         name.get(DESCRIPTION); // placeholder
         name.get(TYPE).set(ModelType.STRING);
         name.get(NILLABLE).set(false);
-        final ModelNode slot = valueType.get(CommonAttributes.SLOT);
+        final ModelNode slot = valueType.get(SLOT);
         slot.get(DESCRIPTION);  // placeholder
         slot.get(TYPE).set(ModelType.STRING);
         slot.get(NILLABLE).set(true);

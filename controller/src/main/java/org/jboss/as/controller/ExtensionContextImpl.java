@@ -27,12 +27,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProviderFactory;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -91,20 +89,16 @@ public final class ExtensionContextImpl implements ExtensionContext {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
-                return registerSubsystemModel(new DescriptionProviderFactory() {
-                    @Override
-                    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-                        return descriptionProvider;
-                    }
-                });
+                PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
+                return registerSubsystemModel(new SimpleResourceDefinition(pathElement, descriptionProvider));
             }
 
             @Override
-            public ManagementResourceRegistration registerSubsystemModel(DescriptionProviderFactory descriptionProviderFactory) {
-                if (descriptionProviderFactory == null) {
+            public ManagementResourceRegistration registerSubsystemModel(ResourceDefinition resourceDefinition) {
+                if (resourceDefinition == null) {
                     throw new IllegalArgumentException("descriptionProviderFactory is null");
                 }
-                return profileRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProviderFactory);
+                return profileRegistration.registerSubModel(resourceDefinition);
             }
 
             @Override
@@ -112,20 +106,16 @@ public final class ExtensionContextImpl implements ExtensionContext {
                 if (descriptionProvider == null) {
                     throw new IllegalArgumentException("descriptionProvider is null");
                 }
-                return registerDeploymentModel(new DescriptionProviderFactory() {
-                    @Override
-                    public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-                        return descriptionProvider;
-                    }
-                });
+                PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
+                return registerDeploymentModel(new SimpleResourceDefinition(pathElement, descriptionProvider));
             }
 
             @Override
-            public ManagementResourceRegistration registerDeploymentModel(DescriptionProviderFactory descriptionProviderFactory) {
-                if (descriptionProviderFactory == null) {
+            public ManagementResourceRegistration registerDeploymentModel(ResourceDefinition resourceDefinition) {
+                if (resourceDefinition == null) {
                     throw new IllegalArgumentException("descriptionProviderFactory is null");
                 }
-                return subsystemDeploymentRegistration.registerSubModel(new PathElement("subsystem", name), descriptionProviderFactory);
+                return subsystemDeploymentRegistration.registerSubModel(resourceDefinition);
             }
 
             @Override
@@ -229,9 +219,9 @@ public final class ExtensionContextImpl implements ExtensionContext {
         }
 
         @Override
-        public ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProviderFactory descriptionProviderFactory) {
-            ManagementResourceRegistration depl = deployments.registerSubModel(address, descriptionProviderFactory);
-            ManagementResourceRegistration subdepl = subdeployments.registerSubModel(address, descriptionProviderFactory);
+        public ManagementResourceRegistration registerSubModel(ResourceDefinition resourceDefinition) {
+            ManagementResourceRegistration depl = deployments.registerSubModel(resourceDefinition);
+            ManagementResourceRegistration subdepl = subdeployments.registerSubModel(resourceDefinition);
             return new DeploymentManagementResourceRegistration(depl, subdepl);
         }
 
