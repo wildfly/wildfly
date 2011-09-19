@@ -47,7 +47,7 @@ public class PersistenceUnitXmlParserTestCase {
                 "    <description>Persistence Unit." +
                 "    </description>" +
                 "    <jta-data-source>java:/H2DS</jta-data-source>" +
-                "    <class>org.jboss.as.testsuite.integration.jpa.epcpropagation.MyEntity</class>" +
+                "    <class>org.jboss.as.test.integration.jpa.epcpropagation.MyEntity</class>" +
                 "    <properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/></properties>" +
                 "  </persistence-unit>" +
                 "</persistence>";
