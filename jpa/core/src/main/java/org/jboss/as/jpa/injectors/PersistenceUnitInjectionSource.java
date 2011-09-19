@@ -43,6 +43,7 @@ import javax.persistence.EntityManagerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Represents the PersistenceUnit injected into a component.
@@ -113,7 +114,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                     // make sure we can access the target class type
                     extensionClass = pu.getClassLoader().loadClass(injectionTypeName);
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("couldn't load " + injectionTypeName + " from JPA modules classloader", e);
+                    throw MESSAGES.cannotLoadFromJpa(e, injectionTypeName);
                 }
                 // TODO:  when/if jpa supports unwrap, change to
                 //   Object targetValueToInject = emf.unwrap(extensionClass);
@@ -123,16 +124,16 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                 try {
                     getSessionFactory = emf.getClass().getMethod("getSessionFactory");
                 } catch (NoSuchMethodException e) {
-                    throw new RuntimeException("Can only inject from a Hibernate EntityManagerFactoryImpl", e);
+                    throw MESSAGES.hibernateOnlyEntityManagerFactory();
                 }
 
                 Object targetValueToInject = null;
                 try {
                     targetValueToInject = getSessionFactory.invoke(emf,new Object[0]);
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Couldn't get Hibernate session factory from entity manager", e);
+                    throw MESSAGES.cannotGetSessionFactory(e);
                 } catch (InvocationTargetException e) {
-                    throw new RuntimeException("Couldn't get Hibernate session factory from entity manager", e);
+                    throw MESSAGES.cannotGetSessionFactory(e);
                 }
                 return new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
             }

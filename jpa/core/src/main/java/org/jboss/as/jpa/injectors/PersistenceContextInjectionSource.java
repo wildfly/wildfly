@@ -36,7 +36,6 @@ import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -47,6 +46,9 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
 import java.util.HashSet;
 import java.util.Map;
+
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Represents the PersistenceContext injected into a component.
@@ -124,7 +126,6 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         private final PersistenceUnitMetadata pu;
 
         private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
-        private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
         public PersistenceContextJndiInjectable(
             final ServiceName puServiceName,
@@ -155,8 +156,8 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             if (type.equals(PersistenceContextType.TRANSACTION)) {
                 isExtended = false;
                 entityManager = new TransactionScopedEntityManager(unitName, properties, emf);
-                if (log.isDebugEnabled())
-                    log.debug("created new TransactionScopedEntityManager for unit name=" + unitName);
+                if (JPA_LOGGER.isDebugEnabled())
+                    JPA_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {
                 // handle PersistenceContextType.EXTENDED
                 isExtended = true;
@@ -164,13 +165,13 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 if (entityManager1 == null) {
                     entityManager1 = emf.createEntityManager(properties);
                     entityManager = new ExtendedEntityManager(unitName, entityManager1);
-                    if (log.isDebugEnabled())
-                        log.debug("created new ExtendedEntityManager for unit name=" + unitName);
+                    if (JPA_LOGGER.isDebugEnabled())
+                        JPA_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s", unitName);
 
                 } else {
                     entityManager = entityManager1;
-                    if (log.isDebugEnabled())
-                        log.debug("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=" + unitName);
+                    if (JPA_LOGGER.isDebugEnabled())
+                        JPA_LOGGER.debugf("inherited existing ExtendedEntityManager from SFSB invocation stack, unit name=%s", unitName);
                 }
 
                 // register the EntityManager on TL so that SFSBCreateInterceptor will see it.
@@ -188,7 +189,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                     // provider classes should be on application classpath
                     extensionClass = pu.getClassLoader().loadClass(injectionTypeName);
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("couldn't load " + injectionTypeName + " from JPA modules classloader", e);
+                    throw MESSAGES.cannotLoadFromJpa(e, injectionTypeName);
                 }
                 boolean skipAutoCloseAfterUnwrap = skipEntityManagerCloseFor.contains(injectionTypeName);
                 if (!skipAutoCloseAfterUnwrap && !isExtended) {

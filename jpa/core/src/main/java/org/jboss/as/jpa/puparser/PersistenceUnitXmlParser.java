@@ -25,7 +25,6 @@ package org.jboss.as.jpa.puparser;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataImpl;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 
 import javax.persistence.SharedCacheMode;
@@ -39,15 +38,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+
 /**
  * Parse a persistence.xml into a list of persistence unit definitions.
  *
  * @author Scott Marlow
  */
 public class PersistenceUnitXmlParser extends MetaDataElementParser {
-    private static final Logger log = Logger.getLogger("org.jboss.jpa");
     // cache the trace enabled flag
-    private static final boolean traceEnabled = log.isTraceEnabled();
+    private static final boolean traceEnabled = JPA_LOGGER.isTraceEnabled();
     public static PersistenceUnitMetadataHolder parse(final XMLStreamReader reader) throws XMLStreamException {
 
         reader.require(START_DOCUMENT, null, null);  // check for a bogus document and throw error
@@ -118,7 +118,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                 case PERSISTENCEUNIT:
                     PersistenceUnitMetadata pu = parsePU(reader, version);
                     PUs.add(pu);
-                    log.info("read persistence.xml for " + pu.getPersistenceUnitName());
+                    JPA_LOGGER.readingPersistenceXml(pu.getPersistenceUnitName());
                     break;
 
                 default:
@@ -126,8 +126,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             }
         }
         PersistenceUnitMetadataHolder result = new PersistenceUnitMetadataHolder().setPersistenceUnits(PUs);
-        if (log.isTraceEnabled())
-            log.trace(result.toString());
+        if (JPA_LOGGER.isTraceEnabled())
+            JPA_LOGGER.trace(result.toString());
 
         return result;
     }
@@ -161,7 +161,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (traceEnabled) {
-                log.trace("parse persistence.xml: attribute value("+i+") = " + value);
+                JPA_LOGGER.tracef("parse persistence.xml: attribute value(%d) = %s", i, value);
             }
             final String attributeNamespace = reader.getAttributeNamespace(i);
             if (attributeNamespace != null && !attributeNamespace.isEmpty()) {
@@ -185,7 +185,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (traceEnabled) {
-                log.trace("parse persistence.xml: element=" + element.getLocalName());
+                JPA_LOGGER.tracef("parse persistence.xml: element=%s", element.getLocalName());
             }
             switch (element) {
                 case CLASS:
@@ -248,7 +248,7 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
             }
         }
         if (traceEnabled) {
-            log.trace("parse persistence.xml: reached ending persistence-unit tag");
+            JPA_LOGGER.trace("parse persistence.xml: reached ending persistence-unit tag");
         }
         pu.setManagedClassNames(classes);
         pu.setJarFiles(jarfiles);

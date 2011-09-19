@@ -24,6 +24,8 @@ package org.jboss.as.jpa.subsystem;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * @author Scott Marlow
  */
@@ -33,7 +35,7 @@ public class JBossAssemblyDescriptor {
     public void addAny(Object a) {
         Class<?> cls = a.getClass();
         Object previous = any.put(cls, a);
-        assert previous == null : "previous object for class " + cls + " is " + previous + " instead of null";
+        assert previous == null : MESSAGES.objectAlreadyDefined(cls, previous);
     }
 
     public <T> T getAny(Class<T> type) {

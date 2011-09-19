@@ -35,6 +35,8 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import javax.persistence.EntityManager;
 import java.util.List;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * For SFSB life cycle management.
  * Handles the closing of XPC after last SFSB using it is destroyed.
@@ -64,7 +66,7 @@ public class SFSBDestroyInterceptor implements Interceptor {
                         // TODO:  continue iterating through remaining entity managers and chain any exceptions
                         ((ExtendedEntityManager) entityManager).containerClose();
                     } else {
-                        throw new RuntimeException("can only close SFSB XPC entity manager that are instances of ExtendedEntityManager" + entityManager.getClass().getName());
+                        throw MESSAGES.cannotCloseNonExtendedEntityManager(entityManager.getClass().getName());
                     }
                 }
             }

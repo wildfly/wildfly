@@ -27,6 +27,8 @@ import org.jboss.vfs.VirtualFile;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * VFS named input stream.
  *
@@ -38,7 +40,7 @@ public class HibernateVirtualFileNamedInputStream extends HibernateLazyNamedInpu
 
     private static String name(VirtualFile file) {
         if (file == null)
-            throw new IllegalArgumentException("Null file");
+            throw MESSAGES.nullVar("file");
         return file.getName();
     }
 

@@ -24,6 +24,8 @@ package org.jboss.as.jpa.container;
 
 import java.io.Serializable;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * Identifies a subset of information about an EntityManager
  *
@@ -42,7 +44,7 @@ public class EntityManagerMetadata implements Serializable {
         this.puScopedName = name;
         int index = name.indexOf("#");
         if (index == -1) {
-            throw new RuntimeException("scoped persistence name should be \"APPLICATION_SCOPE#PU-NAME\" but was " + name);
+            MESSAGES.invalidScopeName("APPLICATION_SCOPE#PU-NAME", name);
         }
         this.puName = name.substring(index + 1);
     }
