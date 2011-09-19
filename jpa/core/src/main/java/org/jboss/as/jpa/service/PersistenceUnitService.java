@@ -24,7 +24,6 @@ package org.jboss.as.jpa.service;
 
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -38,6 +37,8 @@ import javax.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
 import java.util.Map;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+
 /**
  * Persistence Unit service that is created for each deployed persistence unit that will be referenced by the
  * persistence context/unit injector.
@@ -49,7 +50,6 @@ import java.util.Map;
 public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("persistenceunit");
-    private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
     private final InjectedValue<Map> properties = new InjectedValue<Map>();
 
@@ -71,7 +71,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            log.infof("starting Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
+            JPA_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
             pu.setJtaDataSource(jtaDataSource.getOptionalValue());
             pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
             this.entityManagerFactory = createContainerEntityManagerFactory();
@@ -83,7 +83,7 @@ public class PersistenceUnitService implements Service<PersistenceUnitService> {
 
     @Override
     public void stop(StopContext context) {
-        log.infof("stopping Persistence Unit Service '%s' ", pu.getScopedPersistenceUnitName() );
+        JPA_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
             entityManagerFactory = null;

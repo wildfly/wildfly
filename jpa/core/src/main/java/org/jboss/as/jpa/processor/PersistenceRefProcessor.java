@@ -57,6 +57,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * Deployment processor responsible for processing persistence unit / context references from deployment descriptors.
  *
@@ -103,7 +105,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 String lookup = puRef.getLookupName();
 
                 if (!isEmpty(lookup) && !isEmpty(persistenceUnitName)) {
-                    throw new DeploymentUnitProcessingException("Cannot specify both <lookup-name> (" + lookup + ") and persistence-unit-name (" + persistenceUnitName + ") in <persistence-unit-ref/> for " + componentDescription);
+                    throw MESSAGES.cannotSpecifyBoth("<lookup-name>", lookup, "persistence-unit-name", persistenceUnitName, "<persistence-unit-ref/>", componentDescription);
                 }
                 if (!name.startsWith("java:")) {
                     name = environment.getDefaultContext() + name;
@@ -122,7 +124,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                     InjectionSource puBindingSource = this.getPersistenceUnitBindingSource(deploymentUnit, persistenceUnitName);
                     bindingConfiguration = new BindingConfiguration(name, puBindingSource);
                 } else {
-                    throw new RuntimeException("Support for persistence-unit-ref without a lookup or persistence-unit-name, isn't yet implemented");
+                    throw MESSAGES.lookupOrPersistenceUnitNameRequired();
                 }
                 bindingConfigurations.add(bindingConfiguration);
             }
@@ -156,7 +158,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 String lookup = puRef.getLookupName();
 
                 if (!isEmpty(lookup) && !isEmpty(persistenceUnitName)) {
-                    throw new DeploymentUnitProcessingException("Cannot specify both <lookup-name> (" + lookup + ") and persistence-unit-name (" + persistenceUnitName + ") in <persistence-context-ref/> for " + componentDescription);
+                    throw MESSAGES.cannotSpecifyBoth("<lookup-name>", lookup, "persistence-unit-name", persistenceUnitName, "<persistence-context-ref/>", componentDescription);
                 }
                 if (!name.startsWith("java:")) {
                     name = environment.getDefaultContext() + name;
@@ -182,7 +184,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                     InjectionSource pcBindingSource = this.getPersistenceContextBindingSource(deploymentUnit, persistenceUnitName, type, map);
                     bindingConfiguration = new BindingConfiguration(name, pcBindingSource);
                 } else {
-                    throw new RuntimeException("Support for persistence-context-ref without a lookup or persistence-unit-name, isn't yet implemented");
+                    throw MESSAGES.lookupOrPersistenceUnitNameRequired();
                 }
                 bindingConfigurations.add(bindingConfiguration);
             }
@@ -208,7 +210,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         throws DeploymentUnitProcessingException {
         PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, unitName);
         if(pu.getTransactionType() == PersistenceUnitTransactionType.RESOURCE_LOCAL) {
-            throw new DeploymentUnitProcessingException("Cannot inject RESOURCE_LOCAL entity manager " + unitName + " using " + "<persistence-context-ref>");
+            throw MESSAGES.cannotInjectResourceLocalEntityManager(unitName);
         }
         String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
@@ -220,7 +222,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
         PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, puName);
         if (null == pu) {
-            throw new DeploymentUnitProcessingException("Can't find a deployment unit named " + puName + " at " + deploymentUnit);
+            throw new DeploymentUnitProcessingException(MESSAGES.deploymentUnitNotFound(puName, deploymentUnit));
         }
         return pu;
     }

@@ -63,6 +63,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
  *
@@ -181,7 +183,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            eeModuleClassDescription.setInvalid("injection target is invalid.  Only setter methods are allowed: " + methodInfo);
+            eeModuleClassDescription.setInvalid(MESSAGES.setterMethodOnlyAnnotation(annotation.name().toString(), methodInfo));
             return;
         }
 
@@ -230,7 +232,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
         final AnnotationValue nameValue = annotation.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw new IllegalArgumentException("Class level annotations must provide a name.");
+            throw MESSAGES.classLevelAnnotationParameterRequired(annotation.name().toString(), "name");
         }
         final String name = nameValue.asString();
         String type = getClassLevelInjectionType(annotation);
@@ -258,7 +260,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         if (isPersistenceContext(annotation)) {
             if(pu.getTransactionType() == PersistenceUnitTransactionType.RESOURCE_LOCAL) {
-                classDescription.setInvalid("Cannot inject RESOURCE_LOCAL container manged EntityManager's using @PersistenceContext");
+                classDescription.setInvalid(MESSAGES.cannotInjectResourceLocalEntityManager());
                 return null;
             }
             AnnotationValue pcType = annotation.value("type");
@@ -316,7 +318,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
         PersistenceUnitMetadata pu =  PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         if (null == pu) {
-            classDescription.setInvalid("Can't find a deployment unit named " + searchName + " at " + deploymentUnit);
+            classDescription.setInvalid(MESSAGES.deploymentUnitNotFound(searchName, deploymentUnit));
             return null;
         }
         return pu;

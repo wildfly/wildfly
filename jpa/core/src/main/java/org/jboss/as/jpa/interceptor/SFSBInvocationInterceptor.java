@@ -31,6 +31,8 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * Stateful session bean Invocation interceptor that is responsible for the SFSBCallStack being set for each
  * SFSB invocation that JPA is interested in.
@@ -48,7 +50,7 @@ public class SFSBInvocationInterceptor implements Interceptor {
     public Object processInvocation(InterceptorContext context) throws Exception {
         ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
         if (componentInstance == null) {
-            throw new IllegalStateException("componentInstance not set in InterceptorContext: " + context);
+            throw MESSAGES.notSetInInterceptorContext("componentInstance", context);
         }
         StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) componentInstance;
         SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
