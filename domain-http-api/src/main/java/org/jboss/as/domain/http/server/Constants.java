@@ -46,6 +46,7 @@ public interface Constants {
     String CONTENT_DISPOSITION = "Content-Disposition";
     String CONTENT_TYPE = "Content-Type";
     String LOCATION = "Location";
+    String VIA = "Via";
     String WWW_AUTHENTICATE_HEADER = "WWW-Authenticate";
 
     /*
