@@ -82,6 +82,10 @@
             <logger category="org.apache.tomcat.util.modeler">
                 <level name="WARN"/>
             </logger>
+            <!-- This makes CDI class loading problems visible-->
+            <logger category="org.jboss.weld.ClassLoading">
+                <level name="DEBUG"/>
+            </logger>
             <logger category="sun.rmi">
                 <level name="WARN"/>
             </logger>
