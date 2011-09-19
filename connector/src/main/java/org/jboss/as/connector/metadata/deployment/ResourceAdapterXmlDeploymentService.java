@@ -56,7 +56,7 @@ import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 public final class ResourceAdapterXmlDeploymentService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
-    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7RaXmlDeployer.class.getName());
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, "org.jboss.as.connector.deployers.RaXmlDeployer");
 
     private final Module module;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
@@ -107,15 +107,14 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             value = new ResourceAdapterDeployment(raxmlDeployment);
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-            if (raxmlDeployment.getResourceAdapter() != null) {
-                registry.getValue().registerResourceAdapterDeployment(value);
-                ServiceName serviceName = ConnectorServices.registerResourceAdapterServiceNameWithSuffix(deploymentName, serviceSuffix);
-                DEPLOYMENT_CONNECTOR_LOGGER.startingService(serviceName);
-                context.getChildTarget()
-                        .addService(serviceName,
-                                new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
-            }
+
+            registry.getValue().registerResourceAdapterDeployment(value);
+            ServiceName serviceName = ConnectorServices.registerResourceAdapterServiceNameWithSuffix(deploymentName, serviceSuffix);
+            DEPLOYMENT_CONNECTOR_LOGGER.startingService(serviceName);
+            context.getChildTarget()
+                .addService(serviceName,
+                            new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(ServiceController.Mode.ACTIVE)
+               .install();
         } catch (Exception e) {
             throw new StartException(e);
         }

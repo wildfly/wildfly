@@ -63,7 +63,7 @@ import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 public final class ResourceAdapterDeploymentService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
-    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7RaDeployer.class.getName());
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, "org.jboss.as.connector.deployers.RADeployer");
 
     private final Module module;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
@@ -99,7 +99,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         value = new ResourceAdapterDeployment(raDeployment);
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
 
-        if (raDeployment.getResourceAdapter() != null) {
+        if (raDeployer.checkActivation(cmd, ijmd)) {
             registry.getValue().registerResourceAdapterDeployment(value);
             DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting sevice %s",
                     ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
@@ -156,8 +156,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                     raMcfClasses.add(ra10.getManagedConnectionFactoryClass().getValue());
                 } else {
                     ResourceAdapter1516 ra = (ResourceAdapter1516) cmd.getResourceadapter();
-                    if (ra != null && ra.getOutboundResourceadapter() != null
-                            && ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
+                    if (ra != null && ra.getOutboundResourceadapter() != null &&
+                        ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
                         List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
                         if (cdMetas.size() > 0) {
                             for (ConnectionDefinition cdMeta : cdMetas) {
@@ -181,61 +181,23 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 }
 
                 if (ijmd != null) {
-                    Set<String> ijMcfClasses = new HashSet<String>();
-                    Set<String> ijAoClasses = new HashSet<String>();
-
-                    boolean mcfSingle = false;
-                    boolean aoSingle = false;
-
-                    boolean mcfOk = true;
-                    boolean aoOk = true;
-
                     if (ijmd.getConnectionDefinitions() != null) {
                         for (org.jboss.jca.common.api.metadata.common.CommonConnDef def : ijmd.getConnectionDefinitions()) {
                             String clz = def.getClassName();
 
-                            if (clz == null) {
-                                if (raMcfClasses.size() == 1) {
-                                    mcfSingle = true;
-                                }
-                            } else {
-                                ijMcfClasses.add(clz);
-                            }
-                        }
-                    }
-
-                    if (!mcfSingle) {
-                        Iterator<String> it = raMcfClasses.iterator();
-                        while (mcfOk && it.hasNext()) {
-                            String clz = it.next();
-                            if (!ijMcfClasses.contains(clz))
-                                mcfOk = false;
+                            if (raMcfClasses.contains(clz))
+                                return true;
                         }
                     }
 
                     if (ijmd.getAdminObjects() != null) {
                         for (org.jboss.jca.common.api.metadata.common.CommonAdminObject def : ijmd.getAdminObjects()) {
                             String clz = def.getClassName();
-                            if (clz == null) {
-                                if (raAoClasses.size() == 1) {
-                                    aoSingle = true;
-                                }
-                            } else {
-                                ijAoClasses.add(clz);
-                            }
+
+                            if (raAoClasses.contains(clz))
+                                return true;
                         }
                     }
-
-                    if (!aoSingle) {
-                        Iterator<String> it = raAoClasses.iterator();
-                        while (aoOk && it.hasNext()) {
-                            String clz = it.next();
-                            if (!ijAoClasses.contains(clz))
-                                aoOk = false;
-                        }
-                    }
-
-                    return mcfOk && aoOk;
                 }
             }
 
