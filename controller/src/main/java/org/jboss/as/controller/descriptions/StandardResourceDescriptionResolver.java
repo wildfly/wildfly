@@ -168,7 +168,7 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
     /** {@inheritDoc} */
     @Override
     public String getResourceAttributeValueTypeDescription(String attributeName, Locale locale, ResourceBundle bundle, String... suffixes) {
-        return getVariableBundleKey(new String[]{attributeName}, suffixes);
+        return bundle.getString(getVariableBundleKey(new String[]{attributeName}, suffixes));
     }
 
     /** {@inheritDoc} */
@@ -195,7 +195,7 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
         } else {
             fixed = new String[]{operationName, paramName};
         }
-        return getVariableBundleKey(fixed, suffixes);
+        return bundle.getString(getVariableBundleKey(fixed, suffixes));
     }
 
     /** {@inheritDoc} */
