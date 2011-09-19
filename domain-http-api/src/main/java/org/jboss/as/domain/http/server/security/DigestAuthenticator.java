@@ -23,9 +23,8 @@
 package org.jboss.as.domain.http.server.security;
 
 import static org.jboss.as.domain.http.server.Constants.AUTHORIZATION_HEADER;
-import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
-import static org.jboss.as.domain.http.server.Constants.GET;
 import static org.jboss.as.domain.http.server.Constants.UNAUTHORIZED;
+import static org.jboss.as.domain.http.server.Constants.VIA;
 import static org.jboss.as.domain.http.server.Constants.WWW_AUTHENTICATE_HEADER;
 
 import javax.security.auth.callback.Callback;
@@ -349,13 +348,20 @@ public class DigestAuthenticator extends Authenticator {
 
 
     private DigestContext getOrCreateNegotiationContext(HttpExchange httpExchange) {
-        DigestContext context = (DigestContext) httpExchange.getAttribute(DigestContext.KEY, HttpExchange.AttributeScope.CONNECTION);
-        if (context == null) {
-            context = new DigestContext();
-            httpExchange.setAttribute(DigestContext.KEY, context, HttpExchange.AttributeScope.CONNECTION);
+        Headers headers = httpExchange.getRequestHeaders();
+        boolean proxied = headers.containsKey(VIA);
+
+        if (proxied) {
+            return new DigestContext();
+        } else {
+            DigestContext context = (DigestContext) httpExchange.getAttribute(DigestContext.KEY, HttpExchange.AttributeScope.CONNECTION);
+            if (context == null) {
+                context = new DigestContext();
+                httpExchange.setAttribute(DigestContext.KEY, context, HttpExchange.AttributeScope.CONNECTION);
+            }
+            return context;
         }
 
-        return context;
     }
 
 
