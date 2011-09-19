@@ -121,27 +121,27 @@ public class PoolConfigurationRWHandler {
                 }, OperationContext.Stage.RUNTIME);
             }
 
-            return (IDLETIMEOUTMINUTES.equals(parameterName) || BACKGROUNDVALIDATION.equals(parameterName)
-                    || BACKGROUNDVALIDATIONMILLIS.equals(parameterName)
-                    || POOL_PREFILL.equals(parameterName));
+            return ( IDLETIMEOUTMINUTES.getName().equals(parameterName) ||  BACKGROUNDVALIDATION.getName().equals(parameterName)
+                    ||  BACKGROUNDVALIDATIONMILLIS.getName().equals(parameterName)
+                    ||  POOL_PREFILL.getName().equals(parameterName));
 
         }
 
         private void updatePoolConfigs(List<PoolConfiguration> poolConfigs, String parameterName, ModelNode newValue) {
             for (PoolConfiguration pc : poolConfigs) {
-                if (MAX_POOL_SIZE.equals(parameterName)) {
+                if (MAX_POOL_SIZE.getName().equals(parameterName)) {
                     pc.setMaxSize(newValue.asInt());
                 }
-                if (MIN_POOL_SIZE.equals(parameterName)) {
+                if ( MIN_POOL_SIZE.getName().equals(parameterName)) {
                     pc.setMinSize(newValue.asInt());
                 }
-                if (BLOCKING_TIMEOUT_WAIT_MILLIS.equals(parameterName)) {
+                if ( BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(parameterName)) {
                     pc.setBlockingTimeout(newValue.asLong());
                 }
-                if (POOL_USE_STRICT_MIN.equals(parameterName)) {
+                if ( POOL_USE_STRICT_MIN.getName().equals(parameterName)) {
                     pc.setStrictMin(newValue.asBoolean());
                 }
-                if (USE_FAST_FAIL.equals(parameterName)) {
+                if ( USE_FAST_FAIL.getName().equals(parameterName)) {
                     pc.setUseFastFail(newValue.asBoolean());
                 }
             }
@@ -210,23 +210,23 @@ public class PoolConfigurationRWHandler {
         @Override
         public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
 
-            if (MAX_POOL_SIZE.equals(parameterName)) {
+            if (MAX_POOL_SIZE.getName().equals(parameterName)) {
                 intValidator.validateParameter(parameterName, value);
-            } else if (MIN_POOL_SIZE.equals(parameterName)) {
+            } else if ( MIN_POOL_SIZE.getName().equals(parameterName)) {
                 intValidator.validateParameter(parameterName, value);
-            } else if (BLOCKING_TIMEOUT_WAIT_MILLIS.equals(parameterName)) {
+            } else if ( BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(parameterName)) {
                 longValidator.validateParameter(parameterName, value);
-            } else if (IDLETIMEOUTMINUTES.equals(parameterName)) {
+            } else if ( IDLETIMEOUTMINUTES.getName().equals(parameterName)) {
                 longValidator.validateParameter(parameterName, value);
-            } else if (BACKGROUNDVALIDATION.equals(parameterName)) {
+            } else if ( BACKGROUNDVALIDATION.getName().equals(parameterName)) {
                 boolValidator.validateParameter(parameterName, value);
-            } else if (BACKGROUNDVALIDATIONMILLIS.equals(parameterName)) {
+            } else if ( BACKGROUNDVALIDATIONMILLIS.getName().equals(parameterName)) {
                 longValidator.validateParameter(parameterName, value);
-            } else if (POOL_PREFILL.equals(parameterName)) {
+            } else if ( POOL_PREFILL.getName().equals(parameterName)) {
                 boolValidator.validateParameter(parameterName, value);
-            } else if (POOL_USE_STRICT_MIN.equals(parameterName)) {
+            } else if ( POOL_USE_STRICT_MIN.getName().equals(parameterName)) {
                 boolValidator.validateParameter(parameterName, value);
-            } else if (USE_FAST_FAIL.equals(parameterName)) {
+            } else if ( USE_FAST_FAIL.getName().equals(parameterName)) {
                 boolValidator.validateParameter(parameterName, value);
             } else {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidParameterName(parameterName)));
