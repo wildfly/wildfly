@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project>
+
+    <!--
+       Property sets
+    -->
+    <propertyset id="ds.properties">
+        <propertyref prefix="ds"/>
+    </propertyset>
+
+    <!--
+      Targets
+    -->
+
+    <condition property="changeDB">
+        <not>
+            <equals arg1="${ds.db}" arg2=""/>
+        </not>
+    </condition>
+
+    <target name="changeDefaultDatabase" description="Changes the default database" if="changeDB">
+
+        <echo message="Changing database for ${server-config} with parameters:"/>
+        <echo message="ds.db = ${ds.db}"/>
+        <echo message="ds.jdbc.driver.jar = ${ds.jdbc.driver.jar}"/>
+        <echo message="ds.jdbc.url = ${ds.jdbc.url}"/>
+        <echo message="ds.jdbc.user = ${ds.jdbc.user}"/>
+        <echo message="ds.jdbc.pass = ${ds.jdbc.pass}"/>
+
+        <property name="server.dir" value="${project.build.directory}/${server-config}"/>
+        <property name="config.dir" value="${server.dir}/standalone/configuration"/>
+
+        <!-- copy in jar into standalone/deployments; this installs the driver under a new driver name -->
+        <copy file="${main.basedir}/target/jdbcDrivers/${ds.jdbc.driver.jar}" todir="${server.dir}/standalone/deployments"/>
+
+        <!-- change standalone/configuration/standalone.xml file:
+              i.e. update datasource subsystem config
+         -->
+        <xslt destdir="${config.dir}"
+              extension=".xml.mod"
+              style="${main.basedir}/../integration/src/test/xslt/changeDatabase.xsl"
+              useImplicitFileset="false">
+            <fileset dir="${config.dir}">
+                <include name="standalone.xml"/>
+                <include name="standalone-preview.xml"/>
+                <include name="standalone-xts.xml"/>
+                <include name="standalone-ha.xml"/>
+                <include name="standalone-preview-ha.xml"/>
+            </fileset>
+            <param name="ds.jdbc.driver.jar" expression="${ds.jdbc.driver.jar}"/>
+            <param name="ds.jdbc.url" expression="${ds.jdbc.url}"/>
+            <param name="ds.jdbc.user" expression="${ds.jdbc.user}"/>
+            <param name="ds.jdbc.pass" expression="${ds.jdbc.pass}"/>
+        </xslt>
+
+        <!-- move processed files back -->
+        <move todir="${config.dir}">
+           <fileset dir="${config.dir}">
+               <include name="**/standalone.xml.mod"/>
+               <include name="**/standalone-preview.xml.mod"/>
+               <include name="**/standalone-xts.xml.mod"/>
+           </fileset>
+           <mapper type="glob" from="*.mod" to="*"/>
+         </move>
+    </target>
+
+
+    <!--
+       Macros
+     -->
+    <macrodef name="build-server-config" description="Builds a server configuration">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="jboss.dist" default="${jboss.dist}"/>
+        <attribute name="test.configs.dir" default="${basedir}/src/test/resources/test-configs"/>
+        <element name="filter-elements" optional="yes" description="additional filter elements"/>
+
+        <sequential>
+
+            <echo message="Building config @{name} from @{jboss.dist}"/>
+
+            <!-- copy the base distribution -->
+            <!-- we exclude modules and bundles as they are read-only and we locate the via sys props-->
+            <copy todir="@{output.dir}/@{name}">
+                <fileset dir="@{jboss.dist}">
+                    <exclude name="**/modules/**"/>
+                    <exclude name="**/bundles/**"/>
+                </fileset>
+            </copy>
+
+            <!-- overwrite with configs from test-configs and apply property filtering -->
+            <copy todir="@{output.dir}/@{name}" overwrite="true" failonerror="false">
+                <fileset dir="@{test.configs.dir}/@{name}"/>
+                <filterset begintoken="${" endtoken="}">
+                    <filter token="node0" value="${node0}"/>
+                    <filter token="node1" value="${node1}"/>
+                    <filter token="udpGroup" value="${udpGroup}"/>
+                    <filter-elements/>
+                  </filterset>
+            </copy>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="change-ip-addresses" description="Changes the IP addresses of a single node configuration">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+        <attribute name="node" default="${node0}"/>
+
+        <sequential>
+
+            <echo message="Changing IP addresses for config @{name}"/>
+
+            <!-- process *.xml to *.xml.mod -->
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${basedir}/src/test/xslt/changeIPAddresses.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone.xml"/>
+                    <include name="**/standalone-preview.xml"/>
+                    <include name="**/standalone-xts.xml"/>
+                </fileset>
+                <param name="managementIPAddress" expression="@{node}"/>
+                <param name="publicIPAddress" expression="@{node}"/>
+            </xslt>
+
+            <!-- move processed files back -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                   <include name="**/standalone.xml.mod"/>
+                   <include name="**/standalone-preview.xml.mod"/>
+                   <include name="**/standalone-xts.xml.mod"/>
+               </fileset>
+               <mapper type="glob" from="*.mod" to="*"/>
+             </move>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="change-ip-multicast-addresses" description="Changes the IP *and* multicast addresses of a node configuration">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+        <attribute name="node" default="${node0}"/>
+        <attribute name="mcastaddr" default="${udpGroup}"/>
+
+        <!--
+         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}
+        -->
+
+        <sequential>
+            <echo message="Changing IP addresses for config @{name}"/>
+
+            <!-- process *.xml to *.xml.mod -->
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${basedir}/src/test/xslt/changeIPAddresses.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <!-- can't get this to work -->
+                <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone-preview-ha.xml"/>
+                </fileset>
+                <param name="managementIPAddress" expression="@{node}"/>
+                <param name="publicIPAddress" expression="@{node}"/>
+                <param name="udpMcastAddress" expression="@{mcastaddr}"/>
+            </xslt>
+
+            <!-- move processed files back -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                   <include name="**/standalone-ha.xml.mod"/>
+                   <include name="**/standalone-preview-ha.xml.mod"/>
+               </fileset>
+               <mapper type="glob" from="*.mod" to="*"/>
+             </move>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="add-port-offset" description="Add a port offeset a node configuration">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+        <attribute name="offset" default="0"/>
+        <attribute name="nativePort" default="9999"/>
+        <attribute name="httpPort" default="9990"/>
+
+        <!--
+         This macro makes use of saxon via  ${net.sf.saxon:saxon:jar}
+        -->
+
+        <sequential>
+            <echo message="Adding port offset for config @{name}"/>
+
+            <!-- process *.xml to *.xml.mod -->
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${basedir}/src/test/xslt/changeIPAddresses.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <!-- can't get this to work -->
+                <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone-preview-ha.xml"/>
+                </fileset>
+                <param name="portOffset" expression="@{offset}"/>
+                <param name="nativeInterfaceManagementPort" expression="@{nativePort}"/>
+                <param name="httpInterfaceManagementPort" expression="@{httpPort}"/>
+            </xslt>
+
+            <!-- move processed files back -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                   <include name="**/standalone-ha.xml.mod"/>
+                   <include name="**/standalone-preview-ha.xml.mod"/>
+               </fileset>
+               <mapper type="glob" from="*.mod" to="*"/>
+             </move>
+        </sequential>
+    </macrodef>
+
+</project>
