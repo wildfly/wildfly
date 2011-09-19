@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * For stateful session bean life cycle management and tracking XPC Inheritance.
  * <p/>
@@ -98,11 +100,11 @@ public class SFSBXPCMap {
     public static void registerPersistenceContext(EntityManager xpc) {
 
         if (xpc == null) {
-            throw new RuntimeException("internal SFSBXPCMap.RegisterPersistenceContext error, null EntityManager passed in");
+            throw MESSAGES.nullParameter("SFSBXPCMap.RegisterPersistenceContext", "EntityManager");
         }
 
         if (!(xpc instanceof AbstractEntityManager)) {
-            throw new RuntimeException("internal error, XPC needs to be a AbstractEntityManager so that we can get metadata");
+            throw MESSAGES.parameterMustBeAbstractEntityManager("XPC");
         }
 
         List<EntityManager> store = deferToPostConstruct.get();
@@ -128,7 +130,7 @@ public class SFSBXPCMap {
      */
     public void register(SFSBContextHandle beanContextHandle, EntityManager entityManager) {
         if (!(entityManager instanceof AbstractEntityManager)) {
-            throw new RuntimeException("internal error, XPC needs to be a AbstractEntityManager so that we can get metadata");
+            throw MESSAGES.parameterMustBeAbstractEntityManager("XPC");
         }
         List<EntityManager> xpcList = contextToXPCMap.get(beanContextHandle);
         if (xpcList == null) {
@@ -140,8 +142,7 @@ public class SFSBXPCMap {
             // no other thread should put at the same time on the same beanContextHandle
             Object existingList = contextToXPCMap.put(beanContextHandle, xpcList);
             if (existingList != null) {
-                throw new RuntimeException("More than one thread is invoking stateful session bean '" +
-                    beanContextHandle.getBeanContextHandle() + "' at the same time.");
+                throw MESSAGES.multipleThreadsInvokingSfsb(beanContextHandle.getBeanContextHandle());
             }
         } else {
             // session bean was already registered, just add XPC to existing list.
@@ -155,8 +156,7 @@ public class SFSBXPCMap {
             sfsbList = new ArrayList<SFSBContextHandle>();
             Object existingList = XPCToContextMap.put(entityManager, sfsbList);
             if (existingList != null) {
-                throw new RuntimeException("More than one thread is using EntityManager instance '" +
-                    entityManager + "' at the same time.");
+                throw MESSAGES.multipleThreadsUsingEntityManager(entityManager);
             }
         }
         // XPC was already registered, just add SFSB to existing list.

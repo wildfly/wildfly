@@ -24,6 +24,8 @@ package org.jboss.as.jpa.container;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * Comment
  *
@@ -64,7 +66,7 @@ public class ThreadLocalStack<T> {
     public void replace(T obj) {
         ArrayList<T> list = stack.get();
         if (list == null) {
-            throw new RuntimeException("Internal error:  Cannot replace top of stack as stack is null (same as being empty).");
+            throw MESSAGES.cannotReplaceStack();
         }
         list.set(list.size() - 1, obj);  // replace top of stack item, with the specified time.
     }

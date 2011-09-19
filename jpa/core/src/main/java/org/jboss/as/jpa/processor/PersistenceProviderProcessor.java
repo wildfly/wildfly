@@ -31,7 +31,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ServicesAttachment;
-import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 
@@ -39,13 +38,15 @@ import javax.persistence.spi.PersistenceProvider;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * Deploy JPA Persistence providers that are found in the application deployment.
  *
  * @author Scott Marlow
  */
 public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
-    private static final Logger log = Logger.getLogger("org.jboss.as.jpa");
 
     /**
      * {@inheritDoc}
@@ -62,18 +63,17 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
             final List<String> providerNames = servicesAttachment.getServiceImplementations(PersistenceProvider.class.getName());
             if (providerNames.size() > 1) {     // TODO: support more than one provider to be packaged, which requires
                 // knowing which adapter belongs with it.
-                throw new DeploymentUnitProcessingException(
-                        "only one persistence provider can be packaged with an application " + providerNames);
+                throw MESSAGES.onlyOnePersistenceProviderAllowed(providerNames);
             }
             for (String providerName : providerNames) {
                 try {
                     final Class<? extends PersistenceProvider> providerClass = deploymentModuleClassLoader.loadClass(providerName).asSubclass(PersistenceProvider.class);
                     final Constructor<? extends PersistenceProvider> constructor = providerClass.getConstructor();
                     provider = constructor.newInstance();
-                    log.infof("Deployment has its own Persistence Provider %s ", providerClass);
+                    ROOT_LOGGER.debugf("Deployment has its own Persistence Provider %s ", providerClass);
 
                 } catch (Exception e) {
-                    throw new DeploymentUnitProcessingException("Could not deploy application packaged persistence provider '" + providerName + "'", e);
+                    throw MESSAGES.cannotDeployApp(e, providerName);
                 }
             }
 
@@ -85,14 +85,11 @@ public class PersistenceProviderProcessor implements DeploymentUnitProcessor {
                         adaptor = (PersistenceProviderAdaptor) deploymentModuleClassLoader.loadClass(adapterClass).newInstance();
                         adaptor.injectJtaManager(JtaManagerImpl.getInstance());
                     } catch (InstantiationException e) {
-                        throw new DeploymentUnitProcessingException("could not create instance of adapter class '" +
-                                adapterClass + "'", e);
+                        throw MESSAGES.cannotCreateAdapter(e, adapterClass);
                     } catch (IllegalAccessException e) {
-                        throw new DeploymentUnitProcessingException("could not create instance of adapter class '" +
-                                adapterClass + "'", e);
+                        throw MESSAGES.cannotCreateAdapter(e, adapterClass);
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("could not create instance of adapter class '" +
-                                adapterClass + "'", e);
+                        throw MESSAGES.cannotCreateAdapter(e, adapterClass);
                     }
                 }
                 deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, new PersistenceProviderDeploymentHolder(provider, adaptor));

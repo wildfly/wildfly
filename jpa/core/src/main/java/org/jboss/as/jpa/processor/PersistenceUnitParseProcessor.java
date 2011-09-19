@@ -37,7 +37,6 @@ import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.Index;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
 
@@ -52,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Handle parsing of Persistence unit persistence.xml files
@@ -73,7 +74,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private static final String META_INF_PERSISTENCE_XML = "META-INF/persistence.xml";
     private static final String JAR_FILE_EXTENSION = ".jar";
     private static final String LIB_FOLDER = "lib";
-    private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
 
     @Override
@@ -107,7 +107,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             // deploymentUnit.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             markDU(holder, deploymentUnit);
-            log.trace("parsed persistence unit definitions for jar " + deploymentRoot.getRootName());
+            JPA_LOGGER.tracef("parsed persistence unit definitions for jar %s", deploymentRoot.getRootName());
         }
     }
 
@@ -150,7 +150,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                     markDU(holder, deploymentUnit);
                 }
             }
-            log.trace("parsed persistence unit definitions for war " + deploymentRoot.getRootName());
+            JPA_LOGGER.tracef("parsed persistence unit definitions for war %s", deploymentRoot.getRootName());
         }
     }
 
@@ -185,7 +185,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                     markDU(holder, deploymentUnit);
                 }
             }
-            log.trace("parsed persistence unit definitions for ear " + deploymentRoot.getRootName());
+            JPA_LOGGER.tracef("parsed persistence unit definitions for ear %s", deploymentRoot.getRootName());
         }
     }
 
@@ -208,7 +208,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 postParseSteps(persistence_xml, puHolder, deploymentUnit, deploymentRoot);
                 listPUHolders.add(puHolder);
             } catch (Exception e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + persistence_xml, e);
+                throw new DeploymentUnitProcessingException(MESSAGES.failedToParse(persistence_xml), e);
             } finally {
                 try {
                     if (is != null) {
@@ -274,10 +274,10 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 VirtualFile baseDir = (parent != null ? parent : deploymentUnitFile);
                 VirtualFile jarFile = baseDir.getChild(jar);
                 if (jarFile == null)
-                    throw new RuntimeException("could not find child '" + jar + "' on '" + baseDir + "'");
+                    throw MESSAGES.childNotFound(jar, baseDir);
                 return jarFile.toURL();
             } catch (Exception e1) {
-                throw new RuntimeException("could not find relative path: " + jar, e1);
+                throw MESSAGES.relativePathNotFound(e1, jar);
             }
         }
     }
@@ -312,12 +312,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 } else {
                     PersistenceUnitMetadata first = flattened.get(pu.getPersistenceUnitName());
                     PersistenceUnitMetadata duplicate = pu;
-                    log.warn("duplicate Persistence Unit definition for " + duplicate.getPersistenceUnitName() +
-                            " in application.  One of the duplicate persistence.xml should be removed from the application." +
-                            " Application deployment will continue with the persistence.xml definitions from " +
-                            first.getScopedPersistenceUnitName() + " used.  The persistence.xml definitions from " +
-                            duplicate.getScopedPersistenceUnitName() + " will be ignored."
-                    );
+                    JPA_LOGGER.duplicatePersistenceUnitDefinition(duplicate.getPersistenceUnitName(), first.getScopedPersistenceUnitName(), duplicate.getScopedPersistenceUnitName());
                 }
             }
         }
@@ -366,10 +361,10 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     public static String createBeanName(DeploymentUnit deploymentUnit, String persistenceUnitName) {
         // persistenceUnitName must be a simple name
         if (persistenceUnitName.indexOf('/') != -1) {
-            throw new IllegalArgumentException("persistence unit name (" + persistenceUnitName + ") contains illegal '/' character");
+            throw MESSAGES.invalidPersistenceUnitName(persistenceUnitName, '/');
         }
         if (persistenceUnitName.indexOf('#') != -1) {
-            throw new IllegalArgumentException("persistence unit name (" + persistenceUnitName + ") contains illegal '#' character");
+            throw MESSAGES.invalidPersistenceUnitName(persistenceUnitName, '#');
         }
 
         String unitName = getScopedDeploymentUnitPath(deploymentUnit) + "#" + persistenceUnitName;

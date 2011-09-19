@@ -29,7 +29,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
-import org.jboss.logging.Logger;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
@@ -44,6 +43,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 /**
  * Annotation scanner for Hibernate
  *
@@ -52,7 +54,6 @@ import java.util.Set;
 public class HibernateAnnotationScanner implements Scanner {
 
     private static final ThreadLocal<PersistenceUnitMetadata> persistenceUnitMetadataTLS = new ThreadLocal<PersistenceUnitMetadata>();
-    private static final Logger log = Logger.getLogger("org.jboss.jpa");
 
     public static void setThreadLocalPersistenceUnitMetadata(final PersistenceUnitMetadata pu) {
         persistenceUnitMetadataTLS.set(pu);
@@ -65,7 +66,7 @@ public class HibernateAnnotationScanner implements Scanner {
     @Override
     public Set<Package> getPackagesInJar(URL jartoScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
 
-        log.tracef("getPackagesInJar url=%s annotations=%s", jartoScan.getPath(), annotationsToLookFor);
+        JPA_LOGGER.tracef("getPackagesInJar url=%s annotations=%s", jartoScan.getPath(), annotationsToLookFor);
         Set<Class<?>> resultClasses = new HashSet<Class<?>>();
 
         if (annotationsToLookFor.size() > 0) {  // Hibernate doesn't pass any annotations currently
@@ -73,15 +74,15 @@ public class HibernateAnnotationScanner implements Scanner {
         } else {
             PersistenceUnitMetadata pu = persistenceUnitMetadataTLS.get();
             if (pu == null) {
-                throw new RuntimeException("Missing PersistenceUnitMetadataImpl (thread local wasn't set)");
+                throw MESSAGES.missingPersistenceUnitMetadata();
             }
             if (jartoScan == null) {
-                throw new IllegalArgumentException("Null jar to scan url");
+                throw MESSAGES.nullVar("jarToScan");
             }
             Index index = getJarFileIndex(jartoScan, pu);
             if (index == null) {
-                log.tracef("No classes to scan for annotations in jar '%s'"
-                     +" (jars with classes '%s')", jartoScan.getPath(), pu.getAnnotationIndex().keySet());
+                JPA_LOGGER.tracef("No classes to scan for annotations in jar '%s' (jars with classes '%s')",
+                        jartoScan.getPath(), pu.getAnnotationIndex().keySet());
                 return new HashSet<Package>();
             }
             Collection<ClassInfo> allClasses = index.getKnownClasses();
@@ -92,8 +93,7 @@ public class HibernateAnnotationScanner implements Scanner {
                     // TODO:  fix temp classloader (get CFNE on entity class)
                     //result.add(pu.getNewTempClassLoader().loadClass(className));
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("could not load entity class '" +
-                        className + "' with PersistenceUnitInfo.getNewTempClassLoader()", e);
+                    throw MESSAGES.cannotLoadEntityClass(e, className);
                 }
             }
         }
@@ -102,7 +102,7 @@ public class HibernateAnnotationScanner implements Scanner {
         for (Class classWithAnnotation : resultClasses) {
             Package classPackage = classWithAnnotation.getPackage();
             if (classPackage != null) {
-                log.tracef("getPackagesInJar found package %s", classPackage);
+                JPA_LOGGER.tracef("getPackagesInJar found package %s", classPackage);
                 uniquePackages.put(classPackage.getName(), classPackage);
             }
         }
@@ -115,25 +115,25 @@ public class HibernateAnnotationScanner implements Scanner {
 
     @Override
     public Set<Class<?>> getClassesInJar(URL jartoScan, Set<Class<? extends Annotation>> annotationsToLookFor) {
-        log.tracef("getClassesInJar url=%s annotations=%s", jartoScan.getPath(), annotationsToLookFor);
+        JPA_LOGGER.tracef("getClassesInJar url=%s annotations=%s", jartoScan.getPath(), annotationsToLookFor);
         PersistenceUnitMetadata pu = persistenceUnitMetadataTLS.get();
         if (pu == null) {
-            throw new RuntimeException("Missing PersistenceUnitMetadataImpl (thread local wasn't set)");
+            throw MESSAGES.missingPersistenceUnitMetadata();
         }
         if (jartoScan == null) {
-            throw new IllegalArgumentException("Null jar to scan url");
+            throw MESSAGES.nullVar("jarToScan");
         }
         Index index = getJarFileIndex(jartoScan, pu);
         if (index == null) {
-            log.tracef("No classes to scan for annotations in jar '%s'"
-                 +" (jars with classes '%s')", jartoScan.getPath(), pu.getAnnotationIndex().keySet());
+            JPA_LOGGER.tracef("No classes to scan for annotations in jar '%s' (jars with classes '%s')",
+                    jartoScan.getPath(), pu.getAnnotationIndex().keySet());
             return new HashSet<Class<?>>();
         }
         if (annotationsToLookFor == null) {
-            throw new IllegalArgumentException("Null annotations to look for");
+            throw MESSAGES.nullVar("annotationsToLookFor");
         }
         if (annotationsToLookFor.size() == 0) {
-            throw new IllegalArgumentException("Zero annotations to look for");
+            throw MESSAGES.emptyParameter("annotationsToLookFor");
         }
 
         Set<Class<?>> result = new HashSet<Class<?>>();
@@ -144,13 +144,12 @@ public class HibernateAnnotationScanner implements Scanner {
             for (AnnotationInstance annotationInstance : classesWithAnnotation) {
                 String className = annotationInstance.target().toString();
                 try {
-                    log.tracef("getClassesInJar found class %s with annotation %s", className, annClass.getName());
+                    JPA_LOGGER.tracef("getClassesInJar found class %s with annotation %s", className, annClass.getName());
                     result.add(pu.getClassLoader().loadClass(className));
                     // TODO:  fix temp classloader (get CFNE on entity class)
                     //result.add(pu.getNewTempClassLoader().loadClass(className));
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("could not load entity class '" +
-                        className + "' with PersistenceUnitInfo.getNewTempClassLoader()", e);
+                    throw MESSAGES.cannotLoadEntityClass(e, className);
                 }
             }
         }
@@ -160,9 +159,9 @@ public class HibernateAnnotationScanner implements Scanner {
     @Override
     public Set<NamedInputStream> getFilesInJar(URL jartoScan, Set<String> filePatterns) {
         if (jartoScan == null)
-            throw new IllegalArgumentException("Null jar to scan url");
+            throw MESSAGES.nullVar("jarToScan");
         if (filePatterns == null)
-            throw new IllegalArgumentException("Null file patterns to look for");
+            throw MESSAGES.nullVar("filePatterns");
 
         Set<NamedInputStream> result = new HashSet<NamedInputStream>();
         Map<String, Set<NamedInputStream>> map;
@@ -207,7 +206,7 @@ public class HibernateAnnotationScanner implements Scanner {
 
     @Override
     public Set<NamedInputStream> getFilesInClasspath(Set<String> filePatterns) {
-        throw new RuntimeException("Not yet implemented");  // not currently called
+        throw MESSAGES.notYetImplemented();  // not currently called
     }
 
     @Override
