@@ -35,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ejb.jboss.ejb3.JBossEjb31MetaData;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.JBossEjb3MetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.AbstractMetaDataParser;
 import org.jboss.metadata.ejb.parser.spec.EjbJarMetaDataParser;
@@ -107,15 +108,17 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
         final EjbJarMetaData ejbJarMetaData;
         final EjbJarMetaData specMetaData = parseEjbJarXml(deploymentUnit);
-        final EjbJarMetaData jbossMetaData = parseJBossEjb3Xml(deploymentUnit);
+        final JBossEjb31MetaData jbossMetaData = parseJBossEjb3Xml(deploymentUnit);
         if (specMetaData == null) {
             if (jbossMetaData == null)
                 return;
             ejbJarMetaData = jbossMetaData;
         } else if (jbossMetaData == null) {
             ejbJarMetaData = specMetaData;
+        } else if (specMetaData instanceof EjbJar31MetaData) {
+            ejbJarMetaData = jbossMetaData.createMerged((EjbJar31MetaData) specMetaData);
         } else {
-            throw new UnsupportedOperationException("NYI: descriptor merging");
+            throw new UnsupportedOperationException("AS7-1211: Only merging of EjbJar31MetaData is supported, actual is " + specMetaData);
         }
 
         // Mark it as a EJB deployment
@@ -234,7 +237,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         }
     }
 
-    private static EjbJarMetaData parseJBossEjb3Xml(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private static JBossEjb31MetaData parseJBossEjb3Xml(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         // Locate the descriptor
@@ -251,7 +254,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
 
             final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(new HashMap<String, AbstractMetaDataParser<?>>());
-            EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
+            final JBossEjb31MetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
             return ejbJarMetaData;
         } catch (XMLStreamException xmlse) {
             throw new DeploymentUnitProcessingException("Exception while parsing " + JBOSS_EJB3_XML + ": " + descriptor.getPathName(), xmlse);
