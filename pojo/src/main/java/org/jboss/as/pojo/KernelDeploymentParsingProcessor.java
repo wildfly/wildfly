@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
 import javax.xml.namespace.QName;
@@ -40,6 +41,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -87,18 +89,32 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
         if (root == null || root.exists() == false)
             return;
 
-        Collection<VirtualFile> beans = Collections.emptySet();
+        Collection<VirtualFile> beans;
         final String name = root.getName();
         if(name.endsWith("jboss-beans.xml")) {
             beans = Collections.singleton(root);
         } else {
-            VirtualFile metainf = root.getChild("META-INF");
-            if (metainf.exists())
-                try {
-                    beans = metainf.getChildren(new SuffixMatchFilter("jboss-beans.xml"));
-                } catch (IOException e) {
-                    throw new DeploymentUnitProcessingException(e);
+            VirtualFileFilter filter = new SuffixMatchFilter("jboss-beans.xml");
+            beans = new ArrayList<VirtualFile>();
+            try {
+                // try plain .jar/META-INF
+                VirtualFile metainf = root.getChild("META-INF");
+                if (metainf.exists())
+                    beans.addAll(metainf.getChildren(filter));
+
+                // allow for WEB-INF/*-jboss-beans.xml
+                VirtualFile webinf = root.getChild("WEB-INF");
+                if (webinf.exists()) {
+                    beans.addAll(webinf.getChildren(filter));
+
+                    // allow WEB-INF/classes/META-INF
+                    metainf = webinf.getChild("classes/META-INF");
+                    if (metainf.exists())
+                        beans.addAll(metainf.getChildren(filter));
                 }
+            } catch (IOException e) {
+                throw new DeploymentUnitProcessingException(e);
+            }
         }
         for (VirtualFile beansXmlFile : beans)
             parseDescriptor(unit, beansXmlFile);
