@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc. and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.clustering.jgroups;
 
-package org.jboss.as.clustering.jgroups.mux;
+import org.jgroups.JChannel;
+import org.jgroups.UpHandler;
+import org.jgroups.blocks.mux.MuxUpHandler;
+import org.jgroups.blocks.mux.Muxer;
+import org.jgroups.conf.ProtocolStackConfigurator;
 
 /**
- *
- *
- * @author Brian Stansberry
- *
- * @version $Revision$
+ * A JGroups channel that uses a MuxUpHandler by default.
+ * @author Paul Ferraro
  */
-public interface StateTransferFilter {
-    boolean accepts(String state_id);
+public class MuxChannel extends JChannel {
+    public MuxChannel(ProtocolStackConfigurator configurator) throws Exception {
+        super(configurator);
+        this.setUpHandler(new MuxUpHandler());
+    }
+
+    @Override
+    public void setUpHandler(UpHandler handler) {
+        UpHandler existingHandler = this.getUpHandler();
+        if (existingHandler != null) {
+            Muxer<UpHandler> muxer = (MuxUpHandler) existingHandler;
+            muxer.setDefaultHandler(handler);
+        } else {
+            super.setUpHandler(handler);
+        }
+    }
 }

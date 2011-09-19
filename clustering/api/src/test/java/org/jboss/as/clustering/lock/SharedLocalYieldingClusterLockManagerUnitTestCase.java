@@ -76,9 +76,8 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
 
         List<RemoteLockResponse> rspList = getOKResponses(2);
         when(ts.rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(ts.rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(ts.rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         assertEquals(LockResult.ACQUIRED_FROM_CLUSTER, ts.testee.lock("test", 1000, false));
 
@@ -125,9 +124,8 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
 
         when(ts.rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
         List<RemoteLockResponse> rspList = getOKResponses(2);
-        when(ts.rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(ts.rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         assertEquals(LockResult.ACQUIRED_FROM_CLUSTER, ts.testee.lock("test", 1000, false));
     }
@@ -191,9 +189,8 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
 
         List<RemoteLockResponse> rspList = getOKResponses(2);
         when(ts.rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(ts.rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(ts.rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         assertEquals(LockResult.ACQUIRED_FROM_CLUSTER, ts.testee.lock("test", 1000, false));
     }
@@ -222,9 +219,8 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
         if (!newLock || newLockPos >= 0) {
             List<RemoteLockResponse> rspList = getOKResponses(2);
             when(ts.rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-            when(ts.rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                            aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                            eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+            when(ts.rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                            aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
         }
 
         Locker[] lockers = new Locker[4];
@@ -280,9 +276,8 @@ public class SharedLocalYieldingClusterLockManagerUnitTestCase {
 
         List<RemoteLockResponse> rspList = getRejectionResponses(node3, 2);
         when(ts.rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(ts.rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(ts.rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
         // expect(ts.partition.callMethodOnCluster(eq("test"),
         // eq("releaseRemoteLock"),
         // eqLockParams(node1, 200000),

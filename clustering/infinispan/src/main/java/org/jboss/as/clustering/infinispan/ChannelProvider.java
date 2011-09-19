@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
-import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.msc.value.Value;
 import org.jgroups.Channel;
 
 import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
@@ -37,14 +37,12 @@ import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
  */
 public class ChannelProvider implements JGroupsChannelLookup {
 
-    private static final String CHANNEL_FACTORY = "channel-factory";
-    private static final String ID = "id";
+    private static final String CHANNEL = "channel";
 
-    public static void init(GlobalConfiguration global, ChannelFactory factory) {
+    public static void init(GlobalConfiguration global, Value<Channel> channel) {
         Properties properties = global.getTransportProperties();
         properties.setProperty(JGroupsTransport.CHANNEL_LOOKUP, ChannelProvider.class.getName());
-        properties.put(CHANNEL_FACTORY, factory);
-        properties.put(ID, global.getTransportNodeName() + "-" + global.getClusterName());
+        properties.put(CHANNEL, channel);
     }
 
     /**
@@ -53,25 +51,13 @@ public class ChannelProvider implements JGroupsChannelLookup {
      */
     @Override
     public Channel getJGroupsChannel(Properties properties) {
-        ChannelFactory factory = (ChannelFactory) properties.get(CHANNEL_FACTORY);
+        @SuppressWarnings("unchecked")
+        Value<Channel> channel = (Value<Channel>) properties.get(CHANNEL);
 
-        if (factory == null) {
-            throw MESSAGES.invalidTransportProperty(CHANNEL_FACTORY, properties);
+        if (channel == null) {
+            throw MESSAGES.invalidTransportProperty(CHANNEL, properties);
         }
-
-        String id = properties.getProperty(ID);
-
-        if (id == null) {
-            throw MESSAGES.invalidTransportProperty(ID, properties);
-        }
-
-        try {
-            return factory.createChannel(id);
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
+        return channel.getValue();
     }
 
     /**
@@ -80,7 +66,7 @@ public class ChannelProvider implements JGroupsChannelLookup {
      */
     @Override
     public boolean shouldStartAndConnect() {
-        return true;
+        return false;
     }
 
     /**
@@ -89,6 +75,6 @@ public class ChannelProvider implements JGroupsChannelLookup {
      */
     @Override
     public boolean shouldStopAndDisconnect() {
-        return true;
+        return false;
     }
 }

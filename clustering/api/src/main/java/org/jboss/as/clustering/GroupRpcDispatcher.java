@@ -86,7 +86,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      *
      * @return an array of responses from nodes that invoked the RPC
      */
-    List<?> callMethodOnCluster(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf) throws InterruptedException;
+    <T> List<T> callMethodOnCluster(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf) throws InterruptedException;
 
     /**
      * Invoke a synchronous RPC call on all nodes of the partition/cluster and return their response values as a list. This
@@ -106,7 +106,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      *
      * @return an array of responses from remote nodes
      */
-    List<?> callMethodOnCluster(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf, ResponseFilter filter) throws InterruptedException;
+    <T> List<T> callMethodOnCluster(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf, ResponseFilter filter) throws InterruptedException;
 
     /**
      * Invoke an RPC call on all nodes of the partition/cluster and return their response values as a list.
@@ -116,8 +116,6 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      * @param methodName name of the Java method to be called on remote services
      * @param args array of Java Object representing the set of parameters to be given to the remote method
      * @param types types of the parameters
-     * @param returnType the expected type of the return values, null or <code>void.class</code> if no return values are
-     *        expected
      * @param excludeSelf <code>false</code> if the RPC must also be made on the current node of the partition,
      *        <code>true</code> if only on remote nodes
      * @param filter response filter instance which allows for early termination of the RPC call once acceptable responses are
@@ -127,7 +125,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      *        consistent order with respect to other RPCs originated by the same node
      * @return a list of responses from remote nodes
      */
-    <T> List<T> callMethodOnCluster(String serviceName, String methodName, Object[] args, Class<?>[] types, Class<T> returnType, boolean excludeSelf, ResponseFilter filter, long methodTimeout, boolean unordered) throws InterruptedException;
+    <T> List<T> callMethodOnCluster(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf, ResponseFilter filter, long methodTimeout, boolean unordered) throws InterruptedException;
 
     /**
      * Invoke an RPC call on all nodes of the partition/cluster without waiting for any responses. The call will return
@@ -177,7 +175,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      *
      * @return the value returned by the target method
      */
-    Object callMethodOnCoordinatorNode(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf) throws Exception;
+    <T> T callMethodOnCoordinatorNode(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf) throws Exception;
 
     /**
      * Calls method on Cluster coordinator node only. The cluster coordinator node is the first node in the current cluster
@@ -197,7 +195,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      *        consistent order with respect to other RPCs originated by the same node
      * @return the value returned by the target method
      */
-    <T> T callMethodOnCoordinatorNode(String serviceName, String methodName, Object[] args, Class<?>[] types, Class<T> returnType, boolean excludeSelf, long methodTimeout, boolean unordered) throws Exception;
+    <T> T callMethodOnCoordinatorNode(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf, long methodTimeout, boolean unordered) throws Exception;
 
     /**
      * Calls method on target node only. This convenience method is equivalent to
@@ -214,7 +212,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      *
      * @return the value returned by the target method
      */
-    Object callMethodOnNode(String serviceName, String methodName, Object[] args, Class<?>[] types, ClusterNode targetNode) throws Exception;
+    <T> T callMethodOnNode(String serviceName, String methodName, Object[] args, Class<?>[] types, ClusterNode targetNode) throws Exception;
 
     /**
      * Calls method on target node only. This convenience method is equivalent to
@@ -230,7 +228,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      *
      * @return the value returned by the target method
      */
-    Object callMethodOnNode(String serviceName, String methodName, Object[] args, Class<?>[] types, long methodTimeout, ClusterNode targetNode) throws Exception;
+    <T> T callMethodOnNode(String serviceName, String methodName, Object[] args, Class<?>[] types, long methodTimeout, ClusterNode targetNode) throws Exception;
 
     /**
      * Calls method synchronously on target node only.
@@ -248,7 +246,7 @@ public interface GroupRpcDispatcher extends GroupCommunicationService {
      *        consistent order with respect to other RPCs originated by the same node
      * @return the value returned by the target method
      */
-    <T> T callMethodOnNode(String serviceName, String methodName, Object[] args, Class<?>[] types, Class<T> returnType, long methodTimeout, ClusterNode targetNode, boolean unordered) throws Exception;
+    <T> T callMethodOnNode(String serviceName, String methodName, Object[] args, Class<?>[] types, long methodTimeout, ClusterNode targetNode, boolean unordered) throws Exception;
 
     /**
      * Calls method on target node only. The call will return immediately and will not wait for the node to answer. Thus no

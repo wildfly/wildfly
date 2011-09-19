@@ -41,13 +41,6 @@ public interface CacheInvoker {
     <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation);
 
     /**
-     * Indicates whether or not to set the {@link Flag#FORCE_SYNCHRONOUS} flag prior to invoking the cache operation
-     *
-     * @param forceSynchronous
-     */
-    void setForceSynchronous(boolean forceSynchronous);
-
-    /**
      * Encapsulates a cache operation.
      *
      * @param <R> the return type of the cache operation

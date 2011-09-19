@@ -149,8 +149,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
                     // Get the lock on all other nodes in the cluster
 
                     List<RemoteLockResponse> rsps = rpcDispatcher.callMethodOnCluster(getServiceHAName(), "remoteLock",
-                            new Object[] { lockId, me, new Long(left) }, REMOTE_LOCK_TYPES, RemoteLockResponse.class, true,
-                            null, rpcDispatcher.getMethodCallTimeout(), false);
+                            new Object[] { lockId, me, new Long(left) }, REMOTE_LOCK_TYPES, true, null, rpcDispatcher.getMethodCallTimeout(), false);
 
                     boolean remoteLocked = true;
                     if (rsps != null) {

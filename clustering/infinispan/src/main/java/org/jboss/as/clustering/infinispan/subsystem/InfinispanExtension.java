@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -570,8 +571,15 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                 }
                 case MODE: {
                     try {
-                        TransactionMode mode = TransactionMode.valueOf(value);
-                        transaction.get(ModelKeys.MODE).set(mode.name());
+                        transaction.get(ModelKeys.MODE).set(TransactionMode.valueOf(value).name());
+                    } catch (IllegalArgumentException e) {
+                        throw ParseUtils.invalidAttributeValue(reader, i);
+                    }
+                    break;
+                }
+                case LOCKING: {
+                    try {
+                        transaction.get(ModelKeys.LOCKING).set(LockingMode.valueOf(value).name());
                     } catch (IllegalArgumentException e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
@@ -579,8 +587,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                 }
                 case EAGER_LOCKING: {
                     try {
-                        EagerLocking eager = EagerLocking.valueOf(value);
-                        transaction.get(ModelKeys.EAGER_LOCKING).set(eager.name());
+                        transaction.get(ModelKeys.EAGER_LOCKING).set(EagerLocking.valueOf(value).name());
                     } catch (IllegalArgumentException e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
@@ -838,6 +845,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                         ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
                         this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
                         this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
+                        this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
                         this.writeOptional(writer, Attribute.EAGER_LOCKING, transaction, ModelKeys.EAGER_LOCKING);
                         writer.writeEndElement();
                     }

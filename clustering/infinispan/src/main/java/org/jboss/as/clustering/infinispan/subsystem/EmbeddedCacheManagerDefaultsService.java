@@ -93,7 +93,7 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
 */
         GlobalConfiguration global = new GlobalConfiguration(this.getClass().getClassLoader());
         global.fluent()
-            .transport().strictPeerToPeer(false).distributedSyncTimeout(60000L)
+            .transport().distributedSyncTimeout(60000L)
             .shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
             ;
         Defaults defaults = new Defaults(global);
@@ -101,7 +101,7 @@ public class EmbeddedCacheManagerDefaultsService implements Service<EmbeddedCach
         defaultConfig.fluent()
             .locking().lockAcquisitionTimeout(15000L).useLockStriping(false).concurrencyLevel(1000)
             .eviction().strategy(EvictionStrategy.NONE).maxEntries(10000)
-            .transaction().useSynchronization(true)
+            .transaction().transactionMode(org.infinispan.transaction.TransactionMode.TRANSACTIONAL).useSynchronization(true)
             ;
         for (Configuration.CacheMode mode: Configuration.CacheMode.values()) {
             Configuration configuration = defaultConfig.clone();

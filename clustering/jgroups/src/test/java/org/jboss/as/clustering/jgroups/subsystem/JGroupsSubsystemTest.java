@@ -21,64 +21,22 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.io.IOException;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class JGroupsSubsystemTest extends AbstractSubsystemBaseTest {
+public class JGroupsSubsystemTest extends ClusteringSubsystemTest {
 
     public JGroupsSubsystemTest() {
-        // FIXME JGroupsSubsystemTest constructor
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension());
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), "subsystem-jgroups.xml");
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        //TODO: This is copied from standalone-ha.xml you may want to try more combinations
-        return "<subsystem xmlns=\"urn:jboss:domain:jgroups:1.0\" default-stack=\"udp\">" +
-            "  <stack name=\"udp\">" +
-            "    <transport type=\"UDP\" socket-binding=\"jgroups-udp\" diagnostics-socket-binding=\"jgroups-diagnostics\"/>" +
-            "    <protocol type=\"PING\"/>" +
-            "    <protocol type=\"MERGE2\"/>" +
-            "    <protocol type=\"FD_SOCK\" socket-binding=\"jgroups-udp-fd\"/>" +
-            "    <protocol type=\"FD\"/>" +
-            "    <protocol type=\"VERIFY_SUSPECT\"/>" +
-            "    <protocol type=\"BARRIER\"/>" +
-            "    <protocol type=\"pbcast.NAKACK\"/>" +
-            "    <protocol type=\"UNICAST\"/>" +
-            "    <protocol type=\"pbcast.STABLE\"/>" +
-            "    <protocol type=\"VIEW_SYNC\"/>" +
-            "    <protocol type=\"pbcast.GMS\"/>" +
-            "    <protocol type=\"UFC\"/>" +
-            "    <protocol type=\"MFC\"/>" +
-            "    <protocol type=\"FRAG2\"/>" +
-            "    <protocol type=\"pbcast.STREAMING_STATE_TRANSFER\"/>" +
-            "    <protocol type=\"pbcast.FLUSH\"/>" +
-            "  </stack>" +
-            "</subsystem>";
+    protected ValidationConfiguration getModelValidationConfiguration() {
+        //TODO fix validation https://issues.jboss.org/browse/AS7-1787
+        return null;
     }
-
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix validation https://issues.jboss.org/browse/AS7-1787
-                return null;
-            }
-        };
-    }
-
 }

@@ -78,6 +78,7 @@ public class LocalDescriptions {
         description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOL, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
         description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOL, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
         description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOL, ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.protocol"));
+        description.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelKeys.PROTOCOL, ModelDescriptionConstants.REQUIRED).set(false);
         return description;
     }
 

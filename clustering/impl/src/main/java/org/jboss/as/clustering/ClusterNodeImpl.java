@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -51,7 +52,7 @@ public class ClusterNodeImpl implements ClusterNode {
     // Attributes ----------------------------------------------------
 
     private final String id;
-    private final Address jgAddress;
+    private transient Address jgAddress;
     private final InetSocketAddress socketAddress;
 
     // Static --------------------------------------------------------
@@ -126,12 +127,27 @@ public class ClusterNodeImpl implements ClusterNode {
         return this.getName();
     }
 
-    // Package protected ---------------------------------------------
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeUTF(this.jgAddress.getClass().getName());
+        try {
+            this.jgAddress.writeTo(out);
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
 
-    // Protected -----------------------------------------------------
-
-    // Private -------------------------------------------------------
-
-    // Inner classes -------------------------------------------------
-
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        try {
+            this.jgAddress = Address.class.getClassLoader().loadClass(in.readUTF()).asSubclass(Address.class).newInstance();
+            this.jgAddress.readFrom(in);
+        } catch (IOException e) {
+            throw e;
+        } catch (ClassNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
 }

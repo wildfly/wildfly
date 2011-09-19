@@ -46,7 +46,7 @@ import static org.jboss.as.clustering.jgroups.JGroupsMessages.MESSAGES;
  */
 public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME, "stack", "defaults");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME, "defaults");
 
     private static final String DEFAULTS = "jgroups-defaults.xml";
 
