@@ -23,13 +23,14 @@ package org.jboss.as.ejb3.context.spi;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 
 /**
  * @author Stuart Douglas
  */
 public interface EntityContext extends EJBContext, javax.ejb.EntityContext {
     @Override
-    MessageDrivenBeanComponent getComponent();
+    EntityBeanComponent getComponent();
 
     @Override
     EJBLocalObject getEJBLocalObject() throws IllegalStateException;

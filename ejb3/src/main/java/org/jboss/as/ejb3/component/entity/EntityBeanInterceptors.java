@@ -45,6 +45,16 @@ public class EntityBeanInterceptors {
         }
     });
 
+    /**
+     * Interceptor for {@link Object#hashCode()}
+     */
+    public static final InterceptorFactory HASH_CODE = new ImmediateInterceptorFactory(new Interceptor() {
+        @Override
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            final EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
+            return instance.getPrimaryKey().hashCode();
+        }
+    });
 
     /**
      * Post construct interceptor that sets up the instances context

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.context.base;
 
+import javax.ejb.EntityBean;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.context.spi.EntityContext;
 import org.jboss.as.ejb3.context.spi.MessageDrivenBeanComponent;
@@ -41,8 +43,8 @@ public class BaseEntityContext extends BaseEJBContext implements EntityContext {
     }
 
     @Override
-    public MessageDrivenBeanComponent getComponent() {
-        return (MessageDrivenBeanComponent) super.getComponent();
+    public EntityBeanComponent getComponent() {
+        return (EntityBeanComponent) super.getComponent();
     }
 
     @Override
@@ -58,5 +60,13 @@ public class BaseEntityContext extends BaseEJBContext implements EntityContext {
     @Override
     public Object getPrimaryKey() throws IllegalStateException {
         return instance.getPrimaryKey();
+    }
+
+    public EntityBean getInstance() {
+        return instance.getInstance();
+    }
+
+    public boolean isRemoved() {
+        return instance.isRemoved();
     }
 }

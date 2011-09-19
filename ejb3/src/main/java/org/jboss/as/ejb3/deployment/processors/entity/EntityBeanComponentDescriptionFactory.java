@@ -31,6 +31,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Stuart Douglas
@@ -58,7 +59,12 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         final String beanName = entity.getName();
         final String beanClassName = entity.getEjbClass();
 
-        final EntityBeanComponentDescription description = new EntityBeanComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+        if (!shouldProcess(entity)) {
+            return;
+        }
+
+        final EntityBeanComponentDescription description = createDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+
         // add it to the ejb jar description
         ejbJarDescription.getEEModuleDescription().addComponent(description);
         description.setDescriptorData(entity);
@@ -77,9 +83,14 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         if (local != null) {
             description.addEjbLocalObjectView(local);
         }
+    }
 
+    protected boolean shouldProcess(EntityBeanMetaData entity) {
+        return entity.isBMP();
+    }
 
-
+    protected EntityBeanComponentDescription createDescription(final String beanName, final String beanClassName, final EjbJarDescription ejbJarDescription, final ServiceName serviceName) {
+        return new EntityBeanComponentDescription(beanName, beanClassName, ejbJarDescription, serviceName);
     }
 
 }

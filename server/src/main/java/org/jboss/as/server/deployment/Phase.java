@@ -227,6 +227,7 @@ public enum Phase {
     public static final int PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS     = 0x1150;
     public static final int PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1151;
     public static final int PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1152;
+    public static final int PARSE_CMP_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1153;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
@@ -279,15 +280,17 @@ public enum Phase {
     public static final int DEPENDENCIES_WS                             = 0x0C00;
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
-    public static final int DEPENDENCIES_JPA = 0x1000;
+    public static final int DEPENDENCIES_JPA                            = 0x1000;
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x1400;
+    public static final int DEPENDENCIES_CMP                            = 0x1500;
     //these must be last
-    public static final int DEPENDENCIES_MODULE_INFO_SERVICE            = 0x1500;
-    public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x1600;
-    public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x1700;
+    public static final int DEPENDENCIES_MODULE_INFO_SERVICE            = 0x1600;
+    public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x1700;
+    public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x1800;
+
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
@@ -346,6 +349,9 @@ public enum Phase {
     public static final int POST_MODULE_APP_CLIENT_METHOD_RESOLUTION    = 0x2020;
     public static final int POST_MODULE_EJB_ORB_BIND                    = 0x2100;
     public static final int POST_MODULE_EJB_CLIENT_CONTEXT_SETUP        = 0x2200;
+    public static final int POST_MODULE_CMP_PARSE                       = 0x2300;
+    public static final int POST_MODULE_CMP_ENTITY_METADATA             = 0x2400;
+    public static final int POST_MODULE_CMP_STORE_MANAGER               = 0x2500;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;

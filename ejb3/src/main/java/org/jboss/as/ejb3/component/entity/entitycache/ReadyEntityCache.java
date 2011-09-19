@@ -76,6 +76,13 @@ public interface ReadyEntityCache {
     void release(EntityBeanComponentInstance instance, boolean transactionSuccess);
 
     /**
+     * This method is called when the entity instance is about to be invoked upon.
+     *
+     * @param instance The entity
+     */
+    void reference(EntityBeanComponentInstance instance);
+
+    /**
      * Discard the object, called when an exception occurs
      *
      * @param instance The instance to discard

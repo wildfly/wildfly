@@ -22,28 +22,20 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
-import java.lang.reflect.MalformedParameterizedTypeException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponentCreateService;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
-import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
-import org.jboss.as.ejb3.component.stateless.StatelessComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.pool.Pool;
@@ -156,6 +148,12 @@ public enum EJBComponentType {
         EJBComponentType type = typeByDescriptionClass.get(description.getClass());
         if (type != null) {
             return type;
+        }
+        // Check for subclass
+        for(Map.Entry<Class<?>, EJBComponentType> entry : typeByDescriptionClass.entrySet()) {
+            if(entry.getKey().isAssignableFrom(description.getClass())) {
+                return entry.getValue();
+            }
         }
         throw new IllegalArgumentException(String.format("Unknown EJB Component description type %s", description.getClass()));
     }

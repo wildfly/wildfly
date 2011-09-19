@@ -28,18 +28,21 @@ import org.jboss.logging.Logger;
 import javax.ejb.NoSuchEJBException;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
- *
+ * Cache of entity bean component instances by transaction key
  * @author Stuart Douglas
  */
 public class TransactionLocalEntityCache implements ReadyEntityCache {
 
 
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-    private final ThreadLocal<Map<Object, EntityBeanComponentInstance>> cache = new ThreadLocal<Map<Object, EntityBeanComponentInstance>>();
+    private final ConcurrentMap<Object, Map<Object, EntityBeanComponentInstance>> cache = new ConcurrentHashMap<Object, Map<Object, EntityBeanComponentInstance>>(Runtime.getRuntime().availableProcessors());
     private final EntityBeanComponent component;
 
     private static final Logger logger = Logger.getLogger(TransactionLocalEntityCache.class);
@@ -54,8 +57,7 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
         if (!isTransactionActive()) {
             return createInstance(key);
         }
-        prepareCache();
-        final Map<Object, EntityBeanComponentInstance> map = cache.get();
+        final Map<Object, EntityBeanComponentInstance> map = prepareCache();
         EntityBeanComponentInstance instance = map.get(key);
         if (instance == null) {
             instance = createInstance(key);
@@ -67,17 +69,20 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     @Override
     public void discard(final EntityBeanComponentInstance instance) {
         if (isTransactionActive()) {
-            if(cache.get() != null) {
-                cache.get().remove(instance.getPrimaryKey());
+            final Object key = transactionSynchronizationRegistry.getTransactionKey();
+            final Map<Object, EntityBeanComponentInstance> map = cache.get(key);
+            if (map != null) {
+                map.remove(instance.getPrimaryKey());
             }
         }
+        instance.discard();
     }
 
     @Override
     public void create(final EntityBeanComponentInstance instance) throws NoSuchEJBException {
         if (isTransactionActive()) {
-            prepareCache();
-            cache.get().put(instance.getPrimaryKey(), instance);
+            final Map<Object, EntityBeanComponentInstance> map = prepareCache();
+            map.put(instance.getPrimaryKey(), instance);
         }
     }
 
@@ -85,15 +90,15 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     public void release(final EntityBeanComponentInstance instance, boolean success) {
         //TODO: this should probably be somewhere else
         //roll back unsuccessful removal
-        if(!success && instance.isRemoved()) {
+        if (!success && instance.isRemoved()) {
             instance.setRemoved(false);
         }
         instance.passivate();
         component.getPool().release(instance);
-        if(cache.get() != null ){
-            cache.get().remove(instance.getPrimaryKey());
-        }
+        discard(instance);
+    }
 
+    public void reference(EntityBeanComponentInstance instance) {
     }
 
     @Override
@@ -105,27 +110,33 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
     public synchronized void stop() {
     }
 
-    private void prepareCache() {
-        if (cache.get() == null) {
-            cache.set(new HashMap<Object, EntityBeanComponentInstance>());
-            if (transactionSynchronizationRegistry.getTransactionKey() != null) {
-                transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
-                    @Override
-                    public void beforeCompletion() {
-
-                    }
-
-                    @Override
-                    public void afterCompletion(final int status) {
-                        cache.remove();
-                    }
-                });
-            }
+    private Map<Object, EntityBeanComponentInstance> prepareCache() {
+        final Object key = transactionSynchronizationRegistry.getTransactionKey();
+        Map<Object, EntityBeanComponentInstance> map = cache.get(key);
+        if (map != null) {
+            return map;
         }
+        map = Collections.synchronizedMap(new HashMap<Object, EntityBeanComponentInstance>());
+        final Map<Object, EntityBeanComponentInstance> existing = cache.putIfAbsent(key, map);
+        if (existing != null) {
+            map = existing;
+        }
+        transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
+            @Override
+            public void beforeCompletion() {
+
+            }
+
+            @Override
+            public void afterCompletion(final int status) {
+                cache.remove(key);
+            }
+        });
+        return map;
     }
 
     private EntityBeanComponentInstance createInstance(Object pk) {
-        final  EntityBeanComponentInstance instance = component.getPool().get();
+        final EntityBeanComponentInstance instance = component.getPool().get();
         instance.associate(pk);
         return instance;
     }

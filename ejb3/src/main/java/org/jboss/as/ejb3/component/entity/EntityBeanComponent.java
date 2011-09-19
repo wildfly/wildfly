@@ -24,10 +24,10 @@ package org.jboss.as.ejb3.component.entity;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
+import org.jboss.as.ejb3.component.entity.entitycache.ReferenceCountingEntityCache;
 import org.jboss.as.ejb3.component.entity.entitycache.TransactionLocalEntityCache;
 import org.jboss.as.ejb3.pool.InfinitePool;
 import org.jboss.as.ejb3.pool.Pool;
@@ -61,15 +61,12 @@ public class EntityBeanComponent extends EJBComponent {
             }
         };
         pool = new InfinitePool<EntityBeanComponentInstance>(factory);
-        cache = new TransactionLocalEntityCache(this);
+        this.cache = createEntityCache(ejbComponentCreateService);
     }
-
-
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        final EntityBeanComponentInstance instance =  new EntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
-        return instance;
+        return new EntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     public ReadyEntityCache getCache() {
@@ -78,5 +75,9 @@ public class EntityBeanComponent extends EJBComponent {
 
     public Pool<EntityBeanComponentInstance> getPool() {
         return pool;
+    }
+
+    protected ReadyEntityCache createEntityCache(EntityBeanComponentCreateService ejbComponentCreateService) {
+        return new ReferenceCountingEntityCache(this);
     }
 }

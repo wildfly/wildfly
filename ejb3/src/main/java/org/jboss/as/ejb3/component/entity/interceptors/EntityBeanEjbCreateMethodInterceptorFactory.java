@@ -83,13 +83,14 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                 //call the ejbCreate method
                 final Object primaryKey = ejbCreate.invoke(instance.getInstance(), params);
                 instance.associate(primaryKey);
-                ejbPostCreate.invoke(instance.getInstance(), params);
-                primaryKeyReference.set(primaryKey);
 
                 //now add the instance to the cache, so it is usable
                 //note that we do not release it back to the pool
                 //the cache will do that when it is expired or removed
                 entityBeanComponent.getCache().create(instance);
+
+                ejbPostCreate.invoke(instance.getInstance(), params);
+                primaryKeyReference.set(primaryKey);
 
                 //if a transaction is active we register a sync
                 //and if the transaction is rolled back we release the instance back into the pool
@@ -111,7 +112,6 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                         }
                     });
                 }
-
                 return context.proceed();
             }
         };

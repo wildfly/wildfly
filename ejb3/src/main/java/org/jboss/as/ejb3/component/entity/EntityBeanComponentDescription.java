@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.component.entity;
 
 import javax.ejb.TransactionManagementType;
-
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -41,6 +40,7 @@ import org.jboss.as.ejb3.tx.CMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceName;
 
@@ -84,7 +84,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
 
     @Override
-    public ComponentConfiguration createConfiguration( final ClassIndex classIndex) {
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
 
         final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex);
         // setup the component create service
@@ -112,26 +112,36 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
         //now we need to figure out if this is a home or object view
         if (view instanceof EjbHomeViewDescription) {
-            view.getConfigurators().add(new EntityBeanHomeViewConfigurator());
+            view.getConfigurators().add(getHomeViewConfigurator());
         } else {
-            view.getConfigurators().add(new EntityBeanObjectViewConfigurator());
+            view.getConfigurators().add(getObjectViewConfigurator());
         }
 
     }
 
+    protected EntityBeanObjectViewConfigurator getObjectViewConfigurator() {
+        return new EntityBeanObjectViewConfigurator();
+    }
 
-    private void addSynchronizationInterceptor() {
+    protected EntityBeanHomeViewConfigurator getHomeViewConfigurator() {
+        return new EntityBeanHomeViewConfigurator();
+    }
+
+    protected void addSynchronizationInterceptor() {
         // we must run before the DefaultFirstConfigurator
         getConfigurators().addFirst(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addComponentInterceptor(EntityBeanSynchronizationInterceptor.FACTORY, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
+                configuration.addComponentInterceptor(getSynchronizationInterceptorFactory(), InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
                 if (!reentrant) {
                     configuration.addComponentInterceptor(EntityBeanReentrancyInterceptor.FACTORY, InterceptorOrder.Component.REENTRANCY_INTERCEPTOR, false);
                 }
             }
         });
+    }
 
+    protected InterceptorFactory getSynchronizationInterceptorFactory() {
+        return EntityBeanSynchronizationInterceptor.FACTORY;
     }
 
     public String getPrimaryKeyType() {

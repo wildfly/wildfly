@@ -52,7 +52,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactory {
 
-    private enum ReturnType {
+    protected enum ReturnType {
         COLLECTION,
         ENUMERATION,
         SINGLE
@@ -86,59 +86,8 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
                 final EntityBeanComponentInstance instance = component.getPool().get();
                 final Object result;
                 try {
-                    //forward the invocation to the component interceptor chain
-                    Method oldMethod = context.getMethod();
-                    try {
-                        context.putPrivateData(ComponentInstance.class, instance);
-                        context.setMethod(finderMethod);
-                        context.setTarget(instance.getInstance());
-                        result = instance.getInterceptor(finderMethod).processInvocation(context);
-                    } finally {
-                        context.setMethod(oldMethod);
-                        context.setTarget(null);
-                        context.putPrivateData(ComponentInstance.class, null);
-                    }
-                    switch (returnType) {
-                        case COLLECTION: {
-                            Collection keys = (Collection) result;
-                            final Set<Object> results = new HashSet<Object>();
-                            if (keys != null) {
-                                for (Object key : keys) {
-                                    results.add(getLocalObject(key));
-                                }
-                            }
-                            return results;
-                        }
-                        case ENUMERATION: {
-                            Enumeration keys = (Enumeration) result;
-                            final Set<Object> results = new HashSet<Object>();
-                            if (keys != null) {
-                                while (keys.hasMoreElements()) {
-                                    Object key = keys.nextElement();
-                                    results.add(getLocalObject(key));
-                                }
-                            }
-                            final Iterator<Object> iterator = results.iterator();
-                            return new Enumeration<Object>() {
-
-                                @Override
-                                public boolean hasMoreElements() {
-                                    return iterator.hasNext();
-                                }
-
-                                @Override
-                                public Object nextElement() {
-                                    return iterator.next();
-                                }
-                            };
-                        }
-                        default: {
-                            if (result == null) {
-                                throw new ObjectNotFoundException("Could not find entity from " + finderMethod + " with params " + Arrays.toString(context.getParameters()));
-                            }
-                            return getLocalObject(result);
-                        }
-                    }
+                    result = invokeFind(context, instance);
+                    return prepareResults(context, result, component);
 
                 } finally {
                     component.getPool().release(instance);
@@ -148,7 +97,65 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
         };
     }
 
-    private Object getLocalObject(final Object result) {
+    protected Object prepareResults(final InterceptorContext context, final Object result, final EntityBeanComponent component) throws ObjectNotFoundException {
+        switch (returnType) {
+            case COLLECTION: {
+                Collection keys = (Collection) result;
+                final Set<Object> results = new HashSet<Object>();
+                if (keys != null) {
+                    for (Object key : keys) {
+                        results.add(getLocalObject(key, component));
+                    }
+                }
+                return results;
+            }
+            case ENUMERATION: {
+                Enumeration keys = (Enumeration) result;
+                final Set<Object> results = new HashSet<Object>();
+                if (keys != null) {
+                    while (keys.hasMoreElements()) {
+                        Object key = keys.nextElement();
+                        results.add(getLocalObject(key, component));
+                    }
+                }
+                final Iterator<Object> iterator = results.iterator();
+                return new Enumeration<Object>() {
+
+                    @Override
+                    public boolean hasMoreElements() {
+                        return iterator.hasNext();
+                    }
+
+                    @Override
+                    public Object nextElement() {
+                        return iterator.next();
+                    }
+                };
+            }
+            default: {
+                if (result == null) {
+                    throw new ObjectNotFoundException("Could not find entity from " + finderMethod + " with params " + Arrays.toString(context.getParameters()));
+                }
+                return getLocalObject(result, component);
+            }
+        }
+    }
+
+    protected Object invokeFind(final InterceptorContext context, final EntityBeanComponentInstance instance) throws Exception {
+        Method oldMethod = context.getMethod();
+        try {
+            context.putPrivateData(ComponentInstance.class, instance);
+            context.setMethod(finderMethod);
+            context.setTarget(instance.getInstance());
+            return instance.getInterceptor(finderMethod).processInvocation(context);
+        } finally {
+            context.setMethod(oldMethod);
+            context.setTarget(null);
+            context.putPrivateData(ComponentInstance.class, null);
+        }
+    }
+
+    protected Object getLocalObject(final Object result, final EntityBeanComponent component) {
         final HashMap<Object, Object> create = new HashMap<Object, Object>();
         create.put(EntityBeanEjbCreateMethodInterceptorFactory.EXISTING_ID_CONTEXT_KEY, result);
         return viewToCreate.getValue().createInstance(create).getInstance();
@@ -156,5 +163,9 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
 
     public InjectedValue<ComponentView> getViewToCreate() {
         return viewToCreate;
+    }
+
+    public ReturnType getReturnType() {
+        return returnType;
     }
 }

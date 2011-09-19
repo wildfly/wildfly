@@ -48,15 +48,15 @@ public class
         public static final int REENTRANCY_INTERCEPTOR                                      = 0x501;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR                                = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR         = 0x700;
-
+        public static final int CMP_RELATIONSHIP_INTERCEPTOR                                = 0x800;
 
         /**
          * All user level interceptors are added with the same priority, so they execute
          * in the order that they are added.
          */
-        public static final int USER_INTERCEPTORS                                           = 0x800;
-        public static final int CDI_INTERCEPTORS                                            = 0x900;
-        public static final int TERMINAL_INTERCEPTOR                                        = 0xA00;
+        public static final int USER_INTERCEPTORS                                           = 0x900;
+        public static final int CDI_INTERCEPTORS                                            = 0xA00;
+        public static final int TERMINAL_INTERCEPTOR                                        = 0xB00;
 
         private Component() {
         }
@@ -132,11 +132,11 @@ public class
     public static final class Client {
 
         public static final int TO_STRING = 0x100;
-        public static final int EJB_EQUALS_HASHCODE = 0x101;
         public static final int LOCAL_ASYNC_INVOCATION = 0x200;
         public static final int ASSOCIATING_INTERCEPTOR = 0x300;
-        public static final int WRITE_REPLACE = 0x400;
-        public static final int CLIENT_DISPATCHER = 0x500;
+        public static final int EJB_EQUALS_HASHCODE = 0x400;
+        public static final int WRITE_REPLACE = 0x500;
+        public static final int CLIENT_DISPATCHER = 0x600;
 
         private Client() {
         }
