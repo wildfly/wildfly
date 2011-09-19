@@ -34,7 +34,7 @@ import java.net.URLEncoder;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.publish.EndpointPublisherImpl.WSEndpointDeploymentUnit;
+import org.jboss.as.webservices.publish.WSEndpointDeploymentUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -54,23 +54,22 @@ public final class ModelDeploymentAspect extends AbstractDeploymentAspect {
     @Override
     public void start(final Deployment dep) {
         final DeploymentUnit unit = dep.getAttachment(DeploymentUnit.class);
-        if (!(unit instanceof WSEndpointDeploymentUnit)) {
-            for (final Endpoint endpoint : dep.getService().getEndpoints()) {
+        if (unit instanceof WSEndpointDeploymentUnit) return;
 
-                ModelNode op = null;
-                try {
-                    op = unit.createDeploymentSubModel(WSExtension.SUBSYSTEM_NAME,
+        for (final Endpoint endpoint : dep.getService().getEndpoints()) {
+            ModelNode op = null;
+            try {
+                op = unit.createDeploymentSubModel(WSExtension.SUBSYSTEM_NAME,
                         PathElement.pathElement(ENDPOINT, URLEncoder.encode(getId(endpoint), "UTF-8")));
-                } catch (final UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
-
-                op.get(ENDPOINT_NAME).set(getName(endpoint));
-                op.get(ENDPOINT_CONTEXT).set(getContext(endpoint));
-                op.get(ENDPOINT_CLASS).set(endpoint.getTargetBeanName());
-                op.get(ENDPOINT_TYPE).set(endpoint.getType().toString());
-                op.get(ENDPOINT_WSDL).set(endpoint.getAddress() + "?wsdl");
+            } catch (final UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
             }
+
+            op.get(ENDPOINT_NAME).set(getName(endpoint));
+            op.get(ENDPOINT_CONTEXT).set(getContext(endpoint));
+            op.get(ENDPOINT_CLASS).set(endpoint.getTargetBeanName());
+            op.get(ENDPOINT_TYPE).set(endpoint.getType().toString());
+            op.get(ENDPOINT_WSDL).set(endpoint.getAddress() + "?wsdl");
         }
     }
 

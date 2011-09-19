@@ -49,6 +49,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
+import org.jboss.as.webservices.publish.WSEndpointDeploymentUnit;
 
 /**
  * JBoss AS integration helper class.
@@ -425,6 +426,8 @@ public final class ASHelper {
      * @return true if JAXWS JSE, false otherwise
      */
     public static boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
+        if (unit instanceof WSEndpointDeploymentUnit) return true;
+
         final boolean hasWarMetaData = hasAttachment(unit, WarMetaData.ATTACHMENT_KEY);
         if (hasWarMetaData) {
             //once the deployment is a WAR, the endpoint(s) can be on either http (servlet) transport or jms transport

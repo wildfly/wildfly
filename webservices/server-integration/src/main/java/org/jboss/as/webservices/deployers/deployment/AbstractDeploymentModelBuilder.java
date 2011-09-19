@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.CLASSLOADER_KEY;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.ws.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
@@ -174,24 +176,31 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
     private ArchiveDeployment newDeployment(final DeploymentUnit unit) throws DeploymentUnitProcessingException {
         this.log.debug("Creating new WS deployment model for: " + unit);
         final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        final VirtualFile root = deploymentRoot.getRoot();
+        final VirtualFile root = deploymentRoot != null ? deploymentRoot.getRoot() : null;
+        final ClassLoader classLoader;
         final Module module = unit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + deploymentRoot);
+            classLoader = unit.getAttachment(CLASSLOADER_KEY);
+            if (classLoader == null) {
+                throw new DeploymentUnitProcessingException("failed to resolve module / classloader for deployment " + unit);
+            }
+        } else {
+            classLoader = module.getClassLoader();
         }
-        final ClassLoader classLoader = module.getClassLoader();
         final ArchiveDeployment dep = this.newDeployment(unit.getName(), classLoader);
 
-        try {
-            List<VirtualFile> virtualFiles = root.getChildrenRecursively(WS_FILE_FILTER);
-            final Set<UnifiedVirtualFile> uVirtualFiles = new HashSet<UnifiedVirtualFile>();
-            for (VirtualFile vf : virtualFiles) {
-                // Adding the roots of the virtual files.
-                uVirtualFiles.add(new VirtualFileAdaptor(vf));
+        if (root != null) {
+            try {
+                List<VirtualFile> virtualFiles = root.getChildrenRecursively(WS_FILE_FILTER);
+                final Set<UnifiedVirtualFile> uVirtualFiles = new HashSet<UnifiedVirtualFile>();
+                for (VirtualFile vf : virtualFiles) {
+                    // Adding the roots of the virtual files.
+                    uVirtualFiles.add(new VirtualFileAdaptor(vf));
+                }
+                dep.setMetadataFiles(new LinkedList<UnifiedVirtualFile>(uVirtualFiles));
+            } catch (IOException e) {
+                this.log.warn("Could not load metadata files for deployment root " + root, e);
             }
-            dep.setMetadataFiles(new LinkedList<UnifiedVirtualFile>(uVirtualFiles));
-        } catch (IOException e) {
-            this.log.warn("Could not load metadata files for deployment root " + root, e);
         }
 
         if (unit.getParent() != null) {
@@ -208,7 +217,11 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             dep.setParent(parentDep);
         }
 
-        dep.setRootFile(new VirtualFileAdaptor(root));
+        if (root != null) {
+            dep.setRootFile(new VirtualFileAdaptor(root));
+        } else {
+            dep.setRootFile(new ResourceLoaderAdapter(classLoader));
+        }
         dep.setRuntimeClassLoader(classLoader);
         dep.setType(deploymentType);
 
