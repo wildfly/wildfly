@@ -143,7 +143,7 @@ public interface JpaMessages {
      *
      * @return the message.
      */
-    @Message(id = 11428, value = "Cannot inject RESOURCE_LOCAL container manged EntityManager's using @PersistenceContext")
+    @Message(id = 11428, value = "Cannot inject RESOURCE_LOCAL container managed EntityManagers using @PersistenceContext")
     String cannotInjectResourceLocalEntityManager();
 
     /**
