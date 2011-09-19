@@ -22,6 +22,7 @@
 package org.jboss.as.ee.structure;
 
 import org.jboss.as.ee.subsystem.CommonAttributes;
+import org.jboss.as.ee.subsystem.GlobalModulesDefinition;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -56,7 +57,7 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
         if (globalMods.isDefined()) {
             for (final ModelNode module : globalMods.asList()) {
                 final String name = module.get(CommonAttributes.NAME).asString();
-                String slot = module.hasDefined(CommonAttributes.SLOT) ? module.get(CommonAttributes.SLOT).asString() : "main";
+                String slot = module.hasDefined(CommonAttributes.SLOT) ? module.get(CommonAttributes.SLOT).asString() : GlobalModulesDefinition.DEFAULT_SLOT;
                 final ModuleIdentifier identifier = ModuleIdentifier.create(name, slot);
                 moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), identifier, false, false, true));
             }

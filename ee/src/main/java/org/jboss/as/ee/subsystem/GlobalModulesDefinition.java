@@ -49,6 +49,8 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
 
     private static final ParameterValidator moduleValidator;
 
+    public static final String DEFAULT_SLOT = "main";
+
     static {
         final ParametersValidator delegate = new ParametersValidator();
         delegate.registerValidator(CommonAttributes.NAME, new StringLengthValidator(1));
@@ -70,7 +72,7 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
         if (result.isDefined()) {
             for (ModelNode module : result.asList()) {
                 if (!module.hasDefined(CommonAttributes.SLOT)) {
-                    module.get(CommonAttributes.SLOT).set("main");
+                    module.get(CommonAttributes.SLOT).set(DEFAULT_SLOT);
                 }
             }
         }
@@ -125,6 +127,7 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
         slot.get(DESCRIPTION);  // placeholder
         slot.get(TYPE).set(ModelType.STRING);
         slot.get(NILLABLE).set(true);
+        slot.get(DEFAULT).set(DEFAULT_SLOT);
 
         return valueType;
     }
