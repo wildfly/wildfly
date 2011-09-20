@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
@@ -73,6 +74,11 @@ public class SubsystemState  extends Observable implements Serializable, Service
         ServiceBuilder<SubsystemState> builder = serviceTarget.addService(SERVICE_NAME, state);
         builder.setInitialMode(Mode.LAZY);
         return builder.install();
+    }
+
+    static SubsystemState getSubsystemState(OperationContext context) {
+        ServiceController<?> controller = context.getServiceRegistry(true).getService(SubsystemState.SERVICE_NAME);
+        return controller != null ? (SubsystemState) controller.getValue() : null;
     }
 
     SubsystemState() {}

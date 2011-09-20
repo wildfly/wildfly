@@ -61,7 +61,13 @@
     <servers>
         <server name="server-one" group="main-server-group">
             <!-- server-one inherits the default socket-group declared in the server-group -->
-            <jvm name="default"/>
+            <jvm name="default">
+              <!-- Remote JPDA debugging for a specific server  
+              <jvm-options>
+                <option value="-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"/>
+              </jvm-options>
+              -->
+           </jvm>
         </server>
 
         <server name="server-two" group="main-server-group" auto-start="true">

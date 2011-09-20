@@ -115,7 +115,8 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
             // Setup the OSGi {@link Framework} properties
-            Map<String, Object> props = new HashMap<String, Object>(injectedSubsystemState.getValue().getProperties());
+            SubsystemState subsystemState = injectedSubsystemState.getValue();
+            Map<String, Object> props = new HashMap<String, Object>(subsystemState.getProperties());
             setupIntegrationProperties(context, props);
 
             // Register the URLStreamHandlerFactory
@@ -134,7 +135,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             builder.addProvidedService(Services.SYSTEM_SERVICES_PROVIDER);
 
             // Create the {@link Framework} services
-            Activation activation = injectedSubsystemState.getValue().getActivationPolicy();
+            Activation activation = subsystemState.getActivationPolicy();
             Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
             builder.createFrameworkServices(initialMode, true);
         } catch (Throwable t) {
