@@ -21,6 +21,7 @@
  */
 package org.jboss.as.osgi.parser;
 
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
 
 import java.util.List;
@@ -29,10 +30,11 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import org.jboss.as.osgi.deployment.BundleStartTracker;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
@@ -70,8 +72,20 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
         }
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
+            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
         ROOT_LOGGER.activatingSubsystem();
+
+        context.addStep(new OperationStepHandler() {
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                ServiceTarget serviceTarget = context.getServiceTarget();
+                newControllers.add(BundleStartTracker.addService(serviceTarget));
+                newControllers.add(BundleInstallProviderIntegration.addService(serviceTarget));
+                newControllers.addAll(FrameworkBootstrapService.addService(serviceTarget, verificationHandler));
+                newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, verificationHandler));
+                context.completeStep();
+            }
+        }, OperationContext.Stage.RUNTIME);
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -79,17 +93,10 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
             }
         }, OperationContext.Stage.RUNTIME);
 
-        long begin = System.currentTimeMillis();
-
         ServiceTarget serviceTarget = context.getServiceTarget();
         newControllers.add(SubsystemState.addService(serviceTarget, getActivationMode(operation)));
-        newControllers.add(BundleStartTracker.addService(serviceTarget));
-        newControllers.add(BundleInstallProviderIntegration.addService(serviceTarget));
-        newControllers.addAll(FrameworkBootstrapService.addService(serviceTarget, verificationHandler));
-        newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, verificationHandler));
 
-        long end = System.currentTimeMillis();
-        ROOT_LOGGER.debugf("Activated OSGi Subsystem in %dms", end - begin);
+        ROOT_LOGGER.debugf("Activated OSGi Subsystem");
     }
 
     @Override
@@ -105,11 +112,9 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
     }
 
     static void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
-        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DESCRIPTION)
-            .set(bundle.getString("activation"));
+        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("activation"));
         node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DEFAULT)
-            .set(DEFAULT_ACTIVATION.toString());
+        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DEFAULT).set(DEFAULT_ACTIVATION.toString());
     }
 
     private Activation getActivationMode(ModelNode operation) {

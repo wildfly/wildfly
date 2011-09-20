@@ -28,11 +28,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
 public class OSGiModuleRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
     static final OSGiModuleRemove INSTANCE = new OSGiModuleRemove();
@@ -44,8 +44,7 @@ public class OSGiModuleRemove extends AbstractRemoveStepHandler implements Descr
     public ModelNode getModelDescription(Locale locale) {
         ModelNode node = new ModelNode();
         node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(
-            OSGiSubsystemProviders.getResourceBundle(locale).getString("module.remove"));
+        node.get(ModelDescriptionConstants.DESCRIPTION).set(OSGiSubsystemProviders.getResourceBundle(locale).getString("module.remove"));
         node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
         node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
         return node;
@@ -54,11 +53,9 @@ public class OSGiModuleRemove extends AbstractRemoveStepHandler implements Descr
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.MODULE).asString();
-
-        SubsystemState stateService = (SubsystemState) context.getServiceRegistry(true).getRequiredService(SubsystemState.SERVICE_NAME).getValue();
-        OSGiModule prevModule = stateService.removeModule(identifier);
-        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-            stateService.addModule(prevModule);
+        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
+            subsystemState.removeModule(identifier);
         }
     }
 }

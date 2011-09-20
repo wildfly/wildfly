@@ -44,7 +44,7 @@ public class ResourceAddRemoveTestBase {
         ServiceRegistry serviceRegistry = Mockito.mock(ServiceRegistry.class);
         ServiceController serviceController = Mockito.mock(ServiceController.class);
         Mockito.when(serviceController.getValue()).thenReturn(stateService);
-        Mockito.when(serviceRegistry.getRequiredService(SubsystemState.SERVICE_NAME)).thenReturn(serviceController);
+        Mockito.when(serviceRegistry.getService(SubsystemState.SERVICE_NAME)).thenReturn(serviceController);
         ModelNode result = new ModelNode();
         OperationContext context = Mockito.mock(OperationContext.class);
         Resource resource = Mockito.mock(Resource.class);

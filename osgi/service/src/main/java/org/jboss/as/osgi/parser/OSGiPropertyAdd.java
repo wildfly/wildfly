@@ -21,59 +21,67 @@
  */
 package org.jboss.as.osgi.parser;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
-public class OSGiPropertyAdd implements OperationStepHandler, DescriptionProvider {
+public class OSGiPropertyAdd extends AbstractAddStepHandler implements DescriptionProvider {
     static final OSGiPropertyAdd INSTANCE = new OSGiPropertyAdd();
 
     private OSGiPropertyAdd() {
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        ModelNode model = resource.getModel();
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER || context.getType() == OperationContext.Type.HOST;
+    }
 
-        final ModelNode propVal = operation.get(CommonAttributes.VALUE);
-        model.get(CommonAttributes.VALUE).set(propVal);
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        model.get(CommonAttributes.VALUE).set(operation.get(CommonAttributes.VALUE));
+    }
 
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.PROPERTY).asString();
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
+            List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-                    SubsystemState stateService = (SubsystemState) context.getServiceRegistry(true).getRequiredService(SubsystemState.SERVICE_NAME).getValue();
-                    Object oldVal = stateService.setProperty(propName, propVal.asString());
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        stateService.setProperty(propName, oldVal);
-                    }
-                }
-            }, OperationContext.Stage.RUNTIME);
+        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.PROPERTY).asString();
+        String propValue = model.get(CommonAttributes.VALUE).asString();
+
+        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        if (subsystemState != null) {
+            subsystemState.setProperty(propName, propValue);
         }
-        context.completeStep();
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.PROPERTY).asString();
+        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        if (subsystemState != null) {
+            subsystemState.setProperty(propName, null);
+        }
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
-
         ModelNode node = new ModelNode();
+        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
         node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
         node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("property.add"));
         addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);
@@ -82,19 +90,14 @@ public class OSGiPropertyAdd implements OperationStepHandler, DescriptionProvide
     }
 
     static void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
-        node.get(propType, CommonAttributes.VALUE, ModelDescriptionConstants.DESCRIPTION)
-            .set(bundle.getString("property.value"));
+        node.get(propType, CommonAttributes.VALUE, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("property.value"));
         node.get(propType, CommonAttributes.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
         node.get(propType, CommonAttributes.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
     }
 
-    /**
-     * Create an "add" operation using the existing model
-     */
     static ModelNode getAddOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         op.get(CommonAttributes.VALUE).set(existing.get(CommonAttributes.VALUE));
-
         return op;
     }
 }

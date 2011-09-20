@@ -21,7 +21,6 @@
  */
 package org.jboss.as.osgi.parser;
 
-import java.util.Dictionary;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -33,6 +32,7 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
 public class OSGiCasConfigRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
     static final OSGiCasConfigRemove INSTANCE = new OSGiCasConfigRemove();
@@ -53,13 +53,10 @@ public class OSGiCasConfigRemove extends AbstractRemoveStepHandler implements De
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CONFIGURATION);
-        String pid = identifier.asString();
-
-        SubsystemState stateService = (SubsystemState) context.getServiceRegistry(true).getRequiredService(SubsystemState.SERVICE_NAME).getValue();
-        Dictionary<String, String> oldValue = stateService.removeConfiguration(pid);
-        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-            stateService.putConfiguration(pid, oldValue);
+        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CONFIGURATION).asString();
+        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
+            subsystemState.removeConfiguration(pid);
         }
     }
 }

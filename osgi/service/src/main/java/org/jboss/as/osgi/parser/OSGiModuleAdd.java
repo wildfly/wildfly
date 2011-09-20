@@ -21,35 +21,49 @@
  */
 package org.jboss.as.osgi.parser;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
-public class OSGiModuleAdd implements OperationStepHandler, DescriptionProvider {
+public class OSGiModuleAdd extends AbstractAddStepHandler implements DescriptionProvider {
     static final OSGiModuleAdd INSTANCE = new OSGiModuleAdd();
 
     private OSGiModuleAdd() {
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        ModelNode model = resource.getModel();
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getType() == OperationContext.Type.SERVER || context.getType() == OperationContext.Type.HOST;
+    }
+
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        model.get(CommonAttributes.MODULE).set(operation.get(CommonAttributes.MODULE));
+        if (operation.has(CommonAttributes.STARTLEVEL)) {
+            model.get(CommonAttributes.STARTLEVEL).set(operation.get(CommonAttributes.STARTLEVEL));
+        }
+    }
+
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
+            List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ModelNode slNode = null;
         if (operation.has(CommonAttributes.STARTLEVEL)) {
@@ -58,29 +72,28 @@ public class OSGiModuleAdd implements OperationStepHandler, DescriptionProvider 
         }
         final Integer startLevel = (slNode != null ? slNode.asInt() : null);
 
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.MODULE).asString();
-                    OSGiModule module = new OSGiModule(ModuleIdentifier.fromString(identifier), startLevel);
-                    SubsystemState stateService = (SubsystemState) context.getServiceRegistry(true).getRequiredService(SubsystemState.SERVICE_NAME).getValue();
-                    stateService.addModule(module);
+        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.MODULE).asString();
+        OSGiModule module = new OSGiModule(ModuleIdentifier.fromString(identifier), startLevel);
 
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        stateService.removeModule(identifier);
-                    }
-                }
-            }, OperationContext.Stage.RUNTIME);
+        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        if (subsystemState != null) {
+            subsystemState.addModule(module);
         }
-        context.completeStep();
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.MODULE).asString();
+        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
+        if (subsystemState != null) {
+            subsystemState.removeModule(identifier);
+        }
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
-
         ModelNode node = new ModelNode();
+        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
         node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
         node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("module.add"));
         addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);
@@ -89,21 +102,16 @@ public class OSGiModuleAdd implements OperationStepHandler, DescriptionProvider 
     }
 
     static void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
-        node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION)
-            .set(bundle.getString("module.startlevel"));
+        node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("module.startlevel"));
         node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
         node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
     }
 
-    /**
-     * Create an "add" operation using the existing model
-     */
     static ModelNode getAddOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         if (existing.hasDefined(CommonAttributes.STARTLEVEL)) {
             op.get(CommonAttributes.STARTLEVEL).set(existing.get(CommonAttributes.STARTLEVEL));
         }
-
         return op;
     }
 }
