@@ -43,8 +43,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.javaee.spec.ResourceInjectionMetaData;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
-import org.jboss.metadata.javaee.support.ResourceInjectionMetaDataWithDescriptions;
 import org.jboss.modules.Module;
 
 import java.lang.reflect.Field;
@@ -129,7 +129,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      * @throws DeploymentUnitProcessingException
      *          If the injection points could not be resolved
      */
-    protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaDataWithDescriptions entry, Class<?> classType) throws DeploymentUnitProcessingException {
+    protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaData entry, Class<?> classType) throws DeploymentUnitProcessingException {
 
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
