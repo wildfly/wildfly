@@ -15,21 +15,6 @@ DIRNAME=`dirname $0`
 GREP="grep"
 ROOT="/"
 
-# set testsuite opts
-
-checkformodule() {
-    search="$*"
-    for d in $search; do
-	MAVEN_HOME="`pwd`/$d"
-	MVN="$MAVEN_HOME/bin/mvn"
-	if [ -x "$MVN" ]; then
-	    # found one
-	    echo $MAVEN_HOME
-	    break
-	fi
-    done
-}
-
 # specify the modules to be enabled and the tests
 # if a testsuite module has been specified, let the user's choice prevail
 # otherwise specify the default module and tests to execute
