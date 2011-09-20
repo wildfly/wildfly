@@ -50,6 +50,7 @@ import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.as.webservices.publish.WSEndpointDeploymentUnit;
+import org.jboss.as.webservices.webserviceref.WSReferences;
 
 /**
  * JBoss AS integration helper class.
@@ -437,6 +438,15 @@ public final class ASHelper {
             return !hasAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY) &&
                     hasAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
         }
+    }
+
+    public static WSReferences getWSRefRegistry(final DeploymentUnit unit) {
+        WSReferences refRegistry = unit.getAttachment(WSAttachmentKeys.WS_REFERENCES);
+        if (refRegistry == null) {
+            refRegistry = WSReferences.newInstance();
+            unit.putAttachment(WSAttachmentKeys.WS_REFERENCES, refRegistry);
+        }
+        return refRegistry;
     }
 
 
