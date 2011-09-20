@@ -80,7 +80,7 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, new File(
-                "src/test/resources/mysql-connector-java-5.1.15.jar"));
+                "src/test/resources/smoke/mysql-connector-java-5.1.15.jar"));
         Node node = archive.get("META-INF");
         return archive;
         // ShrinkWrapUtils.createJavaArchive("mysql-connector-java-5.1.15.jar").getResources("mysql-connector-java-5.1.15.jar");
@@ -114,7 +114,7 @@ public class AddMySqlDataSourceOperationsUnitTestCase {
         operation.get("jndi-name").set("java:jboss/datasources/MySqlDs");
         operation.get("enabled").set(true);
 
-        operation.get("driver-name").set("smoke/mysql-connector-java-5.1.15.jar");
+        operation.get("driver-name").set("mysql-connector-java-5.1.15.jar");
         operation.get("pool-name").set("MySqlDs_Pool");
 
         operation.get("connection-url").set("dont_care");
