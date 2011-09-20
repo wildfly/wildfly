@@ -25,7 +25,6 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -35,8 +34,6 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -52,24 +49,12 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.value.Value;
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
-import org.jboss.wsf.spi.serviceref.ServiceRefHandlerFactory;
-import org.jboss.wsf.stack.cxf.client.serviceref.CXFServiceObjectFactoryJAXWS;
 
-import javax.naming.Referenceable;
 import javax.xml.ws.WebServiceRef;
 import javax.xml.ws.WebServiceRefs;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -155,7 +140,7 @@ public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor 
             new ResourceInjectionConfiguration(targetDescription, new LookupInjectionSource(localContextName)) : null;
 
         // Create the binding from whence our injection comes.
-        final InjectionSource valueSource = new WebServiceRefValueSource(module, getServiceReference(deploymentUnit, name, type, value, wsdlLocation));
+        final InjectionSource valueSource = new WSRefValueSource(module, getServiceReference(deploymentUnit, name, type, value, wsdlLocation));
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
         // TODO: class hierarchies? shared bindings?
@@ -194,87 +179,6 @@ public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor 
         return new VirtualFileAdaptor(resourceRoot.getRoot());
     }
 
-
-    private static class WebServiceRefValueSource extends InjectionSource implements Value<Object> {
-        private final Module module;
-        private final UnifiedServiceRefMetaData serviceRef;
-
-        private WebServiceRefValueSource(Module module, UnifiedServiceRefMetaData serviceRef) {
-            this.module = module;
-            this.serviceRef = serviceRef;
-        }
-
-        public void getResourceValue(final ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
-            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-            final EEApplicationDescription applicationComponentDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
-            if (applicationComponentDescription == null) {
-                return; // Not an EE deployment
-            }
-            ManagedReferenceFactory factory = new ValueManagedReferenceFactory(this);
-            serviceBuilder.addInjection(injector, factory);
-        }
-
-        public Object getValue() throws IllegalStateException, IllegalArgumentException {
-            // FIXME this is a workaround to class loader issues
-            final ClassLoader tccl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-            final ClassLoader classLoader = new ClassLoader(this.getClass().getClassLoader()) {
-                @Override
-                public Class<?> loadClass(String className) throws ClassNotFoundException {
-                    try {
-                        return super.loadClass(className);
-                    } catch (ClassNotFoundException cnfe) {
-                        return module.getClassLoader().loadClass(className);
-                    }
-                }
-
-                @Override
-                public Enumeration<URL> getResources(String name) throws IOException {
-                    final Enumeration<URL> superResources = super.getResources(name);
-                    final Enumeration<URL> duModuleCLResources = module.getClassLoader().getResources(name);
-                    if (superResources == null || !superResources.hasMoreElements()) {
-                        return duModuleCLResources;
-                    }
-                    if (duModuleCLResources == null || !duModuleCLResources.hasMoreElements()) {
-                        return superResources;
-                    }
-                    return new Enumeration<URL>() {
-                        public boolean hasMoreElements() {
-                            return superResources.hasMoreElements() || duModuleCLResources.hasMoreElements();
-                        }
-
-                        public URL nextElement() {
-                            if (superResources.hasMoreElements()) {
-                                return superResources.nextElement();
-                            }
-                            return duModuleCLResources.nextElement();
-                        }
-                    };
-                }
-            };
-            Thread.currentThread().setContextClassLoader(classLoader);
-            try {
-                return new CXFServiceObjectFactoryJAXWS().getObjectInstance(getReferenceable(), null, null, null);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                Thread.currentThread().setContextClassLoader(tccl);
-            }
-        }
-
-        private Referenceable getReferenceable() {
-            // FIXME SPIProviderResolver won't require a TCCL in the future
-            ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-            final Referenceable referenceable;
-            try {
-                Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-                final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-                final ServiceRefHandler serviceRefHandler = spiProvider.getSPI(ServiceRefHandlerFactory.class).getServiceRefHandler();
-                return serviceRefHandler.createReferenceable(serviceRef);
-            } finally {
-                Thread.currentThread().setContextClassLoader(contextClassLoader);
-            }
-        }
-    }
 
     private class WebServiceRefWrapper {
         private final String type;
