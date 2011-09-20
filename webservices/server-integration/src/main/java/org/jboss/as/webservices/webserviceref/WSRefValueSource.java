@@ -19,33 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.webservices.webserviceref;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
-
 import javax.naming.Referenceable;
+import javax.naming.spi.ObjectFactory;
 
-import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.value.Value;
+import org.jboss.ws.common.utils.DelegateClassLoader;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandlerFactory;
-import org.jboss.wsf.stack.cxf.client.serviceref.CXFServiceObjectFactoryJAXWS;
 
 /**
  * WebServiceRef injection source.
@@ -53,82 +47,38 @@ import org.jboss.wsf.stack.cxf.client.serviceref.CXFServiceObjectFactoryJAXWS;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class WSRefValueSource extends InjectionSource implements Value<Object> {
-    private final Module module;
     private final UnifiedServiceRefMetaData serviceRef;
 
-    WSRefValueSource(Module module, UnifiedServiceRefMetaData serviceRef) {
-        this.module = module;
+    WSRefValueSource(final UnifiedServiceRefMetaData serviceRef) {
         this.serviceRef = serviceRef;
     }
 
-    public void getResourceValue(final ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEApplicationDescription applicationComponentDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
-        if (applicationComponentDescription == null) {
-            return; // Not an EE deployment
-        }
-        ManagedReferenceFactory factory = new ValueManagedReferenceFactory(this);
+    public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+        final ManagedReferenceFactory factory = new ValueManagedReferenceFactory(this);
         serviceBuilder.addInjection(injector, factory);
     }
 
     public Object getValue() throws IllegalStateException, IllegalArgumentException {
-        // FIXME this is a workaround to class loader issues
-        final ClassLoader tccl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-        final ClassLoader classLoader = new ClassLoader(this.getClass().getClassLoader()) {
-            @Override
-            public Class<?> loadClass(String className) throws ClassNotFoundException {
-                try {
-                    return super.loadClass(className);
-                } catch (ClassNotFoundException cnfe) {
-                    return module.getClassLoader().loadClass(className);
-                }
-            }
-
-            @Override
-            public Enumeration<URL> getResources(String name) throws IOException {
-                final Enumeration<URL> superResources = super.getResources(name);
-                final Enumeration<URL> duModuleCLResources = module.getClassLoader().getResources(name);
-                if (superResources == null || !superResources.hasMoreElements()) {
-                    return duModuleCLResources;
-                }
-                if (duModuleCLResources == null || !duModuleCLResources.hasMoreElements()) {
-                    return superResources;
-                }
-                return new Enumeration<URL>() {
-                    public boolean hasMoreElements() {
-                        return superResources.hasMoreElements() || duModuleCLResources.hasMoreElements();
-                    }
-
-                    public URL nextElement() {
-                        if (superResources.hasMoreElements()) {
-                            return superResources.nextElement();
-                        }
-                        return duModuleCLResources.nextElement();
-                    }
-                };
-            }
-        };
-        Thread.currentThread().setContextClassLoader(classLoader);
+        final ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
         try {
-            return new CXFServiceObjectFactoryJAXWS().getObjectInstance(getReferenceable(), null, null, null);
-        } catch (Exception e) {
+            final ClassLoader integrationCL = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
+            final ClassLoader newCL = new DelegateClassLoader(integrationCL, oldCL);
+            Thread.currentThread().setContextClassLoader(newCL);
+            final Referenceable referenceable = getReferenceable(integrationCL);
+            final Class<?> clazz = Class.forName(referenceable.getReference().getFactoryClassName(), true, integrationCL);
+            final ObjectFactory factory = (ObjectFactory)clazz.newInstance();
+            return factory.getObjectInstance(referenceable.getReference(), null, null, null);
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         } finally {
-            Thread.currentThread().setContextClassLoader(tccl);
+            Thread.currentThread().setContextClassLoader(oldCL);
         }
     }
 
-    private Referenceable getReferenceable() {
-        // FIXME SPIProviderResolver won't require a TCCL in the future
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        final Referenceable referenceable;
-        try {
-            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-            final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-            final ServiceRefHandler serviceRefHandler = spiProvider.getSPI(ServiceRefHandlerFactory.class).getServiceRefHandler();
-            return serviceRefHandler.createReferenceable(serviceRef);
-        } finally {
-            Thread.currentThread().setContextClassLoader(contextClassLoader);
-        }
+    private Referenceable getReferenceable(final ClassLoader loader) {
+        final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+        final ServiceRefHandler serviceRefHandler = spiProvider.getSPI(ServiceRefHandlerFactory.class, loader).getServiceRefHandler();
+        return serviceRefHandler.createReferenceable(serviceRef);
     }
+
 }
