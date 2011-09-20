@@ -156,6 +156,7 @@ class DataSourceModelNodeUtil {
         final CommonPool pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
 
         final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
+
         final String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
         final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
@@ -369,7 +370,8 @@ class DataSourceModelNodeUtil {
 
     private static String getStringIfSetOrGetDefault(final ModelNode dataSourceNode, final SimpleAttributeDefinition key, final String defaultValue) {
         if (dataSourceNode.hasDefined(key.getName())) {
-            return dataSourceNode.get(key.getName()).asString();
+            String returnValue = dataSourceNode.get(key.getName()).asString();
+            return (returnValue != null && returnValue.trim().length() != 0) ? returnValue : null;
         } else {
             return defaultValue;
         }

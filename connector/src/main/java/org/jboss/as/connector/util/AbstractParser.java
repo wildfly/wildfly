@@ -70,7 +70,7 @@ public abstract class AbstractParser {
      */
     public String rawElementText(XMLStreamReader reader) throws XMLStreamException {
         String elementtext = reader.getElementText();
-        elementtext = elementtext == null ? null : elementtext.trim();
+        elementtext = elementtext == null || elementtext.trim().length() == 0 ? null : elementtext.trim();
         return elementtext;
     }
 
