@@ -24,12 +24,12 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
+import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
@@ -59,6 +59,7 @@ import java.util.List;
  * as an injection binding for the component.
  *
  * @author John Bailey
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitProcessor {
     private static final DotName EJB_ANNOTATION_NAME = DotName.createSimple(EJB.class.getName());
@@ -165,14 +166,10 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
         // TODO: class hierarchies? shared bindings?
-        classDescription.getConfigurators().add(new ClassConfigurator() {
-            public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getBindingConfigurations().add(bindingConfiguration);
-                if (injectionConfiguration != null) {
-                    configuration.getInjectionConfigurations().add(injectionConfiguration);
-                }
-            }
-        });
+        classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+        if (injectionConfiguration != null) {
+            classDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+        }
     }
 
     private boolean isEmpty(final String string) {

@@ -24,9 +24,8 @@ package org.jboss.as.ee.datasource;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -108,12 +107,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
         final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(datasourceDefinition);
         EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(targetClass.name().toString());
         // add the binding configuration via a class configurator
-        classDescription.getConfigurators().add(new ClassConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getBindingConfigurations().add(bindingConfiguration);
-            }
-        });
+        classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
     }
 
     private BindingConfiguration getBindingConfiguration(final AnnotationInstance datasourceAnnotation) {

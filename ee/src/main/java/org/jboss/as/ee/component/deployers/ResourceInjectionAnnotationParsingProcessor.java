@@ -24,12 +24,12 @@ package org.jboss.as.ee.component.deployers;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ClassConfigurator;
+import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
+import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LazyResourceInjection;
@@ -67,6 +67,7 @@ import java.util.Set;
  *
  * @author John Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUnitProcessor {
 
@@ -271,18 +272,14 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
                     new ResourceInjectionConfiguration(targetDescription, injectionSource) : null;
 
-            final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
             // TODO: class hierarchies? shared bindings?
-            classDescription.getConfigurators().add(new ClassConfigurator() {
-                public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                    if (createBindingFinal) {
-                        configuration.getBindingConfigurations().add(bindingConfiguration);
-                    }
-                    if (injectionConfiguration != null) {
-                        configuration.getInjectionConfigurations().add(injectionConfiguration);
-                    }
-                }
-            });
+            if (createBindingFinal) {
+                final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
+                classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+            }
+            if (injectionConfiguration != null) {
+                classDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+            }
         }
     }
 
