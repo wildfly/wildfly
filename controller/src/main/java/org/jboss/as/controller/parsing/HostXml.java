@@ -521,7 +521,7 @@ public class HostXml extends CommonXml {
                         throw new XMLStreamException(element.getLocalName() + " already defined", reader.getLocation());
                     }
 
-                    parseJvm(reader, address, list, new HashSet<String>());
+                    parseJvm(reader, address, list, new HashSet<String>(), true);
                     sawJvm = true;
                     break;
                 }

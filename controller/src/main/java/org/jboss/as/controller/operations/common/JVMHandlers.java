@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -33,8 +34,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import org.jboss.as.controller.descriptions.common.JVMDescriptions;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -78,15 +83,11 @@ public final class JVMHandlers {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) {
-            try {
-                final String name = operation.require(NAME).asString();
-                final boolean value = operation.get(VALUE).asBoolean();
-                ModelNode valNode = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name);
-                boolean oldVal = valNode.asBoolean();
-                valNode.set(value);
-            } catch (Exception e) {
-                context.getFailureDescription().set(e.toString());
-            }
+
+            final String name = operation.require(NAME).asString();
+            final boolean value = operation.get(VALUE).asBoolean();
+            context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(name).set(value);
+
             context.completeStep();
         }
     };
@@ -124,18 +125,25 @@ public final class JVMHandlers {
         //
     }
 
-    static final class JVMOptionAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+    static final class JVMOptionAddHandler implements OperationStepHandler, DescriptionProvider {
 
         static final String OPERATION_NAME = ADD_JVM_OPTION;
         static final JVMOptionAddHandler INSTANCE = new JVMOptionAddHandler();
 
-        protected void populateModel(ModelNode operation, ModelNode model) {
+        private final ParameterValidator validator = new StringLengthValidator(1);
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+            validator.validateParameter(JVM_OPTION, operation.get(JVM_OPTION));
+
+            final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+            final ModelNode model = resource.getModel();
+
             final ModelNode option = operation.require(JVM_OPTION);
             model.get(JVM_OPTIONS).add(option);
-        }
 
-        protected boolean requiresRuntime(OperationContext context) {
-            return false;
+            context.completeStep();
         }
 
         /**
@@ -147,12 +155,21 @@ public final class JVMHandlers {
         }
     }
 
-    static final class JVMOptionRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+    static final class JVMOptionRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
         static final String OPERATION_NAME = "remove-jvm-option";
         static final JVMOptionRemoveHandler INSTANCE = new JVMOptionRemoveHandler();
 
-        protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
+        private final ParameterValidator validator = new StringLengthValidator(1);
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+            validator.validateParameter(JVM_OPTION, operation.get(JVM_OPTION));
+
+            final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+            final ModelNode model = resource.getModel();
+
             final ModelNode option = operation.require(JVM_OPTION);
             if (model.hasDefined(JVM_OPTIONS)) {
                 final ModelNode values = model.get(JVM_OPTIONS);
@@ -164,10 +181,8 @@ public final class JVMHandlers {
                     }
                 }
             }
-        }
 
-        protected boolean requiresRuntime(OperationContext context) {
-            return false;
+            context.completeStep();
         }
 
         /**
