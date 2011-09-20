@@ -96,7 +96,6 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 // add the DUP for dealing with WS deployments
                 WSDeploymentActivator.activate(processorTarget);
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WSRefAnnotationParsingProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
