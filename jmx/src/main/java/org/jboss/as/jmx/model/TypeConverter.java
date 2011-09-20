@@ -661,7 +661,18 @@ public abstract class TypeConverter {
             for (String name : typeNode.keys()) {
                 ModelNode current = typeNode.get(name);
                 itemNames.add(name);
-                itemDescriptions.add(current.get(DESCRIPTION).asString());
+                String description = null;
+                if (!current.hasDefined(DESCRIPTION)) {
+                    description = "-";
+                }
+                else {
+                    description = current.get(DESCRIPTION).asString().trim();
+                    if (description.length() == 0) {
+                        description = "-";
+                    }
+                }
+
+                itemDescriptions.add(getDescription(current));
                 itemTypes.add(getConverter(current.get(TYPE), current.get(VALUE_TYPE)).getOpenType());
             }
             try {
@@ -671,6 +682,16 @@ public abstract class TypeConverter {
             }
         }
 
+        static String getDescription(ModelNode node) {
+            if (!node.hasDefined(DESCRIPTION)) {
+                return "-";
+            }
+            String description = node.get(DESCRIPTION).asString();
+            if (description.trim().length() == 0) {
+                return "-";
+            }
+            return description;
+        }
         @Override
         public Object fromModelNode(ModelNode node) {
             if (node == null || !node.isDefined()) {
@@ -725,4 +746,5 @@ public abstract class TypeConverter {
             return list.toArray(new CompositeData[list.size()]);
         }
     }
+
 }
