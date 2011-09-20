@@ -107,6 +107,28 @@ public class HttpRequest {
     }
 
     public static String put(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+        return execRequestMethod(spec, message, timeout, unit, "PUT");
+    }
+
+    /**
+     * Executes an HTTP request to write the specified message.
+     * 
+     * @param spec The {@link URL} in String form
+     * @param message Message to write
+     * @param timeout TImeout value
+     * @param unit Timeout units
+     * @param requestMethod Name of the HTTP method to execute (ie. HEAD, GET, POST)
+     * @return
+     * @throws MalformedURLException
+     * @throws ExecutionException
+     * @throws TimeoutException
+     */
+    private static String execRequestMethod(final String spec, final String message, final long timeout, final TimeUnit unit, final String requestMethod) throws MalformedURLException, ExecutionException, TimeoutException {
+        
+        if(requestMethod==null||requestMethod.isEmpty()){
+            throw new IllegalArgumentException("Request Method must be specified (ie. GET, PUT, DELETE etc)");
+        }
+        
         final URL url = new URL(spec);
         Callable<String> task = new Callable<String>() {
             @Override
@@ -114,7 +136,7 @@ public class HttpRequest {
                 final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
-                conn.setRequestMethod("PUT");
+                conn.setRequestMethod(requestMethod);
                 final OutputStream out = conn.getOutputStream();
                 try {
                     write(out, message);
@@ -127,29 +149,19 @@ public class HttpRequest {
         };
         return execute(task, timeout, unit);
     }
-
+    
     public static String post(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
-        final URL url = new URL(spec);
-        Callable<String> task = new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-                conn.setRequestMethod("POST");
-                final OutputStream out = conn.getOutputStream();
-                try {
-                    write(out, message);
-                    return processResponse(conn);
-                }
-                finally {
-                    out.close();
-                }
-            }
-        };
-        return execute(task, timeout, unit);
+        return execRequestMethod(spec, message, timeout, unit, "POST");
     }
 
+    public static String delete(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+        return execRequestMethod(spec, message, timeout, unit, "DELETE");
+    }
+    
+    public static String head(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+        return execRequestMethod(spec, message, timeout, unit, "HEAD");
+    }
+    
     private static void write(OutputStream out, String message) throws IOException {
         final OutputStreamWriter writer = new OutputStreamWriter(out);
         writer.write(message);
