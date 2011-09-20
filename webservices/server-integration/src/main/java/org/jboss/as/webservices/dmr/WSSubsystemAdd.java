@@ -41,11 +41,11 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.webservices.config.ServerConfigImpl;
-import org.jboss.as.webservices.deployers.WebServiceRefAnnotationParsingProcessor;
 import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
+import org.jboss.as.webservices.webserviceref.WSRefAnnotationParsingProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
@@ -96,7 +96,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 // add the DUP for dealing with WS deployments
                 WSDeploymentActivator.activate(processorTarget);
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WebServiceRefAnnotationParsingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEB_SERVICE_INJECTION_ANNOTATION, new WSRefAnnotationParsingProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
