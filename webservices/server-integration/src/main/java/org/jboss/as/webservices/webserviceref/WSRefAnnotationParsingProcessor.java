@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices.deployers;
+package org.jboss.as.webservices.webserviceref;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -79,7 +79,7 @@ import java.util.List;
  * @author <a href="mailto:flavia.rainone@jboss.com">Flavia Rainone</a>
  * @author John Bailey
  */
-public class WebServiceRefAnnotationParsingProcessor implements DeploymentUnitProcessor {
+public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor {
     private static final DotName WEB_SERVICE_REF_ANNOTATION_NAME = DotName.createSimple(WebServiceRef.class.getName());
     private static final DotName WEB_SERVICE_REFS_ANNOTATION_NAME = DotName.createSimple(WebServiceRefs.class.getName());
 
