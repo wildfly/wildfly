@@ -63,6 +63,14 @@
               </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.projectodd.stilts</groupId>
+            <artifactId>stilts-stomp-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectodd.stilts</groupId>
+            <artifactId>stilts-stomplet-server-core</artifactId>
+        </dependency>
         <!-- Needed for @Resource(lookup=) -->
         <dependency>
            <groupId>org.jboss.spec.javax.annotation</groupId>
