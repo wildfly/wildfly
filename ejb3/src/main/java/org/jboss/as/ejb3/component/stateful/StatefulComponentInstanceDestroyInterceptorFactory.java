@@ -34,15 +34,14 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class StatefulComponentInstanceDestroyInterceptorFactory implements InterceptorFactory {
 
-    private final Object sessionIdContextKey;
+    public static final StatefulComponentInstanceDestroyInterceptorFactory INSTANCE = new StatefulComponentInstanceDestroyInterceptorFactory();
 
-    public StatefulComponentInstanceDestroyInterceptorFactory(final Object sessionIdContextKey) {
-        this.sessionIdContextKey = sessionIdContextKey;
+    private StatefulComponentInstanceDestroyInterceptorFactory() {
     }
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        AtomicReference<Serializable> sessionIdReference = (AtomicReference<Serializable>) context.getContextData().get(this.sessionIdContextKey);
+        AtomicReference<Serializable> sessionIdReference = (AtomicReference<Serializable>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
         return new StatefulComponentInstanceDestroyInterceptor(sessionIdReference);
     }
 }

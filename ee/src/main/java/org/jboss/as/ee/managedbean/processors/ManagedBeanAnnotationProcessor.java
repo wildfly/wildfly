@@ -109,10 +109,10 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                     // Add MB association interceptors
                     final Object contextKey = new Object();
-                    configuration.addViewPostConstructInterceptor(new ManagedBeanCreateInterceptorFactory(contextKey), InterceptorOrder.ViewPostConstruct.INSTANCE_CREATE);
+                    configuration.addClientPostConstructInterceptor(new ManagedBeanCreateInterceptorFactory(contextKey), InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
                     final ManagedBeanAssociatingInterceptorFactory associatingInterceptorFactory = new ManagedBeanAssociatingInterceptorFactory(contextKey);
-                    configuration.addViewInterceptor(associatingInterceptorFactory, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
-                    configuration.addViewPreDestroyInterceptor(new ManagedBeanDestroyInterceptorFactory(contextKey), InterceptorOrder.ViewPreDestroy.INSTANCE_DESTROY);
+                    configuration.addClientInterceptor(associatingInterceptorFactory, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
+                    configuration.addClientPreDestroyInterceptor(new ManagedBeanDestroyInterceptorFactory(contextKey), InterceptorOrder.ClientPreDestroy.INSTANCE_DESTROY);
                 }
             });
             viewDescription.getBindingNames().addAll(Arrays.asList("java:module/" + beanName, "java:app/" + moduleDescription.getModuleName() + "/" + beanName));

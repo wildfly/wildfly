@@ -120,8 +120,7 @@ public class InterceptorOrder {
 
 
     public static final class ViewPostConstruct {
-        public static final int INSTANCE_CREATE                                         = 0x100;
-        public static final int TERMINAL_INTERCEPTOR                                    = 0x200;
+        public static final int TERMINAL_INTERCEPTOR                                    = 0x100;
 
         private ViewPostConstruct() {
 
@@ -129,7 +128,6 @@ public class InterceptorOrder {
     }
 
     public static final class ViewPreDestroy {
-        public static final int INSTANCE_DESTROY = 0x100;
         public static final int TERMINAL_INTERCEPTOR = 0x200;
 
         private ViewPreDestroy() {
@@ -141,7 +139,8 @@ public class InterceptorOrder {
 
         public static final int TO_STRING = 0x100;
         public static final int LOCAL_ASYNC_INVOCATION = 0x200;
-        public static final int CLIENT_DISPATCHER = 0x300;
+        public static final int ASSOCIATING_INTERCEPTOR = 0x300;
+        public static final int CLIENT_DISPATCHER = 0x400;
 
         private Client() {
         }
@@ -149,7 +148,8 @@ public class InterceptorOrder {
 
     public static final class ClientPreDestroy {
 
-        public static final int TERMINAL_INTERCEPTOR = 0x100;
+        public static final int INSTANCE_DESTROY = 0x100;
+        public static final int TERMINAL_INTERCEPTOR = 0x200;
 
         private ClientPreDestroy() {
         }
@@ -157,7 +157,8 @@ public class InterceptorOrder {
 
     public static final class ClientPostConstruct {
 
-        public static final int TERMINAL_INTERCEPTOR = 0x100;
+        public static final int INSTANCE_CREATE      = 0x100;
+        public static final int TERMINAL_INTERCEPTOR = 0x200;
 
         private ClientPostConstruct() {
         }

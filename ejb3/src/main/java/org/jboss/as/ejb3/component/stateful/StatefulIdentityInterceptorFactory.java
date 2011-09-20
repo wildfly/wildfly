@@ -37,15 +37,14 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
 
-    private final Object sessionIdContextKey;
+    public static final StatefulIdentityInterceptorFactory INSTANCE = new StatefulIdentityInterceptorFactory();
 
-    public StatefulIdentityInterceptorFactory(Object sessionIdContextKey) {
-        this.sessionIdContextKey = sessionIdContextKey;
+    private StatefulIdentityInterceptorFactory() {
     }
 
     @Override
     public Interceptor create(final InterceptorFactoryContext context) {
-        AtomicReference<Serializable> sessionIdReference = (AtomicReference<Serializable>) context.getContextData().get(this.sessionIdContextKey);
+        AtomicReference<Serializable> sessionIdReference = (AtomicReference<Serializable>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
         final ComponentView componentView = (ComponentView) context.getContextData().get(ComponentView.class);
         return new StatefulIdentityInterceptor(componentView, sessionIdReference);
 
@@ -54,7 +53,7 @@ public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
     private class StatefulIdentityInterceptor implements Interceptor {
 
         private final ComponentView componentView;
-        final AtomicReference<Serializable> sessionIdReference;
+        private final AtomicReference<Serializable> sessionIdReference;
 
         public StatefulIdentityInterceptor(final ComponentView componentView, final AtomicReference<Serializable> sessionIdReference) {
             this.componentView = componentView;

@@ -22,6 +22,10 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.invocation.InterceptorContext;
+import sun.rmi.transport.ObjectTable;
+
+import javax.interceptor.InvocationContext;
 import java.util.Map;
 
 /**
@@ -45,6 +49,15 @@ public interface ComponentView {
      * @return the component view instance
      */
     ComponentViewInstance createInstance(Map<Object, Object> contextData);
+
+    /**
+     * Invoke on the component view interceptor chain.
+     * TODO: fully document the semantics of this method
+     *
+     * @param interceptorContext The context of the invocation
+     * @return The result of the invocation
+     */
+    Object invoke(final InterceptorContext interceptorContext) throws Exception;
 
     /**
      * Get the associated component.

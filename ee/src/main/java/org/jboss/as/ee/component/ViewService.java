@@ -96,7 +96,9 @@ public final class ViewService implements Service<ComponentView> {
 
     public void start(final StartContext context) throws StartException {
         // Construct the view
-        view = new View();
+        View view = new View();
+        view.initializeInterceptors();
+        this.view = view;
     }
 
     public void stop(final StopContext context) {
@@ -114,9 +116,26 @@ public final class ViewService implements Service<ComponentView> {
     class View implements ComponentView {
 
         private final Component component;
+        private final Map<Method, Interceptor> viewInterceptors;
 
         View() {
             component = componentInjector.getValue();
+            //we need to build the view interceptor chain
+            this.viewInterceptors = new IdentityHashMap<Method, Interceptor>();
+        }
+
+        void initializeInterceptors() {
+            final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
+            final Map<Method, InterceptorFactory> viewInterceptorFactories = ViewService.this.viewInterceptorFactories;
+            final Map<Method, Interceptor> viewEntryPoints = viewInterceptors;
+            factoryContext.getContextData().put(Component.class, component);
+            //we don't have this code in the constructor so we avoid passing around
+            //a half constructed instance
+            factoryContext.getContextData().put(ComponentView.class, this);
+
+            for (Method method : viewInterceptorFactories.keySet()) {
+                viewEntryPoints.put(method, viewInterceptorFactories.get(method).create(factoryContext));
+            }
         }
 
         public ComponentViewInstance createInstance() {
@@ -125,29 +144,38 @@ public final class ViewService implements Service<ComponentView> {
 
         public ComponentViewInstance createInstance(Map<Object, Object> contextData) {
             final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
-            final Map<Method, InterceptorFactory> viewInterceptorFactories = ViewService.this.viewInterceptorFactories;
-            final Map<Method, Interceptor> viewEntryPoints = new IdentityHashMap<Method, Interceptor>(viewInterceptorFactories.size());
             factoryContext.getContextData().put(Component.class, component);
-            factoryContext.getContextData().put(ComponentView.class, this);
+            factoryContext.getContextData().put(ComponentView.class, View.this);
+            factoryContext.getContextData().put(ComponentViewInstance.class, this);
             factoryContext.getContextData().putAll(contextData);
-            final Interceptor postConstructInterceptor = viewPostConstruct.create(factoryContext);
 
-            for (Method method : viewInterceptorFactories.keySet()) {
-                viewEntryPoints.put(method, viewInterceptorFactories.get(method).create(factoryContext));
+            final Interceptor clientPostConstructInterceptor = clientPostConstruct.create(factoryContext);
+            final Interceptor clientPreDestroyInterceptor = clientPreDestroy.create(factoryContext);
+
+            final Map<Method, InterceptorFactory> clientInterceptorFactories = ViewService.this.clientInterceptorFactories;
+            IdentityHashMap<Method, Interceptor> clientEntryPoints = new IdentityHashMap<Method, Interceptor>(clientInterceptorFactories.size());
+            for (Method method : clientInterceptorFactories.keySet()) {
+                clientEntryPoints.put(method, clientInterceptorFactories.get(method).create(factoryContext));
             }
-            final Interceptor preDestroyInterceptor = viewPreDestroy.create(factoryContext);
 
-            final ComponentViewInstance instance = new ViewInstance(viewEntryPoints, preDestroyInterceptor);
+            final ComponentViewInstance instance = new ViewInstance(viewInterceptors,  clientPreDestroyInterceptor, clientEntryPoints );
             try {
                 InterceptorContext context = new InterceptorContext();
                 context.putPrivateData(ComponentView.class, this);
                 context.putPrivateData(Component.class, component);
-                postConstructInterceptor.processInvocation(context);
+                clientPostConstructInterceptor.processInvocation(context);
             } catch (Exception e) {
                 // TODO: What is the best exception type to throw here?
                 throw new RuntimeException("Failed to instantiate component view", e);
             }
             return instance;
+        }
+
+        @Override
+        public Object invoke(InterceptorContext interceptorContext) throws Exception {
+            final Method method = interceptorContext.getMethod();
+            final Interceptor interceptor = viewInterceptors.get(method);
+            return interceptor.processInvocation(interceptorContext);
         }
 
         public Component getComponent() {
@@ -162,11 +190,13 @@ public final class ViewService implements Service<ComponentView> {
         class ViewInstance implements ComponentViewInstance {
 
             private final Map<Method, Interceptor> viewEntryPoints;
+            private final Map<Method, Interceptor> clientEntryPoints;
             private final Interceptor preDestroyInterceptor;
 
-            ViewInstance(final Map<Method, Interceptor> viewEntryPoints, final Interceptor preDestroyInterceptor) {
+            ViewInstance(final Map<Method, Interceptor> viewEntryPoints,  final Interceptor preDestroyInterceptor, Map<Method, Interceptor> clientEntryPoints) {
                 this.viewEntryPoints = viewEntryPoints;
                 this.preDestroyInterceptor = preDestroyInterceptor;
+                this.clientEntryPoints = clientEntryPoints;
             }
 
             public Component getComponent() {
@@ -178,31 +208,8 @@ public final class ViewService implements Service<ComponentView> {
             }
 
             public Object createProxy() {
-                final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
-                factoryContext.getContextData().put(Component.class, component);
-                factoryContext.getContextData().put(ComponentView.class, View.this);
-                factoryContext.getContextData().put(ComponentViewInstance.class, this);
-
-                final Map<Method, InterceptorFactory> clientInterceptorFactories = ViewService.this.clientInterceptorFactories;
-                final Map<Method, Interceptor> clientEntryPoints = new IdentityHashMap<Method, Interceptor>(clientInterceptorFactories.size());
-                for (Method method : clientInterceptorFactories.keySet()) {
-                    clientEntryPoints.put(method, clientInterceptorFactories.get(method).create(factoryContext));
-                }
-                final Interceptor postConstructInterceptor = clientPostConstruct.create(factoryContext);
                 try {
-                    Object object = proxyFactory.newInstance(new ProxyInvocationHandler(clientEntryPoints, component, View.this, this));
-                    InterceptorContext interceptorContext = new InterceptorContext();
-                    interceptorContext.putPrivateData(ComponentView.class, View.this);
-                    interceptorContext.putPrivateData(ComponentViewInstance.class, this);
-                    interceptorContext.putPrivateData(Component.class, component);
-                    try {
-                        postConstructInterceptor.processInvocation(interceptorContext);
-                    } catch (Exception e) {
-                        InstantiationException exception = new InstantiationException("Post-construct lifecycle failed");
-                        exception.initCause(e);
-                        throw exception;
-                    }
-                    return object;
+                    return proxyFactory.newInstance(new ProxyInvocationHandler(clientEntryPoints, component, View.this, this));
                 } catch (InstantiationException e) {
                     InstantiationError error = new InstantiationError(e.getMessage());
                     Throwable cause = e.getCause();

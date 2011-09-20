@@ -62,6 +62,8 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     public static final Object SESSION_ATTACH_KEY = new Object();
 
+    public static final Object SESSION_ID_REFERENCE_KEY = new Object();
+
     private static final Logger logger = Logger.getLogger(StatefulSessionComponent.class);
 
     private final Cache<StatefulSessionComponentInstance> cache;
