@@ -122,7 +122,7 @@ public final class Main {
                                     || CommandLineConstants.OLD_VERSION.equals(arg)) {
                                 System.out.println("\nJBoss Application Server " + getVersionString());
                                 return null;
-                            } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i, pcSocketConfig)) {
+                            } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                                 if (pcSocketConfig.isParseFailed()) {
                                     return null;
                                 }
@@ -132,7 +132,7 @@ public final class Main {
                             }
                         }
                         break OUT;
-                    } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i, pcSocketConfig)) {
+                    } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                         // This would normally come in via the nested if ("--".equals(arg)) case above, but in case someone tweaks the
                         // script to set it directly, we've handled it
                         if (pcSocketConfig.isParseFailed()) {
@@ -144,7 +144,7 @@ public final class Main {
                     }
                 }
                 break OUT;
-            } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i, pcSocketConfig)) {
+            } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                 // This would normally come in via the if ("--".equals(arg)) cases above, but in case someone tweaks the
                 // script to set it directly, we've handled it
                 if (pcSocketConfig.isParseFailed()) {
@@ -263,7 +263,7 @@ public final class Main {
             return parseFailed;
         }
 
-        private boolean processPCSocketConfigArgument(final String arg, final String[] args, final int index, final PCSocketConfig pcSocketConfig) {
+        private boolean processPCSocketConfigArgument(final String arg, final String[] args, final int index) {
             boolean isPCSocketArg = true;
 
             argIncrement = 0;
