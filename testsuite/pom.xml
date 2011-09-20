@@ -76,12 +76,14 @@
     <!-- global testsuite system property defaults -->
 
     <properties>
-        <!-- the base dir of the parent -->
-        <main.basedir>${project.basedir}</main.basedir>
-
-        <!-- jboss dist location -->
-        <jboss.dist>${main.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <!-- used to provide an absolute location for the distribution under test -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <jboss.dist>${project.basedir}/../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
+
+        <!-- used to provide an absolute location for the XSLT scripts -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <xslt.scripts.dir>${basedir}/integration/src/test/xslt</xslt.scripts.dir>
 
         <!-- IP address defaults -->
         <node0>127.0.0.1</node0>
@@ -254,7 +256,7 @@
                                 <transformationSet>
                                     <dir>${basedir}/target/jbossas/standalone/configuration</dir>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                    <stylesheet>${basedir}/../integration/src/test/xslt/changeIPAddresses.xsl
+                                    <stylesheet>${xslt.scripts.dir}/changeIPAddresses.xsl
                                     </stylesheet>
                                     <includes>
                                         <include>standalone.xml</include>
@@ -294,6 +296,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
+                    <!-- don't halt the all test executions if a test fails -->
+                    <testFailureIgnore>true</testFailureIgnore>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
@@ -485,7 +489,7 @@
                                         <transformationSet>
                                             <dir>${basedir}/target/jbossas/standalone/configuration</dir>
                                             <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                            <stylesheet>${basedir}/../integration/src/test/xslt/changeDatabase.xsl</stylesheet>
+                                            <stylesheet>${xslt.scripts.dir}/changeDatabase.xsl</stylesheet>
                                             <includes>
                                                 <include>standalone.xml</include>
                                                 <include>standalone-preview.xml</include>

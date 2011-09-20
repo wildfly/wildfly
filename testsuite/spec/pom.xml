@@ -35,6 +35,20 @@
     <artifactId>jboss-as-testsuite-spec</artifactId>
     <name>JBoss Application Server Test Suite: Specification Tests</name>
 
+    <properties>
+        <!-- define properties specific to the spec tests -->
+
+        <!-- used to provide an absolute location for the distribution under test -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <jboss.dist>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.home>${jboss.dist}</jboss.home>
+
+        <!-- used to provide an absolute location for the XSLT scripts -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
+    </properties>
+
+
     <build>
         <plugins>
             <plugin>
