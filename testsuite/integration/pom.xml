@@ -261,7 +261,7 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- smoke tests -->
+
                             <execution>
                                 <id>basic-integration-default.surefire</id>
                                 <phase>test</phase>
@@ -280,11 +280,14 @@
                                        <include>org/jboss/as/test/ejb/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/injection/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/interceptors/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/jaxb/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/jaxrs/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/jpa/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/jsf/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/mdb/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/messaging/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/osgi/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/pojo/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/sar/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/security/**/*TestCase.java</include>
                                        <include>org/jboss/as/test/transactionmanager/**/*TestCase.java</include>
@@ -297,10 +300,15 @@
                                        <include>org/jboss/as/test/xerces/**/*TestCase.java</include>
                                    </includes>
                                    <excludes>
+                                       <!-- Messaging tests are excluded since the default/web profile doesn't support messaging -->
+                                       <exclude>org/jboss/as/test/messaging/**/*TestCase.java</exclude>
+                                       <!-- WebService tests are excluded since the default/web profile doesn't support webservices -->
+                                       <exclude>org/jboss/as/test/as1675/**/*TestCase.java</exclude>
                                        <exclude>org/jboss/as/test/ws/**/*TestCase.java</exclude>
                                        <exclude>org/jboss/as/test/wsejb/**/*TestCase.java</exclude>
                                        <exclude>org/jboss/as/test/xerces/ws/**/*TestCase.java</exclude>
                                        <exclude>org/jboss/as/test/mdb/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/ejb/async/**/*TestCase.java</exclude>
                                    </excludes>
 
                                     <!-- parameters to test cases -->
@@ -331,10 +339,15 @@
                                 <configuration>
                                      <!-- tests to execute -->
                                     <includes>
+                                        <!-- Messaging tests are included since the preview profile supports messaging -->
+                                        <include>org/jboss/as/test/messaging/**/*TestCase.java</include>
+                                        <!-- Enable the Webservice testcases since "preview" profile has support for webservices -->
+                                        <include>org/jboss/as/test/as1675/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/ws/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/wsejb/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/xerces/ws/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/exerces/ws/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/mdb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/ejb/async/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>none</exclude>
