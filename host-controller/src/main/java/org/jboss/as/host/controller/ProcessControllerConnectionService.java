@@ -75,7 +75,7 @@ class ProcessControllerConnectionService implements Service<ProcessControllerCon
             final ProtocolClient.Configuration configuration = new ProtocolClient.Configuration();
             configuration.setReadExecutor(Executors.newCachedThreadPool());
             configuration.setServerAddress(new InetSocketAddress(environment.getProcessControllerAddress(), environment.getProcessControllerPort().intValue()));
-
+            configuration.setBindAddress(new InetSocketAddress(environment.getHostControllerAddress(), environment.getHostControllerPort()));
             final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ProcessControllerConnection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
             configuration.setThreadFactory(threadFactory);
             configuration.setSocketFactory(SocketFactory.getDefault());
