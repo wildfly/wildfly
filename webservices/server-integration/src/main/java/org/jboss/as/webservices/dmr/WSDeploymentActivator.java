@@ -34,6 +34,7 @@ import org.jboss.as.webservices.deployers.WSModelDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WebServiceContextResourceProcessor;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationProcessor;
+import org.jboss.as.webservices.webserviceref.WSRefDDProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
@@ -52,6 +53,7 @@ final class WSDeploymentActivator {
         processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WSDescriptorDeploymentProcessor());
         processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WS_EJB_INTEGRATION, new WSEJBIntegrationProcessor());
         processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
+        processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_REF_DESCRIPTOR, new WSRefDDProcessor());
         processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_REF_ANNOTATION, new WSRefAnnotationProcessor());
         processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_JMS_INTEGRATION, new WSJMSIntegrationProcessor());
         //processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRPC, new WSJAXRPCDependenciesDeploymentProcessor());
