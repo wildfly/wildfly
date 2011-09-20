@@ -21,6 +21,14 @@
  */
 package org.jboss.as.webservices.webserviceref;
 
+import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
+
+import java.util.List;
+
+import javax.xml.ws.Service;
+import javax.xml.ws.WebServiceRef;
+import javax.xml.ws.WebServiceRefs;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.BindingConfigurator;
@@ -50,11 +58,6 @@ import org.jboss.modules.Module;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
-
-import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceRef;
-import javax.xml.ws.WebServiceRefs;
-import java.util.List;
 
 /**
  * TODO: javadoc
@@ -143,7 +146,14 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         // Create the binding from whence our injection comes.
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final ClassLoader classLoader = module.getClassLoader();
-        final UnifiedServiceRefMetaData serviceRefUMDM = getServiceReference(deploymentUnit, classLoader, name, type, value, wsdlLocation);
+        final WSReferences wsRefRegistry = getWSRefRegistry(deploymentUnit);
+        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(name); // TODO: prefix with java:comp/env prefix ?
+        if (serviceRefUMDM == null) {
+            serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(deploymentUnit));
+            serviceRefUMDM.setServiceRefName(name);
+            wsRefRegistry.add(name, serviceRefUMDM);
+        }
+        processServiceRef(deploymentUnit, serviceRefUMDM, classLoader, name, type, value, wsdlLocation);
         final InjectionSource valueSource = new WSRefValueSource(serviceRefUMDM);
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
@@ -154,11 +164,8 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private UnifiedServiceRefMetaData getServiceReference(final DeploymentUnit deploymentUnit, final ClassLoader classLoader, final String name, final String type, final String value, final String wsdlLocation) {
-        final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(deploymentUnit));
-        serviceRefUMDM.setServiceRefName(name);
+    private UnifiedServiceRefMetaData processServiceRef(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final ClassLoader classLoader, final String name, final String type, final String value, final String wsdlLocation) {
         // TODO handle mappedName
-
         final Class<?> typeClass;
         try {
             typeClass = classLoader.loadClass(type);
@@ -166,6 +173,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             throw new RuntimeException("Could not load class " + type);
         }
 
+        // TODO: does DD have higher precedence than annotation values ?
         if (wsdlLocation != null && wsdlLocation.length() > 0) {
             serviceRefUMDM.setWsdlFile(wsdlLocation);
         }
@@ -181,6 +189,13 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         final boolean isJAXRPC = serviceRefUMDM.getMappingFile() != null // TODO: is mappingFile check required?
                 || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
         serviceRefUMDM.setType(isJAXRPC ? ServiceRefHandler.Type.JAXRPC : ServiceRefHandler.Type.JAXWS);
+
+        System.out.println("----AnnotationProcessor----");
+        System.out.println("---------------------------");
+        System.out.println(serviceRefUMDM);
+        System.out.println("---------------------------");
+        System.out.println("---------------------------");
+
         return serviceRefUMDM;
     }
 

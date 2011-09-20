@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.webserviceref;
 
+import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -71,12 +73,30 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
 
         final List<BindingConfiguration> bindingDescriptions = new LinkedList<BindingConfiguration>();
         for (final ServiceReferenceMetaData serviceRefMD : serviceRefsMD) {
+            final String serviceRefTypeName = serviceRefMD.getServiceRefType();
+            final Class<?> serviceRefType = getClass(classLoader, serviceRefTypeName);
             final UnifiedServiceRefMetaData serviceRefUMDM = toUMDM(serviceRefMD, unit, classLoader);
+            final WSReferences wsRefRegistry = getWSRefRegistry(unit);
+            wsRefRegistry.add(serviceRefMD.getName(), serviceRefUMDM); // TODO: prefix with java:comp/env prefix ?
             final WSRefValueSource valueSource = new WSRefValueSource(serviceRefUMDM);
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(serviceRefMD.getName(), valueSource);
             bindingDescriptions.add(bindingConfiguration);
+            // TODO: do we need to process injection targets annotations here, or later is enough? (@MTOM, @HandlerChain, @Addressing & @RespectBinding)
+            this.processInjectionTargets(moduleDescription, applicationClasses, valueSource, classLoader, deploymentReflectionIndex, serviceRefMD, serviceRefType);
         }
         return bindingDescriptions;
+    }
+
+    private Class<?> getClass(final ClassLoader classLoader, final String className) throws DeploymentUnitProcessingException {
+        if (!isEmpty(className)) {
+            try {
+                return classLoader.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                throw new DeploymentUnitProcessingException("Could not load class " + className, e);
+            }
+        }
+
+        return null;
     }
 
     private static UnifiedServiceRefMetaData toUMDM(final ServiceReferenceMetaData serviceRefMD,
@@ -107,28 +127,11 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
            processUnifiedJBossServiceRefMetaData(serviceRefUMDM, serviceRefMD);
         }
 
-        /*
-        final Class<?> typeClass;
-        try {
-            typeClass = classLoader.loadClass(type);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Could not load class " + type);
-        }
-
-        serviceRefUMDM.setServiceRefType(type);
-        if (!isEmpty(value)) {
-            serviceRefUMDM.setServiceInterface(value);
-        } else if (Service.class.isAssignableFrom(typeClass)) {
-            serviceRefUMDM.setServiceInterface(type);
-        } else {
-            serviceRefUMDM.setServiceInterface(Service.class.getName());
-        }*/
-
         final boolean isJAXRPC = serviceRefUMDM.getMappingFile() != null // TODO: is mappingFile check required?
         || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
-        serviceRefUMDM.setType(isJAXRPC ? ServiceRefHandler.Type.JAXRPC : ServiceRefHandler.Type.JAXWS); // TODO: service ref type - later in the DA chain
+        serviceRefUMDM.setType(isJAXRPC ? ServiceRefHandler.Type.JAXRPC : ServiceRefHandler.Type.JAXWS);
 
-        System.out.println("---------------------------");
+        System.out.println("--------DDProcessor--------");
         System.out.println("---------------------------");
         System.out.println(serviceRefUMDM);
         System.out.println("---------------------------");
@@ -209,6 +212,10 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
             throw new IllegalStateException("Resource root not found for deployment " + deploymentUnit);
         }
         return new VirtualFileAdaptor(resourceRoot.getRoot());
+    }
+
+    private static boolean isEmpty(final String string) { // TODO: some common class - StringUtils ?
+        return string == null || string.isEmpty();
     }
 
 }
