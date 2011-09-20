@@ -42,7 +42,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
@@ -66,7 +65,7 @@ import java.util.List;
  * @author John Bailey
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor {
+public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
     private static final DotName WEB_SERVICE_REF_ANNOTATION_NAME = DotName.createSimple(WebServiceRef.class.getName());
     private static final DotName WEB_SERVICE_REFS_ANNOTATION_NAME = DotName.createSimple(WebServiceRefs.class.getName());
 
@@ -77,7 +76,7 @@ public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor 
         // TODO: we removed EEComponetClasses & EEapplicationClasses from parameters passing - fix it in all AS7 processors as well
         for (AnnotationInstance annotation : resourceAnnotations) {
             final AnnotationTarget annotationTarget = annotation.target();
-            final WebServiceRefWrapper annotationWrapper = new WebServiceRefWrapper(annotation);
+            final WSRefAnnotationWrapper annotationWrapper = new WSRefAnnotationWrapper(annotation);
 
             if (annotationTarget instanceof FieldInfo) {
                 processFieldRef(deploymentUnit, annotationWrapper, (FieldInfo) annotationTarget);
@@ -93,7 +92,7 @@ public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor 
             if (annotationTarget instanceof ClassInfo) {
                 final AnnotationInstance[] values = outerAnnotation.value("value").asNestedArray();
                 for (AnnotationInstance annotation : values) {
-                    processClassRef(deploymentUnit, new WebServiceRefWrapper(annotation), (ClassInfo) annotationTarget);
+                    processClassRef(deploymentUnit, new WSRefAnnotationWrapper(annotation), (ClassInfo) annotationTarget);
                 }
             }
         }
@@ -103,7 +102,7 @@ public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor 
         // NOOP
     }
 
-    private void processFieldRef(final DeploymentUnit deploymentUnit, final WebServiceRefWrapper annotation, final FieldInfo fieldInfo) {
+    private void processFieldRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final FieldInfo fieldInfo) {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? fieldInfo.type().name().toString() : annotation.type();
         final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(),  fieldName, injectionType);
@@ -111,7 +110,7 @@ public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor 
         processRef(deploymentUnit, localContextName, injectionType, annotation.value(), annotation.wsdlLocation(), fieldInfo.declaringClass(), targetDescription, localContextName);
     }
 
-    private void processMethodRef(final DeploymentUnit deploymentUnit, final WebServiceRefWrapper annotation, final MethodInfo methodInfo) {
+    private void processMethodRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final MethodInfo methodInfo) {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@WebServiceRef injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -123,7 +122,7 @@ public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor 
         processRef(deploymentUnit, localContextName, injectionType, annotation.value(), annotation.wsdlLocation(), methodInfo.declaringClass(), targetDescription, localContextName);
     }
 
-    private void processClassRef(final DeploymentUnit deploymentUnit, final WebServiceRefWrapper annotation, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
+    private void processClassRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
             throw new DeploymentUnitProcessingException("@WebServiceRef attribute 'name' is required fo class level annotations.");
         }
@@ -198,46 +197,6 @@ public class WSRefAnnotationParsingProcessor implements DeploymentUnitProcessor 
         return new VirtualFileAdaptor(resourceRoot.getRoot());
     }
 
-
-    private class WebServiceRefWrapper {
-        private final String type;
-        private final String name;
-        private final String value;
-        private final String wsdlLocation;
-
-        private WebServiceRefWrapper(final AnnotationInstance annotation) {
-            name = stringValueOrNull(annotation, "name");
-            type = classValueOrNull(annotation, "type");
-            value = classValueOrNull(annotation, "value");
-            wsdlLocation = stringValueOrNull(annotation, "wsdlLocation");
-        }
-
-        private String name() {
-            return name;
-        }
-
-        private String type() {
-            return type;
-        }
-
-        private String value() {
-            return value;
-        }
-
-        private String wsdlLocation() {
-            return wsdlLocation;
-        }
-
-        private String stringValueOrNull(final AnnotationInstance annotation, final String attribute) {
-            final AnnotationValue value = annotation.value(attribute);
-            return value != null ? value.asString() : null;
-        }
-
-        private String classValueOrNull(final AnnotationInstance annotation, final String attribute) {
-            final AnnotationValue value = annotation.value(attribute);
-            return value != null ? value.asClass().name().toString() : null;
-        }
-    }
 
     private boolean isEmpty(final String string) {
         return string == null || string.isEmpty();
