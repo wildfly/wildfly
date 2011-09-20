@@ -1043,12 +1043,10 @@
         <bundle-def name="org.osgi.compendium">
             <maven-bundle group="org.osgi" artifact="org.osgi.compendium"/>
         </bundle-def>
-        <!--
-        <include name="org.apache.felix.eventadmin.jar" />
-        <include name="org.apache.felix.log.jar" />
-        <include name="org.apache.felix.metatype.jar" />
-        <include name="org.apache.felix.webconsole.jar" />
-        -->
+
+        <bundle-def name="org.projectodd.stilts">
+            <maven-bundle group="org.projectodd.stilts" artifact="stilts-stomplet-server-bundle"/>
+        </bundle-def>
     </target>
 
     <target name="clean-target">

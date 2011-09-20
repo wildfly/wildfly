@@ -208,6 +208,7 @@
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.picketbox>4.0.2.final</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.CR1</version.org.picketbox.picketbox-commons>
+        <version.org.projectodd.stilts>0.1.20</version.org.projectodd.stilts>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j.jcl-over-slf4j>1.6.1</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.6.1</version.org.slf4j.slf4j-api>
@@ -5192,6 +5193,24 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>org.projectodd.stilts</groupId>
+                <artifactId>stilts-stomp-client</artifactId>
+                <version>${version.org.projectodd.stilts}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.projectodd.stilts</groupId>
+                <artifactId>stilts-stomplet-server-bundle</artifactId>
+                <version>${version.org.projectodd.stilts}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.projectodd.stilts</groupId>
+                <artifactId>stilts-stomplet-server-core</artifactId>
+                <version>${version.org.projectodd.stilts}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.scannotation</groupId>
                 <artifactId>scannotation</artifactId>
