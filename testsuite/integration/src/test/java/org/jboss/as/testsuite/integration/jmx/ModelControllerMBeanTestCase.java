@@ -41,7 +41,6 @@ import javax.management.InstanceNotFoundException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.openmbean.ArrayType;
 import javax.management.openmbean.CompositeData;
@@ -80,14 +79,7 @@ public class ModelControllerMBeanTestCase {
     final int PORT = 1090;
 
     static final ObjectName MODEL_FILTER = createObjectName(Constants.DOMAIN  + ":*");
-    static final ObjectName ROOT_MODEL_NAME;
-    static {
-        try {
-            ROOT_MODEL_NAME = ObjectName.getInstance(Constants.DOMAIN, "type", "root");
-        } catch (MalformedObjectNameException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    static final ObjectName ROOT_MODEL_NAME = Constants.ROOT_MODEL_NAME;
 
     MBeanServerConnection connection;
     ModelControllerClient client;

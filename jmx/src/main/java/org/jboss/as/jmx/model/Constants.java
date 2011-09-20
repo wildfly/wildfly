@@ -34,7 +34,7 @@ public class Constants {
     public static final ObjectName ROOT_MODEL_NAME;
     static {
         try {
-            ROOT_MODEL_NAME = ObjectName.getInstance(Constants.DOMAIN, "type", "root");
+            ROOT_MODEL_NAME = ObjectName.getInstance(Constants.DOMAIN, "management-root", "server");
         } catch (MalformedObjectNameException e) {
             throw new RuntimeException(e);
         }
