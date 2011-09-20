@@ -23,16 +23,15 @@ package org.jboss.as.ee.component.deployers;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ClassConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
+import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LazyResourceInjection;
@@ -57,6 +56,7 @@ import java.util.List;
  * Class that provides common functionality required by processors that process environment information from deployment descriptors.
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class AbstractDeploymentDescriptorBindingsProcessor implements DeploymentUnitProcessor {
 
@@ -195,12 +195,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                         new MethodInjectionTarget(eeModuleClassDescription.getClassName(), memberName, classType.getName());
 
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTargetDescription, injectionSource);
-                eeModuleClassDescription.getConfigurators().add(new ClassConfigurator() {
-                    @Override
-                    public void configure(DeploymentPhaseContext context, EEModuleClassDescription description, EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-                        configuration.getInjectionConfigurations().add(injectionConfiguration);
-                    }
-                });
+                eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
 
             }
         }
