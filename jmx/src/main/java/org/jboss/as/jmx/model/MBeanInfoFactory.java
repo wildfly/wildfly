@@ -101,18 +101,22 @@ public class MBeanInfoFactory {
 
     private MBeanInfo createMBeanInfo() {
         return new OpenMBeanInfoSupport(ModelControllerMBeanHelper.CLASS_NAME,
-                getDescription(),
+                getDescription(providedDescription),
                 getAttributes(),
                 getConstructors(),
                 getOperations(),
                 getNotifications());
     }
 
-    private String getDescription() {
-        if (!providedDescription.hasDefined(DESCRIPTION)) {
+    private String getDescription(ModelNode node) {
+        if (!node.hasDefined(DESCRIPTION)) {
             return "-";
         }
-        return providedDescription.get(DESCRIPTION).asString();
+        String description = node.get(DESCRIPTION).asString();
+        if (description.trim().length() == 0) {
+            return "-";
+        }
+        return description;
     }
 
     private OpenMBeanAttributeInfo[] getAttributes() {
@@ -137,7 +141,7 @@ public class MBeanInfoFactory {
         }
         return new OpenMBeanAttributeInfoSupport(
                 escapedName,
-                attribute.hasDefined(DESCRIPTION) ? attribute.get(DESCRIPTION).asString() : "-",
+                getDescription(attribute),
                 TypeConverter.convertToMBeanType(attribute),
                 true,
                 writable,
@@ -203,7 +207,7 @@ public class MBeanInfoFactory {
         }
         return new OpenMBeanOperationInfoSupport(
                 name,
-                opNode.hasDefined(DESCRIPTION) ? opNode.get(DESCRIPTION).asString() : "-",
+                getDescription(opNode),
                 params,
                 getReturnType(opNode),
                 MBeanOperationInfo.UNKNOWN);
@@ -220,7 +224,7 @@ public class MBeanInfoFactory {
             params.add(
                     new OpenMBeanParameterInfoSupport(
                             paramName,
-                            prop.getValue().hasDefined(DESCRIPTION) ? prop.getValue().get(DESCRIPTION).asString() : "-",
+                            getDescription(prop.getValue()),
                             TypeConverter.convertToMBeanType(value)));
         }
         return params.toArray(new OpenMBeanParameterInfo[params.size()]);
