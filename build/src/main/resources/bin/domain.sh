@@ -137,7 +137,7 @@ echo ""
 while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
-      eval \"$JAVA\" $JAVA_OPTS \
+      eval \"$JAVA\" $PROCESS_CONTROLLER_JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
@@ -149,14 +149,14 @@ while true; do
          -- \
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/host-controller/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
-         $JAVA_OPTS \
+         $HOST_CONTROLLER_JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA\" \
          "$@"
       JBOSS_STATUS=$?
    else
       # Execute the JVM in the background
-      eval \"$JAVA\" $JAVA_OPTS \
+      eval \"$JAVA\" $PROCESS_CONTROLLER_JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/process-controller/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
@@ -168,7 +168,7 @@ while true; do
          -- \
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/domain/log/host-controller/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/domain/configuration/logging.properties\" \
-         $JAVA_OPTS \
+         $HOST_CONTROLLER_JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA\" \
          "$@" "&"
