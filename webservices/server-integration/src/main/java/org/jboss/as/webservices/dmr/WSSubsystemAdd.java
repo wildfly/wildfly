@@ -45,7 +45,7 @@ import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
-import org.jboss.as.webservices.webserviceref.WSRefAnnotationParsingProcessor;
+import org.jboss.as.webservices.webserviceref.WSRefAnnotationProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
