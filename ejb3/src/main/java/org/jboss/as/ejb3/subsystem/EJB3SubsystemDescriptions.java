@@ -241,10 +241,10 @@ public class EJB3SubsystemDescriptions {
         description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, TYPE).set(ModelType.STRING);
         description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, REQUIRED).set(false);
         description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, DEFAULT).set(StrictMaxPoolConfig.DEFAULT_TIMEOUT_UNIT.name());
-        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).set(TimeUnit.HOURS.name());
-        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).set(TimeUnit.MINUTES.name());
-        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).set(TimeUnit.SECONDS.name());
-        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).set(TimeUnit.MILLISECONDS.name());
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).add(TimeUnit.HOURS.name());
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).add(TimeUnit.MINUTES.name());
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).add(TimeUnit.SECONDS.name());
+        description.get(ATTRIBUTES, INSTANCE_ACQUISITION_TIMEOUT_UNIT, ALLOWED).add(TimeUnit.MILLISECONDS.name());
 
         description.get(OPERATIONS); // placeholder
 
