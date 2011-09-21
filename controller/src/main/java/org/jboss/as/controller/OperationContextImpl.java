@@ -839,7 +839,18 @@ final class OperationContextImpl implements OperationContext {
                     model = toAdd;
                 }
             } else {
-                model = model.requireChild(element);
+                model = model.getChild(element);
+                if (model == null) {
+                    PathAddress ancestor = PathAddress.EMPTY_ADDRESS;
+                    for (PathElement pe : absoluteAddress) {
+                        ancestor = ancestor.append(pe);
+                        if (element.equals(pe)) {
+                            break;
+                        }
+                    }
+                    throw new IllegalStateException(String.format("Resource %s does not exist; a resource at " +
+                            "address %s cannot be created until all ancestor resources have been added", ancestor, absoluteAddress));
+                }
             }
         }
     }
