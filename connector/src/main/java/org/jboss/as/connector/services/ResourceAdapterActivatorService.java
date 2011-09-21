@@ -106,7 +106,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                 ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
 
         context.getChildTarget()
-                .addService(ServiceName.of(value.getDeployment().getDeploymentName()),
+                .addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(value.getDeployment().getDeploymentName()),
                         new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                 .install();
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
