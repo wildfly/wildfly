@@ -102,14 +102,14 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         value = new ResourceAdapterDeployment(deploymentMD);
         registry.getValue().registerResourceAdapterDeployment(value);
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting service %s",
-                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
-
+        String suffix = ConnectorServices.getNextValidSuffix(value.getDeployment().getDeploymentName());
+        ServiceName serviceName = ConnectorServices.registerResourceAdapterServiceNameWithSuffix(value.getDeployment().getDeploymentName(), suffix);
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting service %s", serviceName);
         context.getChildTarget()
-                .addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(value.getDeployment().getDeploymentName()),
+                .addService(serviceName,
                         new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                 .install();
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Started service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
     }
 
     /**
