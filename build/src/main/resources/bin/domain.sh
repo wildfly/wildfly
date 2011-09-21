@@ -202,6 +202,9 @@ while true; do
             # Wait for a complete shudown
             wait $JBOSS_PID 2>/dev/null
       fi
+      if [ "x$JBOSS_PIDFILE" != "x" ]; then
+            grep "$JBOSS_PID" $JBOSS_PIDFILE && rm $JBOSS_PIDFILE
+      fi 
    fi
    exit $JBOSS_STATUS
 done
