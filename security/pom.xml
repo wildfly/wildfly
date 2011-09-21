@@ -51,6 +51,18 @@
                     <enableAssertions>false</enableAssertions>
                 </configuration>
             </plugin>
+
+            <!-- JAR -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.jboss.as.security.vault.VaultTool</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
