@@ -101,11 +101,12 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         if (raDeployer.checkActivation(cmd, ijmd)) {
             registry.getValue().registerResourceAdapterDeployment(value);
-            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting sevice %s",
-                    ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+            String suffix = ConnectorServices.getNextValidSuffix(value.getDeployment().getDeploymentName());
+            ServiceName serviceName = ConnectorServices.registerResourceAdapterServiceNameWithSuffix(value.getDeployment().getDeploymentName(), suffix);
+            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting sevice %s",serviceName);
 
             context.getChildTarget()
-                    .addService(ServiceName.of(value.getDeployment().getDeploymentName()),
+                    .addService(serviceName,
                             new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                     .install();
         }
