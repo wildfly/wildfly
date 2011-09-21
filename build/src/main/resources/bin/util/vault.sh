@@ -64,7 +64,6 @@ if [ "x$JAVA" = "x" ]; then
 fi
 
 if [ "x$MODULEPATH" = "x" ]; then
-    echo $JBOSS_HOME
     MODULEPATH="$JBOSS_HOME/modules"
 fi
 
