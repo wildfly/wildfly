@@ -26,7 +26,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
-import org.jboss.as.webservices.util.ASHelper;
 
 /**
  * This deployer initializes JBossWS deployment meta data.
