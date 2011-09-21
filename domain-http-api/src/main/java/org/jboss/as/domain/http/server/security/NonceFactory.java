@@ -26,7 +26,7 @@ import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.domain.management.util.HexUtil;
+import org.jboss.sasl.util.HexConverter;
 
 /**
  * A simple NonceFactory for single use nonces.
@@ -55,7 +55,7 @@ public class NonceFactory {
     public String createNonce() {
         byte[] newNonce = new byte[NONCE_BYTES];
         srand.nextBytes(newNonce);
-        String nonceString = HexUtil.convertToHexString(newNonce);
+        String nonceString = HexConverter.convertToHexString(newNonce);
         synchronized (issuedNonces) {
             issuedNonces.add(nonceString);
         }

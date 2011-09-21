@@ -40,12 +40,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.domain.management.security.UserNotFoundException;
-import org.jboss.as.domain.management.util.HexUtil;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 import org.jboss.logging.Logger;
+import org.jboss.sasl.util.HexConverter;
 
 /**
  * An authenticator to handle Digest authentication.
@@ -176,13 +176,13 @@ public class DigestAuthenticator extends Authenticator {
             md.update(COLON);
             md.update(new String(pcb.getPassword()).getBytes());
 
-            byte[] ha1 = HexUtil.convertToHexBytes(md.digest());
+            byte[] ha1 = HexConverter.convertToHexBytes(md.digest());
 
             md.update(httpExchange.getRequestMethod().getBytes());
             md.update(COLON);
             md.update(challengeParameters.get(URI).getBytes());
 
-            byte[] ha2 = HexUtil.convertToHexBytes(md.digest());
+            byte[] ha2 = HexConverter.convertToHexBytes(md.digest());
 
             md.update(ha1);
             md.update(COLON);
@@ -190,7 +190,7 @@ public class DigestAuthenticator extends Authenticator {
             md.update(COLON);
             md.update(ha2);
 
-            byte[] expectedResponse = HexUtil.convertToHexBytes(md.digest());
+            byte[] expectedResponse = HexConverter.convertToHexBytes(md.digest());
             byte[] actualResponse = challengeParameters.get(RESPONSE).getBytes();
 
             if (MessageDigest.isEqual(expectedResponse, actualResponse)) {
