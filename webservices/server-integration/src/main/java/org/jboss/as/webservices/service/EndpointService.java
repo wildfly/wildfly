@@ -61,8 +61,12 @@ public final class EndpointService implements Service<Endpoint> {
     private EndpointService(final Endpoint endpoint) {
         this.endpoint = endpoint;
         final ObjectName on = endpoint.getName();
-        this.name = WSServices.ENDPOINT_SERVICE.append(on.getKeyProperty(Endpoint.SEPID_PROPERTY_CONTEXT)).append(
-                on.getKeyProperty(Endpoint.SEPID_PROPERTY_ENDPOINT));
+        final String ctx = on.getKeyProperty(Endpoint.SEPID_PROPERTY_CONTEXT);
+        ServiceName n = WSServices.ENDPOINT_SERVICE;
+        if (ctx != null && !ctx.isEmpty()) {
+            n = n.append(ctx);
+        }
+        this.name = n.append(on.getKeyProperty(Endpoint.SEPID_PROPERTY_ENDPOINT));
     }
 
     @Override
