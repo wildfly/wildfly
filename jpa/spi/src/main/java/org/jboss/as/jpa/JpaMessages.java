@@ -100,7 +100,7 @@ public interface JpaMessages {
      */
     @Message(id = 11424, value = "Container managed entity manager can only be closed by the container " +
             "(auto-cleared at tx/invocation end and closed when owning component is closed.)")
-    IllegalArgumentException cannotCloseTransactionContainerEntityManger();
+    IllegalStateException cannotCloseTransactionContainerEntityManger();
 
     /**
      * Creates an exception indicating the inability to create an instance of the adapter class represented by the
