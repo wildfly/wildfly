@@ -80,14 +80,14 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
 
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, createParameterValidator(type, allowNull, allowExpression), null, null);
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, (ParameterValidator) null, null, null);
     }
 
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                createParameterValidator(type, allowNull, allowExpression), null, null, flags);
+                null, null, null, flags);
     }
 
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
@@ -99,15 +99,18 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterValidator validator, String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
-        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, validator, alternatives, requires, flags);
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                createParameterValidator(validator, type, allowNull, allowExpression), alternatives, requires, flags);
     }
 
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final String[] alternatives) {
-        this(name, name, defaultValue, type, allowNull, false, MeasurementUnit.NONE, createParameterValidator(type, allowNull, false), alternatives, null);
+        this(name, name, defaultValue, type, allowNull, false, MeasurementUnit.NONE, null, alternatives, null);
     }
 
-    private static ParameterValidator createParameterValidator(final ModelType type,final boolean allowNull, final boolean allowExpression) {
-        if (type == ModelType.STRING) {
+    private static ParameterValidator createParameterValidator(final ParameterValidator existing, final ModelType type,final boolean allowNull, final boolean allowExpression) {
+        if (existing != null) {
+            return existing;
+        } else if (type == ModelType.STRING) {
             return new StringLengthValidator(1, Integer.MAX_VALUE, allowNull, allowExpression);
         } else {
             return new ModelTypeValidator(type, allowNull, allowExpression);
