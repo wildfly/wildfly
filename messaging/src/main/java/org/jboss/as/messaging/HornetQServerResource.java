@@ -109,7 +109,7 @@ public class HornetQServerResource implements Resource {
             }
             throw new NoSuchElementException(element.toString());
         } else {
-            return delegate.getChild(element);
+            return delegate.requireChild(element);
         }
     }
 
