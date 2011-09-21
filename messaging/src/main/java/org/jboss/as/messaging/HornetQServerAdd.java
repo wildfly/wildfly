@@ -398,7 +398,7 @@ class HornetQServerAdd implements OperationStepHandler {
      * @param configuration the hornetQ configuration
      * @param params        the detyped operation parameters
      */
-    static void processSecuritySettings(final Configuration configuration, final ModelNode params) {
+    static void processSecuritySettings(final Configuration configuration, final ModelNode params) throws OperationFailedException {
         if (params.get(SECURITY_SETTING).isDefined()) {
             for (final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
                 final String match = property.getName();
@@ -429,10 +429,6 @@ class HornetQServerAdd implements OperationStepHandler {
         final String pathName = path.hasDefined(PATH) ? path.get(PATH).asString() : DEFAULT_PATH + name;
         RelativePathService.addService(serviceName, pathName, relativeTo, serviceTarget);
         return serviceName;
-    }
-
-    static SimpleString asSimpleString(final ModelNode node, final String defVal) {
-        return SimpleString.toSimpleString(node.getType() != ModelType.UNDEFINED ? node.asString() : defVal);
     }
 
 }

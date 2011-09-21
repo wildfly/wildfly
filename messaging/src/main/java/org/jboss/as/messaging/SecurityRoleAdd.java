@@ -105,14 +105,14 @@ class SecurityRoleAdd implements OperationStepHandler, DescriptionProvider {
         return operation;
     }
 
-    static Role transform(final String name, final ModelNode node) {
-        final boolean send = node.get(SEND.getName()).asBoolean();
-        final boolean consume = node.get(CONSUME.getName()).asBoolean();
-        final boolean createDurableQueue = node.get(CREATE_DURABLE_QUEUE.getName()).asBoolean();
-        final boolean deleteDurableQueue = node.get(DELETE_DURABLE_QUEUE.getName()).asBoolean();
-        final boolean createNonDurableQueue = node.get(CREATE_NON_DURABLE_QUEUE.getName()).asBoolean();
-        final boolean deleteNonDurableQueue = node.get(DELETE_NON_DURABLE_QUEUE.getName()).asBoolean();
-        final boolean manage = node.get(MANAGE.getName()).asBoolean();
+    static Role transform(final String name, final ModelNode node) throws OperationFailedException {
+        final boolean send = SEND.validateResolvedOperation(node).asBoolean();
+        final boolean consume = CONSUME.validateResolvedOperation(node).asBoolean();
+        final boolean createDurableQueue = CREATE_DURABLE_QUEUE.validateResolvedOperation(node).asBoolean();
+        final boolean deleteDurableQueue = DELETE_DURABLE_QUEUE.validateResolvedOperation(node).asBoolean();
+        final boolean createNonDurableQueue = CREATE_NON_DURABLE_QUEUE.validateResolvedOperation(node).asBoolean();
+        final boolean deleteNonDurableQueue = DELETE_NON_DURABLE_QUEUE.validateResolvedOperation(node).asBoolean();
+        final boolean manage = MANAGE.validateResolvedOperation(node).asBoolean();
         return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
     }
 
