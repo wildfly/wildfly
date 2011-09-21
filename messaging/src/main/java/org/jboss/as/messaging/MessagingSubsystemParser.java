@@ -88,7 +88,10 @@ import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.Location;
@@ -919,15 +922,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     static void parseSecurityRoles(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
 
-        ArrayList<String> send = new ArrayList<String>();
-        ArrayList<String> consume = new ArrayList<String>();
-        ArrayList<String> createDurableQueue = new ArrayList<String>();
-        ArrayList<String> deleteDurableQueue = new ArrayList<String>();
-        ArrayList<String> createNonDurableQueue = new ArrayList<String>();
-        ArrayList<String> deleteNonDurableQueue = new ArrayList<String>();
-        ArrayList<String> manageRoles = new ArrayList<String>();
-        ArrayList<String> allRoles = new ArrayList<String>();
-
+        final Map<String, Set<AttributeDefinition>> permsByRole = new HashMap<String, Set<AttributeDefinition>>();
         int tag = reader.getEventType();
         String localName = null;
         do {
@@ -957,34 +952,26 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             }
 
             for (String role : roles) {
-                if (Attribute.SEND_NAME.getLocalName().equals(type)) {
-                    send.add(role.trim());
-                } else if (Attribute.CONSUME_NAME.getLocalName().equals(type)) {
-                    consume.add(role.trim());
-                } else if (Attribute.CREATEDURABLEQUEUE_NAME.getLocalName().equals(type)) {
-                    createDurableQueue.add(role);
-                } else if (Attribute.DELETEDURABLEQUEUE_NAME.getLocalName().equals(type)) {
-                    deleteDurableQueue.add(role);
-                } else if (Attribute.CREATE_NON_DURABLE_QUEUE_NAME.getLocalName().equals(type)) {
-                    createNonDurableQueue.add(role);
-                } else if (Attribute.DELETE_NON_DURABLE_QUEUE_NAME.getLocalName().equals(type)) {
-                    deleteNonDurableQueue.add(role);
-                } else if (Attribute.CREATETEMPQUEUE_NAME.getLocalName().equals(type)) {
-                    createNonDurableQueue.add(role);
-                } else if (Attribute.DELETETEMPQUEUE_NAME.getLocalName().equals(type)) {
-                    deleteNonDurableQueue.add(role);
-                } else if (Attribute.MANAGE_NAME.getLocalName().equals(type)) {
-                    manageRoles.add(role);
+                role = role.trim();
+                Set<AttributeDefinition> perms = permsByRole.get(role);
+                if (perms == null) {
+                    perms = new HashSet<AttributeDefinition>();
+                    permsByRole.put(role, perms);
                 }
-                if (!allRoles.contains(role.trim())) {
-                    allRoles.add(role.trim());
+                for (AttributeDefinition perm : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+                    if (perm.getXmlName().equals(type)) {
+                        perms.add(perm);
+                    }
                 }
             }
             // Scan to element end
             reader.discardRemainder();
         } while (reader.hasNext());
 
-        for (String role : allRoles) {
+        for (Map.Entry<String, Set<AttributeDefinition>> entry : permsByRole.entrySet()) {
+            final String role = entry.getKey();
+            final Set<AttributeDefinition> perms = entry.getValue();
+
             final ModelNode addr = address.clone();
             addr.add(ROLE, role);
 
@@ -992,13 +979,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             operation.get(OP).set(ADD);
             operation.get(OP_ADDR).set(addr);
 
-            operation.get(SecurityRoleAdd.SEND.getName()).set(send.contains(role));
-            operation.get(SecurityRoleAdd.CONSUME.getName()).set(consume.contains(role));
-            operation.get(SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName()).set(createDurableQueue.contains(role));
-            operation.get(SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName()).set(deleteDurableQueue.contains(role));
-            operation.get(SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName()).set(createNonDurableQueue.contains(role));
-            operation.get(SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName()).set(deleteNonDurableQueue.contains(role));
-            operation.get(SecurityRoleAdd.MANAGE.getName()).set(manageRoles.contains(role));
+            for (AttributeDefinition perm : SecurityRoleAdd.ROLE_ATTRIBUTES) {
+                operation.get(perm.getName()).set(perms.contains(perm));
+            }
 
             operations.add(operation);
         }
