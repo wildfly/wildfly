@@ -205,11 +205,17 @@ class DataSourceModelNodeUtil {
     }
 
     static XaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {
-        List<Property> propertyList = dataSourceNode.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList();
-        final Map<String, String> xaDataSourceProperty = new HashMap<String, String>(propertyList.size());
-        for (Property property : propertyList) {
-            xaDataSourceProperty.put(property.getName(), property.getValue().asString());
+        final Map<String, String> xaDataSourceProperty;
+        if (dataSourceNode.hasDefined(XADATASOURCE_PROPERTIES.getName())) {
+            List<Property> propertyList = dataSourceNode.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList();
+            xaDataSourceProperty = new HashMap<String, String>(propertyList.size());
+            for (Property property : propertyList) {
+                xaDataSourceProperty.put(property.getName(), property.getValue().asString());
+            }
+        } else {
+            xaDataSourceProperty = Collections.emptyMap();
         }
+
         final String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
         final String module = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_DRIVER, null);

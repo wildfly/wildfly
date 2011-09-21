@@ -68,6 +68,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         boolean enabled = !operation.hasDefined(ENABLED.getName()) || operation.get(ENABLED.getName()).asBoolean();
 
+        ModelNode node = operation.require(DATASOURCE_DRIVER.getName());
+
+
         AbstractDataSourceService dataSourceService = createDataSourceService(jndiName);
 
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
@@ -84,7 +87,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         controllers.add(startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, jndiName, serviceTarget, operation));
 
-        ModelNode node = operation.require(DATASOURCE_DRIVER.getName());
         final String driverName = node.asString();
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
         if (driverServiceName != null) {
