@@ -66,4 +66,46 @@ class SecurityActions {
             }
         });
     }
+
+    static String getSystemProperty(final String name, final String defaultValue) {
+        return AccessController.doPrivileged(new PrivilegedAction<String>() {
+
+            @Override
+            public String run() {
+                return System.getProperty(name, defaultValue);
+            }
+        });
+    }
+
+    static ClassLoader getContextClassLoader() {
+        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        });
+    }
+
+    static Class<?> loadClass(final String name) throws PrivilegedActionException {
+        return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
+            public Class<?> run() throws ClassNotFoundException {
+                ClassLoader[] cls = new ClassLoader[] {
+                        SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
+                        getContextClassLoader(), // User defined classes
+                        ClassLoader.getSystemClassLoader() // System loader, usually has app class path
+                };
+                ClassNotFoundException e = null;
+                for (ClassLoader cl : cls) {
+                    if (cl == null)
+                        continue;
+
+                    try {
+                        return cl.loadClass(name);
+                    } catch (ClassNotFoundException ce) {
+                        e = ce;
+                    }
+                }
+                throw e != null ? e : new ClassNotFoundException(name);
+            }
+        });
+    }
 }

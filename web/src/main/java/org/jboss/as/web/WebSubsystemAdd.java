@@ -22,9 +22,10 @@
 
 package org.jboss.as.web;
 
-import javax.management.MBeanServer;
 import java.util.List;
 import java.util.Locale;
+
+import javax.management.MBeanServer;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -37,6 +38,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.web.deployment.EarContextRootProcessor;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
+import org.jboss.as.web.deployment.JaccWarDeploymentProcessor;
 import org.jboss.as.web.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.WarAnnotationDeploymentProcessor;
@@ -147,6 +149,8 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JsfAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer));
+                // jacc war processor
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new JaccWarDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
