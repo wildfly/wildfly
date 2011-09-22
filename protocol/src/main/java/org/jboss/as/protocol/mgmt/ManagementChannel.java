@@ -52,6 +52,7 @@ public class ManagementChannel extends ProtocolChannel {
     private final AtomicBoolean byeByeSent = new AtomicBoolean();
     private volatile long lastResponseReceived;
     private AtomicBoolean awaitingPong = new AtomicBoolean();
+    private volatile boolean receivedByeBye;
 
     ManagementChannel(String name, Channel channel) {
         super(name, channel);
@@ -75,6 +76,9 @@ public class ManagementChannel extends ProtocolChannel {
     }
 
     public void sendByeBye() throws IOException {
+        if (receivedByeBye) {
+            return;
+        }
         if(!byeByeSent.compareAndSet(false, true)) {
             return;
         }
@@ -123,6 +127,7 @@ public class ManagementChannel extends ProtocolChannel {
                 break;
             case ManagementProtocol.TYPE_BYE_BYE:
                 ROOT_LOGGER.tracef("Received bye bye on %s, closing", this);
+                receivedByeBye = true;
                 close();
                 break;
             case ManagementProtocol.TYPE_PING:
