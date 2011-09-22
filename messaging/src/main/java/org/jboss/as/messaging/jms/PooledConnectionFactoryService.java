@@ -252,7 +252,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             // Mock the deployment service to allow it to start
-            serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(name), Service.NULL).install();
+            serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name), Service.NULL).install();
         } finally {
             if (is != null)
                 is.close();

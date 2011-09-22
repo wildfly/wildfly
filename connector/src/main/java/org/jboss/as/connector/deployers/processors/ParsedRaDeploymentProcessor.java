@@ -118,7 +118,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             // Create the service
-            serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()), raDeployementService)
+            serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()), raDeployementService)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raDeployementService.getMdrInjector())
                     .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class, raDeployementService.getRaRepositoryInjector())
                     .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class, raDeployementService.getManagementRepositoryInjector())
