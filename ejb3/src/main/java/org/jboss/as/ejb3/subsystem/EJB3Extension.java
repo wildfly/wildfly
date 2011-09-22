@@ -22,35 +22,33 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
+import java.util.Locale;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-
 /**
+ * Extension that provides the EJB3 subsystem.
+ *
  * @author Emanuel Muckenhuber
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class EJB3Extension implements Extension {
 
@@ -60,6 +58,11 @@ public class EJB3Extension implements Extension {
 
     private static final EJB3Subsystem10Parser ejb3Subsystem10Parser = new EJB3Subsystem10Parser();
     private static final EJB3Subsystem11Parser ejb3Subsystem11Parser = new EJB3Subsystem11Parser();
+    private static final String RESOURCE_NAME = EJB3Extension.class.getPackage().getName() + ".LocalDescriptions";
+
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, EJB3Extension.class.getClassLoader(), true, true);
+    }
 
     /**
      * {@inheritDoc}
@@ -67,40 +70,19 @@ public class EJB3Extension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(EJB3SubsystemProviders.SUBSYSTEM);
+
         subsystem.registerXMLElementWriter(ejb3Subsystem11Parser);
 
-        // register the operations
-        // EJB3 subsystem ADD operation
-        subsystemRegistration.registerOperationHandler(ADD, EJB3SubsystemAdd.INSTANCE, EJB3SubsystemAdd.INSTANCE, false);
+        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(EJB3SubsystemRootResourceDefinition.INSTANCE);
+
         // describe operation for the subsystem
         subsystemRegistration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        // default slsb pool
-        subsystemRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, SetDefaultSLSBPool.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        // default MDB pool
-        subsystemRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, SetDefaultMDBPool.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        // default resource adapter name
-        subsystemRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, SetDefaultResourceAdapterName.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
 
         // subsystem=ejb3/strict-max-bean-instance-pool=*
-        final ManagementResourceRegistration strictMaxPoolRegistration = subsystemRegistration.registerSubModel(
-                PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL), EJB3SubsystemProviders.STRICT_MAX_BEAN_INSTANCE_POOL);
-        // register ADD and REMOVE operations for strict-max-pool
-        strictMaxPoolRegistration.registerOperationHandler(ADD, StrictMaxPoolAdd.INSTANCE, StrictMaxPoolAdd.INSTANCE, false);
-        strictMaxPoolRegistration.registerOperationHandler(REMOVE, StrictMaxPoolRemove.INSTANCE, StrictMaxPoolRemove.INSTANCE, false);
+        subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
 
-
-        final ManagementResourceRegistration timerService = subsystemRegistration.registerSubModel(
-                EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemProviders.TIMER_SERVICE);
-
-        // register ADD and REMOVE operations for timer-service
-        timerService.registerOperationHandler(ADD, TimerServiceAdd.INSTANCE, TimerServiceAdd.INSTANCE, false);
-        timerService.registerOperationHandler(REMOVE, TimerServiceRemove.INSTANCE, TimerServiceRemove.INSTANCE, false);
-
-        timerService.registerReadWriteAttribute(EJB3SubsystemModel.PATH, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        timerService.registerReadWriteAttribute(EJB3SubsystemModel.RELATIVE_TO, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        timerService.registerReadWriteAttribute(EJB3SubsystemModel.CORE_THREADS, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        timerService.registerReadWriteAttribute(EJB3SubsystemModel.MAX_THREADS, null,  WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        // subsystem=ejb3/timer-service=*
+        subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);
 
     }
 

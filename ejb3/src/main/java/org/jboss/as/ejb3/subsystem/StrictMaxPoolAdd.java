@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -34,6 +35,7 @@ import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -57,18 +59,9 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
  * <p/>
  * User: Jaikiran Pai
  */
-public class StrictMaxPoolAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class StrictMaxPoolAdd extends AbstractAddStepHandler {
 
     public static final StrictMaxPoolAdd INSTANCE = new StrictMaxPoolAdd();
-
-    /**
-     * Description provider for the strict-max-pool add operation
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return EJB3SubsystemDescriptions.getStrictMaxPoolAddDescription(locale);
-    }
-
 
     /**
      * Populate the <code>strictMaxPoolModel</code> from the <code>operation</code>
@@ -79,36 +72,13 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler implements Descript
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode strictMaxPoolModel) throws OperationFailedException {
+
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         strictMaxPoolModel.get(EJB3SubsystemModel.NAME).set(poolName);
-        // max-pool-size
 
-        if (operation.hasDefined(EJB3SubsystemModel.MAX_POOL_SIZE)) {
-            int maxPoolSize = operation.get(EJB3SubsystemModel.MAX_POOL_SIZE).asInt();
-            if (maxPoolSize <= 0) {
-                throw new IllegalArgumentException("Invalid value: " + maxPoolSize + " for " + EJB3SubsystemModel.MAX_POOL_SIZE);
-            }
-            strictMaxPoolModel.get(EJB3SubsystemModel.MAX_POOL_SIZE).set(maxPoolSize);
+        for (AttributeDefinition attr : StrictMaxPoolResourceDefinition.ATTRIBUTES.values()) {
+            attr.validateAndSet(operation, strictMaxPoolModel);
         }
-
-        // instance-acquisition-timeout
-        if (operation.hasDefined(INSTANCE_ACQUISITION_TIMEOUT)) {
-            long instanceAcquisitionTimeout = operation.get(INSTANCE_ACQUISITION_TIMEOUT).asLong();
-            if (instanceAcquisitionTimeout <= 0) {
-                throw new IllegalArgumentException("Invalid value: " + instanceAcquisitionTimeout + " for " + INSTANCE_ACQUISITION_TIMEOUT);
-            }
-            strictMaxPoolModel.get(INSTANCE_ACQUISITION_TIMEOUT).set(instanceAcquisitionTimeout);
-        }
-
-        // instance-acquisition-timeout-unit
-        if (operation.hasDefined(INSTANCE_ACQUISITION_TIMEOUT_UNIT)) {
-            String instanceAcquisitionTimeoutUnit = operation.get(INSTANCE_ACQUISITION_TIMEOUT_UNIT).asString();
-            if (!this.isValidTimeoutUnit(instanceAcquisitionTimeoutUnit)) {
-                throw new IllegalArgumentException("Invalid value: " + instanceAcquisitionTimeoutUnit + " for " + INSTANCE_ACQUISITION_TIMEOUT_UNIT);
-            }
-            strictMaxPoolModel.get(INSTANCE_ACQUISITION_TIMEOUT_UNIT).set(instanceAcquisitionTimeoutUnit.trim().toUpperCase(Locale.ENGLISH));
-        }
-
     }
 
     @Override
@@ -116,37 +86,29 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler implements Descript
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
-        final String poolName = strictMaxPoolModel.require(EJB3SubsystemModel.NAME).asString();
-        final int maxPoolSize = strictMaxPoolModel.get(EJB3SubsystemModel.MAX_POOL_SIZE).asInt(StrictMaxPoolConfig.DEFAULT_MAX_POOL_SIZE);
-        final long timeout = strictMaxPoolModel.get(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT).asLong(StrictMaxPoolConfig.DEFAULT_TIMEOUT);
-        final String unit = strictMaxPoolModel.hasDefined(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT)
-                ? strictMaxPoolModel.get(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT).asString()
-                : StrictMaxPoolConfig.DEFAULT_TIMEOUT_UNIT.name();
-        // create the pool config
-        final PoolConfig strictMaxPoolConfig = new StrictMaxPoolConfig(poolName, maxPoolSize, timeout, TimeUnit.valueOf(unit));
-        // create and install the service
-        final PoolConfigService poolConfigService = new PoolConfigService(strictMaxPoolConfig);
-        final ServiceName serviceName = PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
-        final ServiceController serviceController = context.getServiceTarget().addService(serviceName, poolConfigService).install();
+        final ServiceController serviceController = installRuntimeService(context, strictMaxPoolModel, verificationHandler);
         // add this to the service controllers
         serviceControllers.add(serviceController);
 
     }
 
-    private boolean isValidTimeoutUnit(final String val) {
-        if (val == null || val.trim().isEmpty()) {
-            return false;
+    ServiceController installRuntimeService(OperationContext context, ModelNode strictMaxPoolModel,
+                                  ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+
+        final String poolName = strictMaxPoolModel.require(EJB3SubsystemModel.NAME).asString();
+        final int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.validateResolvedOperation(strictMaxPoolModel).asInt();
+        final long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.validateResolvedOperation(strictMaxPoolModel).asLong();
+        final String unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.validateResolvedOperation(strictMaxPoolModel).asString();
+        // create the pool config
+        final PoolConfig strictMaxPoolConfig = new StrictMaxPoolConfig(poolName, maxPoolSize, timeout, TimeUnit.valueOf(unit));
+        // create and install the service
+        final PoolConfigService poolConfigService = new PoolConfigService(strictMaxPoolConfig);
+        final ServiceName serviceName = PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
+        ServiceBuilder<PoolConfig> svcBuilder = context.getServiceTarget().addService(serviceName, poolConfigService);
+        if (verificationHandler != null) {
+            svcBuilder.addListener(verificationHandler);
         }
-        final String upperCaseUnitValue = val.toUpperCase(Locale.ENGLISH);
-        try {
-            final TimeUnit unit = TimeUnit.valueOf(upperCaseUnitValue);
-            if (unit == TimeUnit.SECONDS || unit == TimeUnit.HOURS || unit == TimeUnit.MINUTES || unit == TimeUnit.MILLISECONDS) {
-                return true;
-            }
-        } catch (IllegalArgumentException iae) {
-            return false;
-        }
-        return false;
+        return svcBuilder.install();
     }
 
 }

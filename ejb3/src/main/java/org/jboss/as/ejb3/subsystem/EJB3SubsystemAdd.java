@@ -97,7 +97,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.LITE;
  *
  * @author Emanuel Muckenhuber
  */
-class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final EJB3SubsystemAdd INSTANCE = new EJB3SubsystemAdd();
 
@@ -105,11 +105,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
 
     private EJB3SubsystemAdd() {
         //
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return EJB3SubsystemDescriptions.getSubystemAddDescription(locale);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {

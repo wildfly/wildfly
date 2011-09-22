@@ -22,25 +22,27 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Handles the remove operation for the timer-service resource.
+ * Handler for removing the EJB3 subsystem.
  *
- * @author Stuart Douglas
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class TimerServiceRemove extends AbstractRemoveStepHandler {
+public class EJB3SubsystemRemove extends AbstractRemoveStepHandler {
 
-    public static final TimerServiceRemove INSTANCE = new TimerServiceRemove();
+    public static final EJB3SubsystemRemove INSTANCE = new EJB3SubsystemRemove();
+
+    private EJB3SubsystemRemove() {
+    }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        // This subsystem registers DUPs, so we can't remove it from the runtime without a reload
         context.reloadRequired();
     }
 

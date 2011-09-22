@@ -52,6 +52,7 @@ public class ResourceAddRemoveTestBase {
         Mockito.when(context.getServiceRegistry(true)).thenReturn(serviceRegistry);
         Mockito.when(context.completeStep()).thenReturn(stepResult);
         Mockito.when(context.createResource(PathAddress.EMPTY_ADDRESS)).thenReturn(resource);
+        Mockito.when(context.readResource(PathAddress.EMPTY_ADDRESS)).thenReturn(resource);
         Mockito.when(context.getType()).thenReturn(OperationContext.Type.SERVER);
         Mockito.doAnswer(new Answer<Void>() {
             @Override
