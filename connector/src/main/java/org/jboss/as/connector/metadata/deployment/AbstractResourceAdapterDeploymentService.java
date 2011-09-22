@@ -243,7 +243,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             binderService.getManagedObjectInjector())
                     .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
                             binderService.getNamingStoreInjector())
-                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(deploymentName))
+                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deploymentName))
                     .addListener(new AbstractServiceListener<Object>() {
                          public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                             switch (transition) {

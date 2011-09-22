@@ -125,7 +125,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     ServiceName getResourceAdapterServiceName() {
         // See ResourceAdapterDeploymentService
-        return ServiceName.of(this.resourceAdapterName);
+        return ServiceName.JBOSS.append("ra").append(this.resourceAdapterName);
     }
 
     private String stripDotRarSuffix(final String raName) {

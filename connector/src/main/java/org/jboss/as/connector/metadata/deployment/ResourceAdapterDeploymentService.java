@@ -119,7 +119,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     @Override
     public void stop(StopContext context) {
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping sevice %s",
-                ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+                ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
         managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
     }

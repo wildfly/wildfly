@@ -56,6 +56,8 @@ public final class ConnectorServices {
 
     public static final ServiceName RESOURCE_ADAPTER_SERVICE_PREFIX = ServiceName.JBOSS.append("ra");
 
+    public static final ServiceName RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX = ServiceName.JBOSS.append("ra").append("deployer");
+
     public static final ServiceName RESOURCE_ADAPTER_XML_SERVICE_PREFIX = ServiceName.JBOSS.append("raxml");
 
     public static final ServiceName RESOURCE_ADAPTER_REGISTRY_SERVICE = ServiceName.JBOSS.append("raregistry");
@@ -98,12 +100,12 @@ public final class ConnectorServices {
 
     public static synchronized String getNextValidSuffix(String raName) {
         if (resourceAdapterXmlServiceNames.get(raName) == null && resourceAdapterServiceNames.get(raName) == null) {
-            return "_1";
+            return "";
         } else {
             if (resourceAdapterServiceNames.get(raName) != null) {
                 if (resourceAdapterXmlServiceNames.get(raName) != null) {
-                    return "_" + (Math.max(resourceAdapterServiceNames.get(raName).size(),
-                            resourceAdapterXmlServiceNames.get(raName).size()) + 1);
+                    return "_" + Math.max(resourceAdapterServiceNames.get(raName).size(),
+                            resourceAdapterXmlServiceNames.get(raName).size());
                 } else {
                     return "_" + resourceAdapterXmlServiceNames.get(raName).size();
                 }

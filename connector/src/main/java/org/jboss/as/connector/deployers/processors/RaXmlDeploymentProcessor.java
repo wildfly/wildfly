@@ -132,7 +132,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                                     service.getSubjectFactoryInjector())
                             .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector())
                             .addDependency(NamingService.SERVICE_NAME)
-                            .addDependency(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()))
+                            .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()))
                             .setInitialMode(Mode.ACTIVE).install();
                 }
             }
