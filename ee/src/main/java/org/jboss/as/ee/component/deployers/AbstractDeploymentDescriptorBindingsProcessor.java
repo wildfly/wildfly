@@ -47,6 +47,7 @@ import org.jboss.metadata.javaee.spec.ResourceInjectionMetaData;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.modules.Module;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -130,59 +131,14 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      *          If the injection points could not be resolved
      */
     protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaData entry, Class<?> classType) throws DeploymentUnitProcessingException {
-
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
+                final String injectionTargetClassName = injectionTarget.getInjectionTargetClass();
+                final String injectionTargetName = injectionTarget.getInjectionTargetName();
+                final AccessibleObject fieldOrMethod = getInjectionTarget(injectionTargetClassName, injectionTargetName, classLoader, deploymentReflectionIndex);
+                final Class<?> injectionTargetType = fieldOrMethod instanceof Field ? ((Field)fieldOrMethod).getType() : ((Method)fieldOrMethod).getParameterTypes()[0];
+                final String memberName = fieldOrMethod instanceof Field ? ((Field)fieldOrMethod).getName() : ((Method)fieldOrMethod).getName();
 
-                final Class<?> injectionTargetClass;
-                try {
-                    injectionTargetClass = classLoader.loadClass(injectionTarget.getInjectionTargetClass());
-                } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load " + injectionTarget.getInjectionTargetClass() + " referenced in env-entry injection point ", e);
-                }
-                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(injectionTargetClass.getName());
-                final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
-                String methodName = "set" + injectionTarget.getInjectionTargetName().substring(0, 1).toUpperCase() + injectionTarget.getInjectionTargetName().substring(1);
-
-                boolean methodFound = false;
-                Method method = null;
-                Field field = null;
-                Class<?> injectionTargetType = null;
-                String memberName = injectionTarget.getInjectionTargetName();
-                Class<?> current = injectionTargetClass;
-                while (current != Object.class && current != null && !methodFound) {
-                    final Collection<Method> methods = index.getAllMethods(methodName);
-                    for (Method m : methods) {
-                        if (m.getParameterTypes().length == 1) {
-                            if (m.isBridge() || m.isSynthetic()) {
-                                continue;
-                            }
-                            if (methodFound) {
-                                throw new DeploymentUnitProcessingException("Two setter methods for " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " found when applying <injection-target> for env-entry");
-                            }
-                            methodFound = true;
-                            method = m;
-                            injectionTargetType = m.getParameterTypes()[0];
-                            memberName = methodName;
-                        }
-                    }
-                    current = current.getSuperclass();
-                }
-                if (method == null) {
-                    current = injectionTargetClass;
-                    while (current != Object.class && current != null && field == null) {
-                        field = index.getField(injectionTarget.getInjectionTargetName());
-                        if (field != null) {
-                            injectionTargetType = field.getType();
-                            memberName = injectionTarget.getInjectionTargetName();
-                            break;
-                        }
-                        current = current.getSuperclass();
-                    }
-                }
-                if (field == null && method == null) {
-                    throw new DeploymentUnitProcessingException("Could not resolve injection point " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " specified in web.xml");
-                }
                 if (classType != null) {
                     if (!classType.isAssignableFrom(injectionTargetType)) {
                         throw new DeploymentUnitProcessingException("Injection target " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " is not compatible with the type of injection");
@@ -190,15 +146,63 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                 } else {
                     classType = injectionTargetType;
                 }
-                final InjectionTarget injectionTargetDescription = method == null ?
-                        new FieldInjectionTarget(eeModuleClassDescription.getClassName(), memberName, classType.getName()) :
-                        new MethodInjectionTarget(eeModuleClassDescription.getClassName(), memberName, classType.getName());
+                final InjectionTarget injectionTargetDescription = fieldOrMethod instanceof Field ?
+                        new FieldInjectionTarget(injectionTargetClassName, memberName, classType.getName()) :
+                        new MethodInjectionTarget(injectionTargetClassName, memberName, classType.getName());
 
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTargetDescription, injectionSource);
+                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(injectionTargetClassName);
                 eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
-
             }
         }
         return classType;
     }
+
+    protected static AccessibleObject getInjectionTarget(final String injectionTargetClassName, final String injectionTargetName, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+        final Class<?> injectionTargetClass;
+        try {
+            injectionTargetClass = classLoader.loadClass(injectionTargetClassName);
+        } catch (ClassNotFoundException e) {
+            throw new DeploymentUnitProcessingException("Could not load " + injectionTargetClassName + " referenced in env-entry injection point ", e);
+        }
+        final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
+        String methodName = "set" + injectionTargetName.substring(0, 1).toUpperCase() + injectionTargetName.substring(1);
+
+        boolean methodFound = false;
+        Method method = null;
+        Field field = null;
+        Class<?> current = injectionTargetClass;
+        while (current != Object.class && current != null && !methodFound) {
+            final Collection<Method> methods = index.getAllMethods(methodName);
+            for (Method m : methods) {
+                if (m.getParameterTypes().length == 1) {
+                    if (m.isBridge() || m.isSynthetic()) {
+                        continue;
+                    }
+                    if (methodFound) {
+                        throw new DeploymentUnitProcessingException("Two setter methods for " + injectionTargetName + " on class " + injectionTargetClassName + " found when applying <injection-target> for env-entry");
+                    }
+                    methodFound = true;
+                    method = m;
+                }
+            }
+            current = current.getSuperclass();
+        }
+        if (method == null) {
+            current = injectionTargetClass;
+            while (current != Object.class && current != null && field == null) {
+                field = index.getField(injectionTargetName);
+                if (field != null) {
+                    break;
+                }
+                current = current.getSuperclass();
+            }
+        }
+        if (field == null && method == null) {
+            throw new DeploymentUnitProcessingException("Could not resolve injection point " + injectionTargetName + " on class " + injectionTargetClassName + " specified in web.xml");
+        }
+
+        return field != null ? field : method;
+    }
+
 }
