@@ -23,10 +23,10 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.invocation.InterceptorContext;
-import sun.rmi.transport.ObjectTable;
 
-import javax.interceptor.InvocationContext;
+import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A component view.
@@ -71,4 +71,19 @@ public interface ComponentView {
      * @return The proxy class used in the view
      */
     Class<?> getProxyClass();
+
+    /**
+     *
+     * @return All methods that the view supports
+     */
+    Set<Method> getViewMethods();
+
+    /**
+     *
+     * @param name the method name
+     * @param descriptor The method descriptor in JVM format
+     * @return The method that corresponds to the given name and descriptor
+     * @throws IllegalArgumentException If the method cannot be found
+     */
+    Method getMethod(final String name, final String descriptor);
 }

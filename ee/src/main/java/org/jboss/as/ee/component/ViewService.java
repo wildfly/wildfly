@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -40,6 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,11 +119,13 @@ public final class ViewService implements Service<ComponentView> {
 
         private final Component component;
         private final Map<Method, Interceptor> viewInterceptors;
+        private final Map<MethodDescription, Method> methods;
 
         View() {
             component = componentInjector.getValue();
             //we need to build the view interceptor chain
             this.viewInterceptors = new IdentityHashMap<Method, Interceptor>();
+            this.methods = new HashMap<MethodDescription, Method>();
         }
 
         void initializeInterceptors() {
@@ -135,7 +139,9 @@ public final class ViewService implements Service<ComponentView> {
 
             for (Method method : viewInterceptorFactories.keySet()) {
                 viewEntryPoints.put(method, viewInterceptorFactories.get(method).create(factoryContext));
+                methods.put(new MethodDescription(method.getName(), DescriptorUtils.methodDescriptor(method)), method);
             }
+
         }
 
         public ComponentViewInstance createInstance() {
@@ -185,6 +191,20 @@ public final class ViewService implements Service<ComponentView> {
         @Override
         public Class<?> getProxyClass() {
             return proxyFactory.defineClass();
+        }
+
+        @Override
+        public Set<Method> getViewMethods() {
+            return viewInterceptors.keySet();
+        }
+
+        @Override
+        public Method getMethod(final String name, final String descriptor) {
+            Method method = this.methods.get(new MethodDescription(name, descriptor));
+            if(method == null) {
+                throw new IllegalArgumentException("Could not find method " + name + " " + descriptor + " on view " + viewClass + " of " + component.getComponentClass());
+            }
+            return method;
         }
 
         class ViewInstance implements ComponentViewInstance {
@@ -252,5 +272,36 @@ public final class ViewService implements Service<ComponentView> {
                 }
             }
         }
+
+        private final class MethodDescription {
+            private final String name;
+            private final String descriptor;
+
+            public MethodDescription(final String name, final String descriptor) {
+                this.name = name;
+                this.descriptor = descriptor;
+            }
+
+            @Override
+            public boolean equals(final Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                final MethodDescription that = (MethodDescription) o;
+
+                if (!descriptor.equals(that.descriptor)) return false;
+                if (!name.equals(that.name)) return false;
+
+                return true;
+            }
+
+            @Override
+            public int hashCode() {
+                int result = name.hashCode();
+                result = 31 * result + descriptor.hashCode();
+                return result;
+            }
+        }
     }
 }
+
