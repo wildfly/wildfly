@@ -148,13 +148,13 @@
         <version.org.jboss.osgi.blueprint>1.0.2</version.org.jboss.osgi.blueprint>
         <version.org.jboss.osgi.deployment>1.0.10</version.org.jboss.osgi.deployment>
         <version.org.jboss.osgi.framework>1.0.0</version.org.jboss.osgi.framework>
-        <version.org.jboss.osgi.http>1.0.3</version.org.jboss.osgi.http>
+        <version.org.jboss.osgi.http>1.0.4</version.org.jboss.osgi.http>
         <version.org.jboss.osgi.jmx>1.0.10</version.org.jboss.osgi.jmx>
         <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.resolver>1.0.9</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.spi>1.0.28</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
-        <version.org.jboss.osgi.webapp>1.0.3</version.org.jboss.osgi.webapp>
+        <version.org.jboss.osgi.webapp>1.0.4</version.org.jboss.osgi.webapp>
         <version.org.jboss.osgi.webconsole>1.0.6</version.org.jboss.osgi.webconsole>
         <version.org.jboss.osgi.xerces>2.9.1.SP7</version.org.jboss.osgi.xerces>
         <version.org.jboss.remoting3.jboss-remoting>3.2.0.Beta2</version.org.jboss.remoting3.jboss-remoting>
@@ -3957,14 +3957,8 @@
 
             <dependency>
                 <groupId>org.jboss.osgi.http</groupId>
-                <artifactId>jboss-osgi-http</artifactId>
+                <artifactId>jbosgi-http</artifactId>
                 <version>${version.org.jboss.osgi.http}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.ops4j.pax.web</groupId>
-                        <artifactId>pax-web-jetty-bundle</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
