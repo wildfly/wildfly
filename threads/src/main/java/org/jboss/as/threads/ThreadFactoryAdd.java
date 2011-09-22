@@ -115,7 +115,6 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler implements Descript
 */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        System.out.println("ThreadFactoryAdd.getModelDescription");
         return ThreadsSubsystemProviders.ADD_THREAD_FACTORY_DESC.getModelDescription(locale);
     }
 
