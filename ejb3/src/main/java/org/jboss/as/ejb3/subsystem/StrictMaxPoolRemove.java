@@ -22,29 +22,48 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * User: jpai
+ * Handles removing a strict-max-bean-instance-pool resource
+ *
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StrictMaxPoolRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class StrictMaxPoolRemove extends AbstractRemoveStepHandler {
 
     public static final StrictMaxPoolRemove INSTANCE = new StrictMaxPoolRemove();
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return EJB3SubsystemDescriptions.getStrictMaxPoolRemoveDescription(locale);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        if (context.isResourceServiceRestartAllowed()) {
+            removeRuntimeService(context, operation);
+        } else {
+            context.reloadRequired();
+        }
     }
 
-
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        if (context.isResourceServiceRestartAllowed()) {
+            StrictMaxPoolAdd.INSTANCE.installRuntimeService(context, model, null);
+        } else {
+            context.revertReloadRequired();
+        }
+    }
+
+    void removeRuntimeService(OperationContext context, ModelNode operation) {
+        final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
+        final ServiceName serviceName = PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
+        context.removeService(serviceName);
     }
 }

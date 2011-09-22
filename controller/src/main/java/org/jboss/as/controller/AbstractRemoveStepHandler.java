@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -30,15 +31,15 @@ import org.jboss.dmr.ModelNode;
 public abstract class AbstractRemoveStepHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+
+        final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         performRemove(context, operation, model);
 
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    performRuntime(context, operation, model
-                    );
+                    performRuntime(context, operation, model);
 
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         recoverServices(context, operation, model);

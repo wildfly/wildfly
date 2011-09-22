@@ -24,6 +24,7 @@ package org.jboss.as.controller.operations.global;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,6 +36,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -77,7 +79,7 @@ public class WriteAttributeHandlers {
 
             validateValue(name, value);
 
-            final ModelNode submodel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+            final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
             final ModelNode currentValue = submodel.get(name).clone();
 
             submodel.get(name).set(value);
@@ -199,6 +201,13 @@ public class WriteAttributeHandlers {
 
         public ListValidatatingHandler(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
             super(new ListValidator(elementValidator, nullable, minSize, maxSize));
+        }
+    }
+
+    public static class AttributeDefinitionValidatatingHandler extends WriteAttributeOperationHandler {
+
+        public AttributeDefinitionValidatatingHandler(AttributeDefinition definition) {
+            super(definition.getValidator());
         }
     }
 
