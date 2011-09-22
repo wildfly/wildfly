@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.util.List;
 
 import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
@@ -207,10 +206,20 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         String urlString = System.getProperty("jmx.service.url",
             "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-        JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
-        MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+
+        MBeanServerConnection connection = null;
+        long end = System.currentTimeMillis() + 10000;
+        do {
+            try {
+                connection = JMXConnectorFactory.connect(serviceURL, null).getMBeanServerConnection();
+            } catch (Exception e) {
+                Thread.sleep(500);
+            }
+        } while (connection == null && System.currentTimeMillis() < end);
+        Assert.assertNotNull(connection);
         connection.getMBeanCount();
     }
+
 
 
     @Test
