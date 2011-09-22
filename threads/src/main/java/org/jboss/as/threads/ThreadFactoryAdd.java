@@ -21,19 +21,19 @@
  */
 package org.jboss.as.threads;
 
+import java.util.List;
 import java.util.Locale;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
-import static org.jboss.as.threads.CommonAttributes.PRIORITY;
-import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
-import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -43,14 +43,18 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="alex@jboss.org">Alexey Loubyansky</a>
  */
-public class ThreadFactoryAdd implements OperationStepHandler, DescriptionProvider {
+public class ThreadFactoryAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final ThreadFactoryAdd INSTANCE = new ThreadFactoryAdd();
 
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.PROPERTIES,
+        PoolAttributeDefinitions.GROUP_NAME, PoolAttributeDefinitions.THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY};
+
     /**
      * {@inheritDoc}
-     */
+     * /
     public void execute(OperationContext context, ModelNode operation) {
         final ModelNode opAddr = operation.get(OP_ADDR);
 
@@ -108,10 +112,48 @@ public class ThreadFactoryAdd implements OperationStepHandler, DescriptionProvid
 
         context.completeStep();
     }
-
+*/
     @Override
     public ModelNode getModelDescription(Locale locale) {
+        System.out.println("ThreadFactoryAdd.getModelDescription");
         return ThreadsSubsystemProviders.ADD_THREAD_FACTORY_DESC.getModelDescription(locale);
     }
 
+    @Override
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        model.get(NAME).set(name);
+
+        for(final AttributeDefinition attribute : ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+//        for(final AttributeDefinition attribute : ATTRIBUTES) {
+//            attribute.validateResolvedOperation(model);
+//        }
+
+        final String threadNamePattern = PoolAttributeDefinitions.THREAD_NAME_PATTERN.validateResolvedOperation(operation).asString();
+        final int priority = PoolAttributeDefinitions.PRIORITY.validateResolvedOperation(operation).asInt();
+        final String groupName = PoolAttributeDefinitions.GROUP_NAME.validateResolvedOperation(operation).asString();
+
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+
+        final ServiceTarget target = context.getServiceTarget();
+        final ThreadFactoryService service = new ThreadFactoryService();
+        service.setNamePattern(threadNamePattern);
+        service.setPriority(priority);
+        service.setThreadGroupName(groupName);
+        //TODO What about the properties?
+        target.addService(ThreadsServices.threadFactoryName(name), service)
+                .addListener(verificationHandler)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+    }
 }
