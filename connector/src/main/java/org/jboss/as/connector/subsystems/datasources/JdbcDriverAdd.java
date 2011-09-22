@@ -124,7 +124,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                 startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
             } catch (Exception e) {
                 SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
-                throw new OperationFailedException(new ModelNode().set("Unable to instantiate driver class. See log (WARN) for more details"));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotInstantiateDriverClass(driverClassName)));
             }
         }
     }

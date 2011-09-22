@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
@@ -96,6 +97,16 @@ public interface ConnectorMessages {
      */
     @Message("Deployment %s failed")
     DeployException deploymentFailed(@Cause Throwable cause, String className);
+
+    /**
+     * A message indicating inability to instantiate the driver class.
+     *
+     * @param driverClassName the driver class name.
+     *
+     * @return the message.
+     */
+    @Message(value = "Unable to instantiate driver class \"%s\". See log (WARN) for more details")
+    String cannotInstantiateDriverClass(String driverClassName);
 
     /**
      * Creates an exception indicating the specified driver version does not match the actual driver version.
