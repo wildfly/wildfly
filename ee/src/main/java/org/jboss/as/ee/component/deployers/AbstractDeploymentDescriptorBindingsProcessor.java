@@ -22,6 +22,12 @@
 package org.jboss.as.ee.component.deployers;
 
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+import static org.jboss.as.server.deployment.Attachments.OSGI_MANIFEST;
+
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -43,17 +49,10 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.ResourceInjectionMetaData;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.modules.Module;
-
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Class that provides common functionality required by processors that process environment information from deployment descriptors.
@@ -65,7 +64,12 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
 
     @Override
     public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (deploymentUnit.hasAttachment(OSGI_MANIFEST)) {
+            return;
+        }
+
         final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
@@ -74,7 +78,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         if (description == null) {
             return;
         }
-
 
         if (environment != null) {
             final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
@@ -93,7 +96,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                 componentDescription.getBindingConfigurations().addAll(bindings);
             }
         }
-
     }
 
     private void handleLazyBindings(final EEApplicationClasses description, final List<BindingConfiguration> bindings) {
