@@ -251,7 +251,7 @@ public enum Phase {
     public static final int PARSE_EJB_DD_INTERCEPTORS                   = 0x3500;
     public static final int PARSE_EJB_SECURITY_ROLE_REF_DD              = 0x3501;
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
-
+    public static final int PARSE_DISTINCT_NAME                         = 0x3601;
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3700;
     public static final int PARSE_WEB_SERVICE_INJECTION_ANNOTATION      = 0x3800;
@@ -361,6 +361,7 @@ public enum Phase {
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
+    public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1F00;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;

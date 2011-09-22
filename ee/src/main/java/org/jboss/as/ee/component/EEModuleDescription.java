@@ -39,6 +39,7 @@ import java.util.Map;
 public final class EEModuleDescription {
     private final String applicationName;
     private volatile String moduleName;
+    private volatile String distinctName;
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
 
@@ -122,5 +123,13 @@ public final class EEModuleDescription {
 
     public void setNamespaceContextSelector(InjectedEENamespaceContextSelector namespaceContextSelector) {
         this.namespaceContextSelector = namespaceContextSelector;
+    }
+
+    public String getDistinctName() {
+        return distinctName;
+    }
+
+    public void setDistinctName(String distinctName) {
+        this.distinctName = distinctName;
     }
 }
