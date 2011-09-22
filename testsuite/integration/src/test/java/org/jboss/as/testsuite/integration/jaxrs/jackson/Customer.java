@@ -23,10 +23,13 @@ package org.jboss.as.testsuite.integration.jaxrs.jackson;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonPropertyOrder;
+
 /**
  * @author Stuart Douglas
  */
 @XmlRootElement
+@JsonPropertyOrder({"first", "last"})
 public class Customer {
     private String first;
     private String last;
