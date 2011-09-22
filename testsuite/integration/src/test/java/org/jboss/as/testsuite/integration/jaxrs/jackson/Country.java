@@ -25,6 +25,7 @@ import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonMethod;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonPropertyOrder;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -36,6 +37,7 @@ import java.io.Serializable;
 @XmlRootElement(name = "Country")
 @XmlType(name = "Country", propOrder = {"name", "awesomeness"})
 @JsonAutoDetect({JsonMethod.NONE})
+@JsonPropertyOrder({"name", "temperature"})
 public class Country implements Serializable {
 
     private Integer id;
