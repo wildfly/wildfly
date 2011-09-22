@@ -147,7 +147,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final ClassLoader classLoader = module.getClassLoader();
         final WSReferences wsRefRegistry = getWSRefRegistry(deploymentUnit);
-        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(name); // TODO: prefix with java:comp/env prefix ?
+        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(name);
         if (serviceRefUMDM == null) {
             serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(deploymentUnit));
             serviceRefUMDM.setServiceRefName(name);
@@ -173,6 +173,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             throw new RuntimeException("Could not load class " + type);
         }
 
+        //serviceRefUMDM.setHandlerChain(serviceRefMD.get); TODO: propagate handlerChain - inspect @HandlerChain
         // TODO: does DD have higher precedence than annotation values ?
         if (wsdlLocation != null && wsdlLocation.length() > 0) {
             serviceRefUMDM.setWsdlFile(wsdlLocation);
@@ -190,25 +191,16 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
                 || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
         serviceRefUMDM.setType(isJAXRPC ? ServiceRefHandler.Type.JAXRPC : ServiceRefHandler.Type.JAXWS);
 
-        System.out.println("----AnnotationProcessor----");
-        System.out.println("---------------------------");
-        System.out.println(serviceRefUMDM);
-        System.out.println("---------------------------");
-        System.out.println("---------------------------");
-
         return serviceRefUMDM;
     }
 
-    private UnifiedVirtualFile getUnifiedVirtualFile(final DeploymentUnit deploymentUnit) { // TODO: refactor to common code
-        ResourceRoot resourceRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-        if (resourceRoot == null) {
-            throw new IllegalStateException("Resource root not found for deployment " + deploymentUnit);
-        }
+    private static UnifiedVirtualFile getUnifiedVirtualFile(final DeploymentUnit deploymentUnit) { // TODO: refactor to common code
+        final ResourceRoot resourceRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
         return new VirtualFileAdaptor(resourceRoot.getRoot());
     }
 
-
-    private boolean isEmpty(final String string) {
+    private static boolean isEmpty(final String string) { // TODO: some common class - StringUtils ?
         return string == null || string.isEmpty();
     }
+
 }

@@ -23,8 +23,8 @@
 package org.jboss.as.webservices.webserviceref;
 
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
+import static org.jboss.as.webservices.webserviceref.WSRefTranslator.translate;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,32 +40,20 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
-import org.jboss.metadata.javaee.jboss.JBossPortComponentRef;
-import org.jboss.metadata.javaee.jboss.JBossServiceReferenceMetaData;
-import org.jboss.metadata.javaee.jboss.StubPropertyMetaData;
-import org.jboss.metadata.javaee.spec.Addressing;
-import org.jboss.metadata.javaee.spec.PortComponentRef;
 import org.jboss.metadata.javaee.spec.ServiceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferencesMetaData;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedStubPropertyMetaData;
-import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
 
 /**
- * TODO: javadoc
+ * WebServiceRef DD processor.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
     @Override
-    protected List<BindingConfiguration> processDescriptorEntries(final DeploymentUnit unit,
-            final DeploymentDescriptorEnvironment environment, final EEModuleDescription moduleDescription,
-            final ComponentDescription componentDescription, final ClassLoader classLoader,
-            final DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses)
-            throws DeploymentUnitProcessingException {
+    protected List<BindingConfiguration> processDescriptorEntries(final DeploymentUnit unit, final DeploymentDescriptorEnvironment environment, final EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         final ServiceReferencesMetaData serviceRefsMD = environment.getEnvironment().getServiceReferences();
         if (serviceRefsMD == null) {
             return Collections.<BindingConfiguration> emptyList();
@@ -75,9 +63,10 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         for (final ServiceReferenceMetaData serviceRefMD : serviceRefsMD) {
             final String serviceRefTypeName = serviceRefMD.getServiceRefType();
             final Class<?> serviceRefType = getClass(classLoader, serviceRefTypeName);
-            final UnifiedServiceRefMetaData serviceRefUMDM = toUMDM(serviceRefMD, unit, classLoader);
+            final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
+            translate(serviceRefMD, serviceRefUMDM);
             final WSReferences wsRefRegistry = getWSRefRegistry(unit);
-            wsRefRegistry.add(serviceRefMD.getName(), serviceRefUMDM); // TODO: prefix with java:comp/env prefix ?
+            wsRefRegistry.add(serviceRefMD.getName(), serviceRefUMDM);
             final WSRefValueSource valueSource = new WSRefValueSource(serviceRefUMDM);
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(serviceRefMD.getName(), valueSource);
             bindingDescriptions.add(bindingConfiguration);
@@ -99,118 +88,8 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         return null;
     }
 
-    private static UnifiedServiceRefMetaData toUMDM(final ServiceReferenceMetaData serviceRefMD,
-            final DeploymentUnit unit, final ClassLoader classLoader) {
-        final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
-        serviceRefUMDM.setServiceRefName(serviceRefMD.getName());
-        serviceRefUMDM.setServiceQName(serviceRefMD.getServiceQname());
-        serviceRefUMDM.setServiceInterface(serviceRefMD.getServiceInterface());
-        serviceRefUMDM.setServiceRefType(serviceRefMD.getServiceRefType()); // TODO: correct ?
-        serviceRefUMDM.setWsdlFile(serviceRefMD.getWsdlFile());
-        serviceRefUMDM.setMappingFile(serviceRefMD.getJaxrpcMappingFile());
-        // propagate port compoments
-
-        final Collection<? extends PortComponentRef> portComponentsMD = serviceRefMD.getPortComponentRef();
-        if (portComponentsMD != null) {
-            for (final PortComponentRef portComponentMD : portComponentsMD) {
-                final UnifiedPortComponentRefMetaData portComponentUMDM = getUnifiedPortComponentRefMetaData(serviceRefUMDM,
-                        portComponentMD);
-                if (portComponentUMDM.getServiceEndpointInterface() != null || portComponentUMDM.getPortQName() != null) {
-                    serviceRefUMDM.addPortComponentRef(portComponentUMDM);
-                } else {
-                    // log.warn(BundleUtils.getMessage(bundle, "IGNORING_PORT_REF", portComponentUMDM));
-                }
-            }
-        }
-        // propagate jboss specific MD
-        if (serviceRefMD instanceof JBossServiceReferenceMetaData) {
-           processUnifiedJBossServiceRefMetaData(serviceRefUMDM, serviceRefMD);
-        }
-
-        final boolean isJAXRPC = serviceRefUMDM.getMappingFile() != null // TODO: is mappingFile check required?
-        || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
-        serviceRefUMDM.setType(isJAXRPC ? ServiceRefHandler.Type.JAXRPC : ServiceRefHandler.Type.JAXWS);
-
-        System.out.println("--------DDProcessor--------");
-        System.out.println("---------------------------");
-        System.out.println(serviceRefUMDM);
-        System.out.println("---------------------------");
-        System.out.println("---------------------------");
-
-        return serviceRefUMDM;
-    }
-
-    private static void processUnifiedJBossServiceRefMetaData(final UnifiedServiceRefMetaData serviceRefUMDM, final ServiceReferenceMetaData serviceRefMD) { final JBossServiceReferenceMetaData jbossServiceRefMD = (JBossServiceReferenceMetaData) serviceRefMD;
-        serviceRefUMDM.setServiceImplClass(jbossServiceRefMD.getServiceClass());
-        serviceRefUMDM.setConfigName(jbossServiceRefMD.getConfigName());
-        serviceRefUMDM.setConfigFile(jbossServiceRefMD.getConfigFile());
-        serviceRefUMDM.setWsdlOverride(jbossServiceRefMD.getWsdlOverride());
-        serviceRefUMDM.setHandlerChain(jbossServiceRefMD.getHandlerChain());
-    }
-
-    private static UnifiedPortComponentRefMetaData getUnifiedPortComponentRefMetaData(final UnifiedServiceRefMetaData serviceRefUMDM, final PortComponentRef portComponentMD) {
-        final UnifiedPortComponentRefMetaData portComponentUMDM = new UnifiedPortComponentRefMetaData(serviceRefUMDM);
-
-        // propagate service endpoint interface
-        portComponentUMDM.setServiceEndpointInterface(portComponentMD.getServiceEndpointInterface());
-
-        // propagate MTOM properties
-        portComponentUMDM.setMtomEnabled(portComponentMD.isEnableMtom()); // TODO: refactor method name
-        portComponentUMDM.setMtomThreshold(portComponentMD.getMtomThreshold());
-
-        // propagate addressing properties
-        final Addressing addressingSBMD = portComponentMD.getAddressing();
-        if (addressingSBMD != null) {
-            portComponentUMDM.setAddressingAnnotationSpecified(true);
-            portComponentUMDM.setAddressingEnabled(addressingSBMD.isEnabled());
-            portComponentUMDM.setAddressingRequired(addressingSBMD.isRequired());
-            portComponentUMDM.setAddressingResponses(addressingSBMD.getResponses());
-        }
-
-        // propagate respect binding properties
-        if (portComponentMD.getRespectBinding() != null) {
-            portComponentUMDM.setRespectBindingAnnotationSpecified(true);
-            portComponentUMDM.setRespectBindingEnabled(true);
-        }
-
-        // propagate link
-        portComponentUMDM.setPortComponentLink(portComponentMD.getPortComponentLink());
-
-        // propagate jboss specific MD
-        if (portComponentMD instanceof JBossPortComponentRef) {
-            processUnifiedJBossPortComponentRefMetaData(portComponentUMDM, portComponentMD);
-        }
-
-        return portComponentUMDM;
-    }
-
-    private static void processUnifiedJBossPortComponentRefMetaData(final UnifiedPortComponentRefMetaData portComponentUMDM, final PortComponentRef portComponentMD) {
-        final JBossPortComponentRef jbossPortComponentMD = (JBossPortComponentRef) portComponentMD;
-
-        // propagate port QName
-        portComponentUMDM.setPortQName(jbossPortComponentMD.getPortQname()); // TODO: fix method name
-
-        // propagate configuration properties
-        portComponentUMDM.setConfigName(jbossPortComponentMD.getConfigName());
-        portComponentUMDM.setConfigFile(jbossPortComponentMD.getConfigFile());
-
-        // propagate stub properties
-        final List<StubPropertyMetaData> stubPropertiesMD = jbossPortComponentMD.getStubProperties();
-        if (stubPropertiesMD != null) {
-            for (final StubPropertyMetaData stubPropertyMD : stubPropertiesMD) {
-                final UnifiedStubPropertyMetaData stubPropertyUMDM = new UnifiedStubPropertyMetaData();
-                stubPropertyUMDM.setPropName(stubPropertyMD.getPropName());
-                stubPropertyUMDM.setPropValue(stubPropertyMD.getPropValue());
-                portComponentUMDM.addStubProperty(stubPropertyUMDM);
-            }
-        }
-    }
-
     private static UnifiedVirtualFile getUnifiedVirtualFile(final DeploymentUnit deploymentUnit) { // TODO: refactor to common code
-        ResourceRoot resourceRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-        if (resourceRoot == null) {
-            throw new IllegalStateException("Resource root not found for deployment " + deploymentUnit);
-        }
+        final ResourceRoot resourceRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
         return new VirtualFileAdaptor(resourceRoot.getRoot());
     }
 
