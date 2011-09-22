@@ -23,11 +23,14 @@
 package org.jboss.as.webservices.webserviceref;
 
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
-import static org.jboss.as.webservices.webserviceref.WSRefTranslator.translate;
+import static org.jboss.as.webservices.webserviceref.WSRefUtils.translate;
+import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
 
+import java.lang.reflect.AccessibleObject;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -40,8 +43,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
+import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferencesMetaData;
+import org.jboss.modules.Module;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 
@@ -70,10 +75,27 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
             final WSRefValueSource valueSource = new WSRefValueSource(serviceRefUMDM);
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(serviceRefMD.getName(), valueSource);
             bindingDescriptions.add(bindingConfiguration);
-            // TODO: do we need to process injection targets annotations here, or later is enough? (@MTOM, @HandlerChain, @Addressing & @RespectBinding)
-            this.processInjectionTargets(moduleDescription, applicationClasses, valueSource, classLoader, deploymentReflectionIndex, serviceRefMD, serviceRefType);
+            processInjectionTargets(unit, serviceRefMD.getInjectionTargets(), serviceRefUMDM);
+            processInjectionTargets(moduleDescription, applicationClasses, valueSource, classLoader, deploymentReflectionIndex, serviceRefMD, serviceRefType);
         }
         return bindingDescriptions;
+    }
+
+    private static void processInjectionTargets(final DeploymentUnit unit, final Set<ResourceInjectionTargetMetaData> injectionTargets, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {
+        if (injectionTargets == null || injectionTargets.size() == 0) return;
+        if (injectionTargets.size() > 1) {
+           // TODO: We should validate all the injection targets whether they're compatible.
+           // This means all the injection targets must be assignable or equivalent.
+           // If there are @Addressing, @RespectBinding or @MTOM annotations present on injection targets,
+           // these annotations must be equivalent for all the injection targets.
+        }
+        final Module module = unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final DeploymentReflectionIndex deploymentReflectionIndex = unit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final ResourceInjectionTargetMetaData injectionTarget = injectionTargets.iterator().next();
+        final String injectionTargetClassName = injectionTarget.getInjectionTargetClass();
+        final String injectionTargetName = injectionTarget.getInjectionTargetName();
+        final AccessibleObject fieldOrMethod = getInjectionTarget(injectionTargetClassName, injectionTargetName, module.getClassLoader(), deploymentReflectionIndex);
+        processAnnotatedElement(fieldOrMethod, serviceRefUMDM);
     }
 
     private Class<?> getClass(final ClassLoader classLoader, final String className) throws DeploymentUnitProcessingException {
