@@ -164,9 +164,10 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
                 result = new ArrayList<CommandArgument>(names.size());
                 for(final String name : names) {
                     result.add(new CommandArgument(){
+                        final String argName = name;
                         @Override
                         public String getFullName() {
-                            return name;
+                            return argName;
                         }
 
                         @Override
@@ -180,9 +181,8 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
                         }
 
                         @Override
-                        public boolean isPresent(ParsedCommandLine args)
-                                throws CommandFormatException {
-                            return args.hasProperty(name);
+                        public boolean isPresent(ParsedCommandLine args) throws CommandFormatException {
+                            return args.hasProperty(argName);
                         }
 
                         @Override
@@ -192,15 +192,15 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
 
                         @Override
                         public String getValue(ParsedCommandLine args) throws CommandFormatException {
-                            return args.getPropertyValue(name);
+                            return args.getPropertyValue(argName);
                         }
 
                         @Override
                         public String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException {
                             if(!isPresent(args)) {
-                                throw new CommandFormatException("Property '" + name + "' is missing required value.");
+                                throw new CommandFormatException("Property '" + argName + "' is missing required value.");
                             }
-                            return args.getPropertyValue(name);
+                            return args.getPropertyValue(argName);
                         }
 
                         @Override
@@ -208,7 +208,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
                             if(!isPresent(args)) {
                                 return false;
                             }
-                            if(name.equals(args.getLastParsedPropertyName())) {
+                            if(argName.equals(args.getLastParsedPropertyName())) {
                                 return false;
                             }
                             return true;
