@@ -78,7 +78,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
 
         if (parsedCmd.hasProperties() || parsedCmd.endsOnPropertyListStart()) {
 
-            final List<CommandArgument> allArgs = candidatesProvider.getProperties(ctx, parsedCmd.getOperationName(), ctx.getPrefix());
+            final List<CommandArgument> allArgs = candidatesProvider.getProperties(ctx, parsedCmd.getOperationName(), parsedCmd.getAddress());
             if (allArgs.isEmpty()) {
                 final CommandLineFormat format = parsedCmd.getFormat();
                 if(format != null && format.getPropertyListEnd() != null) {
