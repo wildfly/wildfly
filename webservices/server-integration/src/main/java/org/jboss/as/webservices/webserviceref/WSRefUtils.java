@@ -22,10 +22,21 @@
 
 package org.jboss.as.webservices.webserviceref;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import javax.xml.ws.WebServiceRef;
+import javax.xml.ws.WebServiceRefs;
+import javax.xml.ws.soap.MTOM;
 
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.jboss.JBossPortComponentRef;
@@ -52,11 +63,11 @@ import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class WSRefTranslator {
+final class WSRefUtils {
 
-    private static final Logger log = Logger.getLogger(WSRefTranslator.class);
+    private static final Logger log = Logger.getLogger(WSRefUtils.class);
 
-    private WSRefTranslator() {
+    private WSRefUtils() {
         // forbidden instantiation
     }
 
@@ -234,5 +245,148 @@ final class WSRefTranslator {
         final boolean isJAXRPC = serviceRefUMDM.getMappingFile() != null || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
         serviceRefUMDM.setType(isJAXRPC ? Type.JAXRPC : Type.JAXWS);
     }
+
+    static void processAnnotatedElement(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
+       processAddressingAnnotation(anElement, serviceRefUMDM);
+       processMTOMAnnotation(anElement, serviceRefUMDM);
+       processRespectBindingAnnotation(anElement, serviceRefUMDM);
+       processHandlerChainAnnotation(anElement, serviceRefUMDM);
+       processServiceRefType(anElement, serviceRefUMDM);
+    }
+
+    private static void processAddressingAnnotation(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
+         final javax.xml.ws.soap.Addressing addressingAnnotation = getAnnotation(anElement, javax.xml.ws.soap.Addressing.class);
+
+         if (addressingAnnotation != null) {
+            serviceRefUMDM.setAddressingAnnotationSpecified(true);
+            serviceRefUMDM.setAddressingEnabled(addressingAnnotation.enabled());
+            serviceRefUMDM.setAddressingRequired(addressingAnnotation.required());
+            serviceRefUMDM.setAddressingResponses(addressingAnnotation.responses().toString());
+         }
+      }
+
+      private static void processMTOMAnnotation(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
+         final MTOM mtomAnnotation = getAnnotation(anElement, MTOM.class);
+
+         if (mtomAnnotation != null) {
+            serviceRefUMDM.setMtomAnnotationSpecified(true);
+            serviceRefUMDM.setMtomEnabled(mtomAnnotation.enabled());
+            serviceRefUMDM.setMtomThreshold(mtomAnnotation.threshold());
+         }
+      }
+
+      private static void processRespectBindingAnnotation(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
+         final javax.xml.ws.RespectBinding respectBindingAnnotation = getAnnotation(anElement, javax.xml.ws.RespectBinding.class);
+
+         if (respectBindingAnnotation != null) {
+            serviceRefUMDM.setRespectBindingAnnotationSpecified(true);
+            serviceRefUMDM.setRespectBindingEnabled(respectBindingAnnotation.enabled());
+         }
+      }
+
+      private static  void processServiceRefType(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
+         if (anElement instanceof Field) {
+            final Class<?> targetClass = ((Field) anElement).getType();
+            serviceRefUMDM.setServiceRefType(targetClass.getName());
+
+            if (Service.class.isAssignableFrom(targetClass))
+               serviceRefUMDM.setServiceInterface(targetClass.getName());
+         } else if (anElement instanceof Method) {
+            final Class<?> targetClass = ((Method) anElement).getParameterTypes()[0];
+            serviceRefUMDM.setServiceRefType(targetClass.getName());
+
+            if (Service.class.isAssignableFrom(targetClass))
+               serviceRefUMDM.setServiceInterface(targetClass.getName());
+         } else {
+            final WebServiceRef serviceRefAnnotation = getWebServiceRefAnnotation(anElement, serviceRefUMDM);
+            Class<?> targetClass = null;
+            if (serviceRefAnnotation != null && (serviceRefAnnotation.type() != Object.class))
+            {
+               targetClass = serviceRefAnnotation.type();
+               serviceRefUMDM.setServiceRefType(targetClass.getName());
+
+               if (Service.class.isAssignableFrom(targetClass))
+                  serviceRefUMDM.setServiceInterface(targetClass.getName());
+            }
+         }
+      }
+
+      private static void processHandlerChainAnnotation(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
+         final javax.jws.HandlerChain handlerChainAnnotation = getAnnotation(anElement, javax.jws.HandlerChain.class);
+
+         if (handlerChainAnnotation != null) {
+            // Set the handlerChain from @HandlerChain on the annotated element
+            String handlerChain = null;
+            if (handlerChainAnnotation.file().length() > 0)
+               handlerChain = handlerChainAnnotation.file();
+
+            // Resolve path to handler chain
+            if (handlerChain != null) {
+               try {
+                  new URL(handlerChain);
+               } catch (MalformedURLException ignored) {
+                  final Class<?> declaringClass = getDeclaringClass(anElement);
+
+                  handlerChain = declaringClass.getPackage().getName().replace('.', '/') + "/" + handlerChain;
+               }
+
+               serviceRefUMDM.setHandlerChain(handlerChain);
+            }
+         }
+      }
+
+      private static <T extends Annotation> T getAnnotation(final AnnotatedElement anElement, final Class<T> annotationClass) {
+         return anElement != null ? (T) anElement.getAnnotation(annotationClass) : null;
+      }
+
+      private static Class<?> getDeclaringClass(final AnnotatedElement annotatedElement) {
+         Class<?> declaringClass = null;
+         if (annotatedElement instanceof Field) {
+            declaringClass = ((Field) annotatedElement).getDeclaringClass();
+         } else if (annotatedElement instanceof Method) {
+            declaringClass = ((Method) annotatedElement).getDeclaringClass();
+         } else if (annotatedElement instanceof Class) {
+            declaringClass = (Class<?>) annotatedElement;
+         }
+
+         return declaringClass;
+      }
+
+      private static WebServiceRef getWebServiceRefAnnotation(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
+          final WebServiceRef webServiceRefAnnotation = getAnnotation(anElement, WebServiceRef.class);
+          final WebServiceRefs webServiceRefsAnnotation = getAnnotation(anElement, WebServiceRefs.class);
+
+          if (webServiceRefAnnotation == null && webServiceRefsAnnotation == null) {
+              return null;
+          }
+
+          // Build the list of @WebServiceRef relevant annotations
+          final List<WebServiceRef> wsrefList = new ArrayList<WebServiceRef>();
+
+          if (webServiceRefAnnotation != null) {
+              wsrefList.add(webServiceRefAnnotation);
+          }
+
+          if (webServiceRefsAnnotation != null) {
+              for (final WebServiceRef webServiceRefAnn : webServiceRefsAnnotation.value()) {
+                  wsrefList.add(webServiceRefAnn);
+              }
+          }
+
+          // Return effective @WebServiceRef annotation
+          WebServiceRef returnValue = null;
+          if (wsrefList.size() == 1) {
+              returnValue = wsrefList.get(0);
+          } else {
+              for (WebServiceRef webServiceRefAnn : wsrefList) {
+                  if (serviceRefUMDM.getServiceRefName().endsWith(webServiceRefAnn.name())) {
+                      returnValue = webServiceRefAnn;
+                      break;
+                  }
+              }
+          }
+
+          return returnValue;
+      }
 
 }
