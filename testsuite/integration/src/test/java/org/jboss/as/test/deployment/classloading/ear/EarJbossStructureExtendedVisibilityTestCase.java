@@ -67,12 +67,12 @@ public class EarJbossStructureExtendedVisibilityTestCase {
 
     @Test(expected = ClassNotFoundException.class)
     public void testWarModuleStillNotAccessible() throws ClassNotFoundException {
-        loadClass("TestAA",getClass().getClassLoader());
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestAA",getClass().getClassLoader());
     }
 
     @Test
     public void testOtherEjbJarAcessible() throws ClassNotFoundException {
-        loadClass("MyEjb2",getClass().getClassLoader());
+        loadClass("org.jboss.as.test.deployment.classloading.ear.MyEjb2",getClass().getClassLoader());
     }
 
 
