@@ -62,7 +62,7 @@ public class EarJbossStructureAdditionalModuleTestCase {
 
     @Test
     public void testWarHassAccessToAdditionalModule() throws ClassNotFoundException {
-        loadClass("TestBB", getClass().getClassLoader());
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestBB", getClass().getClassLoader());
     }
 
     private static Class<?> loadClass(String name, ClassLoader cl) throws ClassNotFoundException {

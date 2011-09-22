@@ -51,7 +51,7 @@ public class WarCannotAccessOtherWarTestCase {
 
     @Test(expected = ClassNotFoundException.class)
     public void testWarCannotAccessOtherWar() throws ClassNotFoundException {
-        loadClass("TestAA");
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestAA");
     }
 
 

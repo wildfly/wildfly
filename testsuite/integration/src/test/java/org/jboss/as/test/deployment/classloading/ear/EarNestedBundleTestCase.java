@@ -69,7 +69,7 @@ public class EarNestedBundleTestCase {
     @Test
     public void testBundleLibAccessible() throws ClassNotFoundException {
         ClassLoader warLoader = EarNestedBundleTestCase.class.getClassLoader();
-        Class<?> clazz = warLoader.loadClass("TestAA");
+        Class<?> clazz = warLoader.loadClass("org.jboss.as.test.deployment.classloading.ear.TestAA");
         ClassLoader bundleLoader = clazz.getClassLoader();
         assertTrue(bundleLoader.toString().contains("ModuleClassLoader for Module \"deployment.as945.ear:main\""));
     }

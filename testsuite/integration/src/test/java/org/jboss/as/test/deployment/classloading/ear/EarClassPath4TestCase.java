@@ -60,12 +60,12 @@ public class EarClassPath4TestCase {
 
     @Test
     public void testClassPathEjbJarAccessible() throws ClassNotFoundException {
-        loadClass("MyEjb");
+        loadClass("org.jboss.as.test.deployment.classloading.ear.MyEjb");
     }
 
     @Test
     public void testClassPathOtherJarAccessible() throws ClassNotFoundException {
-        loadClass("org.jboss.as.test.integration.deployment.classloading.ear.TestAA");
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestAA");
     }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {

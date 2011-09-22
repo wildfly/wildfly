@@ -52,12 +52,12 @@ public class EarClassLoadingTestCase {
 
     @Test(expected = ClassNotFoundException.class)
     public void testWebInfLibNotAccessible() throws ClassNotFoundException {
-        loadClass("TestAA");
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestAA");
     }
 
     @Test
     public void testLibAccessible() throws ClassNotFoundException {
-        loadClass("TestBB");
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestBB");
     }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {

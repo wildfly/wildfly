@@ -91,7 +91,7 @@ public class HttpDeploymentUploadUnitTestCase {
 
 
             // Grab the test WAR file and get a stream to its contents to be included in the POST.
-            final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("smoke/servermodule/test-http-deployment.sar", Simple.class.getPackage());
+            final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-http-deployment.sar", Simple.class.getPackage());
             os = new BufferedOutputStream(connection.getOutputStream());
             is = new BufferedInputStream(archive.as(ZipExporter.class).exportAsInputStream());
 
@@ -139,7 +139,7 @@ public class HttpDeploymentUploadUnitTestCase {
 
         ModelNode op = new ModelNode();
         op.get("operation").set("add");
-        op.get("address").add("smoke/deployment", "test-http-deployment.sar");
+        op.get("address").add("deployment", "test-http-deployment.sar");
         op.get("content").get(0).get("hash").set(hash);
         op.get("enabled").set(true);
 

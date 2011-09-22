@@ -55,7 +55,7 @@ public class WarCanAccessEjbJarTestCase {
 
     @Test
     public void testEjbJarCanAccessOtherEjbJar() throws ClassNotFoundException {
-        loadClass("TestAA");
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestAA");
     }
 
 

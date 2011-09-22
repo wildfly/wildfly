@@ -56,12 +56,12 @@ public class EarClassPath3TestCase {
 
     @Test
     public void testWebInfLibAccessible() throws ClassNotFoundException {
-        loadClass("TestAA");
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestAA");
     }
 
     @Test
     public void testClassPathEntryAccessible() throws ClassNotFoundException {
-        loadClass("TestBB");
+        loadClass("org.jboss.as.test.deployment.classloading.ear.TestBB");
     }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {

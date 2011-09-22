@@ -74,7 +74,7 @@ public class ServerInModuleDeploymentTestCase  {
 
     @Test
     public void testDeploymentStreamApi() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("smoke/servermodule/test-deployment.sar",
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory
                 .create(InetAddress.getByName("localhost"), 9999);
@@ -107,7 +107,7 @@ public class ServerInModuleDeploymentTestCase  {
 
     @Test
     public void testDeploymentFileApi() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("smoke/servermodule/test-deployment.sar",
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
         final ServerDeploymentManager manager = ServerDeploymentManager.Factory
                 .create(InetAddress.getByName("localhost"), 9999);
@@ -154,7 +154,7 @@ public class ServerInModuleDeploymentTestCase  {
 
     @Test
     public void testFilesystemDeployment_Marker() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("smoke/servermodule/test-deployment.sar",
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
         final File dir = new File("target/archives");
         dir.mkdirs();
@@ -272,7 +272,7 @@ public class ServerInModuleDeploymentTestCase  {
 
     @Test
     public void testFilesystemDeployment_Auto() throws Exception {
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("smoke/servermodule/test-deployment.sar",
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
         final File dir = new File("target/archives");
         dir.mkdirs();
@@ -388,7 +388,7 @@ public class ServerInModuleDeploymentTestCase  {
         final String scannerName = "exploded";
         addDeploymentScanner(deployDir, client, scannerName, false);
 
-        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("smoke/servermodule/test-deployment.sar",
+        final JavaArchive archive = ShrinkWrapUtils.createJavaArchive("servermodule/test-deployment.sar",
                 Simple.class.getPackage());
         final File dir = new File("target/archives");
         dir.mkdirs();
