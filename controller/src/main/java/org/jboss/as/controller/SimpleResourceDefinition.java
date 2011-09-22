@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
@@ -30,6 +32,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 
 /**
  * Basic implementation of {@link ResourceDefinition}.
@@ -38,11 +41,16 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class SimpleResourceDefinition implements ResourceDefinition {
 
+    private static final EnumSet<OperationEntry.Flag> RESTART_FLAGS = EnumSet.of(OperationEntry.Flag.RESTART_NONE,
+            OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_JVM);
+
     private final PathElement pathElement;
     private final ResourceDescriptionResolver descriptionResolver;
     private final DescriptionProvider descriptionProvider;
     private final OperationStepHandler addHandler;
     private final OperationStepHandler removeHandler;
+    private final OperationEntry.Flag addRestartLevel;
+    private final OperationEntry.Flag removeRestartLevel;
 
     /**
      * {@link ResourceDefinition} that uses the given {code descriptionProvider} to describe the resource.
@@ -64,6 +72,8 @@ public class SimpleResourceDefinition implements ResourceDefinition {
         this.descriptionProvider = descriptionProvider;
         this.addHandler = null;
         this.removeHandler = null;
+        this.addRestartLevel = null;
+        this.removeRestartLevel = null;
     }
 
     /**
@@ -76,7 +86,7 @@ public class SimpleResourceDefinition implements ResourceDefinition {
      * @throws IllegalArgumentException if any parameter is {@code null}.
      */
     public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver) {
-        this(pathElement, descriptionResolver, null, null);
+        this(pathElement, descriptionResolver, null, null, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
     /**
@@ -94,6 +104,25 @@ public class SimpleResourceDefinition implements ResourceDefinition {
      */
     public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
                                     final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
+        this (pathElement, descriptionResolver, addHandler, removeHandler, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+    }
+
+    /**
+     * {@link ResourceDefinition} that uses the given {code descriptionResolver} to configure a
+     * {@link DefaultResourceDescriptionProvider} to describe the resource.
+     *
+     * @param pathElement the path. Cannot be {@code null}.
+     * @param descriptionResolver  the description resolver to use in the description provider. Cannot be {@code null}      *
+     * @param addHandler a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "add" operation.
+     *                   Can be {@null}
+     * @param removeHandler a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "remove" operation.
+     *                      Can be {@null}
+     *
+     * @throws IllegalArgumentException if any parameter is {@code null}.
+     */
+    public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
+                                    final OperationStepHandler addHandler, final OperationStepHandler removeHandler,
+                                    final OperationEntry.Flag addRestartLevel, final OperationEntry.Flag removeRestartLevel) {
         if (pathElement == null) {
             throw new IllegalArgumentException("pathElement is null");
         }
@@ -105,6 +134,8 @@ public class SimpleResourceDefinition implements ResourceDefinition {
         this.descriptionProvider = null;
         this.addHandler = addHandler;
         this.removeHandler = removeHandler;
+        this.addRestartLevel = addRestartLevel == null ? OperationEntry.Flag.RESTART_NONE : validateRestartLevel("addRestartLevel", addRestartLevel);
+        this.removeRestartLevel = removeRestartLevel == null ? OperationEntry.Flag.RESTART_ALL_SERVICES : validateRestartLevel("removeRestartLevel", removeRestartLevel);
     }
 
     @Override
@@ -126,10 +157,10 @@ public class SimpleResourceDefinition implements ResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         if (addHandler != null) {
-            registerAddOperation(resourceRegistration, addHandler);
+            registerAddOperation(resourceRegistration, addHandler, addRestartLevel);
         }
         if (removeHandler != null) {
-            registerRemoveOperation(resourceRegistration, removeHandler);
+            registerRemoveOperation(resourceRegistration, removeHandler, removeRestartLevel);
         }
     }
 
@@ -148,17 +179,39 @@ public class SimpleResourceDefinition implements ResourceDefinition {
         return descriptionResolver;
     }
 
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler) {
+    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler,
+                                        OperationEntry.Flag... flags) {
         DescriptionProvider provider = handler instanceof DescriptionProvider
                 ? (DescriptionProvider) handler
                 : new DefaultResourceAddDescriptionProvider(registration, descriptionResolver);
-        registration.registerOperationHandler(ModelDescriptionConstants.ADD, handler, provider);
+        registration.registerOperationHandler(ModelDescriptionConstants.ADD, handler, provider, getFlagsSet(flags));
     }
 
-    protected void registerRemoveOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler) {
+    protected void registerRemoveOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler,
+                                        OperationEntry.Flag... flags) {
         DescriptionProvider provider = handler instanceof DescriptionProvider
                 ? (DescriptionProvider) handler
                 : new DefaultResourceRemoveDescriptionProvider(descriptionResolver);
-        registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, handler, provider);
+        registration.registerOperationHandler(ModelDescriptionConstants.REMOVE, handler, provider, getFlagsSet(flags));
+    }
+
+    private static OperationEntry.Flag validateRestartLevel(String paramName, OperationEntry.Flag flag) {
+        if (flag != null && !RESTART_FLAGS.contains(flag)) {
+            throw new IllegalArgumentException(String.format("%s is not a valid value for parameter" +
+                    " %s -- must be one of %s", flag, paramName, RESTART_FLAGS));
+        }
+        return flag;
+    }
+
+    private EnumSet<OperationEntry.Flag> getFlagsSet(OperationEntry.Flag... vararg) {
+        if (vararg == null || vararg.length == 0) {
+            return EnumSet.noneOf(OperationEntry.Flag.class);
+        } else {
+            EnumSet<OperationEntry.Flag> result = EnumSet.noneOf(OperationEntry.Flag.class);
+            for (OperationEntry.Flag flag : vararg) {
+                result.add(flag);
+            }
+            return result;
+        }
     }
 }
