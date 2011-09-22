@@ -102,7 +102,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                     problemList.add(problem.toString());
                 }
             }
-            if (ModelControllerImpl.RB_ON_RT_FAILURE.get() == Boolean.TRUE) {
+            if (context.isRollbackOnRuntimeFailure()) {
                 context.setRollbackOnly();
             }
         }

@@ -37,6 +37,7 @@ public class ModelDescriptionConstants {
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
     public static final String ALLOWED = "allowed";
+    public static final String ALLOW_RESOURCE_SERVICE_RESTART = "allow-resource-service-restart";
     public static final String ALTERNATIVES = "alternatives";
     public static final String ANY = "any";
     public static final String ANY_ADDRESS = "any-address";

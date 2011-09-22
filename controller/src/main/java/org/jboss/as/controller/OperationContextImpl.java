@@ -130,6 +130,7 @@ final class OperationContextImpl implements OperationContext {
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL,
+        ALLOW_RESOURCE_SERVICE_RESTART,
     }
 
     OperationContextImpl(final ModelControllerImpl modelController, final Type contextType, final EnumSet<ContextFlag> contextFlags,
@@ -472,6 +473,16 @@ final class OperationContextImpl implements OperationContext {
 
     private boolean isRollingBack() {
         return currentStage == Stage.DONE && resultAction == ResultAction.ROLLBACK;
+    }
+
+    @Override
+    public boolean isRollbackOnRuntimeFailure() {
+        return contextFlags.contains(ContextFlag.ROLLBACK_ON_FAIL);
+    }
+
+    @Override
+    public boolean isResourceServiceRestartAllowed() {
+        return contextFlags.contains(ContextFlag.ALLOW_RESOURCE_SERVICE_RESTART);
     }
 
     @Override
