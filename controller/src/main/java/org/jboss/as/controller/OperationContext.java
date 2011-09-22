@@ -158,6 +158,23 @@ public interface OperationContext {
     void setRollbackOnly();
 
     /**
+     * Gets whether any changes made by the operation should be rolled back if an error is introduced
+     * by a {@link Stage#RUNTIME} or {@link Stage#VERIFY} handler.
+     *
+     * @return {@code true} if the operation should rollback if there is a runtime stage failure
+     */
+    boolean isRollbackOnRuntimeFailure();
+
+    /**
+     * Gets whether {@link Stage#RUNTIME} handlers can restart (or remove) runtime services in order to
+     * make the operation take effect. If {@code false} and the operation cannot be effected without restarting
+     * or removing services, the handler should invoke {@link #reloadRequired()} or {@link #restartRequired()}.
+     *
+     * @return {@code true} if a service restart or removal is allowed
+     */
+    boolean isResourceServiceRestartAllowed();
+
+    /**
      * Notify the context that the process requires a stop and re-start of its root service (but not a full process
      * restart) in order to ensure stable operation and/or to bring its running state in line with its persistent configuration.
      *
