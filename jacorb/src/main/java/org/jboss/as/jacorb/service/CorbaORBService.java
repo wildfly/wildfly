@@ -22,9 +22,11 @@
 
 package org.jboss.as.jacorb.service;
 
-import org.jboss.as.jacorb.JacORBConstants;
-import org.jboss.as.jacorb.ORBInitializer;
-import org.jboss.as.jacorb.naming.ORBInitialContextFactory;
+import java.net.InetSocketAddress;
+import java.util.Properties;
+
+import org.jboss.as.jacorb.JacORBSubsystemConstants;
+import org.jboss.as.jacorb.naming.JBossInitialContextFactory;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
@@ -36,10 +38,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.omg.CORBA.ORB;
-
-import java.net.InetSocketAddress;
-import java.util.EnumSet;
-import java.util.Properties;
 
 /**
  * <p>
@@ -56,8 +54,6 @@ public class CorbaORBService implements Service<ORB> {
 
     private static final Properties properties = new Properties();
 
-    private final EnumSet<ORBInitializer> initializers;
-
     private final InjectedValue<SocketBinding> jacORBSocketBindingInjector = new InjectedValue<SocketBinding>();
 
     private final InjectedValue<SocketBinding> jacORBSSLSocketBindingInjector = new InjectedValue<SocketBinding>();
@@ -69,11 +65,9 @@ public class CorbaORBService implements Service<ORB> {
      * Creates an instance of {@code CorbaORBService} with the specified {@code ORBImplementation} and initializers.
      * </p>
      *
-     * @param initializers a list containing the {@code ORB} initializers that must be installed.
-     * @param props        a {@code Properties} instance containing the properties that were configured in the JacORB subsystem.
+     * @param props a {@code Properties} instance containing the JacORB subsystem configuration properties.
      */
-    public CorbaORBService(EnumSet<ORBInitializer> initializers, Properties props) {
-        this.initializers = initializers;
+    public CorbaORBService(Properties props) {
         if (props != null) {
             properties.putAll(props);
         }
@@ -85,44 +79,36 @@ public class CorbaORBService implements Service<ORB> {
 
         try {
             // set the ORBClass and ORBSingleton class as system properties.
-            properties.setProperty(JacORBConstants.ORB_CLASS, JacORBConstants.JACORB_ORB_CLASS);
-            properties.setProperty(JacORBConstants.ORB_SINGLETON_CLASS, JacORBConstants.JacORB_ORB_SINGLETON_CLASS);
-            SecurityActions.setSystemProperty(JacORBConstants.ORB_CLASS, JacORBConstants.JACORB_ORB_CLASS);
-            SecurityActions.setSystemProperty(JacORBConstants.ORB_SINGLETON_CLASS, JacORBConstants.JacORB_ORB_SINGLETON_CLASS);
+            properties.setProperty(JacORBSubsystemConstants.ORB_CLASS, JacORBSubsystemConstants.JACORB_ORB_CLASS);
+            properties.setProperty(JacORBSubsystemConstants.ORB_SINGLETON_CLASS, JacORBSubsystemConstants.JacORB_ORB_SINGLETON_CLASS);
+            SecurityActions.setSystemProperty(JacORBSubsystemConstants.ORB_CLASS, JacORBSubsystemConstants.JACORB_ORB_CLASS);
+            SecurityActions.setSystemProperty(JacORBSubsystemConstants.ORB_SINGLETON_CLASS, JacORBSubsystemConstants.JacORB_ORB_SINGLETON_CLASS);
 
             // set the JacORB IIOP and IIOP/SSL ports from the respective socket bindings.
             if (this.jacORBSocketBindingInjector.getValue() != null) {
                 InetSocketAddress address = this.jacORBSocketBindingInjector.getValue().getSocketAddress();
-                properties.setProperty(JacORBConstants.ORB_ADDRESS, address.getHostName());
-                properties.setProperty(JacORBConstants.ORB_PORT, String.valueOf(address.getPort()));
+                properties.setProperty(JacORBSubsystemConstants.ORB_ADDRESS, address.getHostName());
+                properties.setProperty(JacORBSubsystemConstants.ORB_PORT, String.valueOf(address.getPort()));
             }
             if (this.jacORBSSLSocketBindingInjector.getValue() != null) {
                 InetSocketAddress address = this.jacORBSSLSocketBindingInjector.getValue().getSocketAddress();
-                properties.setProperty(JacORBConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
-                if (!properties.containsKey(JacORBConstants.ORB_ADDRESS)) {
-                    properties.setProperty(JacORBConstants.ORB_ADDRESS, address.getHostName());
+                properties.setProperty(JacORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
+                if (!properties.containsKey(JacORBSubsystemConstants.ORB_ADDRESS)) {
+                    properties.setProperty(JacORBSubsystemConstants.ORB_ADDRESS, address.getHostName());
                 }
             }
 
             // configure the naming service initial reference.
-            String rootContext = properties.getProperty(JacORBConstants.NAMING_ROOT_CONTEXT);
-            if (rootContext == null)
-                rootContext = JacORBConstants.NAMING_DEFAULT_ROOT_CONTEXT;
-            String host = properties.getProperty(JacORBConstants.ORB_ADDRESS);
-            String port = properties.getProperty(JacORBConstants.ORB_PORT);
-            properties.setProperty(JacORBConstants.JACORB_NAME_SERVICE_INIT_REF,
+            String rootContext = properties.getProperty(JacORBSubsystemConstants.NAMING_ROOT_CONTEXT);
+            String host = properties.getProperty(JacORBSubsystemConstants.ORB_ADDRESS);
+            String port = properties.getProperty(JacORBSubsystemConstants.ORB_PORT);
+            properties.setProperty(JacORBSubsystemConstants.JACORB_NAME_SERVICE_INIT_REF,
                     "corbaloc::" + host + ":" + port + "/" + rootContext);
 
             // export the naming service corbaloc if necessary.
-            String exportCorbalocProperty = properties.getProperty(JacORBConstants.NAMING_EXPORT_CORBALOC, "on");
-            if (exportCorbalocProperty != null && exportCorbalocProperty.equalsIgnoreCase("on")) {
-                properties.setProperty(JacORBConstants.JACORB_NAME_SERVICE_MAP_KEY, rootContext);
-            }
-
-            // set the ORB initializers.
-            properties.setProperty(JacORBConstants.JACORB_STD_INITIALIZER_KEY, JacORBConstants.JACORB_STD_INITIALIZER_VALUE);
-            for (ORBInitializer initializer : this.initializers) {
-                properties.setProperty(JacORBConstants.ORB_INITIALIZER_PREFIX + initializer.getInitializerClass(), "");
+            String exportCorbalocProperty = properties.getProperty(JacORBSubsystemConstants.NAMING_EXPORT_CORBALOC, "on");
+            if (exportCorbalocProperty.equalsIgnoreCase("on")) {
+                properties.setProperty(JacORBSubsystemConstants.JACORB_NAME_SERVICE_MAP_KEY, rootContext);
             }
 
             // initialize the ORB - the thread context classloader needs to be adjusted as the ORB classes are loaded via reflection.
@@ -139,8 +125,8 @@ public class CorbaORBService implements Service<ORB> {
             Thread orbThread = SecurityActions.createThread(new ORBRunner(this.orb), "ORB Run Thread");
             orbThread.start();
 
-            // set the ORBInitialContextFactory ORB.
-            ORBInitialContextFactory.setORB(this.orb);
+            // set the JBossInitialContextFactory ORB.
+            JBossInitialContextFactory.setORB(this.orb);
 
             // bind the ORB to JNDI under java:/jboss/orb.
             ServiceTarget target = context.getChildTarget();

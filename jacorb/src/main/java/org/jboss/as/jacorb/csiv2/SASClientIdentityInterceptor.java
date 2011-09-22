@@ -22,6 +22,8 @@
 
 package org.jboss.as.jacorb.csiv2;
 
+import java.security.Principal;
+
 import org.jacorb.orb.MinorCodes;
 import org.jboss.logging.Logger;
 import org.jboss.security.RunAs;
@@ -52,8 +54,6 @@ import org.omg.IOP.CodecPackage.TypeMismatch;
 import org.omg.IOP.ServiceContext;
 import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
-
-import java.security.Principal;
 
 /**
  * <p>

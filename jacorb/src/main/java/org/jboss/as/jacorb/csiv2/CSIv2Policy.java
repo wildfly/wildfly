@@ -22,7 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
-import org.jboss.as.jacorb.JacORBConstants;
+import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.logging.Logger;
@@ -80,7 +80,7 @@ public class CSIv2Policy extends LocalObject implements Policy {
         try {
             // get the singleton orb.
             ORB orb = ORB.init();
-            String sslPortString = CorbaORBService.getORBProperty(JacORBConstants.ORB_SSL_PORT);
+            String sslPortString = CorbaORBService.getORBProperty(JacORBSubsystemConstants.ORB_SSL_PORT);
             int sslPort = sslPortString == null ? 0 : Integer.parseInt(sslPortString);
             this.sslTaggedComponent = CSIv2Util.createSSLTaggedComponent(metadata, codec, sslPort, orb);
             this.secTaggedComponent = CSIv2Util.createSecurityTaggedComponent(metadata, codec, sslPort, orb);

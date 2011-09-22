@@ -21,6 +21,9 @@
  */
 package org.jboss.as.jacorb.csiv2;
 
+import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
 import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata;
@@ -65,9 +68,6 @@ import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.SSLIOP.SSL;
 import org.omg.SSLIOP.SSLHelper;
 import org.omg.SSLIOP.TAG_SSL_SEC_TRANS;
-
-import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 
 /**
  * <p>

@@ -27,43 +27,50 @@ import java.util.Map;
 
 /**
  * <p>
- * Enumeration of the pre-configured {@code ORB} initializers.
+ * Enumeration of {@code ORB} initializer groups. Each member contains one or more initiliazer classes that belong to a
+ * specific group.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public enum ORBInitializer {
-    // Unknown is just a default value to avoid dealing with exceptions when parsing the JacORB subsystem.
-    UNKNOWN(null, null),
-    // Codebase initializer creates the IOR interceptor that inserts the codebase location into generated IORs.
-    CODEBASE("Codebase", "org.jboss.as.jacorb.codebase.CodebaseInterceptorInitializer"),
-    // CSIv2 initializer creates the IOR interceptor that inserts the security requirements into IORs.
-    CSIV2("CSIv2", "org.jboss.as.jacorb.csiv2.CSIv2Initializer"),
-    // SAS initializer creates the request interceptors that implement the security attribute service.
-    SAS("SAS", "org.jboss.as.jacorb.csiv2.SASInitializer");
+
+    UNKNOWN("", ""),
+
+    // codebase group contains the initializer that inserts the codebase location into generated IORs.
+    CODEBASE("codebase", "org.jboss.as.jacorb.codebase.CodebaseInterceptorInitializer"),
+
+    // the security group encompasses both CSIv2 and SAS initializers.
+    SECURITY("security", "org.jboss.as.jacorb.csiv2.CSIv2Initializer", "org.jboss.as.jacorb.csiv2.SASInitializer"),
+
+    // the transaction group encompasses the Interposition and InboundCurrent initializers.
+    TRANSACTIONS("transaction",
+            "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
+            "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer");
 
     private String initializerName;
-    private String initializerClass;
+    private String[] initializerClasses;
 
     /**
      * <p>
-     * {@code ORBInitializer} constructor. Sets the initializer name and implementation class.
+     * {@code ORBInitializer} constructor. Sets the group name and implementation classes of the initializers that are
+     * part of the group.
      * </p>
      *
-     * @param initializerName  the name that identifies the initializer.
-     * @param initializerClass the fully-qualified class name of the initializer.
+     * @param initializerName    the name that identifies the initializer group.
+     * @param initializerClasses an array containing the fully-qualified name of the initializers that compose the group.
      */
-    ORBInitializer(String initializerName, String initializerClass) {
+    ORBInitializer(String initializerName, String... initializerClasses) {
         this.initializerName = initializerName;
-        this.initializerClass = initializerClass;
+        this.initializerClasses = initializerClasses;
     }
 
     /**
      * <p>
-     * Obtains the initializer name.
+     * Obtains the name of this initializer group.
      * </p>
      *
-     * @return a {@code String} that represents the initializer name.
+     * @return a {@code String} that represents the initializer group name.
      */
     public String getInitializerName() {
         return this.initializerName;
@@ -71,16 +78,16 @@ public enum ORBInitializer {
 
     /**
      * <p>
-     * Obtains the initializer class name.
+     * Obtains the class names of the initializers that are part of this group.
      * </p>
      *
-     * @return a {@code String} containing the fully-qualified class name of the initializer.
+     * @return a {@code String[]} containing the fully-qualified class names of the initializers.
      */
-    public String getInitializerClass() {
-        return this.initializerClass;
+    public String[] getInitializerClasses() {
+        return this.initializerClasses;
     }
 
-    // a map that caches all available initializers by name.
+    // a map that caches all available initializer groups by name.
     private static final Map<String, ORBInitializer> MAP;
 
     static {
@@ -95,14 +102,14 @@ public enum ORBInitializer {
 
     /**
      * <p>
-     * Gets the {@code ORBInitializer} identified by the specified name.
+     * Gets the {@code ORBInitializer} instance identified by the specified group name.
      * </p>
      *
-     * @param initializerName a {@code String} representing the implementation name.
+     * @param initializerName a {@code String} representing the initializer group name.
      * @return the {@code ORBInitializer} identified by the name. If no implementation can be found, the
      *         {@code ORBInitializer.UNKNOWN} type is returned.
      */
-    static ORBInitializer getInitializer(String initializerName) {
+    static ORBInitializer forName(String initializerName) {
         final ORBInitializer element = MAP.get(initializerName);
         return element == null ? UNKNOWN : element;
     }

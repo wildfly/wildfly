@@ -171,16 +171,7 @@
                 </local-cache>
             </cache-container>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jacorb:1.0">
-            <orb name="JBoss" print-version="off" giop-minor-version="2">
-                <connection max-managed-buf-size="24" outbuf-cache-timeout="-1"/>
-                <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
-            </orb>
-            <poa monitoring="off" queue-wait="off">
-                <request-processors pool-size="2" max-threads="8"/>
-            </poa>
-            <interop sun="on" chunk-custom-rmi-valuetypes="on" strict-check-on-tc-creation="off"/>
-        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.0">
             <archive-validation enabled="false" />

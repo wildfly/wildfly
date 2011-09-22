@@ -22,7 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
-import org.jboss.as.jacorb.JacORBConstants;
+import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.logging.Logger;
 import org.omg.CORBA.Any;
@@ -443,8 +443,8 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         // accept (CompleteEstablishContext) reply together with an exception.
         //
         // The CSIv2 spec does not explicitly disallow an SAS accept in an IIOP exception reply.
-        if (threadLocal.sasReply != null && Boolean.parseBoolean(CorbaORBService.getORBProperty(
-                JacORBConstants.SEND_SAS_ACCEPT_WITH_EXCEPTION))) {
+        boolean interopIONA = "on".equalsIgnoreCase(CorbaORBService.getORBProperty(JacORBSubsystemConstants.INTEROP_IONA));
+        if (threadLocal.sasReply != null && !interopIONA) {
             try {
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
