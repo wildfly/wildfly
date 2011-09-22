@@ -37,8 +37,11 @@ import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
@@ -51,6 +54,9 @@ import org.junit.Test;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class JMXSubsystemTestCase extends AbstractSubsystemTest {
+
+    private static final String LAUNCH_TYPE = "launch-type";
+    private static final String TYPE_STANDALONE = "STANDALONE";
 
     public JMXSubsystemTestCase() {
         super(JMXExtension.SUBSYSTEM_NAME, new JMXExtension());
@@ -248,6 +254,13 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new AdditionalInitialization(){
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource,
+                    ManagementResourceRegistration rootRegistration) {
+                rootResource.getModel().get(LAUNCH_TYPE).set(TYPE_STANDALONE);
+            }
+
             @Override
             protected void setupController(ControllerInitializer controllerInitializer) {
                 controllerInitializer.addSocketBinding("registry1", 12345);
@@ -279,7 +292,14 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "    <jmx-connector registry-binding=\"registry1\" server-binding=\"server1\" />" +
                 "</subsystem>";
 
+
         AdditionalInitialization additionalInit = new AdditionalInitialization(){
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionContext extensionContext, Resource rootResource,
+                    ManagementResourceRegistration rootRegistration) {
+                rootResource.getModel().get(LAUNCH_TYPE).set(TYPE_STANDALONE);
+            }
+
             @Override
             protected void setupController(ControllerInitializer controllerInitializer) {
                 controllerInitializer.addSocketBinding("registry1", 12345);
