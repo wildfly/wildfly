@@ -71,65 +71,23 @@ import org.jboss.dmr.ModelNode;
 class ModelControllerMBeanHelper {
 
     static final String CLASS_NAME = ModelController.class.getName();
-    private volatile Boolean standalone;
-    private boolean failedStandalone;
+    private final boolean standalone;
     private final ModelController controller;
     private final PathAddress CORE_SERVICE_PLATFORM_MBEAN = PathAddress.pathAddress(PathElement.pathElement("core-service", "platform-mbean"));
 
     ModelControllerMBeanHelper(ModelController controller) {
         this.controller = controller;
-    }
 
-    /**
-     * Reads the launch-type attribute of the server to determine if it is a standalone or domain mode server.
-     *
-     * @return {@code true} if it is a standalone server
-     * @throws IllegalStateException if the launch-type attribute has not been initialized yet
-     */
-    boolean isStandalone() {
-        Boolean standalone = this.standalone;
-        if (standalone != null) {
-            return standalone;
+        ModelNode op = new ModelNode();
+        op.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        op.get(OP_ADDR).setEmptyList();
+        op.get(NAME).set("launch-type");
+        final ModelNode result = execute(op);
+        String error = getFailureDescription(result);
+        if (error != null) {
+            throw new IllegalStateException(error);
         }
-
-        synchronized (this) {
-            if (!failedStandalone) {
-                long end = System.currentTimeMillis() + 10000;
-                String error = null;
-                do {
-                    ModelNode op = new ModelNode();
-                    op.get(OP).set(READ_ATTRIBUTE_OPERATION);
-                    op.get(OP_ADDR).setEmptyList();
-                    op.get(NAME).set("launch-type");
-                    final ModelNode result = execute(controller, op);
-                    error = getFailureDescription(result);
-                    if (error != null) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            failedStandalone = true;
-                            break;
-                        }
-                        continue;
-                    }
-                    standalone = result.require(RESULT).asString().equals("STANDALONE");
-                    error = null;
-                    break;
-
-                } while (System.currentTimeMillis() < end);
-
-                if (error != null) {
-                    failedStandalone = true;
-                    throw new IllegalArgumentException(error);
-                }
-                this.standalone = standalone;
-            }
-            if (failedStandalone){
-                throw new IllegalArgumentException("Was not able to determine if standalone or not");
-            }
-        }
-
-        return this.standalone;
+        standalone = result.require(RESULT).asString().equals("STANDALONE");
     }
 
     int getMBeanCount() {
@@ -210,7 +168,7 @@ class ModelControllerMBeanHelper {
             throw createInstanceNotFoundException(name);
         }
 
-        return MBeanInfoFactory.createMBeanInfo(isStandalone(), address, getMBeanRegistration(address, reg));
+        return MBeanInfoFactory.createMBeanInfo(standalone, address, getMBeanRegistration(address, reg));
     }
 
     Object getAttribute(final ObjectName name, final String attribute)  throws AttributeNotFoundException, InstanceNotFoundException, ReflectionException {
@@ -299,7 +257,7 @@ class ModelControllerMBeanHelper {
         final ModelNode description = provider.getModelDescription(null);
         final String attributeName = findAttributeName(description.get(ATTRIBUTES), attribute.getName());
 
-        if (!isStandalone()) {
+        if (!standalone) {
             throw new AttributeNotFoundException("Attribute " + attribute + " is not writable");
         }
 
@@ -385,7 +343,7 @@ class ModelControllerMBeanHelper {
     }
 
     private Object invoke(final OperationEntry entry, final String operationName, PathAddress address, Object[] params)  throws InstanceNotFoundException, MBeanException, ReflectionException {
-        if (!isStandalone() && !entry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
+        if (!standalone && !entry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
             throw new InstanceNotFoundException("No operation called " + operationName);
         }
 
@@ -429,10 +387,6 @@ class ModelControllerMBeanHelper {
     }
 
     private ModelNode execute(ModelNode op) {
-        return execute(controller, op);
-    }
-
-    private static ModelNode execute(ModelController controller, ModelNode op) {
         return controller.execute(op, null, OperationTransactionControl.COMMIT, null);
     }
 
@@ -445,7 +399,7 @@ class ModelControllerMBeanHelper {
         return resourceRegistration;
     }
 
-    private static String getFailureDescription(ModelNode result) {
+    private String getFailureDescription(ModelNode result) {
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
             return result.get(FAILURE_DESCRIPTION).asString();
         }
