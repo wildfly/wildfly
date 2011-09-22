@@ -22,14 +22,8 @@
 
 package org.jboss.as.jacorb;
 
-import static org.jboss.as.jacorb.JacORBElement.INITIALIZERS_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.INTEROP_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.ORB_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.POA_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.PROPERTY_CONFIG;
-import static org.jboss.as.jacorb.JacORBElement.SECURITY_CONFIG;
-
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,10 +31,9 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.jacorb.deployment.JacORBDependencyProcessor;
 import org.jboss.as.jacorb.deployment.JacORBMarkerProcessor;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.jacorb.service.CorbaPOAService;
@@ -49,7 +42,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
@@ -84,38 +76,24 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
 
     static final JacORBSubsystemAdd INSTANCE = new JacORBSubsystemAdd();
 
-    private final ParametersValidator jacorbConfigValidator = new ParametersValidator();
-
     /**
      * <p>
      * Private constructor as required by the {@code Singleton} pattern.
      * </p>
      */
     private JacORBSubsystemAdd() {
-        ModelTypeValidator optionalObjectTypeValidator = new ModelTypeValidator(ModelType.OBJECT, true);
-        this.jacorbConfigValidator.registerValidator(ORB_CONFIG.getLocalName(), optionalObjectTypeValidator);
-        this.jacorbConfigValidator.registerValidator(POA_CONFIG.getLocalName(), optionalObjectTypeValidator);
-        this.jacorbConfigValidator.registerValidator(INTEROP_CONFIG.getLocalName(), optionalObjectTypeValidator);
-        this.jacorbConfigValidator.registerValidator(SECURITY_CONFIG.getLocalName(), optionalObjectTypeValidator);
-        this.jacorbConfigValidator.registerValidator(PROPERTY_CONFIG.getLocalName(),
-                new ModelTypeValidator(ModelType.LIST, true));
-        this.jacorbConfigValidator.registerValidator(INITIALIZERS_CONFIG.getLocalName(),
-                new ModelTypeValidator(ModelType.STRING, true, true));
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        // validate the operation.
-        this.jacorbConfigValidator.validate(operation);
-
         // populate the submodel.
-        for (JacORBElement configElement : JacORBElement.getRootElements()) {
-            String configElementName = configElement.getLocalName();
-            if (operation.hasDefined(configElementName)) {
-                model.get(configElementName).set(operation.get(configElementName));
-            }
+        for (SimpleAttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
+            attrDefinition.validateAndSet(operation, model);
         }
+        // if generic properties have been specified, add them to the model as well.
+        String properties = JacORBSubsystemConstants.PROPERTIES;
+        if (operation.hasDefined(properties))
+            model.get(properties).set(operation.get(properties));
     }
 
     @Override
@@ -124,21 +102,22 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                                   List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         log.info("Activating JacORB Subsystem");
+
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JACORB, new JacORBDependencyProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JACORB, new JacORBMarkerProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
-        // get the list of ORB initializers.
-        EnumSet<ORBInitializer> initializers = getORBInitializers(operation);
 
         // get the configured ORB properties.
-        Properties props = new Properties();
-        getConfigurationProperties(operation, props);
+        Properties props = this.getConfigurationProperties(model);
+
+        // setup the ORB initializers using the configured properties.
+        this.setupInitializers(props);
 
         // create the service that initializes and starts the CORBA ORB.
-        CorbaORBService orbService = new CorbaORBService(initializers, props);
+        CorbaORBService orbService = new CorbaORBService(props);
         final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(
                 CorbaORBService.SERVICE_NAME, orbService);
         // inject the socket bindings that specify the JacORB IIOP and IIOP/SSL ports.
@@ -189,67 +168,70 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
 
     /**
      * <p>
-     * Obtains the set of {@code ORBInitializer}s that have been configured in the JacORB subsystem.
+     * Obtains the subsystem configuration properties from the specified {@code ModelNode}, using default values for
+     * undefined properties. If the property has a JacORB equivalent, it is translated into its JacORB counterpart
+     * before being added to the returned {@code Properties} object.
      * </p>
      *
-     * @param jacorbConfig the {@code ModelNode} that contains the JacORB configuration.
-     * @return an {@code EnumSet} containing all configured {@code ORBInitializer}s. If the {@code orbConfig} parameter
-     *         is {@code null} or if no initializers have been configured, the method returns the default {@code CODEBASE},
-     *         {@code CSIv2} and {@code SAS} initializers.
-     * @throws org.jboss.as.controller.OperationFailedException
-     *          if an unknown initializer has been specified in the configuration.
+     * @param node the {@code ModelNode} that contains the subsystem configuration properties.
+     * @return a {@code Properties} instance containing all configured subsystem properties.
+     * @throws OperationFailedException if an error occurs while resolving the properties.
      */
-    private EnumSet<ORBInitializer> getORBInitializers(ModelNode jacorbConfig) throws OperationFailedException {
-        if (jacorbConfig.hasDefined(INITIALIZERS_CONFIG.getLocalName())) {
-            String value = jacorbConfig.get(INITIALIZERS_CONFIG.getLocalName()).asString();
-            String[] initializers = value.split(",");
+    private Properties getConfigurationProperties(ModelNode node) throws OperationFailedException {
+        Properties props = new Properties();
 
-            EnumSet<ORBInitializer> orbInitializers = EnumSet.noneOf(ORBInitializer.class);
-            for (String initializer : initializers) {
-                ORBInitializer orbInitializer = ORBInitializer.getInitializer(initializer);
-                if (orbInitializer == ORBInitializer.UNKNOWN) {
-                    throw new OperationFailedException("Unknown ORB initializer", jacorbConfig);
-                }
-                orbInitializers.add(orbInitializer);
-            }
-            return orbInitializers;
-        } else {
-            // return the default ORB initializers.
-            return EnumSet.of(ORBInitializer.CODEBASE, ORBInitializer.CSIV2, ORBInitializer.SAS);
+        // get the configuration properties from the attribute definitions.
+        for (SimpleAttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
+            String name = attrDefinition.getName();
+            String value = attrDefinition.validateResolvedOperation(node).asString();
+
+            // check if the property can be mapped to a jacorb property.
+            String jacorbProperty = PropertiesMap.JACORB_PROPS_MAP.get(name);
+            if (jacorbProperty != null)
+                name = jacorbProperty;
+            props.setProperty(name, value);
         }
+
+        // check if the node contains a list of generic properties.
+        if (node.hasDefined(JacORBSubsystemConstants.PROPERTIES)) {
+            ModelNode propertiesNode = node.get(JacORBSubsystemConstants.PROPERTIES);
+
+            for (Property property : propertiesNode.asPropertyList()) {
+                String name = property.getName();
+                ModelNode value = property.getValue();
+                props.setProperty(name, value.asString());
+            }
+        }
+        return props;
     }
 
     /**
      * <p>
-     * Fills the provided {@code Properties} instance with the properties extracted recursively from the specified
-     * {@code ModelNode}. The property names are translated to JacORB properties before being added to the
-     * {@code Properties} instance. If the translation fails (that is, if that property does not correspond to a JacORB
-     * property), then the configuration property name itself will be used as key.
+     * Sets up the ORB initializers according to what hs been configured in the subsystem.
      * </p>
      *
-     * @param node  the {@code ModelNode}  that contains the configuration properties.
-     * @param props the {@code Properties} instance that will hold the extracted properties.
+     * @param props the subsystem configuration properties.
      */
-    private void getConfigurationProperties(ModelNode node, Properties props) {
-        if (node == null || props == null)
-            return;
+    private void setupInitializers(Properties props) {
+        List<String> orbInitializers = new ArrayList<String>();
 
-        // iterate through the child nodes.
-        for (Property property : node.asPropertyList()) {
-            String key = property.getName();
-            ModelNode value = property.getValue();
-            // if the value is a complex type, use recursion to get all attributes from the value.
-            if (value.getType() == ModelType.OBJECT || value.getType() == ModelType.LIST) {
-                this.getConfigurationProperties(value, props);
-            }
-            // else try to translate the config property into a jacorb property using JacORBAttribute.
-            else {
-                String jacorbKey = JacORBAttribute.forName(key).getJacORBName();
-                if (jacorbKey == null) {
-                    jacorbKey = key;
-                }
-                props.setProperty(jacorbKey, value.asString());
-            }
-        }
+        // check which groups of initializers are to be installed.
+        String installCodebase = (String) props.remove(JacORBSubsystemConstants.ORB_INIT_CODEBASE);
+        if (installCodebase.equalsIgnoreCase("on"))
+            orbInitializers.addAll(Arrays.asList(ORBInitializer.CODEBASE.getInitializerClasses()));
+
+        String installSecurity = (String) props.remove(JacORBSubsystemConstants.ORB_INIT_SECURITY);
+        if (installSecurity.equalsIgnoreCase("on"))
+            orbInitializers.addAll(Arrays.asList(ORBInitializer.SECURITY.getInitializerClasses()));
+
+        String installTransaction = (String) props.remove(JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS);
+        if (installTransaction.equalsIgnoreCase("on"))
+            orbInitializers.addAll(Arrays.asList(ORBInitializer.TRANSACTIONS.getInitializerClasses()));
+
+        // add the standard jacorb initializer plus all configured initializers.
+        props.setProperty(JacORBSubsystemConstants.JACORB_STD_INITIALIZER_KEY,
+                JacORBSubsystemConstants.JACORB_STD_INITIALIZER_VALUE);
+        for (String initializerClass : orbInitializers)
+            props.setProperty(JacORBSubsystemConstants.ORB_INITIALIZER_PREFIX + initializerClass, "");
     }
 }

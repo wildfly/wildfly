@@ -22,12 +22,13 @@
 
 package org.jboss.as.jacorb.naming;
 
-import org.jboss.as.naming.InitialContextFactory;
-import org.omg.CORBA.ORB;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.util.Hashtable;
+
+import org.jboss.as.naming.InitialContextFactory;
+import org.omg.CORBA.ORB;
 
 /**
  * <p>
@@ -37,7 +38,7 @@ import java.util.Hashtable;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 @SuppressWarnings("unchecked")
-public class ORBInitialContextFactory extends InitialContextFactory {
+public class JBossInitialContextFactory extends InitialContextFactory {
 
     public static final String ORB_INSTANCE = "java.naming.corba.orb";
 
@@ -66,9 +67,9 @@ public class ORBInitialContextFactory extends InitialContextFactory {
      */
     public static void setORB(ORB orb) {
         if (orb == null)
-            ORBInitialContextFactory.orb = null;
+            JBossInitialContextFactory.orb = null;
         else
-            ORBInitialContextFactory.orb = new SerializableORB(orb);
+            JBossInitialContextFactory.orb = new SerializableORB(orb);
     }
 
     @Override

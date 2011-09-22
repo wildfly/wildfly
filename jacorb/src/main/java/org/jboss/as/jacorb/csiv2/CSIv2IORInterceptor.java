@@ -22,7 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
-import org.jboss.as.jacorb.JacORBConstants;
+import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.metadata.IORSecurityConfigMetadata;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.logging.Logger;
@@ -70,7 +70,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
      * @param codec the {@code Codec} used to encode the IOR security components.
      */
     public CSIv2IORInterceptor(Codec codec) {
-        String sslPortString = CorbaORBService.getORBProperty(JacORBConstants.ORB_SSL_PORT);
+        String sslPortString = CorbaORBService.getORBProperty(JacORBSubsystemConstants.ORB_SSL_PORT);
         int sslPort = sslPortString == null ? 0 : Integer.parseInt(sslPortString);
         try {
             // build default SSL component with minimum SSL options.
@@ -107,11 +107,12 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
             log.debugf("Error fetching CSIv2Policy", e);
         }
 
-        boolean sslComponentsEnabled = Boolean.parseBoolean(CorbaORBService.getORBProperty(JacORBConstants.SSL_COMPONENTS_ENABLED));
+        boolean interopIONA = "on".equalsIgnoreCase(CorbaORBService.getORBProperty(JacORBSubsystemConstants.INTEROP_IONA));
         if (csiv2Policy != null) {
             // if csiv2Policy effective, stuff a copy of the TaggedComponents already created by the CSIv2Policy into the IOR's IIOP profile.
             TaggedComponent sslComponent = csiv2Policy.getSSLTaggedComponent();
-            if (sslComponent != null && sslComponentsEnabled) {
+            // if interop with IONA ASP is on, don't add the SSL component to the IOR.
+            if (sslComponent != null && !interopIONA) {
                 info.add_ior_component_to_profile(sslComponent, TAG_INTERNET_IOP.value);
             }
             TaggedComponent csiv2Component = csiv2Policy.getSecurityTaggedComponent();
@@ -119,7 +120,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
                 info.add_ior_component_to_profile(csiv2Component, TAG_INTERNET_IOP.value);
             }
         } else {
-            if (defaultSSLComponent != null && sslComponentsEnabled) {
+            if (defaultSSLComponent != null && !interopIONA) {
                 // otherwise stuff the default SSL component (with the minimum set of SSL options) into the IOR's IIOP profile.
                 info.add_ior_component_to_profile(defaultSSLComponent, TAG_INTERNET_IOP.value);
             }

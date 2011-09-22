@@ -22,6 +22,9 @@
 
 package org.jboss.as.jacorb.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -41,9 +44,6 @@ import org.omg.PortableServer.POAHelper;
 import org.omg.PortableServer.RequestProcessingPolicyValue;
 import org.omg.PortableServer.ServantRetentionPolicyValue;
 import org.omg.PortableServer.ThreadPolicyValue;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <p>
