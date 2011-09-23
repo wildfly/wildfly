@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.jboss.as.test.embedded.stilts.bundle;
+package org.jboss.as.test.smoke.embedded.stilts.bundle;
 
 
-import static org.jboss.as.test.embedded.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
+import static org.jboss.as.test.smoke.embedded.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
 
 import java.util.Dictionary;
 import java.util.Hashtable;

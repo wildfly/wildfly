@@ -115,7 +115,7 @@
 
         <!-- Arquillian dependency versions -->
         <version.arquillian_core>1.0.0.CR5</version.arquillian_core>
-        <version.arquillian_as7>7.1.0.Alpha1-SNAPSHOT</version.arquillian_as7>
+        <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
         <version.saxon>8.7</version.saxon>
     </properties>
 

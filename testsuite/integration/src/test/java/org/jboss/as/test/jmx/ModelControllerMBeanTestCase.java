@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.testsuite.integration.jmx;
+package org.jboss.as.test.jmx;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
@@ -56,7 +56,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.jmx.model.Constants;
-import org.jboss.as.testsuite.integration.jmx.sar.TestMBean;
+import org.jboss.as.test.jmx.sar.TestMBean;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -152,7 +152,7 @@ public class ModelControllerMBeanTestCase {
         assertNoMBean(testDeploymentModelName);
 
         final JavaArchive sar = ShrinkWrap.create(JavaArchive.class, "test-jmx-sar.sar");
-        sar.addClasses(org.jboss.as.testsuite.integration.jmx.sar.Test.class, TestMBean.class);
+        sar.addClasses(org.jboss.as.test.jmx.sar.Test.class, TestMBean.class);
         sar.addAsManifestResource("jmx-sar/jboss-service.xml", "jboss-service.xml");
 
         InputStream in = sar.as(ZipExporter.class).exportAsInputStream();
