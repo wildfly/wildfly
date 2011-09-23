@@ -241,7 +241,7 @@ final class WSRefUtils {
         return handlerChainsUMDM;
     }
 
-    private static void processType(final UnifiedServiceRefMetaData serviceRefUMDM) {
+    static void processType(final UnifiedServiceRefMetaData serviceRefUMDM) {
         final boolean isJAXRPC = serviceRefUMDM.getMappingFile() != null || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
         serviceRefUMDM.setType(isJAXRPC ? Type.JAXRPC : Type.JAXWS);
     }

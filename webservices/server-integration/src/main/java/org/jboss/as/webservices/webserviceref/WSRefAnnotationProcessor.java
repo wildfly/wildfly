@@ -24,6 +24,7 @@ package org.jboss.as.webservices.webserviceref;
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
 import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
+import static org.jboss.as.webservices.webserviceref.WSRefUtils.processType;
 
 import java.lang.reflect.AccessibleObject;
 import java.util.List;
@@ -61,124 +62,131 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
-import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
 
 /**
- * TODO: javadoc
- * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
- * required {@link WebServiceRef} injection.
+ * @WebServiceRef annotation processor.
  *
- * @author <a href="mailto:flavia.rainone@jboss.com">Flavia Rainone</a>
- * @author John Bailey
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
+
     private static final DotName WEB_SERVICE_REF_ANNOTATION_NAME = DotName.createSimple(WebServiceRef.class.getName());
     private static final DotName WEB_SERVICE_REFS_ANNOTATION_NAME = DotName.createSimple(WebServiceRefs.class.getName());
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
-        final List<AnnotationInstance> resourceAnnotations = index.getAnnotations(WEB_SERVICE_REF_ANNOTATION_NAME);
-        // TODO: we removed EEComponetClasses & EEapplicationClasses from parameters passing - fix it in all AS7 processors as well
-        for (AnnotationInstance annotation : resourceAnnotations) {
+        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        final CompositeIndex index = unit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+
+        // Process @WebServiceRef annotations
+        final List<AnnotationInstance> webServiceRefAnnotations = index.getAnnotations(WEB_SERVICE_REF_ANNOTATION_NAME);
+        for (final AnnotationInstance annotation : webServiceRefAnnotations) {
             final AnnotationTarget annotationTarget = annotation.target();
             final WSRefAnnotationWrapper annotationWrapper = new WSRefAnnotationWrapper(annotation);
 
             if (annotationTarget instanceof FieldInfo) {
-                processFieldRef(deploymentUnit, annotationWrapper, (FieldInfo) annotationTarget);
+                processFieldRef(unit, annotationWrapper, (FieldInfo) annotationTarget);
             } else if (annotationTarget instanceof MethodInfo) {
-                processMethodRef(deploymentUnit, annotationWrapper, (MethodInfo) annotationTarget);
+                processMethodRef(unit, annotationWrapper, (MethodInfo) annotationTarget);
             } else if (annotationTarget instanceof ClassInfo) {
-                processClassRef(deploymentUnit, annotationWrapper, (ClassInfo) annotationTarget);
+                processClassRef(unit, annotationWrapper, (ClassInfo) annotationTarget);
             }
         }
-        final List<AnnotationInstance> resourcesAnnotations = index.getAnnotations(WEB_SERVICE_REFS_ANNOTATION_NAME);
-        for (AnnotationInstance outerAnnotation : resourcesAnnotations) {
+
+        // Process @WebServiceRefs annotations
+        final List<AnnotationInstance> webServiceRefsAnnotations = index.getAnnotations(WEB_SERVICE_REFS_ANNOTATION_NAME);
+        for (final AnnotationInstance outerAnnotation : webServiceRefsAnnotations) {
             final AnnotationTarget annotationTarget = outerAnnotation.target();
             if (annotationTarget instanceof ClassInfo) {
                 final AnnotationInstance[] values = outerAnnotation.value("value").asNestedArray();
-                for (AnnotationInstance annotation : values) {
-                    processClassRef(deploymentUnit, new WSRefAnnotationWrapper(annotation), (ClassInfo) annotationTarget);
+                for (final AnnotationInstance annotation : values) {
+                    final WSRefAnnotationWrapper annotationWrapper = new WSRefAnnotationWrapper(annotation);
+                    processClassRef(unit, annotationWrapper, (ClassInfo) annotationTarget);
                 }
             }
         }
     }
 
-    public void undeploy(final DeploymentUnit context) {
+    public void undeploy(final DeploymentUnit unit) {
         // NOOP
     }
 
-    private void processFieldRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final FieldInfo fieldInfo) throws DeploymentUnitProcessingException {
+    private static void processFieldRef(final DeploymentUnit unit, final WSRefAnnotationWrapper annotation, final FieldInfo fieldInfo) throws DeploymentUnitProcessingException {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? fieldInfo.type().name().toString() : annotation.type();
-        final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(),  fieldName, injectionType);
-        final String localContextName = isEmpty(annotation.name()) ? fieldInfo.declaringClass().name().toString() + "/" + fieldInfo.name() : annotation.name();
-        processRef(deploymentUnit, localContextName, injectionType, annotation.value(), annotation.wsdlLocation(), fieldInfo.declaringClass(), targetDescription, localContextName);
+        final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(),  fieldName, injectionType);
+        final String bindingName = isEmpty(annotation.name()) ? fieldInfo.declaringClass().name().toString() + "/" + fieldInfo.name() : annotation.name();
+        processRef(unit, injectionType, annotation, fieldInfo.declaringClass(), injectionTarget, bindingName);
     }
 
-    private void processMethodRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final MethodInfo methodInfo) throws DeploymentUnitProcessingException {
+    private static void processMethodRef(final DeploymentUnit unit, final WSRefAnnotationWrapper annotation, final MethodInfo methodInfo) throws DeploymentUnitProcessingException {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@WebServiceRef injection target is invalid.  Only setter methods are allowed: " + methodInfo);
         }
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : annotation.type();
-        final InjectionTarget targetDescription = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, injectionType);
-
-        final String localContextName = isEmpty(annotation.name()) ? methodInfo.declaringClass().name().toString() + "/" + methodName.substring(3, 4).toLowerCase() + methodName.substring(4) : annotation.name();
-        processRef(deploymentUnit, localContextName, injectionType, annotation.value(), annotation.wsdlLocation(), methodInfo.declaringClass(), targetDescription, localContextName);
+        final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, injectionType);
+        final String bindingName = isEmpty(annotation.name()) ? methodInfo.declaringClass().name().toString() + "/" + methodName.substring(3, 4).toLowerCase() + methodName.substring(4) : annotation.name();
+        processRef(unit, injectionType, annotation, methodInfo.declaringClass(), injectionTarget, bindingName);
     }
 
-    private void processClassRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
+    private static void processClassRef(final DeploymentUnit unit, final WSRefAnnotationWrapper annotation, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
             throw new DeploymentUnitProcessingException("@WebServiceRef attribute 'name' is required fo class level annotations.");
         }
         if (isEmpty(annotation.type())) {
             throw new DeploymentUnitProcessingException("@WebServiceRef attribute 'type' is required fo class level annotations.");
         }
-        processRef(deploymentUnit, annotation.name(), annotation.type(), annotation.value(), annotation.wsdlLocation(), classInfo, null, annotation.name());
+        processRef(unit, annotation.type(), annotation, classInfo, null, annotation.name());
     }
 
-    private void processRef(final DeploymentUnit deploymentUnit, final String name, final String type, final String value, final String wsdlLocation, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName) throws DeploymentUnitProcessingException {
-        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
-
-        // our injection comes from the local lookup, no matter what.
-        final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
-            new ResourceInjectionConfiguration(targetDescription, new LookupInjectionSource(localContextName)) : null;
-
-        // Create the binding from whence our injection comes.
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final ClassLoader classLoader = module.getClassLoader();
-        final WSReferences wsRefRegistry = getWSRefRegistry(deploymentUnit);
-        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(name);
-        if (serviceRefUMDM == null) {
-            serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(deploymentUnit));
-            serviceRefUMDM.setServiceRefName(name);
-            wsRefRegistry.add(name, serviceRefUMDM);
-        }
-        final Class<?> typeClass = getClass(classLoader, type);
-        processServiceRef(deploymentUnit, serviceRefUMDM, typeClass, name, value, wsdlLocation);
-        if (targetDescription != null) {
-            // @WebServiceRef specified on field or method
-            processInjectionTargets(deploymentUnit, targetDescription, serviceRefUMDM);
-        } else {
-            // @WebServiceRef specified on class
-            final Class<?> target = getClass(classLoader, classInfo.name().toString());
-            processAnnotatedElement(target, serviceRefUMDM);
-        }
-        final InjectionSource valueSource = new WSRefValueSource(serviceRefUMDM);
-        final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
+    private static void processRef(final DeploymentUnit unit, final String type, final WSRefAnnotationWrapper annotation, final ClassInfo classInfo, final InjectionTarget injectionTarget, final String bindingName) throws DeploymentUnitProcessingException {
+        final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, bindingName);
+        initServiceRef(unit, serviceRefUMDM, type, annotation);
+        processWSFeatures(unit, serviceRefUMDM, injectionTarget, classInfo);
 
         // TODO: class hierarchies? shared bindings?
+        final EEApplicationClasses applicationClasses = unit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
+        // Create the binding from whence our injection comes.
+        final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM);
+        final BindingConfiguration bindingConfiguration = new BindingConfiguration(bindingName, serviceRefSource);
         classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+        // our injection comes from the local lookup, no matter what.
+        final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ?
+            new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(bindingName)) : null;
         if (injectionConfiguration != null) {
             classDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
         }
     }
 
-    private static void processInjectionTargets(final DeploymentUnit unit, final InjectionTarget injectionTarget, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {
-        if (injectionTarget == null) return;
+    private static void processWSFeatures(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final InjectionTarget injectionTarget, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
+        if (injectionTarget != null) {
+            // @WebServiceRef specified on field or method
+            processInjectionTarget(unit, serviceRefUMDM, injectionTarget);
+        } else {
+            // @WebServiceRef specified on class
+            processInjectionTarget(unit, serviceRefUMDM, classInfo);
+        }
+    }
+
+    private static UnifiedServiceRefMetaData getServiceRef(final DeploymentUnit unit, final String name) {
+        final WSReferences wsRefRegistry = getWSRefRegistry(unit);
+        UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(name);
+        if (serviceRefUMDM == null) {
+            serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
+            serviceRefUMDM.setServiceRefName(name);
+            wsRefRegistry.add(name, serviceRefUMDM);
+        }
+        return serviceRefUMDM;
+    }
+
+    private static void processInjectionTarget(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
+        final Module module = unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Class<?> target = getClass(module.getClassLoader(), classInfo.name().toString());
+        processAnnotatedElement(target, serviceRefUMDM);
+    }
+
+    private static void processInjectionTarget(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final InjectionTarget injectionTarget) throws DeploymentUnitProcessingException {
         final Module module = unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex deploymentReflectionIndex = unit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final String injectionTargetClassName = injectionTarget.getClassName();
@@ -197,28 +205,30 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         throw new UnsupportedOperationException();
     }
 
-    private UnifiedServiceRefMetaData processServiceRef(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final Class<?> typeClass, final String name, final String value, final String wsdlLocation) throws DeploymentUnitProcessingException  {
-        // TODO handle mappedName
-        if (wsdlLocation != null && wsdlLocation.length() > 0) {
-            serviceRefUMDM.setWsdlFile(wsdlLocation);
+    private static UnifiedServiceRefMetaData initServiceRef(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final String type, final WSRefAnnotationWrapper annotation) throws DeploymentUnitProcessingException  {
+        // wsdl location
+        if (!isEmpty(annotation.wsdlLocation())) {
+            serviceRefUMDM.setWsdlFile(annotation.wsdlLocation());
         }
+        // ref class type
+        final Module module = unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Class<?> typeClass = getClass(module.getClassLoader(), type);
         serviceRefUMDM.setServiceRefType(typeClass.getName());
-        if (!isEmpty(value)) {
-            serviceRefUMDM.setServiceInterface(value);
+        // ref service interface
+        if (!isEmpty(annotation.value())) {
+            serviceRefUMDM.setServiceInterface(annotation.value());
         } else if (Service.class.isAssignableFrom(typeClass)) {
             serviceRefUMDM.setServiceInterface(typeClass.getName());
         } else {
             serviceRefUMDM.setServiceInterface(Service.class.getName());
         }
-
-        final boolean isJAXRPC = serviceRefUMDM.getMappingFile() != null // TODO: is mappingFile check required?
-                || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
-        serviceRefUMDM.setType(isJAXRPC ? ServiceRefHandler.Type.JAXRPC : ServiceRefHandler.Type.JAXWS);
+        // ref type
+        processType(serviceRefUMDM);
 
         return serviceRefUMDM;
     }
 
-    private Class<?> getClass(final ClassLoader classLoader, final String className) throws DeploymentUnitProcessingException { // TODO: refactor to common code
+    private static Class<?> getClass(final ClassLoader classLoader, final String className) throws DeploymentUnitProcessingException { // TODO: refactor to common code
         if (!isEmpty(className)) {
             try {
                 return classLoader.loadClass(className);
@@ -230,8 +240,8 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         return null;
     }
 
-    private static UnifiedVirtualFile getUnifiedVirtualFile(final DeploymentUnit deploymentUnit) { // TODO: refactor to common code
-        final ResourceRoot resourceRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
+    private static UnifiedVirtualFile getUnifiedVirtualFile(final DeploymentUnit unit) { // TODO: refactor to common code
+        final ResourceRoot resourceRoot = unit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
         return new VirtualFileAdaptor(resourceRoot.getRoot());
     }
 
