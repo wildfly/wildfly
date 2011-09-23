@@ -157,8 +157,16 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             serviceRefUMDM.setServiceRefName(name);
             wsRefRegistry.add(name, serviceRefUMDM);
         }
-        processServiceRef(deploymentUnit, serviceRefUMDM, classLoader, name, type, value, wsdlLocation);
-        processInjectionTargets(deploymentUnit, targetDescription, serviceRefUMDM);
+        final Class<?> typeClass = getClass(classLoader, type);
+        processServiceRef(deploymentUnit, serviceRefUMDM, typeClass, name, value, wsdlLocation);
+        if (targetDescription != null) {
+            // @WebServiceRef specified on field or method
+            processInjectionTargets(deploymentUnit, targetDescription, serviceRefUMDM);
+        } else {
+            // @WebServiceRef specified on class
+            final Class<?> target = getClass(classLoader, classInfo.name().toString());
+            processAnnotatedElement(target, serviceRefUMDM);
+        }
         final InjectionSource valueSource = new WSRefValueSource(serviceRefUMDM);
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
@@ -189,23 +197,16 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         throw new UnsupportedOperationException();
     }
 
-    private UnifiedServiceRefMetaData processServiceRef(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final ClassLoader classLoader, final String name, final String type, final String value, final String wsdlLocation) {
+    private UnifiedServiceRefMetaData processServiceRef(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final Class<?> typeClass, final String name, final String value, final String wsdlLocation) throws DeploymentUnitProcessingException  {
         // TODO handle mappedName
-        final Class<?> typeClass;
-        try {
-            typeClass = classLoader.loadClass(type);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Could not load class " + type);
-        }
-
         if (wsdlLocation != null && wsdlLocation.length() > 0) {
             serviceRefUMDM.setWsdlFile(wsdlLocation);
         }
-        serviceRefUMDM.setServiceRefType(type);
+        serviceRefUMDM.setServiceRefType(typeClass.getName());
         if (!isEmpty(value)) {
             serviceRefUMDM.setServiceInterface(value);
         } else if (Service.class.isAssignableFrom(typeClass)) {
-            serviceRefUMDM.setServiceInterface(type);
+            serviceRefUMDM.setServiceInterface(typeClass.getName());
         } else {
             serviceRefUMDM.setServiceInterface(Service.class.getName());
         }
@@ -215,6 +216,18 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         serviceRefUMDM.setType(isJAXRPC ? ServiceRefHandler.Type.JAXRPC : ServiceRefHandler.Type.JAXWS);
 
         return serviceRefUMDM;
+    }
+
+    private Class<?> getClass(final ClassLoader classLoader, final String className) throws DeploymentUnitProcessingException { // TODO: refactor to common code
+        if (!isEmpty(className)) {
+            try {
+                return classLoader.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                throw new DeploymentUnitProcessingException("Could not load class " + className, e);
+            }
+        }
+
+        return null;
     }
 
     private static UnifiedVirtualFile getUnifiedVirtualFile(final DeploymentUnit deploymentUnit) { // TODO: refactor to common code
