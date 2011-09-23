@@ -17,8 +17,9 @@
 package org.jboss.as.test.smoke.embedded.stilts;
 
 import static org.jboss.as.test.smoke.embedded.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
-
 import java.io.InputStream;
+import org.jboss.as.test.smoke.embedded.stilts.bundle.SimpleStomplet;
+import org.jboss.as.test.smoke.embedded.stilts.bundle.SimpleStompletActivator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -88,7 +89,7 @@ public class SimpleStompletTestCase {
 
         final List<String> outbound = new ArrayList<String>();
         final CountDownLatch outboundLatch = new CountDownLatch(2);
-        SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
+        SubscriptionBuilder builder = client.subscribe(SimpleStomplet.DESTINATION_QUEUE_ONE);
         builder.withMessageHandler(new MessageHandler() {
             public void handle(StompMessage message) {
                 String content = message.getContentAsString();
@@ -98,8 +99,8 @@ public class SimpleStompletTestCase {
         });
         ClientSubscription subscription = builder.start();
 
-        client.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg1"));
-        client.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg2"));
+        client.send(StompMessages.createStompMessage(SimpleStomplet.DESTINATION_QUEUE_ONE, "msg1"));
+        client.send(StompMessages.createStompMessage(SimpleStomplet.DESTINATION_QUEUE_ONE, "msg2"));
 
         Assert.assertTrue("No latch timeout", outboundLatch.await(3, TimeUnit.SECONDS));
         Assert.assertEquals("msg1", outbound.get(0));
@@ -117,7 +118,7 @@ public class SimpleStompletTestCase {
 
         final List<String> outbound = new ArrayList<String>();
         final CountDownLatch outboundLatch = new CountDownLatch(2);
-        SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
+        SubscriptionBuilder builder = client.subscribe(SimpleStomplet.DESTINATION_QUEUE_ONE);
         builder.withMessageHandler(new MessageHandler() {
             public void handle(StompMessage message) {
                 String content = message.getContentAsString();
@@ -128,8 +129,8 @@ public class SimpleStompletTestCase {
         ClientSubscription subscription = builder.start();
 
         ClientTransaction tx = client.begin();
-        tx.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg1"));
-        tx.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg2"));
+        tx.send(StompMessages.createStompMessage(SimpleStomplet.DESTINATION_QUEUE_ONE, "msg1"));
+        tx.send(StompMessages.createStompMessage(SimpleStomplet.DESTINATION_QUEUE_ONE, "msg2"));
         tx.commit();
 
         Assert.assertTrue("No latch timeout", outboundLatch.await(3, TimeUnit.SECONDS));
