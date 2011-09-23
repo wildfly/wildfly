@@ -67,22 +67,29 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
 
         final List<BindingConfiguration> bindingDescriptions = new LinkedList<BindingConfiguration>();
         for (final ServiceReferenceMetaData serviceRefMD : serviceRefsMD) {
-            final String serviceRefTypeName = serviceRefMD.getServiceRefType();
-            final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
-            translate(serviceRefMD, serviceRefUMDM);
-            final WSReferences wsRefRegistry = getWSRefRegistry(unit);
-            wsRefRegistry.add(serviceRefMD.getName(), serviceRefUMDM);
+            final UnifiedServiceRefMetaData serviceRefUMDM = getServiceRef(unit, serviceRefMD);
             final WSRefValueSource valueSource = new WSRefValueSource(serviceRefUMDM);
-            final BindingConfiguration bindingConfiguration = new BindingConfiguration(serviceRefMD.getName(), valueSource);
+            final BindingConfiguration bindingConfiguration = new BindingConfiguration(serviceRefUMDM.getServiceRefName(), valueSource);
             bindingDescriptions.add(bindingConfiguration);
-            processInjectionTargets(unit, serviceRefMD.getInjectionTargets(), serviceRefUMDM);
+            final String serviceRefTypeName = serviceRefUMDM.getServiceRefType();
             final Class<?> serviceRefType = getClass(classLoader, serviceRefTypeName);
             processInjectionTargets(moduleDescription, applicationClasses, valueSource, classLoader, deploymentReflectionIndex, serviceRefMD, serviceRefType);
         }
         return bindingDescriptions;
     }
 
-    private static void processInjectionTargets(final DeploymentUnit unit, final Set<ResourceInjectionTargetMetaData> injectionTargets, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {
+    private static UnifiedServiceRefMetaData getServiceRef(final DeploymentUnit unit, final ServiceReferenceMetaData serviceRefMD) throws DeploymentUnitProcessingException {
+        // construct service ref
+        final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
+        translate(serviceRefMD, serviceRefUMDM);
+        processWSFeatures(unit, serviceRefMD.getInjectionTargets(), serviceRefUMDM);
+        // register it
+        final WSReferences wsRefRegistry = getWSRefRegistry(unit);
+        wsRefRegistry.add(serviceRefMD.getName(), serviceRefUMDM);
+        return serviceRefUMDM;
+    }
+
+    private static void processWSFeatures(final DeploymentUnit unit, final Set<ResourceInjectionTargetMetaData> injectionTargets, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {
         if (injectionTargets == null || injectionTargets.size() == 0) return;
         if (injectionTargets.size() > 1) {
            // TODO: We should validate all the injection targets whether they're compatible.

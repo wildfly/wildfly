@@ -139,7 +139,7 @@
         <version.org.jboss.management.console>1.0.0.Beta17</version.org.jboss.management.console>
         <version.org.jboss.marshalling.jboss-marshalling>1.3.0.GA</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.marshalling.jboss-marshalling-river>1.3.0.GA</version.org.jboss.marshalling.jboss-marshalling-river>
-        <version.org.jboss.metadata>7.0.0.Beta13-SNAPSHOT</version.org.jboss.metadata>
+        <version.org.jboss.metadata>7.0.0.Beta12</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.1.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.0.2.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.1.GA</version.org.jboss.msc.jboss-msc>
@@ -194,7 +194,7 @@
         <version.org.jboss.weld.weld>1.1.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.0.Beta2</version.org.jboss.ws.api>
-        <version.org.jboss.ws.common>2.0.0.Beta8</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common>2.0.0.Beta9</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.0.0.Beta1</version.org.jboss.ws.common.tools>
         <version.org.jboss.ws.jbossws-cxf>4.0.0.Beta4</version.org.jboss.ws.jbossws-cxf>
         <version.org.jboss.ws.spi>2.0.0.Beta9</version.org.jboss.ws.spi>
