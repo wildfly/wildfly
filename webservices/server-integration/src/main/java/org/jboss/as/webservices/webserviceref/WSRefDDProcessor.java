@@ -22,9 +22,10 @@
 
 package org.jboss.as.webservices.webserviceref;
 
+import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
-import static org.jboss.as.webservices.webserviceref.WSRefUtils.translate;
 import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
+import static org.jboss.as.webservices.webserviceref.WSRefUtils.translate;
 
 import java.lang.reflect.AccessibleObject;
 import java.util.Collections;

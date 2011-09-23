@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -156,53 +158,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
             }
         }
         return classType;
-    }
-
-    protected static AccessibleObject getInjectionTarget(final String injectionTargetClassName, final String injectionTargetName, final ClassLoader classLoader, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-        final Class<?> injectionTargetClass;
-        try {
-            injectionTargetClass = classLoader.loadClass(injectionTargetClassName);
-        } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load " + injectionTargetClassName + " referenced in env-entry injection point ", e);
-        }
-        final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
-        String methodName = "set" + injectionTargetName.substring(0, 1).toUpperCase() + injectionTargetName.substring(1);
-
-        boolean methodFound = false;
-        Method method = null;
-        Field field = null;
-        Class<?> current = injectionTargetClass;
-        while (current != Object.class && current != null && !methodFound) {
-            final Collection<Method> methods = index.getAllMethods(methodName);
-            for (Method m : methods) {
-                if (m.getParameterTypes().length == 1) {
-                    if (m.isBridge() || m.isSynthetic()) {
-                        continue;
-                    }
-                    if (methodFound) {
-                        throw new DeploymentUnitProcessingException("Two setter methods for " + injectionTargetName + " on class " + injectionTargetClassName + " found when applying <injection-target> for env-entry");
-                    }
-                    methodFound = true;
-                    method = m;
-                }
-            }
-            current = current.getSuperclass();
-        }
-        if (method == null) {
-            current = injectionTargetClass;
-            while (current != Object.class && current != null && field == null) {
-                field = index.getField(injectionTargetName);
-                if (field != null) {
-                    break;
-                }
-                current = current.getSuperclass();
-            }
-        }
-        if (field == null && method == null) {
-            throw new DeploymentUnitProcessingException("Could not resolve injection point " + injectionTargetName + " on class " + injectionTargetClassName + " specified in web.xml");
-        }
-
-        return field != null ? field : method;
     }
 
 }
