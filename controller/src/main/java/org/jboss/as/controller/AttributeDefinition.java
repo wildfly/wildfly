@@ -124,7 +124,7 @@ public abstract class AttributeDefinition {
     }
 
     public String[] getRequires() {
-        return alternatives;
+        return requires;
     }
 
     public EnumSet<AttributeAccess.Flag> getFlags() {
