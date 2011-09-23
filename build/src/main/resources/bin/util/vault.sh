@@ -102,8 +102,5 @@ echo "  VAULT Classpath: $JBOSS_VAULT_CLASSPATH"
 echo "========================================================================="
 echo ""
 
-echo "$JAVA" -classpath "$JBOSS_VAULT_CLASSPATH" \
-   org.jboss.as.security.vault.VaultTool
-
 "$JAVA" -classpath "$JBOSS_VAULT_CLASSPATH" \
    org.jboss.as.security.vault.VaultTool

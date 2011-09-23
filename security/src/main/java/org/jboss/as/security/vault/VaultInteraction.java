@@ -102,14 +102,7 @@ public class VaultInteraction {
                         while (attributeName == null || attributeName.length() == 0) {
                             attributeName = console.readLine("Enter Attribute Name:");
                         }
-
-                        String sharedKey = null;
-                        while (sharedKey == null || sharedKey.length() == 0) {
-                            sharedKey = console.readLine("Enter Shared Key:");
-                        }
-
-                        // TODO: PBox 4.0.3 will have the vault.exists() method which is better
-                        if (vault.retrieve(vaultBlock, attributeName, sharedKey.getBytes()) == null)
+                        if (vault.exists(vaultBlock, attributeName) == false)
                             System.out.println("No value has been store for (" + vaultBlock + ", " + attributeName + ")");
                         else
                             System.out.println("A value exists for (" + vaultBlock + ", " + attributeName + ")");
