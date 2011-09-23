@@ -21,12 +21,12 @@
  */
 package org.jboss.as.webservices.webserviceref;
 
+import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
 import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
 
 import java.lang.reflect.AccessibleObject;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceRef;
@@ -58,7 +58,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.modules.Module;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
@@ -110,7 +109,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         // NOOP
     }
 
-    private void processFieldRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final FieldInfo fieldInfo) {
+    private void processFieldRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final FieldInfo fieldInfo) throws DeploymentUnitProcessingException {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? fieldInfo.type().name().toString() : annotation.type();
         final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(),  fieldName, injectionType);
@@ -118,7 +117,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         processRef(deploymentUnit, localContextName, injectionType, annotation.value(), annotation.wsdlLocation(), fieldInfo.declaringClass(), targetDescription, localContextName);
     }
 
-    private void processMethodRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final MethodInfo methodInfo) {
+    private void processMethodRef(final DeploymentUnit deploymentUnit, final WSRefAnnotationWrapper annotation, final MethodInfo methodInfo) throws DeploymentUnitProcessingException {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@WebServiceRef injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -140,7 +139,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         processRef(deploymentUnit, annotation.name(), annotation.type(), annotation.value(), annotation.wsdlLocation(), classInfo, null, annotation.name());
     }
 
-    private void processRef(final DeploymentUnit deploymentUnit, final String name, final String type, final String value, final String wsdlLocation, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName) {
+    private void processRef(final DeploymentUnit deploymentUnit, final String name, final String type, final String value, final String wsdlLocation, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName) throws DeploymentUnitProcessingException {
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
 
@@ -159,6 +158,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             wsRefRegistry.add(name, serviceRefUMDM);
         }
         processServiceRef(deploymentUnit, serviceRefUMDM, classLoader, name, type, value, wsdlLocation);
+        processInjectionTargets(deploymentUnit, targetDescription, serviceRefUMDM);
         final InjectionSource valueSource = new WSRefValueSource(serviceRefUMDM);
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
