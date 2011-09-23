@@ -2221,7 +2221,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         attr = bindingGroup.get(DEFAULT_INTERFACE);
         writeAttribute(writer, Attribute.DEFAULT_INTERFACE, attr.asString());
 
-        if (fromServer && bindingGroup.hasDefined(PORT_OFFSET) && bindingGroup.get(PORT_OFFSET).asInt() > 0) {
+        if (fromServer && bindingGroup.hasDefined(PORT_OFFSET)
+                && (bindingGroup.getType() == ModelType.EXPRESSION || bindingGroup.get(PORT_OFFSET).asInt() > 0)) {
             attr = bindingGroup.get(PORT_OFFSET);
             writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
         }
