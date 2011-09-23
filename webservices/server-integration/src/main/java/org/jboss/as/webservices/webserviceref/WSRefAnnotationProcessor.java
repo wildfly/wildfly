@@ -22,8 +22,11 @@
 package org.jboss.as.webservices.webserviceref;
 
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
+import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
 
+import java.lang.reflect.AccessibleObject;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceRef;
@@ -47,6 +50,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -54,6 +58,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.modules.Module;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
@@ -164,6 +169,26 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    private static void processInjectionTargets(final DeploymentUnit unit, final InjectionTarget injectionTarget, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {
+        if (injectionTarget == null) return;
+        final Module module = unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final DeploymentReflectionIndex deploymentReflectionIndex = unit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final String injectionTargetClassName = injectionTarget.getClassName();
+        final String injectionTargetName = getInjectionTargetName(injectionTarget);
+        final AccessibleObject fieldOrMethod = getInjectionTarget(injectionTargetClassName, injectionTargetName, module.getClassLoader(), deploymentReflectionIndex);
+        processAnnotatedElement(fieldOrMethod, serviceRefUMDM);
+    }
+
+    private static String getInjectionTargetName(final InjectionTarget injectionTarget) {
+        final String name = injectionTarget.getName();
+        if (injectionTarget instanceof FieldInjectionTarget) {
+            return name;
+        } else if (injectionTarget instanceof MethodInjectionTarget) {
+            return name.substring(3, 4).toUpperCase() + name.substring(4);
+        }
+        throw new UnsupportedOperationException();
+    }
+
     private UnifiedServiceRefMetaData processServiceRef(final DeploymentUnit unit, final UnifiedServiceRefMetaData serviceRefUMDM, final ClassLoader classLoader, final String name, final String type, final String value, final String wsdlLocation) {
         // TODO handle mappedName
         final Class<?> typeClass;
@@ -173,8 +198,6 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             throw new RuntimeException("Could not load class " + type);
         }
 
-        //serviceRefUMDM.setHandlerChain(serviceRefMD.get); TODO: propagate handlerChain - inspect @HandlerChain
-        // TODO: does DD have higher precedence than annotation values ?
         if (wsdlLocation != null && wsdlLocation.length() > 0) {
             serviceRefUMDM.setWsdlFile(wsdlLocation);
         }
