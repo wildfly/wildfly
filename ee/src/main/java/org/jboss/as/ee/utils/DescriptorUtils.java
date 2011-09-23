@@ -25,7 +25,10 @@ package org.jboss.as.ee.utils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class for working with method descriptors
@@ -33,6 +36,24 @@ import java.util.List;
  * @author Stuart Douglas
  */
 public class DescriptorUtils {
+
+
+    private static final Map<Class<?>, String> primitives;
+
+    static {
+        Map<Class<?>, String> p = new IdentityHashMap<Class<?>, String>();
+        p.put(void.class, "V");
+        p.put(byte.class, "B");
+        p.put(char.class, "C");
+        p.put(double.class, "D");
+        p.put(float.class, "F");
+        p.put(int.class, "I");
+        p.put(long.class, "J");
+        p.put(short.class, "S");
+        p.put(boolean.class, "Z");
+        primitives = Collections.unmodifiableMap(p);
+    }
+
     /**
      * Changes a class name to the internal form suitable for use in a descriptor string.
      * <p/>
@@ -44,25 +65,10 @@ public class DescriptorUtils {
     }
 
     public static String makeDescriptor(Class<?> c) {
-        if (void.class.equals(c)) {
-            return "V";
-        } else if (byte.class.equals(c)) {
-            return "B";
-        } else if (char.class.equals(c)) {
-            return "C";
-        } else if (double.class.equals(c)) {
-            return "D";
-        } else if (float.class.equals(c)) {
-            return "F";
-        } else if (int.class.equals(c)) {
-            return "I";
-        } else if (long.class.equals(c)) {
-            return "J";
-        } else if (short.class.equals(c)) {
-            return "S";
-        } else if (boolean.class.equals(c)) {
-            return "Z";
-        } else if (c.isArray()) {
+        String primitive = primitives.get(c);
+        if(primitive != null) {
+            return primitive;
+        }else if (c.isArray()) {
             return c.getName().replace(".", "/");
         } else {
             return makeDescriptor(c.getName());
