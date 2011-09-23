@@ -194,12 +194,6 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(true, true);
     }
 
-    @Ignore(value="We don't want a test file in the build dir")
-    @Test
-    public void testStandaloneJcaXml() throws Exception {
-        standaloneXmlTest("standalone-jca.xml");
-    }
-
     private void standaloneXmlTest(boolean preview, boolean ha) throws Exception {
 
         String profile = preview ? (ha ? "standalone-preview-ha.xml" : "standalone-preview.xml")
