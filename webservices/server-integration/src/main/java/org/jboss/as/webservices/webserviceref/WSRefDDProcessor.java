@@ -68,7 +68,6 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         final List<BindingConfiguration> bindingDescriptions = new LinkedList<BindingConfiguration>();
         for (final ServiceReferenceMetaData serviceRefMD : serviceRefsMD) {
             final String serviceRefTypeName = serviceRefMD.getServiceRefType();
-            final Class<?> serviceRefType = getClass(classLoader, serviceRefTypeName);
             final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
             translate(serviceRefMD, serviceRefUMDM);
             final WSReferences wsRefRegistry = getWSRefRegistry(unit);
@@ -77,6 +76,7 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(serviceRefMD.getName(), valueSource);
             bindingDescriptions.add(bindingConfiguration);
             processInjectionTargets(unit, serviceRefMD.getInjectionTargets(), serviceRefUMDM);
+            final Class<?> serviceRefType = getClass(classLoader, serviceRefTypeName);
             processInjectionTargets(moduleDescription, applicationClasses, valueSource, classLoader, deploymentReflectionIndex, serviceRefMD, serviceRefType);
         }
         return bindingDescriptions;
@@ -99,7 +99,7 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
         processAnnotatedElement(fieldOrMethod, serviceRefUMDM);
     }
 
-    private Class<?> getClass(final ClassLoader classLoader, final String className) throws DeploymentUnitProcessingException {
+    private Class<?> getClass(final ClassLoader classLoader, final String className) throws DeploymentUnitProcessingException { // TODO: refactor to common code
         if (!isEmpty(className)) {
             try {
                 return classLoader.loadClass(className);
