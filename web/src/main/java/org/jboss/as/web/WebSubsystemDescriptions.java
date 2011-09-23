@@ -729,5 +729,128 @@ class WebSubsystemDescriptions {
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 
+    public static ModelNode getConfigurationDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+    public static ModelNode getContainerDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.container"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
 
+    public static ModelNode getMimeMappingAddDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.add-mime"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getMimeMappingRemoveDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getReWriteDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getAccessLogDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getDirectoryDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.directory"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getReWriteCondDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getAccessLogAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log-add"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getAccessLogRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log-remove"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getReWriteRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite-remove"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getReWriteAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite-add"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getReWriteConditionAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition-add"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getReWriteConditionRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition-remove"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
 }
