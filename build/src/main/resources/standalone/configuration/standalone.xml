@@ -187,17 +187,14 @@
                     http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA
                 -->
                 <property name="org.jboss.osgi.system.modules">
-                org.apache.commons.logging,
                 org.apache.log4j,
-                org.jboss.as.osgi,
-                org.slf4j,
+                org.slf4j
                 </property>
                 <!--
                     Framework environment property identifying extra packages which the system bundle
                     must export from the current execution environment
                 -->
                 <property name="org.osgi.framework.system.packages.extra">
-                org.apache.commons.logging;version=1.1.1,
                 org.apache.log4j;version=1.2,
                 org.jboss.as.osgi.service;version=7.0,
                 org.jboss.osgi.deployment.interceptor;version=1.0,
@@ -213,6 +210,7 @@
             <modules>
                 <!-- modules registered with the OSGi layer on startup -->
                 <module identifier="javaee.api"/>
+                <module identifier="org.apache.commons.logging"/>
                 <module identifier="org.jboss.logging"/>
                 <!-- bundles installed on startup -->
                 <module identifier="org.apache.aries.util"/>

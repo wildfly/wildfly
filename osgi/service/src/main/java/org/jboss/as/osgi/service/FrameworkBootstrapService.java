@@ -271,13 +271,16 @@ public class FrameworkBootstrapService implements Service<Void> {
             ModuleIdentifier systemIdentifier = systemModule.getIdentifier();
             ModuleLoader systemLoader = systemModule.getModuleLoader();
             ModuleSpec.Builder specBuilder = ModuleSpec.build(ModuleIdentifier.create(JBOSGI_PREFIX + ".framework"));
-            PathFilter acceptAll = PathFilters.acceptAll();
-            specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, systemLoader, systemIdentifier, false));
+            specBuilder.addDependency(createSystemModuleDependency(systemLoader, systemIdentifier));
 
             // Add a dependency on the default framework module
             ModuleLoader bootLoader = Module.getBootModuleLoader();
             ModuleIdentifier frameworkIdentifier = ModuleIdentifier.create("org.jboss.osgi.framework");
-            specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, frameworkIdentifier, false));
+            specBuilder.addDependency(createSystemModuleDependency(bootLoader, frameworkIdentifier));
+
+            // Add a dependency on the subsystem module
+            ModuleIdentifier subsystemIdentifier = ModuleIdentifier.create("org.jboss.as.osgi");
+            specBuilder.addDependency(createSystemModuleDependency(bootLoader, subsystemIdentifier));
 
             // Add the user defined module dependencies
             String modulesProps = (String) injectedSubsystemState.getValue().getProperties().get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
@@ -286,7 +289,7 @@ public class FrameworkBootstrapService implements Service<Void> {
                     moduleProp = moduleProp.trim();
                     if (moduleProp.length() > 0) {
                         ModuleIdentifier moduleId = ModuleIdentifier.create(moduleProp);
-                        DependencySpec moduleDep = DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, moduleId, false);
+                        DependencySpec moduleDep = createSystemModuleDependency(bootLoader, moduleId);
                         specBuilder.addDependency(moduleDep);
                     }
                 }
@@ -312,6 +315,11 @@ public class FrameworkBootstrapService implements Service<Void> {
             } catch (ModuleLoadException ex) {
                 throw new IllegalStateException(ex);
             }
+        }
+
+        private DependencySpec createSystemModuleDependency(ModuleLoader moduleLoader, ModuleIdentifier identifier) {
+            PathFilter acceptAll = PathFilters.acceptAll();
+            return DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, moduleLoader, identifier, false);
         }
     }
 }
