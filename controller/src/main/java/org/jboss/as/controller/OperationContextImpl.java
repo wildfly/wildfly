@@ -306,6 +306,7 @@ final class OperationContextImpl implements OperationContext {
             persistenceResource = modelController.writeModel(model, affectsModel);
         } catch (ConfigurationPersistenceException e) {
             response.get(OUTCOME).set(FAILED);
+            log.errorf(e, "Failed to persist configuration change");
             response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
             return resultAction = ResultAction.ROLLBACK;
         }

@@ -1630,25 +1630,25 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 for (Property rolePerms : matchRoles.getValue().get(ROLE).asPropertyList()) {
                     final String role = rolePerms.getName();
                     final ModelNode perms = rolePerms.getValue();
-                    if (perms.get(SecurityRoleAdd.SEND.getName()).asBoolean()) {
+                    if (perms.get(SecurityRoleAdd.SEND.getName()).asBoolean(false)) {
                         send.add(role);
                     }
-                    if (perms.get(SecurityRoleAdd.CONSUME.getName()).asBoolean()) {
+                    if (perms.get(SecurityRoleAdd.CONSUME.getName()).asBoolean(false)) {
                         consume.add(role);
                     }
-                    if (perms.get(SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName()).asBoolean()) {
+                    if (perms.get(SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName()).asBoolean(false)) {
                         createDurableQueue.add(role);
                     }
-                    if (perms.get(SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName()).asBoolean()) {
+                    if (perms.get(SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName()).asBoolean(false)) {
                         deleteDurableQueue.add(role);
                     }
-                    if (perms.get(SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName()).asBoolean()) {
+                    if (perms.get(SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName()).asBoolean(false)) {
                         createNonDurableQueue.add(role);
                     }
-                    if (perms.get(SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName()).asBoolean()) {
+                    if (perms.get(SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName()).asBoolean(false)) {
                         deleteNonDurableQueue.add(role);
                     }
-                    if (perms.get(SecurityRoleAdd.MANAGE.getName()).asBoolean()) {
+                    if (perms.get(SecurityRoleAdd.MANAGE.getName()).asBoolean(false)) {
                         manageRoles.add(role);
                     }
                 }
