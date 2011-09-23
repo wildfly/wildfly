@@ -23,7 +23,6 @@
 package org.jboss.as.web;
 
 import org.apache.catalina.servlets.WebdavServlet;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -112,8 +111,6 @@ public class WebExtension implements Extension {
         hosts.registerReadWriteAttribute(Constants.ENABLE_WELCOME_ROOT, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
         hosts.registerReadWriteAttribute(Constants.DEFAULT_WEB_MODULE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
 
-        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebSubsystemDescriptionProviders.DEPLOYMENT);
-        final ManagementResourceRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), WebSubsystemDescriptionProviders.SERVLET);
         // Attributes
         registration.registerReadWriteAttribute(Constants.NATIVE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(Constants.DEFAULT_VIRTUAL_SERVER, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
@@ -164,14 +161,8 @@ public class WebExtension implements Extension {
         container.registerOperationHandler("remove-mime", MimeMappingRemove.INSTANCE, MimeMappingRemove.INSTANCE, false);
         container.registerReadWriteAttribute(Constants.WELCOME_FILE, null, new WriteAttributeHandlers. ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
 
-        DescriptionProvider NULL = new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return new ModelNode();
-            }
-        };
-        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(NULL);
-        final ManagementResourceRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), NULL);
+        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebSubsystemDescriptionProviders.DEPLOYMENT);
+        final ManagementResourceRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), WebSubsystemDescriptionProviders.SERVLET);
         ServletDeploymentStats.register(servlets);
     }
 
