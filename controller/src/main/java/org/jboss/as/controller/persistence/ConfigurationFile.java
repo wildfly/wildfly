@@ -266,11 +266,6 @@ public class ConfigurationFile {
         return mainFile;
     }
 
-
-    public boolean isMainFile() {
-        return mainFile.equals(getBootFile());
-    }
-
     void successfulBoot() throws ConfigurationPersistenceException {
         synchronized (this) {
             if (doneBootup.get()) {
@@ -286,7 +281,7 @@ public class ConfigurationFile {
 
                 final File historyBase = new File(historyRoot, mainFile.getName());
                 final File last = addSuffixToFile(historyBase, LAST);
-                final File original = addSuffixToFile(historyBase, BOOT);
+                final File boot = addSuffixToFile(historyBase, BOOT);
                 final File initial = addSuffixToFile(historyBase, INITIAL);
 
                 if (!initial.exists()) {
@@ -294,8 +289,7 @@ public class ConfigurationFile {
                 }
 
                 copyFile(mainFile, last);
-                copyFile(mainFile, original);
-                snapshot();
+                copyFile(mainFile, boot);
             } catch (IOException e) {
                 throw new ConfigurationPersistenceException(String.format("Failed to create backup copies of configuration file %s", bootFile), e);
             }
@@ -326,7 +320,7 @@ public class ConfigurationFile {
         if (!doneBootup.get()) {
             return;
         }
-        File last = addSuffixToFile(new File(currentHistory, mainFile.getName()), LAST);
+        File last = addSuffixToFile(new File(historyRoot, mainFile.getName()), LAST);
         try {
             copyFile(mainFile, last);
         } catch (IOException e) {
