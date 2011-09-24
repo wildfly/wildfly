@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.component.messagedriven;
 
+import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
@@ -36,6 +37,7 @@ import org.jboss.msc.value.InjectedValue;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ResourceAdapter;
+import java.util.Collection;
 import java.util.Properties;
 
 /**
@@ -124,8 +126,11 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     }
 
     ServiceName getResourceAdapterServiceName() {
-        // See ResourceAdapterDeploymentService
-        return ServiceName.JBOSS.append("ra").append(this.resourceAdapterName);
+        final Collection<ServiceName> serviceNames = ConnectorServices.getResourceAdapteServiceName(this.resourceAdapterName);
+        if (serviceNames == null || serviceNames.isEmpty()) {
+            throw new IllegalStateException("Cannot find any resource adapter service for resource adapter " + this.resourceAdapterName);
+        }
+        return serviceNames.iterator().next();
     }
 
     private String stripDotRarSuffix(final String raName) {
