@@ -52,7 +52,7 @@ public class ResourceAdapterNameTestCase {
 
     private static final Logger logger = Logger.getLogger(ResourceAdapterNameTestCase.class);
 
-    private static final String REPLY_QUEUE_JNDI_NAME = "java:/resource-adapter-name-test/replyQueue";
+    private static final String REPLY_QUEUE_JNDI_NAME = "java:jboss/resource-adapter-name-test/replyQueue";
 
     @EJB(mappedName = "java:module/JMSMessagingUtil")
     private JMSMessagingUtil jmsUtil;
@@ -97,6 +97,7 @@ public class ResourceAdapterNameTestCase {
         final Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
         // test the reply
         final TextMessage textMessage = (TextMessage) reply;
+        Assert.assertNotNull(textMessage);
         Assert.assertEquals("Unexpected reply message on reply queue: " + this.replyQueue, OverriddenResourceAdapterNameMDB.REPLY, textMessage.getText());
     }
 
