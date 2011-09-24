@@ -48,7 +48,7 @@ public enum Namespace {
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DOMAIN_1_0;
+    public static final Namespace CURRENT = DOMAIN_1_1;
 
     private final String name;
 
