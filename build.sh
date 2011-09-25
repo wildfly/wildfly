@@ -30,7 +30,7 @@ MAVEN_SEARCH_PATH="\
     maven"
 
 # the default arguments
-MVN_OPTIONS="-s tools/maven/conf/settings.xml"
+MVN_OPTIONS="-s tools/maven/conf/settings.xml $TESTSUITE_OPTS"
 
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
@@ -47,6 +47,53 @@ case "`uname`" in
         darwin=true
         ;;
 esac
+
+# testsuite support
+CMD_LINE_PARAMS=
+TESTS_SPECIFIED="N"
+DEFAULT_TESTS="-Dintegration.module -Dsmoke.integration.tests"
+ALL_TEST_MODULES="-Dapi.module -Ddomain.module -Dintegration.module -Dspec.module"
+ALL_INTEGRATION_TESTS="-Dbasic.integration.tests -Dcompat.integration.tests -Dclustering.integration.tests -Dtimerservice.integration.tests"
+
+#
+# Helper to process command line for test directives
+# - user-specified parameters (allTests, stress-tests, benchmark-tests) are translated into the appropriate
+# maven build profiles and removed from the command line
+# - smoke tests run with build
+#
+process_test_directives() {
+
+  # for each parameter, check for testsuite directives
+  for param in $@
+  do
+    case $param in
+      # if someone specified -DallTests, run all tests except benchmark and
+      -DallTests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $ALL_TEST_MODULES $ALL_INTEGRATION_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # if someone specified -Dstress-tests, run stress tests only
+      -Dstress-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS -Dstress.module"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # if someone specified -Dstress-tests, run stress tests only
+      -Dbenchmark-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS -Dbenchmark.module"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # pass through all other params
+      *)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param"
+        ;;
+    esac
+  done
+
+  # if no tests specified, run smoke tests
+  if [[ $TESTS_SPECIFIED == "N" ]]; then
+    CMD_LINE_PARAMS="$CMD_LINE_PARAMS $DEFAULT_TESTS"
+  fi
+}
 
 #
 # Helper to complain.
@@ -159,12 +206,16 @@ main() {
     if [ -z "$MVN_GOAL" ]; then
       MVN_GOAL="install"
     fi
-    
+
+    # process test directives before calling maven
+    process_test_directives $MVN_GOAL
+    MVN_GOAL=$CMD_LINE_PARAMS
+
     # export some stuff for maven
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
     echo "$MVN $MVN_OPTIONS $MVN_GOAL"
-    
+
     # execute in debug mode, or simply execute
     if [ "x$MVN_DEBUG" != "x" ]; then
 	  /bin/sh -x $MVN $MVN_OPTIONS $MVN_GOAL
