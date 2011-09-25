@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.osgi.logging;
+package org.jboss.as.test.osgi.logging;
 
 import java.io.InputStream;
 
@@ -27,9 +27,9 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
-import org.jboss.as.testsuite.integration.osgi.logging.bundle.LoggingActivator;
-import org.jboss.as.testsuite.integration.osgi.logging.bundle.LoggingDelegate;
+import org.jboss.as.test.osgi.OSGiTestSupport;
+import org.jboss.as.test.osgi.logging.bundle.LoggingActivator;
+import org.jboss.as.test.osgi.logging.bundle.LoggingDelegate;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

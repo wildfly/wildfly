@@ -490,6 +490,23 @@
                                 <pluginExecution>
                                     <pluginExecutionFilter>
                                         <groupId>
+                                            org.codehaus.mojo
+                                        </groupId>
+                                        <artifactId>
+                                            xml-maven-plugin
+                                        </artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals>
+                                            <goal>transform</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
                                             org.apache.maven.plugins
                                         </groupId>
                                         <artifactId>
