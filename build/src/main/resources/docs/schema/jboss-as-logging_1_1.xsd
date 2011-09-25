@@ -216,7 +216,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="filter" type="filterType" minOccurs="0"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
-            <xs:element name="queue-length" type="positiveIntType" minOccurs="0"/>
+            <xs:element name="queue-length" type="queueLengthType" minOccurs="1" maxOccurs="1"/>
             <xs:element name="overflow-action" type="overflowActionType" minOccurs="0"/>
             <xs:element name="subhandlers" type="handlersType"/>
         </xs:all>
@@ -239,6 +239,16 @@
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="module" type="xs:string" use="required"/>
         <xs:attribute name="class" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="queueLengthType">
+        <xs:attribute name="value" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:positiveInteger">
+                    <xs:minExclusive value="1"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="overflowActionType">
