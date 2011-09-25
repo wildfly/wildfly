@@ -62,9 +62,8 @@ All of these are activated independently of each other, unlike the -P usage.
 
 4. Executing tests from the command line
 
-Tests are run using the build.sh and build.bat shell scripts in the testsuite directory.
-
-> cd testsuite
+Tests are run using the build.sh and build.bat shell scripts in the main build directory.
+At present, running the integration tests also runs the unit tests.
 
 # run the default module and its tests (-Dintegration.module -Dsmoke.integration.tests)
 > ./build.sh clean test
