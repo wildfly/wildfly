@@ -135,6 +135,16 @@ interface LoggingMessages {
     String invalidLogLevel(String level);
 
     /**
+     * A message indicating the overflow action, represented by the {@code overflowAction} parameter, is invalid.
+     *
+     * @param overflowAction the invalid overflow action.
+     *
+     * @return the message.
+     */
+    @Message(id = 11534, value = "Overflow action %s is invalid.")
+    String invalidOverflowAction(String overflowAction);
+
+    /**
      * A message indicating the target name value is invalid.
      *
      * @return the message.

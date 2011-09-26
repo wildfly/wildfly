@@ -22,49 +22,38 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.handlers.AsyncHandler;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.value.InjectedValue;
 
-import java.util.LinkedList;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
-import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
-import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
- * Operation responsible for updating the properties of an async logging handler.
+ * Date: 24.09.2011
  *
- * @author John Bailey
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class AsyncHandlerUpdateProperties extends AbstractModelUpdateHandler {
-    static final AsyncHandlerUpdateProperties INSTANCE = new AsyncHandlerUpdateProperties();
-
-    static final String OPERATION_NAME = HandlerUpdateProperties.OPERATION_NAME;
+public class LoggerUpdateProperties extends AbstractAddStepHandler {
 
     @Override
-    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        LEVEL.validateAndSet(operation, model);
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        ENCODING.validateAndSet(operation, model);
         FILTER.validateAndSet(operation, model);
-        FORMATTER.validateAndSet(operation, model);
-        OVERFLOW_ACTION.validateAndSet(operation, model);
-        QUEUE_LENGTH.validateAndSet(operation, model);
-        model.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
+        LEVEL.validateAndSet(operation, model);
     }
 
     @Override
@@ -72,32 +61,29 @@ public class AsyncHandlerUpdateProperties extends AbstractModelUpdateHandler {
                                         final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
         if (controller != null) {
             final Handler handler = controller.getValue();
             final ModelNode level = LEVEL.validateResolvedOperation(model);
             final ModelNode filter = FILTER.validateResolvedOperation(model);
-            final ModelNode formatter = FORMATTER.validateResolvedOperation(model);
-            final ModelNode queueLength = QUEUE_LENGTH.validateResolvedOperation(model);
+            final ModelNode encoding = ENCODING.validateResolvedOperation(model);
 
             if (level.isDefined()) {
-                handler.setLevel(java.util.logging.Level.parse(level.asString()));
+                handler.setLevel(Level.parse(level.asString()));
             }
 
             if (filter.isDefined()) {
-                // TODO (jrp) implement filter
+                // TODO - Implement filter
                 // handler.setFilter();
             }
 
-            if (formatter.isDefined()) {
-                AbstractFormatterSpec.fromModelNode(model).apply(handler);
-            }
-            final AsyncHandler asyncHandler = AsyncHandler.class.cast(handler);
-            asyncHandler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.validateResolvedOperation(operation).asString()));
-
-            // TODO (jrp) requires restart since it's in the AysncHandler constructor
-            if (queueLength.isDefined()) {
+            if (encoding.isDefined()) {
+                try {
+                    handler.setEncoding(encoding.asString());
+                } catch (UnsupportedEncodingException e) {
+                    throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
+                }
             }
         }
     }

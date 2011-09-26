@@ -22,31 +22,28 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.ExtHandler;
+import org.jboss.msc.service.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Handler;
-
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import java.util.logging.Level;
 
 /**
- * Parent operation responsible for updating the 'autoflush' property of logging handlers.
+ * Date: 23.09.2011
  *
- * @author John Bailey
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class FlushingHandlerUpdateProperties extends HandlerUpdateProperties {
-    @Override
-    protected void updateModel(final ModelNode operation, ModelNode model) throws OperationFailedException {
-        super.updateModel(operation, model);
-        AUTOFLUSH.validateAndSet(operation, model);
-    }
+interface HandlerService extends Service<Handler> {
 
-    @Override
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
-        final ModelNode autoflush = AUTOFLUSH.validateResolvedOperation(operation);
-        if (autoflush.isDefined()) {
-            ExtHandler.class.cast(handler).setAutoFlush(autoflush.asBoolean());
-        }
-    }
+    Level getLevel();
+
+    void setLevel(Level level);
+
+    String getEncoding();
+
+    void setEncoding(String encoding) throws UnsupportedEncodingException;
+
+    AbstractFormatterSpec getFormatterSpec();
+
+    void setFormatterSpec(AbstractFormatterSpec formatterSpec);
 }

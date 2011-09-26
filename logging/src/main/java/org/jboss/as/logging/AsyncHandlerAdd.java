@@ -24,14 +24,17 @@ package org.jboss.as.logging;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
@@ -52,15 +55,15 @@ class AsyncHandlerAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        LoggingValidators.validate(operation);
-        model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
+        LEVEL.validateAndSet(operation, model);
+        FILTER.validateAndSet(operation, model);
+        QUEUE_LENGTH.validateAndSet(operation, model);
+        OVERFLOW_ACTION.validateAndSet(operation, model);
         model.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
-        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
-        model.get(OVERFLOW_ACTION).set(operation.get(OVERFLOW_ACTION));
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
@@ -68,17 +71,22 @@ class AsyncHandlerAdd extends AbstractAddStepHandler {
         final AsyncHandlerService service = new AsyncHandlerService();
         final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
         final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
-        if (operation.hasDefined(SUBHANDLERS)) for (final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
+        final ModelNode subhandlers = model.get(SUBHANDLERS);
+        if (subhandlers.isDefined()) for (final ModelNode handlerName : subhandlers.asList()) {
             final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
             serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
             list.add(injectedValue);
         }
         service.addHandlers(list);
-        if (operation.hasDefined(QUEUE_LENGTH))
-            service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
-        if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-        if (operation.hasDefined(OVERFLOW_ACTION))
-            service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
+        service.setQueueLength(QUEUE_LENGTH.validateResolvedOperation(model).asInt());
+        final ModelNode level = LEVEL.validateResolvedOperation(model);
+        if (level.isDefined()) {
+            service.setLevel(Level.parse(level.asString()));
+        }
+        final ModelNode overflowAction = OVERFLOW_ACTION.validateResolvedOperation(model);
+        if (overflowAction.isDefined()) {
+            service.setOverflowAction(OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
+        }
 
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);

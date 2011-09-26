@@ -49,7 +49,7 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public final class CustomHandlerService implements Service<Handler> {
+public final class CustomHandlerService implements HandlerService {
     private final String className;
     private final String moduleName;
     private final List<Property> properties;

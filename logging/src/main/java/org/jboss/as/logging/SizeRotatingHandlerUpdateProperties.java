@@ -22,14 +22,14 @@
 
 package org.jboss.as.logging;
 
-import java.util.logging.Handler;
 import org.jboss.as.controller.OperationFailedException;
-import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
-import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
-import static org.jboss.as.logging.CommonAttributes.SUFFIX;
-import static org.jboss.as.logging.SizeRotatingFileHandlerAdd.DEFAULT_ROTATE_SIZE;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
+
+import java.util.logging.Handler;
+
+import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 
 /**
  * Operation responsible for updating the properties of a size based rotating log handler.
@@ -40,28 +40,25 @@ public class SizeRotatingHandlerUpdateProperties extends FlushingHandlerUpdatePr
     static final SizeRotatingHandlerUpdateProperties INSTANCE = new SizeRotatingHandlerUpdateProperties();
 
     @Override
-    protected void updateModel(final ModelNode operation, final ModelNode model) {
+    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         super.updateModel(operation, model);
-
-        if (operation.hasDefined(MAX_BACKUP_INDEX)) {
-            apply(operation, model, MAX_BACKUP_INDEX);
-        }
-        if (operation.hasDefined(ROTATE_SIZE)) {
-            apply(operation, model, ROTATE_SIZE);
-        }
+        MAX_BACKUP_INDEX.validateAndSet(operation, model);
+        ROTATE_SIZE.validateAndSet(operation, model);
     }
 
     @Override
     protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
         super.updateRuntime(operation, handler);
-        if (operation.hasDefined(MAX_BACKUP_INDEX)) {
-            SizeRotatingFileHandler.class.cast(handler).setMaxBackupIndex(operation.get(MAX_BACKUP_INDEX).asInt());
+        final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.validateResolvedOperation(operation);
+        if (maxBackupIndex.isDefined()) {
+            SizeRotatingFileHandler.class.cast(handler).setMaxBackupIndex(maxBackupIndex.asInt());
         }
 
-        if (operation.hasDefined(ROTATE_SIZE)) {
-            long rotateSize = DEFAULT_ROTATE_SIZE;
+        final ModelNode rotateSizeNode = ROTATE_SIZE.validateResolvedOperation(operation);
+        if (rotateSizeNode.isDefined()) {
+            long rotateSize;
             try {
-                rotateSize = LoggingSubsystemParser.parseSize(operation.get(ROTATE_SIZE).asString());
+                rotateSize = LoggingSubsystemParser.parseSize(rotateSizeNode.asString());
             } catch (Throwable t) {
                 throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
             }

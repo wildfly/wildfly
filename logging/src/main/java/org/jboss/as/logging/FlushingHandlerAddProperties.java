@@ -22,31 +22,33 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.ExtHandler;
-
-import java.util.logging.Handler;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 /**
- * Parent operation responsible for updating the 'autoflush' property of logging handlers.
+ * Date: 23.09.2011
  *
- * @author John Bailey
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class FlushingHandlerUpdateProperties extends HandlerUpdateProperties {
+abstract class FlushingHandlerAddProperties<T extends FlushingHandlerService> extends HandlerAddProperties<T> {
+
     @Override
-    protected void updateModel(final ModelNode operation, ModelNode model) throws OperationFailedException {
-        super.updateModel(operation, model);
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.populateModel(operation, model);
         AUTOFLUSH.validateAndSet(operation, model);
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
-        final ModelNode autoflush = AUTOFLUSH.validateResolvedOperation(operation);
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final T service, final ModelNode model) throws OperationFailedException {
+        final ModelNode autoflush = AUTOFLUSH.validateResolvedOperation(model);
         if (autoflush.isDefined()) {
-            ExtHandler.class.cast(handler).setAutoFlush(autoflush.asBoolean());
+            service.setAutoflush(autoflush.asBoolean());
         }
     }
 }
