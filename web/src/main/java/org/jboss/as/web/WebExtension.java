@@ -22,18 +22,14 @@
 
 package org.jboss.as.web;
 
-import org.apache.catalina.servlets.WebdavServlet;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import java.util.Locale;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -41,7 +37,6 @@ import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.web.deployment.ServletDeploymentStats;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
 
@@ -56,6 +51,7 @@ public class WebExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "web";
     private static final PathElement connectorPath =  PathElement.pathElement(Constants.CONNECTOR);
+    private static final PathElement sslPath =  PathElement.pathElement(Constants.SSL);
     private static final PathElement hostPath = PathElement.pathElement(Constants.VIRTUAL_SERVER);
     private static final PathElement confPath = PathElement.pathElement(Constants.CONFIGURATION);
 
@@ -65,6 +61,7 @@ public class WebExtension implements Extension {
 
     private static final PathElement accesslogPath = PathElement.pathElement(Constants.ACCESS_LOG, "configuration");
     private static final PathElement rewritePath = PathElement.pathElement(Constants.REWRITE);
+    private static final PathElement ssoPath = PathElement.pathElement(Constants.SSO, "configuration");
 
     private static final PathElement directoryPath = PathElement.pathElement(Constants.DIRECTORY, "configuration");
     private static final PathElement rewritecondPath = PathElement.pathElement(Constants.CONDITION);
@@ -101,7 +98,22 @@ public class WebExtension implements Extension {
         connectors.registerReadWriteAttribute(Constants.ENABLED, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
         connectors.registerReadWriteAttribute(Constants.EXECUTOR, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         connectors.registerReadWriteAttribute(Constants.MAX_CONNECTIONS, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
-        connectors.registerReadWriteAttribute(Constants.VIRTUAL_SERVER, null, new WriteAttributeHandlers. ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
+        connectors.registerReadWriteAttribute(Constants.VIRTUAL_SERVER, null, new WriteAttributeHandlers.ListValidatatingHandler(new StringLengthValidator(1, false), true), Storage.CONFIGURATION);
+
+        // connector SSL part.
+        final ManagementResourceRegistration ssl = connectors.registerSubModel(sslPath, WebSubsystemDescriptionProviders.SSL);
+        ssl.registerReadWriteAttribute(Constants.KEY_ALIAS, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.PASSWORD, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.CERTIFICATE_KEY_FILE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.CIPHER_SUITE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.PROTOCOL, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.VERIFY_CLIENT, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.VERIFY_DEPTH, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.CERTIFICATE_FILE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.CA_CERTIFICATE_FILE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.CA_REVOCATION_URL, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.SESSION_CACHE_SIZE, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0, true), Storage.CONFIGURATION);
+        ssl.registerReadWriteAttribute(Constants.SESSION_TIMEOUT, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0, true), Storage.CONFIGURATION);
 
         //hosts
         final ManagementResourceRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemDescriptionProviders.VIRTUAL_SERVER);
@@ -112,14 +124,12 @@ public class WebExtension implements Extension {
         hosts.registerReadWriteAttribute(Constants.DEFAULT_WEB_MODULE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
 
         // Attributes
-        registration.registerReadWriteAttribute(Constants.NATIVE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
-        registration.registerReadWriteAttribute(Constants.DEFAULT_VIRTUAL_SERVER, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
         final ManagementResourceRegistration accesslog = hosts.registerSubModel(accesslogPath, WebSubsystemDescriptionProviders.ACCESS_LOG);
         accesslog.registerOperationHandler(ADD, WebAccessLogAdd.INSTANCE, WebAccessLogAdd.INSTANCE, false);
         accesslog.registerOperationHandler(REMOVE, WebAccessLogRemove.INSTANCE, WebAccessLogRemove.INSTANCE, false);
 
         // access-log.
-        // TODO the directory needs one level more
+        // the directory needs one level more
         final ManagementResourceRegistration directory = accesslog.registerSubModel(directoryPath, WebSubsystemDescriptionProviders.DIRECTORY);
         directory.registerReadWriteAttribute(Constants.RELATIVE_TO, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         directory.registerReadWriteAttribute(Constants.PATH, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
@@ -129,6 +139,12 @@ public class WebExtension implements Extension {
         accesslog.registerReadWriteAttribute(Constants.EXTENDED, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
         accesslog.registerReadWriteAttribute(Constants.PREFIX, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         accesslog.registerReadWriteAttribute(Constants.ROTATE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+
+        // sso valve.
+        final ManagementResourceRegistration sso = hosts.registerSubModel(ssoPath, WebSubsystemDescriptionProviders.SSO);
+        sso.registerReadWriteAttribute(Constants.CACHE_CONTAINER, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        sso.registerReadWriteAttribute(Constants.DOMAIN, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        sso.registerReadWriteAttribute(Constants.REAUTHENTICATE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
 
         // rewrite valve.
         final ManagementResourceRegistration rewrite = hosts.registerSubModel(rewritePath, WebSubsystemDescriptionProviders.REWRITE);
