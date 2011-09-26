@@ -44,7 +44,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;

@@ -28,7 +28,7 @@ import org.jboss.as.demos.DomainDeploymentUtils;
 import org.jboss.as.demos.rar.archive.HelloWorldConnection;
 import org.jboss.as.demos.rar.mbean.Test;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a>

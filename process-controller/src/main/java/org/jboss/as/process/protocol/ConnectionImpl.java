@@ -20,12 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
+package org.jboss.as.process.protocol;
 
-import static org.jboss.as.protocol.ProtocolLogger.CONNECTION_LOGGER;
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
-import static org.jboss.as.protocol.old.ProtocolConstants.CHUNK_END;
-import static org.jboss.as.protocol.old.ProtocolConstants.CHUNK_START;
+import static org.jboss.as.process.protocol.ProtocolLogger.CONNECTION_LOGGER;
+import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 import java.io.BufferedOutputStream;
 import java.io.FilterInputStream;
@@ -212,7 +210,7 @@ final class ConnectionImpl implements Connection {
                                 closed();
                                 return;
                             }
-                            case CHUNK_START: {
+                            case ProtocolConstants.CHUNK_START: {
                                 if (mos == null) {
                                     pipe = new Pipe(8192);
                                     // new message!
@@ -238,7 +236,7 @@ final class ConnectionImpl implements Connection {
                                 }
                                 break;
                             }
-                            case CHUNK_END: {
+                            case ProtocolConstants.CHUNK_END: {
                                 CONNECTION_LOGGER.trace("Received end data marker");
                                 if (mos != null) {
                                     // end message
@@ -342,7 +340,7 @@ final class ConnectionImpl implements Connection {
                 return;
             }
             final byte[] hdr = this.hdr;
-            hdr[0] = (byte) CHUNK_START;
+            hdr[0] = (byte) ProtocolConstants.CHUNK_START;
             hdr[1] = (byte) (len >> 24);
             hdr[2] = (byte) (len >> 16);
             hdr[3] = (byte) (len >> 8);
@@ -378,7 +376,7 @@ final class ConnectionImpl implements Connection {
                     });
                 }
                 CONNECTION_LOGGER.tracef("Sending end of message");
-                out.write(CHUNK_END);
+                out.write(ProtocolConstants.CHUNK_END);
             }
         }
 

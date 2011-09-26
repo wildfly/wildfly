@@ -44,7 +44,7 @@ import java.util.Set;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.demos.DemoAuthentication;
-import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
 /**

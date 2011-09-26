@@ -34,7 +34,7 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.logging.Logger;
 
 import static org.jboss.as.process.ProcessMessages.MESSAGES;

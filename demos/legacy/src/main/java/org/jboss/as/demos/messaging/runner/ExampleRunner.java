@@ -29,7 +29,7 @@ import javax.management.ObjectName;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.messaging.mbean.Test;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  *

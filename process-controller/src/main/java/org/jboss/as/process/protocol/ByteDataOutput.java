@@ -20,23 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
+package org.jboss.as.process.protocol;
 
-import java.io.IOException;
+import java.io.DataOutput;
+import org.jboss.marshalling.ByteOutput;
 
 /**
- * A handler for incoming protocol connections.
+ * Interface used to establish a contract for a class that complies to both the DataOutput and ByteOutput contract.
  *
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author John Bailey
  */
-public interface ConnectionHandler {
-
-    /**
-     * Handle the new connection.
-     *
-     * @param connection the connection
-     * @return the message handler for this connection (must not be {@code null})
-     * @throws IOException if an I/O error occurs
-     */
-    MessageHandler handleConnected(Connection connection) throws IOException;
+public interface ByteDataOutput extends DataOutput, ByteOutput{
 }

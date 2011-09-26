@@ -20,15 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
+package org.jboss.as.process.protocol;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Random;
 
-import org.jboss.as.protocol.old.Pipe;
-import org.jboss.as.protocol.old.StreamUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

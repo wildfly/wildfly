@@ -30,7 +30,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * @author <a href="alessio.soldano@jboss.com">Alessio Soldano</a>

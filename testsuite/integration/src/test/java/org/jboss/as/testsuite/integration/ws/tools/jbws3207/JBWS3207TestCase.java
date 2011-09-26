@@ -21,7 +21,7 @@
  */
 package org.jboss.as.testsuite.integration.ws.tools.jbws3207;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedInputStream;

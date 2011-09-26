@@ -36,9 +36,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.jboss.as.protocol.old.Connection;
-import org.jboss.as.protocol.old.ProtocolServer;
-import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.process.protocol.Connection;
+import org.jboss.as.process.protocol.ProtocolServer;
+import org.jboss.as.process.protocol.StreamUtils;
 
 import static org.jboss.as.process.ProcessLogger.ROOT_LOGGER;
 import static org.jboss.as.process.ProcessMessages.MESSAGES;

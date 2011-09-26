@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.mgmt.domain;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;

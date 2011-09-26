@@ -22,7 +22,7 @@
 
 package org.jboss.as.host.controller.mgmt;
 
-import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
+import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
 import java.io.IOException;

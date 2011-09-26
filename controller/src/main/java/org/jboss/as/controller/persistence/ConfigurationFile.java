@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
-import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  * Encapsulates the configuration file and manages its history
