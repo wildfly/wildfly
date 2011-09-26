@@ -22,7 +22,10 @@
 package org.jboss.as.webservices.webserviceref;
 
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_REFS_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_REF_ANNOTATION;
 import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
 import static org.jboss.as.webservices.webserviceref.WSRefUtils.processType;
 
@@ -30,8 +33,6 @@ import java.lang.reflect.AccessibleObject;
 import java.util.List;
 
 import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceRef;
-import javax.xml.ws.WebServiceRefs;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
@@ -49,14 +50,12 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
@@ -70,15 +69,11 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
  */
 public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
 
-    private static final DotName WEB_SERVICE_REF_ANNOTATION_NAME = DotName.createSimple(WebServiceRef.class.getName());
-    private static final DotName WEB_SERVICE_REFS_ANNOTATION_NAME = DotName.createSimple(WebServiceRefs.class.getName());
-
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final CompositeIndex index = unit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         // Process @WebServiceRef annotations
-        final List<AnnotationInstance> webServiceRefAnnotations = index.getAnnotations(WEB_SERVICE_REF_ANNOTATION_NAME);
+        final List<AnnotationInstance> webServiceRefAnnotations = getAnnotations(unit, WEB_SERVICE_REF_ANNOTATION);
         for (final AnnotationInstance annotation : webServiceRefAnnotations) {
             final AnnotationTarget annotationTarget = annotation.target();
             final WSRefAnnotationWrapper annotationWrapper = new WSRefAnnotationWrapper(annotation);
@@ -93,7 +88,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         }
 
         // Process @WebServiceRefs annotations
-        final List<AnnotationInstance> webServiceRefsAnnotations = index.getAnnotations(WEB_SERVICE_REFS_ANNOTATION_NAME);
+        final List<AnnotationInstance> webServiceRefsAnnotations = getAnnotations(unit, WEB_SERVICE_REFS_ANNOTATION);
         for (final AnnotationInstance outerAnnotation : webServiceRefsAnnotations) {
             final AnnotationTarget annotationTarget = outerAnnotation.target();
             if (annotationTarget instanceof ClassInfo) {

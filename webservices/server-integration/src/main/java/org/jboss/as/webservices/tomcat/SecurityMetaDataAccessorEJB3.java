@@ -21,21 +21,20 @@
  */
 package org.jboss.as.webservices.tomcat;
 
+import static org.jboss.as.webservices.util.DotNames.ROLES_ALLOWED_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.SECURITY_DOMAIN_ANNOTATION;
+
 import java.util.Iterator;
 
-import javax.annotation.security.RolesAllowed;
-
-import org.jboss.ejb3.annotation.SecurityDomain;
+import org.jboss.as.webservices.metadata.WebServiceDeclaration;
+import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.ws.api.annotation.WebContext;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.as.webservices.metadata.WebServiceDeclaration;
-import org.jboss.as.webservices.metadata.WebServiceDeployment;
 
 /**
  * Creates web app security meta data for EJB 3 deployment.
@@ -44,9 +43,6 @@ import org.jboss.as.webservices.metadata.WebServiceDeployment;
  * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccessorEJB {
-
-    private static final DotName ROLES_ALLOWED_DOT_NAME = DotName.createSimple(RolesAllowed.class.getName());
-    private static final DotName SECURITY_DOMAIN_DOT_NAME = DotName.createSimple(SecurityDomain.class.getName());
 
     /**
      * Constructor.
@@ -68,8 +64,7 @@ final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccesso
 
         while (ejbContainers.hasNext()) {
             final WebServiceDeclaration ejbContainer = ejbContainers.next();
-            //final SecurityDomain nextSecurityDomain = ejbContainer.getAnnotation(SecurityDomain.class);
-            final AnnotationInstance nextSecurityDomain = ejbContainer.getAnnotation(SECURITY_DOMAIN_DOT_NAME);
+            final AnnotationInstance nextSecurityDomain = ejbContainer.getAnnotation(SECURITY_DOMAIN_ANNOTATION);
 
             securityDomain = getDomain(securityDomain, nextSecurityDomain);
         }
@@ -91,8 +86,7 @@ final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccesso
 
         while (ejbContainers.hasNext()) {
             final WebServiceDeclaration ejbContainer = ejbContainers.next();
-            //final RolesAllowed allowedRoles = ejbContainer.getAnnotation(RolesAllowed.class);
-            final AnnotationInstance allowedRoles = ejbContainer.getAnnotation(ROLES_ALLOWED_DOT_NAME);
+            final AnnotationInstance allowedRoles = ejbContainer.getAnnotation(ROLES_ALLOWED_ANNOTATION);
             final boolean hasAllowedRoles = allowedRoles != null;
 
             if (hasAllowedRoles) {

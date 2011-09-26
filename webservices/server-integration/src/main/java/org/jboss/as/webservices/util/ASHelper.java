@@ -21,6 +21,11 @@
  */
 package org.jboss.as.webservices.util;
 
+import static org.jboss.as.webservices.util.DotNames.OBJECT_CLASS;
+import static org.jboss.as.webservices.util.DotNames.SERVLET_CLASS;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,14 +72,6 @@ public final class ASHelper {
 
     /** Logger. */
     private static final Logger LOGGER = Logger.getLogger(ASHelper.class);
-
-    /** @WebService jandex annotation. */
-    public static final DotName WEB_SERVICE_ANNOTATION = DotName.createSimple(WebService.class.getName());
-
-    /** @WebServiceProvider jandex annotation. */
-    public static final DotName WEB_SERVICE_PROVIDER_ANNOTATION = DotName.createSimple(WebServiceProvider.class.getName());
-
-    private static final String SERVLET_CLASS_NAME = Servlet.class.getName();
 
     /**
      * Forbidden constructor.
@@ -314,14 +311,14 @@ public final class ASHelper {
 
     private static boolean isServlet(final ClassInfo info, CompositeIndex index, Set<DotName> interfaces) {
         for (DotName dn : info.interfaces()) {
-            if (SERVLET_CLASS_NAME.equals(dn.toString())) {
+            if (SERVLET_CLASS.equals(dn)) {
                 return true;
             } else {
                 interfaces.add(dn);
             }
         }
         final DotName superName = info.superName();
-        if (!"java.lang.Object".equals(superName.toString())) {
+        if (!OBJECT_CLASS.equals(superName)) {
             ClassInfo su = index.getClassByName(superName);
             if (su != null) {
                 return isServlet(su, index, interfaces);
@@ -334,9 +331,9 @@ public final class ASHelper {
         ClassInfo ci = index.getClassByName(current);
         if (ci != null) {
             final DotName superName = ci.superName();
-            if (SERVLET_CLASS_NAME.equals(superName.toString())) {
+            if (SERVLET_CLASS.equals(superName)) {
                 return true;
-            } else if (!"java.lang.Object".equals(superName.toString()) && !processedInterfaces.contains(superName)) {
+            } else if (!OBJECT_CLASS.equals(superName) && !processedInterfaces.contains(superName)) {
                 interfacesToProcess.add(superName);
             }
         }
@@ -363,6 +360,7 @@ public final class ASHelper {
         return result;
     }
 
+    // TODO: useful ?
     public static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
        final CompositeIndex compositeIndex = getRequiredAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
        return compositeIndex.getAnnotations(annotation);
