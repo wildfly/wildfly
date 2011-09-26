@@ -41,7 +41,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import java.io.IOException;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 /**
  * Demo using the AS management API to create and destroy a JMS queue.

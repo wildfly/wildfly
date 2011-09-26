@@ -29,7 +29,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
-import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  * Abstract handler that checks whether the argument is '--help', in which case it

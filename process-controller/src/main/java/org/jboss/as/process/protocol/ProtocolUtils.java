@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
+package org.jboss.as.process.protocol;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -32,7 +32,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * Utility class providing methods for common management tasks.

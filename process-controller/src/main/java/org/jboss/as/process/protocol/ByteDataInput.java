@@ -20,15 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
+package org.jboss.as.process.protocol;
+
+import java.io.DataInput;
+import org.jboss.marshalling.ByteInput;
 
 /**
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * Interface used to establish a contract for a class that complies to both the DataInput and ByteInput contract.
+ *
+ * @author John Bailey
  */
-public final class ProtocolConstants {
-    public static final int CHUNK_START = 0x98;
-    public static final int CHUNK_END = 0x99;
-
-    private ProtocolConstants() {
-    }
+public interface ByteDataInput extends DataInput, ByteInput {
 }

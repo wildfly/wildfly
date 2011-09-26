@@ -42,7 +42,7 @@ import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
-import org.jboss.as.protocol.old.ProtocolUtils;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.logging.Logger;
 
 /**

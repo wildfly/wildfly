@@ -28,7 +28,7 @@ import javax.management.ObjectName;
 import org.jboss.as.demos.DeploymentUtils;
 import org.jboss.as.demos.sar.archive.ConfigService;
 
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import static org.jboss.as.protocol.StreamUtils.safeClose;
 
 
 /**

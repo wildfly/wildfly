@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
+package org.jboss.as.process.protocol;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -32,10 +32,10 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.net.ServerSocketFactory;
 
-import org.jboss.as.protocol.old.Connection.ClosedCallback;
+import org.jboss.as.process.protocol.Connection.ClosedCallback;
 
-import static org.jboss.as.protocol.ProtocolLogger.CLIENT_LOGGER;
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+import static org.jboss.as.process.protocol.ProtocolLogger.CLIENT_LOGGER;
+import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

@@ -34,7 +34,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.support.ChannelServer;
-import org.jboss.as.protocol.old.ProtocolUtils;
+import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.OpenListener;

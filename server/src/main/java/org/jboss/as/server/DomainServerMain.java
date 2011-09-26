@@ -34,8 +34,8 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.old.StreamUtils;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.logmanager.Level;
@@ -135,7 +135,6 @@ public final class DomainServerMain {
             final CountDownLatch latch = new CountDownLatch(2);
             final UninstallListener connectionListener = new UninstallListener(latch, HostControllerConnectionService.SERVICE_NAME);
             final UninstallListener clientListener = new UninstallListener(latch, HostControllerServerClient.SERVICE_NAME);
-
 
             //Disconnect from the old HC
             final ServiceContainer container = containerFuture.get();

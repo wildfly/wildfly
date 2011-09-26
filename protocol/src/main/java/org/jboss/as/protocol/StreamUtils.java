@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,33 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
+package org.jboss.as.protocol;
 
-import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
-
-import javax.xml.stream.XMLStreamWriter;
 import java.io.Closeable;
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.Unmarshaller;
+
+import javax.xml.stream.XMLStreamWriter;
+
+import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
+import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
- *
- * @deprecated as of JBoss Application Server 7.1
- * @see org.jboss.as.protocol.StreamUtils
  */
-@Deprecated
-public class StreamUtils {
+public final class StreamUtils {
 
-    /**
-     * Safe close a {@code Closeable}.
-     *
-     * @param closeable the closeable to close
-     * @deprecated as of JBoss Application Server 7.1
-     * @see org.jboss.as.protocol.StreamUtils#safeClose(java.io.Closeable)
-     */
-    @Deprecated
+    private StreamUtils() {
+        //
+    }
+
+    public static void copyStream(final InputStream in, final OutputStream out) throws IOException {
+        final byte[] bytes = new byte[8192];
+        int cnt;
+        while ((cnt = in.read(bytes)) != -1) {
+            out.write(bytes, 0, cnt);
+        }
+    }
     public static void safeClose(final Closeable closeable) {
         if (closeable != null) try {
             closeable.close();
@@ -55,14 +62,6 @@ public class StreamUtils {
         }
     }
 
-    /**
-     * Safe close a {@code Socket}
-     *
-     * @param socket the socket to close
-     * @deprecated as of JBoss Application Server 7.1
-     * @see org.jboss.as.protocol.StreamUtils#safeClose(java.net.Socket)
-     */
-    @Deprecated
     public static void safeClose(final Socket socket) {
         if (socket != null) try {
             socket.close();
@@ -71,14 +70,6 @@ public class StreamUtils {
         }
     }
 
-    /**
-     * Safe close a {@code ServerSocket}.
-     *
-     * @param serverSocket the serverSocket to close
-     * @deprecated as of JBoss Application Server 7.1
-     * @see org.jboss.as.protocol.StreamUtils#safeClose(java.net.ServerSocket)
-     */
-    @Deprecated
     public static void safeClose(final ServerSocket serverSocket) {
         if (serverSocket != null) try {
             serverSocket.close();
@@ -87,14 +78,6 @@ public class StreamUtils {
         }
     }
 
-    /**
-     * Safe close a {@code XmlStreamWriter}.
-     *
-     * @param writer the streamWriter to close.
-     * @deprecated as of JBoss Application Server 7.1
-     * @see org.jboss.as.protocol.StreamUtils#safeClose(javax.xml.stream.XMLStreamWriter)
-     */
-    @Deprecated
     public static void safeClose(final XMLStreamWriter writer) {
         if (writer != null) try {
             writer.close();
@@ -102,5 +85,4 @@ public class StreamUtils {
             ROOT_LOGGER.failedToCloseResource(t, writer);
         }
     }
-
 }

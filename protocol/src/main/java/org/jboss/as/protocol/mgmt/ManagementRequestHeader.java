@@ -26,8 +26,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.jboss.as.protocol.old.ProtocolUtils;
-
 /**
  * DomainClientProtocol header used for management requests.  Provides the default header fields from
  * {@link ManagementProtocolHeader} as well as a field to identify who the
