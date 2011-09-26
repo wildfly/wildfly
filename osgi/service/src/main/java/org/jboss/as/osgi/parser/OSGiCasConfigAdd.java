@@ -99,6 +99,7 @@ public class OSGiCasConfigAdd extends AbstractAddStepHandler implements Descript
         node.get(propType, CommonAttributes.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("config.entries"));
         node.get(propType, CommonAttributes.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
         node.get(propType, CommonAttributes.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
+        node.get(propType, CommonAttributes.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
     }
 
     static ModelNode getAddOperation(ModelNode address, ModelNode existing) {

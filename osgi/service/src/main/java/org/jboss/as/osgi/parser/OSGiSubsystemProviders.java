@@ -68,9 +68,9 @@ class OSGiSubsystemProviders {
         node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("osgi"));
         OSGiSubsystemAdd.addModelProperties(bundle, node, ModelDescriptionConstants.ATTRIBUTES);
 
-        node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.CONFIGURATION).set(getCasConfiguration(locale));
-        node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.PROPERTY).set(getProperty(locale));
-        node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.MODULE).set(getModule(locale));
+        setCasConfigDescription(bundle, node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.CONFIGURATION));
+        setPropertyDescription(bundle, node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.PROPERTY));
+        setModuleDescription(bundle, node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.MODULE));
         return node;
     }
 
@@ -78,30 +78,42 @@ class OSGiSubsystemProviders {
         ResourceBundle bundle = OSGiSubsystemProviders.getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("config"));
+        setCasConfigDescription(bundle, node);
         OSGiCasConfigAdd.addModelProperties(bundle, node, ModelDescriptionConstants.ATTRIBUTES);
 
         return node;
+    }
+
+    private static void setCasConfigDescription(ResourceBundle bundle, final ModelNode node) {
+        node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("config"));
     }
 
     private static ModelNode getProperty(Locale locale) {
         ResourceBundle bundle = OSGiSubsystemProviders.getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("property"));
+        setPropertyDescription(bundle, node);
         OSGiPropertyAdd.addModelProperties(bundle, node, ModelDescriptionConstants.ATTRIBUTES);
 
         return node;
+    }
+
+    private static void setPropertyDescription(ResourceBundle bundle, final ModelNode node) {
+        node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("property"));
     }
 
     private static ModelNode getModule(Locale locale) {
         ResourceBundle bundle = OSGiSubsystemProviders.getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("module"));
+        setModuleDescription(bundle, node);
         OSGiModuleAdd.addModelProperties(bundle, node, ModelDescriptionConstants.ATTRIBUTES);
 
         return node;
+    }
+
+    private static void setModuleDescription(ResourceBundle bundle, final ModelNode node) {
+        node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("module"));
     }
 
     static ResourceBundle getResourceBundle(Locale locale) {
