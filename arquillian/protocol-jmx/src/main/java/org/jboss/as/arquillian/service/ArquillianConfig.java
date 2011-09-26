@@ -21,6 +21,11 @@
  */
 package org.jboss.as.arquillian.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.arquillian.testenricher.msc.ServiceContainerAssociation;
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
@@ -41,14 +46,10 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.BundleManagerService;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /**
  * The ArquillianConfig represents an Arquillian deployment.
@@ -64,7 +65,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     private final ServiceName serviceName;
     private final List<String> testClasses = new ArrayList<String>();
 
-    // The optional dependency on OSGi. This should perhaps be generic.
+    private final InjectedValue<BundleManagerService> injectedBundleManager = new InjectedValue<BundleManagerService>();
     private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
@@ -87,6 +88,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     }
 
     void addFrameworkDependency(ServiceBuilder<ArquillianConfig> builder) {
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManagerService.class, injectedBundleManager);
         builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
         builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
     }
@@ -140,6 +142,11 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         serviceContainer = context.getController().getServiceContainer();
         serviceTarget = context.getChildTarget();
         arqService.registerArquillianConfig(this);
+
+        BundleManagerService bundleManager = injectedBundleManager.getOptionalValue();
+        if (bundleManager != null) {
+            arqService.registerArquillianServiceWithOSGi(bundleManager);
+        }
     }
 
     @Override
