@@ -186,17 +186,6 @@ public final class ASHelper {
     }
 
     /**
-     * Returns true if deployment unit have attachment value associated with the <b>key</b>.
-     *
-     * @param unit deployment unit
-     * @param key attachment key
-     * @return true if contains attachment, false otherwise
-     */
-    public static boolean hasAttachment(final DeploymentUnit unit, final AttachmentKey<?> key) {
-        return getOptionalAttachment(unit, key) != null;
-    }
-
-    /**
      * Returns first webservice description meta data or null if not found.
      *
      * @param wsDescriptionsMD webservice descriptions
@@ -400,7 +389,7 @@ public final class ASHelper {
      * @return true if JAXRPC JSE, false otherwise
      */
     public static boolean isJaxrpcJseDeployment(final DeploymentUnit unit) {
-        final boolean hasWebservicesMD = hasAttachment(unit, WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
+        final boolean hasWebservicesMD = unit.hasAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
         final boolean hasJBossWebMD = getJBossWebMetaData(unit) != null;
 
         if (hasWebservicesMD && hasJBossWebMD) {
@@ -417,7 +406,7 @@ public final class ASHelper {
      * @return true if JAXWS EJB, false otherwise
      */
     public static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        return hasAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
+        return unit.hasAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
     }
 
     /**
@@ -429,14 +418,14 @@ public final class ASHelper {
     public static boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
         if (unit instanceof WSEndpointDeploymentUnit) return true;
 
-        final boolean hasWarMetaData = hasAttachment(unit, WarMetaData.ATTACHMENT_KEY);
+        final boolean hasWarMetaData = unit.hasAttachment(WarMetaData.ATTACHMENT_KEY);
         if (hasWarMetaData) {
             //once the deployment is a WAR, the endpoint(s) can be on either http (servlet) transport or jms transport
-            return getJaxwsServlets(unit).size() > 0 || hasAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+            return getJaxwsServlets(unit).size() > 0 || unit.hasAttachment(WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
         } else {
             //otherwise the (JAR) deployment can be a jaxws_jse one if there're jms transport endpoints only (no ejb3)
-            return !hasAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY) &&
-                    hasAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+            return !unit.hasAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY) &&
+                    unit.hasAttachment(WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
         }
     }
 
