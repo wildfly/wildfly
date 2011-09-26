@@ -147,12 +147,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         return this.initOnStartup;
     }
 
-    /**
-     * Marks the singleton bean for init-on-startup
-     */
-    public void initOnStartup() {
-        this.initOnStartup = true;
-
+    public void setInitOnStartup(final boolean initOnStartup) {
+        this.initOnStartup = initOnStartup;
     }
 
     @Override
