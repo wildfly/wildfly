@@ -38,6 +38,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
+
 /**
  * Adds a thread factory to the threads subsystem.
  *
@@ -52,67 +53,9 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler implements Descript
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.PROPERTIES,
         PoolAttributeDefinitions.GROUP_NAME, PoolAttributeDefinitions.THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY};
 
-    /**
-     * {@inheritDoc}
-     * /
-    public void execute(OperationContext context, ModelNode operation) {
-        final ModelNode opAddr = operation.get(OP_ADDR);
+    static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {
+        PoolAttributeDefinitions.GROUP_NAME, PoolAttributeDefinitions.THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY};
 
-        final PathAddress address = PathAddress.pathAddress(opAddr);
-        final String name = address.getLastElement().getValue();
-
-        //Get/validate the properties
-        final String groupName = operation.hasDefined(GROUP_NAME) ? operation.get(GROUP_NAME).asString() : null;
-        final String threadNamePattern = operation.hasDefined(THREAD_NAME_PATTERN) ? operation.get(THREAD_NAME_PATTERN).asString() : null;
-        final int priority = operation.hasDefined(PRIORITY) ? operation.get(PRIORITY).asInt() : -1;
-        if (priority != -1 && priority < 0 || priority > 10) {
-            throw new IllegalArgumentException(PRIORITY + " is out of range " + priority); //TODO i18n
-        }
-        final ModelNode properties = operation.hasDefined(PROPERTIES) ? operation.get(PROPERTIES) : null;
-        //Apply to the model
-        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        model.get(NAME).set(name);
-        if (groupName != null) {
-            model.get(GROUP_NAME).set(groupName);
-        }
-        if (threadNamePattern != null) {
-            model.get(THREAD_NAME_PATTERN).set(threadNamePattern);
-        }
-        if (priority >= 0) {
-            model.get(PRIORITY).set(priority);
-        }
-        if (properties != null) {
-            model.get(PROPERTIES).set(properties);
-        }
-
-
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) {
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    final ServiceTarget target = context.getServiceTarget();
-                    final ThreadFactoryService service = new ThreadFactoryService();
-                    service.setNamePattern(threadNamePattern);
-                    service.setPriority(priority);
-                    service.setThreadGroupName(groupName);
-                    //TODO What about the properties?
-                    target.addService(ThreadsServices.threadFactoryName(name), service)
-                            .addListener(verificationHandler)
-                            .setInitialMode(ServiceController.Mode.ACTIVE)
-                            .install();
-
-                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(ThreadsServices.threadFactoryName(name));
-                    }
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
-
-        context.completeStep();
-    }
-*/
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ThreadsSubsystemProviders.ADD_THREAD_FACTORY_DESC.getModelDescription(locale);

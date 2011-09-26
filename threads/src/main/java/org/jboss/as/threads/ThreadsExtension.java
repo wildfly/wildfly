@@ -96,11 +96,13 @@ public class ThreadsExtension implements Extension {
                 THREAD_FACTORY_DESC);
         threadFactories.registerOperationHandler(ADD, ThreadFactoryAdd.INSTANCE, ThreadFactoryAdd.INSTANCE, false);
         threadFactories.registerOperationHandler(REMOVE, ThreadFactoryRemove.INSTANCE, ThreadFactoryRemove.INSTANCE, false);
-        threadFactories.registerReadWriteAttribute(THREAD_NAME_PATTERN, null, ThreadFactoryThreadNamePatternUpdate.INSTANCE,
+/*        threadFactories.registerReadWriteAttribute(THREAD_NAME_PATTERN, null, ThreadFactoryThreadNamePatternUpdate.INSTANCE,
                 AttributeAccess.Storage.CONFIGURATION);
         threadFactories.registerReadWriteAttribute(GROUP_NAME, null, ThreadFactoryGroupNameUpdate.INSTANCE,
                 AttributeAccess.Storage.CONFIGURATION);
         threadFactories.registerReadWriteAttribute(PRIORITY, null, ThreadFactoryPriorityUpdate.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+*/
+        ThreadFactoryWriteAttributeHandler.INSTANCE.registerAttributes(threadFactories);
 
         final ManagementResourceRegistration boundedQueueThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(BOUNDED_QUEUE_THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);

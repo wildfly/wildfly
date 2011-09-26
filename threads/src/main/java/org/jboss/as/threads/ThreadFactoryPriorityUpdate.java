@@ -61,7 +61,7 @@ public final class ThreadFactoryPriorityUpdate implements OperationStepHandler {
             throw new OperationFailedException(notConfigured(name));
         }
 
-        ModelNode oldValue = model.get(CommonAttributes.PRIORITY);
+        //ModelNode oldValue = model.get(CommonAttributes.PRIORITY);
         final Integer newPriority;
         ModelNode newValue;
         if (operation.hasDefined(VALUE)) {
@@ -82,7 +82,7 @@ public final class ThreadFactoryPriorityUpdate implements OperationStepHandler {
                     if (service == null) {
                         throw new OperationFailedException(notConfigured(name));
                     } else {
-                        final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getValue();
+                        final ThreadFactoryService threadFactoryService = (ThreadFactoryService) service.getService();
                         threadFactoryService.setPriority(newPriority);
                     }
                     context.completeStep();
