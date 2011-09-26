@@ -22,6 +22,9 @@
 
 package org.jboss.as.webservices.webserviceref;
 
+import static org.jboss.as.webservices.webserviceref.SecurityActions.getContextClassLoader;
+import static org.jboss.as.webservices.webserviceref.SecurityActions.setContextClassLoader;
+
 import javax.naming.Referenceable;
 import javax.naming.spi.ObjectFactory;
 
@@ -59,11 +62,11 @@ final class WSRefValueSource extends InjectionSource implements Value<Object> {
     }
 
     public Object getValue() throws IllegalStateException, IllegalArgumentException {
-        final ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
+        final ClassLoader oldCL = getContextClassLoader();
         try {
             final ClassLoader integrationCL = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
             final ClassLoader newCL = new DelegateClassLoader(integrationCL, oldCL);
-            Thread.currentThread().setContextClassLoader(newCL);
+            setContextClassLoader(newCL);
             final Referenceable referenceable = getReferenceable(integrationCL);
             final Class<?> clazz = Class.forName(referenceable.getReference().getFactoryClassName(), true, integrationCL);
             final ObjectFactory factory = (ObjectFactory)clazz.newInstance();
@@ -71,7 +74,7 @@ final class WSRefValueSource extends InjectionSource implements Value<Object> {
         } catch (final Exception e) {
             throw new RuntimeException(e);
         } finally {
-            Thread.currentThread().setContextClassLoader(oldCL);
+            setContextClassLoader(oldCL);
         }
     }
 
