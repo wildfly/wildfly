@@ -45,7 +45,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
@@ -183,7 +182,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         return factory.create(context);
     }
 
-    public Serializable createSession() {
+    public byte[] createSession() {
         return getCache().create().getId();
     }
 
@@ -201,7 +200,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
      *
      * @param sessionId The session id
      */
-    public void removeSession(final Serializable sessionId) {
+    public void removeSession(final byte[] sessionId) {
         Transaction currentTx = null;
         try {
             currentTx = getTransactionManager().getTransaction();
@@ -244,9 +243,9 @@ public class StatefulSessionComponent extends SessionBeanComponent {
  */
 private static class RemoveSynchronization implements Synchronization {
     private final StatefulSessionComponent statefulComponent;
-    private final Serializable sessionId;
+    private final byte[] sessionId;
 
-    public RemoveSynchronization(final StatefulSessionComponent component, final Serializable sessionId) {
+    public RemoveSynchronization(final StatefulSessionComponent component, final byte[] sessionId) {
         if (sessionId == null) {
             throw new IllegalArgumentException("Session id cannot be null");
         }

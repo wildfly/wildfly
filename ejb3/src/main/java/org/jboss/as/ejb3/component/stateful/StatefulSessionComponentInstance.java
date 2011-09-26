@@ -28,20 +28,20 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.util.id.GUID;
 
 import javax.ejb.EJBException;
-import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable {
-    private final GUID id;
+    private final byte[] id;
 
     private final Interceptor afterBegin;
     private final Interceptor afterCompletion;
@@ -56,7 +56,13 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
      */
     protected StatefulSessionComponentInstance(final StatefulSessionComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors, Collections.<Method, Interceptor>emptyMap());
-        this.id = new GUID();
+
+
+        final UUID uuid = UUID.randomUUID();
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        this.id = bb.array();
 
         this.afterBegin = component.createInterceptor(component.getAfterBegin());
         this.afterCompletion = component.createInterceptor(component.getAfterCompletion());
@@ -105,7 +111,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         return (StatefulSessionComponent) super.getComponent();
     }
 
-    public Serializable getId() {
-        return id;
+    public byte[] getId() {
+        return id.clone();
     }
 }

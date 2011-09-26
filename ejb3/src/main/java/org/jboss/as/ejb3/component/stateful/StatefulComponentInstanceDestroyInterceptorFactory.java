@@ -41,7 +41,7 @@ public class StatefulComponentInstanceDestroyInterceptorFactory implements Inter
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        AtomicReference<Serializable> sessionIdReference = (AtomicReference<Serializable>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
+        AtomicReference<byte[]> sessionIdReference = (AtomicReference<byte[]>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
         return new StatefulComponentInstanceDestroyInterceptor(sessionIdReference);
     }
 }

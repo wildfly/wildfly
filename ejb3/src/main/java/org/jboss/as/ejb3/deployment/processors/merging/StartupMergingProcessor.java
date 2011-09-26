@@ -50,7 +50,7 @@ public class StartupMergingProcessor extends AbstractMergingProcessor<SingletonC
             final ClassAnnotationInformation<Startup, Object> data = clazz.getAnnotationInformation(Startup.class);
             if (data != null) {
                 if (!data.getClassLevelAnnotations().isEmpty()) {
-                    description.setInitOnStartup(true);
+                    description.initOnStartup();
                 }
             }
         }
@@ -62,8 +62,8 @@ public class StartupMergingProcessor extends AbstractMergingProcessor<SingletonC
         if (data instanceof SessionBean31MetaData) {
             SessionBean31MetaData singletonBeanMetaData = (SessionBean31MetaData) data;
             Boolean initOnStartup = singletonBeanMetaData.isInitOnStartup();
-            if (initOnStartup != null) {
-                description.setInitOnStartup(true);
+            if (initOnStartup != null && initOnStartup) {
+                description.initOnStartup();
             }
         }
     }

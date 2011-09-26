@@ -50,7 +50,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     private final Map<String, ServiceName> viewServices;
     private transient StatefulSessionComponent ejbComponent;
     private final ServiceName createServiceName;
-    private final Serializable id;
+    private final byte[] id;
 
 
     public StatefulSessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {

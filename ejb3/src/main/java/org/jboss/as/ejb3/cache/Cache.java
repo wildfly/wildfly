@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.cache;
 
 import javax.ejb.NoSuchEJBException;
-import java.io.Serializable;
 
 /**
  * Cache a stateful object and make sure any life cycle callbacks are
@@ -44,7 +43,7 @@ public interface Cache<T extends Identifiable> {
      *
      * @param key the identifier of the object
      */
-    void discard(Serializable key);
+    void discard(byte[] key);
 
     /**
      * Get the specified object from cache. This will mark
@@ -54,7 +53,7 @@ public interface Cache<T extends Identifiable> {
      * @return the object
      * @throws javax.ejb.NoSuchEJBException if the object does not exist
      */
-    T get(Serializable key) throws NoSuchEJBException;
+    T get(byte[] key) throws NoSuchEJBException;
 
     /**
      * Peek at an object which might be in use.
@@ -77,7 +76,7 @@ public interface Cache<T extends Identifiable> {
      *
      * @param key the identifier of the object
      */
-    void remove(Serializable key);
+    void remove(byte[] key);
 
     /**
      * Associate the cache with a stateful object factory.

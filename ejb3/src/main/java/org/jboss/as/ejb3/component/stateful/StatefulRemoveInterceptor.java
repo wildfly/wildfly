@@ -28,7 +28,6 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 
 /**
@@ -70,12 +69,12 @@ public class StatefulRemoveInterceptor implements Interceptor {
             }
             // otherwise, just remove it and throw back the original exception
             final StatefulSessionComponentInstance statefulComponentInstance = (StatefulSessionComponentInstance) context.getPrivateData(ComponentInstance.class);
-            final Serializable sessionId = statefulComponentInstance.getId();
+            final byte[] sessionId = statefulComponentInstance.getId();
             statefulComponent.removeSession(sessionId);
             throw e;
         }
         final StatefulSessionComponentInstance statefulComponentInstance = (StatefulSessionComponentInstance) context.getPrivateData(ComponentInstance.class);
-        final Serializable sessionId = statefulComponentInstance.getId();
+        final byte[] sessionId = statefulComponentInstance.getId();
         // just remove the session because of a call to @Remove method
         statefulComponent.removeSession(sessionId);
         // return the invocation result

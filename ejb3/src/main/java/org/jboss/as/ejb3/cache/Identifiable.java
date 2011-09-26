@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import java.io.Serializable;
-
 /**
  * An object that has an identification. How the object obtains
  * it's identification is left beyond scope. Could be via construction
@@ -37,5 +35,5 @@ public interface Identifiable {
      *
      * @return the object identifier
      */
-    Serializable getId();
+    byte[] getId();
 }
