@@ -35,7 +35,7 @@ import java.util.logging.Level;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ConsoleHandlerService implements Service<Handler> {
+public final class ConsoleHandlerService implements FlushingHandlerService {
 
     private AbstractFormatterSpec formatterSpec;
 

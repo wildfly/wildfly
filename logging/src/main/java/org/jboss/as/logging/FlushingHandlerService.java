@@ -22,35 +22,14 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
-
-
 /**
- * Operation responsible unassigning a handler from a logger.
+ * Date: 23.09.2011
  *
- * @author Stan Silvert
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class RootLoggerUnassignHandler extends LoggerUnassignHandler {
-    static final String OPERATION_NAME = "root-logger-unassign-handler";
-    static final RootLoggerUnassignHandler INSTANCE = new RootLoggerUnassignHandler();
+interface FlushingHandlerService extends HandlerService {
 
-    @Override
-    protected String getLoggerName(ModelNode operation) {
-        return "";
-    }
+    boolean isAutoflush();
 
-    /**
-     * Get the ModelNode that has a "handlers" attribute.
-     * @param model The root model for the operation.
-     * @return The ModelNode that has a "handlers" attribute.
-     */
-    @Override
-    protected ModelNode getTargetModel(ModelNode model) throws OperationFailedException {
-        return model.get(ROOT_LOGGER);
-    }
+    void setAutoflush(final boolean autoflush);
 }

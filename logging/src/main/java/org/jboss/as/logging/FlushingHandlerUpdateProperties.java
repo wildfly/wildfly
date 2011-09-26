@@ -22,11 +22,13 @@
 
 package org.jboss.as.logging;
 
-import java.util.logging.Handler;
 import org.jboss.as.controller.OperationFailedException;
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.ExtHandler;
+
+import java.util.logging.Handler;
+
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 
 /**
  * Parent operation responsible for updating the 'autoflush' property of logging handlers.
@@ -34,15 +36,17 @@ import org.jboss.logmanager.ExtHandler;
  * @author John Bailey
  */
 public class FlushingHandlerUpdateProperties extends HandlerUpdateProperties {
-    protected void updateModel(final ModelNode operation, ModelNode model) {
-        if (operation.hasDefined(AUTOFLUSH)) {
-            apply(operation, model, AUTOFLUSH);
-        }
+    @Override
+    protected void updateModel(final ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.updateModel(operation, model);
+        AUTOFLUSH.validateAndSet(operation, model);
     }
 
+    @Override
     protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
-        if (operation.hasDefined(AUTOFLUSH)) {
-            ExtHandler.class.cast(handler).setAutoFlush(operation.get(AUTOFLUSH).asBoolean());
+        final ModelNode autoflush = AUTOFLUSH.validateOperation(operation);
+        if (autoflush.isDefined()) {
+            ExtHandler.class.cast(handler).setAutoFlush(autoflush.asBoolean());
         }
     }
 }

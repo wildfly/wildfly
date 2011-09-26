@@ -32,6 +32,8 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.ServiceController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import org.jboss.dmr.ModelNode;
 
@@ -42,29 +44,15 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert
  */
 public class LoggerUnassignHandler extends AbstractModelUpdateHandler {
-    private static final String OPERATION_NAME = "unassign-handler";
-    private static final LoggerUnassignHandler INSTANCE = new LoggerUnassignHandler();
+    static final String OPERATION_NAME = "unassign-handler";
+    static final LoggerUnassignHandler INSTANCE = new LoggerUnassignHandler();
 
-    /**
-     * @return the OPERATION_NAME
-     */
-    public static String getOperationName() {
-        return OPERATION_NAME;
-    }
-
-    /**
-     * @return the INSTANCE
-     */
-    public static LoggerUnassignHandler getInstance() {
-        return INSTANCE;
-    }
-
-    protected String getHandlerName(ModelNode operation) {
+    protected String getHandlerName(ModelNode operation) throws OperationFailedException {
         return getHandlerNameNode(operation).asString();
     }
 
-    protected ModelNode getHandlerNameNode(ModelNode operation) {
-        return operation.get(CommonAttributes.NAME);
+    protected ModelNode getHandlerNameNode(ModelNode operation) throws OperationFailedException {
+        return NAME.validateOperation(operation);
     }
 
     protected String getLoggerName(ModelNode operation) {
@@ -78,17 +66,8 @@ public class LoggerUnassignHandler extends AbstractModelUpdateHandler {
         throw new OperationFailedException(failure);
     }
 
-    protected ModelNode getAssignedHandlers(ModelNode updateableModel) {
-        return updateableModel.get(CommonAttributes.HANDLERS);
-    }
-
-    @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        String loggerName = getLoggerName(operation);
-        String handlerName = getHandlerName(operation);
-
-        context.removeService(LogServices.loggerHandlerName(loggerName, handlerName));
+    protected ModelNode getAssignedHandlers(ModelNode updateableModel) throws OperationFailedException {
+        return updateableModel.get(HANDLERS);
     }
 
     /**
@@ -96,7 +75,7 @@ public class LoggerUnassignHandler extends AbstractModelUpdateHandler {
      * @param model The root model for the operation.
      * @return The ModelNode that has a "handlers" attribute.
      */
-    protected ModelNode getTargetModel(ModelNode model) {
+    protected ModelNode getTargetModel(ModelNode model) throws OperationFailedException {
         return model;
     }
 
@@ -117,7 +96,16 @@ public class LoggerUnassignHandler extends AbstractModelUpdateHandler {
             newList.add(node);
         }
 
-        targetModel.get(CommonAttributes.HANDLERS).set(newList);
+        model.get(HANDLERS).set(newList);
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        String loggerName = getLoggerName(operation);
+        String handlerName = getHandlerName(operation);
+
+        context.removeService(LogServices.loggerHandlerName(loggerName, handlerName));
     }
 
 }

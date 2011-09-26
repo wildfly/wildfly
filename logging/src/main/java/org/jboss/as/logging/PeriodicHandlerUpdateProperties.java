@@ -37,19 +37,17 @@ public class PeriodicHandlerUpdateProperties extends FlushingHandlerUpdateProper
     static final PeriodicHandlerUpdateProperties INSTANCE = new PeriodicHandlerUpdateProperties();
 
     @Override
-    protected void updateModel(final ModelNode operation, final ModelNode model) {
+    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException{
         super.updateModel(operation, model);
-
-        if (operation.hasDefined(SUFFIX)) {
-            apply(operation, model, SUFFIX);
-        }
+        SUFFIX.validateAndSet(operation, model);
     }
 
     @Override
     protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
         super.updateRuntime(operation, handler);
-        if (operation.hasDefined(SUFFIX)) {
-            PeriodicRotatingFileHandler.class.cast(handler).setSuffix(operation.get(SUFFIX).asString());
+        final ModelNode suffix = SUFFIX.validateOperation(operation);
+        if (suffix.isDefined()) {
+            PeriodicRotatingFileHandler.class.cast(handler).setSuffix(suffix.asString());
         }
     }
 }
