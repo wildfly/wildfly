@@ -113,7 +113,7 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
-    @Ignore
+    @Ignore("[AS7-1929] Invalid webapp deploys without error in management API")
     public void testDistributeBadWar() throws Exception {
         ProgressObject progress = jsr88Deploy(getBadWebArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
