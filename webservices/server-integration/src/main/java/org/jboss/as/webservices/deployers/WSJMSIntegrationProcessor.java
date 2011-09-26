@@ -22,6 +22,8 @@
 package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
+import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -37,7 +39,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.util.ASHelper;
+//import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
@@ -52,6 +54,7 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
  * DUP for detecting JMS WS endpoints
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class WSJMSIntegrationProcessor implements DeploymentUnitProcessor {
 
@@ -64,7 +67,8 @@ public final class WSJMSIntegrationProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final List<AnnotationInstance> webServiceAnnotations = ASHelper.getAnnotations(unit, ASHelper.WEB_SERVICE_ANNOTATION);
+        final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, WEB_SERVICE_ANNOTATION);
+        // TODO: how about @WebServiceProvider JMS based endpoints?
 
         //group @WebService annotations in the deployment by wsdl contract location
         Map<String, List<AnnotationInstance>> map = new HashMap<String, List<AnnotationInstance>>();

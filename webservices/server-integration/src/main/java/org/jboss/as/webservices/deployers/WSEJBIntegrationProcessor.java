@@ -22,9 +22,11 @@
 package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,13 +38,12 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.metadata.WebServiceDeclaration;
+import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.as.webservices.metadata.WebServiceDeclaration;
-import org.jboss.as.webservices.metadata.WebServiceDeployment;
 
 /**
  * WebServiceDeployment deployer processes EJB containers and its metadata and creates WS adapters wrapping it.
@@ -55,8 +56,8 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final WebServiceDeployment wsDeploymentAdapter = new WebServiceDeploymentAdapter();
-        processAnnotation(unit, ASHelper.WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
-        processAnnotation(unit, ASHelper.WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
+        processAnnotation(unit, WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
+        processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
         if (!wsDeploymentAdapter.getServiceEndpoints().isEmpty()) {
             unit.putAttachment(WEBSERVICE_DEPLOYMENT_KEY, wsDeploymentAdapter);
         }
@@ -68,7 +69,7 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
     }
 
    private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final WebServiceDeployment wsDeployment) {
-       final List<AnnotationInstance> webServiceAnnotations = ASHelper.getAnnotations(unit, annotation);
+       final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
        final List<WebServiceDeclaration> endpoints = wsDeployment.getServiceEndpoints();
        final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
 
