@@ -52,7 +52,6 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
@@ -76,9 +75,8 @@ import org.junit.runner.RunWith;
  * @author Thomas.Diesler@jboss.com
  * @since 02-Aug-2011
  */
-@RunWith(Arquillian.class)
 @RunAsClient
-@Ignore
+@RunWith(Arquillian.class)
 public class EnterpriseDeploymentTestCase {
 
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
@@ -86,12 +84,6 @@ public class EnterpriseDeploymentTestCase {
     private static final String EAR_JBOSS_FILE = "META-INF/jboss-app.xml";
 
     private DeploymentManager deploymentManager;
-
-    @Deployment
-    public static Archive<?> createDeployment(){
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "deployment-test.jar");
-        return archive;
-    }
 
     @Test
     public void testDeploymentManager() throws Exception {
