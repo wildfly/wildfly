@@ -567,6 +567,15 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="management-subsystem-endpoint" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Set to true to have servers belonging to the server group connect back to the host controller using the
+                    endpoint from their remoting subsystem. The subsystem must be preset for this to
+                    work.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="mapped-deploymentsType">

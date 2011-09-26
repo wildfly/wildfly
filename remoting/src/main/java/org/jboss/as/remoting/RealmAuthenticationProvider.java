@@ -25,6 +25,10 @@ import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -32,9 +36,6 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
@@ -53,7 +54,7 @@ import org.xnio.Sequence;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class RealmAuthenticationProvider implements ServerAuthenticationProvider {
+public class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
     static final String ANONYMOUS = "ANONYMOUS";
 
@@ -64,7 +65,7 @@ class RealmAuthenticationProvider implements ServerAuthenticationProvider {
     private final SecurityRealm realm;
     private final CallbackHandler serverCallbackHandler;
 
-    RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler) {
+    public RealmAuthenticationProvider(final SecurityRealm realm, final CallbackHandler serverCallbackHandler) {
         this.realm = realm;
         this.serverCallbackHandler = serverCallbackHandler;
     }

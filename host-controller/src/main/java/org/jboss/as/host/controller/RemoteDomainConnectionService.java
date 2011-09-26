@@ -65,6 +65,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
 import org.jboss.as.process.protocol.Connection.ClosedCallback;
 import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -136,7 +137,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             throw new RuntimeException(e);
         }
         ServiceBuilder builder = serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
-                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, service.endpointInjector)
+                .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpointInjector)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
 
         if (securityRealm != null) {
@@ -221,7 +222,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             client.connect(handler);
             this.channelClient = client;
 
-            ManagementChannel channel = client.openChannel(RemotingServices.DOMAIN_CHANNEL);
+            ManagementChannel channel = client.openChannel(ManagementRemotingServices.DOMAIN_CHANNEL);
             this.channel = channel;
 
             channel.addCloseHandler(new CloseHandler<Channel>() {

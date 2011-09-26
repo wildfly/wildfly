@@ -356,7 +356,6 @@ public class HostXml extends CommonXml {
             parseVault(reader, address, DOMAIN_1_1, list);
             element = nextElement(reader, DOMAIN_1_1);
         }
-
         if (element == Element.MANAGEMENT) {
             parseManagement(reader, address, DOMAIN_1_1, list, true);
             element = nextElement(reader, DOMAIN_1_1);
@@ -659,6 +658,16 @@ public class HostXml extends CommonXml {
             }
         }
 
+    }
+
+    /**
+     * Overrides the CommonXML implementation of parseNativeRemotingManagementInterface_1_1 to mark unexpected in
+     * host.xml parsing.
+     */
+    // TODO - This still needs to be properly represented in the schema.
+    @Override
+    protected void parseNativeRemotingManagementInterface_1_1(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
+        throw unexpectedElement(reader);
     }
 
     private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode)

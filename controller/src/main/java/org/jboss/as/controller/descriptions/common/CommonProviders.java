@@ -97,6 +97,16 @@ public final class CommonProviders {
     };
 
     /**
+     * Provider for a sub-model that defines the management configuration.
+     */
+    public static final DescriptionProvider NATIVE_REMOTING_MANAGEMENT_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ManagementDescription.getNativeRemotingManagementDescription(locale);
+        }
+    };
+
+    /**
      * Provider for a sub-model that names an interface and specifies the criteria.
      */
     public static final DescriptionProvider HTTP_MANAGEMENT_PROVIDER = new DescriptionProvider() {

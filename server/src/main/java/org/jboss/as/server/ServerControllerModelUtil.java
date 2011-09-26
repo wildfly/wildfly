@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MUL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
@@ -113,6 +114,7 @@ import org.jboss.as.server.operations.HttpManagementAttributeHandlers;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.NativeManagementAddHandler;
 import org.jboss.as.server.operations.NativeManagementAttributeHandlers;
+import org.jboss.as.server.operations.NativeRemotingManagementAddHandler;
 import org.jboss.as.server.operations.ProcessTypeHandler;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.server.operations.ServerReloadHandler;
@@ -255,6 +257,9 @@ public class
         ManagementResourceRegistration managementNative = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_INTERFACE), CommonProviders.NATIVE_MANAGEMENT_PROVIDER);
         managementNative.registerOperationHandler(NativeManagementAddHandler.OPERATION_NAME, NativeManagementAddHandler.INSTANCE, NativeManagementAddHandler.INSTANCE, false);
         managementNative.registerReadWriteAttribute(SECURITY_REALM, null, NativeManagementAttributeHandlers.INSTANCE, Storage.CONFIGURATION);
+
+        ManagementResourceRegistration managementNativeRemoting = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, NATIVE_REMOTING_INTERFACE), CommonProviders.NATIVE_REMOTING_MANAGEMENT_PROVIDER);
+        managementNativeRemoting.registerOperationHandler(NativeRemotingManagementAddHandler.OPERATION_NAME, NativeRemotingManagementAddHandler.INSTANCE, NativeRemotingManagementAddHandler.INSTANCE, false);
 
         ManagementResourceRegistration managementHttp = management.registerSubModel(PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE), CommonProviders.HTTP_MANAGEMENT_PROVIDER);
         managementHttp.registerOperationHandler(HttpManagementAddHandler.OPERATION_NAME, HttpManagementAddHandler.INSTANCE, HttpManagementAddHandler.INSTANCE, false);

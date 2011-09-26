@@ -23,25 +23,28 @@ package org.jboss.as.remoting;
 
 import java.net.InetSocketAddress;
 
-import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class NetworkBindingStreamServerService extends AbstractStreamServerService {
+public class InjectedSocketBindingStreamServerService extends AbstractStreamServerService {
 
-    private final NetworkInterfaceBinding interfaceBinding;
-    private final int port;
+    private final InjectedValue<SocketBinding> socketBindingValue = new InjectedValue<SocketBinding>();
 
-    public NetworkBindingStreamServerService(final NetworkInterfaceBinding interfaceBinding, int port) {
-        this.port = port;
-        this.interfaceBinding = interfaceBinding;
+    public InjectedSocketBindingStreamServerService() {
+    }
+
+    public InjectedValue<SocketBinding> getSocketBindingInjector(){
+        return socketBindingValue;
     }
 
     @Override
     InetSocketAddress getSocketAddress() {
-        return new InetSocketAddress(interfaceBinding.getAddress(), port);
+        return socketBindingValue.getValue().getSocketAddress();
     }
+
 }

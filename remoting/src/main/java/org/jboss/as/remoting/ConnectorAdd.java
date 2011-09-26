@@ -22,6 +22,7 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
 import static org.jboss.as.remoting.CommonAttributes.INCLUDE_MECHANISMS;
@@ -47,10 +48,14 @@ import java.util.Set;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
@@ -82,10 +87,14 @@ public class ConnectorAdd extends AbstractAddStepHandler implements DescriptionP
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-//        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-//        final String name = address.getLastElement().getValue();
-//
-//        final ServiceTarget target = context.getServiceTarget();
+        //TODO SASL and properties
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String connectorName = address.getLastElement().getValue();
+
+        final ServiceTarget target = context.getServiceTarget();
+
+        ServiceName socketBindingName = SocketBinding.JBOSS_BINDING_NAME.append(operation.require(SOCKET_BINDING).asString());
+        RemotingServices.installConnectorServicesForSocketBinding(target, RemotingServices.SUBSYSTEM_ENDPOINT, connectorName, socketBindingName, null, null, verificationHandler, newControllers);
 //
 //        final ConnectorService connectorService = new ConnectorService();
 //        connectorService.setOptionMap(createOptionMap(operation));
@@ -95,7 +104,7 @@ public class ConnectorAdd extends AbstractAddStepHandler implements DescriptionP
 //        try {
 //            newControllers.add(target.addService(connectorName, connectorService)
 //                    .addDependency(connectorName.append("auth-provider"), ServerAuthenticationProvider.class, connectorService.getAuthenticationProviderInjector())
-//                    .addDependency(RemotingServices.ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
+//                    .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, connectorService.getEndpointInjector())
 //                    .addListener(verificationHandler)
 //                    .setInitialMode(ServiceController.Mode.ACTIVE)
 //                    .install());

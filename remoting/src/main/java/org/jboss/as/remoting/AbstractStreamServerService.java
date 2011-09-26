@@ -24,7 +24,6 @@ package org.jboss.as.remoting;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 
-import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -55,12 +54,9 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
     private final InjectedValue<OptionMap> optionMapInjectedValue = new InjectedValue<OptionMap>();
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
 
-    private final int port;
-
     private volatile AcceptingChannel<? extends ConnectedStreamChannel> streamServer;
 
-    AbstractStreamServerService(final int port) {
-        this.port = port;
+    AbstractStreamServerService() {
     }
 
     @Override
@@ -107,10 +103,5 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
         IoUtils.safeClose(streamServer);
     }
 
-    abstract NetworkInterfaceBinding getNetworkInterfaceBinding();
-
-    InetSocketAddress getSocketAddress() {
-        return new InetSocketAddress(getNetworkInterfaceBinding().getAddress(), port);
-    }
-
+    abstract InetSocketAddress getSocketAddress();
 }

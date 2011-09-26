@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -100,6 +101,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private final JvmElement jvmElement;
     private final HostControllerEnvironment environment;
     private final DomainController domainController;
+    private final boolean managementSubsystemEndpoint;
 
     ModelCombiner(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final DomainController domainController,
                   final HostControllerEnvironment environment) {
@@ -132,6 +134,12 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 break;
             }
         }
+
+        boolean managementSubsystemEndpoint = false;
+        if (serverGroup.hasDefined(MANAGEMENT_SUBSYSTEM_ENDPOINT)) {
+            managementSubsystemEndpoint = serverGroup.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).asBoolean();
+        }
+        this.managementSubsystemEndpoint = managementSubsystemEndpoint;
 
         final String jvmName = serverVMName != null ? serverVMName : groupVMName;
         final ModelNode hostVM = jvmName != null ? hostModel.get(JVM, jvmName) : null;
@@ -220,6 +228,11 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         command.add("org.jboss.as.server");
 
         return command;
+    }
+
+    @Override
+    public boolean isManagementSubsystemEndpoint() {
+        return managementSubsystemEndpoint;
     }
 
     private String getJavaCommand() {
