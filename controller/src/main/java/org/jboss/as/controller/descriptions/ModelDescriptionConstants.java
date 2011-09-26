@@ -112,6 +112,7 @@ public class ModelDescriptionConstants {
     public static final String LDAP = "ldap";
     public static final String LOCAL = "local";
     public static final String LOCALE = "locale";
+    public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-element";
     public static final String MANAGEMENT = "management";
     public static final String MANAGEMENT_INTERFACE = "management-interface";
     public static final String MASK = "mask";
@@ -133,6 +134,7 @@ public class ModelDescriptionConstants {
     public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
     public static final String NATIVE_INTERFACE = "native-interface";
+    public static final String NATIVE_REMOTING_INTERFACE = "native-remoting-interface";
     public static final String NETWORK = "network";
     public static final String NILLABLE = "nillable";
     public static final String NOT = "not";

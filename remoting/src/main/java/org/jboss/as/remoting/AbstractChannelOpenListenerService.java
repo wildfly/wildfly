@@ -27,10 +27,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.controller.remote.ManagementOperationHandlerFactory;
-import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -47,41 +43,35 @@ import org.xnio.OptionMap;
 
 
 /**
- * Service responsible for listening for channel open requests and associating the channel with a {@link ManagementOperationHandler}
+ * Abstract service responsible for listening for channel open requests.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class ChannelOpenListenerService implements Service<Void>, OpenListener {
+public abstract class AbstractChannelOpenListenerService<T> implements Service<Void>, OpenListener {
 
-    private final Logger log = Logger.getLogger("org.jboss.as.remoting");
+    protected final Logger log = Logger.getLogger("org.jboss.as.remoting");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
 
-    private final InjectedValue<ManagementOperationHandlerFactory> operationHandlerFactoryValue = new InjectedValue<ManagementOperationHandlerFactory>();
-
-    private final String channelName;
+    protected final String channelName;
     private final OptionMap optionMap;
-    private final Set<ManagementChannel> channels = Collections.synchronizedSet(new HashSet<ManagementChannel>());
+    private final Set<T> channels = Collections.synchronizedSet(new HashSet<T>());
 
     private volatile Registration registration;
     private final AtomicBoolean closed = new AtomicBoolean();
 
-    public ChannelOpenListenerService(final String channelName, OptionMap optionMap) {
+    public AbstractChannelOpenListenerService(final String channelName, OptionMap optionMap) {
         this.channelName = channelName;
         this.optionMap = optionMap;
     }
 
-    public ServiceName getServiceName() {
-        return RemotingServices.channelServiceName(channelName);
+    public ServiceName getServiceName(ServiceName endpointName) {
+        return RemotingServices.channelServiceName(endpointName, channelName);
     }
 
     public InjectedValue<Endpoint> getEndpointInjector(){
         return endpointValue;
-    }
-
-    public InjectedValue<ManagementOperationHandlerFactory> getOperationHandlerInjector(){
-        return operationHandlerFactoryValue;
     }
 
     @Override
@@ -92,6 +82,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
     @Override
     public void start(StartContext context) throws StartException {
         try {
+            closed.set(false);
             log.debugf("Registering channel listener for %s", channelName);
             registration = endpointValue.getValue().registerService(channelName, this, optionMap);
         } catch (Exception e) {
@@ -101,35 +92,27 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
 
     @Override
     public void stop(StopContext context) {
+        if (!closed.compareAndSet(false, true)) {
+            return;
+        }
         if (registration != null) {
             registration.close();
         }
         synchronized (channels) {
-            for (ManagementChannel channel : channels) {
-                try {
-                    channel.sendByeBye();
-                } catch (IOException e) {
-                }
+            for (T channel : channels) {
+                closeChannelOnShutdown(channel);
             }
-
         }
     }
 
     @Override
     public void channelOpened(Channel channel) {
-        final ManagementOperationHandler handler = operationHandlerFactoryValue.getValue().createOperationHandler();
-        final ManagementChannel managementChannel = new ManagementChannelFactory(handler).create(channelName, channel);
-        channels.add(managementChannel);
-        log.tracef("Opened %s: %s with handler %s", channelName, managementChannel, handler);
-        managementChannel.startReceiving();
+        final T createdChannel = createChannel(channel);
+        channels.add(createdChannel);
         channel.addCloseHandler(new CloseHandler<Channel>() {
             public void handleClose(final Channel closed, final IOException exception) {
-                channels.remove(managementChannel);
-                try {
-                    managementChannel.sendByeBye();
-                } catch (IOException ignore) {
-                }
-                log.tracef("Handling close for %s", managementChannel);
+                channels.remove(createdChannel);
+                log.tracef("Handling close for %s", createdChannel);
             }
         });
     }
@@ -138,4 +121,7 @@ public class ChannelOpenListenerService implements Service<Void>, OpenListener {
     public void registrationTerminated() {
     }
 
+    protected abstract T createChannel(Channel channel);
+
+    protected abstract void closeChannelOnShutdown(T channel);
 }

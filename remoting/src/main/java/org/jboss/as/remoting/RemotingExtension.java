@@ -22,31 +22,12 @@
 
 package org.jboss.as.remoting;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readArrayAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
@@ -55,9 +36,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElem
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import static org.jboss.as.remoting.CommonAttributes.ADD_CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
@@ -77,6 +55,30 @@ import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -97,14 +99,18 @@ public class RemotingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "remoting";
 
+    //This is given by ServerEnvironment.NODE_NAME
+    private static final String NODE_NAME = "jboss.node.name";
+
     @Override
     public void initialize(ExtensionContext context) {
+
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         registration.registerXMLElementWriter(NewRemotingSubsystemParser.INSTANCE);
         // Remoting subsystem description and operation handlers
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(RemotingSubsystemProviders.SUBSYSTEM);
-        subsystem.registerOperationHandler(ADD, RemotingSubsystemAdd.INSTANCE, RemotingSubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystem.registerOperationHandler(ADD, new RemotingSubsystemAdd(SecurityActions.getSystemProperty(NODE_NAME)), RemotingSubsystemProviders.SUBSYSTEM_ADD, false);
         subsystem.registerOperationHandler(DESCRIBE, RemotingSubsystemDescribeHandler.INSTANCE, RemotingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         // Remoting connectors
@@ -387,11 +393,11 @@ public class RemotingExtension implements Extension {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             final ModelNode node = context.getModelNode();
 
-            if (has(node, CONNECTOR)) {
+            if (node.hasDefined(CONNECTOR)) {
                 final ModelNode connector = node.get(CONNECTOR);
                 for (String name : connector.keys()) {
-                    if (has(connector, name)) {
-                        writeConnector(writer, node.get(name), name);
+                    if (connector.hasDefined(name)) {
+                        writeConnector(writer, connector.get(name), name);
                     }
                 }
             }
@@ -402,16 +408,16 @@ public class RemotingExtension implements Extension {
         private void writeConnector(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
             writer.writeStartElement(Element.CONNECTOR.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-            if (has(node, SOCKET_BINDING)) {
+            if (node.hasDefined(SOCKET_BINDING)) {
                 writeAttribute(writer, Attribute.SOCKET_BINDING, node.get(SOCKET_BINDING));
             }
-            if (has(node, AUTHENTICATION_PROVIDER)) {
+            if (node.hasDefined(AUTHENTICATION_PROVIDER)) {
                 writeSimpleChild(writer, Element.AUTHENTICATION_PROVIDER, Attribute.NAME, node.get(AUTHENTICATION_PROVIDER));
             }
-            if (has(node, PROPERTIES)) {
+            if (node.hasDefined(PROPERTIES)) {
                 writeProperties(writer, node.get(PROPERTIES));
             }
-            if (has(node, SASL)) {
+            if (node.hasDefined(SASL)) {
                 writeSasl(writer, node.get(SASL));
             }
             writer.writeEndElement();
@@ -420,7 +426,7 @@ public class RemotingExtension implements Extension {
         private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
             writer.writeStartElement(Element.PROPERTIES.getLocalName());
             for (String name : node.keys()) {
-                if (has(node, name)) {
+                if (node.hasDefined(name)) {
                     final ModelNode prop = node.get(name);
                     if (prop.getType() == ModelType.PROPERTY) {
                         writer.writeStartElement(Element.PROPERTY.getLocalName());
@@ -435,27 +441,27 @@ public class RemotingExtension implements Extension {
 
         private void writeSasl(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
             writer.writeStartElement(Element.SASL.getLocalName());
-            if (has(node, INCLUDE_MECHANISMS)) {
+            if (node.hasDefined(INCLUDE_MECHANISMS)) {
 
             }
-            if (has(node, QOP)) {
+            if (node.hasDefined(QOP)) {
                 //FIXME is this really an xml attribute?
                 writeSimpleChild(writer, Element.QOP, Attribute.VALUE, node.get(QOP));
             }
-            if (has(node, STRENGTH)) {
+            if (node.hasDefined(STRENGTH)) {
                 //FIXME is this really an xml attribute?
                 writeSimpleChild(writer, Element.STRENGTH, Attribute.VALUE, node.get(STRENGTH));
             }
-            if (has(node, REUSE_SESSION)) {
+            if (node.hasDefined(REUSE_SESSION)) {
                 writeSimpleChild(writer, Element.REUSE_SESSION, Attribute.VALUE, node.get(REUSE_SESSION));
             }
-            if (has(node, SERVER_AUTH)) {
+            if (node.hasDefined(SERVER_AUTH)) {
                 writeSimpleChild(writer, Element.SERVER_AUTH, Attribute.VALUE, node.get(SERVER_AUTH));
             }
-            if (has(node, POLICY)) {
+            if (node.hasDefined(POLICY)) {
                 writePolicy(writer, node.get(POLICY));
             }
-            if (has(node, PROPERTIES)) {
+            if (node.hasDefined(PROPERTIES)) {
                 writeProperties(writer, node.get(PROPERTIES));
             }
 
@@ -465,30 +471,26 @@ public class RemotingExtension implements Extension {
         private void writePolicy(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
             writer.writeStartElement(Element.POLICY.getLocalName());
 
-            if (has(node, FORWARD_SECRECY)) {
+            if (node.hasDefined(FORWARD_SECRECY)) {
                 writeSimpleChild(writer, Element.FORWARD_SECRECY, Attribute.VALUE, node.get(FORWARD_SECRECY));
             }
-            if (has(node, NO_ACTIVE)) {
+            if (node.hasDefined(NO_ACTIVE)) {
                 writeSimpleChild(writer, Element.NO_ACTIVE, Attribute.VALUE, node.get(NO_ACTIVE));
             }
-            if (has(node, NO_ANONYMOUS)) {
+            if (node.hasDefined(NO_ANONYMOUS)) {
                 writeSimpleChild(writer, Element.NO_ANONYMOUS, Attribute.VALUE, node.get(NO_ANONYMOUS));
             }
-            if (has(node, NO_DICTIONARY)) {
+            if (node.hasDefined(NO_DICTIONARY)) {
                 writeSimpleChild(writer, Element.NO_DICTIONARY, Attribute.VALUE, node.get(NO_DICTIONARY));
             }
-            if (has(node, NO_PLAINTEXT)) {
+            if (node.hasDefined(NO_PLAINTEXT)) {
                 writeSimpleChild(writer, Element.NO_PLAINTEXT, Attribute.VALUE, node.get(NO_PLAINTEXT));
             }
-            if (has(node, PASS_CREDENTIALS)) {
+            if (node.hasDefined(PASS_CREDENTIALS)) {
                 writeSimpleChild(writer, Element.PASS_CREDENTIALS, Attribute.VALUE, node.get(PASS_CREDENTIALS));
             }
 
             writer.writeEndElement();
-        }
-
-        private boolean has(ModelNode node, String name) {
-            return node.has(name) && node.get(name).isDefined();
         }
 
         private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
@@ -507,6 +509,7 @@ public class RemotingExtension implements Extension {
         static final RemotingSubsystemDescribeHandler INSTANCE = new RemotingSubsystemDescribeHandler();
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
             final ModelNode result = context.getResult();
             final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
@@ -531,7 +534,7 @@ public class RemotingExtension implements Extension {
                     if (connector.hasDefined(SASL)) {
                         add.get(SASL);
                     }
-                    result.add(connector);
+                    result.add(add);
                 }
             }
             context.completeStep();

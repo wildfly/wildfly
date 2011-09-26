@@ -62,6 +62,7 @@ public enum Element {
     HOST("host"),
     HTTP_INTERFACE("http-interface"),
 
+
     INCLUDE("include"),
     INET_ADDRESS("inet-address"),
     INTERFACE("interface"),
@@ -87,6 +88,7 @@ public enum Element {
 
     NAME("name"),
     NATIVE_INTERFACE("native-interface"),
+    NATIVE_REMOTING_INTERFACE("native-remoting-interface"),
     NIC("nic"),
     NIC_MATCH("nic-match"),
     NOT("not"),

@@ -1,6 +1,6 @@
 /*
 * JBoss, Home of Professional Open Source.
-* Copyright 2006, Red Hat Middleware LLC, and individual contributors
+* Copyright 2011, Red Hat Middleware LLC, and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
 * distribution for a full listing of individual contributors.
 *
@@ -19,29 +19,25 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.remoting;
+package org.jboss.as.domain.management.security;
 
-import java.net.InetSocketAddress;
-
-import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.remoting3.security.ServerAuthenticationProvider;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
-public class NetworkBindingStreamServerService extends AbstractStreamServerService {
+public class ServerAuthenticationProviderRegistry {
 
-    private final NetworkInterfaceBinding interfaceBinding;
-    private final int port;
-
-    public NetworkBindingStreamServerService(final NetworkInterfaceBinding interfaceBinding, int port) {
-        this.port = port;
-        this.interfaceBinding = interfaceBinding;
+    private ServerAuthenticationProviderRegistry() {
     }
 
-    @Override
-    InetSocketAddress getSocketAddress() {
-        return new InetSocketAddress(interfaceBinding.getAddress(), port);
+
+    public String[] getRealmNames() {
+        return new String[]{"something"};
+    }
+
+    public ServerAuthenticationProvider getServerAuthenticationManager(String realmName) {
+        return null;
     }
 }
