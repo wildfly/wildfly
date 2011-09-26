@@ -21,18 +21,7 @@
  */
 package org.jboss.as.threads;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -45,90 +34,12 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
 
     public static final ThreadFactoryWriteAttributeHandler INSTANCE = new ThreadFactoryWriteAttributeHandler();
 
-    private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
-    private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
-    private final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
-
     private ThreadFactoryWriteAttributeHandler() {
-        for(AttributeDefinition attr : ThreadFactoryAdd.ATTRIBUTES) {
-            attributes.put(attr.getName(), attr);
-        }
-        for(AttributeDefinition attr : ThreadFactoryAdd.RW_ATTRIBUTES) {
-            runtimeAttributes.put(attr.getName(), attr);
-        }
+        super(ThreadFactoryAdd.ATTRIBUTES, ThreadFactoryAdd.RW_ATTRIBUTES);
     }
 
-    public void registerAttributes(final ManagementResourceRegistration registry) {
-        for(AttributeDefinition attr : ThreadFactoryAdd.ATTRIBUTES) {
-            String attrName = attr.getName();
-            EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
-            registry.registerReadWriteAttribute(attrName, null, this, flags);
-        }
-    }
+    protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
 
-    @Override
-    protected void validateValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateResolvedParameter(name, value);
-    }
-
-    @Override
-    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-                                           final String attributeName, final ModelNode newValue,
-                                           final ModelNode currentValue) throws OperationFailedException {
-
-        AttributeDefinition attr = runtimeAttributes.get(attributeName);
-        if (attr == null) {
-            // Not a runtime attribute; restart required
-            return true;
-        }
-        else {
-            final ServiceController<?> service = getService(context, operation);
-            if (service == null) {
-                // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
-                return false;
-            } else if (service.getState() != ServiceController.State.UP) {
-                // Service is installed but not up?
-                //throw new IllegalStateException(String.format("Cannot apply attribue %s to runtime; service %s is not in state %s, it is in state %s",
-                //            attributeName, MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
-                // No, don't barf; just let the update apply to the model and put the server in a reload-required state
-                return true;
-            } else {
-                // Actually apply the update
-                applyOperation(operation, attributeName, service);
-                return false;
-            }
-
-        }
-    }
-
-    @Override
-    protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
-                                         final String attributeName, final ModelNode valueToRestore,
-                                         final ModelNode valueToRevert) throws OperationFailedException {
-
-        if (runtimeAttributes.containsKey(attributeName)) {
-            final ServiceController<?> service = getService(context, operation);
-            if (service != null && service.getState() == ServiceController.State.UP) {
-                // Create and execute a write-attribute operation that uses the valueToRestore
-                ModelNode revertOp = operation.clone();
-                revertOp.get(attributeName).set(valueToRestore);
-                applyOperation(revertOp, attributeName, service);
-            }
-        }
-    }
-
-    private void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
-
-        System.out.println("applyOperation " + attributeName);
         final ThreadFactoryService tf = (ThreadFactoryService) service.getService();
         try {
             if (CommonAttributes.GROUP_NAME.equals(attributeName)) {
@@ -137,18 +48,16 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
             } else if(CommonAttributes.PRIORITY.equals(attributeName)) {
                 final ModelNode value = PoolAttributeDefinitions.PRIORITY.validateResolvedOperation(operation);
                 tf.setPriority(value.isDefined() ? value.asInt() : -1);
+            } else if(CommonAttributes.THREAD_NAME_PATTERN.equals(attributeName)) {
+                final ModelNode value = PoolAttributeDefinitions.THREAD_NAME_PATTERN.validateResolvedOperation(operation);
+                tf.setNamePattern(value.isDefined() ? value.asString() : null);
             } else {
-                System.out.println("   not supported");
+                throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
             }
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) {
-        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
-        return context.getServiceRegistry(true).getService(ThreadsServices.threadFactoryName(name));
     }
 }

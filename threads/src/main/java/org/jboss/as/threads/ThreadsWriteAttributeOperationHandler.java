@@ -22,70 +22,52 @@
 
 package org.jboss.as.threads;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAttributeOperationHandler;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Abstract superclass for write-attribute operation handlers that run on the
  * server.
  *
  * @author Brian Stansberry
+ * @author Alexey Loubyansky
  */
-public class ThreadsWriteAttributeOperationHandler extends WriteAttributeOperationHandler {
+public abstract class ThreadsWriteAttributeOperationHandler extends WriteAttributeOperationHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
-    private final ParameterValidator resolvedValueValidator;
+    private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
+    private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+
+    protected final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
+    protected final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
 
     /**
      * Creates a handler that doesn't validate values.
      */
-    public ThreadsWriteAttributeOperationHandler() {
-        this(null, null);
-    }
-
-    /**
-     * Creates a handler that users the given {@code valueValidator}
-     * to validate values before applying them to the model.
-     *
-     * @param valueValidator the validator to use to validate the value. May be {@code null}
-     */
-    public ThreadsWriteAttributeOperationHandler(ParameterValidator valueValidator) {
-        this(valueValidator, null);
-    }
-
-    /**
-     * Creates a handler that users the given {@code attributeDefinition}
-     * to validate values before applying them to the model.
-     *
-     * @param attributeDefinition the definition of the attribute being written
-     */
-    public ThreadsWriteAttributeOperationHandler(AttributeDefinition attributeDefinition) {
-        this(attributeDefinition.getValidator(), attributeDefinition.getValidator());
-    }
-
-    /**
-     * Creates a handler that uses the given {@code valueValidator}
-     * to validate values before applying them to the model, and a separate
-     * validator to validate the {@link ModelNode#resolve() resolved value}
-     * after it has been applied to the model.
-     * <p/>
-     * Typically if this constructor is used the {@code valueValidator} would
-     * allow expressions, while the {@code resolvedValueValidator} would not.
-     *
-     * @param valueValidator         the validator to use to validate the value before application to the model. May be {@code null}     *
-     * @param resolvedValueValidator the validator to use to validate the value before application to the model. May be {@code null}
-     */
-    public ThreadsWriteAttributeOperationHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator) {
-        super(valueValidator);
-        this.resolvedValueValidator = resolvedValueValidator;
+    public ThreadsWriteAttributeOperationHandler(AttributeDefinition[] attrs, AttributeDefinition[] rwAttrs) {
+        for(AttributeDefinition attr : attrs) {
+            attributes.put(attr.getName(), attr);
+        }
+        for(AttributeDefinition attr : rwAttrs) {
+            runtimeAttributes.put(attr.getName(), attr);
+        }
     }
 
     @Override
@@ -125,9 +107,8 @@ public class ThreadsWriteAttributeOperationHandler extends WriteAttributeOperati
      * Subclasses can alter this behavior.
      */
     protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        if (resolvedValueValidator != null) {
-            resolvedValueValidator.validateParameter(name, value.resolve());
-        }
+        AttributeDefinition attr = attributes.get(name);
+        attr.getValidator().validateResolvedParameter(name, value);
     }
 
 
@@ -150,7 +131,29 @@ public class ThreadsWriteAttributeOperationHandler extends WriteAttributeOperati
      */
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-        return true;
+        AttributeDefinition attr = runtimeAttributes.get(attributeName);
+        if (attr == null) {
+            // Not a runtime attribute; restart required
+            return true;
+        }
+        else {
+            final ServiceController<?> service = getService(context, operation);
+            if (service == null) {
+                // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
+                return false;
+            } else if (service.getState() != ServiceController.State.UP) {
+                // Service is installed but not up?
+                //throw new IllegalStateException(String.format("Cannot apply attribue %s to runtime; service %s is not in state %s, it is in state %s",
+                //            attributeName, MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState()));
+                // No, don't barf; just let the update apply to the model and put the server in a reload-required state
+                return true;
+            } else {
+                // Actually apply the update
+                applyOperation(operation, attributeName, service);
+                return false;
+            }
+
+        }
     }
 
     /**
@@ -169,8 +172,35 @@ public class ThreadsWriteAttributeOperationHandler extends WriteAttributeOperati
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                          final String attributeName, final ModelNode valueToRestore,
                                          final ModelNode valueToRevert) throws OperationFailedException {
-
+        if (runtimeAttributes.containsKey(attributeName)) {
+            final ServiceController<?> service = getService(context, operation);
+            if (service != null && service.getState() == ServiceController.State.UP) {
+                // Create and execute a write-attribute operation that uses the valueToRestore
+                ModelNode revertOp = operation.clone();
+                revertOp.get(attributeName).set(valueToRestore);
+                applyOperation(revertOp, attributeName, service);
+            }
+        }
     }
 
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        for(String attrName : attributes.keySet()) {
+            EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
+            registry.registerReadWriteAttribute(attrName, null, this, flags);
+        }
+    }
 
+    @Override
+    protected void validateValue(String name, ModelNode value)
+            throws OperationFailedException {
+                AttributeDefinition attr = attributes.get(name);
+                attr.getValidator().validateParameter(name, value);
+            }
+
+    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) {
+        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
+        return context.getServiceRegistry(true).getService(ThreadsServices.threadFactoryName(name));
+    }
+
+    protected abstract void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service);
 }

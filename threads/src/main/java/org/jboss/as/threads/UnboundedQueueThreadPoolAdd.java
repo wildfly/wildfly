@@ -58,56 +58,6 @@ public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler implemen
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY};
 
-    /**
-     * {@inheritDoc}
-     *
-    public void execute(OperationContext context, ModelNode operation) {
-        final BaseOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseUnboundedQueueThreadPoolOperationParameters(operation);
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        //Apply to the model
-        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        model.get(NAME).set(name);
-        if (params.getThreadFactory() != null) {
-            model.get(THREAD_FACTORY).set(params.getThreadFactory());
-        }
-        if (params.getProperties() != null && params.getProperties().asList().size() > 0) {
-            model.get(PROPERTIES).set(params.getProperties());
-        }
-        if (params.getMaxThreads() != null) {
-            model.get(MAX_THREADS).set(operation.get(MAX_THREADS));
-        }
-
-        if (params.getKeepAliveTime() != null) {
-            model.get(KEEPALIVE_TIME).set(operation.get(KEEPALIVE_TIME));
-        }
-
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) {
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-
-                    ServiceTarget target = context.getServiceTarget();
-                    final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-                    final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
-                    final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
-                    ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
-                    serviceBuilder.addListener(verificationHandler);
-                    serviceBuilder.install();
-
-                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(serviceName);
-                    }
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
-
-        context.completeStep();
-    }
-*/
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ThreadsSubsystemProviders.ADD_UNBOUNDED_QUEUE_THREAD_POOL_DESC.getModelDescription(locale);
