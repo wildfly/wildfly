@@ -37,26 +37,22 @@ public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdatePropert
     static final ConsoleHandlerUpdateProperties INSTANCE = new ConsoleHandlerUpdateProperties();
 
     @Override
-    protected void updateModel(final ModelNode operation, ModelNode model) {
+    protected void updateModel(final ModelNode operation, ModelNode model) throws OperationFailedException {
         super.updateModel(operation, model);
-        if (operation.hasDefined(TARGET)) {
-            apply(operation, model, TARGET);
-        }
+        TARGET.validateAndSet(operation, model);
     }
 
     @Override
     protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
         super.updateRuntime(operation, handler);
-        if (operation.hasDefined(TARGET)) {
-            switch (Target.fromString(operation.get(TARGET).asString())) {
-                case SYSTEM_ERR: {
-                    ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                    break;
-                }
-                case SYSTEM_OUT: {
-                    ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_OUT);
-                    break;
-                }
+        switch (Target.fromString(TARGET.validateResolvedOperation(operation).asString())) {
+            case SYSTEM_ERR: {
+                ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
+                break;
+            }
+            case SYSTEM_OUT: {
+                ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_OUT);
+                break;
             }
         }
     }

@@ -18,17 +18,23 @@
  */
 package org.jboss.as.logging;
 
-import java.util.Locale;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
@@ -37,6 +43,7 @@ import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
+import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
@@ -52,15 +59,14 @@ import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
+import static org.jboss.as.logging.CommonAttributes.TARGET;
+import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class LoggingDescribeHandler implements OperationStepHandler, DescriptionProvider{
+public class LoggingDescribeHandler implements OperationStepHandler, DescriptionProvider {
 
     static final LoggingDescribeHandler INSTANCE = new LoggingDescribeHandler();
 
@@ -72,15 +78,17 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
         result.add(LoggingExtension.NewLoggingSubsystemAdd.createOperation(rootAddress.toModelNode()));
         if (model.hasDefined(ROOT_LOGGER)) {
             ModelNode add = Util.getEmptyOperation(RootLoggerAdd.OPERATION_NAME, rootAddress.toModelNode());
-            add.get(LEVEL).set(model.get(ROOT_LOGGER, LEVEL));
-            add.get(HANDLERS).set(model.get(ROOT_LOGGER, HANDLERS));
+            copy(LEVEL, model.get(ROOT_LOGGER), add);
+            copy(FILTER, model.get(ROOT_LOGGER), add);
+            copy(HANDLERS, model.get(ROOT_LOGGER), add);
             result.add(add);
         }
         if (model.hasDefined(LOGGER)) {
             for (Property prop : model.get(LOGGER).asPropertyList()) {
                 ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(LOGGER, prop.getName())).toModelNode());
-                add.get(HANDLERS).set(prop.getValue().get(HANDLERS));
-                add.get(LEVEL).set(prop.getValue().get(LEVEL));
+                copy(USE_PARENT_HANDLERS, prop.getValue(), add);
+                copy(HANDLERS, prop.getValue(), add);
+                copy(LEVEL, prop.getValue(), add);
                 result.add(add);
             }
         }
@@ -117,146 +125,69 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
         context.completeStep();
     }
 
-    private ModelNode defineAsynchHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
+    private ModelNode defineAsynchHandler(final String name, final ModelNode handler, final PathAddress rootAddress) throws OperationFailedException {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(ASYNC_HANDLER, name)).toModelNode());
 
-        add.get(QUEUE_LENGTH).set(handler.get(QUEUE_LENGTH));
-        add.get(SUBHANDLERS).set(handler.get(SUBHANDLERS));
-        add.get(LEVEL).set(handler.get(LEVEL));
-        add.get(OVERFLOW_ACTION).set(handler.get(OVERFLOW_ACTION));
+        copy(LEVEL, handler, add);
+        copy(FILTER, handler, add);
+        copy(QUEUE_LENGTH, handler, add);
+        copy(SUBHANDLERS, handler, add);
+        copy(OVERFLOW_ACTION, handler, add);
 
         return add;
     }
 
 
-    private ModelNode defineConsoleHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
+    private ModelNode defineConsoleHandler(final String name, final ModelNode handler, final PathAddress rootAddress) throws OperationFailedException {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(CONSOLE_HANDLER, name)).toModelNode());
 
-        if (handler.hasDefined(AUTOFLUSH)) {
-            add.get(AUTOFLUSH).set(handler.get(AUTOFLUSH));
-        }
-        if (handler.hasDefined(ENCODING)) {
-            add.get(ENCODING).set(handler.get(ENCODING));
-        }
-        if (handler.hasDefined(FORMATTER)) {
-            add.get(FORMATTER).set(handler.get(FORMATTER));
-        }
-        if (handler.hasDefined(LEVEL)) {
-            add.get(LEVEL).set(handler.get(LEVEL));
-        }
-        if (handler.hasDefined(QUEUE_LENGTH)) {
-            add.get(QUEUE_LENGTH).set(handler.get(QUEUE_LENGTH));
-        }
+        copyCommonFlushingHandlerAttributes(handler, add);
+        copy(TARGET, handler, add);
 
         return add;
     }
 
-    private ModelNode defineFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
+    private ModelNode defineFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) throws OperationFailedException {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(FILE_HANDLER, name)).toModelNode());
 
-        if (handler.hasDefined(AUTOFLUSH)) {
-            add.get(AUTOFLUSH).set(handler.get(AUTOFLUSH));
-        }
-        if (handler.hasDefined(ENCODING)) {
-            add.get(ENCODING).set(handler.get(ENCODING));
-        }
-        if (handler.hasDefined(FORMATTER)) {
-            add.get(FORMATTER).set(handler.get(FORMATTER));
-        }
-        if (handler.hasDefined(LEVEL)) {
-            add.get(LEVEL).set(handler.get(LEVEL));
-        }
-        if (handler.hasDefined(FILE)) {
-            add.get(FILE).set(handler.get(FILE));
-        }
-        if (handler.hasDefined(QUEUE_LENGTH)) {
-            add.get(QUEUE_LENGTH).set(handler.get(QUEUE_LENGTH));
-        }
+        copyCommonFlushingHandlerAttributes(handler, add);
+        copy(APPEND, handler, add);
+        copy(FILE, handler, add);
 
         return add;
     }
 
 
-    private ModelNode defineCustomHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
+    private ModelNode defineCustomHandler(final String name, final ModelNode handler, final PathAddress rootAddress) throws OperationFailedException {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(CUSTOM_HANDLER, name)).toModelNode());
 
-        if (handler.hasDefined(ENCODING)) {
-            add.get(ENCODING).set(handler.get(ENCODING));
-        }
-        if (handler.hasDefined(FORMATTER)) {
-            add.get(FORMATTER).set(handler.get(FORMATTER));
-        }
-        if (handler.hasDefined(LEVEL)) {
-            add.get(LEVEL).set(handler.get(LEVEL));
-        }
-        if (handler.hasDefined(QUEUE_LENGTH)) {
-            add.get(QUEUE_LENGTH).set(handler.get(QUEUE_LENGTH));
-        }
-        if (handler.hasDefined(CLASS)) {
-            add.get(CLASS).set(handler.get(CLASS));
-        }
-        if (handler.hasDefined(MODULE)) {
-            add.get(MODULE).set(handler.get(MODULE));
-        }
-        if (handler.hasDefined(PROPERTIES)) {
-            add.get(PROPERTIES).set(handler.get(PROPERTIES));
-        }
+        copyCommonHandlerAttributes(handler, add);
+        copy(CLASS, handler, add);
+        copy(MODULE, handler, add);
+        copy(PROPERTIES, handler, add);
 
         return add;
     }
 
-    private ModelNode definePeriodicRotatingFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
+    private ModelNode definePeriodicRotatingFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) throws OperationFailedException {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(PERIODIC_ROTATING_FILE_HANDLER, name)).toModelNode());
 
-        if (handler.hasDefined(AUTOFLUSH)) {
-            add.get(AUTOFLUSH).set(handler.get(AUTOFLUSH));
-        }
-        if (handler.hasDefined(ENCODING)) {
-            add.get(ENCODING).set(handler.get(ENCODING));
-        }
-        if (handler.hasDefined(FORMATTER)) {
-            add.get(FORMATTER).set(handler.get(FORMATTER));
-        }
-        if (handler.hasDefined(LEVEL)) {
-            add.get(LEVEL).set(handler.get(LEVEL));
-        }
-        if (handler.hasDefined(FILE)) {
-            add.get(FILE).set(handler.get(FILE));
-        }
-        if (handler.hasDefined(QUEUE_LENGTH)) {
-            add.get(QUEUE_LENGTH).set(handler.get(QUEUE_LENGTH));
-        }
-        if (handler.hasDefined(SUFFIX)) {
-            add.get(SUFFIX).set(handler.get(SUFFIX));
-        }
+        copyCommonFlushingHandlerAttributes(handler, add);
+        copy(FILE, handler, add);
+        copy(APPEND, handler, add);
+        copy(SUFFIX, handler, add);
+
         return add;
     }
 
 
-    private ModelNode defineSizeRotatingFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) {
+    private ModelNode defineSizeRotatingFileHandler(final String name, final ModelNode handler, final PathAddress rootAddress) throws OperationFailedException {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(SIZE_ROTATING_FILE_HANDLER, name)).toModelNode());
 
-        if (handler.hasDefined(AUTOFLUSH)) {
-            add.get(AUTOFLUSH).set(handler.get(AUTOFLUSH));
-        }
-        if (handler.hasDefined(ENCODING)) {
-            add.get(ENCODING).set(handler.get(ENCODING));
-        }
-        if (handler.hasDefined(FORMATTER)) {
-            add.get(FORMATTER).set(handler.get(FORMATTER));
-        }
-        if (handler.hasDefined(LEVEL)) {
-            add.get(LEVEL).set(handler.get(LEVEL));
-        }
-        if (handler.hasDefined(FILE)) {
-            add.get(FILE).set(handler.get(FILE));
-        }
-        if (handler.hasDefined(MAX_BACKUP_INDEX)) {
-            add.get(MAX_BACKUP_INDEX).set(handler.get(MAX_BACKUP_INDEX));
-        }
-        if (handler.hasDefined(ROTATE_SIZE)) {
-            add.get(ROTATE_SIZE).set(handler.get(ROTATE_SIZE));
-        }
+        copyCommonFlushingHandlerAttributes(handler, add);
+        copy(FILE, handler, add);
+        copy(MAX_BACKUP_INDEX, handler, add);
+        copy(ROTATE_SIZE, handler, add);
 
         return add;
     }
@@ -264,5 +195,25 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return CommonDescriptions.getSubsystemDescribeOperation(locale);
+    }
+
+    private void copyCommonHandlerAttributes(final ModelNode from, final ModelNode to) throws OperationFailedException {
+        copy(ENCODING, from, to);
+        copy(FORMATTER, from, to);
+        copy(LEVEL, from, to);
+        copy(FILTER, from, to);
+    }
+
+    private void copyCommonFlushingHandlerAttributes(final ModelNode from, final ModelNode to) throws OperationFailedException {
+        copyCommonHandlerAttributes(from, to);
+        copy(AUTOFLUSH, from, to);
+    }
+
+    private void copy(final AttributeDefinition definition, final ModelNode from, final ModelNode to) throws OperationFailedException {
+        definition.validateAndSet(definition.validateResolvedOperation(from), to);
+    }
+
+    private void copy(final String name, final ModelNode from, final ModelNode to) {
+        to.get(name).set(from.get(name));
     }
 }

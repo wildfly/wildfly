@@ -22,15 +22,19 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+
+import java.util.List;
 
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
@@ -40,29 +44,22 @@ import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
  *
  * @author John Bailey
  */
-public class RootLoggerLevelChange implements OperationStepHandler {
+public class RootLoggerLevelChange extends AbstractModelUpdateHandler {
     static final String OPERATION_NAME = "change-root-log-level";
     static final RootLoggerLevelChange INSTANCE = new RootLoggerLevelChange();
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        LoggingValidators.validate(operation);
-        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        final String level = operation.get(LEVEL).asString();
-        model.get(ROOT_LOGGER, LEVEL).set(level);
+    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        LEVEL.validateAndSet(operation.get(ROOT_LOGGER), model.get(ROOT_LOGGER));
+    }
 
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) {
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                    final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.ROOT_LOGGER);
-                    if (controller != null && operation.hasDefined(LEVEL)) {
-                        controller.getValue().setLevel(Level.parse(level));
-                    }
-                    context.completeStep();
-                }
-            }, OperationContext.Stage.RUNTIME);
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.ROOT_LOGGER);
+        final ModelNode level = LEVEL.validateResolvedOperation(model);
+        if (controller != null && level.isDefined()) {
+            controller.getValue().setLevel(Level.parse(level.asString()));
         }
-        context.completeStep();
     }
 }

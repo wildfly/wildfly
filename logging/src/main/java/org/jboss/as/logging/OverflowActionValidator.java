@@ -28,62 +28,52 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Locale;
 
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import static org.jboss.dmr.ModelType.EXPRESSION;
 
 /**
- * Checks the value to see if it's a valid {@link Level}.
- * <p/>
- * Date: 13.07.2011
+ * Date: 21.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-final class LogLevelValidator extends ModelTypeValidator implements AllowedValuesValidator {
-    private final List<Level> allowedValues;
+final class OverflowActionValidator extends ModelTypeValidator implements AllowedValuesValidator {
+    private final EnumSet<OverflowAction> allowedValues;
 
-    public LogLevelValidator(final boolean nullable) {
+    public OverflowActionValidator(final boolean nullable) {
         this(nullable, false);
     }
 
-    public LogLevelValidator(final boolean nullable, final Level... levels) {
-        this(nullable, false, levels);
-    }
-
-    public LogLevelValidator(final boolean nullable, final boolean allowExpressions) {
-        this(nullable, allowExpressions, Level.ALL, Level.CONFIG, Level.FINE, Level.FINER, Level.FINEST, Level.INFO, Level.OFF, Level.SEVERE, Level.WARNING);
-    }
-
-    public LogLevelValidator(final boolean nullable, final boolean allowExpressions, final Level... levels) {
+    public OverflowActionValidator(final boolean nullable, final boolean allowExpressions) {
         super(ModelType.STRING, nullable, allowExpressions);
-        allowedValues = Arrays.asList(levels);
+        allowedValues = EnumSet.allOf(OverflowAction.class);
     }
 
     @Override
     public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
         super.validateParameter(parameterName, value);
         if (value.isDefined()) {
-            final String levelString = value.asString();
+            final String oaString = value.asString();
             try {
-                final Level level = Level.parse(levelString);
-                if (!allowedValues.contains(level)) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(levelString)));
+                final OverflowAction overflowAction = OverflowAction.valueOf(oaString.toUpperCase(Locale.US));
+                if (overflowAction == null || !allowedValues.contains(overflowAction)) {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOverflowAction(oaString)));
                 }
             } catch (IllegalArgumentException e) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(levelString)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOverflowAction(oaString)));
             }
         }
     }
 
     @Override
     public List<ModelNode> getAllowedValues() {
-        final List<ModelNode> result = new LinkedList<ModelNode>();
-        for (Level level : allowedValues) {
-            result.add(new ModelNode().set(level.getName()));
+        List<ModelNode> result = new ArrayList<ModelNode>();
+        for (OverflowAction oa : allowedValues) {
+            result.add(new ModelNode().set(oa.name()));
         }
         return result;
     }

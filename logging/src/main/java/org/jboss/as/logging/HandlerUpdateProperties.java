@@ -22,87 +22,71 @@
 
 package org.jboss.as.logging;
 
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Handler;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
+
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.logging.Handler;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.Level;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Parent operation responsible for updating the common attributes of logging handlers.
  *
  * @author John Bailey
  */
-public abstract class HandlerUpdateProperties implements OperationStepHandler {
+public abstract class HandlerUpdateProperties extends AbstractModelUpdateHandler {
     static final String OPERATION_NAME = "update-properties";
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        LEVEL.validateAndSet(operation, model);
+        FORMATTER.validateAndSet(operation, model);
+        ENCODING.validateAndSet(operation, model);
+    }
+
+    @Override
+    protected final void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                        final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
+        if (controller != null) {
+            final Handler handler = controller.getValue();
+            final ModelNode level = LEVEL.validateResolvedOperation(model);
+            final ModelNode formatter = FORMATTER.validateResolvedOperation(model);
+            final ModelNode encoding = ENCODING.validateResolvedOperation(model);
 
-        final ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
+            if (level.isDefined()) {
+                handler.setLevel(java.util.logging.Level.parse(level.asString()));
+            }
 
-        if (operation.hasDefined(LEVEL)) {
-            apply(operation, model, LEVEL);
-        }
-        if (operation.hasDefined(FORMATTER)) {
-            apply(operation, model, FORMATTER);
-        }
-        if (operation.hasDefined(ENCODING)) {
-            apply(operation, model, ENCODING);
-        }
+            if (formatter.isDefined()) {
+                AbstractFormatterSpec.fromModelNode(model).apply(handler);
+            }
 
-        updateModel(operation, model);
-
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    LoggingValidators.validate(operation);
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                    final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
-                    if (controller != null) {
-                        final Handler handler = controller.getValue();
-                        if (operation.hasDefined(LEVEL)) {
-                            handler.setLevel(Level.parse(operation.get(LEVEL).asString()));
-                        }
-                        if (operation.hasDefined(FORMATTER)) {
-                            new PatternFormatterSpec(operation.get(FORMATTER).asString()).apply(handler);
-                        }
-                        if (operation.hasDefined(ENCODING)) {
-                            try {
-                                handler.setEncoding(operation.get(ENCODING).asString());
-                            } catch (UnsupportedEncodingException e) {
-                                throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
-                            }
-                        }
-                        updateRuntime(operation, handler);
-                    }
-                    context.completeStep();
+            if (encoding.isDefined()) {
+                try {
+                    handler.setEncoding(encoding.asString());
+                } catch (UnsupportedEncodingException e) {
+                    throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
                 }
-            }, OperationContext.Stage.RUNTIME);
+            }
+            updateRuntime(model, handler);
         }
-        context.completeStep();
     }
-
-    protected abstract void updateModel(final ModelNode operation, final ModelNode model);
 
     protected abstract void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException;
-
-    protected void apply(ModelNode from, ModelNode to, String... attributePath) {
-        if (from.get(attributePath).isDefined()) {
-            to.get(attributePath).set(from.get(attributePath));
-        }
-    }
 }

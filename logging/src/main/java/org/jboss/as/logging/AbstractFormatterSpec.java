@@ -22,8 +22,8 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.formatters.PatternFormatter;
 
 import java.io.Serializable;
 import java.util.logging.Handler;
@@ -39,30 +39,7 @@ public abstract class AbstractFormatterSpec implements Serializable {
 
     protected abstract void apply(Handler handler);
 
-    public static final class Factory {
-
-        private static final AbstractFormatterSpec DEFAULT_FORMATTER_SPEC = new AbstractFormatterSpec() {
-
-            private static final long serialVersionUID = -7900863870629839192L;
-            public static final String PATTERN = "%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n";
-
-            @Override
-            protected void apply(final Handler handler) {
-                handler.setFormatter(new PatternFormatter(PATTERN));
-            }
-        };
-
-        /**
-         * Private factory.
-         */
-        private Factory() {
-        }
-
-        public static AbstractFormatterSpec create(final ModelNode node) {
-            if (node.hasDefined(FORMATTER)) {
-                return new PatternFormatterSpec((node.get(FORMATTER).asString()));
-            }
-            return DEFAULT_FORMATTER_SPEC;
-        }
+    public static AbstractFormatterSpec fromModelNode(final ModelNode node) throws OperationFailedException {
+        return new PatternFormatterSpec(FORMATTER.validateResolvedOperation(node).asString());
     }
 }

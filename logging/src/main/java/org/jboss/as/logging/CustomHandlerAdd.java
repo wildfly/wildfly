@@ -22,27 +22,13 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceName;
 
-import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
-import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
-import static org.jboss.as.logging.CommonAttributes.ENCODING;
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 
@@ -51,41 +37,32 @@ import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class CustomHandlerAdd extends AbstractAddStepHandler {
+class CustomHandlerAdd extends HandlerAddProperties<CustomHandlerService> {
 
     static final CustomHandlerAdd INSTANCE = new CustomHandlerAdd();
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        LoggingValidators.validate(operation);
-        model.get(ENCODING).set(operation.get(ENCODING));
-        model.get(FORMATTER).set(operation.get(FORMATTER));
-        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
-        model.get(MODULE).set(operation.get(MODULE));
-        model.get(CLASS).set(operation.get(CLASS));
-        if (operation.hasDefined(PROPERTIES)) model.get(PROPERTIES).set(operation.get(PROPERTIES));
+        super.populateModel(operation, model);
+        MODULE.validateAndSet(operation, model);
+        CLASS.validateAndSet(operation, model);
+        PROPERTIES.validateAndSet(operation, model);
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        final String className = operation.get(CLASS).asString();
-        final String moduleName = operation.get(MODULE).asString();
-        final CustomHandlerService service = new CustomHandlerService(className, moduleName);
-        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-        try {
-            if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-            if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-        } catch (Throwable t) {
-            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-        }
-        if (operation.hasDefined(PROPERTIES)) service.addProperties(operation.get(PROPERTIES).asPropertyList());
-        service.setFormatterSpec(AbstractFormatterSpec.Factory.create(operation));
-        serviceBuilder.addListener(verificationHandler);
-        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-        newControllers.add(serviceBuilder.install());
+    protected CustomHandlerService createHandlerService(final ModelNode model) throws OperationFailedException {
+        final String className = CLASS.validateResolvedOperation(model).asString();
+        final String moduleName = MODULE.validateResolvedOperation(model).asString();
+        return new CustomHandlerService(className, moduleName);
     }
+
+    @Override
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final CustomHandlerService service, final ModelNode model) throws OperationFailedException {
+        final ModelNode properties = PROPERTIES.validateResolvedOperation(model);
+        if (properties.isDefined()) {
+            service.addProperties(properties.asPropertyList());
+        }
+    }
+
+
 }
