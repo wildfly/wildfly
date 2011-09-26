@@ -28,7 +28,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -39,9 +38,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class StatefulComponentIdInterceptor extends AbstractEJBInterceptor {
     private static final Logger log = Logger.getLogger(StatefulComponentIdInterceptor.class);
 
-    private final AtomicReference<Serializable> reference;
+    private final AtomicReference<byte[]> reference;
 
-    public StatefulComponentIdInterceptor(AtomicReference<Serializable> reference) {
+    public StatefulComponentIdInterceptor(AtomicReference<byte[]> reference) {
         this.reference = reference;
     }
 
@@ -64,7 +63,7 @@ public class StatefulComponentIdInterceptor extends AbstractEJBInterceptor {
 
         @Override
         public Interceptor create(InterceptorFactoryContext context) {
-            final AtomicReference<Serializable> reference = (AtomicReference<Serializable>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
+            final AtomicReference<byte[]> reference = (AtomicReference<byte[]>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
             return new StatefulComponentIdInterceptor(reference);
         }
     }

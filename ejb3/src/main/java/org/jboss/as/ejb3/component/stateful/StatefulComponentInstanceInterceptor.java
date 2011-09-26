@@ -31,8 +31,8 @@ import org.jboss.logging.Logger;
 
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
-import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 
 /**
  * Associate the proper component instance to the invocation based on the passed in session identifier.
@@ -48,11 +48,11 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
     public Object processInvocation(InterceptorContext context) throws Exception {
         StatefulSessionComponent component = getComponent(context, StatefulSessionComponent.class);
         // TODO: this is a contract with the client interceptor
-        Serializable sessionId = (Serializable) context.getPrivateData(StatefulContextIdKey.INSTANCE);
+        byte[] sessionId = (byte[]) context.getPrivateData(StatefulContextIdKey.INSTANCE);
         if (sessionId == null) {
             throw new IllegalStateException("Session id hasn't been set for stateful component: " + component.getComponentName());
         }
-        log.debug("Looking for stateful component instance with session id: " + sessionId);
+        log.debug("Looking for stateful component instance with session id: " + Arrays.toString(sessionId));
         StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         try {
             context.putPrivateData(ComponentInstance.class, instance);
@@ -68,18 +68,18 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
             }
             if (ex instanceof RuntimeException || ex instanceof RemoteException) {
                 if (log.isTraceEnabled())
-                    log.trace("Removing bean " + sessionId + " because of exception", ex);
+                    log.trace("Removing bean " + Arrays.toString(sessionId) + " because of exception", ex);
                 component.getCache().discard(sessionId);
             }
             throw ex;
         } catch (final Error e) {
             if (log.isTraceEnabled())
-                log.trace("Removing bean " + sessionId + " because of error", e);
+                log.trace("Removing bean " + Arrays.toString(sessionId) + " because of error", e);
             component.getCache().discard(sessionId);
             throw e;
         } catch (final Throwable t) {
             if (log.isTraceEnabled())
-                log.trace("Removing bean " + sessionId + " because of Throwable", t);
+                log.trace("Removing bean " + Arrays.toString(sessionId) + " because of Throwable", t);
             component.getCache().discard(sessionId);
             throw new RuntimeException(t);
         } finally {

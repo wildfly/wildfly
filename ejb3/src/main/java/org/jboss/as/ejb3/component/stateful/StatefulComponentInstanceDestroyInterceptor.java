@@ -26,7 +26,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 
 import javax.ejb.NoSuchEJBException;
-import java.io.Serializable;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -37,9 +37,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class StatefulComponentInstanceDestroyInterceptor extends AbstractEJBInterceptor {
     private static final Logger log = Logger.getLogger(StatefulComponentInstanceDestroyInterceptor.class);
 
-    private final AtomicReference<Serializable> sessionIdReference;
+    private final AtomicReference<byte[]> sessionIdReference;
 
-    public StatefulComponentInstanceDestroyInterceptor(AtomicReference<Serializable> sessionIdReference) {
+    public StatefulComponentInstanceDestroyInterceptor(AtomicReference<byte[]> sessionIdReference) {
         this.sessionIdReference = sessionIdReference;
     }
 
@@ -47,16 +47,16 @@ public class StatefulComponentInstanceDestroyInterceptor extends AbstractEJBInte
     public Object processInvocation(InterceptorContext context) throws Exception {
         StatefulSessionComponent component = getComponent(context, StatefulSessionComponent.class);
         // TODO: this is a contract with the client interceptor
-        Serializable sessionId = this.sessionIdReference.get();
+        byte[] sessionId = this.sessionIdReference.get();
         if (sessionId == null) {
             throw new IllegalStateException("Session id hasn't been set for stateful component: " + component.getComponentName());
         }
-        log.debug("Looking for stateful component instance with session id: " + sessionId);
+        log.debug("Looking for stateful component instance with session id: " + Arrays.toString(sessionId));
         try {
             StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         } catch (NoSuchEJBException nsee) {
             // probably already destroyed (for example if some method had a @Remove on it)
-            log.info("Could not find stateful session bean instance with id: " + sessionId + " for bean: " +
+            log.info("Could not find stateful session bean instance with id: " + Arrays.toString(sessionId) + " for bean: " +
                     component.getComponentName() + " during destruction. Probably already removed");
             return null;
         }

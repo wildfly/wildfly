@@ -29,7 +29,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -44,11 +43,11 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        final AtomicReference<Serializable> sessionIdReference = new AtomicReference<Serializable>();
+        final AtomicReference<byte[]> sessionIdReference = new AtomicReference<byte[]>();
         context.getContextData().put(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY, sessionIdReference);
 
         //if we are attaching to an existing instance this will not be null
-        final Serializable id = (Serializable) context.getContextData().get(StatefulSessionComponent.SESSION_ATTACH_KEY);
+        final byte[] id = (byte[]) context.getContextData().get(StatefulSessionComponent.SESSION_ATTACH_KEY);
         if(id == null) {
             return new StatefulComponentSessionIdGeneratingInterceptor(sessionIdReference);
         } else {
@@ -59,9 +58,9 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
 
     private class StatefulComponentSessionIdGeneratingInterceptor implements Interceptor {
 
-        private final AtomicReference<Serializable> sessionIdReference;
+        private final AtomicReference<byte[]> sessionIdReference;
 
-        StatefulComponentSessionIdGeneratingInterceptor(AtomicReference<Serializable> sessionIdReference) {
+        StatefulComponentSessionIdGeneratingInterceptor(AtomicReference<byte[]> sessionIdReference) {
             this.sessionIdReference = sessionIdReference;
         }
 
