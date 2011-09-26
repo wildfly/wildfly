@@ -570,7 +570,7 @@ final class OperationContextImpl implements OperationContext {
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        if (! (currentStage == Stage.RUNTIME || currentStage == Stage.VERIFY || isRollingBack() && ! modify)) {
+        if (! (currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack() && ! modify)) {
             throw new IllegalStateException("Get service registry only supported in runtime operations");
         }
         if (modify && !affectsRuntime) {
