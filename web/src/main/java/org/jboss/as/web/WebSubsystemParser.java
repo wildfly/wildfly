@@ -258,11 +258,18 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     }
                 }
                 if(config.hasDefined(SSO)) {
-                    writer.writeEmptyElement(SSO);
-                    final ModelNode sso = config.get(SSO);
-                    writeAttribute(writer, Attribute.CACHE_CONTAINER.getLocalName(), sso);
-                    writeAttribute(writer, Attribute.DOMAIN.getLocalName(), sso);
-                    writeAttribute(writer, Attribute.REAUTHENTICATE.getLocalName(), sso);
+                    final ModelNode sso;
+                    if (config.get(SSO).has("configuration"))
+                        sso = config.get(SSO).get("configuration");
+                    else
+                        sso = config.get(SSO);
+                    if (sso.isDefined()) {
+                        writer.writeStartElement(SSO);
+                        writeAttribute(writer, Attribute.CACHE_CONTAINER.getLocalName(), sso);
+                        writeAttribute(writer, Attribute.DOMAIN.getLocalName(), sso);
+                        writeAttribute(writer, Attribute.REAUTHENTICATE.getLocalName(), sso);
+                        writer.writeEndElement();
+                    }
                 }
                 writer.writeEndElement();
             }
@@ -628,7 +635,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 case SSO:
                     final ModelNode sso = parseSso(reader);
-                    host.get(SSO).add(sso);
+                    host.get(SSO).set(sso);
                     break;
                 default:
                     throw unexpectedElement(reader);
