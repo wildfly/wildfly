@@ -925,7 +925,9 @@ final class OperationContextImpl implements OperationContext {
 
     public void report(final MessageSeverity severity, final String message) {
         try {
-            messageHandler.handleReport(severity, message);
+            if(messageHandler != null) {
+                messageHandler.handleReport(severity, message);
+            }
         } catch (Throwable t) {
             // ignored
         }
