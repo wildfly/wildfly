@@ -130,11 +130,11 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
         return NO_ALIASES;
     }
 
-    static void accessLogService(final String hostName, final ModelNode element, final ServiceTarget target) {
-        if (element.has(Constants.ACCESS_LOG)) {
-            final ModelNode accessLog = element.get(Constants.ACCESS_LOG);
-            final String relativeTo = accessLog.has(RELATIVE_TO) ? accessLog.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
-            final String path = accessLog.has(PATH) ? accessLog.get(PATH).asString() : hostName;
+    static void accessLogService(final String hostName, final ModelNode node, final ServiceTarget target) {
+        if (node.has(Constants.DIRECTORY)) {
+            final ModelNode directory = node.get(Constants.DIRECTORY);
+            final String relativeTo = directory.hasDefined(RELATIVE_TO) ? directory.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
+            final String path = directory.hasDefined(PATH) ? directory.get(PATH).asString() : hostName;
             RelativePathService.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName, Constants.ACCESS_LOG),
                     path, relativeTo, target);
         } else {

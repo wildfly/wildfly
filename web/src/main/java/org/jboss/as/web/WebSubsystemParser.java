@@ -707,7 +707,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 switch (element) {
                 case DIRECTORY:
                     final ModelNode directory = new ModelNode();
-                    log.get(DIRECTORY).set(directory);
                     final int count2 = reader.getAttributeCount();
                     for (int i = 0; i < count2; i++) {
                         requireNoNamespaceAttribute(reader, i);
@@ -724,6 +723,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             throw unexpectedAttribute(reader, i);
                         }
                     }
+                    requireNoContent(reader);
+                    log.get(DIRECTORY).set(directory);
                     break;
                 default:
                     throw unexpectedElement(reader);
