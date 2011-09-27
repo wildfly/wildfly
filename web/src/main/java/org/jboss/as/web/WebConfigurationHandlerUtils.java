@@ -49,6 +49,7 @@ import static org.jboss.as.web.Constants.SCRATCH_DIR;
 import static org.jboss.as.web.Constants.SENDFILE;
 import static org.jboss.as.web.Constants.SMAP;
 import static org.jboss.as.web.Constants.SOURCE_VM;
+import static org.jboss.as.web.Constants.SSL;
 import static org.jboss.as.web.Constants.SSO;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
 import static org.jboss.as.web.Constants.TAG_POOLING;
@@ -90,6 +91,7 @@ class WebConfigurationHandlerUtils {
     static final PathElement JSP = PathElement.pathElement(CONTAINER_CONFIG, JSP_CONFIGURATION);
     static final PathElement RESOURCE = PathElement.pathElement(CONTAINER_CONFIG, STATIC_RESOURCES);
     static final PathElement CONTAINER = PathElement.pathElement(CONTAINER_CONFIG, Constants.CONTAINER);
+    static final PathElement SSLPATH = PathElement.pathElement(SSL, "configuration");
     static final PathElement SSOPATH = PathElement.pathElement(SSO, "configuration");
     static final PathElement REWRITEPATH = PathElement.pathElement(REWRITE, "configuration");
     static final PathElement ACCESSLOG = PathElement.pathElement(ACCESS_LOG, "configuration");
@@ -228,5 +230,13 @@ class WebConfigurationHandlerUtils {
         resources.registerReadWriteAttribute(WEBDAV, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
         resources.registerReadWriteAttribute(MAX_DEPTH, null, new WriteAttributeHandlers.IntRangeValidatingHandler(1), Storage.CONFIGURATION);
         resources.registerReadWriteAttribute(DISABLED, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
+    }
+
+    public static void initializeConnector(Resource resource, ModelNode model) {
+        resource.registerChild(SSLPATH, Resource.Factory.create());
+        final Resource ssl = resource.getChild(SSLPATH);
+        if (model.hasDefined(SSL)) {
+            populateModel(ssl.getModel(),  model.get(SSL));
+        }
     }
 }

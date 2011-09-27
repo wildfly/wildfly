@@ -51,6 +51,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
@@ -96,6 +97,15 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         //
     }
 
+    @Override
+    protected void populateModel(final ModelNode operation, final Resource resource) {
+        final ModelNode model = resource.getModel();
+
+        populateModel(operation, model);
+        WebConfigurationHandlerUtils.initializeConnector(resource, model);
+    }
+
+    @Override
     protected void populateModel(ModelNode operation, ModelNode subModel) {
         subModel.get(PROTOCOL).set(operation.get(PROTOCOL));
         subModel.get(SOCKET_BINDING).set(operation.get(SOCKET_BINDING));
@@ -117,6 +127,7 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         subModel.get(Constants.SSL).set(operation.get(Constants.SSL));
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
