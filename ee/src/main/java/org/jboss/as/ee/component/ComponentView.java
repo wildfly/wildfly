@@ -74,6 +74,12 @@ public interface ComponentView {
 
     /**
      *
+     * @return The class of the view
+     */
+    Class<?> getViewClass();
+
+    /**
+     *
      * @return All methods that the view supports
      */
     Set<Method> getViewMethods();

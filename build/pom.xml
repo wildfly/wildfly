@@ -442,7 +442,7 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.scr</artifactId>
         </dependency>
-            
+
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.webconsole</artifactId>
@@ -846,6 +846,11 @@
         <dependency>
             <groupId>org.jboss.com.sun.httpserver</groupId>
             <artifactId>httpserver</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-ejb-client</artifactId>
         </dependency>
 
         <dependency>
@@ -1438,7 +1443,7 @@
             <groupId>org.projectodd.stilts</groupId>
             <artifactId>stilts-stomplet-server-bundle</artifactId>
         </dependency>
-            
+
         <dependency>
             <groupId>org.scannotation</groupId>
             <artifactId>scannotation</artifactId>

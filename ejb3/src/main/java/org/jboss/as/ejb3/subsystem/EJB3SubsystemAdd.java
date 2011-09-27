@@ -26,7 +26,6 @@ import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
@@ -67,6 +66,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
+import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -86,7 +86,6 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
@@ -206,6 +205,11 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         newControllers.add(context.getServiceTarget().addService(DeploymentRepository.SERVICE_NAME, new DeploymentRepository()).install());
 
+        final LocalEjbReceiver localEjbReceiver = new LocalEjbReceiver();
+
+        newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.SERVICE_NAME, localEjbReceiver)
+                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, localEjbReceiver.getDeploymentRepository())
+                .install());
 
         if (!lite) {
             //TODO: Quick hack for testing purposes

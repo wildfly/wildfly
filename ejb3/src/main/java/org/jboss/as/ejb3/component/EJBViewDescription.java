@@ -24,8 +24,11 @@ package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
 
@@ -67,6 +70,22 @@ public final class EJBViewDescription extends ViewDescription {
         if (!getViewClassName().equals(that.getViewClassName())) return false;
 
         return true;
+    }
+
+    @Override
+    protected InjectionSource createInjectionSource(final ServiceName serviceName) {
+        if(methodIntf != MethodIntf.REMOTE) {
+            return super.createInjectionSource(serviceName);
+        } else {
+            final EJBComponentDescription componentDescription = getComponentDescription();
+            EEModuleDescription desc = componentDescription.getModuleDescription();
+            return new RemoteViewInjectionSource(serviceName, desc.getApplicationName(), desc.getModuleName(), desc.getDistinctName(), componentDescription.getComponentName(), getViewClassName() , componentDescription.isStateful());
+        }
+    }
+
+    @Override
+    public EJBComponentDescription getComponentDescription() {
+        return (EJBComponentDescription)super.getComponentDescription();
     }
 
     @Override // TODO: what to do in JNDI if multiple views are available for no interface view ?
