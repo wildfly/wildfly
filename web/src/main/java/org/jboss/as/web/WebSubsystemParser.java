@@ -209,13 +209,14 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     accessLog = config.get(ACCESS_LOG);
                 }
                 if (accessLog.isDefined() && !accessLog.keys().isEmpty()) {
-                    writer.writeStartElement(Element.ACCESS_LOG.getLocalName());
-                    final ModelNode accessLog = config.get(ACCESS_LOG);
-                    writeAttribute(writer, Attribute.PATTERN.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.EXTENDED.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.PREFIX.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.ROTATE.getLocalName(), accessLog);
+                    boolean startwritten = false;
+                    String name = Element.ACCESS_LOG.getLocalName();
+                    startwritten = writeAttribute(writer, Attribute.PATTERN.getLocalName(), accessLog, startwritten, name);
+                    startwritten = writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), accessLog, startwritten, name);
+                    startwritten = writeAttribute(writer, Attribute.EXTENDED.getLocalName(), accessLog, startwritten, name);
+                    startwritten = writeAttribute(writer, Attribute.PREFIX.getLocalName(), accessLog, startwritten, name);
+                    startwritten = writeAttribute(writer, Attribute.ROTATE.getLocalName(), accessLog, startwritten, name);
+
                     if(accessLog.has(DIRECTORY)) {
                         ModelNode directory;
                         if (accessLog.get(DIRECTORY).has("configuration"))
@@ -223,13 +224,18 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                         else
                             directory = accessLog.get(DIRECTORY);
                         if (directory.isDefined()) {
+                            if (!startwritten) {
+                                writer.writeStartElement(name);
+                                startwritten = true;
+                            }
                             writer.writeStartElement(Element.DIRECTORY.getLocalName());
                             writeAttribute(writer, Attribute.PATH.getLocalName(), directory);
                             writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), directory);
                             writer.writeEndElement();
                         }
                     }
-                    writer.writeEndElement();
+                    if (startwritten)
+                        writer.writeEndElement();
                 }
 
                 if (config.hasDefined(REWRITE)) {
@@ -268,7 +274,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                         sso = config.get(SSO).get("configuration");
                     else
                         sso = config.get(SSO);
-                    if (sso.isDefined()) {
+                    if (sso.isDefined() && !sso.keys().isEmpty()) {
                         writer.writeStartElement(SSO);
                         writeAttribute(writer, Attribute.CACHE_CONTAINER.getLocalName(), sso);
                         writeAttribute(writer, Attribute.DOMAIN.getLocalName(), sso);
@@ -979,4 +985,16 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             writer.writeAttribute(name, node.get(name).asString());
         }
     }
+    private boolean writeAttribute(XMLExtendedStreamWriter writer, String name, ModelNode node, boolean startwritten, String origin) throws XMLStreamException {
+        if(node.hasDefined(name)) {
+            if (!startwritten) {
+                startwritten = true;
+                writer.writeStartElement(origin);
+            }
+            writer.writeAttribute(name, node.get(name).asString());
+        }
+        return startwritten;
+    }
+
+
 }
