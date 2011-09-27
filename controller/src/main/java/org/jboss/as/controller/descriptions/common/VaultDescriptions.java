@@ -75,7 +75,7 @@ public class VaultDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("jvm.add"));
+        node.get(DESCRIPTION).set(bundle.getString("vault.add"));
         node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), DESCRIPTION).set(bundle.getString("vault.code"));
         node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), REQUIRED).set(false);
