@@ -205,7 +205,7 @@ public class PlatformMBeanResourceRegistrar {
                     return PlatformMBeanDescriptions.getBufferPoolRootResource(locale);
                 }
             });
-            ManagementResourceRegistration bufPool = memPoolRoot.registerSubModel(PathElement.pathElement(NAME), new DescriptionProvider() {
+            ManagementResourceRegistration bufPool = bufPoolRoot.registerSubModel(PathElement.pathElement(NAME), new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
                     return PlatformMBeanDescriptions.getBufferPoolResource(locale);
