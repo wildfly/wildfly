@@ -131,17 +131,22 @@ class WebConfigurationHandlerUtils {
         }
     }
 
+    /* create the sso=configuration, the rewrite=rule-n (if defined) and the access-log=configuration/directory=configuration */
     static void initializeHost(final Resource resource, final ModelNode operation) {
+        resource.registerChild(SSOPATH, Resource.Factory.create());
+        final Resource sso = resource.getChild(SSOPATH);
+        resource.registerChild(ACCESSLOG, Resource.Factory.create());
+        final Resource accesslog = resource.getChild(ACCESSLOG);
+
+        accesslog.registerChild(DIRECTORYPATH, Resource.Factory.create());
+        final Resource directory = accesslog.getChild(DIRECTORYPATH);
+
         for(final String attribute :  operation.keys()) {
             if (attribute.equals(REWRITE) && operation.get(REWRITE).isDefined()) {
                 populateReWrite(operation, resource);
             } else if (attribute.equals(ACCESS_LOG) && operation.get(ACCESS_LOG).isDefined())  {
-                resource.registerChild(ACCESSLOG, Resource.Factory.create());
-                final Resource accesslog = resource.getChild(ACCESSLOG);
-                populateAccessLog(accesslog.getModel(), operation.get(ACCESS_LOG), accesslog);
+                populateAccessLog(accesslog.getModel(), operation.get(ACCESS_LOG), directory);
              } else if (attribute.equals(SSO) && operation.get(SSO).isDefined())  {
-                 resource.registerChild(SSOPATH, Resource.Factory.create());
-                 final Resource sso = resource.getChild(SSOPATH);
                  populateModel(sso.getModel(), operation.get(SSO));
              }
         }
@@ -175,21 +180,14 @@ class WebConfigurationHandlerUtils {
         }
     }
 
-    static void populateAccessLog(final ModelNode subModel, final ModelNode operation, final Resource accesslog) {
-        boolean create = false;
-        for(final String attribute : operation.keys()) {
+    static void populateAccessLog(final ModelNode subModel, final ModelNode operation, final Resource directory) {
+         for(final String attribute : operation.keys()) {
             if(operation.hasDefined(attribute)) {
                 if (attribute.equals(DIRECTORY)) {
-                    accesslog.registerChild(DIRECTORYPATH, Resource.Factory.create());
-                    final Resource directory = accesslog.getChild(DIRECTORYPATH);
-                    create = true;
-                    populateModel(directory.getModel(),  operation.get(DIRECTORY));
+                     populateModel(directory.getModel(),  operation.get(DIRECTORY));
                 } else
                     subModel.get(attribute).set(operation.get(attribute));
             }
-        }
-        if (!create) {
-            accesslog.registerChild(DIRECTORYPATH, Resource.Factory.create());
         }
     }
 
