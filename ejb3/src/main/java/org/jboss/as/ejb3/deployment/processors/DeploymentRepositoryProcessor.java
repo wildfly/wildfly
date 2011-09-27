@@ -61,7 +61,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
                     injectedValues.put(view.getServiceName(), componentViewInjectedValue);
                 }
                 EjbDeploymentInformation info = new EjbDeploymentInformation(ejbComponentDescription.getEJBName(), componentInjectedValue, views, module.getClassLoader());
-                deploymentInformationMap.put(ejbComponentDescription.getEJBClassName(), info);
+                deploymentInformationMap.put(ejbComponentDescription.getEJBName(), info);
             }
         }
 

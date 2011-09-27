@@ -39,7 +39,8 @@ import java.util.Map;
 public final class EEModuleDescription {
     private final String applicationName;
     private volatile String moduleName;
-    private volatile String distinctName;
+    //distinct name defaults to the empty string
+    private volatile String distinctName = "";
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
 
@@ -78,7 +79,7 @@ public final class EEModuleDescription {
         }
         componentsByName.put(componentName, description);
         List<ComponentDescription> list = componentsByClassName.get(componentClassName);
-        if(list == null) {
+        if (list == null) {
             componentsByClassName.put(componentClassName, list = new ArrayList<ComponentDescription>(1));
         }
         list.add(description);
@@ -130,6 +131,9 @@ public final class EEModuleDescription {
     }
 
     public void setDistinctName(String distinctName) {
+        if (distinctName == null) {
+            throw new IllegalArgumentException("Distinct name cannot be null");
+        }
         this.distinctName = distinctName;
     }
 }

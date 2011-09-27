@@ -60,7 +60,7 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
             throw new RuntimeException("Could not load view class for ejb " + beanName, e);
         }
 
-        final Object proxy = EJBClient.getProxy(appName, moduleName, distinctName, viewClass, beanName);
+        final Object proxy = EJBClient.getProxy(appName, moduleName, distinctName, beanName, viewClass);
 
         if (stateful) {
             EJBClient.createSession(proxy);

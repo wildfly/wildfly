@@ -21,7 +21,9 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -39,6 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -63,7 +66,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
     }
 
     @Override
-    protected Future<?> processInvocation(final EJBClientInvocationContext<Void> invocation) throws Exception {
+    protected Future<?> processInvocation(final EJBClientInvocationContext<Void> invocation, final EJBReceiverContext receiverContext) throws Exception {
         final EjbDeploymentInformation ejb = findBean(invocation.getAppName(), invocation.getModuleName(), invocation.getDistinctName(), invocation.getBeanName());
         //TODO: we need a better way to get the correct view
         final Class<?> viewClass = invocation.getViewClass();
@@ -75,11 +78,18 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         //TODO: this needs to be pass by value
         //we really need to setup client interceptors to handle this somehow
 
+        final Method invokedMethod = invocation.getInvokedMethod();
+        //TODO: this is not very efficent
+        final Method method = view.getMethod(invokedMethod.getName(), DescriptorUtils.methodDescriptor(invokedMethod));
+
+
         final InterceptorContext context = new InterceptorContext();
         context.setParameters(invocation.getParameters());
-        context.setMethod(invocation.getInvokedMethod());
+        context.setMethod(method);
         context.setTarget(invocation.getInvokedProxy());
         context.setContextData(new HashMap<String, Object>());
+        context.putPrivateData(Component.class, ejb.getEjbComponent());
+        context.putPrivateData(ComponentView.class, view);
         final Object result = view.invoke(context);
         return new Future<Object>() {
             @Override
@@ -110,7 +120,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
     }
 
     @Override
-    protected byte[] openSession(final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
+    protected byte[] openSession(final EJBReceiverContext ejbReceiverContext, final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
         final EjbDeploymentInformation ejbInfo = findBean(appName, moduleName, distinctName, beanName);
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (component instanceof StatefulSessionComponent) {
@@ -145,7 +155,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
     @Override
     public void start(final StartContext context) throws StartException {
-
+        DefaultClientContext.getInstance().registerEJBReceiver(this);
     }
 
     @Override

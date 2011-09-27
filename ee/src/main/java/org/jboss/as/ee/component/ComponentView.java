@@ -85,7 +85,7 @@ public interface ComponentView {
     Set<Method> getViewMethods();
 
     /**
-     *
+     * Gets a view method based on name and descriptor
      * @param name the method name
      * @param descriptor The method descriptor in JVM format
      * @return The method that corresponds to the given name and descriptor
