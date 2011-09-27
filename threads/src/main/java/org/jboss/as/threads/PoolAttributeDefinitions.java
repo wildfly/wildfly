@@ -29,6 +29,7 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -117,4 +118,8 @@ public interface PoolAttributeDefinitions {
                         }
                     }
                 }});
+
+    AttributeDefinition[] THREAD_FACTORY_ATTRIBUTES = new AttributeDefinition[]{
+            NAME, PROPERTIES, GROUP_NAME, THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY
+    };
 }

@@ -215,7 +215,7 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.STRING, threadFactoryDescription.require(ATTRIBUTES).require(THREAD_NAME_PATTERN).require(TYPE)
                 .asType());
         assertEquals(ModelType.INT, threadFactoryDescription.require(ATTRIBUTES).require(PRIORITY).require(TYPE).asType());
-        assertEquals(ModelType.OBJECT, threadFactoryDescription.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
+        assertEquals(ModelType.LIST, threadFactoryDescription.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
 
         ModelNode boundedQueueThreadPoolDesc = threadsDescription.get(CHILDREN, BOUNDED_QUEUE_THREAD_POOL, MODEL_DESCRIPTION,
                 "*");
