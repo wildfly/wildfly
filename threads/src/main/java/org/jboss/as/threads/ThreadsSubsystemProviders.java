@@ -43,18 +43,15 @@ import static org.jboss.as.threads.CommonAttributes.BLOCKING;
 import static org.jboss.as.threads.CommonAttributes.BOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
 import static org.jboss.as.threads.CommonAttributes.COUNT;
-import static org.jboss.as.threads.CommonAttributes.GROUP_NAME;
 import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
 import static org.jboss.as.threads.CommonAttributes.PER_CPU;
-import static org.jboss.as.threads.CommonAttributes.PRIORITY;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
 import static org.jboss.as.threads.CommonAttributes.QUEUELESS_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.threads.CommonAttributes.SCHEDULED_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
-import static org.jboss.as.threads.CommonAttributes.THREAD_NAME_PATTERN;
 import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
@@ -62,6 +59,7 @@ import static org.jboss.as.threads.CommonAttributes.UNIT;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -120,7 +118,10 @@ public class ThreadsSubsystemProviders {
             node.get(HEAD_COMMENT_ALLOWED).set(true);
             node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-            node.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("threadfactory.name"));
+            for(AttributeDefinition attr : PoolAttributeDefinitions.THREAD_FACTORY_ATTRIBUTES) {
+                attr.addResourceAttributeDescription(bundle, "threadfactory", node);
+            }
+/*            node.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("threadfactory.name"));
             node.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, NAME, REQUIRED).set(true);
 
@@ -135,12 +136,13 @@ public class ThreadsSubsystemProviders {
             node.get(ATTRIBUTES, PRIORITY, DESCRIPTION).set(bundle.getString("threadfactory.priority"));
             node.get(ATTRIBUTES, PRIORITY, TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, PRIORITY, REQUIRED).set(false);
+            node.get(ATTRIBUTES, PRIORITY, DEFAULT).set(-1);
 
             node.get(ATTRIBUTES, PROPERTIES, DESCRIPTION).set(bundle.getString("threadfactory.properties"));
             node.get(ATTRIBUTES, PROPERTIES, TYPE).set(ModelType.OBJECT);
             node.get(ATTRIBUTES, PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, PROPERTIES, REQUIRED).set(false);
-
+*/
             return node;
         }
     };
@@ -299,7 +301,11 @@ public class ThreadsSubsystemProviders {
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set(ADD);
             operation.get(DESCRIPTION).set(bundle.getString("threadfactory.add"));
-            operation.get(REQUEST_PROPERTIES, GROUP_NAME, DESCRIPTION).set(bundle.getString("threadfactory.groupname"));
+
+            for(AttributeDefinition attr : ThreadFactoryAdd.ATTRIBUTES) {
+                attr.addOperationParameterDescription(bundle, "threadfactory", operation);
+            }
+/*            operation.get(REQUEST_PROPERTIES, GROUP_NAME, DESCRIPTION).set(bundle.getString("threadfactory.groupname"));
             operation.get(REQUEST_PROPERTIES, GROUP_NAME, TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, GROUP_NAME, REQUIRED).set(false);
             operation.get(REQUEST_PROPERTIES, THREAD_NAME_PATTERN, DESCRIPTION).set(
@@ -313,7 +319,7 @@ public class ThreadsSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, PROPERTIES, TYPE).set(ModelType.OBJECT);
             operation.get(REQUEST_PROPERTIES, PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, PROPERTIES, REQUIRED).set(false);
-            operation.get(REPLY_PROPERTIES).setEmptyObject();
+*/            operation.get(REPLY_PROPERTIES).setEmptyObject();
             return operation;
         }
     };
