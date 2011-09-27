@@ -125,8 +125,8 @@ public class WebExtension implements Extension {
 
         // Attributes
         final ManagementResourceRegistration accesslog = hosts.registerSubModel(accesslogPath, WebSubsystemDescriptionProviders.ACCESS_LOG);
-        accesslog.registerOperationHandler(ADD, WebAccessLogAdd.INSTANCE, WebAccessLogAdd.INSTANCE, false);
-        accesslog.registerOperationHandler(REMOVE, WebAccessLogRemove.INSTANCE, WebAccessLogRemove.INSTANCE, false);
+        accesslog.registerOperationHandler(ADD, WebAccessLogAdd.INSTANCE, WebAccessLogAdd.INSTANCE, true);
+        accesslog.registerOperationHandler(REMOVE, WebAccessLogRemove.INSTANCE, WebAccessLogRemove.INSTANCE, true);
 
         // access-log.
         // the directory needs one level more
@@ -142,6 +142,9 @@ public class WebExtension implements Extension {
 
         // sso valve.
         final ManagementResourceRegistration sso = hosts.registerSubModel(ssoPath, WebSubsystemDescriptionProviders.SSO);
+        sso.registerOperationHandler(ADD, WebSSOAdd.INSTANCE, WebSSOAdd.INSTANCE, false);
+        sso.registerOperationHandler(REMOVE, WebSSORemove.INSTANCE, WebSSORemove.INSTANCE, false);
+
         sso.registerReadWriteAttribute(Constants.CACHE_CONTAINER, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         sso.registerReadWriteAttribute(Constants.DOMAIN, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         sso.registerReadWriteAttribute(Constants.REAUTHENTICATE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);

@@ -860,4 +860,22 @@ class WebSubsystemDescriptions {
         node.get(REQUIRED).set(false);
         return node;
     }
+
+    public static ModelNode getSSOAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso.add"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getSSORemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso.remove"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
 }
