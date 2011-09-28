@@ -90,8 +90,13 @@ class DomainApiHandler implements ManagementHttpHandler {
      * Represents all possible management operations that can be executed using HTTP GET
      */
     enum GetOperation {
-        RESOURCE("read-resource"), ATTRIBUTE("read-attribute"), RESOURCE_DESCRIPTION("read-resource-description"), OPERATION_DESCRIPTION(
-                "read-operation-description"), OPERATION_NAMES("read-operation-names");
+        RESOURCE("read-resource"),
+        ATTRIBUTE("read-attribute"),
+        RESOURCE_DESCRIPTION("read-resource-description"),
+        SNAPSHOTS("list-snapshots"),
+        OPERATION_DESCRIPTION(
+                "read-operation-description"),
+        OPERATION_NAMES("read-operation-names");
 
         private String realOperation;
 
