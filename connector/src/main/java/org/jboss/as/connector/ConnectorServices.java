@@ -126,7 +126,7 @@ public final class ConnectorServices {
 
     public static synchronized ServiceName registerDeployment(String raName) {
         if (raName == null)
-            throw new IllegalArgumentException("RaName is null");
+            throw MESSAGES.undefinedVar("RaName");
 
         Integer identifier = getDeploymentIdentifier(raName);
         ServiceName serviceName = RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(raName + "_" + identifier);
@@ -140,7 +140,7 @@ public final class ConnectorServices {
 
         if (entries.contains(serviceName)) {
             deploymentIdentifiers.get(raName).remove(identifier);
-            throw new IllegalStateException("ServiceName '" + serviceName.getCanonicalName() + "' already registered");
+            throw MESSAGES.serviceAlreadyRegistered(serviceName.getCanonicalName());
         }
 
         entries.add(serviceName);
@@ -150,16 +150,16 @@ public final class ConnectorServices {
 
     public static synchronized void unregisterDeployment(String raName, ServiceName serviceName) {
         if (raName == null)
-            throw new IllegalArgumentException("RaName is null");
+            throw MESSAGES.undefinedVar("RaName");
 
         if (serviceName == null)
-            throw new IllegalArgumentException("ServiceName is null");
+            throw MESSAGES.undefinedVar("ServiceName");
 
         Set<ServiceName> entries = deploymentServiceNames.get(raName);
 
         if (entries != null) {
             if (!entries.contains(serviceName))
-                throw new IllegalStateException("ServiceName '" + serviceName.getCanonicalName() + "' isn't registered");
+                throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
 
             Integer identifier = Integer.valueOf(serviceName.getSimpleName().substring(serviceName.getSimpleName().lastIndexOf("_") + 1));
             deploymentIdentifiers.get(raName).remove(identifier);
@@ -201,7 +201,7 @@ public final class ConnectorServices {
 
     public static synchronized ServiceName registerResourceAdapter(String raName) {
         if (raName == null)
-            throw new IllegalArgumentException("RaName is null");
+            throw MESSAGES.undefinedVar("RaName");
 
         Integer identifier = getResourceAdapterIdentifier(raName);
         ServiceName serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName + "_" + identifier);
@@ -215,7 +215,7 @@ public final class ConnectorServices {
 
         if (entries.contains(serviceName)) {
             resourceAdapterIdentifiers.get(raName).remove(identifier);
-            throw new IllegalStateException("ServiceName '" + serviceName.getCanonicalName() + "' already registered");
+            throw MESSAGES.serviceAlreadyRegistered(serviceName.getCanonicalName());
         }
 
         entries.add(serviceName);
@@ -225,16 +225,16 @@ public final class ConnectorServices {
 
     public static synchronized void unregisterResourceAdapter(String raName, ServiceName serviceName) {
         if (raName == null)
-            throw new IllegalArgumentException("RaName is null");
+            throw MESSAGES.undefinedVar("RaName");
 
         if (serviceName == null)
-            throw new IllegalArgumentException("ServiceName is null");
+            throw MESSAGES.undefinedVar("ServiceName");
 
         Set<ServiceName> entries = resourceAdapterServiceNames.get(raName);
 
         if (entries != null) {
             if (!entries.contains(serviceName))
-                throw new IllegalStateException("ServiceName '" + serviceName.getCanonicalName() + "' isn't registered");
+                throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
 
             Integer identifier = Integer.valueOf(serviceName.getSimpleName().substring(serviceName.getSimpleName().lastIndexOf("_") + 1));
             resourceAdapterIdentifiers.get(raName).remove(identifier);
