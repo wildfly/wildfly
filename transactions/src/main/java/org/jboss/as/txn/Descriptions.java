@@ -163,7 +163,7 @@ public class Descriptions {
         coordinatorEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.ENABLE_TSM_STATUS, ModelDescriptionConstants.REQUIRED).set(false);
         coordinatorEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.ENABLE_TSM_STATUS, ModelDescriptionConstants.DEFAULT).set(false);
         coordinatorEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.DEFAULT_TIMEOUT, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("coordinator-environment.default-timeout"));
-        coordinatorEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.DEFAULT_TIMEOUT, ModelDescriptionConstants.TYPE).set(ModelType.BOOLEAN);
+        coordinatorEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.DEFAULT_TIMEOUT, ModelDescriptionConstants.TYPE).set(ModelType.INT);
         coordinatorEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.DEFAULT_TIMEOUT, ModelDescriptionConstants.REQUIRED).set(false);
         coordinatorEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.DEFAULT_TIMEOUT, ModelDescriptionConstants.DEFAULT).set(300);
 
