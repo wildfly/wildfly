@@ -70,6 +70,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergi
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
 import org.jboss.as.ejb3.remote.EjbClientContextService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.naming.InitialContext;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -81,6 +82,7 @@ import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.naming.ejb.EjbNamingContextSetup;
+import org.jboss.ejb.client.naming.ejb.ejbURLContextFactory;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.logging.Logger;
@@ -123,6 +125,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         //setup ejb: namespace
         EjbNamingContextSetup.setupEjbNamespace();
+        //TODO: this is a bit of a hack
+        InitialContext.addUrlContextFactory("ejb", new ejbURLContextFactory());
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

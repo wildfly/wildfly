@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.remote.simple;
+package org.jboss.as.testsuite.integration.ejb.remote.ejbnamespace;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -41,28 +41,40 @@ import javax.naming.NamingException;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class SimpleRemoteInvocationTestCase {
+public class EjbNamespaceInvocationTestCase {
 
-    private static final String ARCHIVE_NAME = "RemoteInvocationTest";
+    public static final String ARCHIVE_NAME = "RemoteInvocationTest";
 
     @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addPackage(SimpleRemoteInvocationTestCase.class.getPackage());
+        jar.addPackage(EjbNamespaceInvocationTestCase.class.getPackage());
         return jar;
     }
 
     @ArquillianResource
     private InitialContext iniCtx;
 
+    @Test
+    public void testDirectLookup() throws Exception {
+        RemoteInterface bean = lookupEjb(StatelessRemoteBean.class.getSimpleName(), RemoteInterface.class);
+        Assert.assertEquals("hello", bean.hello());
+    }
+
+    @Test
+    public void testAnnotationInjection() throws Exception {
+        SimpleEjb bean = lookup(SimpleEjb.class.getSimpleName(), SimpleEjb.class);
+        Assert.assertEquals("hello", bean.hello());
+    }
+
+
+    protected <T> T lookupEjb(String beanName, Class<T> interfaceType) throws NamingException {
+        return interfaceType.cast(iniCtx.lookup("ejb:" + ARCHIVE_NAME + "/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
+    }
+
     protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
         return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
     }
 
-    @Test
-    public void testInvocationOnRemoteInterface() throws Exception {
-        RemoteInterface bean = lookup(StatelessRemoteBean.class.getSimpleName(), RemoteInterface.class);
-        Assert.assertEquals("hello", bean.hello());
-    }
 }

@@ -95,7 +95,11 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 EjbInjectionSource ejbInjectionSource = null;
 
                 if (!isEmpty(lookup)) {
-                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
+                    if (lookup.startsWith("ejb:")) {
+                        bindingConfiguration = new BindingConfiguration(name, new EjbLookupInjectionSource(lookup));
+                    } else {
+                        bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
+                    }
                 } else if (!isEmpty(ejbName)) {
                     //TODO: implement cross deployment references
                     final ServiceName beanServiceName = deploymentUnit.getServiceName()
