@@ -25,12 +25,10 @@ package org.jboss.as.server.deployment.scanner;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -39,7 +37,7 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Brian Stansberry
  */
-abstract class AbstractWriteAttributeHandler extends ServerWriteAttributeOperationHandler {
+abstract class AbstractWriteAttributeHandler extends org.jboss.as.controller.AbstractWriteAttributeHandler<DeploymentScanner> {
 
     AbstractWriteAttributeHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator) {
         super(valueValidator, resolvedValueValidator);
@@ -47,29 +45,28 @@ abstract class AbstractWriteAttributeHandler extends ServerWriteAttributeOperati
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+            final String attributeName, final ModelNode newValue, final ModelNode currentValue,
+            final HandbackHolder<DeploymentScanner> handbackHolder) throws OperationFailedException {
 
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-                    final String name = address.getLastElement().getValue();
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(DeploymentScannerService.getServiceName(name));
-                    DeploymentScanner scanner = null;
-                    if (controller == null) {
-                        throw new OperationFailedException(new ModelNode().set("scanner not configured"));
-                    } else {
-                        scanner = (DeploymentScanner) controller.getValue();
-                        updateScanner(scanner, newValue);
-                    }
-
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK && scanner != null) {
-                        updateScanner(scanner, currentValue);
-                    }
-                }
-            }, OperationContext.Stage.RUNTIME);
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final String name = address.getLastElement().getValue();
+        final ServiceController<?> controller = context.getServiceRegistry(false).getService(DeploymentScannerService.getServiceName(name));
+        DeploymentScanner scanner = null;
+        if (controller == null) {
+            throw new OperationFailedException(new ModelNode().set("scanner not configured"));
+        } else {
+            scanner = (DeploymentScanner) controller.getValue();
+            updateScanner(scanner, newValue);
+            handbackHolder.setHandback(scanner);
         }
+
         return false;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                         ModelNode valueToRestore, ModelNode valueToRevert, DeploymentScanner handback) throws OperationFailedException {
+        updateScanner(handback, valueToRestore.resolve());
     }
 
     protected abstract void updateScanner(DeploymentScanner scanner, ModelNode newValue);

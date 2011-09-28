@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +31,7 @@ import java.util.Map;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,19 +41,16 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 /**
  * Write attribute handler for attributes that update a JMS connection factory configuration.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ConnectionFactoryWriteAttributeHandler extends ServerWriteAttributeOperationHandler {
+public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
     public static final ConnectionFactoryWriteAttributeHandler INSTANCE = new ConnectionFactoryWriteAttributeHandler();
 
@@ -77,7 +77,7 @@ public class ConnectionFactoryWriteAttributeHandler extends ServerWriteAttribute
     }
 
     @Override
-    protected void validateValue(String name, ModelNode value) throws OperationFailedException {
+    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
         AttributeDefinition attr = attributes.get(name);
         attr.getValidator().validateParameter(name, value);
     }
@@ -91,7 +91,8 @@ public class ConnectionFactoryWriteAttributeHandler extends ServerWriteAttribute
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                            final String attributeName, final ModelNode newValue,
-                                           final ModelNode currentValue) throws OperationFailedException {
+                                           final ModelNode currentValue,
+                                           final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
 
         AttributeDefinition attr = runtimeAttributes.get(attributeName);
         if (attr == null) {
@@ -123,7 +124,8 @@ public class ConnectionFactoryWriteAttributeHandler extends ServerWriteAttribute
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                          final String attributeName, final ModelNode valueToRestore,
-                                         final ModelNode valueToRevert) throws OperationFailedException {
+                                         final ModelNode valueToRevert,
+                                         final Void handback) throws OperationFailedException {
 
         if (runtimeAttributes.containsKey(attributeName)) {
             ServiceRegistry registry = context.getServiceRegistry(true);

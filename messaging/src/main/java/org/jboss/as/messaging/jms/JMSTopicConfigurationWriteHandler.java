@@ -24,13 +24,11 @@ package org.jboss.as.messaging.jms;
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class JMSTopicConfigurationWriteHandler extends ServerWriteAttributeOperationHandler {
+public class JMSTopicConfigurationWriteHandler extends ReloadRequiredWriteAttributeHandler {
 
     public static final JMSTopicConfigurationWriteHandler INSTANCE = new JMSTopicConfigurationWriteHandler();
 
@@ -51,7 +49,7 @@ public class JMSTopicConfigurationWriteHandler extends ServerWriteAttributeOpera
     }
 
     @Override
-    protected void validateValue(String name, ModelNode value) throws OperationFailedException {
+    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
         CommonAttributes.ENTRIES.getValidator().validateParameter(name, value);
     }
 
@@ -59,12 +57,6 @@ public class JMSTopicConfigurationWriteHandler extends ServerWriteAttributeOpera
     protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
         // no-op, as we are not going to apply this value until the server is reloaded, so allow the
         // any system property to be set between now and then
-    }
-
-    @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                           ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
-        return true;
     }
 
 }

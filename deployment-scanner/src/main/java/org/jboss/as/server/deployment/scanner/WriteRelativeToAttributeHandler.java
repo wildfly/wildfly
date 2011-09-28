@@ -22,29 +22,19 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Update the 'relative-to' attribute on a {@code DeploymentScanner}.
  *
  * @author Brian Stansberry
  */
-class WriteRelativeToAttributeHandler extends ServerWriteAttributeOperationHandler {
+class WriteRelativeToAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
     static final WriteRelativeToAttributeHandler INSTANCE = new WriteRelativeToAttributeHandler();
 
     private WriteRelativeToAttributeHandler() {
         super(new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-    }
-
-    @Override
-    protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-            final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-
-        return true;
     }
 }

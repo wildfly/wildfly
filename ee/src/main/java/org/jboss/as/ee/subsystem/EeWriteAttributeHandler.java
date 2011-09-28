@@ -22,12 +22,12 @@
 
 package org.jboss.as.ee.subsystem;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class EeWriteAttributeHandler extends ServerWriteAttributeOperationHandler {
+public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor;
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
@@ -52,7 +52,7 @@ public class EeWriteAttributeHandler extends ServerWriteAttributeOperationHandle
     }
 
     @Override
-    protected void validateValue(String name, ModelNode value) throws OperationFailedException {
+    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
         if (GlobalModulesDefinition.INSTANCE.getName().equals(name)) {
             GlobalModulesDefinition.INSTANCE.getValidator().validateParameter(name, value);
         } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(name)) {
@@ -70,7 +70,8 @@ public class EeWriteAttributeHandler extends ServerWriteAttributeOperationHandle
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                           ModelNode newValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
 
         applyUpdateToDeploymentUnitProcessor(operation, attributeName);
 
@@ -78,7 +79,8 @@ public class EeWriteAttributeHandler extends ServerWriteAttributeOperationHandle
     }
 
     @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert) throws OperationFailedException {
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                         ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
 
         final ModelNode revertOp = operation.clone();
         revertOp.get(attributeName).set(valueToRestore);
