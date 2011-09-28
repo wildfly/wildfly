@@ -108,13 +108,20 @@ public interface PoolAttributeDefinitions {
     SimpleAttributeDefinition THREAD_NAME_PATTERN = new SimpleAttributeDefinition(CommonAttributes.THREAD_NAME_PATTERN, ModelType.STRING, true);
 
     SimpleAttributeDefinition PRIORITY = new SimpleAttributeDefinition(CommonAttributes.PRIORITY, CommonAttributes.PRIORITY, new ModelNode().set(-1),
-            ModelType.INT, true, false, MeasurementUnit.NONE, new AbstractParameterValidator(){
+            ModelType.INT, true, true, MeasurementUnit.NONE, new AbstractParameterValidator(){
                 @Override
                 public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                    if (value.isDefined() /*&& value.getType() != EXPRESSION*/) {
-                        final int priority = value.asInt();
-                        if (priority != -1 && priority < 0 || priority > 10) {
-                            throw new OperationFailedException(new ModelNode().set(PRIORITY + " is out of range " + priority)); //TODO i18n
+                    if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
+                        try {
+                            final int priority = value.asInt();
+                            if (priority != -1 && priority < 0 || priority > 10) {
+                                throw new OperationFailedException(new ModelNode().set(PRIORITY + " is out of range " + priority)); //TODO i18n
+                            }
+                        } catch(NumberFormatException e) {
+                            final String str = value.asString();
+                            if(!str.startsWith("${") && str.endsWith("}")) {
+                                throw new OperationFailedException(new ModelNode().set("Wrong format for " + PRIORITY + ": '" + value + "'")); //TODO i18n
+                            }
                         }
                     }
                 }});

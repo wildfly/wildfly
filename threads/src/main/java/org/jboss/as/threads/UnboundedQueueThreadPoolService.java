@@ -106,4 +106,32 @@ public class UnboundedQueueThreadPoolService implements Service<ExecutorService>
             executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
         }
     }
+
+    public int getActiveCount() {
+        return executor.getActiveCount();
+    }
+
+    public long getCompletedTaskCount() {
+        return executor.getCompletedTaskCount();
+    }
+
+    public int getCurrentThreadCount() {
+        return executor.getCurrentThreadCount();
+    }
+
+    public int getLargestPoolSize() {
+        return executor.getLargestPoolSize();
+    }
+
+    public int getLargestThreadCount() {
+        return executor.getLargestThreadCount();
+    }
+
+    public int getRejectedCount() {
+        return executor.getRejectedCount();
+    }
+
+    public long getTaskCount() {
+        return executor.getTaskCount();
+    }
 }

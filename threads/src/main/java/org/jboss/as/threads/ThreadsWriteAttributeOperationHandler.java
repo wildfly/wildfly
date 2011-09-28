@@ -40,6 +40,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Abstract superclass for write-attribute operation handlers that run on the
@@ -197,9 +198,14 @@ public abstract class ThreadsWriteAttributeOperationHandler extends WriteAttribu
                 attr.getValidator().validateParameter(name, value);
             }
 
-    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) {
+    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
-        return context.getServiceRegistry(true).getService(ThreadsServices.threadFactoryName(name));
+        final ServiceName serviceName = ThreadsServices.threadFactoryName(name);
+        ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
+        if(controller == null) {
+            throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));
+        }
+        return controller;
     }
 
     protected abstract void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service);
