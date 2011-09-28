@@ -38,18 +38,14 @@ import javax.security.jacc.WebResourcePermission;
 import javax.security.jacc.WebRoleRefPermission;
 import javax.security.jacc.WebUserDataPermission;
 
+import org.apache.catalina.Container;
+import org.apache.catalina.Context;
+import org.apache.catalina.Wrapper;
+import org.apache.catalina.deploy.SecurityCollection;
+import org.apache.catalina.deploy.SecurityConstraint;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
-import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
-import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
-import org.jboss.metadata.web.jboss.JBossServletMetaData;
-import org.jboss.metadata.web.jboss.JBossServletsMetaData;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.SecurityConstraintMetaData;
-import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.WebResourceCollectionMetaData;
-import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 
 /**
  * A service that creates JACC permissions for a web deployment
@@ -72,6 +68,12 @@ public class WarJaccService extends JaccService<WarMetaData> {
     /** An prefix pattern "/prefix/*" */
     private static final int EXACT = 4;
 
+    private Context context;
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
     public WarJaccService(String contextId, WarMetaData metaData, Boolean standalone) {
         super(contextId, metaData, standalone);
     }
@@ -79,68 +81,69 @@ public class WarJaccService extends JaccService<WarMetaData> {
     /** {@inheritDoc} */
     @Override
     public void createPermissions(WarMetaData metaData, PolicyConfiguration pc) throws PolicyContextException {
-        JBossWebMetaData webMetaData = metaData.getMergedJBossWebMetaData();
-        HashMap<String, PatternInfo> patternMap = qualifyURLPatterns(webMetaData);
+        if (context == null) {
+            throw new IllegalStateException("Catalina Context is null while creating JACC permissions");
+        }
+        HashMap<String, PatternInfo> patternMap = qualifyURLPatterns(context);
         log.debug("Qualified url patterns: " + patternMap);
 
-        List<SecurityConstraintMetaData> constraints = webMetaData.getSecurityConstraints();
-        if (constraints != null) {
-            for (SecurityConstraintMetaData sc : constraints) {
-                WebResourceCollectionsMetaData resources = sc.getResourceCollections();
-                TransportGuaranteeType transport = sc.getTransportGuarantee();
-                if (sc.isExcluded() || sc.isUnchecked()) {
-                    // Process the permissions for the excluded/unchecked resources
-                    if (resources != null)
-                        for (WebResourceCollectionMetaData wrc : resources) {
-                            List<String> httpMethods = wrc.getHttpMethods();
-                            List<String> urlPatterns = wrc.getUrlPatterns();
-                            int length = urlPatterns != null ? urlPatterns.size() : 0;
-                            for (int n = 0; n < length; n++) {
-                                String url = urlPatterns.get(n);
-                                PatternInfo info = (PatternInfo) patternMap.get(url);
-                                // Add the excluded methods
-                                if (sc.isExcluded()) {
-                                    info.addExcludedMethods(httpMethods);
-                                }
-                            }
+        SecurityConstraint[] constraints = context.findConstraints();
+        for (int i = 0; i < constraints.length; i++) {
+            SecurityConstraint sc = constraints[i];
+            SecurityCollection[] resources = sc.findCollections();
+            String transport = sc.getUserConstraint();
+            if ((sc.getAuthConstraint() && sc.findAuthRoles().length == 0) || !sc.getAuthConstraint()) {
+                // Process the permissions for the excluded/unchecked resources
+                for (int j = 0; j < resources.length; j++) {
+                    SecurityCollection wrc = resources[j];
+                    String[] httpMethods = wrc.findMethods();
+                    String[] urlPatterns = wrc.findPatterns();
+                    for (int n = 0; n < urlPatterns.length; n++) {
+                        String url = urlPatterns[n];
+                        PatternInfo info = (PatternInfo) patternMap.get(url);
+                        // Add the excluded methods
+                        if (sc.getAuthConstraint() && sc.findAuthRoles().length == 0) {
+                            info.addExcludedMethods(Arrays.asList(httpMethods));
                         }
-                } else {
-                    // Process the permission for the resources x roles
-                    if (resources != null)
-                        for (WebResourceCollectionMetaData wrc : resources) {
-                            List<String> httpMethods = wrc.getHttpMethods();
-                            List<String> urlPatterns = wrc.getUrlPatterns();
-                            int length = urlPatterns != null ? urlPatterns.size() : 0;
-                            for (int n = 0; n < length; n++) {
-                                String url = urlPatterns.get(n);
-                                // Get the qualified url pattern
-                                PatternInfo info = (PatternInfo) patternMap.get(url);
-                                HashSet<String> mappedRoles = new HashSet<String>();
-                                if (sc.getRoleNames() != null)
-                                    for (String role : sc.getRoleNames()) {
-                                        if (role.equals("*")) {
-                                            // JBAS-1824: Allow "*" to provide configurable authorization bypass
-                                            if (webMetaData.isJaccAllStoreRole())
-                                                mappedRoles.add("*");
-                                            else {
-                                                // The wildcard ref maps to all declared security-role names
-                                                for (SecurityRoleMetaData srmd : webMetaData.getSecurityRoles()) {
-                                                    role = srmd.getRoleName();
-                                                    mappedRoles.add(role);
-                                                }
-                                            }
-                                        } else {
-                                            mappedRoles.add(role);
-                                        }
+                        // SECURITY-63: Missing auth-constraint needs unchecked policy
+                        if (!sc.getAuthConstraint())
+                            info.isMissingAuthConstraint = true;
+                    }
+                }
+            } else {
+                // Process the permission for the resources x roles
+                for (int j = 0; j < resources.length; j++) {
+                    SecurityCollection wrc = resources[j];
+                    String[] httpMethods = wrc.findMethods();
+                    String[] urlPatterns = wrc.findPatterns();
+                    for (int n = 0; n < urlPatterns.length; n++) {
+                        String url = urlPatterns[n];
+                        // Get the qualified url pattern
+                        PatternInfo info = (PatternInfo) patternMap.get(url);
+                        HashSet<String> mappedRoles = new HashSet<String>();
+                        String[] authRoles = sc.findAuthRoles();
+                        for (int k = 0; k < authRoles.length; k++) {
+                            String role = authRoles[k];
+                            if (role.equals("*")) {
+                                // JBAS-1824: Allow "*" to provide configurable authorization bypass
+                                if (metaData.getMergedJBossWebMetaData().isJaccAllStoreRole())
+                                    mappedRoles.add("*");
+                                else {
+                                    // The wildcard ref maps to all declared security-role names
+                                    String[] roles = context.findSecurityRoles();
+                                    for (int l = 0; l < roles.length; l++) {
+                                        role = roles[l];
+                                        mappedRoles.add(role);
                                     }
-                                info.addRoles(mappedRoles, httpMethods);
-                                // Add the transport to methods
-                                info.addTransport(transport.name(), httpMethods);
-                                // SECURITY-63: Missing auth-constraint needs unchecked policy
-                                if (sc.getAuthConstraint() == null)
-                                    info.isMissingAuthConstraint = true;
+                                }
+                            } else {
+                                mappedRoles.add(role);
                             }
                         }
+                        info.addRoles(mappedRoles, Arrays.asList(httpMethods));
+                        // Add the transport to methods
+                        info.addTransport(transport, Arrays.asList(httpMethods));
+                    }
                 }
             }
         }
@@ -236,72 +239,68 @@ public class WarJaccService extends JaccService<WarMetaData> {
             }
         }
 
+        String[] unreferencedRoles = context.findSecurityRoles();
+        List<String> unRefRoles = new ArrayList<String>();
+        for (int i = 0; i < unreferencedRoles.length; i++) {
+            unRefRoles.add(unreferencedRoles[i]);
+        }
+
         /*
          * Create WebRoleRefPermissions for all servlet/security-role-refs along with all the cross product of servlets and
          * security-role elements that are not referenced via a security-role-ref as described in JACC section 3.1.3.2
          */
-        JBossServletsMetaData servlets = webMetaData.getServlets();
-        for (JBossServletMetaData servlet : servlets) {
-            String servletName = servlet.getServletName();
-            SecurityRoleRefsMetaData roleRefs = servlet.getSecurityRoleRefs();
+        Container[] servlets = context.findChildren();
+        for (int i = 0; i < servlets.length; i++) {
+            Wrapper servlet = (Wrapper) servlets[i];
+            String servletName = servlet.getName();
+            String[] roleRefs = servlet.findSecurityReferences();
             // Perform the unreferenced roles processing for every servlet name
-            Set<String> unreferencedRoles = webMetaData.getSecurityRoleNames();
-            if (roleRefs != null)
-                for (SecurityRoleRefMetaData roleRef : roleRefs) {
-                    String roleName = roleRef.getRoleLink();
-                    WebRoleRefPermission wrrp = new WebRoleRefPermission(servletName, roleRef.getName());
-                    pc.addToRole(roleName, wrrp);
-                    /*
-                     * A bit of a hack due to how tomcat calls out to its Realm.hasRole() with a role name that has been mapped
-                     * to the role-link value. We may need to handle this with a custom request wrapper.
-                     */
-                    wrrp = new WebRoleRefPermission(servletName, roleName);
-                    pc.addToRole(roleRef.getName(), wrrp);
-                    // Remove the role from the unreferencedRoles
-                    unreferencedRoles.remove(roleName);
-                }
+            for (int j = 0; j < roleRefs.length; j++) {
+                String roleRef = roleRefs[j];
+                String roleName = servlet.findSecurityReference(roleRef);
+                WebRoleRefPermission wrrp = new WebRoleRefPermission(servletName, roleRef);
+                pc.addToRole(roleName, wrrp);
+                /*
+                 * A bit of a hack due to how tomcat calls out to its Realm.hasRole() with a role name that has been mapped to
+                 * the role-link value. We may need to handle this with a custom request wrapper.
+                 */
+                wrrp = new WebRoleRefPermission(servletName, roleName);
+                pc.addToRole(roleRef, wrrp);
+                // Remove the role from the unreferencedRoles
+                unRefRoles.remove(roleName);
+            }
 
             // Spec 3.1.3.2: For each servlet element in the deployment descriptor
             // a WebRoleRefPermission must be added to each security-role of the
             // application whose name does not appear as the rolename
             // in a security-role-ref within the servlet element.
-            if (unreferencedRoles != null)
-                for (String unrefRole : unreferencedRoles) {
-                    WebRoleRefPermission unrefP = new WebRoleRefPermission(servletName, unrefRole);
-                    pc.addToRole(unrefRole, unrefP);
-                }
+            for (String unrefRole : unRefRoles) {
+                WebRoleRefPermission unrefP = new WebRoleRefPermission(servletName, unrefRole);
+                pc.addToRole(unrefRole, unrefP);
+            }
         }
 
-        Set<String> unreferencedRoles = webMetaData.getSecurityRoleNames();
         // JACC 1.1:Spec 3.1.3.2: For each security-role defined in the deployment descriptor, an
         // additional WebRoleRefPermission must be added to the corresponding role by
         // calling the addToRole method on the PolicyConfiguration object. The
         // name of all such permissions must be the empty string, and the actions of each
         // such permission must be the role-name of the corresponding role.
-        if (unreferencedRoles != null)
-            for (String unreferencedRole : unreferencedRoles) {
-                WebRoleRefPermission wrrep = new WebRoleRefPermission("", unreferencedRole);
-                pc.addToRole(unreferencedRole, wrrep);
-            }
+        for (int i = 0; i < unreferencedRoles.length; i++) {
+            String unreferencedRole = unreferencedRoles[i];
+            WebRoleRefPermission wrrep = new WebRoleRefPermission("", unreferencedRole);
+            pc.addToRole(unreferencedRole, wrrep);
+        }
 
         // Now build the cross product of the unreferencedRoles and servlets
-        Set<String> servletNames = servlets.keySet();
-        if (servletNames != null)
-            for (String servletName : servletNames) {
-                if (unreferencedRoles != null)
-                    for (String role : unreferencedRoles) {
-                        WebRoleRefPermission wrrp = new WebRoleRefPermission(servletName, role);
-                        pc.addToRole(role, wrrp);
-                    }
-            }
-        /**
-         * The programmatic security checks are made from jsps. JBAS-3054:Use of isCallerInRole from jsp does not work for JACC
-         */
-        if (unreferencedRoles != null)
-            for (String role : unreferencedRoles) {
-                WebRoleRefPermission wrrp = new WebRoleRefPermission("", role);
+        for (int i = 0; i < servlets.length; i++) {
+            Wrapper servlet = (Wrapper) servlets[i];
+            String servletName = servlet.getName();
+            for (int j = 0; j < unreferencedRoles.length; j++) {
+                String role = unreferencedRoles[j];
+                WebRoleRefPermission wrrp = new WebRoleRefPermission(servletName, role);
                 pc.addToRole(role, wrrp);
             }
+        }
     }
 
     static String getCommaSeparatedString(String[] str) {
@@ -360,41 +359,40 @@ public class WarJaccService extends JaccService<WarMetaData> {
      * @param metaData - the web deployment metadata
      * @return HashMap<String, PatternInfo>
      */
-    static HashMap<String, PatternInfo> qualifyURLPatterns(JBossWebMetaData metaData) {
+    static HashMap<String, PatternInfo> qualifyURLPatterns(Context metaData) {
         ArrayList<PatternInfo> prefixList = new ArrayList<PatternInfo>();
         ArrayList<PatternInfo> extensionList = new ArrayList<PatternInfo>();
         ArrayList<PatternInfo> exactList = new ArrayList<PatternInfo>();
         HashMap<String, PatternInfo> patternMap = new HashMap<String, PatternInfo>();
         PatternInfo defaultInfo = null;
 
-        List<SecurityConstraintMetaData> constraints = metaData.getSecurityConstraints();
-        if (constraints != null) {
-            for (SecurityConstraintMetaData sc : constraints) {
-                WebResourceCollectionsMetaData resources = sc.getResourceCollections();
-                for (WebResourceCollectionMetaData wrc : resources) {
-                    List<String> urlPatterns = wrc.getUrlPatterns();
-                    int length = urlPatterns != null ? urlPatterns.size() : 0;
-                    for (int n = 0; n < length; n++) {
-                        String url = urlPatterns.get(n);
-                        int type = getPatternType(url);
-                        PatternInfo info = (PatternInfo) patternMap.get(url);
-                        if (info == null) {
-                            info = new PatternInfo(url, type);
-                            patternMap.put(url, info);
-                            switch (type) {
-                                case PREFIX:
-                                    prefixList.add(info);
-                                    break;
-                                case EXTENSION:
-                                    extensionList.add(info);
-                                    break;
-                                case EXACT:
-                                    exactList.add(info);
-                                    break;
-                                case DEFAULT:
-                                    defaultInfo = info;
-                                    break;
-                            }
+        SecurityConstraint[] constraints = metaData.findConstraints();
+        for (int i = 0; i < constraints.length; i++) {
+            SecurityConstraint sc = constraints[i];
+            SecurityCollection[] resources = sc.findCollections();
+            for (int j = 0; j < resources.length; j++) {
+                SecurityCollection wrc = resources[j];
+                String[] urlPatterns = wrc.findPatterns();
+                for (int n = 0; n < urlPatterns.length; n++) {
+                    String url = urlPatterns[n];
+                    int type = getPatternType(url);
+                    PatternInfo info = (PatternInfo) patternMap.get(url);
+                    if (info == null) {
+                        info = new PatternInfo(url, type);
+                        patternMap.put(url, info);
+                        switch (type) {
+                            case PREFIX:
+                                prefixList.add(info);
+                                break;
+                            case EXTENSION:
+                                extensionList.add(info);
+                                break;
+                            case EXACT:
+                                exactList.add(info);
+                                break;
+                            case DEFAULT:
+                                defaultInfo = info;
+                                break;
                         }
                     }
                 }
