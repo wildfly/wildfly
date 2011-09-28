@@ -30,7 +30,7 @@ import javax.ejb.Stateless;
 @Stateless
 public class SimpleEjb {
 
-    @EJB(lookup="ejb:RemoteInvocationTest/RemoteInvocationTest/StatelessRemoteBean!org.jboss.as.testsuite.integration.ejb.remote.ejbnamespace.RemoteInterface")
+    @EJB(lookup="ejb:RemoteInvocationTest/RemoteInvocationTest//StatelessRemoteBean!org.jboss.as.testsuite.integration.ejb.remote.ejbnamespace.RemoteInterface")
     RemoteInterface ejb;
 
 

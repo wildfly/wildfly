@@ -70,7 +70,7 @@ public class EjbNamespaceInvocationTestCase {
 
 
     protected <T> T lookupEjb(String beanName, Class<T> interfaceType) throws NamingException {
-        return interfaceType.cast(iniCtx.lookup("ejb:" + ARCHIVE_NAME + "/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
+        return interfaceType.cast(iniCtx.lookup("ejb:" + ARCHIVE_NAME + "/" + ARCHIVE_NAME + "//" + beanName + "!" + interfaceType.getName()));
     }
 
     protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
