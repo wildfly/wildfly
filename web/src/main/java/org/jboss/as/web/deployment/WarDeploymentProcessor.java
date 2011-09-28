@@ -22,16 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.ServletContext;
-
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
@@ -48,7 +38,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.NamingValve;
+import org.jboss.as.web.SetupValve;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
@@ -71,6 +63,15 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 
+import javax.servlet.ServletContext;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * {@code DeploymentUnitProcessor} creating the actual deployment services.
  *
@@ -88,7 +89,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         this.defaultHost = defaultHost;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -116,7 +119,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit deploymentUnit,
-            final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
+                                     final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
@@ -126,6 +129,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final EEModuleDescription moduleDescription = deploymentUnit
                 .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS);
 
         // Create the context
         final StandardContext webContext = new StandardContext();
@@ -140,6 +144,14 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         namingValve.setValveClass(NamingValve.class.getName());
         namingValve.setId(NamingValve.class.getName());
         valves.add(namingValve);
+
+        if (!setupActions.isEmpty()) {
+            final ValveMetaData setupValve = new ValveMetaData();
+            setupValve.setModule("org.jboss.as.web");
+            setupValve.setValveClass(SetupValve.class.getName());
+            setupValve.setId(SetupValve.class.getName());
+            valves.add(setupValve);
+        }
 
         // Set the deployment root
         try {
@@ -216,7 +228,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)
                     .install();
 
-            WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer);
+            WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer, setupActions);
             if (moduleDescription != null) {
                 webDeploymentService.getNamespaceSelector().setValue(
                         new ImmediateValue<NamespaceContextSelector>(moduleDescription.getNamespaceContextSelector()));

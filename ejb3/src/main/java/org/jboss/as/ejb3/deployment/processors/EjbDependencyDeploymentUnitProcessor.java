@@ -86,7 +86,6 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB3_TIMERS, false, false, false));
-
     }
 
     @Override

@@ -194,6 +194,11 @@ public final class ViewService implements Service<ComponentView> {
         }
 
         @Override
+        public Class<?> getViewClass() {
+            return viewClass;
+        }
+
+        @Override
         public Set<Method> getViewMethods() {
             return viewInterceptors.keySet();
         }
@@ -253,11 +258,6 @@ public final class ViewService implements Service<ComponentView> {
                     throw new IllegalArgumentException("Invalid view entry point " + method);
                 }
                 return interceptor;
-            }
-
-            @Deprecated
-            public boolean isAsynchronous(final Method method) throws IllegalArgumentException {
-                return false;
             }
 
             public void destroy() {

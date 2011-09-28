@@ -26,7 +26,9 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.NamingValve;
+import org.jboss.as.web.SetupValve;
 import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -34,6 +36,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.util.List;
 
 /**
  * A service starting a web deployment.
@@ -47,10 +51,12 @@ class WebDeploymentService implements Service<Context> {
     private final InjectedValue<NamespaceContextSelector> namespaceSelector = new InjectedValue<NamespaceContextSelector>();
     private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
     private final WebInjectionContainer injectionContainer;
+    private final List<SetupAction> setupActions;
 
-    public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer) {
+    public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions) {
         this.context = context;
         this.injectionContainer = injectionContainer;
+        this.setupActions = setupActions;
     }
 
     /** {@inheritDoc} */
@@ -60,6 +66,7 @@ class WebDeploymentService implements Service<Context> {
         JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
         try {
             NamingValve.beginComponentStart(namespaceSelector.getOptionalValue());
+            SetupValve.beginComponentStart(setupActions);
             try {
                 try {
                     context.create();
@@ -74,6 +81,7 @@ class WebDeploymentService implements Service<Context> {
                 log.info("registering web context: " + context.getName());
             } finally {
                 NamingValve.endComponentStart();
+                SetupValve.endComponentStart();
             }
         } finally {
             JsfInjectionProvider.getInjectionContainer().set(null);

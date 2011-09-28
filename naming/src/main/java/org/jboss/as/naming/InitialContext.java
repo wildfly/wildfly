@@ -22,7 +22,8 @@
 
 package org.jboss.as.naming;
 
-import java.util.Hashtable;
+import org.jboss.as.naming.context.NamespaceContextSelector;
+
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
@@ -30,12 +31,28 @@ import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import org.jboss.as.naming.context.NamespaceContextSelector;
+import javax.naming.spi.ObjectFactory;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * @author John Bailey
  */
 public class InitialContext extends NamingContext {
+
+
+    /**
+     * Map of any additional naming schemes
+     */
+    private static volatile Map<String, ObjectFactory> urlContextFactories = Collections.emptyMap();
+
+    public static synchronized void addUrlContextFactory(final String scheme, ObjectFactory factory) {
+        Map<String, ObjectFactory> factories = new HashMap<String, ObjectFactory>(urlContextFactories);
+        factories.put(scheme, factory);
+        urlContextFactories = Collections.unmodifiableMap(factories);
+    }
 
     public InitialContext(Hashtable<String, Object> environment) {
         super(environment);
@@ -43,6 +60,24 @@ public class InitialContext extends NamingContext {
 
     public Object lookup(final Name name) throws NamingException {
         final ParsedName parsedName = parse(name);
+        if (parsedName.namespace() == null) {
+            //TODO: this is a bit of a hack, there should be a better way to handle this
+            if (!parsedName.remaining().isEmpty()) {
+                final String firstPart = parsedName.remaining().get(0);
+                int index = firstPart.indexOf(':');
+                if (index != -1) {
+                    final String scheme = firstPart.substring(0, index);
+                    ObjectFactory factory = urlContextFactories.get(scheme);
+                    if (factory != null) {
+                        try {
+                            return ((Context)factory.getObjectInstance(null, name, this, getEnvironment())).lookup(name);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+        }
         if (parsedName.namespace() == null || parsedName.namespace().equals("")) {
             return super.lookup(parsedName.remaining());
         }

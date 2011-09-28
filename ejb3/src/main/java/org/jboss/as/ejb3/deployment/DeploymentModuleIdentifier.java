@@ -14,6 +14,15 @@ public final class DeploymentModuleIdentifier implements Serializable {
     private final String distinctName;
 
     public DeploymentModuleIdentifier(String applicationName, String moduleName, String distinctName) {
+        if (applicationName == null) {
+            throw new IllegalArgumentException("Application name cannot be null");
+        }
+        if (moduleName == null) {
+            throw new IllegalArgumentException("Module name cannot be null");
+        }
+        if (distinctName == null) {
+            throw new IllegalArgumentException("Distinct name cannot be null");
+        }
         this.applicationName = applicationName;
         this.moduleName = moduleName;
         this.distinctName = distinctName;

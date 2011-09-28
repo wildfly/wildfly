@@ -22,14 +22,8 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-import static org.jboss.as.naming.util.NamingUtils.isEmpty;
-import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
-import static org.jboss.as.naming.util.NamingUtils.namingException;
-import static org.jboss.as.naming.util.NamingUtils.notAContextException;
-
-import java.util.Hashtable;
+import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.naming.util.NameParser;
 
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
@@ -47,9 +41,14 @@ import javax.naming.event.NamingListener;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.naming.spi.ResolveResult;
+import java.util.Hashtable;
 
-import org.jboss.as.naming.context.ObjectFactoryBuilder;
-import org.jboss.as.naming.util.NameParser;
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import static org.jboss.as.naming.util.NamingUtils.isEmpty;
+import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
+import static org.jboss.as.naming.util.NamingUtils.namingException;
+import static org.jboss.as.naming.util.NamingUtils.notAContextException;
 
 /**
  * Naming context implementation which proxies calls to a {@code NamingStore} instance.  This context is
@@ -88,7 +87,12 @@ public class NamingContext implements EventContext {
      */
     public static void initializeNamingManager() {
         // Setup naming environment
-        System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
+        final String property = SecurityActions.getSystemProperty(Context.URL_PKG_PREFIXES);
+        if(property == null || property.isEmpty()) {
+            SecurityActions.setSystemProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
+        } else {
+            SecurityActions.setSystemProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES + ":" + property);
+        }
         try {
             //If we are reusing the JVM. e.g. in tests we should not set this again
             if (!NamingManager.hasInitialContextFactoryBuilder())

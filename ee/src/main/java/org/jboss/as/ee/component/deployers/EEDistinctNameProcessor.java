@@ -45,9 +45,17 @@ public final class EEDistinctNameProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription module = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if (module == null || deploymentUnit.getParent() != null) {
+
+        if (module == null) {
             return;
         }
+        //if this is a sub deployment we share the DN with the parent
+        if (deploymentUnit.getParent() != null) {
+            final EEModuleDescription parentDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            module.setDistinctName(parentDescription.getDistinctName());
+            return;
+        }
+
         final Manifest manifest = deploymentRoot.getAttachment(Attachments.MANIFEST);
         if (manifest == null) {
             return;

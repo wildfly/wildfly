@@ -190,7 +190,6 @@ public final class Attachments {
 
     public static final AttachmentKey<AttachmentList<ModuleIdentifier>> ADDITIONAL_ANNOTATION_INDEXES = AttachmentKey.createList(ModuleIdentifier.class);
 
-
     //
     // VALIDATE
     //

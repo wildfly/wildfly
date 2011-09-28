@@ -23,14 +23,8 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.InjectionSource;
-import org.jboss.as.ee.component.ViewBindingInjectionSource;
-import org.jboss.as.ee.component.ViewConfiguration;
-import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -157,9 +151,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
     }
 
     private void registerBinding(final ViewDescription viewDescription, final String jndiName) {
-        final InjectionSource moduleBindingSource = new ViewBindingInjectionSource(viewDescription.getServiceName());
-        final BindingConfiguration moduleBinding = new BindingConfiguration(jndiName, moduleBindingSource);
-        addBindingConfiguration(viewDescription, moduleBinding);
+        viewDescription.getBindingNames().add(jndiName);
     }
 
     private void logBinding(final StringBuilder jndiBindingsLogMessage, final String jndiName) {
@@ -192,21 +184,6 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             return duName.substring(0, duName.length() - ".ear".length());
         }
         return null;
-    }
-
-    /**
-     * Add the passed {@link BindingConfiguration} to the {@link ViewDescription viewDescription}
-     *
-     * @param viewDescription      The view description
-     * @param bindingConfiguration The binding configuration
-     */
-    private void addBindingConfiguration(final ViewDescription viewDescription, final BindingConfiguration bindingConfiguration) {
-        viewDescription.getConfigurators().add(new ViewConfigurator() {
-            @Override
-            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.getBindingConfigurations().add(bindingConfiguration);
-            }
-        });
     }
 
     @Override

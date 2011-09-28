@@ -648,6 +648,10 @@
             <maven-resource group="org.jboss" artifact="jboss-dmr"/>
         </module-def>
 
+        <module-def name="org.jboss.ejb-client">
+            <maven-resource group="org.jboss" artifact="jboss-ejb-client"/>
+        </module-def>
+
         <module-def name="org.jboss.ejb3">
 
             <!-- TODO: this is not the final API -->

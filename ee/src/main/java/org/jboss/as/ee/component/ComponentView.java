@@ -74,12 +74,18 @@ public interface ComponentView {
 
     /**
      *
+     * @return The class of the view
+     */
+    Class<?> getViewClass();
+
+    /**
+     *
      * @return All methods that the view supports
      */
     Set<Method> getViewMethods();
 
     /**
-     *
+     * Gets a view method based on name and descriptor
      * @param name the method name
      * @param descriptor The method descriptor in JVM format
      * @return The method that corresponds to the given name and descriptor

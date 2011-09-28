@@ -15,6 +15,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -36,6 +37,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (eeModuleDescription == null) {
             return;
         }
@@ -58,8 +60,8 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
                     views.put(view.getViewClassName(), componentViewInjectedValue);
                     injectedValues.put(view.getServiceName(), componentViewInjectedValue);
                 }
-                EjbDeploymentInformation info = new EjbDeploymentInformation(ejbComponentDescription.getEJBName(), componentInjectedValue, views);
-                deploymentInformationMap.put(ejbComponentDescription.getEJBClassName(), info);
+                EjbDeploymentInformation info = new EjbDeploymentInformation(ejbComponentDescription.getEJBName(), componentInjectedValue, views, module.getClassLoader());
+                deploymentInformationMap.put(ejbComponentDescription.getEJBName(), info);
             }
         }
 
