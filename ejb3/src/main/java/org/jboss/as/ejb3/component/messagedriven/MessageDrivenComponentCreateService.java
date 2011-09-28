@@ -126,7 +126,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     }
 
     ServiceName getResourceAdapterServiceName() {
-        final Collection<ServiceName> serviceNames = ConnectorServices.getResourceAdapteServiceName(this.resourceAdapterName);
+        final Collection<ServiceName> serviceNames = ConnectorServices.getResourceAdapterServiceNames(this.resourceAdapterName);
         if (serviceNames == null || serviceNames.isEmpty()) {
             throw new IllegalStateException("Cannot find any resource adapter service for resource adapter " + this.resourceAdapterName);
         }

@@ -109,12 +109,14 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     } else {
                         deployment = deploymentUnit.getName().substring(0, deploymentUnit.getName().lastIndexOf('.'));
                     }
-                    String suffix = ConnectorServices.getNextValidSuffix(connectorXmlDescriptor.getDeploymentName());
-                    ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
-                            raxml, module, deployment, suffix);
+
                     // Create the service
-                    ServiceName serviceName = ConnectorServices.registerResourceAdapterXmlServiceNameWithSuffix(
-                            connectorXmlDescriptor.getDeploymentName(), suffix);
+                    String raName = connectorXmlDescriptor.getDeploymentName();
+                    ServiceName serviceName = ConnectorServices.registerDeployment(raName);
+
+                    ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
+                        raxml, module, deployment, serviceName);
+
                     serviceTarget
                             .addService(serviceName, service)
                             .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, service.getMdrInjector())

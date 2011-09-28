@@ -62,39 +62,35 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
     private final ResourceAdapter raxml;
     private final String deployment;
-    private final String serviceSuffix;
 
+    private String raName;
+    private ServiceName deploymentServiceName;
 
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
-            Module module, final String deployment, final String serviceSuffix) {
+                                               Module module, final String deployment, final ServiceName deploymentServiceName) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.raxml = raxml;
         this.module = module;
         this.deployment = deployment;
-        this.serviceSuffix = serviceSuffix;
+        this.raName = raxml.getArchive().substring(0, raxml.getArchive().indexOf(".rar"));
+        this.deploymentServiceName = deploymentServiceName;
     }
 
     /**
-     * create an instance *
+     * Start
      */
-
     @Override
     public void start(StartContext context) throws StartException {
         try {
-
-            String archive = raxml.getArchive();
-
             Connector cmd = mdr.getValue().getResourceAdapter(deployment);
             IronJacamar ijmd = mdr.getValue().getIronJacamar(deployment);
             File root = mdr.getValue().getRoot(deployment);
 
             cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(raxml, cmd);
 
-            String deploymentName = archive.substring(0, archive.indexOf(".rar")) ;
-
             final ServiceContainer container = context.getController().getServiceContainer();
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
-                    deploymentName + serviceSuffix, root, module.getClassLoader(), cmd, raxml, ijmd);
+                raName, root, module.getClassLoader(), cmd, raxml, ijmd);
 
             raDeployer.setConfiguration(config.getValue());
 
@@ -102,18 +98,19 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             try {
                 raxmlDeployment = raDeployer.doDeploy();
             } catch (Throwable t) {
-                throw MESSAGES.failedToStartRaDeployment(t, deploymentName);
+                throw MESSAGES.failedToStartRaDeployment(t, raName);
             }
 
             value = new ResourceAdapterDeployment(raxmlDeployment);
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
 
             registry.getValue().registerResourceAdapterDeployment(value);
-            ServiceName serviceName = ConnectorServices.registerResourceAdapterServiceNameWithSuffix(deploymentName, serviceSuffix);
-            DEPLOYMENT_CONNECTOR_LOGGER.startingService(serviceName);
+
+            ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
+
             context.getChildTarget()
-                .addService(serviceName,
-                            new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(ServiceController.Mode.ACTIVE)
+                .addService(raServiceName,
+                            new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(ServiceController.Mode.ACTIVE)
                .install();
         } catch (Exception e) {
             throw new StartException(e);
@@ -126,7 +123,12 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     @Override
     public void stop(StopContext context) {
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s",
-                ConnectorServices.RESOURCE_ADAPTER_XML_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+            ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+
+        if (raName != null && deploymentServiceName != null) {
+            ConnectorServices.unregisterDeployment(raName, deploymentServiceName);
+        }
+
         managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
         super.stop(context);
     }
