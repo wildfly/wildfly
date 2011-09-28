@@ -229,7 +229,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private void addRemoteInvocationServices(final OperationContext context, final List<ServiceController<?>> newControllers) {
-        final LocalEjbReceiver localEjbReceiver = new LocalEjbReceiver();
+        final LocalEjbReceiver localEjbReceiver = new LocalEjbReceiver(false);
         newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.SERVICE_NAME, localEjbReceiver)
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, localEjbReceiver.getDeploymentRepository())
                 .install());
