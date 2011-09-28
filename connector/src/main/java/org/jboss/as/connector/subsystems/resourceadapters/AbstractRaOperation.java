@@ -43,6 +43,7 @@ import java.util.Map;
 
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdaptors;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.services.security.VaultUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -66,6 +67,7 @@ import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.resourceadapter.ResourceAdapterImpl;
+import org.jboss.security.vault.SecurityVaultException;
 
 public abstract class AbstractRaOperation {
 
@@ -157,7 +159,15 @@ public abstract class AbstractRaOperation {
                 CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis,
                         useFastFail);
                 final String recoveryUsername = getStringIfSetOrGetDefault(conDefNode, RECOVERY_USERNAME.getName(), null);
-                final String recoveryPassword = getStringIfSetOrGetDefault(conDefNode, RECOVERY_PASSWORD.getName(), null);
+                String recoveryPassword = getStringIfSetOrGetDefault(conDefNode, RECOVERY_PASSWORD.getName(), null);
+
+                if (VaultUtil.isVaultFormat(recoveryPassword)) {
+                    try {
+                        recoveryPassword = VaultUtil.getValueAsString(recoveryPassword);
+                    } catch (SecurityVaultException e) {
+                        throw new RuntimeException(e); // TODO: use bundle from IJ
+                    }
+                }
                 final String recoverySecurityDomain = getStringIfSetOrGetDefault(conDefNode, RECOVERY_SECURITY_DOMAIN.getName(), null);
 
                 final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
