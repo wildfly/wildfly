@@ -32,6 +32,8 @@ import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationPro
 import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.DeploymentRepositoryProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbCleanUpProcessor;
+import org.jboss.as.ejb3.deployment.processors.EjbClientContextParsingProcessor;
+import org.jboss.as.ejb3.deployment.processors.EjbClientContextSetupProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbContextJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbDependencyDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.EjbInjectionResolutionProcessor;
@@ -66,6 +68,7 @@ import org.jboss.as.ejb3.deployment.processors.merging.StartupMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.StatefulTimeoutMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionAttributeMergingProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TransactionManagementMergingProcessor;
+import org.jboss.as.ejb3.remote.EjbClientContextService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
@@ -76,9 +79,11 @@ import org.jboss.as.threads.TimeSpec;
 import org.jboss.as.threads.UnboundedQueueThreadPoolService;
 import org.jboss.as.txn.TxnServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -143,6 +148,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_DD_INTERCEPTORS, new InterceptorClassDeploymentDescriptorProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_ASSEMBLY_DESC_DD, new AssemblyDescriptorProcessor());
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_SECURITY_ROLE_REF_DD, new SecurityRoleRefDDProcessor());
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_EJB_REMOTE_CLIENT_CONTEXT, new EjbClientContextParsingProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB, new EjbDependencyDeploymentUnitProcessor());
 
@@ -166,6 +172,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_METHOD_PERMISSIONS, new MethodPermissionsMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_STATEFUL_TIMEOUT, new StatefulTimeoutMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_SYNCHRONIZATION, new SessionSynchronizationMergingProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CLIENT_CONTEXT_SETUP, new EjbClientContextSetupProcessor());
+
 
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RESOLVE_EJB_INJECTIONS, new EjbInjectionResolutionProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());
@@ -205,11 +213,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         newControllers.add(context.getServiceTarget().addService(DeploymentRepository.SERVICE_NAME, new DeploymentRepository()).install());
 
-        final LocalEjbReceiver localEjbReceiver = new LocalEjbReceiver();
+        addRemoteInvocationServices(context, newControllers);
 
-        newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.SERVICE_NAME, localEjbReceiver)
-                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, localEjbReceiver.getDeploymentRepository())
-                .install());
 
         if (!lite) {
             //TODO: Quick hack for testing purposes
@@ -221,6 +226,20 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .install());
         }
 
+    }
+
+    private void addRemoteInvocationServices(final OperationContext context, final List<ServiceController<?>> newControllers) {
+        final LocalEjbReceiver localEjbReceiver = new LocalEjbReceiver();
+        newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.SERVICE_NAME, localEjbReceiver)
+                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, localEjbReceiver.getDeploymentRepository())
+                .install());
+
+        //add the default EjbClientContext
+        //TODO: This should be configured via XML
+        EjbClientContextService clientContextService = new EjbClientContextService();
+        final ServiceBuilder<EJBClientContext> clientBuilder = context.getServiceTarget().addService(EjbClientContextService.DEFAULT_SERVICE_NAME, clientContextService);
+        clientContextService.addReceiver(clientBuilder, LocalEjbReceiver.SERVICE_NAME);
+        newControllers.add(clientBuilder.install());
     }
 
 }

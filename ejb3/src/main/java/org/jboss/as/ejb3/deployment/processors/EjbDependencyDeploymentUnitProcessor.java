@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ejb3.remote.DefaultClientContext;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -87,10 +86,6 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB3_TIMERS, false, false, false));
-
-
-        //TODO: get rid of this
-        deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, DefaultClientContext.SETUP_ACTION);
     }
 
     @Override

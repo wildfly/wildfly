@@ -254,7 +254,7 @@ public enum Phase {
     public static final int PARSE_DISTINCT_NAME                         = 0x3601;
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3700;
-
+    public static final int PARSE_EJB_REMOTE_CLIENT_CONTEXT             = 0x3900;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_EJB                            = 0x0000;
@@ -325,6 +325,7 @@ public enum Phase {
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
+    public static final int POST_MODULE_EJB_CLIENT_CONTEXT_SETUP        = 0x1D00;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;

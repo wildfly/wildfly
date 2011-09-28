@@ -155,7 +155,6 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
     @Override
     public void start(final StartContext context) throws StartException {
-        DefaultClientContext.getInstance().registerEJBReceiver(this);
     }
 
     @Override

@@ -23,6 +23,8 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
+import org.jboss.as.server.deployment.SetupAction;
 
 /**
  * @author John Bailey
@@ -39,4 +41,9 @@ public class Attachments {
 
     public static final AttachmentKey<DeploymentDescriptorEnvironment> MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT = AttachmentKey.create(DeploymentDescriptorEnvironment.class);
 
+
+    /**
+     * A list of actions that should be performed for every EE thread.
+     */
+    public static final AttachmentKey<AttachmentList<SetupAction>> EE_SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
 }

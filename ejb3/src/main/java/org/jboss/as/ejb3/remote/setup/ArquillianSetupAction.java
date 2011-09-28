@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.remote;
+package org.jboss.as.ejb3.remote.setup;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.ejb.client.EJBClientContext;
@@ -27,49 +27,30 @@ import org.jboss.ejb.client.EJBClientContext;
 import java.util.Map;
 
 /**
- * TODO: HACK to setup a {@link org.jboss.ejb.client.EJBClientContext} for the server
+ * Sets the correct EJBClientContext for arquillian tests
  *
  * @author Stuart Douglas
  */
-public class DefaultClientContext {
+public class ArquillianSetupAction implements SetupAction {
 
-    private static final EJBClientContext INSTANCE;
+    private final EJBClientContext context;
 
-    static {
-        EJBClientContext.create();
-        INSTANCE = EJBClientContext.suspendCurrent();
+    public ArquillianSetupAction(final EJBClientContext context) {
+        this.context = context;
     }
 
-    public static void associate() {
-        EJBClientContext.restoreCurrent(INSTANCE);
+    @Override
+    public void setup(final Map<String, Object> properties) {
+        EJBClientContext.restoreCurrent(context);
     }
 
-    public static void disasociate() {
+    @Override
+    public void teardown(final Map<String, Object> properties) {
         EJBClientContext.suspendCurrent();
     }
 
-    public static EJBClientContext getInstance() {
-        return INSTANCE;
+    @Override
+    public int priority() {
+        return 0;
     }
-
-    /**
-     * SetupAction that sets up EJB invocations for arquillian
-     */
-    public static final SetupAction SETUP_ACTION = new SetupAction() {
-        @Override
-        public void setup(final Map<String, Object> properties) {
-            associate();
-        }
-
-        @Override
-        public void teardown(final Map<String, Object> properties) {
-            disasociate();
-        }
-
-        @Override
-        public int priority() {
-            return 0;
-        }
-    };
-
 }
