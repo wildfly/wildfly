@@ -74,6 +74,8 @@ public class VaultInteraction {
                     }
                     try {
                         vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
+
+                        String keyAsString = new String(handshakeKey);
                         System.out.println("Attribute Value for (" + vaultBlock + ", " + attributeName + ") saved");
 
                         System.out.println("                ");
@@ -81,7 +83,9 @@ public class VaultInteraction {
                         System.out.println("********************************************");
                         System.out.println("Vault Block:" + vaultBlock);
                         System.out.println("Attribute Name:" + attributeName);
-                        System.out.println("Shared Key:" + new String(handshakeKey));
+                        System.out.println("Shared Key:" + keyAsString);
+                        System.out.println("Configuration should be done as follows:");
+                        System.out.println("VAULT::" + vaultBlock + "::" + attributeName + "::" + keyAsString);
                         System.out.println("********************************************");
                         System.out.println("                ");
                     } catch (SecurityVaultException e) {
