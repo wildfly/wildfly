@@ -23,17 +23,18 @@
 package org.jboss.as.server.services.net;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.net.UnknownHostException;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -44,20 +45,23 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Emanuel Muckenhuber
  */
-abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperationHandler {
+abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
 
     private static final ServiceName SOCKET_BINDING = SocketBinding.JBOSS_BINDING_NAME;
 
+    private final ParameterValidator resolvedValueValidator;
+
     protected AbstractBindingWriteHandler() {
-        super();
+        this(null, null);
     }
 
     protected AbstractBindingWriteHandler(ParameterValidator valueValidator) {
-        super(valueValidator);
+        this(valueValidator, valueValidator);
     }
 
     protected AbstractBindingWriteHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator) {
-        super(valueValidator, resolvedValueValidator);
+        super(valueValidator);
+        this.resolvedValueValidator = resolvedValueValidator;
     }
 
     /**
@@ -105,8 +109,10 @@ abstract class AbstractBindingWriteHandler extends ServerWriteAttributeOperation
             } else {
                 context.addStep(new OperationStepHandler() {
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        validateResolvedValue(attributeName, newValue);
                         final ModelNode resolvedValue = newValue.isDefined() ? newValue.resolve() : newValue;
+                        if (resolvedValueValidator != null) {
+                            resolvedValueValidator.validateResolvedParameter(VALUE, resolvedValue);
+                        }
                         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
                         final PathElement element = address.getLastElement();
                         final String bindingName = element.getValue();

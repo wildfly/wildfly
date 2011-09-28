@@ -40,13 +40,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.connector.ConnectorServices;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
@@ -83,7 +83,7 @@ public class PoolConfigurationRWHandler {
         }
     }
 
-    public abstract static class PoolConfigurationWriteHandler extends ServerWriteAttributeOperationHandler {
+    public abstract static class PoolConfigurationWriteHandler extends AbstractWriteAttributeHandler<List<PoolConfiguration>> {
 
         protected PoolConfigurationWriteHandler(ParameterValidator validator) {
             super(validator);
@@ -92,39 +92,38 @@ public class PoolConfigurationRWHandler {
         @Override
         protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                final String parameterName, final ModelNode newValue,
-               final ModelNode currentValue) throws OperationFailedException {
+               final ModelNode currentValue, final HandbackHolder<List<PoolConfiguration>> handbackHolder) throws OperationFailedException {
 
-            if (context.getType() == OperationContext.Type.SERVER) {
-                context.addStep(new OperationStepHandler() {
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-                        final String jndiName = address.getLastElement().getValue();
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String jndiName = address.getLastElement().getValue();
 
-                        final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
-                                ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
-                        List<PoolConfiguration> poolConfigs = null;
-                        if (managementRepoService != null) {
-                            try {
-                                final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
-                                poolConfigs = getMatchingPoolConfigs(jndiName, repository);
-                                updatePoolConfigs(poolConfigs, parameterName, newValue);
-                            } catch (Exception e) {
-                                throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToSetAttribute(e.getLocalizedMessage())));
-                            }
-                        }
-
-                        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK && poolConfigs != null) {
-                            updatePoolConfigs(poolConfigs, parameterName, currentValue);
-                        }
-
-                    }
-                }, OperationContext.Stage.RUNTIME);
+            final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
+                    ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE);
+            List<PoolConfiguration> poolConfigs = null;
+            if (managementRepoService != null) {
+                try {
+                    final ManagementRepository repository = (ManagementRepository) managementRepoService.getValue();
+                    poolConfigs = getMatchingPoolConfigs(jndiName, repository);
+                    updatePoolConfigs(poolConfigs, parameterName, newValue);
+                    handbackHolder.setHandback(poolConfigs);
+                } catch (Exception e) {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToSetAttribute(e.getLocalizedMessage())));
+                }
             }
 
             return ( IDLETIMEOUTMINUTES.getName().equals(parameterName) ||  BACKGROUNDVALIDATION.getName().equals(parameterName)
                     ||  BACKGROUNDVALIDATIONMILLIS.getName().equals(parameterName)
                     ||  POOL_PREFILL.getName().equals(parameterName));
 
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String parameterName,
+                                             ModelNode valueToRestore, ModelNode valueToRevert,
+                                             List<PoolConfiguration> handback) throws OperationFailedException {
+            if (handback != null) {
+                updatePoolConfigs(handback, parameterName, valueToRestore.resolve());
+            }
         }
 
         private void updatePoolConfigs(List<PoolConfiguration> poolConfigs, String parameterName, ModelNode newValue) {

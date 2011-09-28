@@ -22,13 +22,8 @@
 
 package org.jboss.as.messaging;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ConnectorServiceParamWriteAttributeHandler extends ServerWriteAttributeOperationHandler {
+public class ConnectorServiceParamWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
     public static final ConnectorServiceParamWriteAttributeHandler INSTANCE = new ConnectorServiceParamWriteAttributeHandler();
 
@@ -44,7 +39,7 @@ public class ConnectorServiceParamWriteAttributeHandler extends ServerWriteAttri
     }
 
     @Override
-    protected void validateValue(String name, ModelNode value) throws OperationFailedException {
+    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
         CommonAttributes.VALUE.getValidator().validateParameter(name, value);
     }
 
@@ -52,12 +47,6 @@ public class ConnectorServiceParamWriteAttributeHandler extends ServerWriteAttri
     protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
         // no-op, as we are not going to apply this value until the server is reloaded, so allow the
         // any system property to be set between now and then
-    }
-
-    @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                           ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
-        return true;
     }
 
 }

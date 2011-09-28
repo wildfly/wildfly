@@ -33,10 +33,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,7 +44,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DiscoveryGroupWriteAttributeHandler extends ServerWriteAttributeOperationHandler {
+public class DiscoveryGroupWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
 
     public static final DiscoveryGroupWriteAttributeHandler INSTANCE = new DiscoveryGroupWriteAttributeHandler();
 
@@ -65,7 +65,6 @@ public class DiscoveryGroupWriteAttributeHandler extends ServerWriteAttributeOpe
     @Override
     protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
                                 final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-        super.modelChanged(context, operation, attributeName, newValue, currentValue);
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -77,24 +76,18 @@ public class DiscoveryGroupWriteAttributeHandler extends ServerWriteAttributeOpe
                 }
             }
         }, OperationContext.Stage.VERIFY);
+
+        context.reloadRequired();
+
+        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
+            context.revertReloadRequired();
+        }
     }
 
     @Override
     protected void validateValue(String name, ModelNode value) throws OperationFailedException {
         AttributeDefinition attr = attributes.get(name);
         attr.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        // no-op, as we are not going to apply this value until the server is reloaded, so allow the
-        // any system property to be set between now and then
-    }
-
-    @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                           ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
-        return true;
     }
 
 }

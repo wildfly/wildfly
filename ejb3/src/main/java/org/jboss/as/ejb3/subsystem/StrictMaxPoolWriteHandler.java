@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.server.operations.ServerWriteAttributeOperationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StrictMaxPoolWriteHandler extends ServerWriteAttributeOperationHandler {
+public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
     public static final StrictMaxPoolWriteHandler INSTANCE = new StrictMaxPoolWriteHandler();
 
@@ -44,7 +44,7 @@ public class StrictMaxPoolWriteHandler extends ServerWriteAttributeOperationHand
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                           ModelNode newValue, ModelNode currentValue) throws OperationFailedException {
+                                           ModelNode newValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
 
         final boolean restartAllowed = context.isResourceServiceRestartAllowed();
         if (restartAllowed) {
@@ -57,7 +57,8 @@ public class StrictMaxPoolWriteHandler extends ServerWriteAttributeOperationHand
     }
 
     @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert) throws OperationFailedException {
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                                         ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
         StrictMaxPoolRemove.INSTANCE.removeRuntimeService(context, operation);
@@ -65,12 +66,12 @@ public class StrictMaxPoolWriteHandler extends ServerWriteAttributeOperationHand
     }
 
     @Override
-    protected void validateValue(String name, ModelNode value) throws OperationFailedException {
-        StrictMaxPoolResourceDefinition.ATTRIBUTES.get(name).getValidator().validateParameter(ModelDescriptionConstants.VALUE, value);
+    protected void validateUnresolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
+        StrictMaxPoolResourceDefinition.ATTRIBUTES.get(attributeName).getValidator().validateParameter(ModelDescriptionConstants.VALUE, value);
     }
 
     @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        StrictMaxPoolResourceDefinition.ATTRIBUTES.get(name).getValidator().validateResolvedParameter(ModelDescriptionConstants.VALUE, value);
+    protected void validateResolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
+        StrictMaxPoolResourceDefinition.ATTRIBUTES.get(attributeName).getValidator().validateResolvedParameter(ModelDescriptionConstants.VALUE, value);
     }
 }

@@ -37,7 +37,10 @@ import org.jboss.logging.Logger;
  * server.
  *
  * @author Brian Stansberry
+ *
+ * @deprecated Use org.jboss.as.controller.AbstractWriteAttributeHandler
  */
+@Deprecated
 public class ServerWriteAttributeOperationHandler extends WriteAttributeOperationHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.server");
