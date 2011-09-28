@@ -22,13 +22,19 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ejb3.component.pool.PoolConfigService;
+import org.jboss.as.ejb3.component.pool.StrictMaxPoolConfig;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Handles the "write-attribute" operation for a strict-max-bean-instance-pool resource.
@@ -46,14 +52,31 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                            ModelNode newValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
 
-        final boolean restartAllowed = context.isResourceServiceRestartAllowed();
-        if (restartAllowed) {
-            final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-            StrictMaxPoolRemove.INSTANCE.removeRuntimeService(context, operation);
-            StrictMaxPoolAdd.INSTANCE.installRuntimeService(context, model, new ServiceVerificationHandler());
-        }
+        final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        applyModelToRuntime(context, operation, attributeName, model);
 
-        return !restartAllowed;
+        return false;
+    }
+
+    private void applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
+
+        final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        final ServiceName serviceName = PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
+        final ServiceRegistry registry = context.getServiceRegistry(true);
+        ServiceController sc = registry.getService(serviceName);
+        if (sc != null) {
+            StrictMaxPoolConfig smpc = StrictMaxPoolConfig.class.cast(sc.getValue());
+            if (StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.equals(attributeName)) {
+                int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.validateResolvedOperation(model).asInt();
+                smpc.setMaxPoolSize(maxPoolSize);
+            } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.equals(attributeName)) {
+                long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.validateResolvedOperation(model).asLong();
+                smpc.setTimeout(timeout);
+            } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.equals(attributeName)) {
+                String timeoutUnit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.validateResolvedOperation(model).asString();
+                smpc.setTimeoutUnit(TimeUnit.valueOf(timeoutUnit));
+            }
+        }
     }
 
     @Override
@@ -61,8 +84,7 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
                                          ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        StrictMaxPoolRemove.INSTANCE.removeRuntimeService(context, operation);
-        StrictMaxPoolAdd.INSTANCE.installRuntimeService(context, restored, null);
+        applyModelToRuntime(context, operation, attributeName, restored);
     }
 
     @Override

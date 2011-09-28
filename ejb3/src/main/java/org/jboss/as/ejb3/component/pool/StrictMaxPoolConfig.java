@@ -40,11 +40,11 @@ public class StrictMaxPoolConfig extends PoolConfig {
     public static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.MINUTES;
 
 
-    private final int maxPoolSize;
+    private volatile int maxPoolSize;
 
-    private final TimeUnit timeoutUnit;
+    private volatile TimeUnit timeoutUnit;
 
-    private final long timeout;
+    private volatile long timeout;
 
     public StrictMaxPoolConfig(final String poolName, int maxSize, long timeout, TimeUnit timeUnit) {
         super(poolName);
@@ -60,6 +60,26 @@ public class StrictMaxPoolConfig extends PoolConfig {
 
     public int getMaxPoolSize() {
         return maxPoolSize;
+    }
+
+    public void setMaxPoolSize(int maxPoolSize) {
+        this.maxPoolSize = maxPoolSize;
+    }
+
+    public TimeUnit getTimeoutUnit() {
+        return timeoutUnit;
+    }
+
+    public void setTimeoutUnit(TimeUnit timeoutUnit) {
+        this.timeoutUnit = timeoutUnit;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
     }
 
     @Override

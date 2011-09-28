@@ -57,7 +57,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode().set(StrictMaxPoolConfig.DEFAULT_MAX_POOL_SIZE))
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(1, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
     public static final SimpleAttributeDefinition INSTANCE_ACQUISITION_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT, ModelType.LONG, true)
@@ -65,14 +65,14 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode().set(StrictMaxPoolConfig.DEFAULT_TIMEOUT))
                     .setAllowExpression(true)
                     .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
     public static final SimpleAttributeDefinition INSTANCE_ACQUISITION_TIMEOUT_UNIT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.INSTANCE_AQUISITION_TIMEOUT_UNIT.getLocalName())
                     .setValidator(TimeUnitValidator.ANY_OPTIONAL)
                     .setDefaultValue(new ModelNode().set(StrictMaxPoolConfig.DEFAULT_TIMEOUT_UNIT.name()))
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
 
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
