@@ -51,9 +51,9 @@ public class PlatformMBeanUtil {
     static {
         int vmVersion;
         try {
-            String vmVersionStr = ManagementFactory.getRuntimeMXBean().getVmVersion();
-            vmVersion = Integer.valueOf(vmVersionStr.substring(0, 1));
-        } catch (SecurityException e) {
+            String vmVersionStr = SecurityActions.getSystemProperty("java.specification.version");
+            vmVersion = Integer.valueOf(vmVersionStr.substring(2));
+        } catch (Exception e) {
             vmVersion = 6;
         }
         JVM_MAJOR_VERSION = vmVersion;
