@@ -26,7 +26,9 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -61,6 +63,13 @@ class OSGiSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider OSGI_BUNDLE_RESOURCE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return getBundle(locale);
+        }
+    };
+
     static ModelNode getRootResource(Locale locale) {
         ResourceBundle bundle = OSGiSubsystemProviders.getResourceBundle(locale);
 
@@ -68,10 +77,16 @@ class OSGiSubsystemProviders {
         node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("osgi"));
         OSGiSubsystemAdd.addModelProperties(bundle, node, ModelDescriptionConstants.ATTRIBUTES);
 
+        setBundleDescription(bundle, node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.BUNDLE));
         setCasConfigDescription(bundle, node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.CONFIGURATION));
         setPropertyDescription(bundle, node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.PROPERTY));
         setModuleDescription(bundle, node.get(ModelDescriptionConstants.CHILDREN, CommonAttributes.MODULE));
+
         return node;
+    }
+
+    private static void setBundleDescription(ResourceBundle bundle, ModelNode node) {
+        node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("bundle"));
     }
 
     private static ModelNode getCasConfiguration(Locale locale) {
@@ -114,6 +129,38 @@ class OSGiSubsystemProviders {
 
     private static void setModuleDescription(ResourceBundle bundle, final ModelNode node) {
         node.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("module"));
+    }
+
+    private static ModelNode getBundle(Locale locale) {
+        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
+        String storageRuntime = AttributeAccess.Storage.RUNTIME.toString();
+
+        final ModelNode node = new ModelNode();
+        node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("bundle"));
+
+        ModelNode idNode = new ModelNode();
+        idNode.get(ModelDescriptionConstants.TYPE).set(ModelType.LONG);
+        idNode.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("bundle.id"));
+        idNode.get(ModelDescriptionConstants.ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+        idNode.get(ModelDescriptionConstants.STORAGE).set(storageRuntime);
+
+        ModelNode bsnNode = new ModelNode();
+        bsnNode.get(ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+        bsnNode.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("bundle.bsn"));
+        bsnNode.get(ModelDescriptionConstants.ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+        bsnNode.get(ModelDescriptionConstants.STORAGE).set(storageRuntime);
+
+        ModelNode versionNode = new ModelNode();
+        versionNode.get(ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+        versionNode.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("bundle.version"));
+        versionNode.get(ModelDescriptionConstants.ACCESS_TYPE).set(ModelDescriptionConstants.READ_ONLY);
+        versionNode.get(ModelDescriptionConstants.STORAGE).set(storageRuntime);
+
+        node.get(ModelDescriptionConstants.ATTRIBUTES).get(CommonAttributes.ID).set(idNode);
+        node.get(ModelDescriptionConstants.ATTRIBUTES).get(CommonAttributes.SYMBOLIC_NAME).set(bsnNode);
+        node.get(ModelDescriptionConstants.ATTRIBUTES).get(CommonAttributes.VERSION).set(versionNode);
+
+        return node;
     }
 
     static ResourceBundle getResourceBundle(Locale locale) {

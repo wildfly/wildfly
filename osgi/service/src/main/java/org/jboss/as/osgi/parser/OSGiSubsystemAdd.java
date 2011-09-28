@@ -24,6 +24,7 @@ package org.jboss.as.osgi.parser;
 import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
 import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -32,6 +33,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -45,8 +47,16 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.osgi.framework.Services;
+import org.osgi.framework.Bundle;
 
 /**
  * OSGi subsystem operation handler.
@@ -62,8 +72,39 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
 
     static final OSGiSubsystemAdd INSTANCE = new OSGiSubsystemAdd();
 
+    private OSGiRuntimeResource resource;
+
     private OSGiSubsystemAdd() {
         // Private to ensure a singleton.
+    }
+
+    // Can't use the execute() from the base class here because we use a custom resource.
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        resource = new OSGiRuntimeResource();
+        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+
+        // rest of super.execute() method is unchanged below
+        populateModel(operation, resource);
+        final ModelNode model = resource.getModel();
+
+        if (requiresRuntime(context)) {
+            context.addStep(new OperationStepHandler() {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
+                    performRuntime(context, operation, model, verificationHandler, controllers);
+
+                    if(requiresRuntimeVerification()) {
+                        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+                    }
+
+                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                        rollbackRuntime(context, operation, model, controllers);
+                    }
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+        context.completeStep();
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode subModel) {
@@ -95,6 +136,32 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
 
         ServiceTarget serviceTarget = context.getServiceTarget();
         newControllers.add(SubsystemState.addService(serviceTarget, getActivationMode(operation)));
+
+        // This step injects the System Bundle Service into our custom resource
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                ServiceBuilder<Void> builder = context.getServiceTarget().addService(
+                        Services.JBOSGI_BASE_NAME.append("OSGiSubsystem").append("initialize"),
+                    new AbstractService<Void>() {
+                        @SuppressWarnings("unchecked")
+                        @Override
+                        public void start(StartContext context) throws StartException {
+                            try {
+                                ServiceContainer ctr = context.getController().getServiceContainer();
+                                ServiceController<Bundle> sc = (ServiceController<Bundle>) ctr.getRequiredService(Services.SYSTEM_BUNDLE);
+                                resource.setBundleContextServiceController(sc);
+                            } finally {
+                                context.getController().setMode(Mode.REMOVE);
+                            }
+                        }
+                    });
+                builder.addDependency(Services.SYSTEM_BUNDLE);
+                builder.setInitialMode(Mode.PASSIVE);
+                builder.install();
+                context.completeStep();
+            }
+        }, OperationContext.Stage.RUNTIME);
 
         ROOT_LOGGER.debugf("Activated OSGi Subsystem");
     }

@@ -23,6 +23,7 @@ package org.jboss.as.osgi.parser;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.osgi.parser.CommonAttributes.BUNDLE;
 import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.osgi.parser.CommonAttributes.MODULE;
 import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTY;
@@ -77,6 +78,10 @@ public class OSGiExtension implements Extension {
         ManagementResourceRegistration modules = registration.registerSubModel(PathElement.pathElement(MODULE), OSGiSubsystemProviders.OSGI_MODULE_RESOURCE);
         modules.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiModuleAdd.INSTANCE, OSGiModuleAdd.INSTANCE, false);
         modules.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiModuleRemove.INSTANCE, OSGiModuleRemove.INSTANCE, false);
+
+        // Bundles present at runtime
+        ManagementResourceRegistration bundles = registration.registerSubModel(PathElement.pathElement(BUNDLE), OSGiSubsystemProviders.OSGI_BUNDLE_RESOURCE);
+        BundleRuntimeHandler.INSTANCE.register(bundles);
 
         subsystem.registerXMLElementWriter(parser);
     }

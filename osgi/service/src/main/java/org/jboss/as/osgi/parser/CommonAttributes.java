@@ -28,11 +28,17 @@ package org.jboss.as.osgi.parser;
 interface CommonAttributes {
 
     String ACTIVATION = "activation";
+    String BUNDLE = "bundle";
     String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
     String MODULE = "module";
     String PROPERTY = "property";
     String STARTLEVEL = "start";
     String VALUE = "value";
+
+    // Attributes on the Bundle resource
+    String ID = "id";
+    String SYMBOLIC_NAME = "symbolic-name";
+    String VERSION = "version";
 
 }
