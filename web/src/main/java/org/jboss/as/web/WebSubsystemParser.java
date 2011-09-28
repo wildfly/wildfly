@@ -196,15 +196,16 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     writer.writeStartElement(Element.ACCESS_LOG.getLocalName());
                     final ModelNode accessLog = config.get(ACCESS_LOG);
                     if(accessLog.has(DIRECTORY)) {
+                        final ModelNode directory = accessLog.get(DIRECTORY);
                         writer.writeEmptyElement(DIRECTORY);
-                        writeAttribute(writer, Attribute.PATH.getLocalName(), accessLog);
-                        writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), accessLog);
+                        writeAttribute(writer, Attribute.PATH.getLocalName(), directory);
+                        writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), directory);
                     }
-                    writeAttribute(writer, Attribute.PATTERN.getLocalName(), config);
-                    writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), config);
-                    writeAttribute(writer, Attribute.EXTENDED.getLocalName(), config);
-                    writeAttribute(writer, Attribute.PREFIX.getLocalName(), config);
-                    writeAttribute(writer, Attribute.ROTATE.getLocalName(), config);
+                    writeAttribute(writer, Attribute.PATTERN.getLocalName(), accessLog);
+                    writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), accessLog);
+                    writeAttribute(writer, Attribute.EXTENDED.getLocalName(), accessLog);
+                    writeAttribute(writer, Attribute.PREFIX.getLocalName(), accessLog);
+                    writeAttribute(writer, Attribute.ROTATE.getLocalName(), accessLog);
                     writer.writeEndElement();
                 }
                 if (config.hasDefined(REWRITE)) {
