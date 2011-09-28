@@ -22,6 +22,17 @@
 
 package org.jboss.as.web.deployment;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.security.jacc.PolicyConfiguration;
+import javax.servlet.ServletContext;
+
 import org.apache.catalina.Loader;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
@@ -31,7 +42,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
+import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -45,6 +58,7 @@ import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealmService;
 import org.jboss.as.web.security.SecurityAssociationService;
+import org.jboss.as.web.security.WarJaccService;
 import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -114,7 +128,8 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-        //
+        AbstractSecurityDeployer<?> deployer = new WarSecurityDeployer();
+        deployer.undeploy(context);
     }
 
     protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit deploymentUnit,
@@ -243,6 +258,24 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             }
 
             builder.install();
+
+            // adding JACC service
+            AbstractSecurityDeployer<?> deployer = new WarSecurityDeployer();
+            JaccService<?> service = deployer.deploy(deploymentUnit);
+            if (service != null) {
+                ((WarJaccService) service).setContext(webContext);
+                final ServiceName jaccServiceName = JaccService.SERVICE_NAME.append(deploymentUnit.getName());
+                builder = serviceTarget.addService(jaccServiceName, service);
+                if (deploymentUnit.getParent() != null) {
+                    // add dependency to parent policy
+                    final DeploymentUnit parentDU = deploymentUnit.getParent();
+                    builder.addDependency(JaccService.SERVICE_NAME.append(parentDU.getName()), PolicyConfiguration.class,
+                            service.getParentPolicyInjector());
+                }
+                // add dependency to web deployment service
+                builder.addDependency(deploymentServiceName);
+                builder.setInitialMode(Mode.ACTIVE).install();
+            }
 
             final ServiceName secAssocServiceName = deploymentServiceName.append("securityAssociation");
             final SecurityAssociationService sas = new SecurityAssociationService(webContext, metaData);
