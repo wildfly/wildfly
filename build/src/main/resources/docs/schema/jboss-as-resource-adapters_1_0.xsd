@@ -176,7 +176,7 @@
       <xs:annotation>
         <xs:documentation>
           <![CDATA[[
-            Specifies if a java:/ JNDI context should be used 
+            Specifies if a java:/ JNDI context should be used
            ]]>
         </xs:documentation>
       </xs:annotation>
@@ -213,11 +213,11 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-                The blocking-timeout-millis element indicates the maximum time in 
-                milliseconds to block while waiting for a connection before throwing an exception. 
-                Note that this blocks only while waiting for a permit for a connection, and 
-                will never throw an exception if creating a new connection takes an inordinately 
-                long time. The default is 30000 (30 seconds).  
+                The blocking-timeout-millis element indicates the maximum time in
+                milliseconds to block while waiting for a connection before throwing an exception.
+                Note that this blocks only while waiting for a permit for a connection, and
+                will never throw an exception if creating a new connection takes an inordinately
+                long time. The default is 30000 (30 seconds).
               ]]>
           </xs:documentation>
         </xs:annotation>
@@ -226,10 +226,10 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              The idle-timeout-minutes elements indicates the maximum time in minutes 
-              a connection may be idle before being closed. The actual maximum time depends 
-              also on the IdleRemover scan time, which is 1/2 the smallest idle-timeout-minutes 
-              of any pool. 
+              The idle-timeout-minutes elements indicates the maximum time in minutes
+              a connection may be idle before being closed. The actual maximum time depends
+              also on the IdleRemover scan time, which is 1/2 the smallest idle-timeout-minutes
+              of any pool.
               ]]>
           </xs:documentation>
         </xs:annotation>
@@ -238,9 +238,9 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              The allocation retry element indicates the number of times that allocating 
-              a connection should be tried before throwing an exception. The default is 
-              0.  
+              The allocation retry element indicates the number of times that allocating
+              a connection should be tried before throwing an exception. The default is
+              0.
               ]]>
           </xs:documentation>
         </xs:annotation>
@@ -249,9 +249,9 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              The allocation retry wait millis element indicates the time in milliseconds 
-              to wait between retrying to allocate a connection. The default is 5000 (5 
-              seconds). 
+              The allocation retry wait millis element indicates the time in milliseconds
+              to wait between retrying to allocate a connection. The default is 5000 (5
+              seconds).
               ]]>
           </xs:documentation>
         </xs:annotation>
@@ -260,7 +260,7 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              Passed to XAResource.setTransactionTimeout(). Default is zero which does not invoke the setter.              
+              Passed to XAResource.setTransactionTimeout(). Default is zero which does not invoke the setter.
               Specified in seconds - e.g. 5 minutes
               <xa-resource-timeout>300</xa-resource-timeout>
              ]]>
@@ -276,8 +276,8 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              An element to specify that connections should be validated on a background 
-              thread versus being validated prior to use 
+              An element to specify that connections should be validated on a background
+              thread versus being validated prior to use
               ]]>
           </xs:documentation>
         </xs:annotation>
@@ -286,8 +286,8 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-               The background-validation-millis element specifies the amount of 
-               time, in millis, that background validation will run. 
+               The background-validation-millis element specifies the amount of
+               time, in millis, that background validation will run.
               ]]>
           </xs:documentation>
         </xs:annotation>
@@ -296,8 +296,8 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-                Whether fail a connection allocation on the first connection if it 
-                is invalid (true) or keep trying until the pool is exhausted of all potential 
+                Whether fail a connection allocation on the first connection if it
+                is invalid (true) or keep trying until the pool is exhausted of all potential
                 connections (false) default false. e.g. <use-fast-fail>true</use-fast-fail>
               ]]>
           </xs:documentation>
@@ -412,8 +412,8 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              The min-pool-size element indicates the minimum number of connections 
-              a pool should hold. These are not created until a Subject is known from a 
+              The min-pool-size element indicates the minimum number of connections
+              a pool should hold. These are not created until a Subject is known from a
               request for a connection. This default to 0. Ex: <min-pool-size>1</min-pool-size>
              ]]>
           </xs:documentation>
@@ -423,9 +423,9 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              The max-pool-size element indicates the maximum number of connections 
-              for a pool. No more than max-pool-size connections will be created in each sub-pool. 
-              This defaults to 20. 
+              The max-pool-size element indicates the maximum number of connections
+              for a pool. No more than max-pool-size connections will be created in each sub-pool.
+              This defaults to 20.
              ]]>
           </xs:documentation>
         </xs:annotation>
@@ -455,7 +455,7 @@
           <xs:documentation>
             <![CDATA[[
               Specifies how the pool should be flush in case of an error.
-              Valid values are: FailingConnectionOnly (default), IdleConnections, EntirePool 
+              Valid values are: FailingConnectionOnly (default), IdleConnections, EntirePool
              ]]>
           </xs:documentation>
         </xs:annotation>
@@ -471,8 +471,8 @@
             <xs:annotation>
               <xs:documentation>
                 <![CDATA[[
-                  The is-same-rm-override element allows one to unconditionally 
-                  set whether the javax.transaction.xa.XAResource.isSameRM(XAResource) returns 
+                  The is-same-rm-override element allows one to unconditionally
+                  set whether the javax.transaction.xa.XAResource.isSameRM(XAResource) returns
                   true or false. Ex: <is-same-rm-override>true</is-same-rm-override>
                  ]]>
               </xs:documentation>
@@ -482,7 +482,7 @@
             <xs:annotation>
               <xs:documentation>
                 <![CDATA[[
-                  An element to enable interleaving for XA connection factories 
+                  An element to enable interleaving for XA connection factories
                   Ex: <interleaving/>
                  ]]>
               </xs:documentation>
@@ -492,7 +492,7 @@
             <xs:annotation>
               <xs:documentation>
                 <![CDATA[[
-                  Oracle does not like XA connections getting used both inside and outside a JTA transaction. 
+                  Oracle does not like XA connections getting used both inside and outside a JTA transaction.
                   To workaround the problem you can create separate sub-pools for the different contexts
                   using <no-tx-separate-pools/>
                   Ex: <no-tx-separate-pools/>
@@ -545,7 +545,7 @@
           <xs:annotation>
             <xs:documentation>
               <![CDATA[[
-                Indicates Subject (from security domain) are used to distinguish connections in the pool. 
+                Indicates Subject (from security domain) are used to distinguish connections in the pool.
                 The content of the security-domain is the name of the JAAS security manager that will handle
                 authentication. This name correlates to the JAAS login-config.xml descriptor
                 application-policy/name attribute.
@@ -565,7 +565,7 @@
                 security-domain is the name of the JAAS security manager that will handle
                 authentication. This name correlates to the JAAS login-config.xml descriptor
                 application-policy/name attribute.
-                
+
                 Ex:
                 <security-domain-and-application>HsqlDbRealm</security-domain-and-application>
               ]]>
@@ -620,7 +620,7 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              Specifies the extension plugin used in spi (core.spi.xa) 
+              Specifies the extension plugin used in spi (core.spi.xa)
               which can be implemented by various plugins to provide better feedback to the XA recovery system.
              ]]>
           </xs:documentation>
@@ -650,7 +650,7 @@
         <xs:annotation>
           <xs:documentation>
               <![CDATA[[
-                Specify the username used when creating a new connection. 
+                Specify the username used when creating a new connection.
                 Ex: <user-name>sa</user-name>
                ]]>
           </xs:documentation>
@@ -660,7 +660,7 @@
         <xs:annotation>
           <xs:documentation>
               <![CDATA[[
-                Specify the password used when creating a new connection. 
+                Specify the password used when creating a new connection.
                 Ex: <password>sa-pass</password>
                ]]>
           </xs:documentation>
@@ -670,7 +670,7 @@
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
-              Indicates Subject (from security domain) are used to distinguish connections in the pool. 
+              Indicates Subject (from security domain) are used to distinguish connections in the pool.
               The content of the security-domain is the name of the JAAS security manager that will handle
               authentication. This name correlates to the JAAS login-config.xml descriptor
               application-policy/name attribute.

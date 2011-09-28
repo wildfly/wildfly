@@ -368,7 +368,7 @@
                 The requested behavior for service handling on a dependency.
             </documentation>
         </annotation>
-        <xsd:restriction base="xsd:string">
+        <xsd:restriction base="xsd:token">
             <xsd:enumeration value="none">
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>

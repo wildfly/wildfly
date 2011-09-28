@@ -77,7 +77,7 @@
             <xs:element name="bean-instance-pools" type="bean-instance-poolsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
-    
+
     <xs:complexType name="bean-instance-poolsType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="strict-max-pool" type="strict-max-poolType"/>
@@ -98,7 +98,7 @@
                 TimeUnit that are allowed for instance-acquisition-timeout on a pool
             </xs:documentation>
         </xs:annotation>
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="HOURS"/>
             <xs:enumeration value="MINUTES"/>
             <xs:enumeration value="SECONDS"/>
@@ -127,7 +127,7 @@
                     The maximum number of threads that will be used to run timer service tasks. Defaults to the
                     number of processes as returned by Runtime.availableProcessors()
                 </xs:documentation>
-            </xs:annotation>          
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 

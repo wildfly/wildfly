@@ -269,7 +269,7 @@
                 ]]>
          </xs:documentation>
       </xs:annotation>
-      <xs:restriction base="xs:string">
+      <xs:restriction base="xs:token">
          <xs:enumeration value="required"/>
          <xs:enumeration value="requisite"/>
          <xs:enumeration value="sufficient"/>
@@ -438,7 +438,7 @@
          <xs:element name="property" type="propertyType" maxOccurs="unbounded"/>
       </xs:sequence>
    </xs:complexType>
-   
+
    <xs:complexType name="vaultType">
       <xs:annotation>
          <xs:documentation>

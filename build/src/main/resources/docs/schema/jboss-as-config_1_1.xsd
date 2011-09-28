@@ -1449,7 +1449,7 @@
         <xs:attribute name="java-home" type="xs:string"/>
         <xs:attribute name="type" default="SUN">
             <xs:simpleType>
-                <xs:restriction base="xs:string">
+                <xs:restriction base="xs:token">
                     <xs:enumeration value="SUN">
 			            <xs:annotation>
 			                <xs:documentation>Allows the full set of JVM options to be set via the jvm schema elements</xs:documentation>
@@ -1573,7 +1573,7 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
-    
+
    <xs:complexType name="vaultType">
       <xs:annotation>
          <xs:documentation>

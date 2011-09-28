@@ -61,7 +61,7 @@
     </xs:complexType>
 
     <xs:simpleType name="mode">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="active"/>
             <xs:enumeration value="passive"/>
             <xs:enumeration value="on demand"/>

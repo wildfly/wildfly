@@ -268,7 +268,7 @@
                 ]]>
          </xs:documentation>
       </xs:annotation>
-      <xs:restriction base="xs:string">
+      <xs:restriction base="xs:token">
          <xs:enumeration value="required"/>
          <xs:enumeration value="requisite"/>
          <xs:enumeration value="sufficient"/>

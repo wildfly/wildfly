@@ -480,7 +480,7 @@
     </xs:complexType>
 
     <xs:simpleType name="isolation">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="NONE">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
@@ -510,7 +510,7 @@
     </xs:simpleType>
 
     <xs:simpleType name="transaction-mode">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="NON_XA">
                 <xs:annotation>
                     <xs:documentation>Cache will enlist within transactions as a javax.transaction.Synchronization</xs:documentation>
@@ -530,7 +530,7 @@
     </xs:simpleType>
 
     <xs:simpleType name="eager-locking">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="NONE">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
@@ -550,7 +550,7 @@
     </xs:simpleType>
 
     <xs:simpleType name="indexing">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="NONE">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
@@ -570,7 +570,7 @@
     </xs:simpleType>
 
     <xs:simpleType name="eviction-strategy">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="NONE">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
@@ -600,7 +600,7 @@
     </xs:simpleType>
 
     <xs:simpleType name="mode">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="ASYNC">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>
@@ -615,7 +615,7 @@
     </xs:simpleType>
 
     <xs:simpleType name="controller-mode">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="EAGER">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>

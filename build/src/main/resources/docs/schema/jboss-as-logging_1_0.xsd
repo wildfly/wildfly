@@ -129,7 +129,7 @@
                 <xs:complexType>
                     <xs:attribute name="name" use="required">
                         <xs:simpleType>
-                            <xs:restriction base="xs:string">
+                            <xs:restriction base="xs:token">
                                 <xs:enumeration value="System.out"/>
                                 <xs:enumeration value="System.err"/>
                             </xs:restriction>
@@ -225,7 +225,7 @@
     <xs:complexType name="overflowActionType">
         <xs:attribute name="value" use="required">
             <xs:simpleType>
-                <xs:restriction base="xs:string">
+                <xs:restriction base="xs:token">
                     <xs:enumeration value="block"/>
                     <xs:enumeration value="discard"/>
                 </xs:restriction>

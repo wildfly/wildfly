@@ -279,20 +279,13 @@
                 The name of a unit of time.
             </xs:documentation>
         </xs:annotation>
-        <xs:restriction base="xs:string">
-
+        <xs:restriction base="xs:token">
             <xs:enumeration value="seconds"/>
-
             <xs:enumeration value="minutes"/>
-
             <xs:enumeration value="milliseconds"/>
-
             <xs:enumeration value="nanoseconds"/>
-
             <xs:enumeration value="hours"/>
-
             <xs:enumeration value="days"/>
-
         </xs:restriction>
     </xs:simpleType>
 

@@ -438,7 +438,7 @@
     </xs:complexType>
 
     <xs:simpleType name="journalType">
-       <xs:restriction base="xs:string">
+       <xs:restriction base="xs:token">
           <xs:enumeration value="ASYNCIO"/>
           <xs:enumeration value="NIO"/>
        </xs:restriction>
@@ -454,7 +454,7 @@
     </xs:complexType>
 
     <xs:simpleType name="groupingHandlerTypeType">
-       <xs:restriction base="xs:string">
+       <xs:restriction base="xs:token">
           <xs:enumeration value="LOCAL"/>
           <xs:enumeration value="REMOTE"/>
        </xs:restriction>
@@ -526,7 +526,7 @@
     </xs:complexType>
 
     <xs:simpleType name="addressFullMessagePolicyType">
-       <xs:restriction base="xs:string">
+       <xs:restriction base="xs:token">
           <xs:enumeration value="DROP"/>
           <xs:enumeration value="PAGE"/>
           <xs:enumeration value="BLOCK"/>
@@ -720,7 +720,7 @@
     </xs:complexType>
 
     <xs:simpleType name="modeType">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="xa">
                 <xs:annotation>
                     <xs:documentation></xs:documentation>

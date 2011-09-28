@@ -180,7 +180,7 @@
         </xs:annotation>
         <xs:list>
             <xs:simpleType>
-                <xs:restriction base="xs:string">
+                <xs:restriction base="xs:token">
                     <xs:enumeration value="auth"/>
                     <xs:enumeration value="auth-int"/>
                     <xs:enumeration value="auth-conf"/>
@@ -200,7 +200,7 @@
         </xs:annotation>
         <xs:list>
             <xs:simpleType>
-                <xs:restriction base="xs:string">
+                <xs:restriction base="xs:token">
                     <xs:enumeration value="low"/>
                     <xs:enumeration value="medium"/>
                     <xs:enumeration value="high"/>

@@ -36,7 +36,7 @@
       <xs:element name="mod-cluster-config" type="mod-cluster-configType" minOccurs="0" maxOccurs="1"/>
     </xs:all>
   </xs:complexType>
-  
+
   <xs:complexType name="mod-cluster-configType">
     <xs:sequence>
       <!-- Simple load-provider or a dynamic one -->
@@ -123,7 +123,7 @@
       </xs:annotation>
     </xs:attribute>
   </xs:complexType>
-  
+
   <xs:simpleType name="SSlProtocolType">
     <xs:restriction base="xs:token">
         <xs:enumeration value="SSLv2"/>
@@ -133,7 +133,7 @@
         <xs:enumeration value="ALL"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <!-- <simple-load-provider load="1"/> -->
   <xs:complexType name="simple-load-providerType">
     <xs:attribute name="factor" default="1" />
@@ -157,7 +157,7 @@
 
   <xs:complexType name="common-load-metricType" abstract="true">
     <xs:attribute name="weight" type="xs:int"/>
-    <xs:attribute name="capacity" type="xs:double"/>    
+    <xs:attribute name="capacity" type="xs:double"/>
   </xs:complexType>
 
   <xs:complexType name="load-metricType">
@@ -177,7 +177,7 @@
   </xs:complexType>
 
   <xs:simpleType name="loadMetricEnum">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:token">
       <xs:enumeration value="cpu"/>
       <xs:enumeration value="mem"/>
       <xs:enumeration value="heap"/>

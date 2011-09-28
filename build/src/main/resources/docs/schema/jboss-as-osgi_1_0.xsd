@@ -47,7 +47,7 @@
     </xs:complexType>
 
     <xs:simpleType name="activationType">
-        <xs:restriction base="xs:string">
+        <xs:restriction base="xs:token">
             <xs:enumeration value="eager"/>
             <xs:enumeration value="lazy"/>
         </xs:restriction>
