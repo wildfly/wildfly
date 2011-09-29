@@ -362,4 +362,24 @@ public interface ConnectorMessages {
      */
     @Message(value = "%s is undefined")
     IllegalArgumentException undefinedVar(String name);
+
+    /**
+     * Creates an exception indicating that a service is already registered
+     *
+     * @param name the name of the service.
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(value = "Service '%s' already registered")
+    IllegalStateException serviceAlreadyRegistered(String name);
+
+    /**
+     * Creates an exception indicating that a service isn't registered
+     *
+     * @param name the name of the service.
+     *
+     * @return an {@link IllegalStateException} for the error.
+     */
+    @Message(value = "Service '%s' isn't registered")
+    IllegalStateException serviceIsntRegistered(String name);
 }

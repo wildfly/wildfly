@@ -50,6 +50,7 @@ import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -113,12 +114,13 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(ijmd, cmd);
             }
 
-            final ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module);
+            final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
+            final ResourceAdapterDeploymentService raDeployementService = new ResourceAdapterDeploymentService(connectorXmlDescriptor, cmd, ijmd, module, null);
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
             // Create the service
-            serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()), raDeployementService)
+            serviceTarget.addService(deployerServiceName, raDeployementService)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, raDeployementService.getMdrInjector())
                     .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class, raDeployementService.getRaRepositoryInjector())
                     .addDependency(ConnectorServices.MANAGEMENT_REPOSISTORY_SERVICE, ManagementRepository.class, raDeployementService.getManagementRepositoryInjector())

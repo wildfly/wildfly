@@ -102,12 +102,14 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         value = new ResourceAdapterDeployment(deploymentMD);
         registry.getValue().registerResourceAdapterDeployment(value);
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-        String suffix = ConnectorServices.getNextValidSuffix(value.getDeployment().getDeploymentName());
-        ServiceName serviceName = ConnectorServices.registerResourceAdapterServiceNameWithSuffix(value.getDeployment().getDeploymentName(), suffix);
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Starting service %s", serviceName);
+
+        String raName = value.getDeployment().getDeploymentName();
+        ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
+
         context.getChildTarget()
-                .addService(serviceName,
-                        new ResourceAdapterService(value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
+                .addService(raServiceName,
+                    new ResourceAdapterService(raName, raServiceName,
+                                               value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                 .install();
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Started service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
     }
@@ -118,7 +120,6 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
     @Override
     public void stop(StopContext context) {
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
-
     }
 
     private class ResourceAdapterActivator extends AbstractAS7RaDeployer {
