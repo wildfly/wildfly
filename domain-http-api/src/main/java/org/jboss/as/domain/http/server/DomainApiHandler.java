@@ -40,7 +40,6 @@ import static org.jboss.as.domain.http.server.Constants.US_ASCII;
 import static org.jboss.as.domain.http.server.Constants.UTF_8;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -90,8 +89,13 @@ class DomainApiHandler implements ManagementHttpHandler {
      * Represents all possible management operations that can be executed using HTTP GET
      */
     enum GetOperation {
-        RESOURCE("read-resource"), ATTRIBUTE("read-attribute"), RESOURCE_DESCRIPTION("read-resource-description"), OPERATION_DESCRIPTION(
-                "read-operation-description"), OPERATION_NAMES("read-operation-names");
+        RESOURCE("read-resource"),
+        ATTRIBUTE("read-attribute"),
+        RESOURCE_DESCRIPTION("read-resource-description"),
+        SNAPSHOTS("list-snapshots"),
+        OPERATION_DESCRIPTION(
+                "read-operation-description"),
+        OPERATION_NAMES("read-operation-names");
 
         private String realOperation;
 
@@ -131,7 +135,6 @@ class DomainApiHandler implements ManagementHttpHandler {
      * @throws IOException if an error occurs while attempting to extract the deployment from the multipart/form data.
      */
     private void processUploadRequest(final HttpExchange http) throws IOException {
-        File tempUploadFile = null;
         ModelNode response = null;
 
         try {
@@ -185,10 +188,17 @@ class DomainApiHandler implements ManagementHttpHandler {
 
         try {
             dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
+        } catch (IllegalArgumentException iae) {
+            log.debugf("Unable to construct ModelNode '%s'", iae.getMessage());
+            http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
+
+            return;
+        }
+
+        try {
             response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             log.error("Unexpected error executing model request", t);
-
             http.sendResponseHeaders(INTERNAL_SERVER_ERROR, -1);
 
             return;
@@ -337,14 +347,14 @@ class DomainApiHandler implements ManagementHttpHandler {
                     operation = GetOperation.valueOf(value.toUpperCase().replace('-', '_'));
                     value = operation.realOperation();
                 } catch (Exception e) {
-                    // Unknown
-                    continue;
+                    throw new IllegalArgumentException("Invalid operation '" + value + "'", e);
                 }
             }
 
             dmr.get(entry.getKey()).set(value);
         }
 
+        // This will now only occur if no operation at all was specified on the incoming request.
         if (operation == null) {
             operation = GetOperation.RESOURCE;
             dmr.get("operation").set(operation.realOperation);
