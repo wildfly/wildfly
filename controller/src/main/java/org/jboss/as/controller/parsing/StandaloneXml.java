@@ -186,12 +186,10 @@ public class StandaloneXml extends CommonXml {
             element = nextElement(reader, DOMAIN_1_0);
         }
 
-        // Single profile - mandatory.
+        // Single profile
         if (element == Element.PROFILE) {
             parseServerProfile(reader, address, list);
             element = nextElement(reader, DOMAIN_1_0);
-        } else {
-            throw missingRequiredElement(reader, Collections.singleton(Element.PROFILE));
         }
 
         // Interfaces
@@ -294,12 +292,10 @@ public class StandaloneXml extends CommonXml {
             parseManagement(reader, address, DOMAIN_1_1, list, true);
             element = nextElement(reader, DOMAIN_1_1);
         }
-        // Single profile - mandatory.
+        // Single profile
         if (element == Element.PROFILE) {
             parseServerProfile(reader, address, list);
             element = nextElement(reader, DOMAIN_1_1);
-        } else {
-            throw missingRequiredElement(reader, Collections.singleton(Element.PROFILE));
         }
 
         // Interfaces

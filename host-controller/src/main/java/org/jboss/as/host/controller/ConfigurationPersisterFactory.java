@@ -51,7 +51,9 @@ public class ConfigurationPersisterFactory {
 
     public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {
         DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
-        return new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
+        persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "domain"), domainXml);
+        return persister;
     }
 
     public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir) {
