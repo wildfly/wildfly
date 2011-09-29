@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain;
+package org.jboss.as.test.domain;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -42,9 +42,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.cleanFile;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.safeClose;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
+import static org.jboss.as.test.domain.DomainTestSupport.cleanFile;
+import static org.jboss.as.test.domain.DomainTestSupport.safeClose;
+import static org.jboss.as.test.domain.DomainTestSupport.validateResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

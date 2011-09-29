@@ -20,18 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain;
+package org.jboss.as.test.domain;
 
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Test validating the configuration starts and can accept a simple web request.

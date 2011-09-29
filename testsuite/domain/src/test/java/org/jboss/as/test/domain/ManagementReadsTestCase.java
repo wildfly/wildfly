@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain;
+package org.jboss.as.test.domain;
 
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
@@ -28,7 +28,6 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import org.jboss.dmr.ModelNode;
@@ -48,7 +47,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
+import static org.jboss.as.test.domain.DomainTestSupport.validateResponse;
 
 /**
  * Test of various read operations against the domain controller.

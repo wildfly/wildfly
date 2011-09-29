@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain;
+package org.jboss.as.test.domain;
 
 import org.jboss.as.arquillian.container.domain.managed.DomainLifecycleUtil;
 import org.jboss.as.arquillian.container.domain.managed.JBossAsManagedConfiguration;
