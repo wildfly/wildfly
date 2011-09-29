@@ -24,6 +24,7 @@ package org.jboss.as.jpa.hibernate3;
 
 import org.hibernate.cfg.Configuration;
 import org.jboss.as.jpa.spi.JtaManager;
+import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -131,7 +132,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     }
 
     @Override
-    public Object getManagementAdaptor() {
+    public ManagementAdaptor getManagementAdaptor() {
         return null;
     }
 

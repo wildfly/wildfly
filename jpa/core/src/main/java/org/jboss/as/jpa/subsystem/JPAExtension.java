@@ -102,7 +102,7 @@ public class JPAExtension implements Extension {
         try {
             // load the default persistence provider adaptor
             PersistenceProviderAdaptor provider = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(null);
-            final ManagementAdaptor managementAdaptor = (ManagementAdaptor)provider.getManagementAdaptor();
+            final ManagementAdaptor managementAdaptor = provider.getManagementAdaptor();
             if (managementAdaptor != null) {
                 DescriptionProvider JPA_SUBSYSTEM = new DescriptionProvider() {
                     @Override

@@ -75,7 +75,7 @@ public interface PersistenceProviderAdaptor {
      *
      * @return ManagementAdaptor or null
      */
-    Object /*ManagementAdaptor*/ getManagementAdaptor();
+    ManagementAdaptor getManagementAdaptor();
 
 
 }

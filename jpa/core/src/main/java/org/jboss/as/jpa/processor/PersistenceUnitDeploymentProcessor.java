@@ -536,7 +536,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
     }
 
     private void addManagementConsole(final DeploymentUnit deploymentUnit, final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor adaptor) {
-        ManagementAdaptor managementAdaptor = (ManagementAdaptor)adaptor.getManagementAdaptor();
+        ManagementAdaptor managementAdaptor = adaptor.getManagementAdaptor();
         if (managementAdaptor != null) {
             final String providerLabel = managementAdaptor.getIdentificationLabel();
             final String scopedPersistenceUnitName = pu.getScopedPersistenceUnitName();
