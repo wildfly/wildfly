@@ -57,7 +57,7 @@ import org.jboss.msc.service.ServiceTarget;
 public class ObjectStoreAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     public static final ObjectStoreAdd INSTANCE = new ObjectStoreAdd();
-    private static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
+    static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
 
 
 

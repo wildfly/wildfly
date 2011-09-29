@@ -39,6 +39,7 @@ interface CommonAttributes {
     String OBJECT_STORE = "object-store";
     /** The com.arjuna.ats.arjuna.utils.Process implementation type */
     String PROCESS_ID = "process-id";
+    String CONFIGURATION = "configuration";
     String RECOVERY_ENVIRONMENT = "recovery-environment";
     String RECOVERY_LISTENER = "recovery-listener";
     /** The process-id/socket element */

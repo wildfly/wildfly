@@ -82,7 +82,6 @@ public class CoordinatorEnvironmentAdd extends AbstractAddStepHandler implements
         final boolean transactionStatusManagerEnable = operation.get(ENABLE_TSM_STATUS).asBoolean(false);
         final int coordinatorDefaultTimeout = operation.get(DEFAULT_TIMEOUT).asInt(300);
 
-
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable);
         controllers.add(context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService)
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("iiop", "orb"), ORB.class, transactionManagerService.getOrbInjector())

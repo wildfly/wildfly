@@ -22,21 +22,6 @@
 
 package org.jboss.as.txn;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -45,10 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
@@ -56,10 +37,8 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import static org.jboss.as.txn.CommonAttributes.BINDING;
+import static org.jboss.as.txn.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.txn.CommonAttributes.COORDINATOR_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.CORE_ENVIRONMENT;
 import static org.jboss.as.txn.CommonAttributes.DEFAULT_TIMEOUT;
@@ -74,7 +53,31 @@ import static org.jboss.as.txn.CommonAttributes.SOCKET_PROCESS_ID_MAX_PORTS;
 import static org.jboss.as.txn.CommonAttributes.STATUS_BINDING;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -100,22 +103,22 @@ public class TransactionExtension implements Extension {
         registration.registerOperationHandler(ADD, TransactionSubsystemAdd.INSTANCE, TransactionSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, TransactionDescribeHandler.INSTANCE, TransactionDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        final ManagementResourceRegistration recoveryEnv = registration.registerSubModel(PathElement.pathElement(RECOVERY_ENVIRONMENT),
+        final ManagementResourceRegistration recoveryEnv = registration.registerSubModel(PathElement.pathElement(CONFIGURATION, RECOVERY_ENVIRONMENT),
                 TransactionSubsystemProviders.RECOVERY_ENVIRONMENT_DESC);
         recoveryEnv.registerOperationHandler(ADD, RecoveryEnvironmentAdd.INSTANCE, TransactionSubsystemProviders.ADD_RECOVERY_ENVIRONMENT_DESC, false);
         recoveryEnv.registerOperationHandler(REMOVE, RecoveryEnvironmentRemove.INSTANCE, TransactionSubsystemProviders.REMOVE_RECOVERY_ENVIRONMENT_DESC, false);
 
-        final ManagementResourceRegistration coreEnv = registration.registerSubModel(PathElement.pathElement(CORE_ENVIRONMENT),
+        final ManagementResourceRegistration coreEnv = registration.registerSubModel(PathElement.pathElement(CONFIGURATION, CORE_ENVIRONMENT),
                 TransactionSubsystemProviders.CORE_ENVIRONMENT_DESC);
         coreEnv.registerOperationHandler(ADD, CoreEnvironmentAdd.INSTANCE, TransactionSubsystemProviders.ADD_CORE_ENVIRONMENT_DESC, false);
         coreEnv.registerOperationHandler(REMOVE, CoreEnvironmentRemove.INSTANCE, TransactionSubsystemProviders.REMOVE_CORE_ENVIRONMENT_DESC, false);
 
-        final ManagementResourceRegistration coordinatorEnv = registration.registerSubModel(PathElement.pathElement(COORDINATOR_ENVIRONMENT),
+        final ManagementResourceRegistration coordinatorEnv = registration.registerSubModel(PathElement.pathElement(CONFIGURATION, COORDINATOR_ENVIRONMENT),
                 TransactionSubsystemProviders.COORDINATOR_ENVIRONMENT_DESC);
         coordinatorEnv.registerOperationHandler(ADD, CoordinatorEnvironmentAdd.INSTANCE, TransactionSubsystemProviders.ADD_COORDINATOR_ENVIRONMENT_DESC, false);
         coordinatorEnv.registerOperationHandler(REMOVE, CoordinatorEnvironmentRemove.INSTANCE, TransactionSubsystemProviders.REMOVE_COORDINATOR_ENVIRONMENT_DESC, false);
 
-        final ManagementResourceRegistration objectStore = registration.registerSubModel(PathElement.pathElement(OBJECT_STORE),
+        final ManagementResourceRegistration objectStore = registration.registerSubModel(PathElement.pathElement(CONFIGURATION, OBJECT_STORE),
                 TransactionSubsystemProviders.OBJECT_STORE_DESC);
         objectStore.registerOperationHandler(ADD, ObjectStoreAdd.INSTANCE, TransactionSubsystemProviders.ADD_OBJECT_STORE_DESC, false);
         objectStore.registerOperationHandler(REMOVE, ObjectStoreRemove.INSTANCE, TransactionSubsystemProviders.REMOVE_OBJECT_STORE_DESC, false);
@@ -163,9 +166,16 @@ public class TransactionExtension implements Extension {
             final ModelNode objectStoreNode = address.clone();
             final ModelNode objectStoreOperation = new ModelNode();
             objectStoreOperation.get(OP).set(ADD);
-            objectStoreNode.add(OBJECT_STORE, OBJECT_STORE);
+            objectStoreNode.add(CONFIGURATION, OBJECT_STORE);
             objectStoreNode.protect();
             objectStoreOperation.get(OP_ADDR).set(objectStoreNode);
+
+            final ModelNode coordinatorNode = address.clone();
+            final ModelNode coordinatorOperatrion = new ModelNode();
+            coordinatorOperatrion.get(OP).set(ADD);
+            coordinatorNode.add(CONFIGURATION, COORDINATOR_ENVIRONMENT);
+            coordinatorNode.protect();
+            coordinatorOperatrion.get(OP_ADDR).set(coordinatorNode);
 
 
             // elements
@@ -189,7 +199,7 @@ public class TransactionExtension implements Extension {
                                 break;
                             }
                             case COORDINATOR_ENVIRONMENT: {
-                                parseCoordinatorEnvironmentElement(reader, list, address);
+                                parseCoordinatorEnvironmentElement(reader, coordinatorOperatrion);
                                 break;
                             }
                             case OBJECT_STORE: {
@@ -208,6 +218,7 @@ public class TransactionExtension implements Extension {
                 }
             }
             list.add(objectStoreOperation);
+            list.add(coordinatorOperatrion);
             if (! required.isEmpty()) {
                 throw missingRequiredElement(reader, required);
             }
@@ -236,14 +247,8 @@ public class TransactionExtension implements Extension {
 
         }
 
-        static void parseCoordinatorEnvironmentElement(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException {
-            final ModelNode env = parentAddress.clone();
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(ADD);
-            env.add(COORDINATOR_ENVIRONMENT, COORDINATOR_ENVIRONMENT);
-            env.protect();
+        static void parseCoordinatorEnvironmentElement(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
 
-            operation.get(OP_ADDR).set(env);
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
                 requireNoNamespaceAttribute(reader, i);
@@ -265,7 +270,7 @@ public class TransactionExtension implements Extension {
             }
             // Handle elements
             requireNoContent(reader);
-            list.add(operation);
+
         }
 
         /**
@@ -278,7 +283,7 @@ public class TransactionExtension implements Extension {
             final ModelNode env = parentAddress.clone();
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(ADD);
-            env.add(CORE_ENVIRONMENT, CORE_ENVIRONMENT);
+            env.add(CONFIGURATION, CORE_ENVIRONMENT);
             env.protect();
 
             operation.get(OP_ADDR).set(env);
@@ -392,7 +397,7 @@ public class TransactionExtension implements Extension {
             final ModelNode recoveryEnvAddress = parentAddress.clone();
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(ADD);
-            recoveryEnvAddress.add(RECOVERY_ENVIRONMENT, RECOVERY_ENVIRONMENT);
+            recoveryEnvAddress.add(CONFIGURATION, RECOVERY_ENVIRONMENT);
             recoveryEnvAddress.protect();
 
             operation.get(OP_ADDR).set(recoveryEnvAddress);
@@ -432,56 +437,63 @@ public class TransactionExtension implements Extension {
 
             ModelNode node = context.getModelNode();
 
-            if (hasDefined(node, CORE_ENVIRONMENT) && node.get(CORE_ENVIRONMENT).asPropertyList().size() != 0) {
-                writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
-                final ModelNode core = node.get(CORE_ENVIRONMENT).asPropertyList().get(0).getValue();
-                if (hasDefined(core, NODE_IDENTIFIER)) {
-                    writeAttribute(writer, Attribute.NODE_IDENTIFIER, core.get(NODE_IDENTIFIER));
+            if (hasDefined(node, CONFIGURATION)) {
+                List<Property> configurations = node.get(CONFIGURATION).asPropertyList();
+                for (Property config : configurations) {
+                    if (config.getName().equals(CORE_ENVIRONMENT) &&
+                            config.getValue().isDefined()) {
+                        writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
+                        final ModelNode core = config.getValue();
+                        if (hasDefined(core, NODE_IDENTIFIER)) {
+                            writeAttribute(writer, Attribute.NODE_IDENTIFIER, core.get(NODE_IDENTIFIER));
+                        }
+                        if (hasDefined(core, PROCESS_ID)) {
+                            writeProcessId(writer, core.get(PROCESS_ID));
+                        }
+                        writer.writeEndElement();
+                    }
+                    if (config.getName().equals(RECOVERY_ENVIRONMENT) && config.getValue().isDefined()) {
+                        writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
+                        final ModelNode env = config.getValue();
+                        if (hasDefined(env, BINDING)) {
+                            writeAttribute(writer, Attribute.BINDING, env.get(BINDING));
+                        }
+                        if (hasDefined(env, STATUS_BINDING)) {
+                            writeAttribute(writer, Attribute.STATUS_BINDING, env.get(STATUS_BINDING));
+                        }
+                        if (hasDefined(env, RECOVERY_LISTENER)) {
+                            writeAttribute(writer, Attribute.RECOVERY_LISTENER, env.get(RECOVERY_LISTENER));
+                        }
+                        writer.writeEndElement();
+                    }
+                    if (config.getName().equals(COORDINATOR_ENVIRONMENT) && config.getValue().isDefined()) {
+                        writer.writeStartElement(Element.COORDINATOR_ENVIRONMENT.getLocalName());
+                        final ModelNode env = config.getValue();
+                        if (hasDefined(env, ENABLE_STATISTICS)) {
+                            writeAttribute(writer, Attribute.ENABLE_STATISTICS, env.get(ENABLE_STATISTICS));
+                        }
+                        if (hasDefined(env, ENABLE_TSM_STATUS)) {
+                            writeAttribute(writer, Attribute.ENABLE_TSM_STATUS, env.get(ENABLE_TSM_STATUS));
+                        }
+                        if (hasDefined(env, DEFAULT_TIMEOUT)) {
+                            writeAttribute(writer, Attribute.DEFAULT_TIMEOUT, env.get(DEFAULT_TIMEOUT));
+                        }
+                        writer.writeEndElement();
+                    }
+                    if (config.getName().equals(OBJECT_STORE) && config.getValue().isDefined()) {
+                        writer.writeStartElement(Element.OBJECT_STORE.getLocalName());
+                        final ModelNode env = config.getValue();
+                        if (hasDefined(env, RELATIVE_TO)) {
+                            writeAttribute(writer, Attribute.RELATIVE_TO, env.get(RELATIVE_TO));
+                        }
+                        if (hasDefined(env, PATH)) {
+                            writeAttribute(writer, Attribute.PATH, env.get(PATH));
+                        }
+                        writer.writeEndElement();
+                    }
                 }
-                if (hasDefined(core, PROCESS_ID)) {
-                    writeProcessId(writer, core.get(PROCESS_ID));
-                }
-                writer.writeEndElement();
             }
-            if (hasDefined(node, RECOVERY_ENVIRONMENT) && node.get(RECOVERY_ENVIRONMENT).asPropertyList().size() != 0) {
-                writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
-                final ModelNode env = node.get(RECOVERY_ENVIRONMENT).asPropertyList().get(0).getValue();
-                if (hasDefined(env, BINDING)) {
-                    writeAttribute(writer, Attribute.BINDING, env.get(BINDING));
-                }
-                if (hasDefined(env, STATUS_BINDING)) {
-                    writeAttribute(writer, Attribute.STATUS_BINDING, env.get(STATUS_BINDING));
-                }
-                if (hasDefined(env, RECOVERY_LISTENER)) {
-                    writeAttribute(writer, Attribute.RECOVERY_LISTENER, env.get(RECOVERY_LISTENER));
-                }
-                writer.writeEndElement();
-            }
-            if (hasDefined(node, COORDINATOR_ENVIRONMENT) && node.get(COORDINATOR_ENVIRONMENT).asPropertyList().size() != 0) {
-                writer.writeStartElement(Element.COORDINATOR_ENVIRONMENT.getLocalName());
-                final ModelNode env = node.get(COORDINATOR_ENVIRONMENT).asPropertyList().get(0).getValue();
-                if (hasDefined(env, ENABLE_STATISTICS)) {
-                    writeAttribute(writer, Attribute.ENABLE_STATISTICS, env.get(ENABLE_STATISTICS));
-                }
-                if (hasDefined(env, ENABLE_TSM_STATUS)) {
-                    writeAttribute(writer, Attribute.ENABLE_TSM_STATUS, env.get(ENABLE_TSM_STATUS));
-                }
-                if (hasDefined(env, DEFAULT_TIMEOUT)) {
-                    writeAttribute(writer, Attribute.DEFAULT_TIMEOUT, env.get(DEFAULT_TIMEOUT));
-                }
-                writer.writeEndElement();
-            }
-            if (hasDefined(node, OBJECT_STORE) && node.get(OBJECT_STORE).asPropertyList().size() != 0) {
-                writer.writeStartElement(Element.OBJECT_STORE.getLocalName());
-                final ModelNode env = node.get(OBJECT_STORE).asPropertyList().get(0).getValue();
-                if (hasDefined(env, RELATIVE_TO)) {
-                    writeAttribute(writer, Attribute.RELATIVE_TO, env.get(RELATIVE_TO));
-                }
-                if (hasDefined(env, PATH)) {
-                    writeAttribute(writer, Attribute.PATH, env.get(PATH));
-                }
-                writer.writeEndElement();
-            }
+
             writer.writeEndElement();
         }
 
