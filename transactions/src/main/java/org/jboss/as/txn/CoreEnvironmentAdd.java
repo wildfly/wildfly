@@ -86,7 +86,7 @@ public class CoreEnvironmentAdd extends AbstractAddStepHandler implements Descri
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
 
         final String nodeIdentifier = operation.hasDefined(NODE_IDENTIFIER) ? operation.get(NODE_IDENTIFIER).asString() : "1";
-        final ModelNode processId = operation.require(PROCESS_ID);
+        final ModelNode processId = operation.hasDefined(PROCESS_ID) ? operation.get(PROCESS_ID) : new ModelNode();
         final String varDirPathRef = operation.hasDefined(RELATIVE_TO) ? operation.get(RELATIVE_TO).asString() : "jboss.server.data.dir";
         final String varDirPath = operation.hasDefined(PATH) ? operation.get(PATH).asString() : "var";
         final int maxPorts = 10;
