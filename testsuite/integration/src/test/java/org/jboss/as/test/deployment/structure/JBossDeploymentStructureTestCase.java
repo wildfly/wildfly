@@ -72,10 +72,10 @@ public class JBossDeploymentStructureTestCase {
      */
     @Test
     public void testDeploymentStructureFilters() throws Exception {
-        final String toBeFoundClassName = "Available";
+        final String toBeFoundClassName = "org.jboss.as.test.deployment.structure.Available";
         this.ejb.loadClass(toBeFoundClassName);
 
-        final String toBeMisssingClassName = "ToBeIgnored";
+        final String toBeMisssingClassName = "org.jboss.as.test.deployment.structure.ToBeIgnored";
         try {
             this.ejb.loadClass(toBeMisssingClassName);
             Assert.fail("Unexpectedly found class " + toBeMisssingClassName);

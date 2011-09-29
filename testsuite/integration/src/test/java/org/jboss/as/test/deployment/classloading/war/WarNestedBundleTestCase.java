@@ -66,7 +66,7 @@ public class WarNestedBundleTestCase {
     @Test
     public void testWebInfLibAccessible() throws ClassNotFoundException {
         ClassLoader warLoader = WarNestedBundleTestCase.class.getClassLoader();
-        Class<?> clazz = warLoader.loadClass("WebInfLibClass");
+        Class<?> clazz = warLoader.loadClass("org.jboss.as.test.deployment.classloading.war.WebInfLibClass");
         ClassLoader bundleLoader = clazz.getClassLoader();
         assertTrue(bundleLoader.toString().contains("ModuleClassLoader for Module \"deployment.as945.war:main\""));
     }

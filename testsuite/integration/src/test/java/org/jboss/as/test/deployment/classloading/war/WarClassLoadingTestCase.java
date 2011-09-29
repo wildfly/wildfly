@@ -45,7 +45,7 @@ public class WarClassLoadingTestCase {
 
     @Test
     public void testWebInfLibAccessible() throws ClassNotFoundException {
-        loadClass("WebInfLibClass");
+        loadClass("org.jboss.as.test.deployment.classloading.war.WebInfLibClass");
     }
 
     private static Class<?> loadClass(String name) throws ClassNotFoundException {
