@@ -87,6 +87,22 @@ public final class ScheduledThreadPoolService implements Service<ScheduledExecut
         return threadFactoryValue;
     }
 
+    public int getActiveCount() {
+        return executor.getActiveCount();
+    }
+
+    public long getCompletedTaskCount() {
+        return executor.getCompletedTaskCount();
+    }
+
+    public int getLargestPoolSize() {
+        return executor.getLargestPoolSize();
+    }
+
+    public long getTaskCount() {
+        return executor.getTaskCount();
+    }
+
     private class ExecutorImpl extends ScheduledThreadPoolExecutor {
 
         ExecutorImpl(final int corePoolSize, final ThreadFactory threadFactory) {

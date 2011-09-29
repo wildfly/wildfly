@@ -149,4 +149,12 @@ public class BoundedQueueThreadPoolService implements Service<ExecutorService> {
             executor.setAllowCoreThreadTimeout(allowCoreTimeout);
         }
     }
+
+    public int getCurrentThreadCount() {
+        return executor.getCurrentThreadCount();
+    }
+
+    public int getLargestThreadCount() {
+        return executor.getLargestThreadCount();
+    }
 }

@@ -123,4 +123,16 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
             executor.setKeepAliveTime(keepAlive);
         }
     }
+
+    public int getCurrentThreadCount() {
+        return executor.getCurrentThreadCount();
+    }
+
+    public int getLargestThreadCount() {
+        return executor.getLargestThreadCount();
+    }
+
+    public int getRejectedCount() {
+        return executor.getRejectedCount();
+    }
 }
