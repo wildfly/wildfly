@@ -96,7 +96,7 @@ public class StatelessBeanIntegrationTestCase {
     public void testStatelessBean() throws Exception {
         deployer.deploy(EJB3_DEPLOYMENT_NAME);
         try {
-            String jndiname = "java:global/ejb3-osgi/SimpleStatelessSessionBean!SimpleStatelessSessionBean";
+            String jndiname = "java:global/ejb3-osgi/SimpleStatelessSessionBean!org.jboss.as.test.osgi.ejb3.SimpleStatelessSessionBean";
             Echo service = (Echo) new InitialContext().lookup(jndiname);
             assertNotNull("StatelessBean not null", service);
             assertEquals("ejb3-osgi-target", service.echo(BUNDLE_SYMBOLICNAME));
