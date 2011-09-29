@@ -33,15 +33,17 @@ import java.util.Map;
  * @since 13-Sep-2010
  */
 public enum Namespace {
+
     // must be first
     UNKNOWN(null),
-    OSGI_1_0("urn:jboss:domain:osgi:1.0")
+    OSGI_1_0("urn:jboss:domain:osgi:1.0"),
+    OSGI_1_1("urn:jboss:domain:osgi:1.1")
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = OSGI_1_0;
+    public static final Namespace CURRENT = OSGI_1_1;
 
     private final String name;
 

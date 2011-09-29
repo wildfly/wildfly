@@ -282,7 +282,7 @@
                 </jms-destinations>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+            <subsystem xmlns="urn:jboss:domain:osgi:1.1" activation="lazy">
                 <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                     <property name="manager.root" value="jboss-osgi"/>
                 </configuration>
@@ -698,7 +698,7 @@
                 <mod-cluster-config advertise-socket="modcluster"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+            <subsystem xmlns="urn:jboss:domain:osgi:1.1" activation="lazy">
                 <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                     <property name="manager.root" value="jboss-osgi"/>
                 </configuration>

@@ -290,7 +290,7 @@
         </profile>
         <profile name="osgi">
             <include profile="default"/>
-            <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
+            <subsystem xmlns="urn:jboss:domain:osgi:1.1" activation="lazy">
                 <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
                     <property name="manager.root">jboss-osgi</property>
                 </configuration>

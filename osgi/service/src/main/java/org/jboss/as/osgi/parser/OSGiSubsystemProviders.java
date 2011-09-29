@@ -35,6 +35,7 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -55,15 +56,15 @@ class OSGiSubsystemProviders {
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
             subsystem.get(NAMESPACE).set(Namespace.OSGI_1_0.getUriString());
 
-            subsystem.get(ATTRIBUTES, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.activation"));
-            subsystem.get(ATTRIBUTES, CommonAttributes.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            subsystem.get(ATTRIBUTES, CommonAttributes.ACTIVATION, ModelDescriptionConstants.RESTART_REQUIRED).set(RESTART_JVM.toString());
-            subsystem.get(ATTRIBUTES, CommonAttributes.ACTIVATION, ModelDescriptionConstants.ACCESS_TYPE).set(READ_WRITE.toString());
-            subsystem.get(ATTRIBUTES, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DEFAULT).set(DEFAULT_ACTIVATION.toString());
+            subsystem.get(ATTRIBUTES, Constants.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.activation"));
+            subsystem.get(ATTRIBUTES, Constants.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            subsystem.get(ATTRIBUTES, Constants.ACTIVATION, ModelDescriptionConstants.RESTART_REQUIRED).set(RESTART_JVM.toString());
+            subsystem.get(ATTRIBUTES, Constants.ACTIVATION, ModelDescriptionConstants.ACCESS_TYPE).set(READ_WRITE.toString());
+            subsystem.get(ATTRIBUTES, Constants.ACTIVATION, ModelDescriptionConstants.DEFAULT).set(DEFAULT_ACTIVATION.toString());
 
-            subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration"));
-            subsystem.get(CHILDREN, CommonAttributes.FRAMEWORK_PROPERTY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property"));
-            subsystem.get(CHILDREN, CommonAttributes.CAPABILITY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability"));
+            subsystem.get(CHILDREN, Constants.CONFIGURATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration"));
+            subsystem.get(CHILDREN, Constants.FRAMEWORK_PROPERTY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property"));
+            subsystem.get(CHILDREN, Constants.CAPABILITY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability"));
 
             return subsystem;
         }
@@ -74,10 +75,10 @@ class OSGiSubsystemProviders {
             final ModelNode node = new ModelNode();
             ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration"));
-            node.get(ATTRIBUTES, CommonAttributes.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.entries"));
-            node.get(ATTRIBUTES, CommonAttributes.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
-            node.get(ATTRIBUTES, CommonAttributes.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
-            node.get(ATTRIBUTES, CommonAttributes.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
+            node.get(ATTRIBUTES, Constants.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.entries"));
+            node.get(ATTRIBUTES, Constants.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
+            node.get(ATTRIBUTES, Constants.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
+            node.get(ATTRIBUTES, Constants.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
             return node;
         }
     };
@@ -87,9 +88,9 @@ class OSGiSubsystemProviders {
             final ModelNode node = new ModelNode();
             ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property"));
-            node.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));
-            node.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
+            node.get(ModelDescriptionConstants.ATTRIBUTES, Constants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));
+            node.get(ModelDescriptionConstants.ATTRIBUTES, Constants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.ATTRIBUTES, Constants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
             return node;
         }
     };
@@ -100,9 +101,9 @@ class OSGiSubsystemProviders {
             final ModelNode node = new ModelNode();
             ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability"));
-            node.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability.startlevel"));
-            node.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
-            node.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
+            node.get(ModelDescriptionConstants.ATTRIBUTES, Constants.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability.startlevel"));
+            node.get(ModelDescriptionConstants.ATTRIBUTES, Constants.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
+            node.get(ModelDescriptionConstants.ATTRIBUTES, Constants.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
             return node;
         }
     };

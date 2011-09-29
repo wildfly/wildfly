@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -54,8 +55,8 @@ public class OSGiCapabilityAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (operation.has(CommonAttributes.STARTLEVEL)) {
-            model.get(CommonAttributes.STARTLEVEL).set(operation.get(CommonAttributes.STARTLEVEL));
+        if (operation.has(Constants.STARTLEVEL)) {
+            model.get(Constants.STARTLEVEL).set(operation.get(Constants.STARTLEVEL));
         }
     }
 
@@ -64,13 +65,13 @@ public class OSGiCapabilityAdd extends AbstractAddStepHandler {
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ModelNode slNode = null;
-        if (operation.has(CommonAttributes.STARTLEVEL)) {
-            slNode = operation.get(CommonAttributes.STARTLEVEL);
-            model.get(CommonAttributes.STARTLEVEL).set(slNode);
+        if (operation.has(Constants.STARTLEVEL)) {
+            slNode = operation.get(Constants.STARTLEVEL);
+            model.get(Constants.STARTLEVEL).set(slNode);
         }
         final Integer startLevel = (slNode != null ? slNode.asInt() : null);
 
-        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CAPABILITY).asString();
+        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(Constants.CAPABILITY).asString();
         OSGiCapability module = new OSGiCapability(ModuleIdentifier.fromString(identifier), startLevel);
 
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
@@ -81,7 +82,7 @@ public class OSGiCapabilityAdd extends AbstractAddStepHandler {
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
-        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CAPABILITY).asString();
+        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(Constants.CAPABILITY).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
             subsystemState.removeCapability(identifier);
@@ -102,9 +103,9 @@ public class OSGiCapabilityAdd extends AbstractAddStepHandler {
         }
 
         private void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
-            node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("capability.startlevel"));
-            node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
-            node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
+            node.get(propType, Constants.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("capability.startlevel"));
+            node.get(propType, Constants.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
+            node.get(propType, Constants.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
         }
     };
 }

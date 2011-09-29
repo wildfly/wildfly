@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -47,9 +48,9 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
 
         ModelNode address = new ModelNode();
         address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(CommonAttributes.CAPABILITY, "org.acme.module1"));
+        address.add(new ModelNode().set(Constants.CAPABILITY, "org.acme.module1"));
         ModelNode data = new ModelNode();
-        data.get(CommonAttributes.STARTLEVEL).set("4");
+        data.get(Constants.STARTLEVEL).set("4");
         ModelNode op = getAddOperation(address, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
@@ -83,9 +84,9 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
 
         ModelNode address = new ModelNode();
         address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(CommonAttributes.CAPABILITY, "org.acme.module1"));
+        address.add(new ModelNode().set(Constants.CAPABILITY, "org.acme.module1"));
         ModelNode data = new ModelNode();
-        data.get(CommonAttributes.STARTLEVEL).set("4");
+        data.get(Constants.STARTLEVEL).set("4");
         ModelNode op = getAddOperation(address, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
@@ -99,8 +100,8 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
 
     private ModelNode getAddOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        if (existing.hasDefined(CommonAttributes.STARTLEVEL)) {
-            op.get(CommonAttributes.STARTLEVEL).set(existing.get(CommonAttributes.STARTLEVEL));
+        if (existing.hasDefined(Constants.STARTLEVEL)) {
+            op.get(Constants.STARTLEVEL).set(existing.get(Constants.STARTLEVEL));
         }
         return op;
     }

@@ -21,8 +21,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:osgi:1.0"
-            xmlns="urn:jboss:domain:osgi:1.0"
+            targetNamespace="urn:jboss:domain:osgi:1.1"
+            xmlns="urn:jboss:domain:osgi:1.1"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="1.0">
@@ -41,7 +41,7 @@
         <xs:all>
             <xs:element name="configuration" type="configurationType" minOccurs="0"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
-            <xs:element name="modules" type="modulesType" minOccurs="0"/>
+            <xs:element name="capabilities" type="capabilitiesType" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="activation" type="activationType" default="lazy"/>
     </xs:complexType>
@@ -60,24 +60,29 @@
         <xs:attribute name="pid" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="modulesType">
+    <xs:complexType name="capabilitiesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="module" type="moduleType"/>
+            <xs:element name="capability" type="capabilityType"/>
         </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="moduleType">
-        <xs:attribute name="identifier" type="xs:string" use="required"/>
+    <xs:complexType name="capabilityType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="startlevel" type="xs:integer"/>
     </xs:complexType>
 
     <xs:complexType name="propertiesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="property" type="propertyType"/>
+            <xs:element name="property" type="propertyContentType"/>
         </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="propertyType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+    
+    <xs:complexType name="propertyContentType">
         <xs:simpleContent>
             <xs:extension base="propertyValueType">
                 <xs:attribute name="name" type="xs:string" use="required"/>
