@@ -131,48 +131,9 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         if (timeout != null) {
             return timeout;
         }
-        return new AccessTimeoutDetails(5, TimeUnit.MINUTES);
+
+        return new AccessTimeoutDetails(10, TimeUnit.SECONDS);
     }
-
-
-    //    @Override
-//    public Interceptor createClientInterceptor(Class<?> view) {
-//        final Serializable sessionId = createSession();
-//        return createClientInterceptor(view, sessionId);
-//    }
-//
-//    @Override
-//    public Interceptor createClientInterceptor(final Class<?> view, final Serializable sessionId) {
-//        return new Interceptor() {
-//            @Override
-//            public Object processInvocation(InterceptorContext context) throws Exception {
-//                final Method method = context.getMethod();
-//                // if no-interface view, then check whether invocation on the method is allowed
-//                // (for ex: invocation on protected methods isn't allowed)
-//                if (StatefulSessionComponent.this.getComponentClass().equals(view)) {
-//                    if (!StatefulSessionComponent.this.isInvocationAllowed(method)) {
-//                        throw new javax.ejb.EJBException("Cannot invoke method " + method
-//                                + " on nointerface view of bean " + StatefulSessionComponent.this.getComponentName());
-//
-//                    }
-//                }
-//                // TODO: FIXME: Component shouldn't be attached in a interceptor context that
-//                // runs on remote clients.
-//                context.putPrivateData(Component.class, StatefulSessionComponent.this);
-//                // TODO: attaching as Serializable.class is a bit wicked
-//                context.putPrivateData(Serializable.class, sessionId);
-//                try {
-//                    if (isAsynchronous(method)) {
-//                        return invokeAsynchronous(method, context);
-//                    }
-//                    return context.proceed();
-//                } finally {
-//                    context.putPrivateData(Component.class, null);
-//                    context.putPrivateData(Serializable.class, null);
-//                }
-//            }
-//        };
-//    }
 
     protected Interceptor createInterceptor(final InterceptorFactory factory) {
         if (factory == null)

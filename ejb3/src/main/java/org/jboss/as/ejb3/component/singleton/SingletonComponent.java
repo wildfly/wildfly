@@ -172,7 +172,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
             return beanTimeout;
         }
         //TODO: this should be configurable
-        return new AccessTimeoutDetails(5, TimeUnit.MINUTES);
+        return getDefaultAccessTimeout();
     }
 
     @Override
