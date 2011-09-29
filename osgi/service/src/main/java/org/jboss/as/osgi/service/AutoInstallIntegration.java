@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.ChangeEvent;
 import org.jboss.as.osgi.parser.SubsystemState.ChangeType;
-import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
+import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.modules.Module;
@@ -110,7 +110,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         serviceController = context.getController();
         ROOT_LOGGER.debugf("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
 
-        final Map<ServiceName, OSGiModule> pendingServices = new LinkedHashMap<ServiceName, OSGiModule>();
+        final Map<ServiceName, OSGiCapability> pendingServices = new LinkedHashMap<ServiceName, OSGiCapability>();
         try {
             final BundleManagerService bundleManager = injectedBundleManager.getValue();
             final ServiceContainer serviceContainer = serviceController.getServiceContainer();
@@ -124,7 +124,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
 
             injectedSubsystemState.getValue().addObserver(this);
 
-            for (OSGiModule moduleMetaData : injectedSubsystemState.getValue().getModules()) {
+            for (OSGiCapability moduleMetaData : injectedSubsystemState.getValue().getCapabilities()) {
                 ServiceName serviceName = installModule(bundleManager, moduleMetaData);
                 pendingServices.put(serviceName, moduleMetaData);
             }
@@ -143,7 +143,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             builder = serviceTarget.addService(Services.AUTOINSTALL_PROVIDER_COMPLETE, new AbstractService<Void>() {
                 public void start(StartContext context) throws StartException {
                     for (ServiceName serviceName : pendingServices.keySet()) {
-                        OSGiModule moduleMetaData = pendingServices.get(serviceName);
+                        OSGiCapability moduleMetaData = pendingServices.get(serviceName);
                         startBundle(serviceContainer, serviceName, moduleMetaData);
                     }
                     ROOT_LOGGER.debugf("Auto bundles bundles started");
@@ -157,7 +157,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         }
     }
 
-    ServiceName installModule(BundleManagerService bundleManager, OSGiModule moduleMetaData) throws Exception {
+    ServiceName installModule(BundleManagerService bundleManager, OSGiCapability moduleMetaData) throws Exception {
         ModuleIdentifier identifier = moduleMetaData.getIdentifier();
         Integer startLevel = moduleMetaData.getStartLevel();
 
@@ -195,7 +195,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
         return bundleManager.installBundle(serviceTarget, dep);
     }
 
-    void startBundle(final ServiceContainer serviceContainer, ServiceName serviceName, OSGiModule moduleMetaData) {
+    void startBundle(final ServiceContainer serviceContainer, ServiceName serviceName, OSGiCapability moduleMetaData) {
         if (moduleMetaData.getStartLevel() != null) {
             @SuppressWarnings("unchecked")
             ServiceController<Bundle> controller = (ServiceController<Bundle>) serviceContainer.getRequiredService(serviceName);
@@ -276,12 +276,12 @@ class AutoInstallIntegration extends AbstractService<AutoInstallProvider> implem
             return;
 
         SubsystemState.ChangeEvent event = (ChangeEvent) arg;
-        if (event.getType() != ChangeType.MODULE)
+        if (event.getType() != ChangeType.CAPABILITY)
             return;
 
         if (!event.isRemoved()) {
             try {
-                for (final OSGiModule module : injectedSubsystemState.getValue().getModules()) {
+                for (final OSGiCapability module : injectedSubsystemState.getValue().getCapabilities()) {
                     if (module.getIdentifier().toString().equals(event.getId())) {
                         final ServiceName serviceName = installModule(injectedBundleManager.getValue(), module);
 

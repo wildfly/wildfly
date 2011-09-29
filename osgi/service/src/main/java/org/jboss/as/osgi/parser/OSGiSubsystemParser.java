@@ -31,12 +31,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
+import static org.jboss.as.osgi.parser.CommonAttributes.CAPABILITY;
 import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.osgi.parser.CommonAttributes.ENTRIES;
-import static org.jboss.as.osgi.parser.CommonAttributes.MODULE;
-import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTY;
+import static org.jboss.as.osgi.parser.CommonAttributes.FRAMEWORK_PROPERTY;
 import static org.jboss.as.osgi.parser.CommonAttributes.STARTLEVEL;
 import static org.jboss.as.osgi.parser.CommonAttributes.VALUE;
 
@@ -70,13 +69,8 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         address.add(SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME);
         address.protect();
 
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).set(address);
-        // Handle attributes
-        parseActivationAttribute(reader, operation);
-
-        operations.add(operation);
+        ModelNode activation = parseActivationAttribute(reader, address);
+        operations.add(activation);
 
         // Elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -85,18 +79,18 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONFIGURATION: {
-                            ModelNode configurations = parseConfigurationElement(reader, address);
-                            if (configurations != null) {
-                                operations.add(configurations);
-                            }
+                            List<ModelNode> result = parseConfigurationElement(reader, address);
+                            operations.addAll(result);
                             break;
                         }
                         case PROPERTIES: {
-                            operations.addAll(parsePropertiesElement(reader, address, operations));
+                            List<ModelNode> result = parsePropertiesElement(reader, address, operations);
+                            operations.addAll(result);
                             break;
                         }
-                        case MODULES: {
-                            operations.addAll(parseModulesElement(reader, address));
+                        case CAPABILITIES: {
+                            List<ModelNode> result = parseModulesElement(reader, address);
+                            operations.addAll(result);
                             break;
                         }
                         default:
@@ -110,7 +104,10 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         }
     }
 
-    private void parseActivationAttribute(XMLExtendedStreamReader reader, ModelNode addOperation) throws XMLStreamException {
+    private ModelNode parseActivationAttribute(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+        final ModelNode result = new ModelNode();
+        result.get(OP).set(ADD);
+        result.get(OP_ADDR).set(address);
         switch (Namespace.forUri(reader.getNamespaceURI())) {
             case OSGI_1_0: {
                 // Handle attributes
@@ -121,7 +118,7 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case ACTIVATION: {
-                            addOperation.get(ACTIVATION).set(attrValue);
+                            result.get(ACTIVATION).set(attrValue);
                             break;
                         }
                         default:
@@ -133,9 +130,11 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             default:
                 throw unexpectedElement(reader);
         }
+        return result;
     }
 
-    ModelNode parseConfigurationElement(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+    List<ModelNode> parseConfigurationElement(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+
         // Handle attributes
         String pid = null;
         int count = reader.getAttributeCount();
@@ -156,10 +155,14 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         if (pid == null)
             throw missingRequired(reader, Collections.singleton(Attribute.PID));
 
-        final ModelNode rootNode = new ModelNode();
-        rootNode.get(OP).set(ADD);
-        rootNode.get(OP_ADDR).set(address).add(CONFIGURATION, pid);
-        ModelNode configuration = rootNode.get(ENTRIES);
+        ModelNode configuration = new ModelNode();
+        configuration.get(OP).set(ADD);
+        configuration.get(OP_ADDR).set(address).add(CONFIGURATION, pid);
+
+        List<ModelNode> result = new ArrayList<ModelNode>();
+        result.add(configuration);
+
+        ModelNode propNode = configuration.get(ENTRIES);
 
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -169,6 +172,7 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                     if (element == Element.PROPERTY) {
                         // Handle attributes
                         String name = null;
+                        String value = null;
                         count = reader.getAttributeCount();
                         for (int i = 0; i < count; i++) {
                             requireNoNamespaceAttribute(reader, i);
@@ -178,8 +182,12 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                             switch (attribute) {
                                 case NAME: {
                                     name = attrValue;
-                                    if (configuration.has(name))
-                                        throw new XMLStreamException(MESSAGES.propertyAlreadyExists(name), reader.getLocation());
+                                    //if (configuration.has(name))
+                                    //    throw new XMLStreamException(MESSAGES.propertyAlreadyExists(name), reader.getLocation());
+                                    break;
+                                }
+                                case VALUE: {
+                                    value = attrValue;
                                     break;
                                 }
                                 default:
@@ -188,9 +196,12 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                         }
                         if (name == null)
                             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+                        if (value == null)
+                            throw missingRequired(reader, Collections.singleton(Attribute.VALUE));
 
-                        String value = reader.getElementText().trim();
-                        configuration.get(name).set(value);
+                        requireNoContent(reader);
+
+                        propNode.get(name).set(value);
 
                         break;
                     } else {
@@ -202,12 +213,14 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             }
         }
 
-        return rootNode;
+        return result;
     }
 
     List<ModelNode> parsePropertiesElement(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> operations) throws XMLStreamException {
-        List<ModelNode> nodes = new ArrayList<ModelNode>();
+
         requireNoAttributes(reader);
+
+        List<ModelNode> result = new ArrayList<ModelNode>();
 
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -238,10 +251,10 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
                         ModelNode propNode = new ModelNode();
                         propNode.get(OP).set(ADD);
-                        propNode.get(OP_ADDR).set(address).add(PROPERTY, name);
+                        propNode.get(OP_ADDR).set(address).add(FRAMEWORK_PROPERTY, name);
                         propNode.get(VALUE).set(value);
 
-                        nodes.add(propNode);
+                        result.add(propNode);
                         break;
                     } else {
                         throw unexpectedElement(reader);
@@ -252,7 +265,7 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             }
         }
 
-        return nodes;
+        return result;
     }
 
     List<ModelNode> parseModulesElement(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
@@ -264,16 +277,16 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case OSGI_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
-                    if (element == Element.MODULE) {
-                        String identifier = null;
+                    if (element == Element.CAPABILITY) {
+                        String name = null;
                         String start = null;
                         final int count = reader.getAttributeCount();
                         for (int i = 0; i < count; i++) {
                             requireNoNamespaceAttribute(reader, i);
                             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                             switch (attribute) {
-                                case IDENTIFIER: {
-                                    identifier = reader.getAttributeValue(i);
+                                case NAME: {
+                                    name = reader.getAttributeValue(i);
                                     break;
                                 }
                                 case STARTLEVEL: {
@@ -284,12 +297,12 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                                     throw unexpectedAttribute(reader, i);
                             }
                         }
-                        if (identifier == null)
-                            throw missingRequired(reader, Collections.singleton(Attribute.IDENTIFIER));
+                        if (name == null)
+                            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
 
                         ModelNode moduleNode = new ModelNode();
                         moduleNode.get(OP).set(ADD);
-                        moduleNode.get(OP_ADDR).set(address).add(MODULE, identifier);
+                        moduleNode.get(OP_ADDR).set(address).add(CAPABILITY, name);
                         if (start != null)
                             moduleNode.get(STARTLEVEL).set(start);
 
@@ -324,21 +337,23 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
                 writer.writeStartElement(Element.CONFIGURATION.getLocalName());
                 writer.writeAttribute(Attribute.PID.getLocalName(), pid);
 
-                ModelNode properties = configuration.get(pid).get(ENTRIES);
-                for (String propKey : properties.keys()) {
-                    String value = properties.get(propKey).asString();
-                    writer.writeStartElement(Element.PROPERTY.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), propKey);
-                    writer.writeCharacters(value);
-                    writer.writeEndElement();
+                ModelNode entries = configuration.get(pid).get(ENTRIES);
+                if (entries.isDefined()) {
+                    for (String propKey : entries.keys()) {
+                        String propValue = entries.get(propKey).asString();
+                        writer.writeStartElement(Element.PROPERTY.getLocalName());
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), propKey);
+                        writer.writeAttribute(Attribute.VALUE.getLocalName(), propValue);
+                        writer.writeEndElement();
+                    }
                 }
                 writer.writeEndElement();
             }
         }
 
-        if (has(node, PROPERTY)) {
+        if (has(node, FRAMEWORK_PROPERTY)) {
             writer.writeStartElement(Element.PROPERTIES.getLocalName());
-            ModelNode properties = node.get(PROPERTY);
+            ModelNode properties = node.get(FRAMEWORK_PROPERTY);
             for (String key : new TreeSet<String>(properties.keys())) {
                 String val = properties.get(key).get(VALUE).asString();
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
@@ -349,13 +364,13 @@ class OSGiSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             writer.writeEndElement();
         }
 
-        if (has(node, MODULE)) {
-            writer.writeStartElement(Element.MODULES.getLocalName());
-            ModelNode modules = node.get(MODULE);
-            for (String key: modules.keys()) {
+        if (has(node, CAPABILITY)) {
+            writer.writeStartElement(Element.CAPABILITIES.getLocalName());
+            ModelNode modules = node.get(CAPABILITY);
+            for (String key : modules.keys()) {
                 ModelNode moduleNode = modules.get(key);
-                writer.writeEmptyElement(Element.MODULE.getLocalName());
-                writer.writeAttribute(Attribute.IDENTIFIER.getLocalName(), key);
+                writer.writeEmptyElement(Element.CAPABILITY.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), key);
                 if (moduleNode.has(STARTLEVEL)) {
                     writeAttribute(writer, Attribute.STARTLEVEL, moduleNode.require(STARTLEVEL));
                 }

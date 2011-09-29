@@ -75,9 +75,9 @@
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="eager">
-                <modules>
-                    <module identifier="org.osgi.compendium"/>
-                </modules>
+                <capabilities>
+                    <capability name="org.osgi.compendium"/>
+                </capabilities>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
         </profile>

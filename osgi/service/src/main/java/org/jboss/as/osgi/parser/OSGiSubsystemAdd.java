@@ -56,9 +56,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author David Bosschaert
  * @since 11-Sep-2010
  */
-class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
-
-    static final Activation DEFAULT_ACTIVATION = Activation.LAZY;
+class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final OSGiSubsystemAdd INSTANCE = new OSGiSubsystemAdd();
 
@@ -74,6 +72,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
 
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+
         ROOT_LOGGER.activatingSubsystem();
 
         context.addStep(new OperationStepHandler() {
@@ -99,29 +98,27 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descrip
         ROOT_LOGGER.debugf("Activated OSGi Subsystem");
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
-
-        ModelNode node = new ModelNode();
-        node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("osgi.add"));
-        addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);
-        node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-        return node;
-    }
-
-    static void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
-        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("activation"));
-        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        node.get(propType, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DEFAULT).set(DEFAULT_ACTIVATION.toString());
-    }
-
     private Activation getActivationMode(ModelNode operation) {
-        Activation activation = DEFAULT_ACTIVATION;
+        Activation activation = SubsystemState.DEFAULT_ACTIVATION;
         if (operation.has(ACTIVATION)) {
             activation = Activation.valueOf(operation.get(ACTIVATION).asString().toUpperCase());
         }
         return activation;
     }
+
+    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode node = new ModelNode();
+            ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
+            node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.add"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.activation"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.ACTIVATION, ModelDescriptionConstants.DEFAULT).set(SubsystemState.DEFAULT_ACTIVATION.toString());
+            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+            return node;
+        }
+    };
 }

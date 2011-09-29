@@ -300,7 +300,7 @@
         <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
         <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="lazy">
             <configuration pid="org.apache.felix.webconsole.internal.servlet.OsgiManager">
-                <property name="manager.root">jboss-osgi</property>
+                <property name="manager.root" value="jboss-osgi"/>
             </configuration>
             <properties>
                 <!--
@@ -310,55 +310,57 @@
                     http://www.osgi.org/javadoc/r4v42/org/osgi/framework/Constants.html#FRAMEWORK_SYSTEMPACKAGES_EXTRA
                 -->
                 <property name="org.jboss.osgi.system.modules">
-                    org.apache.commons.logging,
-                    org.apache.log4j,
-                    org.jboss.as.osgi,
-                    org.slf4j,
+                org.apache.commons.logging,
+                org.apache.log4j,
+                org.jboss.as.osgi,
+                org.slf4j,
                 </property>
                 <!--
                     Framework environment property identifying extra packages which the system bundle
                     must export from the current execution environment
                 -->
                 <property name="org.osgi.framework.system.packages.extra">
-                    org.apache.commons.logging;version=1.1.1,
-                    org.apache.log4j;version=1.2,
-                    org.jboss.as.osgi.service;version=7.0,
-                    org.jboss.osgi.deployment.interceptor;version=1.0,
-                    org.jboss.osgi.spi.capability;version=1.0,
-                    org.jboss.osgi.spi.util;version=1.0,
-                    org.jboss.osgi.testing;version=1.0,
-                    org.jboss.osgi.vfs;version=1.0,
-                    org.slf4j;version=1.5.10,
+                org.apache.commons.logging;version=1.1.1,
+                org.apache.log4j;version=1.2,
+                org.jboss.as.osgi.service;version=7.0,
+                org.jboss.osgi.deployment.interceptor;version=1.0,
+                org.jboss.osgi.spi.capability;version=1.0,
+                org.jboss.osgi.spi.util;version=1.0,
+                org.jboss.osgi.testing;version=1.0,
+                org.jboss.osgi.vfs;version=1.0,
+                org.slf4j;version=1.5.10,
                 </property>
                 <!-- Specifies the beginning start level of the framework -->
                 <property name="org.osgi.framework.startlevel.beginning">1</property>
             </properties>
-            <modules>
+            <capabilities>
                 <!-- modules registered with the OSGi layer on startup -->
-                <module identifier="javaee.api"/>
-                <module identifier="org.jboss.logging"/>
+                <capability name="javaee.api"/>
+                <capability name="org.jboss.logging"/>
                 <!-- bundles installed on startup -->
-                <module identifier="org.apache.aries.util"/>
-                <module identifier="org.jboss.osgi.webconsole"/>
-                <module identifier="org.osgi.compendium"/>
+                <capability name="org.apache.aries.util"/>
+                <capability name="org.jboss.osgi.webconsole"/>
+                <capability name="org.osgi.compendium"/>
                 <!-- bundles started in startlevel 1 -->
-                <module identifier="org.apache.felix.log" startlevel="1"/>
-                <module identifier="org.jboss.osgi.logging" startlevel="1"/>
-                <module identifier="org.apache.felix.configadmin" startlevel="1"/>
-                <module identifier="org.jboss.as.osgi.configadmin" startlevel="1"/>
+                <capability name="org.apache.felix.log" startlevel="1"/>
+                <capability name="org.jboss.osgi.logging" startlevel="1"/>
+                <capability name="org.apache.felix.configadmin" startlevel="1"/>
+                <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
                 <!-- bundles started in startlevel 2 -->
-                <module identifier="org.apache.aries.jmx" startlevel="2"/>
-                <module identifier="org.apache.felix.eventadmin" startlevel="2"/>
-                <module identifier="org.apache.felix.metatype" startlevel="2"/>
-                <module identifier="org.apache.felix.scr" startlevel="2"/>
-                <module identifier="org.apache.felix.webconsole" startlevel="2"/>
-                <module identifier="org.jboss.osgi.jmx" startlevel="2"/>
-                <module identifier="org.jboss.osgi.http" startlevel="2"/>
+                <capability name="org.apache.aries.jmx" startlevel="2"/>
+                <capability name="org.apache.felix.eventadmin" startlevel="2"/>
+                <capability name="org.apache.felix.metatype" startlevel="2"/>
+                <capability name="org.apache.felix.scr" startlevel="2"/>
+                <capability name="org.apache.felix.webconsole" startlevel="2"/>
+                <capability name="org.jboss.netty" startlevel="2"/>
+                <capability name="org.jboss.osgi.jmx" startlevel="2"/>
+                <capability name="org.jboss.osgi.http" startlevel="2"/>
+                <capability name="org.projectodd.stilts" startlevel="2"/>
                 <!-- bundles started in startlevel 3 -->
-                <module identifier="org.jboss.osgi.blueprint" startlevel="3"/>
-                <module identifier="org.jboss.osgi.webapp" startlevel="3"/>
-                <module identifier="org.jboss.osgi.xerces" startlevel="3"/>
-            </modules>
+                <capability name="org.jboss.osgi.blueprint" startlevel="3"/>
+                <capability name="org.jboss.osgi.webapp" startlevel="3"/>
+                <capability name="org.jboss.osgi.xerces" startlevel="3"/>
+            </capabilities>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
