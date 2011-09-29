@@ -42,23 +42,26 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTION;
+import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
+import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_1;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
@@ -76,6 +79,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * A mapper between an AS server's configuration model and XML representations, particularly {@code standalone.xml}.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class StandaloneXml extends CommonXml {
 
@@ -83,22 +87,34 @@ public class StandaloneXml extends CommonXml {
         super(loader);
     }
 
-    @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList)
             throws XMLStreamException {
         final ModelNode address = new ModelNode().setEmptyList();
 
-        Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
-        if ( !(readerNS == Namespace.DOMAIN_1_0 || readerNS == Namespace.DOMAIN_1_1 )) {
-            throw unexpectedElement(reader);
-        }
         if (Element.forName(reader.getLocalName()) != Element.SERVER) {
             throw unexpectedElement(reader);
         }
-        readServerElement(reader, address, operationList);
+
+        Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
+        switch (readerNS) {
+            case DOMAIN_1_0: {
+                readServerElement_1_0(reader, address, operationList);
+                break;
+            }
+            case DOMAIN_1_1: {
+                readServerElement_1_1(reader, address, operationList);
+                break;
+            }
+            default: {
+              throw unexpectedElement(reader);
+            }
+        }
     }
 
-    private void readServerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+    /**
+     * Read the <server/> element based on version 1.0 of the schema.
+     */
+    private void readServerElement_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
 
         parseNamespaces(reader, address, list);
@@ -150,58 +166,162 @@ public class StandaloneXml extends CommonXml {
 
         // elements - sequence
 
-        Element element = nextElement(reader);
+        Element element = nextElement(reader, DOMAIN_1_0);
         if (element == Element.EXTENSIONS) {
-            parseExtensions(reader, address, list);
-            element = nextElement(reader);
+            parseExtensions(reader, address, DOMAIN_1_0, list);
+            element = nextElement(reader, DOMAIN_1_0);
         }
         // System properties
         if (element == Element.SYSTEM_PROPERTIES) {
-            parseSystemProperties(reader, address, list, true);
-            element = nextElement(reader);
+            parseSystemProperties(reader, address, DOMAIN_1_0, list, true);
+            element = nextElement(reader, DOMAIN_1_0);
         }
         if (element == Element.PATHS) {
-            parsePaths(reader, address, list, true);
-            element = nextElement(reader);
-        }
-
-        if (element == Element.VAULT) {
-            Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
-            if(schemaVer == Namespace.DOMAIN_1_0)
-                throw unexpectedElement(reader);
-
-            parseVault(reader, address, list);
-            element = nextElement(reader);
+            parsePaths(reader, address, DOMAIN_1_0, list, true);
+            element = nextElement(reader, DOMAIN_1_0);
         }
 
         if (element == Element.MANAGEMENT) {
-            parseManagement(reader, address, list, true);
-            element = nextElement(reader);
+            parseManagement(reader, address, DOMAIN_1_0, list, true);
+            element = nextElement(reader, DOMAIN_1_0);
         }
-        // Single profile
+
+        // Single profile - mandatory.
         if (element == Element.PROFILE) {
             parseServerProfile(reader, address, list);
-            element = nextElement(reader);
+            element = nextElement(reader, DOMAIN_1_0);
+        } else {
+            throw missingRequiredElement(reader, Collections.singleton(Element.PROFILE));
         }
+
         // Interfaces
         final Set<String> interfaceNames = new HashSet<String>();
         if (element == Element.INTERFACES) {
-            parseInterfaces(reader, interfaceNames, address, list, true);
-            element = nextElement(reader);
+            parseInterfaces(reader, interfaceNames, address, DOMAIN_1_0, list, true);
+            element = nextElement(reader, DOMAIN_1_0);
         }
         // Single socket binding group
         if (element == Element.SOCKET_BINDING_GROUP) {
-            parseSocketBindingGroup(reader, interfaceNames, address, list);
-            element = nextElement(reader);
+            parseSocketBindingGroup(reader, interfaceNames, address, DOMAIN_1_0, list);
+            element = nextElement(reader, DOMAIN_1_0);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseDeployments(reader, address, list, true);
-            element = nextElement(reader);
+            parseDeployments(reader, address, DOMAIN_1_0, list, true);
+            element = nextElement(reader, DOMAIN_1_0);
         }
 
         if (element != null) {
             throw unexpectedElement(reader);
         }
+    }
+
+    /**
+     * Read the <server/> element based on version 1.1 of the schema.
+     */
+    private void readServerElement_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
+        String serverName = null;
+
+        // attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            switch (Namespace.forUri(reader.getAttributeNamespace(i))) {
+                case NONE: {
+                    final String value = reader.getAttributeValue(i);
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            serverName = value;
+                            break;
+                        }
+                        default:
+                            throw unexpectedAttribute(reader, i);
+                    }
+                    break;
+                }
+                case XML_SCHEMA_INSTANCE: {
+                    switch (Attribute.forName(reader.getAttributeLocalName(i))) {
+                        case SCHEMA_LOCATION: {
+                            parseSchemaLocations(reader, address, list, i);
+                            break;
+                        }
+                        case NO_NAMESPACE_SCHEMA_LOCATION: {
+                            // todo, jeez
+                            break;
+                        }
+                        default: {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        if (serverName == null) {
+            serverName = getDefaultName();
+        }
+        setServerName(address, list, serverName);
+
+        // elements - sequence
+
+        Element element = nextElement(reader, DOMAIN_1_1);
+        if (element == Element.EXTENSIONS) {
+            parseExtensions(reader, address, DOMAIN_1_1, list);
+            element = nextElement(reader, DOMAIN_1_1);
+        }
+        // System properties
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, DOMAIN_1_1, list, true);
+            element = nextElement(reader, DOMAIN_1_1);
+        }
+        if (element == Element.PATHS) {
+            parsePaths(reader, address, DOMAIN_1_1, list, true);
+            element = nextElement(reader, DOMAIN_1_1);
+        }
+
+        if (element == Element.VAULT) {
+            parseVault(reader, address, DOMAIN_1_1, list);
+            element = nextElement(reader, DOMAIN_1_1);
+        }
+
+        if (element == Element.MANAGEMENT) {
+            parseManagement(reader, address, DOMAIN_1_1, list, true);
+            element = nextElement(reader, DOMAIN_1_1);
+        }
+        // Single profile - mandatory.
+        if (element == Element.PROFILE) {
+            parseServerProfile(reader, address, list);
+            element = nextElement(reader, DOMAIN_1_1);
+        } else {
+            throw missingRequiredElement(reader, Collections.singleton(Element.PROFILE));
+        }
+
+        // Interfaces
+        final Set<String> interfaceNames = new HashSet<String>();
+        if (element == Element.INTERFACES) {
+            parseInterfaces(reader, interfaceNames, address, DOMAIN_1_1, list, true);
+            element = nextElement(reader, DOMAIN_1_1);
+        }
+        // Single socket binding group
+        if (element == Element.SOCKET_BINDING_GROUP) {
+            parseSocketBindingGroup(reader, interfaceNames, address, DOMAIN_1_1, list);
+            element = nextElement(reader, DOMAIN_1_1);
+        }
+        if (element == Element.DEPLOYMENTS) {
+            parseDeployments(reader, address, DOMAIN_1_1, list, true);
+            element = nextElement(reader, DOMAIN_1_1);
+        }
+
+        if (element != null) {
+            throw unexpectedElement(reader);
+        }
+    }
 
         // for (;;) {
         // switch (reader.nextTag()) {
@@ -221,10 +341,9 @@ public class StandaloneXml extends CommonXml {
         // default: throw new IllegalStateException();
         // }
         // }
-    }
 
     private void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces,
-            final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+            final ModelNode address, final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> socketBindings = new HashSet<String>();
 
         // Handle attributes
@@ -287,21 +406,22 @@ public class StandaloneXml extends CommonXml {
 
         // Handle elements
         while (reader.nextTag() != END_ELEMENT) {
-                final Element element = Element.forName(reader.getLocalName());
-                switch (element) {
-                    case SOCKET_BINDING: {
-                        // FIXME JBAS-8825
-                        final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
-                        if (socketBindings.contains(bindingName)) {
-                            throw new XMLStreamException("socket-binding " + bindingName + " already declared",
-                                    reader.getLocation());
-                        }
-                        socketBindings.add(bindingName);
-                        break;
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SOCKET_BINDING: {
+                    // FIXME JBAS-8825
+                    final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
+                    if (socketBindings.contains(bindingName)) {
+                        throw new XMLStreamException("socket-binding " + bindingName + " already declared",
+                                reader.getLocation());
                     }
-                    default:
-                        throw unexpectedElement(reader);
+                    socketBindings.add(bindingName);
+                    break;
                 }
+                default:
+                    throw unexpectedElement(reader);
+            }
         }
     }
 
@@ -313,9 +433,6 @@ public class StandaloneXml extends CommonXml {
         // Content
         final Set<String> configuredSubsystemTypes = new HashSet<String>();
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.UNKNOWN) {
-                throw unexpectedElement(reader);
-            }
             if (Element.forName(reader.getLocalName()) != Element.SUBSYSTEM) {
                 throw unexpectedElement(reader);
             }
@@ -350,7 +467,6 @@ public class StandaloneXml extends CommonXml {
         }
     }
 
-    @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context)
             throws XMLStreamException {
 
