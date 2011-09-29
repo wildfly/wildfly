@@ -22,20 +22,22 @@
 
 package org.jboss.as.web;
 
-import java.util.List;
-import java.util.Locale;
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.services.path.AbstractPathService;
@@ -62,7 +64,14 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
     private WebVirtualHostAdd() {
         //
     }
+    @Override
+    protected void populateModel(final ModelNode operation, final Resource resource) {
+        final ModelNode model = resource.getModel();
 
+        populateModel(operation, model);
+        WebConfigurationHandlerUtils.initializeHost(resource, model);
+    }
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.get(Constants.ALIAS).set(operation.get(Constants.ALIAS));
         model.get(Constants.ACCESS_LOG).set(operation.get(Constants.ACCESS_LOG));
@@ -74,6 +83,7 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
         model.get(Constants.ENABLE_WELCOME_ROOT).set(welcome);
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -91,6 +101,7 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
             serviceBuilder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name, Constants.ACCESS_LOG), String.class, service.getAccessLogPathInjector());
         }
         if (operation.hasDefined(Constants.REWRITE)) {
+            // there is a list of rule-n from the management logic
             service.setRewrite(operation.get(Constants.REWRITE).clone());
         }
         if (operation.hasDefined(Constants.SSO)) {

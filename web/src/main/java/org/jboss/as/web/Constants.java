@@ -36,8 +36,10 @@ interface Constants {
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CHECK_INTERVAL = "check-interval";
     String CIPHER_SUITE = "cipher-suite";
+    String CONFIGURATION = "configuration";
     String CONDITION = "condition";
     String CONNECTOR = "connector";
+    String CONTAINER = "container";
     String CONTAINER_CONFIG = "configuration";
     String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     String DEFAULT_WEB_MODULE = "default-web-module";
