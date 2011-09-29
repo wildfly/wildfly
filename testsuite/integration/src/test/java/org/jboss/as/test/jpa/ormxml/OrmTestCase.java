@@ -63,7 +63,7 @@ public class OrmTestCase {
     private static final String orm_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<entity-mappings xmlns=\"http://java.sun.com/xml/ns/persistence/orm\" version=\"2.0\">" +
-            "<entity class=\"Employee\"/>" +
+            "<entity class=\"org.jboss.as.test.jpa.ormxml.Employee\"/>" +
             "</entity-mappings>"
         ;
 
