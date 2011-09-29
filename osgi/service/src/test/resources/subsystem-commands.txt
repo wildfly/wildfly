@@ -1,0 +1,6 @@
+/subsystem=osgi:read-resource-description(recursive=true)
+
+/subsystem=osgi:read-resource(recursive=true)
+
+/subsystem=osgi/capability=xxx:add(startlevel=5)
+/subsystem=osgi/capability=xxx:read-attribute(name=startlevel)

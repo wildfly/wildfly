@@ -147,29 +147,29 @@ public class SubsystemStateTestCase {
         };
         state.addObserver(o);
 
-        Assert.assertEquals("Precondition", 0, state.getModules().size());
+        Assert.assertEquals("Precondition", 0, state.getCapabilities().size());
 
         Assert.assertEquals("Precondition", 0, arguments.size());
         ModuleIdentifier id = ModuleIdentifier.fromString("hi");
-        SubsystemState.OSGiModule m = new SubsystemState.OSGiModule(id, 3);
-        state.addModule(m);
+        SubsystemState.OSGiCapability m = new SubsystemState.OSGiCapability(id, 3);
+        state.addCapability(m);
 
         Assert.assertEquals(1, arguments.size());
         SubsystemState.ChangeEvent event = (SubsystemState.ChangeEvent) arguments.get(0);
-        assertEventEquals(id.toString(), false, SubsystemState.ChangeType.MODULE, event);
+        assertEventEquals(id.toString(), false, SubsystemState.ChangeType.CAPABILITY, event);
 
-        Assert.assertEquals(Collections.singletonList(m), state.getModules());
+        Assert.assertEquals(Collections.singletonList(m), state.getCapabilities());
 
-        Assert.assertNull(state.removeModule("abc"));
-        Assert.assertEquals(Collections.singletonList(m), state.getModules());
+        Assert.assertNull(state.removeCapability("abc"));
+        Assert.assertEquals(Collections.singletonList(m), state.getCapabilities());
 
-        Assert.assertEquals(m, state.removeModule("hi"));
+        Assert.assertEquals(m, state.removeCapability("hi"));
 
         Assert.assertEquals(2, arguments.size());
         SubsystemState.ChangeEvent event2 = (SubsystemState.ChangeEvent) arguments.get(1);
-        assertEventEquals(id.toString(), true, SubsystemState.ChangeType.MODULE, event2);
+        assertEventEquals(id.toString(), true, SubsystemState.ChangeType.CAPABILITY, event2);
 
-        Assert.assertEquals(0, state.getModules().size());
+        Assert.assertEquals(0, state.getCapabilities().size());
     }
 
     @Test

@@ -34,28 +34,31 @@ import org.jboss.dmr.ModelNode;
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiPropertyRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
-    static final OSGiPropertyRemove INSTANCE = new OSGiPropertyRemove();
+public class OSGiCapabilityRemove extends AbstractRemoveStepHandler {
+    static final OSGiCapabilityRemove INSTANCE = new OSGiCapabilityRemove();
 
-    private OSGiPropertyRemove() {
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelNode node = new ModelNode();
-        node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(OSGiSubsystemProviders.getResourceBundle(locale).getString("property.remove"));
-        node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-        node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-        return node;
+    private OSGiCapabilityRemove() {
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.PROPERTY).asString();
+        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CAPABILITY).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
-            subsystemState.setProperty(propName, null);
+            subsystemState.removeCapability(identifier);
         }
     }
+
+    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode node = new ModelNode();
+            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
+            node.get(ModelDescriptionConstants.DESCRIPTION).set(OSGiSubsystemProviders.getResourceBundle(locale).getString("capability.remove"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
+            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+            return node;
+        }
+    };
 }

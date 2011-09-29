@@ -140,14 +140,12 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
- * @version $Revision: 1.1 $
  */
 @RunWith(Arquillian.class)
 public class ParseAndMarshalModelsTestCase {
@@ -156,10 +154,10 @@ public class ParseAndMarshalModelsTestCase {
     public static Archive<?> getDeployment() {
         return ShrinkWrapUtils.createJavaArchive("bogus.jar", ParseAndMarshalModelsTestCase.class.getPackage())
                 .add(new Asset() {
-                            public InputStream openStream() {
-                                return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.domain-controller\n\n".getBytes());
-                            }
-                        }, "META-INF/MANIFEST.MF");
+                    public InputStream openStream() {
+                        return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.domain-controller\n\n".getBytes());
+                    }
+                 }, "META-INF/MANIFEST.MF");
     }
 
     private ServiceContainer serviceContainer;
@@ -267,39 +265,38 @@ public class ParseAndMarshalModelsTestCase {
 
     private void fixupOSGiStandalone(ModelNode node1, ModelNode node2) {
         //These multiline properties get extra indentation when marshalled. Put them on one line to compare properly
-        node1.get("subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("subsystem", "osgi", "property", "org.jboss.osgi.system.modules").asString()));
-        node2.get("subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("subsystem", "osgi", "property", "org.jboss.osgi.system.modules").asString()));
-        node1.get("subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").asString()));
-        node2.get("subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").asString()));
+        node1.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node2.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node1.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
     }
 
     private void fixupOSGiDomain(ModelNode node1, ModelNode node2) {
         //These multiline properties get extra indentation when marshalled. Put them on one line to compare properly
-        node1.get("profile", "default", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").asString()));
-        node2.get("profile", "default", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").asString()));
-        node1.get("profile", "default", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").asString()));
-        node2.get("profile", "default", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").asString()));
+        node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "default", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
 
-        node1.get("profile", "ha", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").asString()));
-        node2.get("profile", "ha", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "property", "org.jboss.osgi.system.modules").asString()));
-        node1.get("profile", "ha", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").asString()));
-        node2.get("profile", "ha", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "property", "org.osgi.framework.system.packages.extra").asString()));
+        node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.jboss.osgi.system.modules").asString()));
+        node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node1.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
+        node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").set(convertToSingleLine(node2.get("profile", "ha", "subsystem", "osgi", "framework-property", "org.osgi.framework.system.packages.extra").asString()));
     }
 
     private String convertToSingleLine(String value) {
         //Reformat the string so it works better in ParseAndMarshalModelsTestCase
-        value.replace('\r', ' ');
-        value.replace('\n', ' ');
         String[] values = value.split(",");
         StringBuilder formattedValue = new StringBuilder();
         boolean first = true;
         for (String val : values) {
+            val = val.trim();
             if (!first) {
                 formattedValue.append(", ");
             } else {
                 first = false;
             }
-            formattedValue.append(val.trim());
+            formattedValue.append(val);
         }
         return formattedValue.toString();
     }

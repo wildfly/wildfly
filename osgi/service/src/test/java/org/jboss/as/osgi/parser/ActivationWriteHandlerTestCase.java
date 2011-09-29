@@ -56,7 +56,7 @@ public class ActivationWriteHandlerTestCase {
         Mockito.when(resource.getModel()).thenReturn(targetNode);
         Mockito.when(context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS)).thenReturn(resource);
 
-        ActivationWriteHandler handler = new ActivationWriteHandler();
+        ActivationAttributeHandler handler = new ActivationAttributeHandler();
 
         ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.VALUE).set(Activation.LAZY.toString().toLowerCase());
@@ -67,8 +67,8 @@ public class ActivationWriteHandlerTestCase {
         Assert.assertEquals(Activation.LAZY.toString().toLowerCase(), targetNode.get(CommonAttributes.ACTIVATION).asString());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testHandlerEagerActivate() throws Exception {
         ModelNode targetNode = new ModelNode();
         targetNode.get(CommonAttributes.ACTIVATION).set("lazy");
@@ -87,7 +87,7 @@ public class ActivationWriteHandlerTestCase {
             }
         }).when(context).addStep((OperationStepHandler) Mockito.any(), Mockito.eq(Stage.RUNTIME));
 
-        ActivationWriteHandler handler = new ActivationWriteHandler();
+        ActivationAttributeHandler handler = new ActivationAttributeHandler();
 
         ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.VALUE).set(Activation.EAGER.toString().toLowerCase());
@@ -100,7 +100,7 @@ public class ActivationWriteHandlerTestCase {
         // Now test the runtime piece...
         ServiceRegistry registry = Mockito.mock(ServiceRegistry.class);
         ServiceController svcCtrl = Mockito.mock(ServiceController.class);
-        Mockito.when(registry.getRequiredService(Services.AUTOINSTALL_PROVIDER)).thenReturn(svcCtrl);
+        Mockito.when(registry.getRequiredService(Services.FRAMEWORK_ACTIVE)).thenReturn(svcCtrl);
 
         OperationContext context2 = Mockito.mock(OperationContext.class);
         Mockito.when(context2.getServiceRegistry(true)).thenReturn(registry);
