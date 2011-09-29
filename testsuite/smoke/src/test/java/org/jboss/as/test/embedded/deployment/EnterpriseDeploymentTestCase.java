@@ -227,6 +227,10 @@ public class EnterpriseDeploymentTestCase {
     }
 
     private void awaitCompletion(ProgressObject progress, long timeout) throws InterruptedException {
+        DeploymentStatus status = progress.getDeploymentStatus();
+        if (status.isCompleted())
+            return;
+
         final CountDownLatch latch = new CountDownLatch(1);
         progress.addProgressListener(new ProgressListener() {
             public void handleProgressEvent(ProgressEvent event) {
@@ -236,7 +240,8 @@ public class EnterpriseDeploymentTestCase {
                 }
             }
         });
-        if (latch.await(timeout, TimeUnit.MILLISECONDS) == false)
+
+        if (!status.isCompleted() && latch.await(timeout, TimeUnit.MILLISECONDS) == false)
             throw new IllegalStateException("Deployment not completed: " + progress);
     }
 
