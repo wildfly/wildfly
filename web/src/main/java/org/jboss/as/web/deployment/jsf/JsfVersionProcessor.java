@@ -45,7 +45,6 @@ public class JsfVersionProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
 
         if (metaData == null) {
@@ -75,12 +74,12 @@ public class JsfVersionProcessor implements DeploymentUnitProcessor {
             if ((param.getParamName().equals(WAR_BUNDLES_JSF_IMPL_PARAM) &&
                     (param.getParamValue() != null) &&
                     (param.getParamValue().toLowerCase().equals("true")))) {
-                JsfVersionMarker.setVersion(topLevelDeployment, JsfVersionMarker.WAR_BUNDLES_JSF_IMPL);
+                JsfVersionMarker.setVersion(deploymentUnit, JsfVersionMarker.WAR_BUNDLES_JSF_IMPL);
                 break; // WAR_BUNDLES_JSF_IMPL always wins
             }
 
             if (param.getParamName().equals(JSF_CONFIG_NAME_PARAM)) {
-                JsfVersionMarker.setVersion(topLevelDeployment, param.getParamValue());
+                JsfVersionMarker.setVersion(deploymentUnit, param.getParamValue());
             }
         }
     }
