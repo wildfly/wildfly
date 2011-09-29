@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -54,15 +55,15 @@ public class OSGiConfigurationAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(CommonAttributes.ENTRIES).set(operation.get(CommonAttributes.ENTRIES));
+        model.get(Constants.ENTRIES).set(operation.get(Constants.ENTRIES));
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        ModelNode entries = operation.get(CommonAttributes.ENTRIES);
-        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CONFIGURATION).asString();
+        ModelNode entries = operation.get(Constants.ENTRIES);
+        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(Constants.CONFIGURATION).asString();
         Dictionary<String, String> dictionary = new Hashtable<String, String>();
         for (String key : entries.keys()) {
             dictionary.put(key, entries.get(key).asString());
@@ -76,7 +77,7 @@ public class OSGiConfigurationAdd extends AbstractAddStepHandler {
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
-        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CONFIGURATION).asString();
+        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(Constants.CONFIGURATION).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
             subsystemState.removeConfiguration(pid);
@@ -91,11 +92,11 @@ public class OSGiConfigurationAdd extends AbstractAddStepHandler {
             ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.add"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(
                     resbundle.getString("configuration.entries"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
             node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
             return node;
         }

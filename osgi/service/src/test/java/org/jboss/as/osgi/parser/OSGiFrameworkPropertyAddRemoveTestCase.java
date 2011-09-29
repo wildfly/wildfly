@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -47,9 +48,9 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
 
         ModelNode address = new ModelNode();
         address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(CommonAttributes.FRAMEWORK_PROPERTY, "PropertyX"));
+        address.add(new ModelNode().set(Constants.FRAMEWORK_PROPERTY, "PropertyX"));
         ModelNode data = new ModelNode();
-        data.get(CommonAttributes.VALUE).set("hi");
+        data.get(Constants.VALUE).set("hi");
         ModelNode op = getAddOperation(address, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
@@ -80,9 +81,9 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
 
         ModelNode address = new ModelNode();
         address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(CommonAttributes.FRAMEWORK_PROPERTY, "PropertyX"));
+        address.add(new ModelNode().set(Constants.FRAMEWORK_PROPERTY, "PropertyX"));
         ModelNode data = new ModelNode();
-        data.get(CommonAttributes.VALUE).set("hi");
+        data.get(Constants.VALUE).set("hi");
         ModelNode op = getAddOperation(address, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
@@ -96,7 +97,7 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
 
     private ModelNode getAddOperation(ModelNode address, ModelNode existing) {
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        op.get(CommonAttributes.VALUE).set(existing.get(CommonAttributes.VALUE));
+        op.get(Constants.VALUE).set(existing.get(Constants.VALUE));
         return op;
     }
 }

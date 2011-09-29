@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -41,9 +42,9 @@ import org.junit.Test;
  * @author David Bosschaert
  */
 public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
-    // Sample subsystem configuration
-    private static final String SUBSYSTEM_XML_1 =
-        "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='lazy'>" +
+
+    private static final String SUBSYSTEM_XML_1_1 =
+        "<subsystem xmlns='urn:jboss:domain:osgi:1.1' activation='lazy'>" +
         "  <!-- Some Comment -->" +
         "  <configuration pid='Pid1'>" +
         "    <property name='org.acme.key1' value='val 1'/>" +
@@ -64,13 +65,35 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         "  </capabilities>" +
         "</subsystem>";
 
+    private static final String SUBSYSTEM_XML_1_0 =
+            "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='lazy'>" +
+            "  <!-- Some Comment -->" +
+            "  <configuration pid='Pid1'>" +
+            "    <property name='org.acme.key1'>val 1</property>" +
+            "  </configuration>" +
+            "  <configuration pid='Pid2'>" +
+            "    <property name='propname'>propval</property>" +
+            "  </configuration>" +
+            "  <properties>" +
+            "    <property name='prop1'>val1</property>" +
+            "    <property name='prop2'>" +
+            "       val2a," +
+            "       val2b," +
+            "    </property>" +
+            "  </properties>" +
+            "  <modules>" +
+            "    <module identifier='org.acme.module2' startlevel='1'/>" +
+            "    <module identifier='org.acme.module1'/>" +
+            "  </modules>" +
+            "</subsystem>";
+
     public OSGiSubsystemTestCase() {
         super(OSGiExtension.SUBSYSTEM_NAME, new OSGiExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return SUBSYSTEM_XML_1;
+        return SUBSYSTEM_XML_1_1;
     }
 
     @Test
@@ -96,7 +119,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testParseSubsystemWithConfiguration() throws Exception {
         String subsystemXml =
-            "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='lazy'>" +
+            "<subsystem xmlns='urn:jboss:domain:osgi:1.1' activation='lazy'>" +
             "  <configuration pid='org.acme.MyPid'>" +
             "    <property name='propname' value='propval'/>" +
             "  </configuration>" +
@@ -111,18 +134,16 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode addSubsystem = operations.get(0);
         Assert.assertEquals(ModelDescriptionConstants.ADD, addSubsystem.get(ModelDescriptionConstants.OP).asString());
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
-        Assert.assertEquals("lazy", addSubsystem.get(CommonAttributes.ACTIVATION).asString());
+        Assert.assertEquals("lazy", addSubsystem.get(Constants.ACTIVATION).asString());
 
-        checkData(operations, 1, CommonAttributes.CONFIGURATION, "org.acme.MyPid",
-                CommonAttributes.ENTRIES, "{\"propname\" => \"propval\"}");
-        checkData(operations, 2, CommonAttributes.CONFIGURATION, "org.acme.MyOtherPid",
-                CommonAttributes.ENTRIES, "{\"prop.name\" => \"prop.val\"}");
+        checkData(operations, 1, Constants.CONFIGURATION, "org.acme.MyPid", Constants.ENTRIES, "{\"propname\" => \"propval\"}");
+        checkData(operations, 2, Constants.CONFIGURATION, "org.acme.MyOtherPid", Constants.ENTRIES, "{\"prop.name\" => \"prop.val\"}");
     }
 
     @Test
     public void testParseSubsystemWithProperties() throws Exception {
         String subsystemXml =
-            "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='eager'>" +
+            "<subsystem xmlns='urn:jboss:domain:osgi:1.1' activation='eager'>" +
             "  <properties>" +
             "    <property name='org.acme.myProperty'>" +
             "      hi ho" +
@@ -139,18 +160,16 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode addSubsystem = operations.get(0);
         Assert.assertEquals(ModelDescriptionConstants.ADD, addSubsystem.get(ModelDescriptionConstants.OP).asString());
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
-        Assert.assertEquals("eager", addSubsystem.get(CommonAttributes.ACTIVATION).asString());
+        Assert.assertEquals("eager", addSubsystem.get(Constants.ACTIVATION).asString());
 
-        checkData(operations, 1, CommonAttributes.FRAMEWORK_PROPERTY, "org.acme.myProperty",
-                CommonAttributes.VALUE, "hi ho");
-        checkData(operations, 2, CommonAttributes.FRAMEWORK_PROPERTY, "org.acme.myProperty2",
-                CommonAttributes.VALUE, "hi.ho");
+        checkData(operations, 1, Constants.FRAMEWORK_PROPERTY, "org.acme.myProperty", Constants.VALUE, "hi ho");
+        checkData(operations, 2, Constants.FRAMEWORK_PROPERTY, "org.acme.myProperty2", Constants.VALUE, "hi.ho");
     }
 
     @Test
     public void testParseSubsystemWithCapabilities() throws Exception {
         String subsystemXml =
-            "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='lazy'>" +
+            "<subsystem xmlns='urn:jboss:domain:osgi:1.1' activation='lazy'>" +
             "  <capabilities>" +
             "    <capability name='org.acme.module1'/>" +
             "    <capability name='org.acme.module2' startlevel='1'/>" +
@@ -164,10 +183,8 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(ModelDescriptionConstants.ADD, addSubsystem.get(ModelDescriptionConstants.OP).asString());
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
 
-        checkData(operations, 1, CommonAttributes.CAPABILITY, "org.acme.module1",
-                CommonAttributes.STARTLEVEL, "undefined");
-        checkData(operations, 2, CommonAttributes.CAPABILITY, "org.acme.module2",
-                CommonAttributes.STARTLEVEL, "1");
+        checkData(operations, 1, Constants.CAPABILITY, "org.acme.module1",  Constants.STARTLEVEL, "undefined");
+        checkData(operations, 2, Constants.CAPABILITY, "org.acme.module2", Constants.STARTLEVEL, "1");
     }
 
     @Test
@@ -183,17 +200,31 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testReadWriteSubsystem() throws Exception {
+    public void testReadWriteNamespace10() throws Exception {
         KernelServices services = installInController(new AdditionalInitialization() {
             @Override
             protected Type getType() {
                 return Type.MANAGEMENT;
             }
-        }, SUBSYSTEM_XML_1);
+        }, SUBSYSTEM_XML_1_0);
         ModelNode model = services.readWholeModel();
 
         String marshalled = outputModel(model);
-        Assert.assertEquals(normalizeXML(SUBSYSTEM_XML_1), normalizeXML(marshalled));
+        Assert.assertEquals(normalizeXML(SUBSYSTEM_XML_1_1), normalizeXML(marshalled));
+    }
+
+    @Test
+    public void testReadWriteNamespace11() throws Exception {
+        KernelServices services = installInController(new AdditionalInitialization() {
+            @Override
+            protected Type getType() {
+                return Type.MANAGEMENT;
+            }
+        }, SUBSYSTEM_XML_1_1);
+        ModelNode model = services.readWholeModel();
+
+        String marshalled = outputModel(model);
+        Assert.assertEquals(normalizeXML(SUBSYSTEM_XML_1_1), normalizeXML(marshalled));
     }
 
     @Test
@@ -203,13 +234,12 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
             protected Type getType() {
                 return Type.MANAGEMENT;
             }
-        }, SUBSYSTEM_XML_1);
+        }, SUBSYSTEM_XML_1_1);
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
         describeOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.DESCRIBE);
         describeOp.get(ModelDescriptionConstants.OP_ADDR).set(
-            PathAddress.pathAddress(
-                PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME)).toModelNode());
+                PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
         KernelServices servicesB = installInController(new AdditionalInitialization() {

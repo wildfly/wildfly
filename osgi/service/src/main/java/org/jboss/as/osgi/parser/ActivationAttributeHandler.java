@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -45,7 +46,7 @@ public class ActivationAttributeHandler implements OperationStepHandler {
         Activation val = Activation.valueOf(operation.require(ModelDescriptionConstants.VALUE).asString().toUpperCase());
 
         ModelNode node = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        node.get(CommonAttributes.ACTIVATION).set(val.toString().toLowerCase());
+        node.get(Constants.ACTIVATION).set(val.toString().toLowerCase());
 
         if (val == Activation.EAGER) {
             context.addStep(new OperationStepHandler() {

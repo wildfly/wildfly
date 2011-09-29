@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -52,15 +53,15 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(CommonAttributes.VALUE).set(operation.get(CommonAttributes.VALUE));
+        model.get(Constants.VALUE).set(operation.get(Constants.VALUE));
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.FRAMEWORK_PROPERTY).asString();
-        String propValue = model.get(CommonAttributes.VALUE).asString();
+        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(Constants.FRAMEWORK_PROPERTY).asString();
+        String propValue = model.get(Constants.VALUE).asString();
 
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
@@ -70,7 +71,7 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.FRAMEWORK_PROPERTY).asString();
+        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(Constants.FRAMEWORK_PROPERTY).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
             subsystemState.setProperty(propName, null);
@@ -85,9 +86,9 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
             ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.add"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
             node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
             return node;
         }

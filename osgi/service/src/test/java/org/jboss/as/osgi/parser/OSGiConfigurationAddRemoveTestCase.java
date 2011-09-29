@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,11 +47,11 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
 
         ModelNode address = new ModelNode();
         address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(CommonAttributes.CONFIGURATION, "org.acme.pid1"));
+        address.add(new ModelNode().set(Constants.CONFIGURATION, "org.acme.pid1"));
         ModelNode data = new ModelNode();
         ModelNode entries = new ModelNode();
         entries.get("mykey").set("myval");
-        data.get(CommonAttributes.ENTRIES).set(entries);
+        data.get(Constants.ENTRIES).set(entries);
         ModelNode op = getAddOperation(address, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
@@ -85,11 +86,11 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
 
         ModelNode address = new ModelNode();
         address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(CommonAttributes.CONFIGURATION, "org.acme.pid1"));
+        address.add(new ModelNode().set(Constants.CONFIGURATION, "org.acme.pid1"));
         ModelNode data = new ModelNode();
         ModelNode entries = new ModelNode();
         entries.get("mykey").set("myval");
-        data.get(CommonAttributes.ENTRIES).set(entries);
+        data.get(Constants.ENTRIES).set(entries);
         ModelNode op = getAddOperation(address, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
@@ -103,8 +104,8 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
 
     private ModelNode getAddOperation(ModelNode address, ModelNode model) {
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        if (model.hasDefined(CommonAttributes.ENTRIES)) {
-            op.get(CommonAttributes.ENTRIES).set(model.get(CommonAttributes.ENTRIES));
+        if (model.hasDefined(Constants.ENTRIES)) {
+            op.get(Constants.ENTRIES).set(model.get(Constants.ENTRIES));
         }
         return op;
     }
