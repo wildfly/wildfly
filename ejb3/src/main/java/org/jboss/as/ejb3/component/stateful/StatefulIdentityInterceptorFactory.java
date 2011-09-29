@@ -27,7 +27,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import java.io.Serializable;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -72,7 +72,7 @@ public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
                     //SessionIdHolder as the other side
                     return other.equals(new SessionIdHolder(sessionIdReference.get()));
                 } else if(other instanceof SessionIdHolder) {
-                    return sessionIdReference.get().equals(((SessionIdHolder)other).sessionId);
+                    return Arrays.equals(sessionIdReference.get(), ((SessionIdHolder)other).sessionId);
                 } else {
                     return false;
                 }
@@ -89,9 +89,9 @@ public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
     }
 
     private static class SessionIdHolder {
-        private final Serializable sessionId;
+        private final byte[] sessionId;
 
-        public SessionIdHolder(final Serializable sessionId) {
+        public SessionIdHolder(final byte[] sessionId) {
             this.sessionId = sessionId;
         }
     }

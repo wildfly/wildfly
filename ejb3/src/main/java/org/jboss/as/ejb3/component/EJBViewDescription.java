@@ -84,7 +84,7 @@ public class EJBViewDescription extends ViewDescription {
             return super.createInjectionSource(serviceName);
         } else {
             final EJBComponentDescription componentDescription = getComponentDescription();
-            EEModuleDescription desc = componentDescription.getModuleDescription();
+            final EEModuleDescription desc = componentDescription.getModuleDescription();
             return new RemoteViewInjectionSource(serviceName, desc.getApplicationName(), desc.getModuleName(), desc.getDistinctName(), componentDescription.getComponentName(), getViewClassName() , componentDescription.isStateful());
         }
     }
