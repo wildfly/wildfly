@@ -52,7 +52,7 @@ public class DataSourceBean {
     @Resource(lookup = "java:app/DataSource")
     private DataSource dataSource3;
 
-    @Resource(name="DataSourceBean/dataSource3")
+    @Resource(name="org.jboss.as.test.datasourcedefinition.DataSourceBean/dataSource3")
     private DataSource dataSource4;
 
 
