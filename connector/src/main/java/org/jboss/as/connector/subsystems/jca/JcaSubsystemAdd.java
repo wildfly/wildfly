@@ -58,6 +58,7 @@ import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.bootstrapcontext.BaseCloneableBootstrapContext;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.core.workmanager.WorkManagerImpl;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
@@ -150,14 +151,17 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
         WorkManager wm = new WorkManagerImpl();
 
         final WorkManagerService wmService = new WorkManagerService(wm);
-        newControllers.add(serviceTarget
-                .addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
-                .addDependency(ThreadsServices.EXECUTOR.append(SHORT_RUNNING_THREADS), Executor.class, wmService.getExecutorShortInjector())
-                .addDependency(ThreadsServices.EXECUTOR.append(LONG_RUNNING_THREADS), Executor.class, wmService.getExecutorLongInjector())
-                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
+        ServiceBuilder builder = serviceTarget
+                .addService(ConnectorServices.WORKMANAGER_SERVICE, wmService);
+        if (operation.get(LONG_RUNNING_THREADS).isDefined() && operation.get(LONG_RUNNING_THREADS).asBoolean()) {
+            builder.addDependency(ThreadsServices.EXECUTOR.append(LONG_RUNNING_THREADS), Executor.class, wmService.getExecutorLongInjector());
+        } else {
+            builder.addDependency(ThreadsServices.EXECUTOR.append(SHORT_RUNNING_THREADS), Executor.class, wmService.getExecutorShortInjector());
+        }
+        builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
                 .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-                .install());
+                .setInitialMode(Mode.ACTIVE);
+        newControllers.add(builder.install());
 
         CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
         final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
