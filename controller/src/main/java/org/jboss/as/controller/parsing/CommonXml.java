@@ -92,6 +92,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
@@ -141,6 +142,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
 
@@ -1050,13 +1052,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected ModelNode parseProperties(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    protected ModelNode parseProperties(final XMLExtendedStreamReader reader, final Namespace expectedNs) throws XMLStreamException {
 
         final ModelNode properties = new ModelNode();
         while (reader.nextTag() != END_ELEMENT) {
-            if (Namespace.forUri(reader.getNamespaceURI()) != Namespace.DOMAIN_1_0) {
-                throw unexpectedElement(reader);
-            }
+            requireNamespace(reader, expectedNs);
             if (Element.forName(reader.getLocalName()) != Element.PROPERTY) {
                 throw unexpectedElement(reader);
             }
@@ -1202,12 +1202,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         reader.discardRemainder();
     }
 
-    protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> updates,
+    protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final Namespace expectedNs, final List<ModelNode> updates,
             final Set<String> jvmNames) throws XMLStreamException {
-        parseJvm(reader, parentAddress, updates, jvmNames, false);
+        parseJvm(reader, parentAddress, expectedNs, updates, jvmNames, false);
     }
 
-    protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> updates,
+    protected void parseJvm(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final Namespace expectedNs, final List<ModelNode> updates,
             final Set<String> jvmNames, final boolean server) throws XMLStreamException {
 
         // Handle attributes
@@ -1323,6 +1323,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         boolean hasJvmOptions = false;
         boolean hasEnvironmentVariables = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case HEAP: {
@@ -1354,7 +1355,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                     }
                     updates.add(Util.getWriteAttributeOperation(address, JVMHandlers.JVM_ENV_VARIABLES,
-                            parseProperties(reader)));
+                            parseProperties(reader, expectedNs)));
                     hasEnvironmentVariables = true;
                     break;
                 }
@@ -1362,12 +1363,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     if (hasJvmOptions) {
                         throw new XMLStreamException(element.getLocalName() + " already declared", reader.getLocation());
                     }
-                    parseJvmOptions(reader, address, updates);
+                    parseJvmOptions(reader, address, expectedNs, updates);
                     hasJvmOptions = true;
                     break;
                 }
                 default:
-                    throw ParseUtils.unexpectedElement(reader);
+                    throw unexpectedElement(reader);
             }
         }
     }
@@ -1412,7 +1413,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         // Handle elements
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
     }
 
     private void parsePermgen(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
@@ -1455,7 +1456,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         // Handle elements
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
     }
 
     private void parseStack(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
@@ -1486,7 +1487,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SIZE));
         }
         // Handle elements
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
     }
 
     private void parseAgentLib(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
@@ -1517,7 +1518,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
         }
         // Handle elements
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
     }
 
     private void parseAgentPath(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
@@ -1548,7 +1549,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
         }
         // Handle elements
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
     }
 
     private void parseJavaagent(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
@@ -1579,10 +1580,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.VALUE));
         }
         // Handle elements
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
     }
 
-    private void parseJvmOptions(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates)
+    private void parseJvmOptions(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> updates)
             throws XMLStreamException {
 
         // Handle attributes
@@ -1590,6 +1591,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         // Handle elements
         boolean optionSet = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             if (element == Element.OPTION) {
                 // Handle attributes
@@ -1623,13 +1625,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 updates.add(update);
                 optionSet = true;
                 // Handle elements
-                ParseUtils.requireNoContent(reader);
+                requireNoContent(reader);
             } else {
-                throw ParseUtils.unexpectedElement(reader);
+                throw unexpectedElement(reader);
             }
         }
         if (!optionSet) {
-            throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.OPTION));
+            throw missingRequiredElement(reader, Collections.singleton(Element.OPTION));
         }
     }
 
@@ -1865,16 +1867,16 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         break;
                     }
                     default:
-                        throw ParseUtils.unexpectedAttribute(reader, i);
+                        throw unexpectedAttribute(reader, i);
                 }
             }
         }
         if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.REF));
+            throw missingRequired(reader, Collections.singleton(Attribute.REF));
         }
 
         // Handle elements
-        ParseUtils.requireNoContent(reader);
+        requireNoContent(reader);
 
         ModelNode update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_GROUP, name);
 
