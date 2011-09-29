@@ -40,11 +40,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class WarJbossStructureClassFileTransformerTestCase {
 
-    public static final String CLASS_NAME = "TestAA";
+    public static final String CLASS_NAME = "org.jboss.as.test.deployment.classloading.ear.TestAA";
 
-    public static final String TRANSFORMER1_CLASS_NAME_CANONICAL = "org/jboss/as/testsuite/integration/deployment/classloading/ear/DummyClassFileTransformer1";
+    public static final String TRANSFORMER1_CLASS_NAME_CANONICAL = "org/jboss/as/test/deployment/classloading/ear/DummyClassFileTransformer1";
 
-    public static final String TRANSFORMER2_CLASS_NAME_CANONICAL = "org/jboss/as/testsuite/integration/deployment/classloading/ear/DummyClassFileTransformer2";
+    public static final String TRANSFORMER2_CLASS_NAME_CANONICAL = "org/jboss/as/test/deployment/classloading/ear/DummyClassFileTransformer2";
 
     @Deployment
     public static Archive<?> deploy() {
