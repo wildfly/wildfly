@@ -34,7 +34,6 @@ import java.util.Map;
 public enum Attribute {
     UNKNOWN(null),
     ACTIVATION("activation"),
-    IDENTIFIER("identifier"),
     NAME("name"),
     PID("pid"),
     STARTLEVEL("startlevel"),

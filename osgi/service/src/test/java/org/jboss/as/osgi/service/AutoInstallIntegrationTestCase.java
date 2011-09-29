@@ -28,7 +28,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.jboss.as.osgi.parser.SubsystemState;
-import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
+import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.logmanager.Level;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
@@ -62,28 +62,28 @@ public class AutoInstallIntegrationTestCase {
         // First we create a test version of AutoInstallIntegration that intercepts the installModule and startBundle
         // methods so that it can be checked that they are called.
         final ServiceName dummyService = ServiceName.of("dummy");
-        final List<OSGiModule> installedModules = new ArrayList<SubsystemState.OSGiModule>();
-        final List<OSGiModule> startedBundles = new ArrayList<SubsystemState.OSGiModule>();
+        final List<OSGiCapability> installedModules = new ArrayList<SubsystemState.OSGiCapability>();
+        final List<OSGiCapability> startedBundles = new ArrayList<SubsystemState.OSGiCapability>();
         AutoInstallIntegration aii = new AutoInstallIntegration() {
             @Override
-            ServiceName installModule(BundleManagerService bundleManager, OSGiModule moduleMetaData) {
+            ServiceName installModule(BundleManagerService bundleManager, OSGiCapability moduleMetaData) {
                 installedModules.add(moduleMetaData);
                 return dummyService;
             }
 
             @Override
-            void startBundle(ServiceContainer serviceContainer, ServiceName serviceName, OSGiModule moduleMetaData) {
+            void startBundle(ServiceContainer serviceContainer, ServiceName serviceName, OSGiCapability moduleMetaData) {
                 startedBundles.add(moduleMetaData);
             }
         };
 
         // Now we set up the SubsystemState object.
-        List<OSGiModule> modules = new ArrayList<SubsystemState.OSGiModule>();
+        List<OSGiCapability> modules = new ArrayList<SubsystemState.OSGiCapability>();
         ModuleIdentifier id = ModuleIdentifier.fromString("abc");
-        OSGiModule module = new OSGiModule(id, null);
+        OSGiCapability module = new OSGiCapability(id, null);
         modules.add(module);
         SubsystemState state = Mockito.mock(SubsystemState.class);
-        Mockito.when(state.getModules()).thenReturn(modules);
+        Mockito.when(state.getCapabilities()).thenReturn(modules);
 
         // Provide some mock injected services into AutoInstallIntegration
         aii.injectedSubsystemState.setValue(new ImmediateValue<SubsystemState>(state));
@@ -107,7 +107,7 @@ public class AutoInstallIntegrationTestCase {
         aii.serviceController = controller;
 
         // Do the actual Observer invocation on the AutoInstallIntegration object.
-        SubsystemState.ChangeEvent event = new SubsystemState.ChangeEvent(SubsystemState.ChangeType.MODULE, false, id.toString());
+        SubsystemState.ChangeEvent event = new SubsystemState.ChangeEvent(SubsystemState.ChangeType.CAPABILITY, false, id.toString());
         aii.update(null, event);
 
         Assert.assertEquals("The new module should have been installed in the system",
@@ -173,7 +173,7 @@ public class AutoInstallIntegrationTestCase {
         try {
             AutoInstallIntegration aii = new AutoInstallIntegration();
             ModuleIdentifier id = ModuleIdentifier.fromString("testing");
-            SubsystemState.ChangeEvent event = new SubsystemState.ChangeEvent(SubsystemState.ChangeType.MODULE, true, id.toString());
+            SubsystemState.ChangeEvent event = new SubsystemState.ChangeEvent(SubsystemState.ChangeType.CAPABILITY, true, id.toString());
             aii.update(null, event);
             Assert.assertEquals("There should not be any error logs", 0, testHandler.records.size());
         } finally {
@@ -192,7 +192,7 @@ public class AutoInstallIntegrationTestCase {
         try {
             AutoInstallIntegration aii = new AutoInstallIntegration();
             ModuleIdentifier id = ModuleIdentifier.fromString("testing");
-            SubsystemState.ChangeEvent event = new SubsystemState.ChangeEvent(SubsystemState.ChangeType.MODULE, false, id.toString());
+            SubsystemState.ChangeEvent event = new SubsystemState.ChangeEvent(SubsystemState.ChangeType.CAPABILITY, false, id.toString());
             Assert.assertEquals("Precondition", 0, testHandler.records.size());
 
             aii.update(null, event);

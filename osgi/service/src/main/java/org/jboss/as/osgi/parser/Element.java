@@ -35,8 +35,8 @@ public enum Element {
     // must be first
     UNKNOWN(null),
     CONFIGURATION("configuration"),
-    MODULES("modules"),
-    MODULE("module"),
+    CAPABILITIES("capabilities"),
+    CAPABILITY("capability"),
     PROPERTIES("properties"),
     PROPERTY("property"),
     ;

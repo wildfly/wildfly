@@ -38,7 +38,7 @@ import org.jboss.osgi.framework.Services;
  *
  * @author David Bosschaert
  */
-public class ActivationWriteHandler implements OperationStepHandler {
+public class ActivationAttributeHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -51,8 +51,7 @@ public class ActivationWriteHandler implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceController<?> svc = context.getServiceRegistry(true).getRequiredService(Services.AUTOINSTALL_PROVIDER);
-                    // This will kick off the OSGi subsystem...
+                    ServiceController<?> svc = context.getServiceRegistry(true).getRequiredService(Services.FRAMEWORK_ACTIVE);
                     svc.setMode(Mode.ACTIVE);
                     context.completeStep();
                 }

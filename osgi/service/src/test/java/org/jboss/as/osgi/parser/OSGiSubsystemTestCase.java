@@ -46,10 +46,10 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='lazy'>" +
         "  <!-- Some Comment -->" +
         "  <configuration pid='Pid1'>" +
-        "    <property name='org.acme.key1'>val 1</property>" +
+        "    <property name='org.acme.key1' value='val 1'/>" +
         "  </configuration>" +
         "  <configuration pid='Pid2'>" +
-        "    <property name='propname'>propval</property>" +
+        "    <property name='propname' value='propval'/>" +
         "  </configuration>" +
         "  <properties>" +
         "    <property name='prop1'>val1</property>" +
@@ -58,10 +58,10 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         "       val2b," +
         "    </property>" +
         "  </properties>" +
-        "  <modules>" +
-        "    <module identifier='org.acme.module1'/>" +
-        "    <module identifier='org.acme.module2' startlevel='1'/>" +
-        "  </modules>" +
+        "  <capabilities>" +
+        "    <capability name='org.acme.module2' startlevel='1'/>" +
+        "    <capability name='org.acme.module1'/>" +
+        "  </capabilities>" +
         "</subsystem>";
 
     public OSGiSubsystemTestCase() {
@@ -94,14 +94,14 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testParseSubsystemWithCasConfiguration() throws Exception {
+    public void testParseSubsystemWithConfiguration() throws Exception {
         String subsystemXml =
             "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='lazy'>" +
             "  <configuration pid='org.acme.MyPid'>" +
-            "    <property name='propname'>propval</property>" +
+            "    <property name='propname' value='propval'/>" +
             "  </configuration>" +
             "  <configuration pid='org.acme.MyOtherPid'>" +
-            "    <property name='prop.name'>prop.val</property>" +
+            "    <property name='prop.name' value='prop.val'/>" +
             "  </configuration>" +
             "</subsystem>";
 
@@ -141,20 +141,20 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
         Assert.assertEquals("eager", addSubsystem.get(CommonAttributes.ACTIVATION).asString());
 
-        checkData(operations, 1, CommonAttributes.PROPERTY, "org.acme.myProperty",
+        checkData(operations, 1, CommonAttributes.FRAMEWORK_PROPERTY, "org.acme.myProperty",
                 CommonAttributes.VALUE, "hi ho");
-        checkData(operations, 2, CommonAttributes.PROPERTY, "org.acme.myProperty2",
+        checkData(operations, 2, CommonAttributes.FRAMEWORK_PROPERTY, "org.acme.myProperty2",
                 CommonAttributes.VALUE, "hi.ho");
     }
 
     @Test
-    public void testParseSubsystemWithModules() throws Exception {
+    public void testParseSubsystemWithCapabilities() throws Exception {
         String subsystemXml =
             "<subsystem xmlns='urn:jboss:domain:osgi:1.0' activation='lazy'>" +
-            "  <modules>" +
-            "    <module identifier='org.acme.module1'/>" +
-            "    <module identifier='org.acme.module2' startlevel='1'/>" +
-            "  </modules>" +
+            "  <capabilities>" +
+            "    <capability name='org.acme.module1'/>" +
+            "    <capability name='org.acme.module2' startlevel='1'/>" +
+            "  </capabilities>" +
             "</subsystem>";
 
         List<ModelNode> operations = parse(subsystemXml);
@@ -164,9 +164,9 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(ModelDescriptionConstants.ADD, addSubsystem.get(ModelDescriptionConstants.OP).asString());
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
 
-        checkData(operations, 1, CommonAttributes.MODULE, "org.acme.module1",
+        checkData(operations, 1, CommonAttributes.CAPABILITY, "org.acme.module1",
                 CommonAttributes.STARTLEVEL, "undefined");
-        checkData(operations, 2, CommonAttributes.MODULE, "org.acme.module2",
+        checkData(operations, 2, CommonAttributes.CAPABILITY, "org.acme.module2",
                 CommonAttributes.STARTLEVEL, "1");
     }
 

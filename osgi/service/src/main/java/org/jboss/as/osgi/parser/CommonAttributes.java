@@ -28,11 +28,13 @@ package org.jboss.as.osgi.parser;
 interface CommonAttributes {
 
     String ACTIVATION = "activation";
+    String CAPABILITY = "capability";
     String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
-    String MODULE = "module";
-    String PROPERTY = "property";
-    String STARTLEVEL = "start";
+    String FRAMEWORK_PROPERTY = "framework-property";
+    String NAME = "name";
+    String PID = "pid";
+    String STARTLEVEL = "startlevel";
     String VALUE = "value";
 
 }
