@@ -32,6 +32,8 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import javax.ejb.EJBException;
 
 /**
+ *
+ *
  * @author Stuart Douglas
  */
 public class EntityBeanReentrancyInterceptor implements Interceptor{

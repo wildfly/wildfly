@@ -30,7 +30,6 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverContext;
@@ -46,6 +45,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import javax.ejb.AsyncResult;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -67,7 +67,6 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
     private final List<EJBReceiverContext> contexts = new CopyOnWriteArrayList<EJBReceiverContext>();
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
-    private final InjectedValue<ServiceModuleLoader> moduleLoader = new InjectedValue<ServiceModuleLoader>();
 
     private final boolean allowPassByReference;
     private volatile ObjectCloner cloner;
@@ -100,13 +99,13 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         final Method method = view.getMethod(invokedMethod.getName(), DescriptorUtils.methodDescriptor(invokedMethod));
 
         final Object[] parameters;
-        if(invocation.getParameters() == null) {
+        if (invocation.getParameters() == null) {
             parameters = EMPTY_OBJECT_ARRAY;
         } else {
-        parameters = new Object[invocation.getParameters().length];
-        for (int i = 0; i < parameters.length; ++i) {
-            parameters[i] = clone(method.getParameterTypes()[i], invocation.getParameters()[i]);
-        }
+            parameters = new Object[invocation.getParameters().length];
+            for (int i = 0; i < parameters.length; ++i) {
+                parameters[i] = clone(method.getParameterTypes()[i], invocation.getParameters()[i],allowPassByReference);
+            }
         }
 
 
@@ -118,14 +117,24 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         context.putPrivateData(Component.class, ejb.getEjbComponent());
         context.putPrivateData(ComponentView.class, view);
         final Object result = view.invoke(context);
-        final Object clonedResult = clone(method.getReturnType(), result);
-        return new ImmediateFuture(clonedResult);
+        if (result instanceof AsyncResult) {
+            final Object futureResult = ((Future) result).get();
+            //this will always be cloned, as we cannot reliably determine the target type
+            return new AsyncResult<Object>(new AsyncResult<Object>(clone(futureResult.getClass(), futureResult, false)));
+        }
+
+        //we do not marshal the return type unless we have to, the spec only says we have to
+        //pass parameters by reference
+        //TODO: investigate the implications of this further
+        final Object clonedResult = clone(method.getReturnType(), result, true);
+        return new AsyncResult<Object>(clonedResult);
     }
 
-    private Object clone(final Class<?> target, final Object object) {
-        if(object == null) {
+    private Object clone(final Class<?> target, final Object object, final boolean allowPassByReference) {
+        if (object == null) {
             return null;
         }
+
         try {
             if (allowPassByReference && target.isAssignableFrom(object.getClass())) {
                 return object;
