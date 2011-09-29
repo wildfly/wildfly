@@ -68,11 +68,10 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
             return; // Skip non web deployments
         }
 
-        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-        final String jsfVersion = JsfVersionMarker.getVersion(topLevelDeployment);
+        final String jsfVersion = JsfVersionMarker.getVersion(deploymentUnit);
 
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
 
