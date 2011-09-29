@@ -66,15 +66,17 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
         ServiceController sc = registry.getService(serviceName);
         if (sc != null) {
             StrictMaxPoolConfig smpc = StrictMaxPoolConfig.class.cast(sc.getValue());
-            if (StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.equals(attributeName)) {
-                int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.validateResolvedOperation(model).asInt();
-                smpc.setMaxPoolSize(maxPoolSize);
-            } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.equals(attributeName)) {
-                long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.validateResolvedOperation(model).asLong();
-                smpc.setTimeout(timeout);
-            } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.equals(attributeName)) {
-                String timeoutUnit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.validateResolvedOperation(model).asString();
-                smpc.setTimeoutUnit(TimeUnit.valueOf(timeoutUnit));
+            if (smpc != null) {
+                if (StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.equals(attributeName)) {
+                    int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.validateResolvedOperation(model).asInt();
+                    smpc.setMaxPoolSize(maxPoolSize);
+                } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.equals(attributeName)) {
+                    long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.validateResolvedOperation(model).asLong();
+                    smpc.setTimeout(timeout);
+                } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.equals(attributeName)) {
+                    String timeoutUnit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.validateResolvedOperation(model).asString();
+                    smpc.setTimeoutUnit(TimeUnit.valueOf(timeoutUnit));
+                }
             }
         }
     }
@@ -94,6 +96,6 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
 
     @Override
     protected void validateResolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
-        StrictMaxPoolResourceDefinition.ATTRIBUTES.get(attributeName).getValidator().validateResolvedParameter(ModelDescriptionConstants.VALUE, value);
+        // we're going to validate using the AttributeDefinition in applyModelToRuntime, so don't bother here
     }
 }

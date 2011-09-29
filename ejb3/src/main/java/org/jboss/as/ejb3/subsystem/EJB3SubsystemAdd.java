@@ -201,18 +201,15 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         if (model.hasDefined(DEFAULT_MDB_INSTANCE_POOL)) {
-            final String poolName = model.get(DEFAULT_MDB_INSTANCE_POOL).asString();
-            context.addStep(new SetDefaultMDBPool.DefaultMDBPoolConfigServiceUpdateHandler(poolName), OperationContext.Stage.RUNTIME);
+            EJB3SubsystemDefaultPoolWriteHandler.MDB_POOL.updatePoolService(context, model, newControllers);
         }
 
         if (model.hasDefined(DEFAULT_SLSB_INSTANCE_POOL)) {
-            final String poolName = model.get(DEFAULT_SLSB_INSTANCE_POOL).asString();
-            context.addStep(new SetDefaultSLSBPool.DefaultSLSBPoolConfigServiceUpdateHandler(poolName), OperationContext.Stage.RUNTIME);
+            EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL.updatePoolService(context, model, newControllers);
         }
 
         if (model.hasDefined(DEFAULT_RESOURCE_ADAPTER_NAME)) {
-            final String raName = model.get(DEFAULT_RESOURCE_ADAPTER_NAME).asString();
-            context.addStep(new SetDefaultResourceAdapterName.DefaultResourceAdapterNameUpdateHandler(raName), OperationContext.Stage.RUNTIME);
+            DefaultResourceAdapterWriteHandler.INSTANCE.updateDefaultAdapterService(context, model, newControllers);
         }
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
