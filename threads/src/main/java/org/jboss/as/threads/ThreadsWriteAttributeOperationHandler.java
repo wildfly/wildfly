@@ -23,11 +23,13 @@
 package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -43,13 +45,12 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Abstract superclass for write-attribute operation handlers that run on the
- * server.
+ * Abstract superclass for write-attribute operation handlers for the threads subsystem.
  *
  * @author Brian Stansberry
  * @author Alexey Loubyansky
  */
-public abstract class ThreadsWriteAttributeOperationHandler extends WriteAttributeOperationHandler {
+public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWriteAttributeHandler<Boolean> {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
@@ -72,66 +73,21 @@ public abstract class ThreadsWriteAttributeOperationHandler extends WriteAttribu
     }
 
     @Override
-    protected void modelChanged(final OperationContext context, final ModelNode operation,
-                                final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
-
-        boolean restartRequired = false;
-        boolean applyToRuntime = context.getType() == OperationContext.Type.SERVER;
-        ModelNode resolvedValue = null;
-        if (applyToRuntime) {
-            validateResolvedValue(attributeName, newValue);
-            resolvedValue = newValue.resolve();
-            restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue);
-            if (restartRequired) {
-                context.reloadRequired();
-            }
-        }
-
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && applyToRuntime) {
-            ModelNode valueToRestore = currentValue.resolve();
-            try {
-                revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue);
-            } catch (Exception e) {
-                log.errorf(e, String.format("%s caught exception attempting to revert operation %s at address %s",
-                        getClass().getSimpleName(),
-                        operation.require(ModelDescriptionConstants.OP).asString(),
-                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR))));
-            }
-            if (restartRequired) {
-                context.revertReloadRequired();
-            }
-        }
+    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
+        AttributeDefinition attr = attributes.get(name);
+        attr.getValidator().validateParameter(VALUE, value);
     }
 
-    /**
-     * If a resolved value validator was passed to the constructor, uses it to validate the value.
-     * Subclasses can alter this behavior.
-     */
+   @Override
     protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
         AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateResolvedParameter(name, value);
+        attr.getValidator().validateResolvedParameter(VALUE, value);
     }
 
-
-    /**
-     * Hook to allow subclasses to make runtime changes to effect the attribute value change. Runtime changes
-     * should be implemented by calling {@link org.jboss.as.controller.OperationContext#addStep(org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationContext.Stage) adding a new step}
-     * with {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME}.
-     * <p>
-     * This default implementation simply returns {@code true}.
-     * </p>
-     *
-     * @param context the context of the operation
-     * @param operation the operation
-     * @param attributeName the name of the attribute being modified
-     * @param newValue the new value for the attribute
-     * @param currentValue the existing value for the attribute
-     *
-     * @return {@code true} if the server requires restart to effect the attribute
-     *         value change; {@code false} if not
-     */
+    @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-                                           final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
+                                           final String attributeName, final ModelNode newValue,
+                                           final ModelNode currentValue, final HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
         AttributeDefinition attr = runtimeAttributes.get(attributeName);
         if (attr == null) {
             // Not a runtime attribute; restart required
@@ -151,29 +107,18 @@ public abstract class ThreadsWriteAttributeOperationHandler extends WriteAttribu
             } else {
                 // Actually apply the update
                 applyOperation(operation, attributeName, service);
+                handbackHolder.setHandback(Boolean.TRUE);
                 return false;
             }
 
         }
     }
 
-    /**
-     * Hook to allow subclasses to revert runtime changes made in
-     * {@link #applyUpdateToRuntime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, String, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)}.
-     * <p>
-     * This default implementation simply does nothing.
-     * </p>
-     *
-     * @param context the context of the operation
-     * @param operation the operation
-     * @param attributeName the name of the attribute being modified
-     * @param valueToRestore the previous value for the attribute, before this operation was executed
-     * @param valueToRevert the new value for the attribute that should be reverted
-     */
+    @Override
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                          final String attributeName, final ModelNode valueToRestore,
-                                         final ModelNode valueToRevert) throws OperationFailedException {
-        if (runtimeAttributes.containsKey(attributeName)) {
+                                         final ModelNode valueToRevert, final Boolean handback) throws OperationFailedException {
+        if (handback != null && handback.booleanValue() && runtimeAttributes.containsKey(attributeName)) {
             final ServiceController<?> service = getService(context, operation);
             if (service != null && service.getState() == ServiceController.State.UP) {
                 // Create and execute a write-attribute operation that uses the valueToRestore
@@ -190,13 +135,6 @@ public abstract class ThreadsWriteAttributeOperationHandler extends WriteAttribu
             registry.registerReadWriteAttribute(attrName, null, this, flags);
         }
     }
-
-    @Override
-    protected void validateValue(String name, ModelNode value)
-            throws OperationFailedException {
-                AttributeDefinition attr = attributes.get(name);
-                attr.getValidator().validateParameter(name, value);
-            }
 
     protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
