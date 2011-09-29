@@ -21,11 +21,9 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -33,15 +31,13 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.AbstractEjbHomeViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceName;
 
@@ -114,7 +110,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         });
 
         //now we need to figure out if this is a home or object view
-        if(view instanceof AbstractEjbHomeViewDescription) {
+        if (view instanceof AbstractEjbHomeViewDescription) {
             view.getConfigurators().add(new EntityBeanHomeViewConfigurator());
         } else {
             view.getConfigurators().add(new EntityBeanObjectViewConfigurator());
@@ -123,19 +119,15 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
     }
 
 
-
     private void addSynchronizationInterceptor() {
         // we must run before the DefaultFirstConfigurator
         getConfigurators().addFirst(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                final InterceptorFactory interceptorFactory = new ComponentInstanceInterceptorFactory() {
-                    @Override
-                    protected Interceptor create(Component component, InterceptorFactoryContext context) {
-                        return new EntityBeanSynchronizationInterceptor(isReentrant());
-                    }
-                };
-                configuration.addComponentInterceptor(interceptorFactory, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
+                configuration.addComponentInterceptor(EntityBeanSynchronizationInterceptor.FACTORY, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
+                if (!reentrant) {
+                    configuration.addComponentInterceptor(EntityBeanReentrancyInterceptor.FACTORY, InterceptorOrder.Component.REENTRANCY_INTERCEPTOR, false);
+                }
             }
         });
 

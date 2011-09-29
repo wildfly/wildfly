@@ -39,8 +39,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -63,47 +61,6 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
         };
     }
 
-    /**
-     * After the bean is accessed within a tx and the tx has committed, the
-     * association should be gone (and thus it is ready for another tx).
-     */
-    @Test
-    public void testConcurrentTx() throws Exception {
-        final Interceptor interceptor = new StatefulSessionSynchronizationInterceptor();
-        final InterceptorContext context = new InterceptorContext();
-        context.setInterceptors(Arrays.asList(noop()));
-        final StatefulSessionComponent component = mock(StatefulSessionComponent.class);
-        context.putPrivateData(Component.class, component);
-        when(component.getAccessTimeout(null)).thenReturn(defaultAccessTimeout());
-        Cache<StatefulSessionComponentInstance> cache = mock(Cache.class);
-        when(component.getCache()).thenReturn(cache);
-        final TransactionSynchronizationRegistry transactionSynchronizationRegistry = mock(TransactionSynchronizationRegistry.class);
-        when(component.getTransactionSynchronizationRegistry()).thenReturn(transactionSynchronizationRegistry);
-        when(transactionSynchronizationRegistry.getTransactionKey()).thenReturn("TX1");
-        final List<Synchronization> synchronizations = new LinkedList<Synchronization>();
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Synchronization synchronization = (Synchronization) invocation.getArguments()[0];
-                synchronizations.add(synchronization);
-                return null;
-            }
-        }).when(transactionSynchronizationRegistry).registerInterposedSynchronization((Synchronization) any());
-        final StatefulSessionComponentInstance instance = mock(StatefulSessionComponentInstance.class);
-        when(instance.getComponent()).thenReturn(component);
-        context.putPrivateData(ComponentInstance.class, instance);
-
-        interceptor.processInvocation(context);
-
-        when(transactionSynchronizationRegistry.getTransactionKey()).thenReturn("TX2");
-
-        try {
-            interceptor.processInvocation(context);
-            fail("Expected an Exception when invoking SFSB from 2 transactions concurrently");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("is already associated with tx TX1 (current tx TX2)"));
-        }
-    }
 
     /**
      * After the bean is accessed within a tx and the tx has committed, the

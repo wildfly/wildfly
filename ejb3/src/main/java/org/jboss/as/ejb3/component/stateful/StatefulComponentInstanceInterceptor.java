@@ -40,8 +40,9 @@ import java.util.Arrays;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor {
-    private static final Logger log = Logger.getLogger(StatefulComponentInstanceInterceptor.class);
 
+
+    private static final Logger log = Logger.getLogger(StatefulComponentInstanceInterceptor.class);
 
 
     @Override
