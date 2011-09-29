@@ -52,7 +52,7 @@ public class MetadataCompleteCustomDescriptorTestCase extends AbstractCustomDesc
     public void testAnnotated() throws NamingException {
         final InitialContext ctx = new InitialContext();
         try {
-            final AnnotatedGreeterBean bean = (AnnotatedGreeterBean) ctx.lookup("java:global/ejb-descriptor-test/AnnotatedGreeter!org.jboss.as.test.integration.ejb.descriptor.AnnotatedGreeterBean");
+            final AnnotatedGreeterBean bean = (AnnotatedGreeterBean) ctx.lookup("java:global/ejb-descriptor-test/AnnotatedGreeter!org.jboss.as.test.ejb.descriptor.AnnotatedGreeterBean");
             fail("The annotated bean should not be available");
         } catch (NameNotFoundException e) {
             // good

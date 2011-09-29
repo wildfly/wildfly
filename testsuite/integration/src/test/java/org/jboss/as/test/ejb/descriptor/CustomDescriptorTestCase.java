@@ -56,7 +56,7 @@ public class CustomDescriptorTestCase extends AbstractCustomDescriptorTests {
     public void testAnnotated() throws NamingException {
         final InitialContext ctx = new InitialContext();
         try {
-            final AnnotatedGreeterBean bean = (AnnotatedGreeterBean) ctx.lookup("java:global/ejb-descriptor-test/AnnotatedGreeter!AnnotatedGreeterBean");
+            final AnnotatedGreeterBean bean = (AnnotatedGreeterBean) ctx.lookup("java:global/ejb-descriptor-test/AnnotatedGreeter!org.jboss.as.test.ejb.descriptor.AnnotatedGreeterBean");
             final String name = "testAnnotated";
             final String result = bean.greet(name);
             assertEquals("Hi testAnnotated", result);
