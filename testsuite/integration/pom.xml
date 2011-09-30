@@ -162,6 +162,16 @@
                         <server.jvm.args>-Xmx512m -XX:MaxPermSize=129m ${ip.server.stack}</server.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
+		<executions>
+		  <!-- disable default-test execution -->
+		  <execution>
+		    <id>default-test</id>
+		    <goals>
+		      <goal>test</goal>
+		    </goals>
+		    <phase>none</phase>
+		  </execution>
+		</executions>
             </plugin>
 
         </plugins>

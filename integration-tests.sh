@@ -30,7 +30,7 @@ MAVEN_SEARCH_PATH="\
     maven"
 
 # the default arguments
-MVN_OPTIONS="-s tools/maven/conf/settings.xml"
+MVN_OPTIONS="-s ../tools/maven/conf/settings.xml"
 
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
@@ -47,6 +47,66 @@ case "`uname`" in
         darwin=true
         ;;
 esac
+
+#
+# integration testsuite support
+#
+
+#
+CMD_LINE_PARAMS=
+TESTS_SPECIFIED="N"
+# each test module executes a different type of test
+API_TESTS="-Dapi.module"
+BENCHMARK_TESTS="-Dbenchmark.module"
+INTEGRATION_TESTS="-Dintegration.module -Dbasic.integration.tests -Dcompat.integration.tests -Dclustering.integration.tests -Dtimerservice.integration.tests"
+SMOKE_TESTS="-Dintegration.module -Dsmoke.integration.tests"
+SPEC_TESTS="-Dspec.module"
+STRESS_TESTS="-Dstress.module"
+
+#
+# Helper to process command line for test directives
+# - user-specified parameters (allTests, stress-tests, benchmark-tests) are translated into the appropriate
+# maven build profiles and removed from the command line
+# - smoke tests run with build
+#
+process_test_directives() {
+
+  # for each parameter, check for testsuite directives
+  for param in $@
+  do
+    case $param in
+      # if someone specified -DallTests, run all tests except benchmark and
+      -DallTests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $INTEGRATION_TESTS $API_TESTS $SPEC_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # if someone specified -Dbenchmark-tests, run stress tests only
+      -Dbenchmark-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BENCHMARK_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # if someone specified -Dsmoke-tests, run stress tests only
+      -Dsmoke-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $SMOKE_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # if someone specified -Dstress-tests, run stress tests only
+      -Dstress-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $STRESS_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # pass through all other params
+      *)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param"
+        ;;
+    esac
+  done
+
+  # if no tests specified, run smoke tests
+  if [[ $TESTS_SPECIFIED == "N" ]]; then
+    CMD_LINE_PARAMS="$CMD_LINE_PARAMS $SMOKE_TESTS"
+  fi
+}
 
 #
 # Helper to complain.
@@ -153,16 +213,16 @@ main() {
 
     # change to the directory where the script lives so users are not forced
     # to be in the same directory as build.xml
-    cd $DIRNAME
+    cd $DIRNAME/testsuite
 
     MVN_GOAL=$@
     if [ -z "$MVN_GOAL" ]; then
       MVN_GOAL="install"
     fi
 
-    # add smoke integration test directives before calling maven
-    SMOKE_TESTS="-Dintegration.module -Dsmoke.integration.tests"
-    MVN_GOAL="$MVN_GOAL $SMOKE_TESTS"
+    # process test directives before calling maven
+    process_test_directives $MVN_GOAL
+    MVN_GOAL=$CMD_LINE_PARAMS
 
     # export some stuff for maven
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
@@ -175,6 +235,8 @@ main() {
     else
 	  exec $MVN $MVN_OPTIONS $MVN_GOAL
     fi
+
+    cd $DIRNAME
 }
 
 ##

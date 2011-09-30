@@ -29,7 +29,7 @@
     benchmark   - holds all benchmark tests for AS7
     domain      - holds all domain management tests for AS7
     integration - holds all integration tests for AS7
-    stress      - holds all spec tests for AS7
+    spec        - holds all spec tests for AS7
     stress      - holds all stress tests for AS7
 
     All tests should fit into one of these four categories.
@@ -116,6 +116,7 @@
         <!-- Arquillian dependency versions -->
         <version.arquillian_core>1.0.0.CR5</version.arquillian_core>
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
+        <version.xml.maven.plugin>1.0.1-SNAPSHOT</version.xml.maven.plugin>
         <version.saxon>8.7</version.saxon>
     </properties>
 
@@ -128,6 +129,11 @@
                 <version>${version.arquillian_core}</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <version>${version.xml.maven.plugin}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -317,6 +323,7 @@
            Module profiles
            - used to activate modules alone or in combination
            - naming convention: X.module.profile activated by -DX.module
+           - this requires that a default profile be set for each module
 
         -->
         <profile>
@@ -333,6 +340,18 @@
                 <module>integration</module>
                 <module>spec</module>
                 <module>stress</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>api.module.profile</id>
+            <activation>
+                <property>
+                    <name>api.module</name>
+                </property>
+            </activation>
+            <modules>
+                <module>api</module>
             </modules>
         </profile>
 
