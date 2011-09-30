@@ -1,6 +1,5 @@
 
-    <subsystem xmlns="urn:jboss:domain:messaging:1.1">
-        <hornetq-server>
+        <subsystem xmlns="urn:jboss:domain:messaging:1.0">
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
             <journal-file-size>102400</journal-file-size>
             <journal-min-files>2</journal-min-files>
@@ -232,7 +231,4 @@
                  <entry name="topic/test"/>
               </jms-topic>
            </jms-destinations>
-        </hornetq-server>
-
-        <hornetq-server name="empty"/>
-    </subsystem>
+        </subsystem>

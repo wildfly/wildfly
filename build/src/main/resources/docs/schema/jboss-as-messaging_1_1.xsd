@@ -36,7 +36,21 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-      <xs:complexType>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="hornetq-server" type="hornetq-serverType" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="hornetq-serverType">
+      <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+                The configuration of an individual HornetQ Server.
+            ]]>
+          </xs:documentation>
+      </xs:annotation>
       <xs:all>
           <xs:element maxOccurs="1" minOccurs="0" name="name" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="clustered" type="xs:boolean" />
@@ -195,8 +209,16 @@
           </xs:element>
 
       </xs:all>
-      </xs:complexType>
-    </xs:element>
+      <xs:attribute name="name" type="xs:string" use="optional" default="default">
+        <xs:annotation>
+            <xs:documentation>
+                The name to use for this HornetQ Server. Must be unique across all "hornetq-server" elements
+                in the subsystem. So, this attribute is optional with a default value, but if more than
+                one "hornetq-server" element exists, only one can leave this attribute unspecified.
+            </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    </xs:complexType>
 
     <xs:element name="local-bind-address" type="xs:string"/>
     <xs:element name="local-bind-port" type="xs:int"/>

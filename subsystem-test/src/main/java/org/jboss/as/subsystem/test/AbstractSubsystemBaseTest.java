@@ -51,6 +51,22 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
      */
     protected abstract String getSubsystemXml() throws IOException;
 
+
+    /**
+     * Get the subsystem xml with the given id as a string.
+     * <p>
+     * This default implementation returns the result of a call to {@link #readResource(String)}.
+     * </p>
+     *
+     * @param configId the id of the xml configuration
+     *
+     * @return the subsystem xml
+     * @throws IOException
+     */
+    protected String getSubsystemXml(String configId) throws IOException {
+        return readResource(configId);
+    }
+
     /**
      * Validate the marshalled xml.
      *
@@ -64,10 +80,25 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
     @Test
     public void testSubsystem() throws Exception {
+        standardSubsystemTest(null);
+    }
+
+    /**
+     * Tests the ability to create a model from an xml configuration, marshal the model back to xml,
+     * re-read that marshalled model into a new model that matches the first one, execute a "describe"
+     * operation for the model, create yet another model from executing the results of that describe
+     * operation, and compare that model to first model.
+     *
+     * @param configId  id to pass to {@link #getSubsystemXml(String)} to get the configuration; if {@code null}
+     *                  {@link #getSubsystemXml()} will be called
+     *
+     * @throws Exception
+     */
+    protected void standardSubsystemTest(final String configId) throws Exception {
         final AdditionalInitialization additionalInit = createAdditionalInitialization();
 
         // Parse the subsystem xml and install into the first controller
-        final String subsystemXml = getSubsystemXml();
+        final String subsystemXml = configId == null ? getSubsystemXml() : getSubsystemXml(configId);
         final KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
         //Get the model and the persisted xml from the first controller
         final ModelNode modelA = servicesA.readWholeModel();

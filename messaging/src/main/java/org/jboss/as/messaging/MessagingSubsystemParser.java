@@ -34,6 +34,8 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
@@ -102,6 +104,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
@@ -143,6 +146,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
+
         final ModelNode address = new ModelNode();
         address.add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
         address.protect();
@@ -152,17 +156,67 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         subsystemAdd.get(OP_ADDR).set(address);
         list.add(subsystemAdd);
 
-        // TODO deal with child "server" elements in a 1.1 xsd
-
-        processHornetQServer(reader, address, list);
+        final Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
+        switch (schemaVer) {
+            case MESSAGING_1_0:
+                processHornetQServer(reader, address, list, schemaVer);
+                break;
+            case MESSAGING_1_1:
+                processHornetQServers(reader, address, list);
+                break;
+            default:
+                throw unexpectedElement(reader);
+        }
 
     }
 
-    private void processHornetQServer(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list) throws XMLStreamException {
+    private void processHornetQServers(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
+            switch (schemaVer) {
+                case MESSAGING_1_0:
+                case UNKNOWN:
+                    throw ParseUtils.unexpectedElement(reader);
+                default: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch (element) {
+                        case HORNETQ_SERVER:
+                            processHornetQServer(reader, subsystemAddress, list, schemaVer);
+                            break;
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
+                    }
+                }
+            }
+        }
+    }
+
+    private void processHornetQServer(final XMLExtendedStreamReader reader, final ModelNode subsystemAddress, final List<ModelNode> list, Namespace namespace) throws XMLStreamException {
+
+        String hqServerName = null;
+        String elementName = null;
+        switch (namespace) {
+            case MESSAGING_1_0:
+                // We're parsing the 1.0 xsd's <subsystem> element
+                requireNoAttributes(reader);
+                elementName = ModelDescriptionConstants.SUBSYSTEM;
+                break;
+            default: {
+                final int count = reader.getAttributeCount();
+                if (count > 0) {
+                    requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+                    hqServerName = reader.getAttributeValue(0).trim();
+                }
+                elementName = CommonAttributes.HORNETQ_SERVER;
+            }
+        }
+
+        if (hqServerName == null || hqServerName.length() == 0) {
+            hqServerName = "default";
+        }
 
         final ModelNode address = subsystemAddress.clone();
-        // TODO parse the server name from the xml
-        address.add(HORNETQ_SERVER, "default");
+        address.add(HORNETQ_SERVER, hqServerName);
         address.protect();
 
         final ModelNode operation = new ModelNode();
@@ -261,8 +315,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, "server", operation);
                     break;
                 }
+                case HORNETQ_SERVER:
+                    // The end of the hornetq-server element
+                    if (namespace == Namespace.MESSAGING_1_0) {
+                        throw unexpectedEndElement(reader);
+                    }
+                    break;
                 case SUBSYSTEM:
                     // The end of the subsystem element
+                    if (namespace != Namespace.MESSAGING_1_0) {
+                        throw unexpectedEndElement(reader);
+                    }
                     break;
                 default:
                     if (SIMPLE_ROOT_RESOURCE_ELEMENTS.contains(element)) {
@@ -277,7 +340,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         throw ParseUtils.unexpectedElement(reader);
                     }
             }
-        } while (reader.hasNext() && localName.equals(ModelDescriptionConstants.SUBSYSTEM) == false);
+        } while (reader.hasNext() && localName.equals(elementName) == false);
     }
 
     private static void processConnectorServices(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
@@ -1332,13 +1395,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         final ModelNode node = context.getModelNode();
 
         final ModelNode servers = node.require(HORNETQ_SERVER);
-        boolean barf = false;
         for (Property prop : servers.asPropertyList()) {
-            if (barf) {
-                // TODO deal with multiple servers and remove this
-                throw new UnsupportedOperationException("Multiple HornetQ server resources not yet implemented");
-            }
-            barf = true;
             writeHornetQServer(writer, prop.getName(), prop.getValue());
         }
 
@@ -1348,9 +1405,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     private void writeHornetQServer(final XMLExtendedStreamWriter writer, final String serverName, final ModelNode node) throws XMLStreamException {
 
-        // TODO start element and write server name
-//        writer.writeStartElement(Element.HORNETQ_SERVER.getLocalName());
-//        writer.writeAttribute(Attribute.NAME.getLocalName(), serverName);
+        writer.writeStartElement(Element.HORNETQ_SERVER.getLocalName());
+
+        if (!"default".equals(serverName)) {
+            writer.writeAttribute(Attribute.NAME.getLocalName(), serverName);
+        }
 
         for (AttributeDefinition simpleAttribute : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             simpleAttribute.marshallAsElement(node, writer);
@@ -1422,8 +1481,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
            writer.writeEndElement();
         }
 
-        // TODO write end element
-//        writer.writeEndElement();
+        writer.writeEndElement();
     }
 
     private void writeConnectorServices(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
