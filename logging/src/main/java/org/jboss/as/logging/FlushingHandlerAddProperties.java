@@ -22,36 +22,33 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
-import java.util.Set;
-
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 /**
- * Date: 13.07.2011
+ * Date: 23.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class LoggingValidators {
-    private static final LoggingValidators INSTANCE = new LoggingValidators();
-    private final ParametersValidator validator;
+abstract class FlushingHandlerAddProperties<T extends FlushingHandlerService> extends HandlerAddProperties<T> {
 
-    private LoggingValidators() {
-        validator = new ParametersValidator();
-        validator.registerValidator(LEVEL, new LogLevelValidator());
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.populateModel(operation, model);
+        AUTOFLUSH.validateAndSet(operation, model);
     }
 
-    /**
-     * Validates default parameters.
-     *
-     * @param operation the operation to validate.
-     *
-     * @throws OperationFailedException if an invalid value is found.
-     */
-    static void validate(final ModelNode operation) throws OperationFailedException {
-        INSTANCE.validator.validate(operation);
+    @Override
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final T service, final ModelNode model) throws OperationFailedException {
+        final ModelNode autoflush = AUTOFLUSH.validateOperation(model);
+        if (autoflush.isDefined()) {
+            service.setAutoflush(autoflush.asBoolean());
+        }
     }
 }

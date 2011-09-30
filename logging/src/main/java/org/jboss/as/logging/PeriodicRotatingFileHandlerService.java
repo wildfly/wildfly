@@ -38,7 +38,7 @@ import java.util.logging.Level;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class PeriodicRotatingFileHandlerService implements Service<Handler> {
+public final class PeriodicRotatingFileHandlerService implements FlushingHandlerService {
 
     private final InjectedValue<String> fileName = new InjectedValue<String>();
 

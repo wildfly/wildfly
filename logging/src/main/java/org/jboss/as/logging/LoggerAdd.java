@@ -22,20 +22,21 @@
 
 package org.jboss.as.logging;
 
-import java.util.List;
-import java.util.logging.Level;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
+import java.util.logging.Level;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -47,26 +48,22 @@ class LoggerAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        LoggingValidators.validate(operation);
-        final String level = operation.require(CommonAttributes.LEVEL).asString();
-        final ModelNode handlers = operation.hasDefined(CommonAttributes.HANDLERS) ? operation.get(CommonAttributes.HANDLERS) : new ModelNode();
-
-        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(level);
-        model.get(HANDLERS).set(handlers);
+        LEVEL.validateAndSet(operation, model);
+        model.get(HANDLERS).set(operation.get(HANDLERS));
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String level = operation.require(LEVEL).asString();
-        final ModelNode handlers = operation.hasDefined(HANDLERS) ? operation.get(HANDLERS) : new ModelNode();
+        final ModelNode level = LEVEL.validateOperation(model);
+        final ModelNode handlers = model.get(HANDLERS);
 
         final ServiceTarget target = context.getServiceTarget();
         final String loggerName = name;
         try {
             // Install logger service
             final LoggerService service = new LoggerService(loggerName);
-            if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(level));
+            if (level.isDefined()) service.setLevel(Level.parse(level.asString()));
             newControllers.add(target.addService(LogServices.loggerName(loggerName), service)
                     .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
