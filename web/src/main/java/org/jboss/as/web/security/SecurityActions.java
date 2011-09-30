@@ -167,6 +167,7 @@ class SecurityActions {
 
     /**
      * Removes the run as identity
+     *
      * @return the identity removed
      */
     static RunAs popRunAsIdentity() {
@@ -184,4 +185,46 @@ class SecurityActions {
         });
     }
 
+    public static final String AUTH_EXCEPTION_KEY = "org.jboss.security.exception";
+
+    static void clearAuthException() {
+        if (System.getSecurityManager() != null) {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                @Override
+                public Void run() {
+                    SecurityContext sc = getSecurityContext();
+                    if (sc != null)
+                        sc.getData().put(AUTH_EXCEPTION_KEY, null);
+                    return null;
+                }
+            });
+        } else {
+            SecurityContext sc = getSecurityContext();
+            if (sc != null)
+                sc.getData().put(AUTH_EXCEPTION_KEY, null);
+        }
+    }
+
+    static Throwable getAuthException() {
+        if (System.getSecurityManager() != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<Throwable>() {
+
+                @Override
+                public Throwable run() {
+                    SecurityContext sc = getSecurityContext();
+                    Throwable exception = null;
+                    if (sc != null)
+                        exception = (Throwable) sc.getData().get(AUTH_EXCEPTION_KEY);
+                    return exception;
+                }
+            });
+        } else {
+            SecurityContext sc = getSecurityContext();
+            Throwable exception = null;
+            if (sc != null)
+                exception = (Throwable) sc.getData().get(AUTH_EXCEPTION_KEY);
+            return exception;
+        }
+    }
 }
