@@ -84,7 +84,6 @@ REM ************* Execute Batch file only once ***********
 REM ******************************************************
 
 :ExecuteBatch
-echo Calling %1 %2 %3 %4 %5 %6 %7 %8
 
 REM Support for testsuite profile processing
 set CMD_LINE_PARAMS=
@@ -98,17 +97,18 @@ set SMOKE_TESTS=-Dintegration.module -Dsmoke.integration.tests
 set SPEC_TESTS=-Dspec.module
 set STRESS_TESTS=-Dstress.module
 
+set MVN=%1%
 set GOAL=%2
 if "%GOAL%"=="" set GOAL=install
 
 REM process test directives before calling maven
-call :processTestDirectives %1 %GOAL% %3 %4 %5 %6 %7 %8
+call :processTestDirectives %GOAL% %3 %4 %5 %6 %7 %8
 
 REM change to testsuite directory before executing mvn
 cd %DIRNAME%\testsuite
 
-echo Calling (w/ test directives) %CMD_LINE_PARAMS%
-call %CMD_LINE_PARAMS%
+echo Calling ..\%MVN% %CMD_LINE_PARAMS%
+call ..\%MVN% %CMD_LINE_PARAMS%
 
 cd %DIRNAME%
 
