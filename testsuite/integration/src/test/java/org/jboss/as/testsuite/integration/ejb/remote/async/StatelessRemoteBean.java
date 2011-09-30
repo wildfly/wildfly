@@ -33,10 +33,15 @@ import java.util.concurrent.TimeUnit;
  *
  */
 @Stateless
-public class StatelessRemoteBean implements RemoteInterface {
+public class StatelessRemoteBean implements RemoteInterface, LocalInterface {
 
-    public static final CountDownLatch doneLatch = new CountDownLatch(1);
-    public static final CountDownLatch startLatch = new CountDownLatch(1);
+    public static volatile CountDownLatch doneLatch = new CountDownLatch(1);
+    public static volatile CountDownLatch startLatch = new CountDownLatch(1);
+
+    public static void reset() {
+        doneLatch = new CountDownLatch(1);
+        startLatch = new CountDownLatch(1);
+    }
 
     @Asynchronous
     public void modifyArray(final String[] array) {
@@ -53,5 +58,16 @@ public class StatelessRemoteBean implements RemoteInterface {
     @Asynchronous
     public Future<String> hello() {
         return new AsyncResult<String>("hello");
+    }
+
+    @Override
+    public void passByReference(final String[] array) {
+        try {
+            startLatch.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        array[0] = "goodbye";
+        doneLatch.countDown();
     }
 }

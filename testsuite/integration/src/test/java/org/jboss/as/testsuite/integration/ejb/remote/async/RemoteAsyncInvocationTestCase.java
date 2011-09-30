@@ -64,12 +64,24 @@ public class RemoteAsyncInvocationTestCase {
 
     @Test
     public void testRemoteAsyncInvocationByValue() throws Exception {
+        StatelessRemoteBean.reset();
         String[] array = {"hello"};
         RemoteInterface remote = lookup(StatelessRemoteBean.class.getSimpleName(), RemoteInterface.class);
         remote.modifyArray(array);
         StatelessRemoteBean.startLatch.countDown();
         StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS);
         Assert.assertEquals("hello", array[0]);
+    }
+
+    @Test
+    public void testLocalAsyncInvocationByValue() throws Exception {
+        StatelessRemoteBean.reset();
+        String[] array = {"hello"};
+        LocalInterface remote = lookup(StatelessRemoteBean.class.getSimpleName(), LocalInterface.class);
+        remote.passByReference(array);
+        StatelessRemoteBean.startLatch.countDown();
+        StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS);
+        Assert.assertEquals("goodbye", array[0]);
     }
 
     @Test
