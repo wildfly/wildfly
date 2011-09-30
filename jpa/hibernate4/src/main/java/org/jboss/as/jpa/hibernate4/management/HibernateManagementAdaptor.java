@@ -45,7 +45,7 @@ import java.util.Locale;
  */
 public class HibernateManagementAdaptor implements ManagementAdaptor {
 
-    private static final String PROVIDER_LABEL = "jpa-hibernate";
+    private static final String PROVIDER_LABEL = "hibernate-persistence-unit";
     public static final String OPERATION_CLEAR = "clear";
     public static final String OPERATION_SUMMARY = "summary";
     public static final String OPERATION_STATISTICS_ENABLED = "enabled";
