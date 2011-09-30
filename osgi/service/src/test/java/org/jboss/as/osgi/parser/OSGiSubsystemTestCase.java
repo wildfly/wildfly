@@ -31,7 +31,6 @@ import org.jboss.as.controller.OperationContext.Type;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -134,10 +133,10 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode addSubsystem = operations.get(0);
         Assert.assertEquals(ModelDescriptionConstants.ADD, addSubsystem.get(ModelDescriptionConstants.OP).asString());
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
-        Assert.assertEquals("lazy", addSubsystem.get(Constants.ACTIVATION).asString());
+        Assert.assertEquals("lazy", addSubsystem.get(ModelConstants.ACTIVATION).asString());
 
-        checkData(operations, 1, Constants.CONFIGURATION, "org.acme.MyPid", Constants.ENTRIES, "{\"propname\" => \"propval\"}");
-        checkData(operations, 2, Constants.CONFIGURATION, "org.acme.MyOtherPid", Constants.ENTRIES, "{\"prop.name\" => \"prop.val\"}");
+        checkData(operations, 1, ModelConstants.CONFIGURATION, "org.acme.MyPid", ModelConstants.ENTRIES, "{\"propname\" => \"propval\"}");
+        checkData(operations, 2, ModelConstants.CONFIGURATION, "org.acme.MyOtherPid", ModelConstants.ENTRIES, "{\"prop.name\" => \"prop.val\"}");
     }
 
     @Test
@@ -160,10 +159,10 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelNode addSubsystem = operations.get(0);
         Assert.assertEquals(ModelDescriptionConstants.ADD, addSubsystem.get(ModelDescriptionConstants.OP).asString());
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
-        Assert.assertEquals("eager", addSubsystem.get(Constants.ACTIVATION).asString());
+        Assert.assertEquals("eager", addSubsystem.get(ModelConstants.ACTIVATION).asString());
 
-        checkData(operations, 1, Constants.FRAMEWORK_PROPERTY, "org.acme.myProperty", Constants.VALUE, "hi ho");
-        checkData(operations, 2, Constants.FRAMEWORK_PROPERTY, "org.acme.myProperty2", Constants.VALUE, "hi.ho");
+        checkData(operations, 1, ModelConstants.FRAMEWORK_PROPERTY, "org.acme.myProperty", ModelConstants.VALUE, "hi ho");
+        checkData(operations, 2, ModelConstants.FRAMEWORK_PROPERTY, "org.acme.myProperty2", ModelConstants.VALUE, "hi.ho");
     }
 
     @Test
@@ -183,8 +182,8 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(ModelDescriptionConstants.ADD, addSubsystem.get(ModelDescriptionConstants.OP).asString());
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
 
-        checkData(operations, 1, Constants.CAPABILITY, "org.acme.module1",  Constants.STARTLEVEL, "undefined");
-        checkData(operations, 2, Constants.CAPABILITY, "org.acme.module2", Constants.STARTLEVEL, "1");
+        checkData(operations, 1, ModelConstants.CAPABILITY, "org.acme.module1",  ModelConstants.STARTLEVEL, "undefined");
+        checkData(operations, 2, ModelConstants.CAPABILITY, "org.acme.module2", ModelConstants.STARTLEVEL, "1");
     }
 
     @Test

@@ -114,7 +114,7 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case ACTIVATION: {
-                            result.get(Constants.ACTIVATION).set(attrValue);
+                            result.get(ModelConstants.ACTIVATION).set(attrValue);
                             break;
                         }
                         default:
@@ -153,12 +153,12 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
 
         ModelNode configuration = new ModelNode();
         configuration.get(OP).set(ADD);
-        configuration.get(OP_ADDR).set(address).add(Constants.CONFIGURATION, pid);
+        configuration.get(OP_ADDR).set(address).add(ModelConstants.CONFIGURATION, pid);
 
         List<ModelNode> result = new ArrayList<ModelNode>();
         result.add(configuration);
 
-        ModelNode entries = configuration.get(Constants.ENTRIES);
+        ModelNode entries = configuration.get(ModelConstants.ENTRIES);
 
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
@@ -241,8 +241,8 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
 
                         ModelNode propNode = new ModelNode();
                         propNode.get(OP).set(ADD);
-                        propNode.get(OP_ADDR).set(address).add(Namespace11.Constants.FRAMEWORK_PROPERTY, name);
-                        propNode.get(Constants.VALUE).set(value);
+                        propNode.get(OP_ADDR).set(address).add(ModelConstants.FRAMEWORK_PROPERTY, name);
+                        propNode.get(ModelConstants.VALUE).set(value);
 
                         result.add(propNode);
                         break;
@@ -292,9 +292,9 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
 
                         ModelNode moduleNode = new ModelNode();
                         moduleNode.get(OP).set(ADD);
-                        moduleNode.get(OP_ADDR).set(address).add(Namespace11.Constants.CAPABILITY, identifier);
+                        moduleNode.get(OP_ADDR).set(address).add(ModelConstants.CAPABILITY, identifier);
                         if (startlevel != null)
-                            moduleNode.get(Constants.STARTLEVEL).set(startlevel);
+                            moduleNode.get(ModelConstants.STARTLEVEL).set(startlevel);
 
                         nodes.add(moduleNode);
 

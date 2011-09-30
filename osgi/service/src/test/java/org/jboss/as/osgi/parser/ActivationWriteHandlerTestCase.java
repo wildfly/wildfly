@@ -30,7 +30,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -50,7 +49,7 @@ public class ActivationWriteHandlerTestCase {
     @Test
     public void testHandlerLazy() throws Exception {
         ModelNode targetNode = new ModelNode();
-        targetNode.get(Constants.ACTIVATION).set("eager");
+        targetNode.get(ModelConstants.ACTIVATION).set("eager");
 
         OperationContext context = Mockito.mock(OperationContext.class);
         Resource resource = Mockito.mock(Resource.class);
@@ -65,14 +64,14 @@ public class ActivationWriteHandlerTestCase {
 
         Mockito.verify(context).completeStep();
 
-        Assert.assertEquals(Activation.LAZY.toString().toLowerCase(), targetNode.get(Constants.ACTIVATION).asString());
+        Assert.assertEquals(Activation.LAZY.toString().toLowerCase(), targetNode.get(ModelConstants.ACTIVATION).asString());
     }
 
     @Test
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testHandlerEagerActivate() throws Exception {
         ModelNode targetNode = new ModelNode();
-        targetNode.get(Constants.ACTIVATION).set("lazy");
+        targetNode.get(ModelConstants.ACTIVATION).set("lazy");
 
         OperationContext context = Mockito.mock(OperationContext.class);
         Resource resource = Mockito.mock(Resource.class);
@@ -96,7 +95,7 @@ public class ActivationWriteHandlerTestCase {
         Assert.assertEquals("Precondition", 0, addedSteps.size());
         handler.execute(context, operation);
         Mockito.verify(context).completeStep();
-        Assert.assertEquals(Activation.EAGER.toString().toLowerCase(), targetNode.get(Constants.ACTIVATION).asString());
+        Assert.assertEquals(Activation.EAGER.toString().toLowerCase(), targetNode.get(ModelConstants.ACTIVATION).asString());
 
         // Now test the runtime piece...
         ServiceRegistry registry = Mockito.mock(ServiceRegistry.class);
