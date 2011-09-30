@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -41,7 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable {
-    private final byte[] id;
+    private final SessionID id;
 
     private final Interceptor afterBegin;
     private final Interceptor afterCompletion;
@@ -62,7 +63,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
-        this.id = bb.array();
+        this.id = SessionID.createSessionID(bb.array());
 
         this.afterBegin = component.createInterceptor(component.getAfterBegin());
         this.afterCompletion = component.createInterceptor(component.getAfterCompletion());
@@ -111,7 +112,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         return (StatefulSessionComponent) super.getComponent();
     }
 
-    public byte[] getId() {
-        return id.clone();
+    public SessionID getId() {
+        return id;
     }
 }

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.cache;
 
+import org.jboss.ejb.client.SessionID;
+
 /**
  * An object that has an identification. How the object obtains
  * it's identification is left beyond scope. Could be via construction
@@ -35,5 +37,5 @@ public interface Identifiable {
      *
      * @return the object identifier
      */
-    byte[] getId();
+    SessionID getId();
 }

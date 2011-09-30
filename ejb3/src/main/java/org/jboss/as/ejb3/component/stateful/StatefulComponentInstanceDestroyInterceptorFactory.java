@@ -22,11 +22,11 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -41,7 +41,7 @@ public class StatefulComponentInstanceDestroyInterceptorFactory implements Inter
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        AtomicReference<byte[]> sessionIdReference = (AtomicReference<byte[]>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
+        AtomicReference<SessionID> sessionIdReference = (AtomicReference<SessionID>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
         return new StatefulComponentInstanceDestroyInterceptor(sessionIdReference);
     }
 }

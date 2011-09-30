@@ -21,11 +21,11 @@
  */
 package org.jboss.as.ejb3.cache;
 
+import org.jboss.ejb.client.SessionID;
 import org.jboss.logging.Logger;
 
 import javax.ejb.NoSuchEJBException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +44,7 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
 
     private final long millisecondTimeout;
     private final String beanName;
-    private final Map<ArrayKey, Entry> cache;
+    private final Map<SessionID, Entry> cache;
 
     private volatile StatefulObjectFactory<T> factory;
     private volatile ExpirationTask expiryThread;
@@ -62,9 +62,9 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
                 final List<Entry> queue = new ArrayList<Entry>();
                 final long time = System.currentTimeMillis();
                 synchronized (cache) {
-                    Iterator<Map.Entry<ArrayKey, Entry>> iterator = cache.entrySet().iterator();
+                    Iterator<Map.Entry<SessionID, Entry>> iterator = cache.entrySet().iterator();
                     while (iterator.hasNext()) {
-                        final Map.Entry<ArrayKey, Entry> entry = iterator.next();
+                        final Map.Entry<SessionID, Entry> entry = iterator.next();
                         if (entry.getValue().isExpired(time)) {
                             queue.add(entry.getValue());
                             iterator.remove();
@@ -112,7 +112,7 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
             this.lastUsed = lastUsed;
         }
 
-        public byte[] getKey() {
+        public SessionID getKey() {
             return value.getId();
         }
 
@@ -132,7 +132,7 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
     public ExpiringCache(long value, TimeUnit timeUnit, final String beanName) {
         this.beanName = beanName;
         millisecondTimeout = TimeUnit.MILLISECONDS.convert(value, timeUnit);
-        cache = new HashMap<ArrayKey, Entry>();
+        cache = new HashMap<SessionID, Entry>();
     }
 
     @Override
@@ -140,22 +140,22 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
         T obj = factory.createInstance();
         Entry entry = new Entry(obj);
         synchronized (cache) {
-            cache.put(new ArrayKey(obj.getId()), entry);
+            cache.put(obj.getId(), entry);
         }
         return obj;
     }
 
     @Override
-    public void discard(final byte[] key) {
+    public void discard(final SessionID key) {
         synchronized (cache) {
-            cache.remove(new ArrayKey(key));
+            cache.remove(key);
         }
     }
 
     @Override
-    public T get(final byte[] key) throws NoSuchEJBException {
+    public T get(final SessionID key) throws NoSuchEJBException {
         synchronized (cache) {
-            Entry val = cache.get(new ArrayKey(key));
+            Entry val = cache.get(key);
             if (val == null) {
                 throw new NoSuchEJBException("Could not find EJB with id " + key);
             }
@@ -168,7 +168,7 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
     @Override
     public void release(final T obj) {
         synchronized (cache) {
-            Entry entry = cache.get(new ArrayKey(obj.getId()));
+            Entry entry = cache.get(obj.getId());
 
             if (entry == null) {
                 logger.warn("Could not find stateful bean to release " + obj.getId());
@@ -181,10 +181,10 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
     }
 
     @Override
-    public void remove(final byte[] key) {
+    public void remove(final SessionID key) {
         Entry object;
         synchronized (cache) {
-            object = cache.remove(new ArrayKey(key));
+            object = cache.remove(key);
         }
         // EJBTHREE-1218: throw NoSuchEJBException if the bean can not be found
         if (object == null)
@@ -217,37 +217,4 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
             cache.clear();
         }
     }
-
-    private static final class ArrayKey {
-        private final byte[] bytes;
-
-        public ArrayKey(final byte[] bytes) {
-            this.bytes = bytes;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            final ArrayKey arrayKey = (ArrayKey) o;
-
-            if (!Arrays.equals(bytes, arrayKey.bytes)) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return Arrays.hashCode(bytes);
-        }
-
-        @Override
-        public String toString() {
-            return "ArrayKey{" +
-                    "bytes=" + Arrays.toString(bytes) +
-                    '}';
-        }
-    }
-
 }

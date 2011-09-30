@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.api.SessionObjectReference;
@@ -50,7 +51,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     private final Map<String, ServiceName> viewServices;
     private transient StatefulSessionComponent ejbComponent;
     private final ServiceName createServiceName;
-    private final byte[] id;
+    private final SessionID id;
 
 
     public StatefulSessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {

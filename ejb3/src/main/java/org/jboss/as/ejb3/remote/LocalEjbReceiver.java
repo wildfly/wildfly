@@ -36,6 +36,8 @@ import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverContext;
+import org.jboss.ejb.client.EJBReceiverInvocationContext;
+import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
@@ -48,7 +50,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import javax.ejb.AsyncResult;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -60,6 +61,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
+ * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
+ * withing the server JVM.
+ *
  * @author Stuart Douglas
  */
 public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<LocalEjbReceiver> {
@@ -85,7 +89,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
     }
 
     @Override
-    protected Future<?> processInvocation(final EJBClientInvocationContext<Void> invocation, final EJBReceiverContext receiverContext) throws Exception {
+    protected void processInvocation(final EJBClientInvocationContext<Void> invocation, final EJBReceiverInvocationContext receiverContext) throws Exception {
 
         final EjbDeploymentInformation ejb = findBean(invocation.getAppName(), invocation.getModuleName(), invocation.getDistinctName(), invocation.getBeanName());
         final EJBComponent ejbComponent = ejb.getEjbComponent();
@@ -134,7 +138,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
                 context.putPrivateData(CancellationFlag.class, flag);
                 component.getAsynchronousExecutor().submit(task);
                 //TODO: we do not clone the result of an async task
-                return new AsyncResult<Object>(task);
+                receiverContext.resultReady(new ImmediateResultProducer(task));
             } else {
                 throw new RuntimeException("Cannot perform asynchronous local invocation for component that is not a session bean");
             }
@@ -144,7 +148,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
             //pass parameters by reference
             //TODO: investigate the implications of this further
             final Object clonedResult = clone(method.getReturnType(), result, true);
-            return new AsyncResult<Object>(clonedResult);
+            receiverContext.resultReady(new ImmediateResultProducer(clonedResult));
         }
     }
 
@@ -167,7 +171,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
 
     @Override
-    protected byte[] openSession(final EJBReceiverContext ejbReceiverContext, final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
+    protected SessionID openSession(final EJBReceiverContext ejbReceiverContext, final String appName, final String moduleName, final String distinctName, final String beanName) throws Exception {
         final EjbDeploymentInformation ejbInfo = findBean(appName, moduleName, distinctName, beanName);
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (component instanceof StatefulSessionComponent) {
@@ -255,6 +259,25 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         @Override
         public Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return result;
+        }
+    }
+
+    private static class ImmediateResultProducer implements EJBReceiverInvocationContext.ResultProducer {
+
+        private final Object clonedResult;
+
+        public ImmediateResultProducer(final Object clonedResult) {
+            this.clonedResult = clonedResult;
+        }
+
+        @Override
+        public Object getResult() throws Exception {
+            return clonedResult;
+        }
+
+        @Override
+        public void discardResult() {
+
         }
     }
 }

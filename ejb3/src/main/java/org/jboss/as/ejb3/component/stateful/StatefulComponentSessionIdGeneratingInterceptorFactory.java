@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.Component;
+import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -43,11 +44,11 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        final AtomicReference<byte[]> sessionIdReference = new AtomicReference<byte[]>();
+        final AtomicReference<SessionID> sessionIdReference = new AtomicReference<SessionID>();
         context.getContextData().put(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY, sessionIdReference);
 
         //if we are attaching to an existing instance this will not be null
-        final byte[] id = (byte[]) context.getContextData().get(StatefulSessionComponent.SESSION_ATTACH_KEY);
+        final SessionID id = (SessionID) context.getContextData().get(StatefulSessionComponent.SESSION_ATTACH_KEY);
         if(id == null) {
             return new StatefulComponentSessionIdGeneratingInterceptor(sessionIdReference);
         } else {
@@ -58,9 +59,9 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
 
     private class StatefulComponentSessionIdGeneratingInterceptor implements Interceptor {
 
-        private final AtomicReference<byte[]> sessionIdReference;
+        private final AtomicReference<SessionID> sessionIdReference;
 
-        StatefulComponentSessionIdGeneratingInterceptor(AtomicReference<byte[]> sessionIdReference) {
+        StatefulComponentSessionIdGeneratingInterceptor(AtomicReference<SessionID> sessionIdReference) {
             this.sessionIdReference = sessionIdReference;
         }
 

@@ -22,12 +22,12 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -44,7 +44,7 @@ public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
 
     @Override
     public Interceptor create(final InterceptorFactoryContext context) {
-        AtomicReference<byte[]> sessionIdReference = (AtomicReference<byte[]>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
+        AtomicReference<SessionID> sessionIdReference = (AtomicReference<SessionID>) context.getContextData().get(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY);
         final ComponentView componentView = (ComponentView) context.getContextData().get(ComponentView.class);
         return new StatefulIdentityInterceptor(componentView, sessionIdReference);
 
@@ -53,9 +53,9 @@ public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
     private class StatefulIdentityInterceptor implements Interceptor {
 
         private final ComponentView componentView;
-        private final AtomicReference<byte[]> sessionIdReference;
+        private final AtomicReference<SessionID> sessionIdReference;
 
-        public StatefulIdentityInterceptor(final ComponentView componentView, final AtomicReference<byte[]> sessionIdReference) {
+        public StatefulIdentityInterceptor(final ComponentView componentView, final AtomicReference<SessionID> sessionIdReference) {
             this.componentView = componentView;
             this.sessionIdReference = sessionIdReference;
         }
@@ -72,7 +72,7 @@ public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
                     //SessionIdHolder as the other side
                     return other.equals(new SessionIdHolder(sessionIdReference.get()));
                 } else if(other instanceof SessionIdHolder) {
-                    return Arrays.equals(sessionIdReference.get(), ((SessionIdHolder)other).sessionId);
+                    return sessionIdReference.get().equals( ((SessionIdHolder)other).sessionId);
                 } else {
                     return false;
                 }
@@ -89,9 +89,9 @@ public class StatefulIdentityInterceptorFactory implements InterceptorFactory {
     }
 
     private static class SessionIdHolder {
-        private final byte[] sessionId;
+        private final SessionID sessionId;
 
-        public SessionIdHolder(final byte[] sessionId) {
+        public SessionIdHolder(final SessionID sessionId) {
             this.sessionId = sessionId;
         }
     }

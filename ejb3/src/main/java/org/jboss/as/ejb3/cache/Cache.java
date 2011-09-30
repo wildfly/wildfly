@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.cache;
 
+import org.jboss.ejb.client.SessionID;
+
 import javax.ejb.NoSuchEJBException;
 
 /**
@@ -43,7 +45,7 @@ public interface Cache<T extends Identifiable> {
      *
      * @param key the identifier of the object
      */
-    void discard(byte[] key);
+    void discard(SessionID key);
 
     /**
      * Get the specified object from cache. This will mark
@@ -53,7 +55,7 @@ public interface Cache<T extends Identifiable> {
      * @return the object
      * @throws javax.ejb.NoSuchEJBException if the object does not exist
      */
-    T get(byte[] key) throws NoSuchEJBException;
+    T get(SessionID key) throws NoSuchEJBException;
 
     /**
      * Peek at an object which might be in use.
@@ -76,7 +78,7 @@ public interface Cache<T extends Identifiable> {
      *
      * @param key the identifier of the object
      */
-    void remove(byte[] key);
+    void remove(SessionID key);
 
     /**
      * Associate the cache with a stateful object factory.

@@ -31,6 +31,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -143,7 +144,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         return factory.create(context);
     }
 
-    public byte[] createSession() {
+    public SessionID createSession() {
         return getCache().create().getId();
     }
 
@@ -161,7 +162,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
      *
      * @param sessionId The session id
      */
-    public void removeSession(final byte[] sessionId) {
+    public void removeSession(final SessionID sessionId) {
         Transaction currentTx = null;
         try {
             currentTx = getTransactionManager().getTransaction();
@@ -204,9 +205,9 @@ public class StatefulSessionComponent extends SessionBeanComponent {
  */
 private static class RemoveSynchronization implements Synchronization {
     private final StatefulSessionComponent statefulComponent;
-    private final byte[] sessionId;
+    private final SessionID sessionId;
 
-    public RemoveSynchronization(final StatefulSessionComponent component, final byte[] sessionId) {
+    public RemoveSynchronization(final StatefulSessionComponent component, final SessionID sessionId) {
         if (sessionId == null) {
             throw new IllegalArgumentException("Session id cannot be null");
         }
