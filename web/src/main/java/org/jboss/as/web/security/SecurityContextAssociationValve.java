@@ -34,6 +34,8 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -53,17 +55,20 @@ import org.jboss.security.SecurityUtil;
  */
 public class SecurityContextAssociationValve extends ValveBase {
 
-    private static Logger log = Logger.getLogger(SecurityContextAssociationValve.class);
+    private static final Logger log = Logger.getLogger(SecurityContextAssociationValve.class);
 
-    private JBossWebMetaData metaData;
+    private final DeploymentUnit deploymentUnit;
 
-    public SecurityContextAssociationValve(JBossWebMetaData metaData) {
-        this.metaData = metaData;
+    public SecurityContextAssociationValve(DeploymentUnit deploymentUnit) {
+        this.deploymentUnit = deploymentUnit;
     }
 
     /** {@inheritDoc} */
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
+        final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
+
         boolean trace = log.isTraceEnabled();
         Session session = null;
         // Get the request caller which could be set due to SSO

@@ -58,7 +58,7 @@ import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
 import org.jboss.as.web.security.JBossWebRealmService;
-import org.jboss.as.web.security.SecurityAssociationService;
+import org.jboss.as.web.security.SecurityContextAssociationValve;
 import org.jboss.as.web.security.WarJaccService;
 import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.dmr.ModelNode;
@@ -76,15 +76,6 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
-
-import javax.servlet.ServletContext;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * {@code DeploymentUnitProcessor} creating the actual deployment services.
@@ -134,7 +125,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     protected void processDeployment(final String hostName, final WarMetaData warMetaData, final DeploymentUnit deploymentUnit,
-                                     final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
+            final ServiceTarget serviceTarget) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
@@ -144,11 +135,15 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final EEModuleDescription moduleDescription = deploymentUnit
                 .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS);
+        final List<SetupAction> setupActions = deploymentUnit
+                .getAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS);
 
         // Create the context
         final StandardContext webContext = new StandardContext();
         final ContextConfig config = new JBossContextConfig(deploymentUnit);
+
+        // add SecurityAssociationValve right at the beginning
+        webContext.addValve(new SecurityContextAssociationValve(deploymentUnit));
 
         List<ValveMetaData> valves = metaData.getValves();
         if (valves == null) {
@@ -282,12 +277,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                 builder.addDependency(deploymentServiceName);
                 builder.setInitialMode(Mode.ACTIVE).install();
             }
-
-            final ServiceName secAssocServiceName = deploymentServiceName.append("securityAssociation");
-            final SecurityAssociationService sas = new SecurityAssociationService(webContext, metaData);
-            serviceTarget.addService(secAssocServiceName, sas).addDependency(deploymentServiceName).setInitialMode(Mode.ACTIVE)
-                    .install();
-
         } catch (ServiceRegistryException e) {
             throw new DeploymentUnitProcessingException("Failed to add JBoss web deployment service", e);
         }

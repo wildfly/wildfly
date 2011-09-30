@@ -129,7 +129,9 @@ public class JBossWebRealm extends RealmBase {
             if (log.isTraceEnabled()) {
                 log.trace("User: " + userPrincipal + " is authenticated");
             }
-            SecurityContext sc = SecurityActions.createSecurityContext(authenticationManager.getSecurityDomain());
+            SecurityContext sc = SecurityActions.getSecurityContext();
+            if (sc == null)
+                throw new IllegalStateException("No SecurityContext found!");
             userPrincipal = getPrincipal(subject);
             sc.getUtil().createSubjectInfo(userPrincipal, credentials, subject);
             SecurityActions.setSecurityContextOnAssociation(sc);
@@ -187,7 +189,9 @@ public class JBossWebRealm extends RealmBase {
                 if (log.isTraceEnabled()) {
                     log.trace("User: " + userPrincipal + " is authenticated");
                 }
-                SecurityContext sc = SecurityActions.createSecurityContext(authenticationManager.getSecurityDomain());
+                SecurityContext sc = SecurityActions.getSecurityContext();
+                if (sc == null)
+                    throw new IllegalStateException("No SecurityContext found!");
                 userPrincipal = getPrincipal(subject);
                 sc.getUtil().createSubjectInfo(userPrincipal, certs, subject);
                 SecurityActions.setSecurityContextOnAssociation(sc);
