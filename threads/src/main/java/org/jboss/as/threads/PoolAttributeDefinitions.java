@@ -37,6 +37,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -108,23 +109,7 @@ public interface PoolAttributeDefinitions {
     SimpleAttributeDefinition THREAD_NAME_PATTERN = new SimpleAttributeDefinition(CommonAttributes.THREAD_NAME_PATTERN, ModelType.STRING, true);
 
     SimpleAttributeDefinition PRIORITY = new SimpleAttributeDefinition(CommonAttributes.PRIORITY, CommonAttributes.PRIORITY, new ModelNode().set(-1),
-            ModelType.INT, true, true, MeasurementUnit.NONE, new AbstractParameterValidator(){
-                @Override
-                public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                    if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-                        try {
-                            final int priority = value.asInt();
-                            if (priority != -1 && priority < 0 || priority > 10) {
-                                throw new OperationFailedException(new ModelNode().set(PRIORITY + " is out of range " + priority)); //TODO i18n
-                            }
-                        } catch(NumberFormatException e) {
-                            final String str = value.asString();
-                            if(!str.startsWith("${") && str.endsWith("}")) {
-                                throw new OperationFailedException(new ModelNode().set("Wrong format for " + PRIORITY + ": '" + value + "'")); //TODO i18n
-                            }
-                        }
-                    }
-                }});
+            ModelType.INT, true, true, MeasurementUnit.NONE, new IntRangeValidator(-1, 10, true, true));
 
     AttributeDefinition[] THREAD_FACTORY_ATTRIBUTES = new AttributeDefinition[]{
             NAME, PROPERTIES, GROUP_NAME, THREAD_NAME_PATTERN, PoolAttributeDefinitions.PRIORITY

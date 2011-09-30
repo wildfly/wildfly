@@ -35,6 +35,7 @@ import static org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,8 +86,38 @@ public class PoolConfigurationRWHandler {
 
     public abstract static class PoolConfigurationWriteHandler extends AbstractWriteAttributeHandler<List<PoolConfiguration>> {
 
-        protected PoolConfigurationWriteHandler(ParameterValidator validator) {
-            super(validator);
+        static final ModelTypeValidator intValidator = new ModelTypeValidator(ModelType.INT);
+        static final ModelTypeValidator longValidator = new ModelTypeValidator(ModelType.LONG);
+        static final ModelTypeValidator boolValidator = new ModelTypeValidator(ModelType.BOOLEAN);
+
+        private static ParameterValidator getValidator(String attributeName) throws OperationFailedException {
+
+            if (MAX_POOL_SIZE.getName().equals(attributeName)) {
+                return intValidator;
+            } else if ( MIN_POOL_SIZE.getName().equals(attributeName)) {
+                return intValidator;
+            } else if ( BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(attributeName)) {
+                return longValidator;
+            } else if ( IDLETIMEOUTMINUTES.getName().equals(attributeName)) {
+                return longValidator;
+            } else if ( BACKGROUNDVALIDATION.getName().equals(attributeName)) {
+                return boolValidator;
+            } else if ( BACKGROUNDVALIDATIONMILLIS.getName().equals(attributeName)) {
+                return longValidator;
+            } else if ( POOL_PREFILL.getName().equals(attributeName)) {
+                return boolValidator;
+            } else if ( POOL_USE_STRICT_MIN.getName().equals(attributeName)) {
+                return boolValidator;
+            } else if ( USE_FAST_FAIL.getName().equals(attributeName)) {
+                return boolValidator;
+            } else {
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidParameterName(attributeName)));
+            }
+
+        }
+
+        protected PoolConfigurationWriteHandler() {
+            super();
         }
 
         @Override
@@ -126,6 +157,16 @@ public class PoolConfigurationRWHandler {
             }
         }
 
+        @Override
+        protected void validateUnresolvedValue(String attributeName, ModelNode unresolvedValue) throws OperationFailedException {
+            getValidator(attributeName).validateParameter(VALUE, unresolvedValue);
+        }
+
+        @Override
+        protected void validateResolvedValue(String attributeName, ModelNode resolvedValue) throws OperationFailedException {
+            getValidator(attributeName).validateResolvedParameter(VALUE, resolvedValue);
+        }
+
         private void updatePoolConfigs(List<PoolConfiguration> poolConfigs, String parameterName, ModelNode newValue) {
             for (PoolConfiguration pc : poolConfigs) {
                 if (MAX_POOL_SIZE.getName().equals(parameterName)) {
@@ -150,11 +191,10 @@ public class PoolConfigurationRWHandler {
     }
 
     public static class LocalAndXaDataSourcePoolConfigurationWriteHandler extends PoolConfigurationWriteHandler {
-        public static LocalAndXaDataSourcePoolConfigurationWriteHandler INSTANCE = new LocalAndXaDataSourcePoolConfigurationWriteHandler(
-                new PoolConfigurationValidator());
+        public static LocalAndXaDataSourcePoolConfigurationWriteHandler INSTANCE = new LocalAndXaDataSourcePoolConfigurationWriteHandler();
 
-        protected LocalAndXaDataSourcePoolConfigurationWriteHandler(ParameterValidator validator) {
-            super(validator);
+        protected LocalAndXaDataSourcePoolConfigurationWriteHandler() {
+            super();
         }
 
         protected List<PoolConfiguration> getMatchingPoolConfigs(String jndiName, ManagementRepository repository) {
@@ -171,14 +211,15 @@ public class PoolConfigurationRWHandler {
             return result;
         }
 
+
+
     }
 
     public static class RaPoolConfigurationWriteHandler extends PoolConfigurationWriteHandler {
-        public static RaPoolConfigurationWriteHandler INSTANCE = new RaPoolConfigurationWriteHandler(
-                new PoolConfigurationValidator());
+        public static RaPoolConfigurationWriteHandler INSTANCE = new RaPoolConfigurationWriteHandler();
 
-        protected RaPoolConfigurationWriteHandler(ParameterValidator validator) {
-            super(validator);
+        protected RaPoolConfigurationWriteHandler() {
+            super();
         }
 
         protected List<PoolConfiguration> getMatchingPoolConfigs(String jndiName, ManagementRepository repository) {
@@ -196,46 +237,6 @@ public class PoolConfigurationRWHandler {
             }
             result.trimToSize();
             return result;
-        }
-
-    }
-
-    static class PoolConfigurationValidator implements ParameterValidator {
-
-        static final ModelTypeValidator intValidator = new ModelTypeValidator(ModelType.INT);
-        static final ModelTypeValidator longValidator = new ModelTypeValidator(ModelType.LONG);
-        static final ModelTypeValidator boolValidator = new ModelTypeValidator(ModelType.BOOLEAN);
-
-        @Override
-        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-
-            if (MAX_POOL_SIZE.getName().equals(parameterName)) {
-                intValidator.validateParameter(parameterName, value);
-            } else if ( MIN_POOL_SIZE.getName().equals(parameterName)) {
-                intValidator.validateParameter(parameterName, value);
-            } else if ( BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(parameterName)) {
-                longValidator.validateParameter(parameterName, value);
-            } else if ( IDLETIMEOUTMINUTES.getName().equals(parameterName)) {
-                longValidator.validateParameter(parameterName, value);
-            } else if ( BACKGROUNDVALIDATION.getName().equals(parameterName)) {
-                boolValidator.validateParameter(parameterName, value);
-            } else if ( BACKGROUNDVALIDATIONMILLIS.getName().equals(parameterName)) {
-                longValidator.validateParameter(parameterName, value);
-            } else if ( POOL_PREFILL.getName().equals(parameterName)) {
-                boolValidator.validateParameter(parameterName, value);
-            } else if ( POOL_USE_STRICT_MIN.getName().equals(parameterName)) {
-                boolValidator.validateParameter(parameterName, value);
-            } else if ( USE_FAST_FAIL.getName().equals(parameterName)) {
-                boolValidator.validateParameter(parameterName, value);
-            } else {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidParameterName(parameterName)));
-            }
-
-        }
-
-        @Override
-        public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            validateParameter(parameterName, value.resolve());
         }
 
     }
