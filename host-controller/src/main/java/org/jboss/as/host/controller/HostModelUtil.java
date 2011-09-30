@@ -244,7 +244,7 @@ public class HostModelUtil {
 
         //Extensions
         ManagementResourceRegistration extensions = hostRegistration.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-        ExtensionContext extensionContext = new ExtensionContextImpl(hostRegistration, null, configurationPersister);
+        ExtensionContext extensionContext = new ExtensionContextImpl(hostRegistration, null, configurationPersister, ExtensionContext.ProcessType.SLAVE_HOST_CONTROLLER);
         ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);

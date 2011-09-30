@@ -22,10 +22,12 @@
 
 package org.jboss.as.controller;
 
+
 /**
  * The context for registering a new extension.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author David Bosschaert
  */
 public interface ExtensionContext {
 
@@ -45,4 +47,38 @@ public interface ExtensionContext {
      * @throws IllegalArgumentException if the subsystem name has already been registered
      */
     SubsystemRegistration registerSubsystem(String name) throws IllegalArgumentException;
+
+    /**
+     * Provide the current Process Type.
+     * @return The current Process Type.
+     */
+    ProcessType getProcessType();
+
+    /**
+     * Holds the possible process types. This is used to identify what type of server we are running in.
+     * Extensions can use this information to decide whether certain resources, operations or attributes
+     * need to be present.
+     */
+    public enum ProcessType {
+        DOMAIN_SERVER,
+        EMBEDDED,
+        STANDALONE_SERVER,
+        MASTER_HOST_CONTROLLER,
+        SLAVE_HOST_CONTROLLER;
+
+        /**
+         * Returns true if the process is one of the 3 server variants.
+         *
+         * @return Returns <tt>true</tt> if the process is a server. Returns <tt>false</tt> otherwise.
+         */
+        public boolean isServer() {
+            switch (this) {
+            case DOMAIN_SERVER:
+            case EMBEDDED:
+            case STANDALONE_SERVER:
+                return true;
+            }
+            return false;
+        }
+    }
 }

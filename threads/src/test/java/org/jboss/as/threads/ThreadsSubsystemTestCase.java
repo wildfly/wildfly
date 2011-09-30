@@ -92,6 +92,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
@@ -797,6 +798,11 @@ public class ThreadsSubsystemTestCase {
 
         TestNewExtensionContext(ManagementResourceRegistration testProfileRegistration) {
             this.testProfileRegistration = testProfileRegistration;
+        }
+
+        @Override
+        public ProcessType getProcessType() {
+            return ProcessType.EMBEDDED;
         }
 
         @Override

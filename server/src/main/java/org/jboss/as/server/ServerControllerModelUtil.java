@@ -59,10 +59,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import org.jboss.as.controller.operations.common.ExtensionAddHandler;
-import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
-
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
 import org.jboss.as.controller.CompositeOperationHandler;
@@ -71,7 +67,9 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.ExtensionAddHandler;
 import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
+import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -144,6 +142,7 @@ import org.jboss.dmr.ModelNode;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author David Bosschaert
  * @version $Revision: 1.1 $
  */
 public class
@@ -315,12 +314,27 @@ public class
 
         // Extensions
         ManagementResourceRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-        ExtensionContext extensionContext = new ExtensionContextImpl(root, deployments, extensibleConfigurationPersister);
+        ExtensionContext extensionContext = new ExtensionContextImpl(root, deployments, extensibleConfigurationPersister, getProcessType(serverEnvironment));
         ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
 
         // Util
         root.registerOperationHandler(DeployerChainAddHandler.NAME, DeployerChainAddHandler.INSTANCE, DeployerChainAddHandler.INSTANCE, false, EntryType.PRIVATE);
+    }
+
+    static ExtensionContext.ProcessType getProcessType(ServerEnvironment serverEnvironment) {
+        if (serverEnvironment != null) {
+            switch (serverEnvironment.getLaunchType()) {
+            case DOMAIN:
+                return ExtensionContext.ProcessType.DOMAIN_SERVER;
+            case STANDALONE:
+                return ExtensionContext.ProcessType.STANDALONE_SERVER;
+            case EMBEDDED:
+                return ExtensionContext.ProcessType.EMBEDDED;
+            }
+        }
+
+        return ExtensionContext.ProcessType.EMBEDDED;
     }
 }

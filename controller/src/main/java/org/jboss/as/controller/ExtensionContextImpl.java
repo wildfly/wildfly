@@ -42,6 +42,7 @@ import org.jboss.staxmapper.XMLElementWriter;
  */
 public final class ExtensionContextImpl implements ExtensionContext {
 
+    private final ProcessType processType;
     private final ManagementResourceRegistration profileRegistration;
     private final SubsystemXmlWriterRegistry writerRegistry;
     private final ManagementResourceRegistration subsystemDeploymentRegistration;
@@ -55,7 +56,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
      */
     public ExtensionContextImpl(final ManagementResourceRegistration profileRegistration,
             final ManagementResourceRegistration deploymentOverrideRegistration,
-            final SubsystemXmlWriterRegistry writerRegistry) {
+            final SubsystemXmlWriterRegistry writerRegistry, ProcessType processType) {
         if (profileRegistration == null) {
             throw new IllegalArgumentException("profileRegistration is null");
         }
@@ -65,6 +66,7 @@ public final class ExtensionContextImpl implements ExtensionContext {
         if (writerRegistry == null) {
             throw new IllegalArgumentException("writerRegistry is null");
         }
+        this.processType = processType;
         this.profileRegistration = profileRegistration;
         this.writerRegistry = writerRegistry;
         if (deploymentOverrideRegistration != null) {
@@ -75,6 +77,11 @@ public final class ExtensionContextImpl implements ExtensionContext {
         } else {
             this.subsystemDeploymentRegistration = null;
         }
+    }
+
+    @Override
+    public ProcessType getProcessType() {
+        return processType;
     }
 
     /** {@inheritDoc} */
