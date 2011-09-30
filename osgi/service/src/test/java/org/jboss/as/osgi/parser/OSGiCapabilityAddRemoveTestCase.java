@@ -30,7 +30,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -38,6 +37,7 @@ import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
 public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
     @Test
@@ -46,12 +46,7 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
         List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.KEEP);
 
-        ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(Constants.CAPABILITY, "org.acme.module1"));
-        ModelNode data = new ModelNode();
-        data.get(Constants.STARTLEVEL).set("4");
-        ModelNode op = getAddOperation(address, data);
+        ModelNode op = getAddOperation("org.acme.module1", 4);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
         OSGiCapabilityAdd.INSTANCE.execute(context, op);
@@ -82,12 +77,7 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
         List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.ROLLBACK);
 
-        ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(Constants.CAPABILITY, "org.acme.module1"));
-        ModelNode data = new ModelNode();
-        data.get(Constants.STARTLEVEL).set("4");
-        ModelNode op = getAddOperation(address, data);
+        ModelNode op = getAddOperation("org.acme.module1", 4);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
         OSGiCapabilityAdd.INSTANCE.execute(context, op);
@@ -98,10 +88,13 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
         Assert.assertEquals("Operation should have been rolled back", 0, stateService.getCapabilities().size());
     }
 
-    private ModelNode getAddOperation(ModelNode address, ModelNode existing) {
+    private ModelNode getAddOperation(String name, Integer startlevel) {
+        ModelNode address = new ModelNode();
+        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
+        address.add(new ModelNode().set(ModelConstants.CAPABILITY, name));
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        if (existing.hasDefined(Constants.STARTLEVEL)) {
-            op.get(Constants.STARTLEVEL).set(existing.get(Constants.STARTLEVEL));
+        if (startlevel != null) {
+            op.get(ModelConstants.STARTLEVEL).set(startlevel);
         }
         return op;
     }

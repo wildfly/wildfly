@@ -28,7 +28,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,7 +42,7 @@ public class OSGiCapabilityRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(Constants.CAPABILITY).asString();
+        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CAPABILITY).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
             subsystemState.removeCapability(identifier);

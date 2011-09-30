@@ -22,14 +22,15 @@
 package org.jboss.as.osgi.parser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,6 +38,7 @@ import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
 public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBase {
     @Test
@@ -45,14 +47,9 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
         List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.KEEP);
 
-        ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(Constants.CONFIGURATION, "org.acme.pid1"));
-        ModelNode data = new ModelNode();
-        ModelNode entries = new ModelNode();
-        entries.get("mykey").set("myval");
-        data.get(Constants.ENTRIES).set(entries);
-        ModelNode op = getAddOperation(address, data);
+        String pid = "org.acme.pid1";
+        Map<String, String> data = Collections.singletonMap("mykey", "myval");
+        ModelNode op = getAddOperation(pid, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
         OSGiConfigurationAdd.INSTANCE.execute(context, op);
@@ -61,7 +58,7 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
         Assert.assertEquals("Precondition", 0, stateService.getConfigurations().size());
         addedSteps.get(0).execute(context, op);
         Assert.assertEquals(1, stateService.getConfigurations().size());
-        Dictionary<String, String> config = stateService.getConfiguration("org.acme.pid1");
+        Dictionary<String, String> config = stateService.getConfiguration(pid);
         Assert.assertEquals(1, config.size());
         Assert.assertEquals("myval", config.get("mykey"));
 
@@ -70,12 +67,12 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
 
         Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.ROLLBACK);
         addedSteps.get(1).execute(context, op);
-        Assert.assertEquals("Configuration rolled back", 1, stateService.getConfiguration("org.acme.pid1").size());
-        Assert.assertEquals("Configuration rolled back", "myval", stateService.getConfiguration("org.acme.pid1").get("mykey"));
+        Assert.assertEquals("Configuration rolled back", 1, stateService.getConfiguration(pid).size());
+        Assert.assertEquals("Configuration rolled back", "myval", stateService.getConfiguration(pid).get("mykey"));
 
         Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.KEEP);
         addedSteps.get(1).execute(context, op);
-        Assert.assertNull("Configuration should have been removed", stateService.getConfiguration("org.acme.pid1"));
+        Assert.assertNull("Configuration should have been removed", stateService.getConfiguration(pid));
     }
 
     @Test
@@ -84,14 +81,9 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
         List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.ROLLBACK);
 
-        ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(Constants.CONFIGURATION, "org.acme.pid1"));
-        ModelNode data = new ModelNode();
-        ModelNode entries = new ModelNode();
-        entries.get("mykey").set("myval");
-        data.get(Constants.ENTRIES).set(entries);
-        ModelNode op = getAddOperation(address, data);
+        String pid = "org.acme.pid1";
+        Map<String, String> data = Collections.singletonMap("mykey", "myval");
+        ModelNode op = getAddOperation(pid, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
         OSGiConfigurationAdd.INSTANCE.execute(context, op);
@@ -102,11 +94,16 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
         Assert.assertEquals("Operation should have been rolled back", 0, stateService.getConfigurations().size());
     }
 
-    private ModelNode getAddOperation(ModelNode address, ModelNode model) {
-        ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        if (model.hasDefined(Constants.ENTRIES)) {
-            op.get(Constants.ENTRIES).set(model.get(Constants.ENTRIES));
+    private ModelNode getAddOperation(String pid, Map<String, String> data) {
+        ModelNode address = new ModelNode();
+        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
+        address.add(new ModelNode().set(ModelConstants.CONFIGURATION, pid));
+        ModelNode entries = new ModelNode();
+        for (String key : data.keySet()) {
+            entries.get(key).set(data.get(key));
         }
+        ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
+        op.get(ModelConstants.ENTRIES).set(entries);
         return op;
     }
 }

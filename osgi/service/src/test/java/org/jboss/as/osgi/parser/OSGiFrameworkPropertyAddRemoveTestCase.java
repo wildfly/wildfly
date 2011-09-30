@@ -30,13 +30,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
 public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTestBase {
 
@@ -46,12 +46,7 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
         List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.KEEP);
 
-        ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(Constants.FRAMEWORK_PROPERTY, "PropertyX"));
-        ModelNode data = new ModelNode();
-        data.get(Constants.VALUE).set("hi");
-        ModelNode op = getAddOperation(address, data);
+        ModelNode op = getAddOperation("PropertyX", "hi");
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
         OSGiFrameworkPropertyAdd.INSTANCE.execute(context, op);
@@ -79,12 +74,7 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
         List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.ROLLBACK);
 
-        ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(Constants.FRAMEWORK_PROPERTY, "PropertyX"));
-        ModelNode data = new ModelNode();
-        data.get(Constants.VALUE).set("hi");
-        ModelNode op = getAddOperation(address, data);
+        ModelNode op = getAddOperation("PropertyX", "hi");
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
         OSGiFrameworkPropertyAdd.INSTANCE.execute(context, op);
@@ -95,9 +85,12 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
         Assert.assertNull("Operation should have been rolled back", stateService.getProperties().get("PropertyX"));
     }
 
-    private ModelNode getAddOperation(ModelNode address, ModelNode existing) {
+    private ModelNode getAddOperation(String name, String value) {
+        ModelNode address = new ModelNode();
+        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
+        address.add(new ModelNode().set(ModelConstants.FRAMEWORK_PROPERTY, name));
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        op.get(Constants.VALUE).set(existing.get(Constants.VALUE));
+        op.get(ModelConstants.VALUE).set(value);
         return op;
     }
 }

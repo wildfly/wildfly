@@ -28,7 +28,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.osgi.parser.Namespace11.Attribute;
-import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.osgi.parser.Namespace11.Element;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -54,17 +53,17 @@ class OSGiSubsystemWriter implements XMLStreamConstants, XMLElementWriter<Subsys
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         ModelNode node = context.getModelNode();
 
-        if (has(node, Constants.ACTIVATION)) {
-            writeAttribute(writer, Attribute.ACTIVATION, node.get(Constants.ACTIVATION));
+        if (has(node, ModelConstants.ACTIVATION)) {
+            writeAttribute(writer, Attribute.ACTIVATION, node.get(ModelConstants.ACTIVATION));
         }
 
-        if (has(node, Constants.CONFIGURATION)) {
-            ModelNode configuration = node.get(Constants.CONFIGURATION);
+        if (has(node, ModelConstants.CONFIGURATION)) {
+            ModelNode configuration = node.get(ModelConstants.CONFIGURATION);
             for (String pid : new TreeSet<String>(configuration.keys())) {
                 writer.writeStartElement(Element.CONFIGURATION.getLocalName());
                 writer.writeAttribute(Attribute.PID.getLocalName(), pid);
 
-                ModelNode entries = configuration.get(pid).get(Constants.ENTRIES);
+                ModelNode entries = configuration.get(pid).get(ModelConstants.ENTRIES);
                 if (entries.isDefined()) {
                     for (String propKey : entries.keys()) {
                         String propValue = entries.get(propKey).asString();
@@ -78,11 +77,11 @@ class OSGiSubsystemWriter implements XMLStreamConstants, XMLElementWriter<Subsys
             }
         }
 
-        if (has(node, Constants.FRAMEWORK_PROPERTY)) {
+        if (has(node, ModelConstants.FRAMEWORK_PROPERTY)) {
             writer.writeStartElement(Element.PROPERTIES.getLocalName());
-            ModelNode properties = node.get(Constants.FRAMEWORK_PROPERTY);
+            ModelNode properties = node.get(ModelConstants.FRAMEWORK_PROPERTY);
             for (String key : new TreeSet<String>(properties.keys())) {
-                String val = properties.get(key).get(Constants.VALUE).asString();
+                String val = properties.get(key).get(ModelConstants.VALUE).asString();
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), key);
                 writer.writeCharacters(val);
@@ -91,15 +90,15 @@ class OSGiSubsystemWriter implements XMLStreamConstants, XMLElementWriter<Subsys
             writer.writeEndElement();
         }
 
-        if (has(node, Constants.CAPABILITY)) {
+        if (has(node, ModelConstants.CAPABILITY)) {
             writer.writeStartElement(Element.CAPABILITIES.getLocalName());
-            ModelNode modules = node.get(Constants.CAPABILITY);
+            ModelNode modules = node.get(ModelConstants.CAPABILITY);
             for (String key : modules.keys()) {
                 ModelNode moduleNode = modules.get(key);
                 writer.writeEmptyElement(Element.CAPABILITY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), key);
-                if (moduleNode.has(Constants.STARTLEVEL)) {
-                    writeAttribute(writer, Attribute.STARTLEVEL, moduleNode.require(Constants.STARTLEVEL));
+                if (moduleNode.has(ModelConstants.STARTLEVEL)) {
+                    writeAttribute(writer, Attribute.STARTLEVEL, moduleNode.require(ModelConstants.STARTLEVEL));
                 }
             }
             writer.writeEndElement();

@@ -27,24 +27,12 @@ import java.util.Map;
 
 
 /**
- * An enumeration of the supported OSGi subsystem namespaces.
+ * Constants related to namespace {@link Namespace#OSGI_1_1}.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 13-Sep-2010
+ * @since 29-Sep-2011
  */
 interface Namespace11 {
-
-    interface Constants {
-        String ACTIVATION = "activation";
-        String CAPABILITY = "capability";
-        String CONFIGURATION = "configuration";
-        String ENTRIES = "entries";
-        String FRAMEWORK_PROPERTY = "framework-property";
-        String NAME = "name";
-        String PID = "pid";
-        String STARTLEVEL = "startlevel";
-        String VALUE = "value";
-    }
 
     enum Attribute {
         UNKNOWN(null),

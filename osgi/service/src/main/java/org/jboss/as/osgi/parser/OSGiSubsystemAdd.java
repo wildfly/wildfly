@@ -36,7 +36,6 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.osgi.deployment.BundleStartTracker;
 import org.jboss.as.osgi.deployment.OSGiDeploymentActivator;
-import org.jboss.as.osgi.parser.Namespace11.Constants;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.service.BundleInstallProviderIntegration;
 import org.jboss.as.osgi.service.ConfigAdminServiceImpl;
@@ -65,8 +64,8 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode subModel) {
-        if (operation.has(Constants.ACTIVATION)) {
-            subModel.get(Constants.ACTIVATION).set(operation.get(Constants.ACTIVATION));
+        if (operation.has(ModelConstants.ACTIVATION)) {
+            subModel.get(ModelConstants.ACTIVATION).set(operation.get(ModelConstants.ACTIVATION));
         }
     }
 
@@ -100,8 +99,8 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private Activation getActivationMode(ModelNode operation) {
         Activation activation = SubsystemState.DEFAULT_ACTIVATION;
-        if (operation.has(Constants.ACTIVATION)) {
-            activation = Activation.valueOf(operation.get(Constants.ACTIVATION).asString().toUpperCase());
+        if (operation.has(ModelConstants.ACTIVATION)) {
+            activation = Activation.valueOf(operation.get(ModelConstants.ACTIVATION).asString().toUpperCase());
         }
         return activation;
     }
@@ -114,9 +113,9 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.add"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.activation"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, Constants.ACTIVATION, ModelDescriptionConstants.DEFAULT).set(SubsystemState.DEFAULT_ACTIVATION.toString());
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.activation"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ACTIVATION, ModelDescriptionConstants.DEFAULT).set(SubsystemState.DEFAULT_ACTIVATION.toString());
             node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
             return node;
         }
