@@ -20,7 +20,7 @@ package org.jboss.as.protocol.mgmt;
 
 import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
-import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
+import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
 import java.io.DataOutput;

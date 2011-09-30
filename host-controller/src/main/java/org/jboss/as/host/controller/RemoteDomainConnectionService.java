@@ -22,7 +22,7 @@
 
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.protocol.old.ProtocolUtils.expectHeader;
+import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
@@ -63,7 +63,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
-import org.jboss.as.protocol.old.Connection.ClosedCallback;
+import org.jboss.as.process.protocol.Connection.ClosedCallback;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;

@@ -26,8 +26,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.jboss.as.protocol.old.ProtocolUtils;
-
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**

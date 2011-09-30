@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
+package org.jboss.as.process.protocol;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -28,12 +28,12 @@ import java.net.Socket;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
-import org.jboss.as.protocol.old.Connection.ClosedCallback;
+import org.jboss.as.process.protocol.Connection.ClosedCallback;
 
 import javax.net.SocketFactory;
 
-import static org.jboss.as.protocol.ProtocolLogger.CLIENT_LOGGER;
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+import static org.jboss.as.process.protocol.ProtocolLogger.CLIENT_LOGGER;
+import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * A protocol client for management commands, which can also asynchronously receive protocol messages.

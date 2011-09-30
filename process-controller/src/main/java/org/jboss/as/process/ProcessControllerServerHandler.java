@@ -23,22 +23,21 @@
 package org.jboss.as.process;
 
 import static org.jboss.as.process.ProcessLogger.SERVER_LOGGER;
-import static org.jboss.as.protocol.old.StreamUtils.readFully;
-import static org.jboss.as.protocol.old.StreamUtils.readInt;
-import static org.jboss.as.protocol.old.StreamUtils.readUTFZBytes;
-import static org.jboss.as.protocol.old.StreamUtils.readUnsignedByte;
-import static org.jboss.as.protocol.old.StreamUtils.safeClose;
+import org.jboss.as.process.protocol.Connection;
+import org.jboss.as.process.protocol.ConnectionHandler;
+import org.jboss.as.process.protocol.MessageHandler;
+import org.jboss.as.process.protocol.StreamUtils;
+import static org.jboss.as.process.protocol.StreamUtils.readFully;
+import static org.jboss.as.process.protocol.StreamUtils.readInt;
+import static org.jboss.as.process.protocol.StreamUtils.readUTFZBytes;
+import static org.jboss.as.process.protocol.StreamUtils.readUnsignedByte;
+import static org.jboss.as.process.protocol.StreamUtils.safeClose;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.jboss.as.protocol.old.Connection;
-import org.jboss.as.protocol.old.ConnectionHandler;
-import org.jboss.as.protocol.old.MessageHandler;
-import org.jboss.as.protocol.old.StreamUtils;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

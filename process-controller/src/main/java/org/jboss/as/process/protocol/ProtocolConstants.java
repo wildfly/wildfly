@@ -20,15 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.protocol.old;
-
-import java.io.DataOutput;
-import org.jboss.marshalling.ByteOutput;
+package org.jboss.as.process.protocol;
 
 /**
- * Interface used to establish a contract for a class that complies to both the DataOutput and ByteOutput contract.
- *
- * @author John Bailey
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public interface ByteDataOutput extends DataOutput, ByteOutput{
+public final class ProtocolConstants {
+    public static final int CHUNK_START = 0x98;
+    public static final int CHUNK_END = 0x99;
+
+    private ProtocolConstants() {
+    }
 }

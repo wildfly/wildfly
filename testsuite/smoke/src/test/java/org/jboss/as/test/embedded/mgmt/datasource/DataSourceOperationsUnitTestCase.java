@@ -30,7 +30,7 @@ import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.NewDat
 import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.protocol.old.StreamUtils;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
