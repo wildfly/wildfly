@@ -46,6 +46,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
 
     private final Object threadLock = new Object();
     private final OwnableReentrantLock lock = new OwnableReentrantLock();
+    private boolean synchronizationRegistered = false;
 
     /**
      * Handles the exception that occured during a {@link StatefulSessionSynchronization transaction synchronization} callback
@@ -103,21 +104,24 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                 Object currentTransactionKey = null;
                 boolean wasTxSyncRegistered = false;
                 try {
-                    // get the key to current transaction associated with this thread
-                    currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
-                    // if this SFSB instance is already associated with a different transaction, then it's an error
-                    // if the thread is currently associated with a tx, then register a tx synchronization
-                    if (currentTransactionKey != null) {
-                        // register a tx synchronization for this SFSB instance
-                        final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance);
-                        transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
-                        wasTxSyncRegistered = true;
-                        if (log.isTraceEnabled()) {
-                            log.trace("Registered tx synchronization: " + statefulSessionSync + " for tx: " + currentTransactionKey +
-                                    " associated with stateful component instance: " + instance);
+                    if (!synchronizationRegistered) {
+                        // get the key to current transaction associated with this thread
+                        currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
+                        // if this SFSB instance is already associated with a different transaction, then it's an error
+                        // if the thread is currently associated with a tx, then register a tx synchronization
+                        if (currentTransactionKey != null) {
+                            // register a tx synchronization for this SFSB instance
+                            final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance);
+                            transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
+                            wasTxSyncRegistered = true;
+                            if (log.isTraceEnabled()) {
+                                log.trace("Registered tx synchronization: " + statefulSessionSync + " for tx: " + currentTransactionKey +
+                                        " associated with stateful component instance: " + instance);
+                            }
+                            // invoke the afterBegin callback on the SFSB
+                            instance.afterBegin();
                         }
-                        // invoke the afterBegin callback on the SFSB
-                        instance.afterBegin();
+                        synchronizationRegistered = true;
                     }
                     // proceed with the invocation
                     return context.proceed();
@@ -159,6 +163,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
             // mark the SFSB instance as no longer in use
             instance.getComponent().getCache().release(instance);
         } finally {
+            synchronizationRegistered = false;
             // release the lock on the SFSB instance
             this.releaseLock();
         }
