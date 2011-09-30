@@ -50,11 +50,28 @@ public final class ParseUtils {
         if (reader.nextTag() == END_ELEMENT) {
             return null;
         }
-        Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
-        if ( !(readerNS == Namespace.DOMAIN_1_0 || readerNS == Namespace.DOMAIN_1_1 )) {
-            throw unexpectedElement(reader);
-        }
+
         return Element.forName(reader.getLocalName());
+    }
+
+    /**
+     * A variation of nextElement that verifies the nextElement is not in a different namespace.
+     *
+     * @param reader the XmlExtendedReader to read from.
+     * @param expectedNamespace the namespace expected.
+     * @return the element or null if the end is reached
+     * @throws XMLStreamException if the namespace is wrong or there is a problem accessing the reader
+     */
+    public static Element nextElement(XMLExtendedStreamReader reader, Namespace expectedNamespace) throws XMLStreamException {
+        Element element = nextElement(reader);
+
+        if (element == null) {
+            return element;
+        } else if (expectedNamespace.equals(Namespace.forUri(reader.getNamespaceURI()))) {
+            return element;
+        }
+
+        throw unexpectedElement(reader);
     }
 
     /**
@@ -158,6 +175,20 @@ public final class ParseUtils {
      */
     public static void requireNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
         if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            throw unexpectedElement(reader);
+        }
+    }
+
+    /**
+     * Require that the namespace of the current element matches the required namespace.
+     *
+     * @param reader the reader
+     * @param requiredNs the namespace required
+     * @throws XMLStreamException if the current namespace does not match the required namespace
+     */
+    public static void requireNamespace(final XMLExtendedStreamReader reader, final Namespace requiredNs) throws XMLStreamException {
+        Namespace actualNs = Namespace.forUri(reader.getNamespaceURI());
+        if (actualNs != requiredNs) {
             throw unexpectedElement(reader);
         }
     }
