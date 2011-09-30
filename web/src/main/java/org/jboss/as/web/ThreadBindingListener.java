@@ -21,53 +21,28 @@
  */
 package org.jboss.as.web;
 
-import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.Response;
-import org.apache.catalina.valves.ValveBase;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-
 /**
- * An InstanceListener used to push/pop the application naming context.
+ * A ThreadBindingListener used to push/pop the application naming context.
  *
  * @author Stuart Douglas
  */
-public class NamingValve extends ValveBase {
+public class ThreadBindingListener implements org.apache.catalina.ThreadBindingListener {
 
     private final NamespaceContextSelector selector;
 
-    /**
-     * Thread local used to initialise the Listener after startup.
-     *
-     * TODO: figure out a better way to do this
-     */
-    private static final ThreadLocal<NamespaceContextSelector> localSelector = new ThreadLocal<NamespaceContextSelector>();
-
-    public NamingValve() {
-        selector = localSelector.get();
+    public ThreadBindingListener(NamespaceContextSelector selector) {
+        this.selector = selector;
         assert selector != null : "selector is null";
     }
 
-    @Override
-    public void invoke(final Request request, final Response response) throws IOException, ServletException {
-        try {
-            NamespaceContextSelector.pushCurrentSelector(selector);
-            getNext().invoke(request, response);
-        } finally {
-            NamespaceContextSelector.popCurrentSelector();
-        }
-    }
-
-    public static void beginComponentStart(NamespaceContextSelector selector) {
-        localSelector.set(selector);
+    public void bind() {
         NamespaceContextSelector.pushCurrentSelector(selector);
     }
 
-    public static void endComponentStart() {
+    public void unbind(){
         NamespaceContextSelector.popCurrentSelector();
-        localSelector.set(null);
     }
 
 }
