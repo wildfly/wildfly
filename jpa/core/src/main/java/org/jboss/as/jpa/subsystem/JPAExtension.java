@@ -36,6 +36,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.processor.PersistenceProviderAdaptorLoader;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
@@ -98,6 +99,12 @@ public class JPAExtension implements Extension {
         nodeRegistration.registerOperationHandler(DESCRIBE, JPADescribeHandler.INSTANCE, JPADescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         nodeRegistration.registerReadWriteAttribute(CommonAttributes.DEFAULT_DATASOURCE, null, JPADefaultDatasourceWriteHandler.INSTANCE, Storage.CONFIGURATION);
         registration.registerXMLElementWriter(parser);
+
+        try {
+            PersistenceProviderLoader.loadDefaultProvider();
+        } catch (ModuleLoadException e) {
+            JPA_LOGGER.errorPreloadingDefaultProvider(e);
+        }
 
         try {
             // load the default persistence provider adaptor
