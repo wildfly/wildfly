@@ -210,7 +210,7 @@ public final class Main {
         initialCommand.addAll(smOptions);
         initialCommand.add("-D" + "jboss.home.dir=" + jbossHome);
 
-        processController.addProcess(HOST_CONTROLLER_PROCESS_NAME, initialCommand, Collections.<String, String>emptyMap(), currentWorkingDir, true);
+        processController.addProcess(HOST_CONTROLLER_PROCESS_NAME, initialCommand, Collections.<String, String>emptyMap(), currentWorkingDir, true, true);
         processController.startProcess(HOST_CONTROLLER_PROCESS_NAME);
 
         final Thread shutdownThread = new Thread(new Runnable() {

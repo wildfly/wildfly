@@ -79,7 +79,7 @@ public interface Connection extends Closeable {
 
     /**
      * Records the current message handler, which can be reset using
-     * {@link #resetMessageHandler()}
+     * {@link #restoreMessageHandler()}
      */
     void backupMessageHandler();
 
