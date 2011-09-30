@@ -59,12 +59,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.ExtensionAddHandler;
-import org.jboss.as.controller.operations.common.ExtensionRemoveHandler;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
@@ -241,13 +237,6 @@ public class HostModelUtil {
         hostRegistration.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false);
         SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(configurationPersister.getHostPersister());
         hostRegistration.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
-
-        //Extensions
-        ManagementResourceRegistration extensions = hostRegistration.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-        ExtensionContext extensionContext = new ExtensionContextImpl(hostRegistration, null, configurationPersister, ExtensionContext.ProcessType.SLAVE_HOST_CONTROLLER);
-        ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
-        extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
-        extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);
 
         // Jvms
         final ManagementResourceRegistration jvms = hostRegistration.registerSubModel(PathElement.pathElement(JVM), CommonProviders.JVM_PROVIDER);
