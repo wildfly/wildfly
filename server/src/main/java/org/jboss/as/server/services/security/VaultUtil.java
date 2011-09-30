@@ -21,11 +21,11 @@
  */
 package org.jboss.as.server.services.security;
 
-import java.util.StringTokenizer;
-
 import org.jboss.security.vault.SecurityVault;
 import org.jboss.security.vault.SecurityVaultException;
 import org.jboss.security.vault.SecurityVaultFactory;
+
+import java.util.StringTokenizer;
 
 /**
  * Common utility methods associated with the {@link SecurityVault}
@@ -42,7 +42,7 @@ public class VaultUtil {
      * @return
      */
     public static boolean isVaultFormat(String str) {
-        return str.startsWith(VAULT_PREFIX);
+        return str != null && str.startsWith(VAULT_PREFIX);
     }
 
     /**
