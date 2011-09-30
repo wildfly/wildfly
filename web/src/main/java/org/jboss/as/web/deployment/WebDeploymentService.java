@@ -27,7 +27,7 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.web.NamingValve;
+import org.jboss.as.web.ThreadBindingListener;
 import org.jboss.as.web.SetupValve;
 import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
 import org.jboss.logging.Logger;
@@ -64,8 +64,8 @@ class WebDeploymentService implements Service<Context> {
         context.setRealm(realm.getValue());
 
         JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
+        context.setThreadBindingListener(new ThreadBindingListener(namespaceSelector.getOptionalValue()));
         try {
-            NamingValve.beginComponentStart(namespaceSelector.getOptionalValue());
             SetupValve.beginComponentStart(setupActions);
             try {
                 try {
@@ -80,7 +80,6 @@ class WebDeploymentService implements Service<Context> {
                 }
                 log.info("registering web context: " + context.getName());
             } finally {
-                NamingValve.endComponentStart();
                 SetupValve.endComponentStart();
             }
         } finally {
