@@ -34,11 +34,15 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-testsuite-stress</artifactId>
+    <version>7.1.0.Alpha1-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Stress Tests</name>
 
     <properties>
         <skip.stress.tests>false</skip.stress.tests>
+
+        <jbosstest.threadcount>10</jbosstest.threadcount>
+        <jbosstest.iterationcount>1000</jbosstest.iterationcount>
     </properties>
 
 
@@ -65,6 +69,13 @@
             <properties>
                 <skip.stress.tests>true</skip.stress.tests>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-arquillian-container-managed</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 </project>
