@@ -38,6 +38,7 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.jpa.util.ManagementUtil;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -542,8 +543,10 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             final String scopedPersistenceUnitName = pu.getScopedPersistenceUnitName();
             // path to management data will be: PROVIDER_LABEL/pu/ScopedPersistenceUnitName
             final ModelNode node = deploymentUnit.getDeploymentSubsystemModel("jpa");
-            ModelNode perPuNode = deploymentUnit.createDeploymentSubModel("jpa", PathElement.pathElement(providerLabel,scopedPersistenceUnitName));
+            ModelNode perPuNode = deploymentUnit.createDeploymentSubModel("jpa", PathElement.pathElement(providerLabel,
+                ManagementUtil.filterScopedPuNameForManagement(scopedPersistenceUnitName)));
             perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
         }
     }
+
 }
