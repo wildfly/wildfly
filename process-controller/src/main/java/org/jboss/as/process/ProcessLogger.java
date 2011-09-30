@@ -244,4 +244,15 @@ interface ProcessLogger extends BasicLogger {
     @Message(id = 12019, value = "Stream processing failed for process '%s': %s")
     void streamProcessingFailed(String processName, Throwable error);
 
+    /**
+     * Logs an informational message that the respawn is waiting until another attempt
+     * is made to restart the process.
+     *
+     * @param seconds the seconds
+     * @param processName the process name
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 12020, value = "Waiting %d seconds until trying to restart process %s.")
+    void waitingToRestart(int seconds, String processName);
+
 }

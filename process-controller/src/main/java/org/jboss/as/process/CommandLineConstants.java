@@ -50,8 +50,11 @@ public class CommandLineConstants {
     public static final String OLD_DEFAULT_JVM = "-default-jvm";
     public static final String DEFAULT_JVM = "--default-jvm";
 
+    /** Flag indicating when a process was restarted. */
+    public static final String PROCESS_RESTARTED = "--process-restarted";
+
     /** Passed in when the host controller is respawned by process controller */
-    public static final String RESTART_HOST_CONTROLLER = "--restarted-host-controller";
+    public static final String RESTART_HOST_CONTROLLER = PROCESS_RESTARTED;
 
     /** Passed in to a slave host controller to get a backup of all files on the domain controller" */
     public static final String OLD_BACKUP_DC = "-backup";
