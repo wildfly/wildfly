@@ -52,9 +52,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.EnumSet;
 
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
-import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.common.ExtensionAddHandler;
@@ -258,7 +258,8 @@ public class DomainModelUtil {
 
         // Extensions
         final ManagementResourceRegistration extensions = root.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-        final ExtensionContext extensionContext = new ExtensionContextImpl(profile, deployments, configurationPersister);
+        final ExtensionContext extensionContext = new ExtensionContextImpl(profile, deployments, configurationPersister,
+                isMaster ? ExtensionContext.ProcessType.MASTER_HOST_CONTROLLER : ExtensionContext.ProcessType.SLAVE_HOST_CONTROLLER);
         final ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
         extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
         extensions.registerOperationHandler(ExtensionRemoveHandler.OPERATION_NAME, ExtensionRemoveHandler.INSTANCE, ExtensionRemoveHandler.INSTANCE, false);

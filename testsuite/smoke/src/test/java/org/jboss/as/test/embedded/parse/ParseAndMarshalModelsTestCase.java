@@ -140,7 +140,6 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -424,7 +423,7 @@ public class ParseAndMarshalModelsTestCase {
 
                 //Extensions
                 ManagementResourceRegistration extensions = hostRegistration.registerSubModel(PathElement.pathElement(EXTENSION), CommonProviders.EXTENSION_PROVIDER);
-                ExtensionContext extensionContext = new ExtensionContextImpl(hostRegistration, null, persister);
+                ExtensionContext extensionContext = new ExtensionContextImpl(hostRegistration, null, persister, ExtensionContext.ProcessType.STANDALONE_SERVER);
                 ExtensionAddHandler addExtensionHandler = new ExtensionAddHandler(extensionContext);
                 extensions.registerOperationHandler(ExtensionAddHandler.OPERATION_NAME, addExtensionHandler, addExtensionHandler, false);
 
