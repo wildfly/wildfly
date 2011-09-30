@@ -24,7 +24,10 @@ package org.jboss.as.ejb3.remote;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
+import org.jboss.as.ejb3.component.AsyncInvocationTask;
+import org.jboss.as.ejb3.component.CancellationFlag;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -83,20 +86,20 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
     @Override
     protected Future<?> processInvocation(final EJBClientInvocationContext<Void> invocation, final EJBReceiverContext receiverContext) throws Exception {
+
         final EjbDeploymentInformation ejb = findBean(invocation.getAppName(), invocation.getModuleName(), invocation.getDistinctName(), invocation.getBeanName());
-        //TODO: we need a better way to get the correct view
+        final EJBComponent ejbComponent = ejb.getEjbComponent();
+
         final Class<?> viewClass = invocation.getViewClass();
         final ComponentView view = ejb.getView(viewClass.getName());
         if (view == null) {
             throw new RuntimeException("Could not find view " + viewClass + " for ejb " + ejb.getEjbName());
         }
 
-        //TODO: this needs to be pass by value
-        //we really need to setup client interceptors to handle this somehow
-
-        final Method invokedMethod = invocation.getInvokedMethod();
         //TODO: this is not very efficent
-        final Method method = view.getMethod(invokedMethod.getName(), DescriptorUtils.methodDescriptor(invokedMethod));
+        final Method method = view.getMethod(invocation.getInvokedMethod().getName(), DescriptorUtils.methodDescriptor(invocation.getInvokedMethod()));
+
+        final boolean async = view.isAsynchronous(method);
 
         final Object[] parameters;
         if (invocation.getParameters() == null) {
@@ -104,7 +107,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         } else {
             parameters = new Object[invocation.getParameters().length];
             for (int i = 0; i < parameters.length; ++i) {
-                parameters[i] = clone(method.getParameterTypes()[i], invocation.getParameters()[i],allowPassByReference);
+                parameters[i] = clone(method.getParameterTypes()[i], invocation.getParameters()[i], allowPassByReference);
             }
         }
 
@@ -114,20 +117,35 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         context.setMethod(method);
         context.setTarget(invocation.getInvokedProxy());
         context.setContextData(new HashMap<String, Object>());
-        context.putPrivateData(Component.class, ejb.getEjbComponent());
+        context.putPrivateData(Component.class, ejbComponent);
         context.putPrivateData(ComponentView.class, view);
-        final Object result = view.invoke(context);
-        if (result instanceof AsyncResult) {
-            final Object futureResult = ((Future) result).get();
-            //this will always be cloned, as we cannot reliably determine the target type
-            return new AsyncResult<Object>(new AsyncResult<Object>(clone(futureResult.getClass(), futureResult, false)));
-        }
 
-        //we do not marshal the return type unless we have to, the spec only says we have to
-        //pass parameters by reference
-        //TODO: investigate the implications of this further
-        final Object clonedResult = clone(method.getReturnType(), result, true);
-        return new AsyncResult<Object>(clonedResult);
+        if (async) {
+            if (ejbComponent instanceof SessionBeanComponent) {
+                final SessionBeanComponent component = (SessionBeanComponent) ejbComponent;
+                final CancellationFlag flag = new CancellationFlag();
+                final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
+
+                    @Override
+                    protected Object runInvocation() throws Exception {
+                        return view.invoke(context);
+                    }
+                };
+                context.putPrivateData(CancellationFlag.class, flag);
+                component.getAsynchronousExecutor().submit(task);
+                //TODO: we do not clone the result of an async task
+                return new AsyncResult<Object>(task);
+            } else {
+                throw new RuntimeException("Cannot perform asynchronous local invocation for component that is not a session bean");
+            }
+        } else {
+            final Object result = view.invoke(context);
+            //we do not marshal the return type unless we have to, the spec only says we have to
+            //pass parameters by reference
+            //TODO: investigate the implications of this further
+            final Object clonedResult = clone(method.getReturnType(), result, true);
+            return new AsyncResult<Object>(clonedResult);
+        }
     }
 
     private Object clone(final Class<?> target, final Object object, final boolean allowPassByReference) {

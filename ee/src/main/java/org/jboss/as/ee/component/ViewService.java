@@ -62,6 +62,7 @@ public final class ViewService implements Service<ComponentView> {
     private final ProxyFactory<?> proxyFactory;
     private final Set<Method> allowedMethods;
     private final Class<?> viewClass;
+    private final Set<Method> asyncMethods;
     private volatile ComponentView view;
 
     private static InterceptorFactory DESTROY_INTERCEPTOR = new ImmediateInterceptorFactory(new Interceptor() {
@@ -94,6 +95,7 @@ public final class ViewService implements Service<ComponentView> {
         this.viewInterceptorFactories = viewInterceptorFactories;
         this.clientInterceptorFactories = clientInterceptorFactories;
         allowedMethods = Collections.unmodifiableSet(viewInterceptorFactories.keySet());
+        this.asyncMethods = viewConfiguration.getAsyncMethods();
     }
 
     public void start(final StartContext context) throws StartException {
@@ -164,7 +166,7 @@ public final class ViewService implements Service<ComponentView> {
                 clientEntryPoints.put(method, clientInterceptorFactories.get(method).create(factoryContext));
             }
 
-            final ComponentViewInstance instance = new ViewInstance(viewInterceptors,  clientPreDestroyInterceptor, clientEntryPoints );
+            final ComponentViewInstance instance = new ViewInstance(viewInterceptors, clientPreDestroyInterceptor, clientEntryPoints);
             try {
                 InterceptorContext context = new InterceptorContext();
                 context.putPrivateData(ComponentView.class, this);
@@ -206,10 +208,15 @@ public final class ViewService implements Service<ComponentView> {
         @Override
         public Method getMethod(final String name, final String descriptor) {
             Method method = this.methods.get(new MethodDescription(name, descriptor));
-            if(method == null) {
+            if (method == null) {
                 throw new IllegalArgumentException("Could not find method " + name + " " + descriptor + " on view " + viewClass + " of " + component.getComponentClass());
             }
             return method;
+        }
+
+        @Override
+        public boolean isAsynchronous(final Method method) {
+            return asyncMethods.contains(method);
         }
 
         class ViewInstance implements ComponentViewInstance {
@@ -218,7 +225,7 @@ public final class ViewService implements Service<ComponentView> {
             private final Map<Method, Interceptor> clientEntryPoints;
             private final Interceptor preDestroyInterceptor;
 
-            ViewInstance(final Map<Method, Interceptor> viewEntryPoints,  final Interceptor preDestroyInterceptor, Map<Method, Interceptor> clientEntryPoints) {
+            ViewInstance(final Map<Method, Interceptor> viewEntryPoints, final Interceptor preDestroyInterceptor, Map<Method, Interceptor> clientEntryPoints) {
                 this.viewEntryPoints = viewEntryPoints;
                 this.preDestroyInterceptor = preDestroyInterceptor;
                 this.clientEntryPoints = clientEntryPoints;

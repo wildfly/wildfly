@@ -154,6 +154,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
                                     MethodIdentifier id = MethodIdentifier.getIdentifierForMethod(method);
                                     if (componentDescription.getAsynchronousMethods().contains(id)) {
                                         addAsyncInterceptor(configuration, method);
+                                        configuration.addAsyncMethod(method);
                                     }
                                 }
                             }

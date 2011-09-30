@@ -46,7 +46,9 @@ public class StatelessRemoteBean implements RemoteInterface, LocalInterface {
     @Asynchronous
     public void modifyArray(final String[] array) {
         try {
-            startLatch.await(5, TimeUnit.SECONDS);
+            if(!startLatch.await(5, TimeUnit.SECONDS)) {
+                throw new RuntimeException("Invocation was not asynchronous");
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -61,9 +63,12 @@ public class StatelessRemoteBean implements RemoteInterface, LocalInterface {
     }
 
     @Override
+    @Asynchronous
     public void passByReference(final String[] array) {
         try {
-            startLatch.await(5, TimeUnit.SECONDS);
+            if(!startLatch.await(5, TimeUnit.SECONDS)) {
+                throw new RuntimeException("Invocation was not asynchronous");
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

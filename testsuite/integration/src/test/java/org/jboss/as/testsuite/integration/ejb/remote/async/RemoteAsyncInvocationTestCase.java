@@ -69,7 +69,9 @@ public class RemoteAsyncInvocationTestCase {
         RemoteInterface remote = lookup(StatelessRemoteBean.class.getSimpleName(), RemoteInterface.class);
         remote.modifyArray(array);
         StatelessRemoteBean.startLatch.countDown();
-        StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS);
+        if (!StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Invocation was not asynchronous");
+        }
         Assert.assertEquals("hello", array[0]);
     }
 
@@ -80,7 +82,10 @@ public class RemoteAsyncInvocationTestCase {
         StatelessRunningBean remote = lookup(StatelessRunningBean.class.getSimpleName(), StatelessRunningBean.class);
         remote.modifyArray(array);
         StatelessRemoteBean.startLatch.countDown();
-        StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS);
+
+        if (!StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Invocation was not asynchronous");
+        }
         Assert.assertEquals("hello", array[0]);
     }
 
@@ -91,7 +96,10 @@ public class RemoteAsyncInvocationTestCase {
         LocalInterface remote = lookup(StatelessRemoteBean.class.getSimpleName(), LocalInterface.class);
         remote.passByReference(array);
         StatelessRemoteBean.startLatch.countDown();
-        StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS);
+
+        if (!StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Invocation was not asynchronous");
+        }
         Assert.assertEquals("goodbye", array[0]);
     }
 

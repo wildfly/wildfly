@@ -92,4 +92,7 @@ public interface ComponentView {
      * @throws IllegalArgumentException If the method cannot be found
      */
     Method getMethod(final String name, final String descriptor);
+
+
+    boolean isAsynchronous(final Method method);
 }

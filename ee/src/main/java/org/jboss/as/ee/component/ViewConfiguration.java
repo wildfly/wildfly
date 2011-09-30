@@ -30,9 +30,11 @@ import org.jboss.msc.service.ServiceName;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A configuration of a component view.
@@ -52,6 +54,7 @@ public class ViewConfiguration {
     private final ProxyFactory<?> proxyFactory;
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
     private final Class<?> viewClass;
+    private final Set<Method> asyncMethods = new HashSet<Method>();
 
     /**
      * Construct a new instance.
@@ -285,4 +288,20 @@ public class ViewConfiguration {
         return viewClass;
     }
 
+    /**
+     * Gets all async methods for the view
+     * @return The async methods
+     */
+    public Set<Method> getAsyncMethods() {
+        return Collections.unmodifiableSet(asyncMethods);
+    }
+
+    /**
+     * Marks a method on the view as asynchronous
+     *
+     * @param method The method
+     */
+    public void addAsyncMethod(Method method) {
+        this.asyncMethods.add(method);
+    }
 }

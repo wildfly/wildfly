@@ -29,12 +29,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * An asynchronous execution interceptor for methods returning {@link Future}.  Because asynchronous invocations
@@ -67,7 +62,13 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final InterceptorContext asyncInterceptorContext = context.clone();
                 final CancellationFlag flag = new CancellationFlag();
-                final Task task = new Task(asyncInterceptorContext, flag);
+                final AsyncInvocationTask task = new AsyncInvocationTask( flag) {
+
+                    @Override
+                    protected Object runInvocation() throws Exception {
+                        return asyncInterceptorContext.proceed();
+                    }
+                };
                 asyncInterceptorContext.putPrivateData(CancellationFlag.class, flag);
                 component.getAsynchronousExecutor().execute(task);
                 return task;
@@ -75,121 +76,4 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
         };
     }
 
-    private static class Task implements Runnable, Future {
-        private final InterceptorContext context;
-        private final CancellationFlag cancelledFlag;
-
-        private volatile boolean running = false;
-
-        private boolean done = false;
-        private Object result;
-        private Exception failed;
-
-        private Task(final InterceptorContext context, final CancellationFlag cancelledFlag) {
-            this.context = context;
-            this.cancelledFlag = cancelledFlag;
-        }
-
-        @Override
-        public synchronized boolean cancel(final boolean mayInterruptIfRunning) {
-            if (!mayInterruptIfRunning && running) {
-                return false;
-            }
-            cancelledFlag.set(true);
-            if (!running) {
-                done();
-                return true;
-            }
-            return false;
-        }
-
-        public void run() {
-            synchronized (this) {
-                running = true;
-                if (cancelledFlag.get()) {
-                    return;
-                }
-            }
-            Object result;
-            try {
-                result = context.proceed();
-            } catch (Exception e) {
-                setFailed(e);
-                return;
-            }
-            Future<?> asyncResult = (Future<?>) result;
-            try {
-                if(asyncResult != null) {
-                    result = asyncResult.get();
-                }
-            } catch (InterruptedException e) {
-                setFailed(new IllegalStateException(e));
-                return;
-            } catch (ExecutionException e) {
-                try {
-                    throw e.getCause();
-                } catch (Exception ex) {
-                    setFailed(ex);
-                    return;
-                } catch (Throwable throwable) {
-                    setFailed(new UndeclaredThrowableException(throwable));
-                    return;
-                }
-            }
-            setResult(result);
-            return;
-        }
-
-        private synchronized void setResult(final Object result) {
-            this.result = result;
-            done();
-        }
-
-        private synchronized void setFailed(final Exception e) {
-            this.failed = e;
-            done();
-        }
-
-        private void done() {
-            done = true;
-            notifyAll();
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return cancelledFlag.get();
-        }
-
-        @Override
-        public boolean isDone() {
-            return done;
-        }
-
-        @Override
-        public synchronized Object get() throws InterruptedException, ExecutionException {
-            while (!isDone()) {
-                wait();
-            }
-            if (failed != null) {
-                throw new ExecutionException(failed);
-            }
-            return result;
-        }
-
-        @Override
-        public synchronized Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            if (!isDone()) {
-                wait(unit.toMillis(timeout));
-                if (!isDone()) {
-                    throw new TimeoutException("Task did not complete in " + timeout + " " + unit);
-                }
-            }
-            if (cancelledFlag.get()) {
-                throw new CancellationException("Task was cancelled");
-            } else if (failed != null) {
-                throw new ExecutionException(failed);
-            }
-            return result;
-        }
-    }
 }
