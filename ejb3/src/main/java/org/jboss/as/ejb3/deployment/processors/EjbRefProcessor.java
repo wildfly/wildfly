@@ -29,14 +29,12 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.EJBLocalReferenceMetaData;
 import org.jboss.metadata.javaee.spec.EJBLocalReferencesMetaData;
-import org.jboss.msc.service.ServiceName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,9 +99,6 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                         bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                     }
                 } else if (!isEmpty(ejbName)) {
-                    //TODO: implement cross deployment references
-                    final ServiceName beanServiceName = deploymentUnit.getServiceName()
-                            .append("component").append(ejbName).append("VIEW").append(localInterfaceType.getName()).append(MethodIntf.LOCAL.toString());
                     bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, localInterfaceType.getName()));
                 } else {
                     bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(localInterfaceType.getName()));

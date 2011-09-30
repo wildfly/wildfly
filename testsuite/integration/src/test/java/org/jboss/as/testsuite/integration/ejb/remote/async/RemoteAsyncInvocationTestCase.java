@@ -74,6 +74,17 @@ public class RemoteAsyncInvocationTestCase {
     }
 
     @Test
+    public void testRemoteAsyncInvocationByValueFromEjbInjcation() throws Exception {
+        StatelessRemoteBean.reset();
+        String[] array = {"hello"};
+        StatelessRunningBean remote = lookup(StatelessRunningBean.class.getSimpleName(), StatelessRunningBean.class);
+        remote.modifyArray(array);
+        StatelessRemoteBean.startLatch.countDown();
+        StatelessRemoteBean.doneLatch.await(5, TimeUnit.SECONDS);
+        Assert.assertEquals("hello", array[0]);
+    }
+
+    @Test
     public void testLocalAsyncInvocationByValue() throws Exception {
         StatelessRemoteBean.reset();
         String[] array = {"hello"};
