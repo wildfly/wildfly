@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -47,6 +48,7 @@ import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -865,6 +867,12 @@ public class ComponentDescription {
                 proxyConfiguration.setClassLoader(module.getClassLoader());
                 proxyConfiguration.setProtectionDomain(viewClass.getProtectionDomain());
                 proxyConfiguration.setMetadataSource(proxyReflectionIndex);
+                if (view.isSerializable()) {
+                    proxyConfiguration.addAdditionalInterface(Serializable.class);
+                    if (view.isUseWriteReplace()) {
+                        proxyConfiguration.addAdditionalInterface(WriteReplaceInterface.class);
+                    }
+                }
 
                 //we define it in the modules class loader to prevent permgen leaks
                 if (viewClass.isInterface()) {

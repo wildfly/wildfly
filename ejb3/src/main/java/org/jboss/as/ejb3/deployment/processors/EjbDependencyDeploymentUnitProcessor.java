@@ -53,6 +53,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
      * TODO: restrict visibility
      */
     private static final ModuleIdentifier EJB3_TIMERS = ModuleIdentifier.create("org.jboss.as.ejb3");
+    private static final ModuleIdentifier EJB_CLIENT = ModuleIdentifier.create("org.jboss.ejb-client");
 
 
     /**
@@ -86,6 +87,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB3_TIMERS, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, false));
     }
 
     @Override

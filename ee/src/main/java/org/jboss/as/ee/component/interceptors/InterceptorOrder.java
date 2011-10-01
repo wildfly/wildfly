@@ -144,7 +144,8 @@ public class InterceptorOrder {
         public static final int EJB_EQUALS_HASHCODE = 0x101;
         public static final int LOCAL_ASYNC_INVOCATION = 0x200;
         public static final int ASSOCIATING_INTERCEPTOR = 0x300;
-        public static final int CLIENT_DISPATCHER = 0x400;
+        public static final int WRITE_REPLACE = 0x400;
+        public static final int CLIENT_DISPATCHER = 0x500;
 
         private Client() {
         }

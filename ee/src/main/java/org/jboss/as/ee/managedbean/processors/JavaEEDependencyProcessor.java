@@ -50,6 +50,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
 
     private static ModuleIdentifier JBOSS_INVOCATION_ID = ModuleIdentifier.create("org.jboss.invocation");
+    private static ModuleIdentifier JBOSS_AS_EE = ModuleIdentifier.create("org.jboss.as.ee");
 
 
     /**
@@ -72,6 +73,10 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         ModuleDependency invocation = new ModuleDependency(moduleLoader, JBOSS_INVOCATION_ID, false, false, false);
         invocation.addImportFilter(PathFilters.is("org.jboss.invocation.proxy.classloading"), true);
         moduleSpecification.addSystemDependency(invocation);
+
+        ModuleDependency ee = new ModuleDependency(moduleLoader, JBOSS_AS_EE, false, false, false);
+        ee.addImportFilter(PathFilters.is("org.jboss.as.ee.component.serialization"), true);
+        moduleSpecification.addSystemDependency(ee);
     }
 
     public void undeploy(final DeploymentUnit context) {

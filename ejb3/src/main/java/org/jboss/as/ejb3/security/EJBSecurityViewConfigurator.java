@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -68,6 +69,9 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         for (final Method viewMethod : viewMethods) {
             // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
             if (!Modifier.isPublic(viewMethod.getModifiers())) {
+                continue;
+            }
+            if(viewMethod.getDeclaringClass() == WriteReplaceInterface.class) {
                 continue;
             }
             final EJBMethodSecurityMetaData ejbMethodSecurityMetaData = new EJBMethodSecurityMetaData(componentConfiguration, viewClassName, viewMethod);

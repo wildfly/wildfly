@@ -32,11 +32,14 @@ import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
@@ -122,7 +125,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName);
 
         addStatefulSessionSynchronizationInterceptor();
-
         addInitMethodInvokingInterceptor();
     }
 
@@ -224,7 +226,24 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         // setup the instance associating interceptors
         this.addStatefulInstanceAssociatingInterceptor(view);
 
+        this.addViewSerializationInterceptor(view);
 
+
+    }
+
+    private void addViewSerializationInterceptor(final ViewDescription view) {
+        view.setSerializable(true);
+        view.setUseWriteReplace(true);
+        view.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+                ClassReflectionIndex<WriteReplaceInterface> classIndex = index.getClassIndex(WriteReplaceInterface.class);
+                for(Method method : classIndex.getMethods()) {
+                    configuration.addClientInterceptor(method, new WriteReplaceInterceptor.Factory(configuration.getViewServiceName().getCanonicalName()), InterceptorOrder.Client.WRITE_REPLACE);
+                }
+            }
+        });
     }
 
     public void addRemoveMethod(final MethodIdentifier removeMethod, final boolean retainIfException) {

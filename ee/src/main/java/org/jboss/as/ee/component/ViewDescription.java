@@ -57,6 +57,8 @@ public class ViewDescription {
     private final List<String> viewNameParts = new ArrayList<String>();
     private final Set<String> bindingNames = new HashSet<String>();
     private final Deque<ViewConfigurator> configurators = new ArrayDeque<ViewConfigurator>();
+    private boolean serializable;
+    private boolean useWriteReplace;
 
     /**
      * Construct a new instance.
@@ -229,5 +231,21 @@ public class ViewDescription {
                 context.setTarget(null);
             }
         }
+    }
+
+    public boolean isSerializable() {
+        return serializable;
+    }
+
+    public void setSerializable(final boolean serializable) {
+        this.serializable = serializable;
+    }
+
+    public boolean isUseWriteReplace() {
+        return useWriteReplace;
+    }
+
+    public void setUseWriteReplace(final boolean useWriteReplace) {
+        this.useWriteReplace = useWriteReplace;
     }
 }
