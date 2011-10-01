@@ -179,8 +179,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         final EJBComponent component = ejbInfo.getEjbComponent();
         if (component instanceof StatefulSessionComponent) {
             final StatefulSessionComponent stateful = (StatefulSessionComponent) component;
-            //return stateful.createSession();
-            return null;
+            return stateful.createSession();
         } else {
             throw new IllegalArgumentException("EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName);
         }
