@@ -22,6 +22,9 @@
 
 package org.jboss.as.jpa.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * configuration properties that may appear in persistence.xml
  *
@@ -34,14 +37,55 @@ public class Configuration {
     public static final String PROVIDER_MODULE = "jboss.as.jpa.providerModule";
 
     /**
+     * Hibernate 4 persistence provider
+     */
+    public static final String PROVIDER_MODULE_HIBERNATE4 = "org.hibernate";
+
+    /**
+     * Hibernate OGM persistence provider
+     */
+    public static final String PROVIDER_MODULE_HIBERNATE_OGM = "org.hibernate:ogm";
+
+    /**
+     * Hibernate 3 persistence provider, if this provider is chosen. ADAPTER_MODULE_HIBERNATE3 will be enabled
+     */
+    public static final String PROVIDER_MODULE_HIBERNATE3 = "org.hibernate:3";
+
+    public static final String PROVIDER_MODULE_ECLIPSELINK = "org.eclipse.persistence";
+
+    public static final String PROVIDER_MODULE_TOPLINK = "oracle.toplink";
+
+    /**
      * default if no PROVIDER_MODULE is specified.
      */
-    public static final String PROVIDER_MODULE_DEFAULT = "org.hibernate";
+    public static final String PROVIDER_MODULE_DEFAULT = PROVIDER_MODULE_HIBERNATE4;
+
+    /**
+     * Hibernate persistence provider class
+     */
+    public static final String PROVIDER_CLASS_HIBERNATE = "org.hibernate.ejb.HibernatePersistence";
+
+    /**
+     * Hibernate OGM persistence provider class
+     */
+    public static final String PROVIDER_CLASS_HIBERNATE_OGM = "org.hibernate.ogm.jpa.HibernateOgmPersistence";
+
+    /**
+     * TopLink provider class names
+     */
+    public static final String PROVIDER_CLASS_TOPLINK_ESSENTIALS = "oracle.toplink.essentials.PersistenceProvider";
+
+    public static final String PROVIDER_CLASS_TOPLINK = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider";
+
+    /**
+     * EclipseLink provider class name
+     */
+    public static final String PROVIDER_CLASS_ECLIPSELINK = "org.eclipse.persistence.jpa.PersistenceProvider";
 
     /**
      * default provider class
      */
-    public static final String PROVIDER_CLASS_DEFAULT = "org.hibernate.ejb.HibernatePersistence";
+    public static final String PROVIDER_CLASS_DEFAULT = PROVIDER_CLASS_HIBERNATE;
 
     /**
      * if the PROVIDER_MODULE is this value, it is expected that the application has its own provider
@@ -54,10 +98,6 @@ public class Configuration {
      */
     public static final String PROVIDER_MODULE_HIBERNATE3_BUNDLED = "hibernate3-bundled";
 
-    /**
-     * Hibernate 3 persistence provider, if this provider is chosen. ADAPTER_MODULE_HIBERNATE3 will be enabled
-     */
-    public static final String PROVIDER_MODULE_HIBERNATE3 = "org.hibernate:3";
 
     /**
      * Hibernate 3 persistence provider adaptor
@@ -79,5 +119,27 @@ public class Configuration {
      */
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
 
+    // key = provider class name, value = module name
+    private static final Map<String,String> providerClassToModuleName = new HashMap<String,String>();
+
+    static {
+        // always choose the default hibernate version for the Hibernate provider class mapping
+        // if the user wants a different version. they can specify the provider module name
+        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE, PROVIDER_MODULE_HIBERNATE4);
+        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE_OGM,PROVIDER_MODULE_HIBERNATE_OGM);
+        providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK_ESSENTIALS, PROVIDER_MODULE_TOPLINK);
+        providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK, PROVIDER_MODULE_TOPLINK);
+        providerClassToModuleName.put(PROVIDER_CLASS_ECLIPSELINK, PROVIDER_MODULE_ECLIPSELINK);
+    }
+
+    /**
+     * Get the provider module name for the specified provider class.
+     *
+     * @param providerClassName
+     * @return provider module name or null if not known
+     */
+    public static String getProviderModuleNameFromProviderClassName(final String providerClassName) {
+        return providerClassToModuleName.get(providerClassName);
+    }
 
 }

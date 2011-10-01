@@ -380,20 +380,6 @@ public interface JpaMessages {
     RuntimeException hibernateOnlyEntityManagerFactory();
 
     /**
-     * Creates an exception indicating the persistence unit, represented by the {@code puName} parameter, used an
-     * incorrect persistence provider class name.
-     *
-     * @param puName                       the persistence unit name.
-     * @param persistenceProviderModule    the module name.
-     * @param persistenceProviderClassName the provider class name.
-     * @param providerClasses              a collection providers.
-     *
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 11450, value = "%s used incorrect persistence provider class name. Module = %s, persistenceProvider specified = %s, providers found = {%s}")
-    DeploymentUnitProcessingException incorrectPersistenceProvider(String puName, String persistenceProviderModule, String persistenceProviderClassName, Collection<?> providerClasses);
-
-    /**
      * Creates an exception indicating the persistence unit name contains an invalid character.
      *
      * @param persistenceUnitName the persistence unit name.

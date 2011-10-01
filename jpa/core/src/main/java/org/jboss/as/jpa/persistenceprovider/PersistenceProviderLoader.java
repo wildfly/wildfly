@@ -32,7 +32,7 @@ import javax.persistence.spi.PersistenceProvider;
 import java.util.ServiceLoader;
 
 /**
- * For pre-loading persistence providers
+ * For loading persistence provider modules
  *
  * @author Scott Marlow
  */
@@ -40,12 +40,22 @@ public class PersistenceProviderLoader {
 
     /**
      * pre-loads the default persistence provider
+     *
      * @throws ModuleLoadException
      */
     public static void loadDefaultProvider() throws ModuleLoadException {
+        loadProviderModuleByName(Configuration.PROVIDER_MODULE_DEFAULT);
+    }
 
+    /**
+     * Loads the specified JPA persistence provider module name
+     *
+     * @param moduleName
+     * @throws ModuleLoadException
+     */
+    public static void loadProviderModuleByName(String moduleName) throws ModuleLoadException {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(Configuration.PROVIDER_MODULE_DEFAULT));
+        Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
         final ServiceLoader<PersistenceProvider> serviceLoader =
             module.loadService(PersistenceProvider.class);
         if (serviceLoader != null) {
@@ -56,5 +66,6 @@ public class PersistenceProviderLoader {
             }
         }
     }
+
 }
 
