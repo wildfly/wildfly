@@ -52,7 +52,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
      * Handles the exception that occured during a {@link StatefulSessionSynchronization transaction synchronization} callback
      * invocations.
      * <p/>
-     * This method discards the <code>statefulSessionComponentInstance</code> and resets the {@link #transactionKey} before
+     * This method discards the <code>statefulSessionComponentInstance</code> before
      * releasing the {@link #lock} held by this thread, for the <code>statefulSessionComponentInstance</code>
      *
      * @param statefulSessionComponentInstance
@@ -107,9 +107,10 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                     if (!synchronizationRegistered) {
                         // get the key to current transaction associated with this thread
                         currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
+                        int status = transactionSynchronizationRegistry.getTransactionStatus();
                         // if this SFSB instance is already associated with a different transaction, then it's an error
                         // if the thread is currently associated with a tx, then register a tx synchronization
-                        if (currentTransactionKey != null) {
+                        if (currentTransactionKey != null && status != Status.STATUS_COMMITTED) {
                             // register a tx synchronization for this SFSB instance
                             final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance);
                             transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
