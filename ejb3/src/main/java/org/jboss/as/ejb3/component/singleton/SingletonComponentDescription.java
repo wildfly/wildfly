@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.ComponentTypeIdentityInterceptorFactory;
+import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
@@ -65,6 +66,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     private boolean initOnStartup;
 
     private final List<ServiceName> dependsOn = new ArrayList<ServiceName>();
+
+    private DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
     /**
      * Construct a new instance.
@@ -212,5 +215,13 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     @Override
     public boolean isTimerServiceApplicable() {
         return true;
+    }
+
+    public DefaultAccessTimeoutService getDefaultAccessTimeoutProvider() {
+        return defaultAccessTimeoutProvider;
+    }
+
+    public void setDefaultAccessTimeoutProvider(final DefaultAccessTimeoutService defaultAccessTimeoutProvider) {
+        this.defaultAccessTimeoutProvider = defaultAccessTimeoutProvider;
     }
 }

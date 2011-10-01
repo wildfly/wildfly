@@ -65,13 +65,13 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INS
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 
 /**
- * User: Jaikiran Pai
+ * @author Jaikiran Pai
  */
-public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    public static final EJB3Subsystem11Parser INSTANCE = new EJB3Subsystem11Parser();
+    public static final EJB3Subsystem12Parser INSTANCE = new EJB3Subsystem12Parser();
 
-    private EJB3Subsystem11Parser() {
+    private EJB3Subsystem12Parser() {
     }
 
     /**
@@ -80,7 +80,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3Extension.NAMESPACE_1_1, false);
+        context.startSubsystemElement(EJB3Extension.NAMESPACE_1_2, false);
 
         ModelNode model = context.getModelNode();
         if (model.hasDefined(EJB3SubsystemModel.LITE)) {
@@ -132,6 +132,8 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
 
+        EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_ACCESS_TIMEOUT.marshallAsElement(model, writer);
+        EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_ACCESS_TIMEOUT.marshallAsElement(model, writer);
         // write the subsystem end element
         writer.writeEndElement();
     }
@@ -153,7 +155,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
         final EnumSet<EJB3SubsystemXMLElement> encountered = EnumSet.noneOf(EJB3SubsystemXMLElement.class);
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemNamespace.forUri(reader.getNamespaceURI())) {
-                case EJB3_1_1: {
+                case EJB3_1_2: {
                     final EJB3SubsystemXMLElement element = EJB3SubsystemXMLElement.forName(reader.getLocalName());
                     if (!encountered.add(element)) {
                         throw unexpectedElement(reader);
@@ -178,6 +180,16 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                             parseTimerService(reader, operations);
                             break;
                         }
+                        case DEFAULT_STATEFUL_ACCESS_TIMEOUT: {
+                            final String timeout = parseDefaultTimeout(reader, EJB3SubsystemModel.DEFAULT_STATEFUL_ACCESS_TIMEOUT);
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_ACCESS_TIMEOUT.parseAndSetParameter(timeout, ejb3SubsystemAddOperation, reader.getLocation());
+                            break;
+                        }
+                        case DEFAULT_SINGLETON_ACCESS_TIMEOUT: {
+                            final String timeout = parseDefaultTimeout(reader, EJB3SubsystemModel.DEFAULT_SINGLETON_ACCESS_TIMEOUT);
+                            EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_ACCESS_TIMEOUT.parseAndSetParameter(timeout, ejb3SubsystemAddOperation, reader.getLocation());
+                            break;
+                        }
                         default: {
                             throw unexpectedElement(reader);
                         }
@@ -189,6 +201,18 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
+    }
+
+    static String parseDefaultTimeout(XMLExtendedStreamReader reader, final String element) throws XMLStreamException {
+
+        // we don't expect any attributes for this element.
+        requireNoAttributes(reader);
+
+        final String value = reader.getElementText();
+        if (value == null || value.trim().isEmpty()) {
+            throw new XMLStreamException("Invalid value: " + value + " for '" + element + "' element", reader.getLocation());
+        }
+        return value.trim();
     }
 
     /**

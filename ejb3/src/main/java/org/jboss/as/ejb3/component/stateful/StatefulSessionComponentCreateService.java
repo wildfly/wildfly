@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.TCCLInterceptor;
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
+import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
@@ -44,6 +45,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InterceptorFactory afterCompletion;
     private final InterceptorFactory beforeCompletion;
     private final StatefulTimeoutInfo statefulTimeout;
+    private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
     /**
      * Construct a new instance.
@@ -61,6 +63,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.afterCompletion = interceptorFactoryChain(tcclInterceptorFactory, namespaceContextInterceptorFactory, SessionInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(beanClass, componentDescription.getAfterCompletion()));
         this.beforeCompletion = interceptorFactoryChain(tcclInterceptorFactory, namespaceContextInterceptorFactory, SessionInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(beanClass, componentDescription.getBeforeCompletion()));
         this.statefulTimeout = componentDescription.getStatefulTimeout();
+        this.defaultAccessTimeoutProvider = componentDescription.getDefaultAccessTimeoutProvider();
     }
 
     private static InterceptorFactory invokeMethodOnTarget(Class<?> beanClass, MethodDescription methodDescription) {
@@ -129,5 +132,9 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
 
     public StatefulTimeoutInfo getStatefulTimeout() {
         return statefulTimeout;
+    }
+
+    public DefaultAccessTimeoutService getDefaultAccessTimeoutProvider() {
+        return defaultAccessTimeoutProvider;
     }
 }

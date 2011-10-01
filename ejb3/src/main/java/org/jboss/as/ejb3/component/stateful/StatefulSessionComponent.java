@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.ExpiringCache;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
+import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
@@ -72,6 +73,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     private final InterceptorFactory afterCompletion;
     private final InterceptorFactory beforeCompletion;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
+    private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
     /**
      * Construct a new instance.
@@ -85,6 +87,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         this.afterCompletion = ejbComponentCreateService.getAfterCompletion();
         this.beforeCompletion = ejbComponentCreateService.getBeforeCompletion();
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
+        this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutProvider();
 
         final StatefulTimeoutInfo statefulTimeout = ejbComponentCreateService.getStatefulTimeout();
         if (statefulTimeout != null) {
@@ -133,7 +136,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
             return timeout;
         }
 
-        return new AccessTimeoutDetails(10, TimeUnit.SECONDS);
+        return defaultAccessTimeoutProvider.getDefaultAccessTimeout();
     }
 
     protected Interceptor createInterceptor(final InterceptorFactory factory) {
