@@ -49,7 +49,6 @@ import org.xnio.Options;
 import org.xnio.Xnio;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -139,17 +138,26 @@ public class EJBClientAPIUsageTestCase {
     public void testRemoteSLSBWithCustomObjects() throws Exception {
         final EmployeeManager proxy = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, EmployeeBean.class.getSimpleName(), EmployeeManager.class);
         Assert.assertNotNull("Received a null proxy", proxy);
-        final String[] nickNames = new String[] {"javauser", "rubyuser", "phpuser"};
+        final String[] nickNames = new String[]{"java-programmer", "ruby-programmer", "php-programmer"};
         final EJBClientContext ejbClientContext = EJBClientContext.create();
         final Employee employee = new Employee(1, "programmer");
+        Employee employeeWithNickNames = null;
         try {
             ejbClientContext.registerConnection(connection);
-            final Employee employeeWithNickNames = proxy.addNickNames(employee, nickNames);
-            Assert.assertEquals("Unexpected employee id", 1, employeeWithNickNames.getId());
-            Assert.assertEquals("Unexpected employee name", "programmer", employeeWithNickNames.getName());
-            Assert.assertTrue("Unexpected employee nick names", Arrays.equals(nickNames, employee.getNickNames().toArray()));
+            // invoke on the bean
+            employeeWithNickNames = proxy.addNickNames(employee, nickNames);
         } finally {
             EJBClientContext.suspendCurrent();
+        }
+        // check the id of the returned employee
+        Assert.assertEquals("Unexpected employee id", 1, employeeWithNickNames.getId());
+        // check the name of the returned employee
+        Assert.assertEquals("Unexpected employee name", "programmer", employeeWithNickNames.getName());
+        // check the number of nicknames
+        Assert.assertEquals("Unexpected number of nick names", nickNames.length, employeeWithNickNames.getNickNames().size());
+        // make sure the correct nick names are present
+        for (int i = 0; i < nickNames.length; i++) {
+            Assert.assertTrue("Employee was expected to have nick name: " + nickNames[i], employeeWithNickNames.getNickNames().contains(nickNames[i]));
         }
     }
 

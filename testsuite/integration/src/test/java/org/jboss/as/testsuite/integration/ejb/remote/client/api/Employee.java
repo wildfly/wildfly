@@ -43,7 +43,7 @@ public class Employee implements Serializable {
     }
 
     public String getName() {
-        return this.getName();
+        return this.name;
     }
 
     public int getId() {
