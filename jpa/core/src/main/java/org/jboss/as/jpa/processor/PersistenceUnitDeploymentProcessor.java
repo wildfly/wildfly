@@ -359,6 +359,15 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
         if (adaptor == null) {
             try {
+                if (adaptorModule == null &&
+                    (pu.getPersistenceProviderClassName() == null ||
+                     pu.getPersistenceProviderClassName().equals(Configuration.PROVIDER_CLASS_DEFAULT))) {
+                    // if using default provider, load default adapter module
+                    adaptorModule = Configuration.ADAPTER_MODULE_DEFAULT;
+                }
+                // will load the persistence provider adaptor (integration classes).  if adaptorModule is null
+                // the noop adaptor is returned (can be used against any provider but the integration classes
+                // are handled externally via properties or code in the persistence provider).
                 adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule);
             } catch (ModuleLoadException e) {
                 throw new DeploymentUnitProcessingException("persistence provider adapter module load error "

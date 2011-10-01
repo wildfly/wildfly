@@ -22,14 +22,18 @@
 
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.jpa.config.Configuration;
+import org.jboss.as.jpa.spi.JtaManager;
+import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceName;
 
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
@@ -41,11 +45,39 @@ import static org.jboss.as.jpa.JpaMessages.MESSAGES;
  * @author Scott Marlow
  */
 public class PersistenceProviderAdaptorLoader {
+    private static PersistenceProviderAdaptor noopAdaptor = new PersistenceProviderAdaptor() {
+
+        @Override
+        public void injectJtaManager(JtaManager jtaManager) {
+        }
+
+        @Override
+        public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
+        }
+
+        @Override
+        public Iterable<ServiceName> getProviderDependencies(PersistenceUnitMetadata pu) {
+            return null;
+        }
+
+        @Override
+        public void beforeCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu) {
+        }
+
+        @Override
+        public void afterCreateContainerEntityManagerFactory(PersistenceUnitMetadata pu) {
+        }
+
+        @Override
+        public ManagementAdaptor getManagementAdaptor() {
+            return null;
+        }
+    };
 
     /**
      * Loads/caches the persistence provider adapter
      *
-     * @param adapterModule may specify the adapter module name (can be null to use default Configuration.ADAPTER_MODULE_DEFAULT)
+     * @param adapterModule may specify the adapter module name (can be null to use noop provider)
      * @return the persistence provider adaptor for the provider class
      * @throws ModuleLoadException
      */
@@ -54,7 +86,7 @@ public class PersistenceProviderAdaptorLoader {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         if (adapterModule == null) {
-            adapterModule = Configuration.ADAPTER_MODULE_DEFAULT;
+            return noopAdaptor;
         }
 
         PersistenceProviderAdaptor persistenceProviderAdaptor=null;

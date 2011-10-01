@@ -36,6 +36,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.processor.PersistenceProviderAdaptorLoader;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
@@ -108,7 +109,7 @@ public class JPAExtension implements Extension {
 
         try {
             // load the default persistence provider adaptor
-            PersistenceProviderAdaptor provider = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(null);
+            PersistenceProviderAdaptor provider = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(Configuration.ADAPTER_MODULE_DEFAULT);
             final ManagementAdaptor managementAdaptor = provider.getManagementAdaptor();
             if (managementAdaptor != null) {
                 DescriptionProvider JPA_SUBSYSTEM = new DescriptionProvider() {

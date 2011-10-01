@@ -159,8 +159,6 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                 }
                 if (adapterModule != null) {
                     ROOT_LOGGER.debugf("%s is configured to use adapter module '%s'", pu.getPersistenceUnitName(), adapterModule);
-                    String persistenceProvider = pu.getPersistenceProviderClassName() != null ? pu.getPersistenceProviderClassName() : Configuration.PROVIDER_CLASS_DEFAULT;
-                    // load persistence provider adapter if not loaded yet
                     moduleDependencies.add(adapterModule);
                 }
                 deploymentUnit.putAttachment(JpaAttachments.ADAPTOR_CLASS_NAME, adapterClass);
@@ -172,7 +170,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                     } else {
                         moduleDependencies.add(provider);
                     }
-                } else {
+                } else if (pu.getPersistenceProviderClassName() == null || pu.getPersistenceProviderClassName().equals(Configuration.ADAPTER_MODULE_DEFAULT)){
                     defaultProviderCount++;  // track number of references to default provider module
                 }
             }
