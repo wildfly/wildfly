@@ -48,6 +48,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
      */
     private static final Logger logger = Logger.getLogger(VersionOneProtocolChannelReceiver.class);
 
+    private static final byte HEADER_SESSION_OPEN_REQUEST = 0x01;
     private static final byte HEADER_INVOCATION_REQUEST = 0x03;
 
     private final ServiceContainer serviceContainer;
@@ -98,9 +99,14 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             final int header = messageInputStream.read();
             // TODO: Log at lower level after the code attains a bit of stability
             logger.info("Got message with header 0x" + Integer.toHexString(header) + " on channel " + channel);
+            MessageHandler messageHandler = null;
             switch (header) {
                 case HEADER_INVOCATION_REQUEST:
-                    final MessageHandler messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallingStrategy);
+                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallingStrategy);
+                    messageHandler.processMessage(channel, messageInputStream);
+                    break;
+                case HEADER_SESSION_OPEN_REQUEST:
+                    messageHandler = new SessionOpenRequestHandler(this.deploymentRepository, this.marshallingStrategy);
                     messageHandler.processMessage(channel, messageInputStream);
                     break;
                 default:

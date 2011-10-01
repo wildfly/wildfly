@@ -24,10 +24,8 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
-import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.InterceptorContext;
@@ -52,13 +50,10 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
 
     private static final char METHOD_PARAM_TYPE_SEPARATOR = ',';
 
-    private final DeploymentRepository deploymentRepository;
-
-    private final String marshallingStrategy;
+    private static final byte HEADER_MESSAGE_INVOCATION_RESPONSE = 0x05;
 
     MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
-        this.deploymentRepository = deploymentRepository;
-        this.marshallingStrategy = marshallingStrategy;
+        super(deploymentRepository, marshallingStrategy);
     }
 
     @Override
@@ -78,12 +73,12 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
 
         final EjbDeploymentInformation ejbDeploymentInformation = this.findEJB(appName, moduleName, distinctName, beanName);
         if (ejbDeploymentInformation == null) {
-            this.writeNoSuchEJBFailureMessage(channel, appName, moduleName, distinctName, beanName, viewClassName);
+            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
             return;
         }
         final ComponentView componentView = ejbDeploymentInformation.getView(viewClassName);
         if (componentView == null) {
-            this.writeNoSuchEJBFailureMessage(channel, appName, moduleName, distinctName, beanName, viewClassName);
+            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
             return;
         }
         // TODO: Add a check for remote view
@@ -105,22 +100,27 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         // read the attachments
         final RemotingAttachments attachments = this.readAttachments(input);
 
-        // un-marshall the method arguments
-        final UnMarshaller unMarshaller = MarshallerFactory.createUnMarshaller(this.marshallingStrategy);
-        final ClassLoader beanClassLoader = ejbDeploymentInformation.getDeploymentClassLoader();
-
-        unMarshaller.start(input, beanClassLoader);
         final Object[] methodParams = new Object[methodParamTypes.length];
-        for (int i = 0; i < methodParamTypes.length; i++) {
-            try {
-                methodParams[i] = unMarshaller.readObject();
-            } catch (ClassNotFoundException cnfe) {
-                // TODO: Write out invocation failure to channel outstream
-                //throw new RuntimeException(cnfe);
-                return;
+        // un-marshall the method arguments
+        // TODO: The protocol should actually write out the number of object params being passed
+        // because even if the signature might have a param type the method could be invoked without
+        // params (for example: someMethod(String... optionalParams)
+        if (methodParamTypes.length > 0) {
+            final UnMarshaller unMarshaller = MarshallerFactory.createUnMarshaller(this.marshallingStrategy);
+            final ClassLoader beanClassLoader = ejbDeploymentInformation.getDeploymentClassLoader();
+
+            unMarshaller.start(input, beanClassLoader);
+            for (int i = 0; i < methodParamTypes.length; i++) {
+                try {
+                    methodParams[i] = unMarshaller.readObject();
+                } catch (ClassNotFoundException cnfe) {
+                    // TODO: Write out invocation failure to channel outstream
+                    //throw new RuntimeException(cnfe);
+                    return;
+                }
             }
+            unMarshaller.finish();
         }
-        unMarshaller.finish();
 
         // now invoke the target method
         // TODO: The method invocation (and the subsequent writing of result to the channel stream) should happen
@@ -129,12 +129,13 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         try {
             result = this.invokeMethod(componentView, invokedMethod, methodParams, attachments);
         } catch (Throwable throwable) {
-            logger.error(throwable);
+            logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName + " in app: " + appName + " module: " + moduleName +
+                    " distinctname: " + distinctName, throwable);
             // TODO: write out the exception as a failure to the channel output stream
             return;
         }
         // write out the result to the channel output stream
-        this.writeMethodInvocationResponse(channel, invocationId, result);
+        this.writeMethodInvocationResponse(channel, invocationId, result, attachments);
     }
 
     private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final RemotingAttachments attachments) throws Throwable {
@@ -144,17 +145,8 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         interceptorContext.setContextData(new HashMap<String, Object>());
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
-        // TODO: Take into account the RemotingAttachments
+        interceptorContext.putPrivateData(RemotingAttachments.class, attachments);
         return componentView.invoke(interceptorContext);
-    }
-
-    private EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
-        final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
-        final ModuleDeployment moduleDeployment = this.deploymentRepository.getModules().get(ejbModule);
-        if (moduleDeployment == null) {
-            return null;
-        }
-        return moduleDeployment.getEjbs().get(beanName);
     }
 
     private Method findMethod(final ComponentView componentView, final String methodName, final String[] paramTypes) {
@@ -180,17 +172,15 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         return null;
     }
 
-    private void writeMethodInvocationResponse(final Channel channel, final short invocationId, final Object result) throws IOException {
+    private void writeMethodInvocationResponse(final Channel channel, final short invocationId, final Object result, final RemotingAttachments attachments) throws IOException {
         final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
         try {
             // write invocation response header
-            outputStream.write(0x05);
+            outputStream.write(HEADER_MESSAGE_INVOCATION_RESPONSE);
             // write the invocation id
             outputStream.writeShort(invocationId);
             // write the attachments
-            // TODO: write attachments
-            //this.writeAttachments(outputStream, attachments);
-            PackedInteger.writePackedInteger(outputStream, 0); // TODO: This won't be needed once we write out the attachments
+            this.writeAttachments(outputStream, attachments);
 
             // write out the result
             final Marshaller marshaller = MarshallerFactory.createMarshaller(this.marshallingStrategy);

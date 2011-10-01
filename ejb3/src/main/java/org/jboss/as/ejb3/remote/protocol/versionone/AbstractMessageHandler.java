@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
+import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.remoting3.Channel;
@@ -36,6 +40,15 @@ import java.io.IOException;
  * User: jpai
  */
 abstract class AbstractMessageHandler implements MessageHandler {
+
+    protected final DeploymentRepository deploymentRepository;
+
+    protected final String marshallingStrategy;
+
+    AbstractMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
+        this.deploymentRepository = deploymentRepository;
+        this.marshallingStrategy = marshallingStrategy;
+    }
 
     protected RemotingAttachments readAttachments(final DataInput input) throws IOException {
         int numAttachments = input.readByte();
@@ -57,20 +70,36 @@ abstract class AbstractMessageHandler implements MessageHandler {
         return attachments;
     }
 
-    protected void writeInvocationFailure(final DataOutput dataOutput, final String failureMessage) throws IOException {
-        // TODO: Implement
+    protected void writeAttachments(final DataOutput output, final RemotingAttachments attachments) throws IOException {
+        // TODO: Implement this
+        PackedInteger.writePackedInteger(output, 0); // TODO: This won't be needed once we write out the attachments
     }
 
-    protected void writeNoSuchEJBFailureMessage(final Channel channel, final String appName, final String moduleName,
-                                                final String distinctname, final String beanName, final String viewClassName) throws IOException {
+    protected void writeInvocationFailure(final Channel channel, final short invocationId, final String failureMessage) throws IOException {
         final DataOutputStream dataOutputStream = new DataOutputStream(channel.writeMessage());
-        final String failureMessage = "No such EJB with appname: " + appName + ", modulename: " + moduleName + ", distinctname: "
-                    + distinctname + ", beanname:" + beanName  + " viewClasssName: " + viewClassName;
         try {
-            this.writeInvocationFailure(dataOutputStream, failureMessage);
+            // TODO: Implement
         } finally {
             dataOutputStream.close();
         }
+
     }
+
+    protected void writeNoSuchEJBFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
+                                                final String distinctname, final String beanName, final String viewClassName) throws IOException {
+        final String failureMessage = "No such EJB with appname: " + appName + ", modulename: " + moduleName + ", distinctname: "
+                + distinctname + ", beanname:" + beanName + " viewClasssName: " + viewClassName;
+        this.writeInvocationFailure(channel, invocationId, failureMessage);
+    }
+
+    protected EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
+        final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
+        final ModuleDeployment moduleDeployment = this.deploymentRepository.getModules().get(ejbModule);
+        if (moduleDeployment == null) {
+            return null;
+        }
+        return moduleDeployment.getEjbs().get(beanName);
+    }
+
 
 }
