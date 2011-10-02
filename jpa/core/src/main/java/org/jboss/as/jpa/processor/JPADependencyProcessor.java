@@ -170,7 +170,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                     } else {
                         moduleDependencies.add(provider);
                     }
-                } else if (pu.getPersistenceProviderClassName() == null || pu.getPersistenceProviderClassName().equals(Configuration.ADAPTER_MODULE_DEFAULT)){
+                } else if (Configuration.PROVIDER_CLASS_DEFAULT.equals(pu.getPersistenceProviderClassName())){
                     defaultProviderCount++;  // track number of references to default provider module
                 }
             }
