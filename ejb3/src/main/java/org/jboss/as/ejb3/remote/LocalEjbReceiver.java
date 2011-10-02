@@ -31,6 +31,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.ejb.client.EJBClientInvocationContext;
@@ -54,11 +55,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -68,13 +66,14 @@ import java.util.concurrent.TimeoutException;
  */
 public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<LocalEjbReceiver> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver");
+    public static final ServiceName BY_VALUE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "value");
+    public static final ServiceName BY_REFERENCE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "localEjbReceiver", "reference");
 
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
 
     private final List<EJBReceiverContext> contexts = new CopyOnWriteArrayList<EJBReceiverContext>();
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
-
+    private final Listener deploymentListener = new Listener();
     private final boolean allowPassByReference;
     private volatile ObjectCloner cloner;
 
@@ -209,6 +208,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         final ObjectClonerFactory factory = ObjectCloners.getSerializingObjectClonerFactory();
         final ClonerConfiguration configuration = new ClonerConfiguration();
         cloner = factory.createCloner(configuration);
+        deploymentRepository.getValue().addListener(deploymentListener);
     }
 
     @Override
@@ -218,6 +218,7 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         }
         this.contexts.clear();
         this.cloner = null;
+        deploymentRepository.getValue().removeListener(deploymentListener);
     }
 
     @Override
@@ -227,39 +228,6 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
     public InjectedValue<DeploymentRepository> getDeploymentRepository() {
         return deploymentRepository;
-    }
-
-    private static class ImmediateFuture implements Future<Object> {
-        private final Object result;
-
-        public ImmediateFuture(final Object result) {
-            this.result = result;
-        }
-
-        @Override
-        public boolean cancel(final boolean mayInterruptIfRunning) {
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDone() {
-            return true;
-        }
-
-        @Override
-        public Object get() throws InterruptedException, ExecutionException {
-            return result;
-        }
-
-        @Override
-        public Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return result;
-        }
     }
 
     private static class ImmediateResultProducer implements EJBReceiverInvocationContext.ResultProducer {
@@ -278,6 +246,30 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         @Override
         public void discardResult() {
 
+        }
+    }
+
+    /**
+     * Listener that updates the accessible set of modules
+     */
+    private class Listener implements DeploymentRepositoryListener {
+
+        @Override
+        public void listenerAdded(final DeploymentRepository repository) {
+            for(Map.Entry<DeploymentModuleIdentifier, ModuleDeployment> entry : repository.getModules().entrySet()) {
+                final DeploymentModuleIdentifier module = entry.getKey();
+                LocalEjbReceiver.this.registerModule(module.getApplicationName(), module.getModuleName(), module.getModuleName());
+            }
+        }
+
+        @Override
+        public void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment) {
+                LocalEjbReceiver.this.registerModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getModuleName());
+        }
+
+        @Override
+        public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
+               //TODO: implement this
         }
     }
 }

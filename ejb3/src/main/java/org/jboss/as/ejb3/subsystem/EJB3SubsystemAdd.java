@@ -230,16 +230,23 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private void addRemoteInvocationServices(final OperationContext context, final List<ServiceController<?>> newControllers) {
-        final LocalEjbReceiver localEjbReceiver = new LocalEjbReceiver(false);
-        newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.SERVICE_NAME, localEjbReceiver)
-                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, localEjbReceiver.getDeploymentRepository())
+        //the default spec compliant EJB reciever
+        final LocalEjbReceiver byValueLocalEjbReceiver = new LocalEjbReceiver(false);
+        newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.BY_VALUE_SERVICE_NAME, byValueLocalEjbReceiver)
+                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byValueLocalEjbReceiver.getDeploymentRepository())
+                .install());
+
+        //the receiver for invocations that allow pass by reference
+        final LocalEjbReceiver byReferenceLocalEjbReceiver = new LocalEjbReceiver(true);
+        newControllers.add(context.getServiceTarget().addService(LocalEjbReceiver.BY_REFERENCE_SERVICE_NAME, byReferenceLocalEjbReceiver)
+                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byReferenceLocalEjbReceiver.getDeploymentRepository())
                 .install());
 
         //add the default EjbClientContext
         //TODO: This should be configured via XML
         EjbClientContextService clientContextService = new EjbClientContextService();
         final ServiceBuilder<EJBClientContext> clientBuilder = context.getServiceTarget().addService(EjbClientContextService.DEFAULT_SERVICE_NAME, clientContextService);
-        clientContextService.addReceiver(clientBuilder, LocalEjbReceiver.SERVICE_NAME);
+        clientContextService.addReceiver(clientBuilder, LocalEjbReceiver.BY_VALUE_SERVICE_NAME);
         newControllers.add(clientBuilder.install());
     }
 

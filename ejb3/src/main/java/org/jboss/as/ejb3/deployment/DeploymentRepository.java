@@ -6,8 +6,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +25,8 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
      * All deployed modules. This is a copy on write map that is updated infrequently and read often.
      */
     private volatile Map<DeploymentModuleIdentifier, ModuleDeployment> modules;
+
+    private final List<DeploymentRepositoryListener> listeners = new ArrayList<DeploymentRepositoryListener>();
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -43,12 +47,27 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
         final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>(this.modules);
         modules.put(identifier, deployment);
         this.modules = Collections.unmodifiableMap(modules);
+        for(final DeploymentRepositoryListener listener : listeners) {
+            listener.deploymentAvailable(identifier, deployment);
+        }
+    }
+
+    public synchronized void addListener(final DeploymentRepositoryListener listener) {
+        listener.listenerAdded(this);
+        listeners.add(listener);
+    }
+
+    public synchronized void removeListener(final DeploymentRepositoryListener listener) {
+        listeners.remove(listener);
     }
 
     public synchronized void remove(DeploymentModuleIdentifier identifier) {
         final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>(this.modules);
         modules.remove(identifier);
         this.modules = Collections.unmodifiableMap(modules);
+        for(final DeploymentRepositoryListener listener : listeners) {
+            listener.deploymentRemoved(identifier);
+        }
     }
 
     public Map<DeploymentModuleIdentifier, ModuleDeployment> getModules() {
