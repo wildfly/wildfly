@@ -20,21 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.remote;
+package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.io.DataInput;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.MessageInputStream;
+
 import java.io.IOException;
 
 /**
- * TODO: Use the one from the ejb-client API project, once the contract is settled
- * <p/>
  * User: jpai
  */
-interface UnMarshaller {
+interface MessageHandler {
 
-    void start(DataInput input, ClassLoader classLoader) throws IOException;
+    void processMessage(final Channel channel, final MessageInputStream messageInputStream) throws IOException;
 
-    Object readObject() throws ClassNotFoundException, IOException;
-
-    void finish() throws IOException;
 }

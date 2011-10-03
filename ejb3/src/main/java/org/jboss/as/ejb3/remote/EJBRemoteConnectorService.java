@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;

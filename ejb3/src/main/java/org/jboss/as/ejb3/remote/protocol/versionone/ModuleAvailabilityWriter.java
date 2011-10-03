@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.remote;
+package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.ejb.client.remoting.PackedInteger;

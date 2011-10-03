@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.remote;
+package org.jboss.as.ejb3.remote.protocol.versionone;
 
 
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -41,7 +41,7 @@ import java.util.Map;
 /**
  * User: jpai
  */
-class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener {
+public class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentRepositoryListener {
 
     /**
      * Logger
@@ -58,7 +58,7 @@ class VersionOneProtocolChannelReceiver implements Channel.Receiver, DeploymentR
 
     private final String marshallingStrategy;
 
-    VersionOneProtocolChannelReceiver(final Channel channel, final ServiceContainer serviceContainer, final String marshallingStrategy) {
+    public VersionOneProtocolChannelReceiver(final Channel channel, final ServiceContainer serviceContainer, final String marshallingStrategy) {
         this.serviceContainer = serviceContainer;
         this.marshallingStrategy = marshallingStrategy;
         this.channel = channel;
