@@ -79,6 +79,7 @@
                         <include>**/*TestCase.java</include>
                     </includes>
                     <excludes>
+                        <exclude>**/*.java</exclude>
                         <!-- Messaging tests are excluded since the default/web profile doesn't support messaging -->
                         <exclude>org/jboss/as/testsuite/integration/messaging/**/*TestCase.java</exclude>
                         <!-- WebService tests are excluded since the default/web profile doesn't support webservices -->
@@ -89,6 +90,7 @@
                         <exclude>org/jboss/as/testsuite/integration/mdb/**/*TestCase.java</exclude>
                         <exclude>org/jboss/as/testsuite/integration/ejb/async/**/*TestCase.java</exclude>
                         <include>org/jboss/as/testsuite/integration/ejb/entity/**/*TestCase.java</include>
+                        <exclude>org/jboss/as/testsuite/integration/ejb/management/deployments/**/*TestCase.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -153,6 +155,7 @@
                                         <include>org/jboss/as/testsuite/integration/mdb/**/*TestCase.java</include>
                                         <include>org/jboss/as/testsuite/integration/ejb/async/**/*TestCase.java</include>
                                         <include>org/jboss/as/testsuite/integration/ejb/entity/**/*TestCase.java</include>
+                                        <include>org/jboss/as/testsuite/integration/ejb/management/deployments/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>none</exclude>

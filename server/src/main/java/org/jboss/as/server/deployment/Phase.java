@@ -367,6 +367,7 @@ public enum Phase {
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;
     public static final int INSTALL_WAR_DEPLOYMENT                      = 0x1D00;
     public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1F00;
+    public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x2000;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;

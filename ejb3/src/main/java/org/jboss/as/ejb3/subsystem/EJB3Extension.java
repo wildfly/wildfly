@@ -28,6 +28,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -37,6 +40,11 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ejb3.subsystem.deployment.EntityBeanResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
@@ -59,7 +67,7 @@ public class EJB3Extension implements Extension {
 
     private static final String RESOURCE_NAME = EJB3Extension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, EJB3Extension.class.getClassLoader(), true, true);
     }
 
@@ -83,6 +91,14 @@ public class EJB3Extension implements Extension {
         // subsystem=ejb3/timer-service=*
         subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);
 
+        ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
+                                                                         getResourceDescriptionResolver("deployed"));
+        final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
+        deploymentsRegistration.registerSubModel(EntityBeanResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(MessageDrivenBeanResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(SingletonBeanResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(StatelessSessionBeanResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(StatefulSessionBeanResourceDefinition.INSTANCE);
     }
 
     /**
