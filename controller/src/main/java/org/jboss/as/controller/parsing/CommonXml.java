@@ -304,7 +304,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
-            // TODO - We should be checking the name of the element, however this would cause previously accepted configurations to fail.
+            final Element element = Element.forName(reader.getLocalName());
+            if (element != Element.EXTENSION) {
+                throw unexpectedElement(reader);
+            }
 
             // Attribute && require no content
             final String moduleName = readStringAttributeElement(reader, Attribute.MODULE.getLocalName());
@@ -995,11 +998,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
-            // TODO - We should be checking the name of the element, however this would cause previously accepted configurations to fail.
-            //final Element element = Element.forName(reader.getLocalName());
-            //if (element != Element.PROPERTY) {
-            //    throw unexpectedElement(reader);
-            //}
+            final Element element = Element.forName(reader.getLocalName());
+            if (element != Element.PROPERTY) {
+                throw unexpectedElement(reader);
+            }
 
             String name = null;
             String value = null;
@@ -1807,11 +1809,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
-            // TODO - We should be checking the name of the element, however this would cause previously accepted configurations to fail.
-            //Element element = Element.forName(reader.getLocalName());
-            //if (Element.INTERFACE != element) {
-            //    throw unexpectedElement(reader);
-            //}
+            Element element = Element.forName(reader.getLocalName());
+            if (Element.INTERFACE != element) {
+                throw unexpectedElement(reader);
+            }
 
             // Attributes
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
@@ -1982,11 +1983,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
-            // TODO - We should be checking the name of the element, however this would cause previously accepted configurations to fail.
-            //Element deployment = Element.forName(reader.getLocalName());
-            // if (Element.DEPLOYMENT != deployment) {
-            //    throw unexpectedElement(reader);
-            //}
+            Element deployment = Element.forName(reader.getLocalName());
+            if (Element.DEPLOYMENT != deployment) {
+                throw unexpectedElement(reader);
+            }
 
             // Handle attributes
             String uniqueName = null;

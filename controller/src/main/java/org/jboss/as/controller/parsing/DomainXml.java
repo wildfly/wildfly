@@ -87,10 +87,9 @@ public class DomainXml extends CommonXml {
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> nodes) throws XMLStreamException {
-        // TODO - We should be checking the name of the element, however this would cause previously accepted configurations to fail.
-        //if (Element.forName(reader.getLocalName()) != Element.DOMAIN) {
-        //    throw unexpectedElement(reader);
-        //}
+        if (Element.forName(reader.getLocalName()) != Element.DOMAIN) {
+            throw unexpectedElement(reader);
+        }
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
             case DOMAIN_1_0:
@@ -319,11 +318,10 @@ public class DomainXml extends CommonXml {
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
-            // TODO - We should be checking the name of the element, however this would cause previously accepted configurations to fail.
-            //Element serverGroup = Element.forName(reader.getLocalName());
-            //if (Element.SERVER_GROUP != serverGroup) {
-            //    throw unexpectedElement(reader);
-            //}
+            Element serverGroup = Element.forName(reader.getLocalName());
+            if (Element.SERVER_GROUP != serverGroup) {
+                throw unexpectedElement(reader);
+            }
 
             String name = null;
             String profile = null;
@@ -418,11 +416,10 @@ public class DomainXml extends CommonXml {
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
-            // TODO - We should be checking the name of the element, however this would cause previously accepted configurations to fail.
-            //Element element = Element.forName(reader.getLocalName());
-            //if (Element.PROFILE != element) {
-            //    throw unexpectedElement(reader);
-            //}
+            Element element = Element.forName(reader.getLocalName());
+            if (Element.PROFILE != element) {
+                throw unexpectedElement(reader);
+            }
 
             // Attributes
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
