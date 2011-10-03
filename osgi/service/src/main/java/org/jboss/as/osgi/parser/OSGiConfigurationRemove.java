@@ -22,6 +22,7 @@
 package org.jboss.as.osgi.parser;
 
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -34,28 +35,32 @@ import org.jboss.dmr.ModelNode;
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiModuleRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
-    static final OSGiModuleRemove INSTANCE = new OSGiModuleRemove();
+public class OSGiConfigurationRemove extends AbstractRemoveStepHandler {
+    static final OSGiConfigurationRemove INSTANCE = new OSGiConfigurationRemove();
 
-    private OSGiModuleRemove() {
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelNode node = new ModelNode();
-        node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(OSGiSubsystemProviders.getResourceBundle(locale).getString("module.remove"));
-        node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-        node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-        return node;
+    private OSGiConfigurationRemove() {
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.MODULE).asString();
+        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
-            subsystemState.removeModule(identifier);
+            subsystemState.removeConfiguration(pid);
         }
     }
+
+    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode node = new ModelNode();
+            ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
+            node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.remove"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
+            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+            return node;
+        }
+    };
 }

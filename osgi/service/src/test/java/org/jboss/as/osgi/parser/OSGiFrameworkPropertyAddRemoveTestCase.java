@@ -29,71 +29,68 @@ import junit.framework.Assert;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
-public class OSGiModuleAddRemoveTestCase extends ResourceAddRemoveTestBase {
+public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTestBase {
+
     @Test
-    public void testOSGiModuleAddRemove() throws Exception {
+    public void testOSGiPropertyAddRemove() throws Exception {
         SubsystemState stateService = new SubsystemState();
         List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.KEEP);
 
-        ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(CommonAttributes.MODULE, "org.acme.module1"));
-        ModelNode data = new ModelNode();
-        data.get(CommonAttributes.STARTLEVEL).set("4");
-        ModelNode op = OSGiModuleAdd.getAddOperation(address, data);
+        ModelNode op = getAddOperation("PropertyX", "hi");
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
-        OSGiModuleAdd.INSTANCE.execute(context, op);
+        OSGiFrameworkPropertyAdd.INSTANCE.execute(context, op);
         Assert.assertEquals(1, addedSteps.size());
 
-        Assert.assertEquals("Precondition", 0, stateService.getModules().size());
+        Assert.assertNull("Precondition", stateService.getProperties().get("PropertyX"));
         addedSteps.get(0).execute(context, op);
-        Assert.assertEquals(1, stateService.getModules().size());
-        OSGiModule module = stateService.getModules().get(0);
-        Assert.assertEquals("org.acme.module1:main", module.getIdentifier().toString());
-        Assert.assertEquals(new Integer(4), module.getStartLevel());
+        Assert.assertEquals("hi", stateService.getProperties().get("PropertyX"));
 
-        OSGiModuleRemove.INSTANCE.execute(context, op);
+        OSGiFrameworkPropertyRemove.INSTANCE.execute(context, op);
         Assert.assertEquals("Actual remove added as async step", 2, addedSteps.size());
 
         Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.ROLLBACK);
         addedSteps.get(1).execute(context, op);
-        Assert.assertEquals("Module should have been kept as the operation was rolled back",
-            module, stateService.getModules().get(0));
+        Assert.assertEquals("Property should have been kept as the operation was rolled back", "hi", stateService.getProperties().get("PropertyX"));
 
         Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.KEEP);
         addedSteps.get(1).execute(context, op);
-        Assert.assertEquals("Module should have been removed", 0, stateService.getModules().size());
+        Assert.assertNull("Property should have been removed", stateService.getProperties().get("PropertyX"));
     }
 
     @Test
-    public void testOSGiModuleAddRollback() throws Exception {
+    public void testOSGiPropertyAddRollback() throws Exception {
         SubsystemState stateService = new SubsystemState();
         List<OperationStepHandler> addedSteps = new ArrayList<OperationStepHandler>();
         OperationContext context = mockOperationContext(stateService, addedSteps, OperationContext.ResultAction.ROLLBACK);
 
-        ModelNode address = new ModelNode();
-        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(CommonAttributes.MODULE, "org.acme.module1"));
-        ModelNode data = new ModelNode();
-        data.get(CommonAttributes.STARTLEVEL).set("4");
-        ModelNode op = OSGiModuleAdd.getAddOperation(address, data);
+        ModelNode op = getAddOperation("PropertyX", "hi");
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
-        OSGiModuleAdd.INSTANCE.execute(context, op);
+        OSGiFrameworkPropertyAdd.INSTANCE.execute(context, op);
         Assert.assertEquals(1, addedSteps.size());
 
-        Assert.assertEquals("Precondition", 0, stateService.getModules().size());
+        Assert.assertNull("Precondition", stateService.getProperties().get("PropertyX"));
         addedSteps.get(0).execute(context, op);
-        Assert.assertEquals("Operation should have been rolled back", 0, stateService.getModules().size());
+        Assert.assertNull("Operation should have been rolled back", stateService.getProperties().get("PropertyX"));
+    }
+
+    private ModelNode getAddOperation(String name, String value) {
+        ModelNode address = new ModelNode();
+        address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
+        address.add(new ModelNode().set(ModelConstants.FRAMEWORK_PROPERTY, name));
+        ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
+        op.get(ModelConstants.VALUE).set(value);
+        return op;
     }
 }

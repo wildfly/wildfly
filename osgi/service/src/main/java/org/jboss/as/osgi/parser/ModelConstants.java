@@ -22,56 +22,24 @@
 
 package org.jboss.as.osgi.parser;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 /**
- * Attributes used with the OSGi subsystem elements.
+ * An enumeration of the supported OSGi subsystem namespaces.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 13-Sep-2010
  */
-public enum Attribute {
-    UNKNOWN(null),
-    ACTIVATION("activation"),
-    IDENTIFIER("identifier"),
-    NAME("name"),
-    PID("pid"),
-    STARTLEVEL("startlevel"),
-    VALUE("value"),
-    ;
-    private final String name;
+interface ModelConstants {
 
-    Attribute(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Get the local name of this attribute.
-     *
-     * @return the local name
-     */
-    public String getLocalName() {
-        return name;
-    }
-
-    private static final Map<String, Attribute> MAP;
-
-    static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
-        for (Attribute element : values()) {
-            final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
-        }
-        MAP = map;
-    }
-
-    public static Attribute forName(String localName) {
-        final Attribute element = MAP.get(localName);
-        return element == null ? UNKNOWN : element;
-    }
-
-    public String toString() {
-        return getLocalName();
-    }
+    String ACTIVATION = "activation";
+    String CAPABILITY = "capability";
+    String CONFIGURATION = "configuration";
+    String ENTRIES = "entries";
+    String ENTRY = "entry";
+    String FRAMEWORK_PROPERTY = "framework-property";
+    String NAME = "name";
+    String PID = "pid";
+    String STARTLEVEL = "startlevel";
+    String VALUE = "value";
 }

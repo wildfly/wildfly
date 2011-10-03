@@ -74,10 +74,10 @@
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
                  <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server" />
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:osgi:1.0" activation="eager">
-                <modules>
-                    <module identifier="org.osgi.compendium"/>
-                </modules>
+            <subsystem xmlns="urn:jboss:domain:osgi:1.1" activation="eager">
+                <capabilities>
+                    <capability name="org.osgi.compendium"/>
+                </capabilities>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
         </profile>

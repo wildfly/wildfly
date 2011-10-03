@@ -34,29 +34,31 @@ import org.jboss.dmr.ModelNode;
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiCasConfigRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
-    static final OSGiCasConfigRemove INSTANCE = new OSGiCasConfigRemove();
+public class OSGiFrameworkPropertyRemove extends AbstractRemoveStepHandler {
+    static final OSGiFrameworkPropertyRemove INSTANCE = new OSGiFrameworkPropertyRemove();
 
-    private OSGiCasConfigRemove() {
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelNode node = new ModelNode();
-        node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(
-            OSGiSubsystemProviders.getResourceBundle(locale).getString("config.remove"));
-        node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-        node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-        return node;
+    private OSGiFrameworkPropertyRemove() {
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CONFIGURATION).asString();
+        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.FRAMEWORK_PROPERTY).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null && context.completeStep() == OperationContext.ResultAction.KEEP) {
-            subsystemState.removeConfiguration(pid);
+            subsystemState.setProperty(propName, null);
         }
     }
+
+    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode node = new ModelNode();
+            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
+            node.get(ModelDescriptionConstants.DESCRIPTION).set(OSGiSubsystemProviders.getResourceBundle(locale).getString("framework.property.remove"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
+            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+            return node;
+        }
+    };
 }

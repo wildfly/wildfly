@@ -32,16 +32,18 @@ import java.util.Map;
  * @author Thomas.Diesler@jboss.com
  * @since 13-Sep-2010
  */
-public enum Namespace {
+enum Namespace {
+
     // must be first
     UNKNOWN(null),
-    OSGI_1_0("urn:jboss:domain:osgi:1.0")
+    OSGI_1_0("urn:jboss:domain:osgi:1.0"),
+    OSGI_1_1("urn:jboss:domain:osgi:1.1")
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = OSGI_1_0;
+    static final Namespace CURRENT = OSGI_1_1;
 
     private final String name;
 
@@ -51,17 +53,15 @@ public enum Namespace {
 
     /**
      * Get the URI of this namespace.
-     *
-     * @return the URI
      */
-    public String getUriString() {
+    String getUriString() {
         return name;
     }
 
     /**
      * Set of all namespaces, excluding the special {@link #UNKNOWN} value.
      */
-    public static final EnumSet<Namespace> STANDARD_NAMESPACES = EnumSet.complementOf(EnumSet.of(Namespace.UNKNOWN));
+    static final EnumSet<Namespace> STANDARD_NAMESPACES = EnumSet.complementOf(EnumSet.of(Namespace.UNKNOWN));
 
     private static final Map<String, Namespace> MAP;
 
@@ -74,7 +74,7 @@ public enum Namespace {
         MAP = map;
     }
 
-    public static Namespace forUri(String uri) {
+    static Namespace forUri(String uri) {
         final Namespace element = MAP.get(uri);
         return element == null ? UNKNOWN : element;
     }

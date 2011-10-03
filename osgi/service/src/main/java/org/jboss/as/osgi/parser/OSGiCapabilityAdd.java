@@ -31,8 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.osgi.parser.SubsystemState.OSGiModule;
+import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleIdentifier;
@@ -42,10 +41,10 @@ import org.jboss.msc.service.ServiceController;
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiModuleAdd extends AbstractAddStepHandler implements DescriptionProvider {
-    static final OSGiModuleAdd INSTANCE = new OSGiModuleAdd();
+public class OSGiCapabilityAdd extends AbstractAddStepHandler {
+    static final OSGiCapabilityAdd INSTANCE = new OSGiCapabilityAdd();
 
-    private OSGiModuleAdd() {
+    private OSGiCapabilityAdd() {
     }
 
     @Override
@@ -55,9 +54,8 @@ public class OSGiModuleAdd extends AbstractAddStepHandler implements Description
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(CommonAttributes.MODULE).set(operation.get(CommonAttributes.MODULE));
-        if (operation.has(CommonAttributes.STARTLEVEL)) {
-            model.get(CommonAttributes.STARTLEVEL).set(operation.get(CommonAttributes.STARTLEVEL));
+        if (operation.has(ModelConstants.STARTLEVEL)) {
+            model.get(ModelConstants.STARTLEVEL).set(operation.get(ModelConstants.STARTLEVEL));
         }
     }
 
@@ -66,52 +64,47 @@ public class OSGiModuleAdd extends AbstractAddStepHandler implements Description
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ModelNode slNode = null;
-        if (operation.has(CommonAttributes.STARTLEVEL)) {
-            slNode = operation.get(CommonAttributes.STARTLEVEL);
-            model.get(CommonAttributes.STARTLEVEL).set(slNode);
+        if (operation.has(ModelConstants.STARTLEVEL)) {
+            slNode = operation.get(ModelConstants.STARTLEVEL);
+            model.get(ModelConstants.STARTLEVEL).set(slNode);
         }
         final Integer startLevel = (slNode != null ? slNode.asInt() : null);
 
-        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.MODULE).asString();
-        OSGiModule module = new OSGiModule(ModuleIdentifier.fromString(identifier), startLevel);
+        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CAPABILITY).asString();
+        OSGiCapability module = new OSGiCapability(ModuleIdentifier.fromString(identifier), startLevel);
 
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
-            subsystemState.addModule(module);
+            subsystemState.addCapability(module);
         }
     }
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
-        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.MODULE).asString();
+        String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CAPABILITY).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
-            subsystemState.removeModule(identifier);
+            subsystemState.removeCapability(identifier);
         }
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelNode node = new ModelNode();
-        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
-        node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("module.add"));
-        addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);
-        node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-        return node;
-    }
+    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
 
-    static void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
-        node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("module.startlevel"));
-        node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
-        node.get(propType, CommonAttributes.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
-    }
-
-    static ModelNode getAddOperation(ModelNode address, ModelNode existing) {
-        ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        if (existing.hasDefined(CommonAttributes.STARTLEVEL)) {
-            op.get(CommonAttributes.STARTLEVEL).set(existing.get(CommonAttributes.STARTLEVEL));
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode node = new ModelNode();
+            ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
+            node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("capability.add"));
+            addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);
+            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+            return node;
         }
-        return op;
-    }
+
+        private void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
+            node.get(propType, ModelConstants.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("capability.startlevel"));
+            node.get(propType, ModelConstants.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
+            node.get(propType, ModelConstants.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
+        }
+    };
 }

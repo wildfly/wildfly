@@ -21,12 +21,6 @@
  */
 package org.jboss.as.osgi.parser;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
-import static org.jboss.as.osgi.parser.CommonAttributes.MODULE;
-import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTY;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -48,36 +42,35 @@ public class OSGiExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "osgi";
 
-    private final OSGiSubsystemParser parser = new OSGiSubsystemParser();
-
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), parser);
+        context.setSubsystemXmlMapping(Namespace.OSGI_1_0.getUriString(), OSGiNamespace10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.OSGI_1_1.getUriString(), OSGiNamespace11Parser.INSTANCE);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(OSGiSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemAdd.INSTANCE, false);
-        registration.registerOperationHandler(DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        registration.registerReadWriteAttribute(CommonAttributes.ACTIVATION, null, new ActivationWriteHandler(), Storage.CONFIGURATION);
+        registration.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false);
+        registration.registerReadWriteAttribute(ModelConstants.ACTIVATION, null, new ActivationAttributeHandler(), Storage.CONFIGURATION);
+        registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
 
         // Configuration Admin Setings
-        ManagementResourceRegistration casConfigs = registration.registerSubModel(PathElement.pathElement(CONFIGURATION), OSGiSubsystemProviders.OSGI_CONFIGURATION_RESOURCE);
-        casConfigs.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiCasConfigAdd.INSTANCE, OSGiCasConfigAdd.INSTANCE, false);
-        casConfigs.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiCasConfigRemove.INSTANCE, OSGiCasConfigRemove.INSTANCE, false);
+        ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), OSGiSubsystemProviders.CONFIGURATION_DESCRIPTION);
+        configuration.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiConfigurationAdd.INSTANCE, OSGiConfigurationAdd.DESCRIPTION, false);
+        configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiConfigurationRemove.INSTANCE, OSGiConfigurationRemove.DESCRIPTION, false);
 
         // Framework Properties
-        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(PROPERTY), OSGiSubsystemProviders.OSGI_PROPERTY_RESOURCE);
-        properties.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiPropertyAdd.INSTANCE, OSGiPropertyAdd.INSTANCE, false);
-        properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiPropertyRemove.INSTANCE, OSGiPropertyRemove.INSTANCE, false);
+        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.FRAMEWORK_PROPERTY), OSGiSubsystemProviders.FRAMEWORK_PROPERTY_DESCRIPTION);
+        properties.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiFrameworkPropertyAdd.INSTANCE, OSGiFrameworkPropertyAdd.DESCRIPTION, false);
+        properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiFrameworkPropertyRemove.INSTANCE, OSGiFrameworkPropertyRemove.DESCRIPTION, false);
 
         // Pre loaded modules
-        ManagementResourceRegistration modules = registration.registerSubModel(PathElement.pathElement(MODULE), OSGiSubsystemProviders.OSGI_MODULE_RESOURCE);
-        modules.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiModuleAdd.INSTANCE, OSGiModuleAdd.INSTANCE, false);
-        modules.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiModuleRemove.INSTANCE, OSGiModuleRemove.INSTANCE, false);
+        ManagementResourceRegistration capabilities = registration.registerSubModel(PathElement.pathElement(ModelConstants.CAPABILITY), OSGiSubsystemProviders.CAPABILITY_DESCRIPTION);
+        capabilities.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiCapabilityAdd.INSTANCE, OSGiCapabilityAdd.DESCRIPTION, false);
+        capabilities.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiCapabilityRemove.INSTANCE, OSGiCapabilityRemove.DESCRIPTION, false);
 
-        subsystem.registerXMLElementWriter(parser);
+        subsystem.registerXMLElementWriter(OSGiSubsystemWriter.INSTANCE);
     }
 }

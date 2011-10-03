@@ -49,14 +49,14 @@ public class ActivationWriteHandlerTestCase {
     @Test
     public void testHandlerLazy() throws Exception {
         ModelNode targetNode = new ModelNode();
-        targetNode.get(CommonAttributes.ACTIVATION).set("eager");
+        targetNode.get(ModelConstants.ACTIVATION).set("eager");
 
         OperationContext context = Mockito.mock(OperationContext.class);
         Resource resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getModel()).thenReturn(targetNode);
         Mockito.when(context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS)).thenReturn(resource);
 
-        ActivationWriteHandler handler = new ActivationWriteHandler();
+        ActivationAttributeHandler handler = new ActivationAttributeHandler();
 
         ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.VALUE).set(Activation.LAZY.toString().toLowerCase());
@@ -64,14 +64,14 @@ public class ActivationWriteHandlerTestCase {
 
         Mockito.verify(context).completeStep();
 
-        Assert.assertEquals(Activation.LAZY.toString().toLowerCase(), targetNode.get(CommonAttributes.ACTIVATION).asString());
+        Assert.assertEquals(Activation.LAZY.toString().toLowerCase(), targetNode.get(ModelConstants.ACTIVATION).asString());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testHandlerEagerActivate() throws Exception {
         ModelNode targetNode = new ModelNode();
-        targetNode.get(CommonAttributes.ACTIVATION).set("lazy");
+        targetNode.get(ModelConstants.ACTIVATION).set("lazy");
 
         OperationContext context = Mockito.mock(OperationContext.class);
         Resource resource = Mockito.mock(Resource.class);
@@ -87,7 +87,7 @@ public class ActivationWriteHandlerTestCase {
             }
         }).when(context).addStep((OperationStepHandler) Mockito.any(), Mockito.eq(Stage.RUNTIME));
 
-        ActivationWriteHandler handler = new ActivationWriteHandler();
+        ActivationAttributeHandler handler = new ActivationAttributeHandler();
 
         ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.VALUE).set(Activation.EAGER.toString().toLowerCase());
@@ -95,12 +95,12 @@ public class ActivationWriteHandlerTestCase {
         Assert.assertEquals("Precondition", 0, addedSteps.size());
         handler.execute(context, operation);
         Mockito.verify(context).completeStep();
-        Assert.assertEquals(Activation.EAGER.toString().toLowerCase(), targetNode.get(CommonAttributes.ACTIVATION).asString());
+        Assert.assertEquals(Activation.EAGER.toString().toLowerCase(), targetNode.get(ModelConstants.ACTIVATION).asString());
 
         // Now test the runtime piece...
         ServiceRegistry registry = Mockito.mock(ServiceRegistry.class);
         ServiceController svcCtrl = Mockito.mock(ServiceController.class);
-        Mockito.when(registry.getRequiredService(Services.AUTOINSTALL_PROVIDER)).thenReturn(svcCtrl);
+        Mockito.when(registry.getRequiredService(Services.FRAMEWORK_ACTIVE)).thenReturn(svcCtrl);
 
         OperationContext context2 = Mockito.mock(OperationContext.class);
         Mockito.when(context2.getServiceRegistry(true)).thenReturn(registry);

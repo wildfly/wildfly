@@ -38,21 +38,20 @@ import org.jboss.osgi.framework.Services;
  *
  * @author David Bosschaert
  */
-public class ActivationWriteHandler implements OperationStepHandler {
+public class ActivationAttributeHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         Activation val = Activation.valueOf(operation.require(ModelDescriptionConstants.VALUE).asString().toUpperCase());
 
         ModelNode node = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        node.get(CommonAttributes.ACTIVATION).set(val.toString().toLowerCase());
+        node.get(ModelConstants.ACTIVATION).set(val.toString().toLowerCase());
 
         if (val == Activation.EAGER) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceController<?> svc = context.getServiceRegistry(true).getRequiredService(Services.AUTOINSTALL_PROVIDER);
-                    // This will kick off the OSGi subsystem...
+                    ServiceController<?> svc = context.getServiceRegistry(true).getRequiredService(Services.FRAMEWORK_ACTIVE);
                     svc.setMode(Mode.ACTIVE);
                     context.completeStep();
                 }

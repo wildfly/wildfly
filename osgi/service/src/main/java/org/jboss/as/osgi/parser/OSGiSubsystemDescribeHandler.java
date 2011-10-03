@@ -21,24 +21,10 @@
  */
 package org.jboss.as.osgi.parser;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.osgi.parser.CommonAttributes.ACTIVATION;
-import static org.jboss.as.osgi.parser.CommonAttributes.CONFIGURATION;
-import static org.jboss.as.osgi.parser.CommonAttributes.MODULE;
-import static org.jboss.as.osgi.parser.CommonAttributes.PROPERTY;
-
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Descibe and handle subsystem operations.
@@ -47,10 +33,14 @@ import org.jboss.dmr.Property;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author David Bosschaert
  */
-class OSGiSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
+class OSGiSubsystemDescribeHandler extends GenericSubsystemDescribeHandler {
+
     static final OSGiSubsystemDescribeHandler INSTANCE = new OSGiSubsystemDescribeHandler();
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        super.execute(context, operation);
+
+        /*
         final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
@@ -68,31 +58,27 @@ class OSGiSubsystemDescribeHandler implements OperationStepHandler, DescriptionP
             for(Property conf : model.get(CONFIGURATION).asPropertyList()) {
                 ModelNode address = rootAddress.toModelNode();
                 address.add(CommonAttributes.CONFIGURATION, conf.getName());
-                result.add(OSGiCasConfigAdd.getAddOperation(address, conf.getValue()));
+                //result.add(OSGiConfigurationAdd.getAddOperation(address, conf.getValue()));
             }
         }
 
-        if (model.has(PROPERTY)) {
-            for (Property prop : model.get(PROPERTY).asPropertyList()) {
+        if (model.has(FRAMEWORK_PROPERTY)) {
+            for (Property prop : model.get(FRAMEWORK_PROPERTY).asPropertyList()) {
                 ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.PROPERTY, prop.getName());
-                result.add(OSGiPropertyAdd.getAddOperation(address, prop.getValue()));
+                address.add(CommonAttributes.FRAMEWORK_PROPERTY, prop.getName());
+                //result.add(OSGiFrameworkPropertyAdd.getAddOperation(address, prop.getValue()));
             }
         }
 
-        if (model.has(MODULE)) {
-            for (Property prop : model.get(MODULE).asPropertyList()) {
+        if (model.has(CAPABILITY)) {
+            for (Property prop : model.get(CAPABILITY).asPropertyList()) {
                 ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.MODULE, prop.getName());
-                result.add(OSGiModuleAdd.getAddOperation(address, prop.getValue()));
+                address.add(CommonAttributes.CAPABILITY, prop.getName());
+                //result.add(OSGiCapabilityAdd.getAddOperation(address, prop.getValue()));
             }
         }
+        */
 
         context.completeStep();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getSubsystemDescribeOperation(locale);
     }
 }

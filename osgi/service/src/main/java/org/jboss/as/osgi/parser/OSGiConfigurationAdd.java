@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -42,10 +41,10 @@ import org.jboss.msc.service.ServiceController;
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiCasConfigAdd extends AbstractAddStepHandler implements DescriptionProvider {
-    static final OSGiCasConfigAdd INSTANCE = new OSGiCasConfigAdd();
+public class OSGiConfigurationAdd extends AbstractAddStepHandler {
+    static final OSGiConfigurationAdd INSTANCE = new OSGiConfigurationAdd();
 
-    private OSGiCasConfigAdd() {
+    private OSGiConfigurationAdd() {
     }
 
     @Override
@@ -55,15 +54,15 @@ public class OSGiCasConfigAdd extends AbstractAddStepHandler implements Descript
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(CommonAttributes.ENTRIES).set(operation.get(CommonAttributes.ENTRIES));
+        model.get(ModelConstants.ENTRIES).set(operation.get(ModelConstants.ENTRIES));
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        ModelNode entries = operation.get(CommonAttributes.ENTRIES);
-        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CONFIGURATION).asString();
+        ModelNode entries = operation.get(ModelConstants.ENTRIES);
+        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
         Dictionary<String, String> dictionary = new Hashtable<String, String>();
         for (String key : entries.keys()) {
             dictionary.put(key, entries.get(key).asString());
@@ -77,37 +76,28 @@ public class OSGiCasConfigAdd extends AbstractAddStepHandler implements Descript
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
-        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(CommonAttributes.CONFIGURATION).asString();
+        String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
             subsystemState.removeConfiguration(pid);
         }
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelNode node = new ModelNode();
-        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
-        node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
-        node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("config.add"));
-        addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);
-        node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-        return node;
-    }
+    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
 
-    static void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
-        node.get(propType, CommonAttributes.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("config.entries"));
-        node.get(propType, CommonAttributes.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
-        node.get(propType, CommonAttributes.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
-        node.get(propType, CommonAttributes.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
-    }
-
-    static ModelNode getAddOperation(ModelNode address, ModelNode existing) {
-        ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        if (existing.hasDefined(CommonAttributes.ENTRIES)) {
-            op.get(CommonAttributes.ENTRIES).set(existing.get(CommonAttributes.ENTRIES));
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            ModelNode node = new ModelNode();
+            ResourceBundle resbundle = OSGiSubsystemProviders.getResourceBundle(locale);
+            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
+            node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.add"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(
+                    resbundle.getString("configuration.entries"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
+            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+            return node;
         }
-
-        return op;
-    }
+    };
 }
