@@ -6,11 +6,12 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 
 /**
  * Repository for information about deployed modules. This includes information on all the deployed EJB's in the module
@@ -26,7 +27,9 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
      */
     private volatile Map<DeploymentModuleIdentifier, ModuleDeployment> modules;
 
-    private final List<DeploymentRepositoryListener> listeners = new ArrayList<DeploymentRepositoryListener>();
+    // Copy-on-write set, since it's not updated frequently but will be traversed relatively more often
+    private final Collection<DeploymentRepositoryListener> listeners = new CopyOnWriteArraySet<DeploymentRepositoryListener>();
+
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -73,4 +76,5 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
     public Map<DeploymentModuleIdentifier, ModuleDeployment> getModules() {
         return modules;
     }
+
 }

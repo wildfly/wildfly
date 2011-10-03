@@ -35,7 +35,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * User: jpai
+ * A {@link org.jboss.as.controller.ResourceDefinition} for the EJB remote service
+ * <p/>
+ * User: Jaikiran Pai
  */
 public class EJBRemoteResourceDefinition extends SimpleResourceDefinition {
 

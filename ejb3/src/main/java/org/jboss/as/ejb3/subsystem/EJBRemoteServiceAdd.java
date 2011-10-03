@@ -43,6 +43,9 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 
 /**
+ * A {@link AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
+ * remote service, in the EJB subsystem
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class EJBRemoteServiceAdd extends AbstractBoottimeAddStepHandler {
@@ -70,7 +73,8 @@ public class EJBRemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String connectorName = model.require(CONNECTOR_REF).asString();
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final EJBRemoteConnectorService service = new EJBRemoteConnectorService();
+        // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
+        final EJBRemoteConnectorService service = new EJBRemoteConnectorService((byte) 0x00, new String[] {"river"});
         newControllers.add(serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service)
                 // TODO: inject the right connector
                 .addDependency(RemotingServices.ENDPOINT, Endpoint.class, service.getEndpointInjector())

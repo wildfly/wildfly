@@ -21,10 +21,10 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -37,8 +37,11 @@ import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.OpenListener;
 import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.ServiceRegistrationException;
+import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
@@ -47,79 +50,30 @@ import java.io.IOException;
 public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorService> {
     private static final Logger log = Logger.getLogger(EJBRemoteConnectorService.class);
 
+    // TODO: Should this be exposed via the management APIs?
+    private static final String EJB_CHANNEL_NAME = "jboss.ejb";
+
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
 
-    public InjectedValue<Endpoint> getEndpointInjector(){
-        return endpointValue;
-    }
-
     private volatile Registration registration;
+
+    private final byte serverProtocolVersion;
+
+    private final String[] supportedMarshallingStrategies;
+
+    public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies) {
+        this.serverProtocolVersion = serverProtocolVersion;
+        this.supportedMarshallingStrategies = supportedMarshallingStrategies;
+    }
 
     @Override
     public void start(StartContext context) throws StartException {
+        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
+        final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
         try {
-            registration = endpointValue.getValue().registerService("ejb3", new OpenListener() {
-                @Override
-                public void channelOpened(Channel channel) {
-                    log.tracef("Welcome %s to the ejb3 channel", channel);
-                    channel.addCloseHandler(new CloseHandler<Channel>() {
-                        @Override
-                        public void handleClose(Channel closed, IOException exception) {
-                            // do nothing
-                            log.tracef("channel %s closed", closed);
-                        }
-                    });
-                    Channel.Receiver handler = new Channel.Receiver() {
-                        @Override
-                        public void handleError(Channel channel, IOException error) {
-                            try {
-                                channel.close();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                            throw new RuntimeException("NYI: .handleError");
-                        }
-
-                        @Override
-                        public void handleEnd(Channel channel) {
-                            try {
-                                channel.close();
-                            } catch (IOException e) {
-                                // ignore
-                            }
-                        }
-
-                        @Override
-                        public void handleMessage(Channel channel, MessageInputStream message) {
-                            channel.receiveMessage(this);
-                            // TODO: implement EJB wire protocol
-                            final SimpleDataInput input = new SimpleDataInput(Marshalling.createByteInput(message));
-                            try {
-                                final String txt = input.readUTF();
-                                System.out.println(txt);
-                                input.close();
-                            } catch (IOException e) {
-                                // log it
-                                log.tracef(e, "Exception on channel %s from message %s", channel, message);
-                                try {
-                                    // press the panic button
-                                    channel.writeShutdown();
-                                } catch (IOException e1) {
-                                    // ignore
-                                }
-                            }
-                        }
-                    };
-                    channel.receiveMessage(handler);
-                }
-
-                @Override
-                public void registrationTerminated() {
-                    // do nothing
-                }
-            }, OptionMap.EMPTY);
+            registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, OptionMap.EMPTY);
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
@@ -133,5 +87,112 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     @Override
     public EJBRemoteConnectorService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public InjectedValue<Endpoint> getEndpointInjector() {
+        return endpointValue;
+    }
+
+    private void sendVersionMessage(final Channel channel) throws IOException {
+        final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
+        try {
+            // write the version
+            outputStream.write(this.serverProtocolVersion);
+            // write the marshaller type count
+            PackedInteger.writePackedInteger(outputStream, this.supportedMarshallingStrategies.length);
+            // write the marshaller types
+            for (int i = 0; i < this.supportedMarshallingStrategies.length; i++) {
+                outputStream.writeUTF(this.supportedMarshallingStrategies[i]);
+            }
+        } finally {
+            outputStream.close();
+        }
+    }
+
+    private class ChannelOpenListener implements OpenListener {
+
+        private final ServiceContainer serviceContainer;
+
+        ChannelOpenListener(final ServiceContainer serviceContainer) {
+            this.serviceContainer = serviceContainer;
+        }
+
+        @Override
+        public void channelOpened(Channel channel) {
+            log.tracef("Welcome %s to the " + EJB_CHANNEL_NAME + " channel", channel);
+            channel.addCloseHandler(new CloseHandler<Channel>() {
+                @Override
+                public void handleClose(Channel closed, IOException exception) {
+                    // do nothing
+                    log.tracef("channel %s closed", closed);
+                }
+            });
+
+            // send the server version and supported marshalling types to the client
+            try {
+                EJBRemoteConnectorService.this.sendVersionMessage(channel);
+            } catch (IOException e) {
+                log.error("Closing channel due to failure to send version message from server to channel " + channel, e);
+                IoUtils.safeClose(channel);
+            }
+
+            // receive messages from the client
+            channel.receiveMessage(new ClientVersionMessageReceiver(this.serviceContainer));
+        }
+
+        @Override
+        public void registrationTerminated() {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+    }
+
+    private class ClientVersionMessageReceiver implements Channel.Receiver {
+
+        private final ServiceContainer serviceContainer;
+
+        ClientVersionMessageReceiver(final ServiceContainer serviceContainer) {
+            this.serviceContainer = serviceContainer;
+        }
+
+        @Override
+        public void handleError(Channel channel, IOException error) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public void handleEnd(Channel channel) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public void handleMessage(Channel channel, MessageInputStream messageInputStream) {
+            final DataInputStream dataInputStream = new DataInputStream(messageInputStream);
+            try {
+                final byte version = dataInputStream.readByte();
+                final String clientMarshallingStrategy = dataInputStream.readUTF();
+                log.debug("Client with protocol version " + version + " and marshalling strategy " + clientMarshallingStrategy +
+                        " will communicate on " + channel);
+                switch (version) {
+                    // TODO: Change this to 0x01
+                    case 0x00:
+                        // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
+                        final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, this.serviceContainer, clientMarshallingStrategy);
+                        receiver.startReceiving();
+                        break;
+
+                    default:
+                        throw new RuntimeException("Cannot handle client version " + version);
+                }
+
+            } catch (IOException e) {
+                // log it
+                log.errorf(e, "Exception on channel %s from message %s", channel, messageInputStream);
+                IoUtils.safeClose(channel);
+            } finally {
+                IoUtils.safeClose(messageInputStream);
+            }
+
+
+        }
     }
 }
