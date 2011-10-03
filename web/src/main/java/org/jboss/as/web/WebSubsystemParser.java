@@ -195,34 +195,33 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 if(config.hasDefined(ACCESS_LOG)) {
                     writer.writeStartElement(Element.ACCESS_LOG.getLocalName());
                     final ModelNode accessLog = config.get(ACCESS_LOG);
+                    writeAttribute(writer, Attribute.PATTERN.getLocalName(), accessLog);
+                    writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), accessLog);
+                    writeAttribute(writer, Attribute.EXTENDED.getLocalName(), accessLog);
+                    writeAttribute(writer, Attribute.PREFIX.getLocalName(), accessLog);
+                    writeAttribute(writer, Attribute.ROTATE.getLocalName(), accessLog);
                     if(accessLog.has(DIRECTORY)) {
                         final ModelNode directory = accessLog.get(DIRECTORY);
                         writer.writeEmptyElement(DIRECTORY);
                         writeAttribute(writer, Attribute.PATH.getLocalName(), directory);
                         writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), directory);
                     }
-                    writeAttribute(writer, Attribute.PATTERN.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.EXTENDED.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.PREFIX.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.ROTATE.getLocalName(), accessLog);
                     writer.writeEndElement();
                 }
                 if (config.hasDefined(REWRITE)) {
                     for (final ModelNode rewrite : config.get(REWRITE).asList()) {
                         writer.writeStartElement(REWRITE);
-                        if (rewrite.hasDefined(CONDITION)) {
-                            for (final ModelNode condition : rewrite.get(CONDITION).asList()) {
-                                writer.writeStartElement(CONDITION);
-                                writeAttribute(writer, Attribute.TEST.getLocalName(), condition);
-                                writeAttribute(writer, Attribute.PATTERN.getLocalName(), condition);
-                                writeAttribute(writer, Attribute.FLAGS.getLocalName(), condition);
-                                writer.writeEndElement();
-                            }
-                        }
                         writeAttribute(writer, Attribute.PATTERN.getLocalName(), rewrite);
                         writeAttribute(writer, Attribute.SUBSTITUTION.getLocalName(), rewrite);
                         writeAttribute(writer, Attribute.FLAGS.getLocalName(), rewrite);
+                        if (rewrite.hasDefined(CONDITION)) {
+                            for (final ModelNode condition : rewrite.get(CONDITION).asList()) {
+                                writer.writeEmptyElement(CONDITION);
+                                writeAttribute(writer, Attribute.TEST.getLocalName(), condition);
+                                writeAttribute(writer, Attribute.PATTERN.getLocalName(), condition);
+                                writeAttribute(writer, Attribute.FLAGS.getLocalName(), condition);
+                            }
+                        }
                         writer.writeEndElement();
                     }
                 }
