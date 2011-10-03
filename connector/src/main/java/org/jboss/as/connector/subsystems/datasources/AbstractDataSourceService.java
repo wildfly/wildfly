@@ -500,7 +500,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         @Override
         protected String buildJndiName(String rawJndiName, Boolean javaContext) {
             final String jndiName;
-            if (!rawJndiName.startsWith("java:")) {
+            if (!rawJndiName.startsWith("java:") && javaContext) {
                 if (rawJndiName.startsWith("jboss/")) {
                     // Bind to java:jboss/ namespace
                     jndiName = "java:" + rawJndiName;
