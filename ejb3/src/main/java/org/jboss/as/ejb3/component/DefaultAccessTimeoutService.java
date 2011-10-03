@@ -31,7 +31,7 @@ import org.jboss.msc.service.StopContext;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Service that manages the default access timeout for session beans 
+ * Service that manages the default access timeout for session beans
  *
  * @author Stuart Douglas
  */
