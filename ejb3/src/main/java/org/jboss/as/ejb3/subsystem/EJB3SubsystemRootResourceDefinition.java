@@ -23,15 +23,14 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -44,10 +43,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     public static final EJB3SubsystemRootResourceDefinition INSTANCE = new EJB3SubsystemRootResourceDefinition();
 
-    public static final SimpleAttributeDefinition LITE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.LITE, ModelType.BOOLEAN, true)
-                    .setDefaultValue(new ModelNode().set(false))
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
     public static final SimpleAttributeDefinition DEFAULT_SLSB_INSTANCE_POOL =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL, ModelType.STRING, true)
                     .setAllowExpression(true).build();
@@ -57,6 +52,12 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final SimpleAttributeDefinition DEFAULT_RESOURCE_ADAPTER_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME, ModelType.STRING, true)
                     .setAllowExpression(true).build();
+    public static final SimpleAttributeDefinition DEFAULT_STATEFUL_ACCESS_TIMEOUT =
+            new SimpleAttributeDefinition(EJB3SubsystemModel.DEFAULT_STATEFUL_ACCESS_TIMEOUT, EJB3SubsystemModel.DEFAULT_STATEFUL_ACCESS_TIMEOUT,
+                    new ModelNode().set(5000L), ModelType.LONG, false, true, null);
+    public static final SimpleAttributeDefinition DEFAULT_SINGLETON_ACCESS_TIMEOUT =
+            new SimpleAttributeDefinition(EJB3SubsystemModel.DEFAULT_SINGLETON_ACCESS_TIMEOUT, EJB3SubsystemModel.DEFAULT_SINGLETON_ACCESS_TIMEOUT,
+                    new ModelNode().set(5000L), ModelType.LONG, false, true, null);
 
     private EJB3SubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
@@ -67,9 +68,10 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(LITE, null, new ReloadRequiredWriteAttributeHandler(LITE));
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, SetDefaultSLSBPool.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, SetDefaultMDBPool.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, SetDefaultResourceAdapterName.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_ACCESS_TIMEOUT, null, new SetDefaultSessionBeanAccessTimeout(EJB3SubsystemModel.DEFAULT_STATEFUL_ACCESS_TIMEOUT, DefaultAccessTimeoutService.STATEFUL_SERVICE_NAME));
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_SINGLETON_ACCESS_TIMEOUT, null, new SetDefaultSessionBeanAccessTimeout(EJB3SubsystemModel.DEFAULT_SINGLETON_ACCESS_TIMEOUT, DefaultAccessTimeoutService.SINGLETON_SERVICE_NAME));
     }
 }

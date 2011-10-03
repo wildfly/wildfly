@@ -22,11 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-
-import java.util.Locale;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -44,6 +39,11 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
+import java.util.Locale;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
 /**
  * Extension that provides the EJB3 subsystem.
  *
@@ -55,9 +55,8 @@ public class EJB3Extension implements Extension {
     public static final String SUBSYSTEM_NAME = "ejb3";
     public static final String NAMESPACE_1_0 = "urn:jboss:domain:ejb3:1.0";
     public static final String NAMESPACE_1_1 = "urn:jboss:domain:ejb3:1.1";
+    public static final String NAMESPACE_1_2 = "urn:jboss:domain:ejb3:1.2";
 
-    private static final EJB3Subsystem10Parser ejb3Subsystem10Parser = new EJB3Subsystem10Parser();
-    private static final EJB3Subsystem11Parser ejb3Subsystem11Parser = new EJB3Subsystem11Parser();
     private static final String RESOURCE_NAME = EJB3Extension.class.getPackage().getName() + ".LocalDescriptions";
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
@@ -71,7 +70,7 @@ public class EJB3Extension implements Extension {
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
 
-        subsystem.registerXMLElementWriter(ejb3Subsystem11Parser);
+        subsystem.registerXMLElementWriter(EJB3Subsystem12Parser.INSTANCE);
 
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(EJB3SubsystemRootResourceDefinition.INSTANCE);
 
@@ -91,8 +90,9 @@ public class EJB3Extension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(NAMESPACE_1_0, ejb3Subsystem10Parser);
-        context.setSubsystemXmlMapping(NAMESPACE_1_1, ejb3Subsystem11Parser);
+        context.setSubsystemXmlMapping(NAMESPACE_1_0, EJB3Subsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(NAMESPACE_1_1, EJB3Subsystem11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(NAMESPACE_1_2, EJB3Subsystem12Parser.INSTANCE);
     }
 
     private static ModelNode createAddSubSystemOperation(final ModelNode model) {

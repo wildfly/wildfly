@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
@@ -46,7 +47,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -69,6 +69,9 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
 
     private final List<ServiceName> dependsOn;
+
+
+    private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
     /**
      * Construct a new instance.
      *
@@ -84,6 +87,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         this.beanLevelLockType = singletonComponentCreateService.getBeanLockType();
         this.methodLockTypes = singletonComponentCreateService.getMethodApplicableLockTypes();
         this.methodAccessTimeouts = singletonComponentCreateService.getMethodApplicableAccessTimeouts();
+        this.defaultAccessTimeoutProvider = singletonComponentCreateService.getDefaultAccessTimeoutProvider();
     }
 
     @Override
@@ -171,15 +175,12 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         if (beanTimeout != null) {
             return beanTimeout;
         }
-        //TODO: this should be configurable
         return getDefaultAccessTimeout();
     }
 
     @Override
     public AccessTimeoutDetails getDefaultAccessTimeout() {
-        // TODO: This has to be configurable.
-        // Currently defaults to 5 minutes
-        return new AccessTimeoutDetails(5, TimeUnit.MINUTES);
+        return defaultAccessTimeoutProvider.getDefaultAccessTimeout();
     }
 
     private synchronized void destroySingletonInstance() {

@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -68,6 +69,8 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private MethodDescription beforeCompletion;
     private final Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
     private StatefulTimeoutInfo statefulTimeout;
+
+    private DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
     /**
      * Map of init method, to the corresponding home create method on the home interface
@@ -325,5 +328,13 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     public Map<Method, String> getInitMethods() {
         return Collections.unmodifiableMap(initMethods);
+    }
+
+    public DefaultAccessTimeoutService getDefaultAccessTimeoutProvider() {
+        return defaultAccessTimeoutProvider;
+    }
+
+    public void setDefaultAccessTimeoutProvider(final DefaultAccessTimeoutService defaultAccessTimeoutProvider) {
+        this.defaultAccessTimeoutProvider = defaultAccessTimeoutProvider;
     }
 }

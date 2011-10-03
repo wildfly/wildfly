@@ -43,6 +43,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  */
 public class EJB3Subsystem10Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
+    public static final EJB3Subsystem10Parser INSTANCE = new EJB3Subsystem10Parser();
+
+    private EJB3Subsystem10Parser() {
+    }
+
     /**
      * {@inheritDoc}
      */
