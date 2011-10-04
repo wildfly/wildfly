@@ -113,10 +113,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private final Set<String> asynchronousClasses = new HashSet<String>();
 
     /**
-     * Views the component marked as @Asynchronous
-     */
-    private final Set<String> asynchronousViews = new HashSet<String>();
-    /**
      * mapped-name of the session bean
      */
     private String mappedName;
@@ -348,26 +344,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public Set<String> getAsynchronousClasses() {
         return asynchronousClasses;
     }
-
-    /**
-     *
-     * @return The class name of all asynchronous views
-     */
-    public Set<String> getAsynchronousViews() {
-        return asynchronousViews;
-    }
-
-    /**
-     * Set an entire view's asynchronous nature.  All business methods for the view will be asynchronous.
-     *
-     * @param viewName The view name
-     */
-    public void addAsynchronousView(final String viewName) {
-        asynchronousViews.add(viewName);
-    }
-
-
-
 
     /**
      * Returns the type of the session bean

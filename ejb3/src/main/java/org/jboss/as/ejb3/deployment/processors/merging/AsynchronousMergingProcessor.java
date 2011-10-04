@@ -87,22 +87,6 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
             }
         }
 
-        for (ViewDescription view : description.getViews()) {
-            //this case is taken care of above
-            if (!view.getViewClassName().equals(description.getComponentClassName())) {
-                //this is an extension to the spec, the spec does not require @Async annotations on view classes to work
-                final EEModuleClassDescription viewClass = applicationClasses.getClassByName(view.getViewClassName());
-                if (viewClass != null) {
-                    final ClassAnnotationInformation<Asynchronous, Boolean> annotations = viewClass.getAnnotationInformation(Asynchronous.class);
-                    if (annotations != null) {
-                        if (!annotations.getClassLevelAnnotations().isEmpty()) {
-                            description.addAsynchronousView(view.getViewClassName());
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     @Override
@@ -121,8 +105,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
             }
         }
         if (!description.getAsynchronousClasses().isEmpty() ||
-                !description.getAsynchronousMethods().isEmpty() ||
-                !description.getAsynchronousViews().isEmpty()) {
+                !description.getAsynchronousMethods().isEmpty()) {
 
             //setup a dependency on the executor service
             description.getConfigurators().add(new ComponentConfigurator() {
@@ -139,22 +122,19 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
             for (final ViewDescription view : description.getViews()) {
                 final EJBViewDescription ejbView = (EJBViewDescription) view;
 
-                //TODO: This is not the way to handle remove async invocations
-                //this will need to be looked at once we have remote in place
                 ejbView.getConfigurators().add(new ViewConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                         final SessionBeanComponentDescription componentDescription = (SessionBeanComponentDescription) componentConfiguration.getComponentDescription();
-                        final boolean asyncView = componentDescription.getAsynchronousViews().contains(view.getViewClassName());
                         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
                             //we need the component method to get the correct declaring class
                             final Method componentMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, deploymentReflectionIndex.getClassIndex(componentClass), method);
 
                             if (componentMethod != null) {
-                                boolean methodFromAsyncView = asyncView && method.getDeclaringClass() != Object.class;
-                                if (methodFromAsyncView || componentDescription.getAsynchronousClasses().contains(componentMethod.getDeclaringClass().getName())) {
+                                if (componentDescription.getAsynchronousClasses().contains(componentMethod.getDeclaringClass().getName())) {
                                     addAsyncInterceptor(configuration, method);
+                                    configuration.addAsyncMethod(method);
                                 } else {
                                     MethodIdentifier id = MethodIdentifier.getIdentifierForMethod(method);
                                     if (componentDescription.getAsynchronousMethods().contains(id)) {
