@@ -29,7 +29,10 @@ import org.apache.catalina.ThreadBindingListener;
 import org.jboss.as.server.deployment.SetupAction;
 
 /**
- * Valve that runs {@link org.jboss.as.server.deployment.SetupAction}s around a web request.
+ * ThreadBindingListener that runs {@link org.jboss.as.server.deployment.SetupAction}s around a web request.
+ *
+ * This sets up things such as the {@link org.jboss.as.naming.context.NamespaceContextSelector} context
+ * and the {@link org.jboss.ejb.client.EJBClientContext}
  *
  * @author Stuart Douglas
  */
