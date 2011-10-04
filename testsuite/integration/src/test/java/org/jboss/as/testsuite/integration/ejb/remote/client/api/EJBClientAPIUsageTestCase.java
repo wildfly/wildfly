@@ -39,9 +39,12 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoFuture;
@@ -49,6 +52,7 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
 
+import javax.ejb.NoSuchEJBException;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -71,6 +75,8 @@ public class EJBClientAPIUsageTestCase {
 
     private static final String MODULE_NAME = "ejb";
 
+    private EJBClientContext ejbClientContext;
+
     @Deployment
     public static Archive<?> createDeployment() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
@@ -86,7 +92,7 @@ public class EJBClientAPIUsageTestCase {
 
 
     @BeforeClass
-    public static void beforeTest() throws Exception {
+    public static void beforeTestClass() throws Exception {
         final Endpoint endpoint = Remoting.createEndpoint("endpoint", Executors.newSingleThreadExecutor(), OptionMap.EMPTY);
         final Xnio xnio = Xnio.getInstance();
         final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
@@ -98,8 +104,21 @@ public class EJBClientAPIUsageTestCase {
     }
 
     @AfterClass
-    public static void afterTest() throws Exception {
+    public static void afterTestClass() throws Exception {
         executor.shutdown();
+    }
+
+    @Before
+    public void beforeTest() throws Exception {
+        this.ejbClientContext = EJBClientContext.create();
+        this.ejbClientContext.registerConnection(connection);
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (this.ejbClientContext != null) {
+            EJBClientContext.suspendCurrent();
+        }
     }
 
     @Test
@@ -107,14 +126,8 @@ public class EJBClientAPIUsageTestCase {
         final EchoRemote proxy = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, EchoBean.class.getSimpleName(), EchoRemote.class);
         Assert.assertNotNull("Received a null proxy", proxy);
         final String message = "Hello world from a really remote client";
-        EJBClientContext ejbClientContext = EJBClientContext.create();
-        try {
-            ejbClientContext.registerConnection(connection);
-            final String echo = proxy.echo(message);
-            Assert.assertEquals("Unexpected echo message", message, echo);
-        } finally {
-            EJBClientContext.suspendCurrent();
-        }
+        final String echo = proxy.echo(message);
+        Assert.assertEquals("Unexpected echo message", message, echo);
     }
 
     @Test
@@ -122,15 +135,9 @@ public class EJBClientAPIUsageTestCase {
         final EchoRemote proxy = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, InterceptedEchoBean.class.getSimpleName(), EchoRemote.class);
         Assert.assertNotNull("Received a null proxy", proxy);
         final String message = "Hello world from a really remote client";
-        EJBClientContext ejbClientContext = EJBClientContext.create();
-        try {
-            ejbClientContext.registerConnection(connection);
-            final String echo = proxy.echo(message);
-            final String expectedEcho = message + InterceptorTwo.MESSAGE_SEPARATOR + InterceptorOne.class.getSimpleName() + InterceptorOne.MESSAGE_SEPARATOR + InterceptorTwo.class.getSimpleName();
-            Assert.assertEquals("Unexpected echo message", expectedEcho, echo);
-        } finally {
-            EJBClientContext.suspendCurrent();
-        }
+        final String echo = proxy.echo(message);
+        final String expectedEcho = message + InterceptorTwo.MESSAGE_SEPARATOR + InterceptorOne.class.getSimpleName() + InterceptorOne.MESSAGE_SEPARATOR + InterceptorTwo.class.getSimpleName();
+        Assert.assertEquals("Unexpected echo message", expectedEcho, echo);
     }
 
     @Test
@@ -138,16 +145,10 @@ public class EJBClientAPIUsageTestCase {
         final EmployeeManager proxy = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, EmployeeBean.class.getSimpleName(), EmployeeManager.class);
         Assert.assertNotNull("Received a null proxy", proxy);
         final String[] nickNames = new String[]{"java-programmer", "ruby-programmer", "php-programmer"};
-        final EJBClientContext ejbClientContext = EJBClientContext.create();
         final Employee employee = new Employee(1, "programmer");
-        Employee employeeWithNickNames = null;
-        try {
-            ejbClientContext.registerConnection(connection);
-            // invoke on the bean
-            employeeWithNickNames = proxy.addNickNames(employee, nickNames);
-        } finally {
-            EJBClientContext.suspendCurrent();
-        }
+        // invoke on the bean
+        final Employee employeeWithNickNames = proxy.addNickNames(employee, nickNames);
+
         // check the id of the returned employee
         Assert.assertEquals("Unexpected employee id", 1, employeeWithNickNames.getId());
         // check the name of the returned employee
@@ -161,27 +162,35 @@ public class EJBClientAPIUsageTestCase {
     }
 
     @Test
+    @Ignore("SFSB session creation hasn't been properly implemented.")
     public void testSFSBInvocation() throws Exception {
         final Counter counter = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, CounterBean.class.getSimpleName(), Counter.class);
         Assert.assertNotNull("Received a null proxy", counter);
-        final EJBClientContext ejbClientContext = EJBClientContext.create();
-        try {
-            ejbClientContext.registerConnection(connection);
-            // open a session for the SFSB
-            EJBClient.createSession(counter);
-            // invoke the bean
-            final int initialCount = counter.getCount();
-            Assert.assertEquals("Unexpected initial count from stateful bean", 0, initialCount);
-            final int NUM_TIMES = 25;
-            for (int i = 1; i <= NUM_TIMES; i++) {
-                final int count = counter.incrementAndGetCount();
-                Assert.assertEquals("Unexpected count after increment", i, count);
-            }
-            final int finalCount = counter.getCount();
-            Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
-        } finally {
-            EJBClientContext.suspendCurrent();
+        // open a session for the SFSB
+        EJBClient.createSession(counter);
+        // invoke the bean
+        final int initialCount = counter.getCount();
+        Assert.assertEquals("Unexpected initial count from stateful bean", 0, initialCount);
+        final int NUM_TIMES = 25;
+        for (int i = 1; i <= NUM_TIMES; i++) {
+            final int count = counter.incrementAndGetCount();
+            Assert.assertEquals("Unexpected count after increment", i, count);
         }
+        final int finalCount = counter.getCount();
+        Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
     }
 
+    @Test
+    public void testNonExistentEJBAccess() throws Exception {
+        final NotAnEJBInterface nonExistentBean = EJBClient.getProxy("non-existen-app-name", MODULE_NAME, null, "blah", NotAnEJBInterface.class);
+        Assert.assertNotNull("Received a null proxy", nonExistentBean);
+        // invoke on the (non-existent) bean
+        try {
+            nonExistentBean.echo("Hello world to a non-existent bean");
+            Assert.fail("Expected a NoSuchEJBException");
+        } catch (NoSuchEJBException nsee) {
+            // expected
+            logger.info("Received the expected exception", nsee);
+        }
+    }
 }

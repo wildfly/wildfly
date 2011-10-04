@@ -42,6 +42,7 @@ import java.io.IOException;
 class SessionOpenRequestHandler extends AbstractMessageHandler {
 
     private static final byte HEADER_SESSION_OPEN_RESPONSE = 0x02;
+    private static final byte HEADER_EJB_NOT_STATEFUL = 0x0D;
 
     SessionOpenRequestHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
         super(deploymentRepository, marshallingStrategy);
@@ -71,7 +72,7 @@ class SessionOpenRequestHandler extends AbstractMessageHandler {
         final Component component = ejbDeploymentInformation.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
             final String failureMessage = "EJB " + beanName + " is not a Stateful Session bean in app: " + appName + " module: " + moduleName + " distinct name:" + distinctName;
-            this.writeInvocationFailure(channel, invocationId, failureMessage);
+            this.writeInvocationFailure(channel, HEADER_EJB_NOT_STATEFUL, invocationId, failureMessage);
             return;
         }
         // read the attachments
@@ -86,7 +87,8 @@ class SessionOpenRequestHandler extends AbstractMessageHandler {
             this.writeSessionId(channel, invocationId, sessionID, attachments);
         } catch (IOException ioe) {
             // write out invocation failure
-            this.writeInvocationFailure(channel, invocationId, "Server failed to send back session id");
+            // this.writeInvocationFailure(channel, invocationId, "Server failed to send back session id");
+            // TODO: Handle this
         }
     }
 

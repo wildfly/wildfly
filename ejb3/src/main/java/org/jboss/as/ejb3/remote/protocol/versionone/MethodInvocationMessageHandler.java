@@ -93,7 +93,7 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         }
         final Method invokedMethod = this.findMethod(componentView, methodName, methodParamTypes);
         if (invokedMethod == null) {
-            // TODO: Write out NoSuchMethod invocation failure to channel outstream
+            this.writeNoSuchEJBMethodFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName, methodName, methodParamTypes);
             return;
         }
         // read the attachments

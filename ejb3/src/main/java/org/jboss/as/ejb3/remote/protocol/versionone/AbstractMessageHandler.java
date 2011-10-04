@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
@@ -46,6 +47,7 @@ abstract class AbstractMessageHandler implements MessageHandler {
     protected final String marshallingStrategy;
 
     protected static final byte HEADER_NO_SUCH_EJB_FAILURE = 0x0A;
+    protected static final byte HEADER_NO_SUCH_EJB_METHOD_FAILURE = 0x0B;
     protected static final byte HEADER_SESSION_NOT_ACTIVE_FAILURE = 0x0C;
 
     AbstractMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
@@ -117,13 +119,23 @@ abstract class AbstractMessageHandler implements MessageHandler {
     protected void writeNoSuchEJBMethodFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
                                                 final String distinctname, final String beanName, final String viewClassName,
                                                 final String methodName, final String[] methodParamTypes) throws IOException {
-        final StringBuffer sb = new StringBuffer("No such EJB[");
+        final StringBuffer sb = new StringBuffer("No such method ");
+        sb.append(methodName).append("(");
+        if (methodParamTypes != null) {
+            for (int i = 0; i < methodParamTypes.length; i++) {
+                if (i != 0) {
+                    sb.append(",");
+                }
+                sb.append(methodParamTypes[i]);
+            }
+        }
+        sb.append(") on EJB[");
         sb.append("appname=").append(appName).append(", ");
         sb.append("modulename=").append(moduleName).append(", ");
         sb.append("distinctname=").append(distinctname).append(", ");
         sb.append("beanname=").append(beanName).append(", ");
         sb.append("viewclassname=").append(viewClassName).append("]");
-        this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_FAILURE, invocationId, sb.toString());
+        this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_METHOD_FAILURE, invocationId, sb.toString());
     }
 
     protected EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
