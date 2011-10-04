@@ -22,11 +22,11 @@
 
 package org.jboss.as.server.deployment.reflect;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.invocation.proxy.MethodIdentifier;
-
 import java.lang.reflect.Method;
 import java.util.Collection;
+
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
  * Utility methods for finding methods within a {@link ClassReflectionIndex} hierarchy.
@@ -105,6 +105,25 @@ public class ClassReflectionIndexUtil {
         }
         MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
         return findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, methodIdentifier);
+    }
+
+    /**
+     * Finds and returns a method corresponding to the passed <code>method</code>, which may be declared in the super class
+     * of the passed <code>classReflectionIndex</code>.
+     * <p/>
+     * <p/>
+     *
+     * @param deploymentReflectionIndex The deployment reflection index
+     * @param classReflectionIndex      The class reflection index which will be used to traverse the class hierarchy to find the method
+     * @param method                    The method being searched for
+     * @return
+     */
+    public static Method findMethod(final DeploymentReflectionIndex deploymentReflectionIndex, final ClassReflectionIndex classReflectionIndex, final Method method) {
+        if (method == null) {
+            throw new IllegalArgumentException("Method cannot be null");
+        }
+        MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
+        return findMethod(deploymentReflectionIndex, classReflectionIndex, methodIdentifier);
     }
 
     /**

@@ -21,6 +21,14 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
+import javax.ejb.Asynchronous;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -53,13 +61,6 @@ import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 
-import javax.ejb.Asynchronous;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 /**
  * Merging processor that handles EJB asyn methods, and adds a configurator to configure any that are found.
  *
@@ -87,12 +88,16 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
         }
 
         for (ViewDescription view : description.getViews()) {
-            final EEModuleClassDescription viewClass = applicationClasses.getClassByName(view.getViewClassName());
-            if (viewClass != null) {
-                final ClassAnnotationInformation<Asynchronous, Boolean> annotations = viewClass.getAnnotationInformation(Asynchronous.class);
-                if (annotations != null) {
-                    if (!annotations.getClassLevelAnnotations().isEmpty()) {
-                        description.addAsynchronousView(view.getViewClassName());
+            //this case is taken care of above
+            if (!view.getViewClassName().equals(description.getComponentClassName())) {
+                //this is an extension to the spec, the spec does not require @Async annotations on view classes to work
+                final EEModuleClassDescription viewClass = applicationClasses.getClassByName(view.getViewClassName());
+                if (viewClass != null) {
+                    final ClassAnnotationInformation<Asynchronous, Boolean> annotations = viewClass.getAnnotationInformation(Asynchronous.class);
+                    if (annotations != null) {
+                        if (!annotations.getClassLevelAnnotations().isEmpty()) {
+                            description.addAsynchronousView(view.getViewClassName());
+                        }
                     }
                 }
             }
@@ -144,7 +149,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
                         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
                             //we need the component method to get the correct declaring class
-                            final Method componentMethod = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, deploymentReflectionIndex.getClassIndex(componentClass), method);
+                            final Method componentMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, deploymentReflectionIndex.getClassIndex(componentClass), method);
 
                             if (componentMethod != null) {
                                 boolean methodFromAsyncView = asyncView && method.getDeclaringClass() != Object.class;
