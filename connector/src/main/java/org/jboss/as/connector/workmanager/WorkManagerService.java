@@ -70,15 +70,8 @@ public final class WorkManagerService implements Service<WorkManager> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        BlockingExecutor longRunning = (BlockingExecutor) executorLong.getOptionalValue();
-        if (longRunning != null) {
-            this.value.setLongRunningThreadPool(longRunning);
-            this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getOptionalValue());
-        } else {
-            this.value.setLongRunningThreadPool((BlockingExecutor) executorShort.getOptionalValue());
-            this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getOptionalValue());
-
-        }
+        this.value.setLongRunningThreadPool((BlockingExecutor) executorLong.getValue());
+        this.value.setShortRunningThreadPool((BlockingExecutor) executorShort.getValue());
         this.value.setXATerminator(new XATerminatorImpl(xaTerminator.getValue()));
 
         // TODO - Remove and do proper integration

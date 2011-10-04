@@ -27,8 +27,6 @@ import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION
 import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION_ENABLED;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
 import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.LONG_RUNNING_THREADS;
-import static org.jboss.as.connector.subsystems.jca.Constants.SHORT_RUNNING_THREADS;
 import static org.jboss.as.connector.subsystems.jca.Constants.THREAD_POOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -154,17 +152,6 @@ class JcaSubsystemProviders {
                     bundle.getString("cached-connection-manager.error"));
             operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_ERROR, TYPE).set(ModelType.BOOLEAN);
             operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
-
-            operation.get(REQUEST_PROPERTIES, LONG_RUNNING_THREADS, DESCRIPTION).set(
-                    bundle.getString("long-running-threads"));
-            operation.get(REQUEST_PROPERTIES, LONG_RUNNING_THREADS, TYPE).set(ModelType.BOOLEAN);
-            operation.get(REQUEST_PROPERTIES, LONG_RUNNING_THREADS, REQUIRED).set(false);
-
-            operation.get(REQUEST_PROPERTIES, SHORT_RUNNING_THREADS, DESCRIPTION).set(
-                    bundle.getString("short-running-threads"));
-            operation.get(REQUEST_PROPERTIES, SHORT_RUNNING_THREADS, TYPE).set(ModelType.BOOLEAN);
-            operation.get(REQUEST_PROPERTIES, SHORT_RUNNING_THREADS, REQUIRED).set(false);
-
 
             return operation;
         }

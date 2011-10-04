@@ -328,12 +328,10 @@ public class JcaExtension implements Extension {
                 switch (element) {
                     case LONG_RUNNING_THREADS: {
                         ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, parentAddress, list, THREAD_POOL, LONG_RUNNING_THREADS);
-                        node.get(LONG_RUNNING_THREADS).set(Boolean.TRUE);
                         break;
                     }
                     case SHORT_RUNNING_THREADS: {
                         ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, parentAddress, list, THREAD_POOL, SHORT_RUNNING_THREADS);
-                        node.get(SHORT_RUNNING_THREADS).set(Boolean.TRUE);
                         break;
                     }
                     default:
