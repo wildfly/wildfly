@@ -96,6 +96,7 @@ set INTEGRATION_TESTS=-Dintegration.module -Dbasic.integration.tests -Dcompat.in
 set SMOKE_TESTS=-Dintegration.module -Dsmoke.integration.tests
 set SPEC_TESTS=-Dspec.module
 set STRESS_TESTS=-Dstress.module
+set DOMAIN_TESTS=-Ddomain.module
 
 set MVN=%1%
 set GOAL=%2
@@ -133,7 +134,7 @@ if "%1" == "" (
 REM Replace occurrences of directives with corresponding maven profiles
 REM -DallTests
 if "%1" == "-DallTests" (
-  set "CMD_LINE_PARAMS=%CMD_LINE_PARAMS% %INTEGRATION_TESTS% %SPEC_TESTS% %API_TESTS%"
+  set "CMD_LINE_PARAMS=%CMD_LINE_PARAMS% %INTEGRATION_TESTS% %SPEC_TESTS% %API_TESTS% %DOMAIN_TESTS%"
   set "TESTS_SPECIFIED=Y"
   goto processed
 )

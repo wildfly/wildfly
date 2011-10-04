@@ -62,6 +62,7 @@ INTEGRATION_TESTS="-Dintegration.module -Dbasic.integration.tests -Dcompat.integ
 SMOKE_TESTS="-Dintegration.module -Dsmoke.integration.tests"
 SPEC_TESTS="-Dspec.module"
 STRESS_TESTS="-Dstress.module"
+DOMAIN_TESTS="-Ddomain.module"
 
 #
 # Helper to process command line for test directives
@@ -77,7 +78,7 @@ process_test_directives() {
     case $param in
       # if someone specified -DallTests, run all tests except benchmark and
       -DallTests)
-        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $INTEGRATION_TESTS $API_TESTS $SPEC_TESTS"
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $INTEGRATION_TESTS $API_TESTS $SPEC_TESTS $DOMAIN_TESTS"
         TESTS_SPECIFIED="Y"
         ;;
       # if someone specified -Dbenchmark-tests, run stress tests only
