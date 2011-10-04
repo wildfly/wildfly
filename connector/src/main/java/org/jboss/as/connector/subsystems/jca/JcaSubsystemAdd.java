@@ -150,11 +150,14 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
         WorkManager wm = new WorkManagerImpl();
 
         final WorkManagerService wmService = new WorkManagerService(wm);
-        newControllers.add(serviceTarget
-                .addService(ConnectorServices.WORKMANAGER_SERVICE, wmService)
-                .addDependency(ThreadsServices.EXECUTOR.append(SHORT_RUNNING_THREADS), Executor.class, wmService.getExecutorShortInjector())
-                .addDependency(ThreadsServices.EXECUTOR.append(LONG_RUNNING_THREADS), Executor.class, wmService.getExecutorLongInjector())
-                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
+        ServiceBuilder builder = serviceTarget
+                .addService(ConnectorServices.WORKMANAGER_SERVICE, wmService);
+        if (operation.get(LONG_RUNNING_THREADS).isDefined() && operation.get(LONG_RUNNING_THREADS).asBoolean()) {
+            builder.addDependency(ThreadsServices.EXECUTOR.append(LONG_RUNNING_THREADS), Executor.class, wmService.getExecutorLongInjector());
+        }
+        builder.addDependency(ThreadsServices.EXECUTOR.append(SHORT_RUNNING_THREADS), Executor.class, wmService.getExecutorShortInjector());
+
+        builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
                 .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
                 .install());
