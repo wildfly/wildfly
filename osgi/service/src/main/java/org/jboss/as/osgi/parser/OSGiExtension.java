@@ -54,6 +54,7 @@ public class OSGiExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(OSGiSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false);
         registration.registerReadWriteAttribute(ModelConstants.ACTIVATION, null, new ActivationAttributeHandler(), Storage.CONFIGURATION);
+        registration.registerReadWriteAttribute(ModelConstants.STARTLEVEL, StartLevelHandler.READ_HANDLER, StartLevelHandler.WRITE_HANDLER, Storage.RUNTIME);
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
 
         // Configuration Admin Setings
@@ -70,6 +71,12 @@ public class OSGiExtension implements Extension {
         ManagementResourceRegistration capabilities = registration.registerSubModel(PathElement.pathElement(ModelConstants.CAPABILITY), OSGiSubsystemProviders.CAPABILITY_DESCRIPTION);
         capabilities.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiCapabilityAdd.INSTANCE, OSGiCapabilityAdd.DESCRIPTION, false);
         capabilities.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiCapabilityRemove.INSTANCE, OSGiCapabilityRemove.DESCRIPTION, false);
+
+        if (context.getProcessType().isServer()) {
+            // Bundles present at runtime, this info is not available for controllers
+            ManagementResourceRegistration bundles = registration.registerSubModel(PathElement.pathElement(ModelConstants.BUNDLE), OSGiSubsystemProviders.BUNDLE_DESCRIPTION);
+            BundleRuntimeHandler.INSTANCE.register(bundles);
+        }
 
         subsystem.registerXMLElementWriter(OSGiSubsystemWriter.INSTANCE);
     }
