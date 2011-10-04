@@ -135,6 +135,8 @@
                 <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
             </timer-service>
 
+            <remote connector-ref="remoting-connector"/>
+
             <!-- EJB3 pools -->
             <pools>
                 <bean-instance-pools>
@@ -158,8 +160,6 @@
                     <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
                 </stateless>
             </session-bean>
-            <!-- TODO: Fixme before merging to upstream -->
-            <remote connector="dummy"/>
 
             <default-stateful-access-timeout>5000</default-stateful-access-timeout>
             <default-singleton-access-timeout>5000</default-singleton-access-timeout>
@@ -346,9 +346,15 @@
             </capabilities>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0">
+<<<<<<< HEAD
             <connector name="remoting-connector" socket-binding="remoting-socket"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
+=======
+            <connector name="remoting-connector" socket-binding="remoting"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
+>>>>>>> Align with Brian's work on ResourceDefinition and also enable the remoting connector configuration in EJB3 subsystem
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>

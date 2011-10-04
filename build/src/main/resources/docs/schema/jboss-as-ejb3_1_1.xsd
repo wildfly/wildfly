@@ -54,7 +54,7 @@
     </xs:complexType>
 
     <xs:complexType name="remoteType">
-        <xs:attribute name="connector" type="xs:string"/>
+        <xs:attribute name="connector-ref" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="session-beanType">

@@ -44,8 +44,8 @@ import java.io.IOException;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class RemoteConnectorService implements Service<RemoteConnectorService> {
-    private static final Logger log = Logger.getLogger(RemoteConnectorService.class);
+public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorService> {
+    private static final Logger log = Logger.getLogger(EJBRemoteConnectorService.class);
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
@@ -131,7 +131,7 @@ public class RemoteConnectorService implements Service<RemoteConnectorService> {
     }
 
     @Override
-    public RemoteConnectorService getValue() throws IllegalStateException, IllegalArgumentException {
+    public EJBRemoteConnectorService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 }

@@ -85,14 +85,13 @@ public class EJB3Extension implements Extension {
         // describe operation for the subsystem
         subsystemRegistration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        // remote
-        final ManagementResourceRegistration remoteConnectorService = subsystemRegistration.registerSubModel(EJB3SubsystemModel.REMOTE_CONNECTOR_SERVICE_PATH, EJB3SubsystemProviders.REMOTE_CONNECTOR_SERVICE);
-        remoteConnectorService.registerOperationHandler(ADD, RemoteConnectorAdd.INSTANCE, RemoteConnectorAdd.INSTANCE, false);
+        // subsystem=ejb3/service=remote
+        subsystemRegistration.registerSubModel(EJBRemoteResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/strict-max-bean-instance-pool=*
         subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
 
-        // subsystem=ejb3/timer-service=*
+        // subsystem=ejb3/service=timerservice
         subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);
 
         ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
@@ -135,6 +134,13 @@ public class EJB3Extension implements Extension {
         return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
     }
 
+    private static ModelNode createRemoteServiceOperation(final ModelNode model) {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+        address.add(EJB3SubsystemModel.SERVICE, EJB3SubsystemModel.REMOTE);
+        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
+    }
+
     private static class SubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
         static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
 
@@ -145,6 +151,12 @@ public class EJB3Extension implements Extension {
             for (Resource.ResourceEntry pool : root.getChildren(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL)) {
                 result.add(createAddStrictMaxPoolOperation(pool.getName(), pool.getModel()));
             }
+            // EJB remote service
+            final Resource remoteService = root.getChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH);
+            if (remoteService != null) {
+                result.add(createRemoteServiceOperation(remoteService.getModel()));
+            }
+            // EJB timerservice
             final Resource timerService = root.getChild(EJB3SubsystemModel.TIMER_SERVICE_PATH);
             if (timerService != null) {
                 result.add(createTimerServiceOperation(timerService.getModel()));
