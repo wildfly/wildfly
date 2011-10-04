@@ -96,7 +96,7 @@ public interface JpaLogger extends BasicLogger {
     void stoppingService(String serviceName, String name);
 
     /**
-     * Logs an error message indicating an exception occurred while preloading the default persistence provider module.
+     * Logs an error message indicating an exception occurred while preloading the default persistence provider adapter module.
      * Initialization continues after logging the error.
      *
      * @param cause the cause of the error.
@@ -105,5 +105,14 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 11404, value = "Could not load default persistence provider adaptor module.  Management attributes will not be registered for the adaptor")
     void errorPreloadingDefaultProviderAdaptor(@Cause Throwable cause);
 
+    /**
+     * Logs an error message indicating an exception occurred while preloading the default persistence provider module.
+     * Initialization continues after logging the error.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11405, value = "Could not load default persistence provider module.  ")
+    void errorPreloadingDefaultProvider(@Cause Throwable cause);
 
 }

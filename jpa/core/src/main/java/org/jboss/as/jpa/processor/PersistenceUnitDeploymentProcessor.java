@@ -32,7 +32,7 @@ import org.jboss.as.jpa.classloader.TempClassLoader;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
+import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
@@ -59,9 +59,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
@@ -83,7 +81,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
@@ -362,6 +359,15 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
         if (adaptor == null) {
             try {
+                if (adaptorModule == null &&
+                    (pu.getPersistenceProviderClassName() == null ||
+                     pu.getPersistenceProviderClassName().equals(Configuration.PROVIDER_CLASS_DEFAULT))) {
+                    // if using default provider, load default adapter module
+                    adaptorModule = Configuration.ADAPTER_MODULE_DEFAULT;
+                }
+                // will load the persistence provider adaptor (integration classes).  if adaptorModule is null
+                // the noop adaptor is returned (can be used against any provider but the integration classes
+                // are handled externally via properties or code in the persistence provider).
                 adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule);
             } catch (ModuleLoadException e) {
                 throw new DeploymentUnitProcessingException("persistence provider adapter module load error "
@@ -393,9 +399,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
         // try to determine the provider module name (ignore if we can't, it might already be loaded)
         if (persistenceProviderModule == null) {
-            if (persistenceProviderClassName.equals(Configuration.PROVIDER_CLASS_DEFAULT)) {
-                persistenceProviderModule = Configuration.PROVIDER_MODULE_DEFAULT;
-            }
+            persistenceProviderModule = Configuration.getProviderModuleNameFromProviderClassName(persistenceProviderClassName);
         }
 
         PersistenceProvider provider = getProviderByName(pu, persistenceProviderModule);
@@ -403,41 +407,15 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         // if we haven't loaded the provider yet, load it
         if (provider == null) {
             if (persistenceProviderModule != null) {
-                final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                Module module = null;
                 try {
-                    module = moduleLoader.loadModule(ModuleIdentifier.fromString(persistenceProviderModule));
+                    PersistenceProviderLoader.loadProviderModuleByName(persistenceProviderModule);
+                    provider = getProviderByName(pu, persistenceProviderModule);
                 } catch (ModuleLoadException e) {
                     throw MESSAGES.cannotLoadPersistenceProviderModule(e, persistenceProviderModule, persistenceProviderClassName);
-                }
-                final ServiceLoader<PersistenceProvider> serviceLoader =
-                        module.loadService(PersistenceProvider.class);
-                if (serviceLoader != null) {
-                    PersistenceProvider persistenceProvider = null;
-                    for (PersistenceProvider provider1 : serviceLoader) {
-                        // persistence provider jar may contain multiple provider service implementations
-                        // use the one that matches
-                        if (persistenceProviderClassName.equals(provider1.getClass().getName())) {
-                            persistenceProvider = provider1;
-                        }
-                    }
-                    if (persistenceProvider == null) {
-                        // could be invalid settings in persistence.xml, throw error that includes list of valid
-                        // persistence provider class names
-                        ArrayList<String> providerClasses = new ArrayList<String>();
-                        for (PersistenceProvider provider2 : serviceLoader) {
-                            providerClasses.add(provider2.getClass().getName());
-                        }
-                        // name in persistence.xml didn't match class names in jar META-INF/services
-                        throw MESSAGES.incorrectPersistenceProvider(pu.getPersistenceUnitName(), persistenceProviderModule, persistenceProviderClassName, providerClasses);
-                    }
-                    PersistenceProviderResolverImpl.getInstance().addPersistenceProvider(persistenceProvider);
                 }
             }
         }
 
-        if (provider == null)
-            provider = getProviderByName(pu, persistenceProviderModule);
         if (provider == null)
             throw MESSAGES.persistenceProviderNotFound(persistenceProviderClassName);
         return provider;
