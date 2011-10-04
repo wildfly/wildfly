@@ -112,6 +112,7 @@
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
         <surefire.forked.process.timeout>300</surefire.forked.process.timeout>
+        <surefire.test.failure.ignore>false</surefire.test.failure.ignore>
 
         <!-- Arquillian dependency versions -->
         <version.arquillian_core>1.0.0.CR5</version.arquillian_core>
@@ -303,7 +304,7 @@
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
                     <!-- don't halt the all test executions if a test fails -->
-                    <testFailureIgnore>true</testFailureIgnore>
+                    <testFailureIgnore>${surefire.test.failure.ignore}</testFailureIgnore>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
