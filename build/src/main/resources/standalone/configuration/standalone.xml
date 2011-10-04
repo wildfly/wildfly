@@ -128,6 +128,8 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
         <subsystem xmlns="urn:jboss:domain:ejb3:1.2">
+            <remote connector="remoting-connector"/>
+
             <timer-service>
                 <thread-pool core-threads="1" max-threads="4"/>
                 <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
@@ -341,8 +343,10 @@
                 <capability name="org.jboss.osgi.xerces" startlevel="3"/>
             </capabilities>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:remoting:1.0">
+            <connector name="remoting-connector" socket-binding="remoting-socket"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>

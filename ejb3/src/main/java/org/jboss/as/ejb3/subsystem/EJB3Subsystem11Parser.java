@@ -54,6 +54,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTOR;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
@@ -94,6 +95,11 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
             // write out the mdb element contents
             this.writeMDB(writer, model);
             // </mdb>
+            writer.writeEndElement();
+        }
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(CONNECTOR)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.REMOTE.getLocalName());
+            writeRemote(writer, model.get(SERVICE, CONNECTOR));
             writer.writeEndElement();
         }
         // write the session-bean element
@@ -169,6 +175,9 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                             this.parsePools(reader, operations);
                             break;
                         }
+                        case REMOTE:
+                            parseRemote(reader, operations);
+                            break;
                         case SESSION_BEAN: {
                             // read <session-bean>
                             this.parseSessionBean(reader, operations, ejb3SubsystemAddOperation);
@@ -218,6 +227,10 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
             // </bean-instance-pool-ref>
             writer.writeEndElement();
         }
+    }
+
+    private void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR).asString());
     }
 
     /**
@@ -389,6 +402,31 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
+    }
+
+    private void parseRemote(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String connector = null;
+        final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.CONNECTOR);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case CONNECTOR:
+                    connector = value;
+                    break;
+
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (! required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        requireNoContent(reader);
+        operations.add(RemoteConnectorAdd.create(connector));
     }
 
     private void parseBeanInstancePools(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {

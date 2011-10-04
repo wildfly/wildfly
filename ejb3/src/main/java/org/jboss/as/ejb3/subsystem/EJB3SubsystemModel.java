@@ -31,6 +31,8 @@ public interface EJB3SubsystemModel {
     String LITE = "lite";
     String NAME = "name";
 
+    String CONNECTOR = "connector";
+
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
     String DEFAULT_SLSB_INSTANCE_POOL = "default-slsb-instance-pool";
@@ -52,6 +54,7 @@ public interface EJB3SubsystemModel {
     String TIMER_SERVICE = "timer-service";
     String DEFAULT = "default";
 
+    PathElement REMOTE_CONNECTOR_SERVICE_PATH = PathElement.pathElement(SERVICE, CONNECTOR);
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
 
 

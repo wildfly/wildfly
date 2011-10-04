@@ -85,6 +85,10 @@ public class EJB3Extension implements Extension {
         // describe operation for the subsystem
         subsystemRegistration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
+        // remote
+        final ManagementResourceRegistration remoteConnectorService = subsystemRegistration.registerSubModel(EJB3SubsystemModel.REMOTE_CONNECTOR_SERVICE_PATH, EJB3SubsystemProviders.REMOTE_CONNECTOR_SERVICE);
+        remoteConnectorService.registerOperationHandler(ADD, RemoteConnectorAdd.INSTANCE, RemoteConnectorAdd.INSTANCE, false);
+
         // subsystem=ejb3/strict-max-bean-instance-pool=*
         subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
 

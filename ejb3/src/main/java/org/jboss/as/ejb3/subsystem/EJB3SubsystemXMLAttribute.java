@@ -30,6 +30,7 @@ import java.util.Map;
 public enum EJB3SubsystemXMLAttribute {
     UNKNOWN(null),
 
+    CONNECTOR("connector"),
     CORE_THREADS("core-threads"),
 
     INSTANCE_AQUISITION_TIMEOUT("instance-acquisition-timeout"),
