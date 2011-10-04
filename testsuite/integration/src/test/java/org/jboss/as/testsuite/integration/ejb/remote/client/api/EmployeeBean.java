@@ -34,10 +34,11 @@ public class EmployeeBean implements EmployeeManager {
 
 
     @Override
-    public Employee addNickNames(final Employee employee, final String... nickNames) {
+    public AliasedEmployee addNickNames(final Employee employee, final String... nickNames) {
+        final AliasedEmployee aliasedEmployee = new AliasedEmployee(employee.getId(), employee.getName());
         for (int i=0; i<nickNames.length; i++) {
-            employee.addNick(nickNames[i]);
+            aliasedEmployee.addNick(nickNames[i]);
         }
-        return employee;
+        return aliasedEmployee;
     }
 }

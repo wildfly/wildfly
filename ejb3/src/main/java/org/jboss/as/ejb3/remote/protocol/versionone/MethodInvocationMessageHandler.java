@@ -29,12 +29,17 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Set;
@@ -49,7 +54,8 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
 
     private static final char METHOD_PARAM_TYPE_SEPARATOR = ',';
 
-    private static final byte HEADER_MESSAGE_INVOCATION_RESPONSE = 0x05;
+    private static final byte HEADER_METHOD_INVOCATION_RESPONSE = 0x05;
+    private static final byte HEADER_METHOD_INVOCATION_APPLICATION_EXCEPTION = 0x06;
 
     MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
         super(deploymentRepository, marshallingStrategy);
@@ -75,13 +81,12 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
             this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
             return;
         }
-        final ComponentView componentView = ejbDeploymentInformation.getView(viewClassName);
-        if (componentView == null) {
+        if (!ejbDeploymentInformation.getViewNames().contains(viewClassName)) {
             this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
             return;
         }
         // TODO: Add a check for remote view
-
+        final ComponentView componentView = ejbDeploymentInformation.getView(viewClassName);
         final String methodName = input.readUTF();
         // method signature
         String[] methodParamTypes = null;
@@ -128,13 +133,20 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         try {
             result = this.invokeMethod(componentView, invokedMethod, methodParams, attachments);
         } catch (Throwable throwable) {
-            logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName + " in app: " + appName + " module: " + moduleName +
-                    " distinctname: " + distinctName, throwable);
-            // TODO: write out the exception as a failure to the channel output stream
-            return;
+            try {
+                this.writeMethodInvocationFailure(channel, invocationId, throwable, attachments);
+            } catch (IOException ioe) {
+                // we couldn't write out a method invocation failure message. So let's atleast log the
+                // actual method invocation exception, for debugging/reference
+                logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName + " in app: " + appName + " module: " + moduleName +
+                        " distinctname: " + distinctName, throwable);
+                // now throw the IOException that happened while writing out the method invocation failure
+                throw ioe;
+            }
         }
-        // write out the result to the channel output stream
+        // write out the (successful) method invocation result to the channel output stream
         this.writeMethodInvocationResponse(channel, invocationId, result, attachments);
+
     }
 
     private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final RemotingAttachments attachments) throws Throwable {
@@ -175,7 +187,7 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
         try {
             // write invocation response header
-            outputStream.write(HEADER_MESSAGE_INVOCATION_RESPONSE);
+            outputStream.write(HEADER_METHOD_INVOCATION_RESPONSE);
             // write the invocation id
             outputStream.writeShort(invocationId);
             // write the attachments
@@ -191,5 +203,25 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         }
     }
 
+
+    private void writeMethodInvocationFailure(final Channel channel, final short invocationId, final Throwable error, final RemotingAttachments attachments) throws IOException {
+        final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
+        try {
+            // write the header
+            outputStream.write(HEADER_METHOD_INVOCATION_APPLICATION_EXCEPTION);
+            // write the invocation id
+            outputStream.writeShort(invocationId);
+            // write the attachments
+            this.writeAttachments(outputStream, attachments);
+            // write out the exception
+            final Marshaller marshaller = MarshallerFactory.createMarshaller(this.marshallingStrategy);
+            marshaller.start(outputStream);
+            marshaller.writeObject(error);
+            marshaller.finish();
+        } finally {
+            outputStream.close();
+        }
+
+    }
 
 }

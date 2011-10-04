@@ -22,10 +22,18 @@
 
 package org.jboss.as.testsuite.integration.ejb.remote.client.api;
 
+import javax.ejb.Remote;
+import javax.ejb.Stateless;
+
 /**
  * User: jpai
  */
-public interface EmployeeManager {
+@Stateless
+@Remote (ExceptionThrowingRemote.class)
+public class ExceptionThrowingBean implements ExceptionThrowingRemote {
 
-    AliasedEmployee addNickNames(final Employee employee, final String... nickNames);
+    @Override
+    public void alwaysThrowApplicationException(String state) throws StatefulApplicationException {
+        throw new StatefulApplicationException(state);
+    }
 }

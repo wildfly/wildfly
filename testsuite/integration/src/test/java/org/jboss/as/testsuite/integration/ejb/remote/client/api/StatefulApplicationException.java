@@ -22,10 +22,22 @@
 
 package org.jboss.as.testsuite.integration.ejb.remote.client.api;
 
+import javax.ejb.ApplicationException;
+import java.io.Serializable;
+
 /**
  * User: jpai
  */
-public interface EmployeeManager {
+@ApplicationException
+public class StatefulApplicationException extends Exception implements Serializable {
 
-    AliasedEmployee addNickNames(final Employee employee, final String... nickNames);
+    private final String state;
+
+    public StatefulApplicationException(final String state) {
+        this.state = state;
+    }
+
+    public String getState() {
+        return this.state;
+    }
 }

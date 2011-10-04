@@ -22,10 +22,28 @@
 
 package org.jboss.as.testsuite.integration.ejb.remote.client.api;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * User: jpai
  */
-public interface EmployeeManager {
+public class AliasedEmployee extends Employee {
 
-    AliasedEmployee addNickNames(final Employee employee, final String... nickNames);
+
+    private Set<String> nickNames = new HashSet<String>();
+
+
+    public AliasedEmployee(final int id, final String name) {
+        super(id, name);
+    }
+
+    public void addNick(final String nick) {
+        this.nickNames.add(nick);
+    }
+
+    public Set<String> getNickNames() {
+        return this.nickNames;
+    }
+
 }

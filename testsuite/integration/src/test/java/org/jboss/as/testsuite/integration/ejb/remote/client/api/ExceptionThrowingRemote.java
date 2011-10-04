@@ -25,7 +25,7 @@ package org.jboss.as.testsuite.integration.ejb.remote.client.api;
 /**
  * User: jpai
  */
-public interface EmployeeManager {
+public interface ExceptionThrowingRemote {
 
-    AliasedEmployee addNickNames(final Employee employee, final String... nickNames);
+    void alwaysThrowApplicationException(final String state) throws StatefulApplicationException;
 }

@@ -59,7 +59,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * User: jpai
+ * Tests the various common use cases of the EJB remote client API
+ * <p/>
+ * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -77,6 +79,11 @@ public class EJBClientAPIUsageTestCase {
 
     private EJBClientContext ejbClientContext;
 
+    /**
+     * Creates an EJB deployment
+     *
+     * @return
+     */
     @Deployment
     public static Archive<?> createDeployment() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
@@ -91,6 +98,11 @@ public class EJBClientAPIUsageTestCase {
     }
 
 
+    /**
+     * Create and setup the remoting connection
+     *
+     * @throws Exception
+     */
     @BeforeClass
     public static void beforeTestClass() throws Exception {
         final Endpoint endpoint = Remoting.createEndpoint("endpoint", Executors.newSingleThreadExecutor(), OptionMap.EMPTY);
@@ -108,6 +120,11 @@ public class EJBClientAPIUsageTestCase {
         executor.shutdown();
     }
 
+    /**
+     * Create and setup the EJB client context backed by the remoting receiver
+     *
+     * @throws Exception
+     */
     @Before
     public void beforeTest() throws Exception {
         this.ejbClientContext = EJBClientContext.create();
@@ -121,6 +138,11 @@ public class EJBClientAPIUsageTestCase {
         }
     }
 
+    /**
+     * Test a simple invocation on a remote view of a Stateless session bean method
+     *
+     * @throws Exception
+     */
     @Test
     public void testRemoteSLSBInvocation() throws Exception {
         final EchoRemote proxy = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, EchoBean.class.getSimpleName(), EchoRemote.class);
@@ -130,6 +152,11 @@ public class EJBClientAPIUsageTestCase {
         Assert.assertEquals("Unexpected echo message", message, echo);
     }
 
+    /**
+     * Test a invocation on the remote view of a stateless bean which is configured for user interceptors
+     *
+     * @throws Exception
+     */
     @Test
     public void testRemoteSLSBWithInterceptors() throws Exception {
         final EchoRemote proxy = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, InterceptedEchoBean.class.getSimpleName(), EchoRemote.class);
@@ -140,6 +167,11 @@ public class EJBClientAPIUsageTestCase {
         Assert.assertEquals("Unexpected echo message", expectedEcho, echo);
     }
 
+    /**
+     * Test a invocation on a stateless bean method which accepts and returns custom objectss
+     *
+     * @throws Exception
+     */
     @Test
     public void testRemoteSLSBWithCustomObjects() throws Exception {
         final EmployeeManager proxy = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, EmployeeBean.class.getSimpleName(), EmployeeManager.class);
@@ -147,7 +179,7 @@ public class EJBClientAPIUsageTestCase {
         final String[] nickNames = new String[]{"java-programmer", "ruby-programmer", "php-programmer"};
         final Employee employee = new Employee(1, "programmer");
         // invoke on the bean
-        final Employee employeeWithNickNames = proxy.addNickNames(employee, nickNames);
+        final AliasedEmployee employeeWithNickNames = proxy.addNickNames(employee, nickNames);
 
         // check the id of the returned employee
         Assert.assertEquals("Unexpected employee id", 1, employeeWithNickNames.getId());
@@ -180,6 +212,11 @@ public class EJBClientAPIUsageTestCase {
         Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
     }
 
+    /**
+     * Tests that invoking a non-existent EJB leads to a {@link NoSuchEJBException}
+     *
+     * @throws Exception
+     */
     @Test
     public void testNonExistentEJBAccess() throws Exception {
         final NotAnEJBInterface nonExistentBean = EJBClient.getProxy("non-existen-app-name", MODULE_NAME, null, "blah", NotAnEJBInterface.class);
@@ -191,6 +228,41 @@ public class EJBClientAPIUsageTestCase {
         } catch (NoSuchEJBException nsee) {
             // expected
             logger.info("Received the expected exception", nsee);
+        }
+    }
+
+    /**
+     * Tests that the invocation on a non-existent view of an (existing) EJB leads to a {@link NoSuchEJBException}
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testNonExistentViewForEJB() throws Exception {
+        final NotAnEJBInterface nonExistentBean = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, EchoBean.class.getSimpleName(), NotAnEJBInterface.class);
+        Assert.assertNotNull("Received a null proxy", nonExistentBean);
+        // invoke on the (non-existent) view of a bean
+        try {
+            nonExistentBean.echo("Hello world to a non-existent view of a bean");
+            Assert.fail("Expected a NoSuchEJBException");
+        } catch (NoSuchEJBException nsee) {
+            // expected
+            logger.info("Received the expected exception", nsee);
+        }
+    }
+
+    @Test
+    @Ignore("There's a marshalling/unmarshalling issue some where which causes this test to fail. I need to debug")
+    public void testApplicationExceptionOnSLSBMethod() throws Exception {
+        final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, ExceptionThrowingBean.class.getSimpleName(), ExceptionThrowingRemote.class);
+        Assert.assertNotNull("Received a null proxy", exceptionThrowingBean);
+        final String exceptionState = "2342348723Dsbjlfjal#";
+        try {
+            exceptionThrowingBean.alwaysThrowApplicationException(exceptionState);
+            Assert.fail("Expected a " + StatefulApplicationException.class.getName() + " exception");
+        } catch (StatefulApplicationException sae) {
+            // expected
+            logger.info("Received the expected exception", sae);
+            Assert.assertEquals("Unexpected state in the application exception", exceptionState, sae.getState());
         }
     }
 }

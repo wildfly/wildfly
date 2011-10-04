@@ -35,8 +35,6 @@ public class Employee implements Serializable {
 
     private final int id;
 
-    private Set<String> nickNames = new HashSet<String>();
-
     public Employee(final int id, final String name) {
         this.id = id;
         this.name = name;
@@ -50,11 +48,4 @@ public class Employee implements Serializable {
         return this.id;
     }
 
-    public void addNick(final String nick) {
-        this.nickNames.add(nick);
-    }
-
-    public Set<String> getNickNames() {
-        return this.nickNames;
-    }
 }
