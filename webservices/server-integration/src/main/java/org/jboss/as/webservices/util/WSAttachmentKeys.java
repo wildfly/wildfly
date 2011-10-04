@@ -25,6 +25,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.as.webservices.component.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.as.webservices.webserviceref.WSReferences;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
@@ -46,6 +47,7 @@ public final class WSAttachmentKeys {
     public static final AttachmentKey<JBossWebMetaData> JBOSSWEB_METADATA_KEY = AttachmentKey.create(JBossWebMetaData.class);
     public static final AttachmentKey<ClassLoader> CLASSLOADER_KEY = AttachmentKey.create(ClassLoader.class);
     public static final AttachmentKey<WSReferences> WS_REFERENCES = AttachmentKey.create(WSReferences.class);
+    public static final AttachmentKey<WSEndpointHandlersMapping> WS_ENDPOINT_HANDLERS_MAPPING_KEY = AttachmentKey.create(WSEndpointHandlersMapping.class);
 
     private WSAttachmentKeys() {
         // forbidden inheritance

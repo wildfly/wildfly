@@ -225,7 +225,10 @@ public enum Phase {
     public static final int PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1152;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     // create and attach the component description out of EJB annotations
-    public static final int PARSE_WS_EJB_INTEGRATION                    = 0x1701;
+    public static final int PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION        = 0x1700;
+    public static final int PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS = 0x1701;
+    public static final int PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS = 0x1702;
+    public static final int PARSE_WS_EJB_INTEGRATION                    = 0x1703;
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;

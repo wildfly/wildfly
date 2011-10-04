@@ -25,7 +25,10 @@ package org.jboss.as.webservices.dmr;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.webservices.component.WSHandlerChainAnnotationProcessor;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
+import org.jboss.as.webservices.deployers.JaxwsEndpointComponentDescriptionFactory;
+import org.jboss.as.webservices.deployers.JaxwsHandlerComponentDescriptionFactory;
 import org.jboss.as.webservices.deployers.WSDependenciesProcessor;
 import org.jboss.as.webservices.deployers.WSDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSEJBIntegrationProcessor;
@@ -51,6 +54,9 @@ final class WSDeploymentActivator {
     static void activate(final DeploymentProcessorTarget processorTarget) {
 
         processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WEBSERVICES_XML, new WSDescriptorDeploymentProcessor());
+        processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION, new WSHandlerChainAnnotationProcessor());
+        processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS, new JaxwsEndpointComponentDescriptionFactory());
+        processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS, new JaxwsHandlerComponentDescriptionFactory());
         processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_WS_EJB_INTEGRATION, new WSEJBIntegrationProcessor());
         processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor());
         processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_WS_REF_DESCRIPTOR, new WSRefDDProcessor());
