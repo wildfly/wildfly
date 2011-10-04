@@ -21,14 +21,17 @@
  */
 package org.jboss.as.web.deployment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
+import org.jboss.as.ee.naming.JavaNamespaceSetup;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.web.ThreadBindingListener;
-import org.jboss.as.web.SetupValve;
+import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -36,8 +39,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.List;
 
 /**
  * A service starting a web deployment.
@@ -59,35 +60,38 @@ class WebDeploymentService implements Service<Context> {
         this.setupActions = setupActions;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized void start(StartContext startContext) throws StartException {
         context.setRealm(realm.getValue());
 
         JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
-        context.setThreadBindingListener(new ThreadBindingListener(namespaceSelector.getOptionalValue()));
+        final List<SetupAction> actions = new ArrayList<SetupAction>();
+        actions.add(new JavaNamespaceSetup(namespaceSelector.getValue()));
+        actions.addAll(setupActions);
+        context.setThreadBindingListener(new ThreadSetupBindingListener(actions));
         try {
-            SetupValve.beginComponentStart(setupActions);
             try {
-                try {
-                    context.create();
-                } catch (Exception e) {
-                    throw new StartException("failed to create context", e);
-                }
-                try {
-                    context.start();
-                } catch (LifecycleException e) {
-                    throw new StartException("failed to start context", e);
-                }
-                log.info("registering web context: " + context.getName());
-            } finally {
-                SetupValve.endComponentStart();
+                context.create();
+            } catch (Exception e) {
+                throw new StartException("failed to create context", e);
             }
+            try {
+                context.start();
+            } catch (LifecycleException e) {
+                throw new StartException("failed to start context", e);
+            }
+            log.info("registering web context: " + context.getName());
+
         } finally {
             JsfInjectionProvider.getInjectionContainer().set(null);
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized void stop(StopContext stopContext) {
         try {
             context.stop();
@@ -101,7 +105,9 @@ class WebDeploymentService implements Service<Context> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized Context getValue() throws IllegalStateException {
         final Context context = this.context;
         if (context == null) {

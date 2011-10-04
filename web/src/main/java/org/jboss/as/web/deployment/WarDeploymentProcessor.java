@@ -52,7 +52,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.web.SetupValve;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
@@ -147,14 +146,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         List<ValveMetaData> valves = metaData.getValves();
         if (valves == null) {
             metaData.setValves(valves = new ArrayList<ValveMetaData>());
-        }
-
-        if (!setupActions.isEmpty()) {
-            final ValveMetaData setupValve = new ValveMetaData();
-            setupValve.setModule("org.jboss.as.web");
-            setupValve.setValveClass(SetupValve.class.getName());
-            setupValve.setId(SetupValve.class.getName());
-            valves.add(setupValve);
         }
 
         // Set the deployment root
