@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
@@ -50,13 +57,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
@@ -114,7 +114,6 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
             }
         }
 
-
         final InterceptorContext context = new InterceptorContext();
         context.setParameters(parameters);
         context.setMethod(method);
@@ -122,6 +121,11 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         context.setContextData(new HashMap<String, Object>());
         context.putPrivateData(Component.class, ejbComponent);
         context.putPrivateData(ComponentView.class, view);
+
+        final SessionID sessionID = invocation.getProxyAttachment(SessionID.SESSION_ID_KEY);
+        if(sessionID != null) {
+            context.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
+        }
 
         if (async) {
             if (ejbComponent instanceof SessionBeanComponent) {

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
@@ -28,8 +30,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Client interceptor that associates a SFSB id with an invocation
@@ -48,10 +48,10 @@ public class StatefulComponentIdInterceptor extends AbstractEJBInterceptor {
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         try {
-            context.putPrivateData(StatefulContextIdKey.INSTANCE, reference.get());
+            context.putPrivateData(SessionID.SESSION_ID_KEY, reference.get());
             return context.proceed();
         } finally {
-            context.putPrivateData(StatefulContextIdKey.INSTANCE, null);
+            context.putPrivateData(SessionID.SESSION_ID_KEY, null);
         }
     }
 

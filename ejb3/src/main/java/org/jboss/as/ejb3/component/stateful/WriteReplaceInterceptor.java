@@ -42,7 +42,7 @@ public class WriteReplaceInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        SessionID sessionId = (SessionID) context.getPrivateData(StatefulContextIdKey.INSTANCE);
+        SessionID sessionId = (SessionID) context.getPrivateData(SessionID.SESSION_ID_KEY);
         return new StatefulSerializedProxy(serviceName, sessionId);
     }
 

@@ -49,7 +49,7 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
     public Object processInvocation(InterceptorContext context) throws Exception {
         StatefulSessionComponent component = getComponent(context, StatefulSessionComponent.class);
         // TODO: this is a contract with the client interceptor
-        SessionID sessionId = (SessionID) context.getPrivateData(StatefulContextIdKey.INSTANCE);
+        SessionID sessionId = (SessionID) context.getPrivateData(SessionID.SESSION_ID_KEY);
         if (sessionId == null) {
             throw new IllegalStateException("Session id hasn't been set for stateful component: " + component.getComponentName());
         }
