@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.util;
 
+import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
 import static org.jboss.as.webservices.util.DotNames.OBJECT_CLASS;
 import static org.jboss.as.webservices.util.DotNames.SERVLET_CLASS;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
@@ -46,6 +47,7 @@ import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionMetaData;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
@@ -88,6 +90,7 @@ public final class ASHelper {
      */
     public static boolean isWebServiceDeployment(final DeploymentUnit unit) {
         return getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY) != null;
+        // TODO: replace with WSDeploymentMarker
     }
 
     /**
@@ -295,7 +298,7 @@ public final class ASHelper {
         return endpointClassName == null || endpointClassName.length() == 0;
     }
 
-    protected static boolean isServlet(final ClassInfo info, CompositeIndex index) {
+    public static boolean isServlet(final ClassInfo info, CompositeIndex index) {
         Set<DotName> interfacesToProcess = new HashSet<DotName>();
         Set<DotName> processedInterfaces = new HashSet<DotName>();
         boolean b = isServlet(info, index, interfacesToProcess);
@@ -336,6 +339,30 @@ public final class ASHelper {
             } else if (!OBJECT_CLASS.equals(superName) && !processedInterfaces.contains(superName)) {
                 interfacesToProcess.add(superName);
             }
+        }
+        return false;
+    }
+
+    public static boolean isJaxwsService(final ClassInfo current, final CompositeIndex index) {
+        ClassInfo tmp = current;
+        while (tmp != null) {
+            final DotName superName = tmp.superName();
+            if (JAXWS_SERVICE_CLASS.equals(superName)) {
+                return true;
+            }
+            tmp = index.getClassByName(superName);
+        }
+        return false;
+    }
+
+    public static boolean isJaxwsService(final ClassInfo current, final Index index) {
+        ClassInfo tmp = current;
+        while (tmp != null) {
+            final DotName superName = tmp.superName();
+            if (JAXWS_SERVICE_CLASS.equals(superName)) {
+                return true;
+            }
+            tmp = index.getClassByName(superName);
         }
         return false;
     }
