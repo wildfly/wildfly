@@ -21,9 +21,12 @@
  */
 package org.jboss.as.weld.injection;
 
-import org.jboss.weld.bean.AbstractClassBean;
-import org.jboss.weld.manager.BeanManagerImpl;
-import org.jboss.weld.resources.ClassTransformer;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.AnnotatedConstructor;
@@ -35,12 +38,11 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.weld.bean.AbstractClassBean;
+import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.resources.ClassTransformer;
 
 /**
  * Class that knows how to create and inject a class that requires CDI injection
@@ -155,6 +157,9 @@ class WeldEEInjection {
                     FieldInjectionPoint ip = new FieldInjectionPoint(field, qualifiers, bean);
                     Set<Bean<?>> beans = beanManager.getBeans(ip);
                     Bean<?> ipBean = beanManager.resolve(beans);
+                    if (ipBean == null) {
+                        throw new RuntimeException("Could not resolve CDI bean for injection point " + field.getJavaMember() + " with qualifiers " + qualifiers);
+                    }
                     injectableFields.add(new InjectableField(field.getJavaMember(), ipBean, ip));
                 }
             }
@@ -179,6 +184,9 @@ class WeldEEInjection {
                         ParameterInjectionPoint ip = new ParameterInjectionPoint(param, qualifiers, bean);
                         Set<Bean<?>> beans = beanManager.getBeans(ip);
                         Bean<?> ipBean = beanManager.resolve(beans);
+                        if (ipBean == null) {
+                            throw new RuntimeException("Could not resolve CDI bean for injection point " + param + " with qualifiers " + qualifiers);
+                        }
                         parameterBeans.add(ipBean);
                         ips.add(ip);
                     }
