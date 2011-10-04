@@ -101,6 +101,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.spec.javax.security.auth.message</groupId>
+            <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
             <artifactId>jboss-servlet-api_3.0_spec</artifactId>
         </dependency>
