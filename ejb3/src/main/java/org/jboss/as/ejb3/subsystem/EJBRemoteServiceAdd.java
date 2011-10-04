@@ -74,7 +74,7 @@ public class EJBRemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final String connectorName = model.require(CONNECTOR_REF).asString();
         final ServiceTarget serviceTarget = context.getServiceTarget();
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
-        final EJBRemoteConnectorService service = new EJBRemoteConnectorService((byte) 0x00, new String[] {"river"});
+        final EJBRemoteConnectorService service = new EJBRemoteConnectorService((byte) 0x01, new String[] {"river"});
         newControllers.add(serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service)
                 // TODO: inject the right connector
                 .addDependency(RemotingServices.ENDPOINT, Endpoint.class, service.getEndpointInjector())

@@ -38,7 +38,6 @@
         </xs:annotation>
         <xs:all>
             <xs:element name="mdb" type="mdbType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="remote" type="remoteType" minOccurs="0"/>
             <xs:element name="session-bean" type="session-beanType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="pools" type="poolsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
@@ -51,10 +50,6 @@
             <xs:element name="resource-adapter-ref" type="resource-adapter-refType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="bean-instance-pool-ref" type="bean-instance-pool-refType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
-    </xs:complexType>
-
-    <xs:complexType name="remoteType">
-        <xs:attribute name="connector-ref" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="session-beanType">

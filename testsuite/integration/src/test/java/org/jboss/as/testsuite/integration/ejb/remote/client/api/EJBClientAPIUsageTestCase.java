@@ -28,6 +28,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.testsuite.integration.ejb.remote.common.AnonymousCallbackHandler;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
@@ -52,8 +53,6 @@ import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static org.jboss.ejb.client.remoting.IoFutureHelper.get;
 
 /**
  * User: jpai
@@ -95,7 +94,7 @@ public class EJBClientAPIUsageTestCase {
 
         // open a connection
         final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
-        connection = get(futureConnection, 5, TimeUnit.SECONDS);
+        connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
     }
 
     @AfterClass
@@ -168,6 +167,8 @@ public class EJBClientAPIUsageTestCase {
         final EJBClientContext ejbClientContext = EJBClientContext.create();
         try {
             ejbClientContext.registerConnection(connection);
+            // open a session for the SFSB
+            EJBClient.createSession(counter);
             // invoke the bean
             final int initialCount = counter.getCount();
             Assert.assertEquals("Unexpected initial count from stateful bean", 0, initialCount);

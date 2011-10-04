@@ -67,7 +67,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         this.deploymentRepository = this.getDeploymentRepository();
     }
 
-    void startReceiving() {
+    public void startReceiving() {
         this.channel.receiveMessage(this);
         // listen to module availability/unavailability events
         this.deploymentRepository.addListener(this);

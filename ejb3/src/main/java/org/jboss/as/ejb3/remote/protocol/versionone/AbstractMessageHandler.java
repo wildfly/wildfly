@@ -45,6 +45,9 @@ abstract class AbstractMessageHandler implements MessageHandler {
 
     protected final String marshallingStrategy;
 
+    protected static final byte HEADER_NO_SUCH_EJB_FAILURE = 0x0A;
+    protected static final byte HEADER_SESSION_NOT_ACTIVE_FAILURE = 0x0C;
+
     AbstractMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
         this.deploymentRepository = deploymentRepository;
         this.marshallingStrategy = marshallingStrategy;
@@ -75,10 +78,15 @@ abstract class AbstractMessageHandler implements MessageHandler {
         PackedInteger.writePackedInteger(output, 0); // TODO: This won't be needed once we write out the attachments
     }
 
-    protected void writeInvocationFailure(final Channel channel, final short invocationId, final String failureMessage) throws IOException {
+    protected void writeInvocationFailure(final Channel channel, final byte messageHeader, final short invocationId, final String failureMessage) throws IOException {
         final DataOutputStream dataOutputStream = new DataOutputStream(channel.writeMessage());
         try {
-            // TODO: Implement
+            // write header
+            dataOutputStream.writeByte(messageHeader);
+            // write invocation id
+            dataOutputStream.writeShort(invocationId);
+            // write the failure message
+            dataOutputStream.writeUTF(failureMessage);
         } finally {
             dataOutputStream.close();
         }
@@ -87,9 +95,35 @@ abstract class AbstractMessageHandler implements MessageHandler {
 
     protected void writeNoSuchEJBFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
                                                 final String distinctname, final String beanName, final String viewClassName) throws IOException {
-        final String failureMessage = "No such EJB with appname: " + appName + ", modulename: " + moduleName + ", distinctname: "
-                + distinctname + ", beanname:" + beanName + " viewClasssName: " + viewClassName;
-        this.writeInvocationFailure(channel, invocationId, failureMessage);
+        final StringBuffer sb = new StringBuffer("No such EJB[");
+        sb.append("appname=").append(appName).append(", ");
+        sb.append("modulename=").append(moduleName).append(", ");
+        sb.append("distinctname=").append(distinctname).append(", ");
+        sb.append("beanname=").append(beanName).append(", ");
+        sb.append("viewclassname=").append(viewClassName).append("]");
+        this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_FAILURE, invocationId, sb.toString());
+    }
+
+    protected void writeSessionNotActiveFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
+                                                final String distinctname, final String beanName) throws IOException {
+        final StringBuffer sb = new StringBuffer("Session not active for EJB[");
+        sb.append("appname=").append(appName).append(", ");
+        sb.append("modulename=").append(moduleName).append(", ");
+        sb.append("distinctname=").append(distinctname).append(", ");
+        sb.append("beanname=").append(beanName).append("]");
+        this.writeInvocationFailure(channel, HEADER_SESSION_NOT_ACTIVE_FAILURE, invocationId, sb.toString());
+    }
+
+    protected void writeNoSuchEJBMethodFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
+                                                final String distinctname, final String beanName, final String viewClassName,
+                                                final String methodName, final String[] methodParamTypes) throws IOException {
+        final StringBuffer sb = new StringBuffer("No such EJB[");
+        sb.append("appname=").append(appName).append(", ");
+        sb.append("modulename=").append(moduleName).append(", ");
+        sb.append("distinctname=").append(distinctname).append(", ");
+        sb.append("beanname=").append(beanName).append(", ");
+        sb.append("viewclassname=").append(viewClassName).append("]");
+        this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_FAILURE, invocationId, sb.toString());
     }
 
     protected EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {

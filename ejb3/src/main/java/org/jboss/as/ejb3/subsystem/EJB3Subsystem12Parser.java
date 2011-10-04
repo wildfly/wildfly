@@ -60,6 +60,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
@@ -96,6 +97,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             // </mdb>
             writer.writeEndElement();
         }
+        // write the remot element
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(REMOTE)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.REMOTE.getLocalName());
+            writeRemote(writer, model.get(SERVICE, REMOTE));
+            writer.writeEndElement();
+        }
+
         // write the session-bean element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL)) {
             // <session-bean>
@@ -171,6 +179,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                             this.parsePools(reader, operations);
                             break;
                         }
+                        case REMOTE: {
+                            // read <remote>
+                            parseRemote(reader, operations);
+                            break;
+                        }
                         case SESSION_BEAN: {
                             // read <session-bean>
                             this.parseSessionBean(reader, operations, ejb3SubsystemAddOperation);
@@ -213,6 +226,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             throw new XMLStreamException("Invalid value: " + value + " for '" + element + "' element", reader.getLocation());
         }
         return value.trim();
+    }
+
+    private void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
     }
 
     /**
@@ -338,7 +355,33 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
     }
 
-    private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+
+    private void parseRemote(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String connectorName = null;
+        final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.CONNECTOR_REF);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case CONNECTOR_REF:
+                    connectorName = value;
+                    break;
+
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (! required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        requireNoContent(reader);
+        operations.add(EJBRemoteServiceAdd.create(connectorName));
+    }
+
+    private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         ModelNode mdbModelNode = new ModelNode();
         // no attributes expected
         requireNoAttributes(reader);

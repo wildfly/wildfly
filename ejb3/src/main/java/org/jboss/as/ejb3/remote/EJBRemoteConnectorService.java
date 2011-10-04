@@ -175,7 +175,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                         " will communicate on " + channel);
                 switch (version) {
                     // TODO: Change this to 0x01
-                    case 0x00:
+                    case 0x01:
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, this.serviceContainer, clientMarshallingStrategy);
                         receiver.startReceiving();

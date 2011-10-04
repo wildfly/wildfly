@@ -26,7 +26,6 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
-import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;

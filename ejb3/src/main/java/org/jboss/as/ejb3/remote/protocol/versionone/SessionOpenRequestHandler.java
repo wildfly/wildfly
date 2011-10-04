@@ -62,11 +62,10 @@ class SessionOpenRequestHandler extends AbstractMessageHandler {
         final String moduleName = dataInputStream.readUTF();
         final String distinctName = dataInputStream.readUTF();
         final String beanName = dataInputStream.readUTF();
-        final String viewClassName = dataInputStream.readUTF();
 
         final EjbDeploymentInformation ejbDeploymentInformation = this.findEJB(appName, moduleName, distinctName, beanName);
         if (ejbDeploymentInformation == null) {
-            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
+            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, null);
             return;
         }
         final Component component = ejbDeploymentInformation.getEjbComponent();
