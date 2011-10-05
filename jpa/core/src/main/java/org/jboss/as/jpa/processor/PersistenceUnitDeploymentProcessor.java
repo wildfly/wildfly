@@ -58,7 +58,6 @@ import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
-import org.jboss.as.jpa.util.ManagementUtil;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -66,8 +65,8 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -528,31 +527,41 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
+    /**
+     * add to management console (if ManagementAdapter is supported for provider).
+     *
+     * full path to management data will be:
+     *
+     *   /deployment=Deployment/subsystem=jpa/hibernate-persistence-unit=FullyAppQualifiedPath#PersistenceUnitName/cache=EntityClassName
+     *
+     * example of full path:
+     *
+     *  /deployment=jpa_SecondLevelCacheTestCase.jar/subsystem=jpa/hibernate-persistence-unit=jpa_SecondLevelCacheTestCase.jar#mypc/
+     *                                                              cache=org.jboss.as.testsuite.integration.jpa.hibernate.Employee
+     *
+     * @param deploymentUnit
+     * @param pu
+     * @param persistenceUnitService
+     * @param adaptor
+     */
     private void addManagementConsole(final DeploymentUnit deploymentUnit, final PersistenceUnitMetadata pu,
                                       final PersistenceUnitService persistenceUnitService, final PersistenceProviderAdaptor adaptor) {
         ManagementAdaptor managementAdaptor = adaptor.getManagementAdaptor();
         if (managementAdaptor != null) {
             final String providerLabel = managementAdaptor.getIdentificationLabel();
             final String scopedPersistenceUnitName = pu.getScopedPersistenceUnitName();
-            // path to management data will be: PROVIDER_LABEL/pu/ScopedPersistenceUnitName
-//            final ModelNode node = deploymentUnit.getDeploymentSubsystemModel("jpa");
-//            ModelNode perPuNode = deploymentUnit.createDeploymentSubModel("jpa", PathElement.pathElement(providerLabel,
-//                ManagementUtil.filterScopedPuNameForManagement(scopedPersistenceUnitName)));
-//            perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
-            final String filteredPersistenceUnitName = ManagementUtil.filterScopedPuNameForManagement(scopedPersistenceUnitName);
-            Resource providerResource = managementAdaptor.createPersistenceUnitResource(filteredPersistenceUnitName);
-            // TODO this is an internal detail of a particular provider
+
+            Resource providerResource = managementAdaptor.createPersistenceUnitResource(scopedPersistenceUnitName);
             ModelNode perPuNode = providerResource.getModel();
             perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
             // TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API
-            AttachmentKey<Resource> key = AttachmentKey.create(Resource.class);
-            final Resource deploymentResource = deploymentUnit.getAttachment(key);
+            final Resource deploymentResource = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
             Resource subsystemResource;
             synchronized (deploymentResource) {
                 subsystemResource = getOrCreateResource(deploymentResource, PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "jpa"));
             }
             synchronized (subsystemResource) {
-                subsystemResource.registerChild(PathElement.pathElement(providerLabel, filteredPersistenceUnitName), providerResource);
+                subsystemResource.registerChild(PathElement.pathElement(providerLabel, scopedPersistenceUnitName), providerResource);
             }
         }
     }

@@ -22,22 +22,21 @@
 
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
+ * TODO:  make this package protected again instead of public
  */
-class DeploymentModelUtils {
+public class DeploymentModelUtils {
 
-    static final AttachmentKey<Resource> DEPLOYMENT_RESOURCE = AttachmentKey.create(Resource.class);
+    // TODO:  make this package protected again instead of public
+    public static final AttachmentKey<Resource> DEPLOYMENT_RESOURCE = AttachmentKey.create(Resource.class);
     static final AttachmentKey<ImmutableManagementResourceRegistration> REGISTRATION_ATTACHMENT = AttachmentKey.create(ImmutableManagementResourceRegistration.class);
 
     static final String SUBSYSTEM = ModelDescriptionConstants.SUBSYSTEM;

@@ -64,7 +64,6 @@ public class HibernateDescriptionConstants {
     public static final String SECOND_LEVEL_CACHE_PUT_COUNT = "hibernate.statistics.second-level-cache.put-count";
     public static final String SESSION_CLOSE_COUNT = "hibernate.statistics.session-close-count";
     public static final String SESSION_OPEN_COUNT = "hibernate.statistics.session-open-count";
-    public static final String SET_STATISTICS = "enable";
     public static final String SUCCESSFUL_TRANSACTION_COUNT = "hibernate.statistics.successful-transaction-count";
     public static final String SUMMARY_STATISTICS = "summary";
 
