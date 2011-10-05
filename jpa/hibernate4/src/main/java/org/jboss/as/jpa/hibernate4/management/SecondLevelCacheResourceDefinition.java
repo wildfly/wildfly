@@ -30,6 +30,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -38,8 +39,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class SecondLevelCacheResourceDefinition extends SimpleResourceDefinition {
-
-    public static final SecondLevelCacheResourceDefinition INSTANCE = new SecondLevelCacheResourceDefinition();
 
     public static final SimpleAttributeDefinition HIT_COUNT = new SimpleAttributeDefinitionBuilder("hit-count", ModelType.LONG)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
@@ -66,18 +65,21 @@ public class SecondLevelCacheResourceDefinition extends SimpleResourceDefinition
             .setMeasurementUnit(MeasurementUnit.BYTES)
             .build();
 
-    private SecondLevelCacheResourceDefinition() {
+    private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
+
+    SecondLevelCacheResourceDefinition(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
         super(PathElement.pathElement(HibernateDescriptionConstants.CACHE),
                 HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.SECOND_LEVEL_CACHE));
+        this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerMetric(HIT_COUNT, SecondLevelCacheMetricsHandler.HIT_COUNT);
-        resourceRegistration.registerMetric(MISS_COUNT, SecondLevelCacheMetricsHandler.MISS_COUNT);
-        resourceRegistration.registerMetric(PUT_COUNT, SecondLevelCacheMetricsHandler.PUT_COUNT);
-        resourceRegistration.registerMetric(ELEMENT_COUNT_IN_MEMORY, SecondLevelCacheMetricsHandler.ELEMENT_COUNT_IN_MEMORY);
-        resourceRegistration.registerMetric(ELEMENT_COUNT_ON_DISK, SecondLevelCacheMetricsHandler.ELEMENT_COUNT_ON_DISK);
-        resourceRegistration.registerMetric(SIZE_IN_MEMORY, SecondLevelCacheMetricsHandler.SIZE_IN_MEMORY);
+        resourceRegistration.registerMetric(HIT_COUNT, SecondLevelCacheMetricsHandler.getHitCount(persistenceUnitRegistry));
+        resourceRegistration.registerMetric(MISS_COUNT, SecondLevelCacheMetricsHandler.getMissCount(persistenceUnitRegistry));
+        resourceRegistration.registerMetric(PUT_COUNT, SecondLevelCacheMetricsHandler.getPutCount(persistenceUnitRegistry));
+        resourceRegistration.registerMetric(ELEMENT_COUNT_IN_MEMORY, SecondLevelCacheMetricsHandler.getElementCountInMemory(persistenceUnitRegistry));
+        resourceRegistration.registerMetric(ELEMENT_COUNT_ON_DISK, SecondLevelCacheMetricsHandler.getElementCountOnDisk(persistenceUnitRegistry));
+        resourceRegistration.registerMetric(SIZE_IN_MEMORY, SecondLevelCacheMetricsHandler.getSizeInMemory(persistenceUnitRegistry));
     }
 }

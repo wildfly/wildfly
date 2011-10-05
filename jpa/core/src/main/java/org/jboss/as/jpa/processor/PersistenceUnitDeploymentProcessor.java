@@ -57,6 +57,7 @@ import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
+import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jboss.as.jpa.util.ManagementUtil;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -98,6 +99,13 @@ import org.jboss.msc.value.ImmediateValue;
 public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final String JNDI_PROPERTY = "jboss.entity.manager.factory.jndi.name";
+
+    private final PersistenceUnitRegistryImpl persistenceUnitRegistry;
+
+    public PersistenceUnitDeploymentProcessor(PersistenceUnitRegistryImpl persistenceUnitRegistry) {
+        this.persistenceUnitRegistry = persistenceUnitRegistry;
+    }
+
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -320,6 +328,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
                         builder.setInitialMode(ServiceController.Mode.ACTIVE)
                                 .addInjection(service.getPropertiesInjector(), properties)
+                                .addInjection(persistenceUnitRegistry.getInjector())
                                 .install();
 
                         JPA_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
@@ -531,7 +540,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 //                ManagementUtil.filterScopedPuNameForManagement(scopedPersistenceUnitName)));
 //            perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
             final String filteredPersistenceUnitName = ManagementUtil.filterScopedPuNameForManagement(scopedPersistenceUnitName);
-            Resource providerResource = managementAdaptor.createManagementResource(filteredPersistenceUnitName, persistenceUnitService);
+            Resource providerResource = managementAdaptor.createPersistenceUnitResource(filteredPersistenceUnitName);
+            // TODO this is an internal detail of a particular provider
             ModelNode perPuNode = providerResource.getModel();
             perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
             // TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API

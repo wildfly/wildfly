@@ -23,10 +23,13 @@
 package org.jboss.as.jpa.hibernate4.management;
 
 import org.hibernate.stat.SecondLevelCacheStatistics;
+import org.hibernate.stat.Statistics;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,9 +39,15 @@ import org.jboss.dmr.ModelNode;
  */
 public abstract class SecondLevelCacheMetricsHandler extends AbstractRuntimeOnlyHandler {
 
+    private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
+
+    private SecondLevelCacheMetricsHandler(PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+        this.persistenceUnitRegistry = persistenceUnitRegistry;
+    }
+
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-        SecondLevelCacheStatistics statistics = getSecondLevelCacheStatistics(context, operation);
+        SecondLevelCacheStatistics statistics = getSecondLevelCacheStatistics(operation);
         if (statistics != null) {
             handle(statistics, context, operation.require(ModelDescriptionConstants.NAME).asString());
         }
@@ -47,58 +56,74 @@ public abstract class SecondLevelCacheMetricsHandler extends AbstractRuntimeOnly
 
     protected abstract void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName);
 
-    private SecondLevelCacheStatistics getSecondLevelCacheStatistics(OperationContext context, ModelNode operation) {
-        //TODO implement getSecondLevelCacheStatistics
-        throw new UnsupportedOperationException();
+    private SecondLevelCacheStatistics getSecondLevelCacheStatistics(ModelNode operation) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        final String puResourceName = address.getElement(address.size() - 2).getValue();
+        final String regionName = address.getLastElement().getValue();
+        Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);
+        return stats == null ? null : stats.getSecondLevelCacheStatistics(regionName);
     }
 
-    static final SecondLevelCacheMetricsHandler HIT_COUNT = new SecondLevelCacheMetricsHandler() {
-        @Override
-        protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
-            long count = statistics.getHitCount();
-            context.getResult().set(count);
-        }
-    };
 
-    static final SecondLevelCacheMetricsHandler MISS_COUNT = new SecondLevelCacheMetricsHandler() {
-        @Override
-        protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
-            long count = statistics.getMissCount();
-            context.getResult().set(count);
-        }
-    };
+    static final SecondLevelCacheMetricsHandler getHitCount(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+        return new SecondLevelCacheMetricsHandler(persistenceUnitRegistry) {
+            @Override
+            protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
+                long count = statistics.getHitCount();
+                context.getResult().set(count);
+            }
+        };
+    }
 
-    static final SecondLevelCacheMetricsHandler PUT_COUNT = new SecondLevelCacheMetricsHandler() {
-        @Override
-        protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
-            long count = statistics.getPutCount();
-            context.getResult().set(count);
-        }
-    };
+    static final SecondLevelCacheMetricsHandler getMissCount(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+        return new SecondLevelCacheMetricsHandler(persistenceUnitRegistry) {
+            @Override
+            protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
+                long count = statistics.getMissCount();
+                context.getResult().set(count);
+            }
+        };
+    }
 
-    static final SecondLevelCacheMetricsHandler ELEMENT_COUNT_IN_MEMORY = new SecondLevelCacheMetricsHandler() {
-        @Override
-        protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
-            long count = statistics.getElementCountInMemory();
-            context.getResult().set(count);
-        }
-    };
+    static final SecondLevelCacheMetricsHandler getPutCount(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+        return new SecondLevelCacheMetricsHandler(persistenceUnitRegistry) {
+            @Override
+            protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
+                long count = statistics.getPutCount();
+                context.getResult().set(count);
+            }
+        };
+    }
 
-    static final SecondLevelCacheMetricsHandler ELEMENT_COUNT_ON_DISK = new SecondLevelCacheMetricsHandler() {
-        @Override
-        protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
-            long count = statistics.getElementCountOnDisk();
-            context.getResult().set(count);
-        }
-    };
+    static final SecondLevelCacheMetricsHandler getElementCountInMemory(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+        return new SecondLevelCacheMetricsHandler(persistenceUnitRegistry) {
+            @Override
+            protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
+                long count = statistics.getElementCountInMemory();
+                context.getResult().set(count);
+            }
+        };
+    }
 
-    static final SecondLevelCacheMetricsHandler SIZE_IN_MEMORY = new SecondLevelCacheMetricsHandler() {
-        @Override
-        protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
-            long size = statistics.getSizeInMemory();
-            context.getResult().set(size);
-        }
-    };
+    static final SecondLevelCacheMetricsHandler getElementCountOnDisk(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+        return new SecondLevelCacheMetricsHandler(persistenceUnitRegistry) {
+            @Override
+            protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
+                long count = statistics.getElementCountOnDisk();
+                context.getResult().set(count);
+            }
+        };
+    }
+
+    static final SecondLevelCacheMetricsHandler getSizeInMemory(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+        return new SecondLevelCacheMetricsHandler(persistenceUnitRegistry) {
+            @Override
+            protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
+                long size = statistics.getSizeInMemory();
+                context.getResult().set(size);
+            }
+        };
+    }
 
 
 }

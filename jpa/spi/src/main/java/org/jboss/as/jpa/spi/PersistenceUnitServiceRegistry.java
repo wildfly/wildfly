@@ -25,23 +25,21 @@ package org.jboss.as.jpa.spi;
 import javax.persistence.EntityManagerFactory;
 
 /**
- * Persistence unit service
+ * Registry of started persistence unit services.
  *
- * @author Scott Marlow
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public interface PersistenceUnitService {
-    /**
-     * get the entity manager factory that represents the persistence unit service.  This corresponds to a
-     * persistence unit definition in a persistence.xml
-     *
-     * @return EntityManagerFactory or {@code null} if this service has not been started or has been stopped
-     */
-    EntityManagerFactory getEntityManagerFactory();
+public interface PersistenceUnitServiceRegistry {
 
     /**
-     * Gets the scoped name of this persistence unit.
+     * Get the persistence unit service associated with the given management resource name.
      *
-     * @return the name
+     * @param persistenceUnitResourceName the name of the management resource representing persistence unit, as was previously
+     *                            provided to {@link ManagementAdaptor#createPersistenceUnitResource(String)}
+     *
+     * @return a PersistenceUnitService or {@code null} if the persistence unit service has not been started or has been stopped
      */
-    String getScopedPersistenceUnitName();
+    PersistenceUnitService getPersistenceUnitService(String persistenceUnitResourceName);
+
+
 }

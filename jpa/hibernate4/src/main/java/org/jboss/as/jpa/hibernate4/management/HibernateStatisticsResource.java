@@ -34,7 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.jpa.spi.PersistenceUnitService;
+import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -45,12 +45,12 @@ import org.jboss.dmr.ModelNode;
 public class HibernateStatisticsResource extends PlaceholderResource.PlaceholderResourceEntry {
 
     private final String puName;
-    private final PersistenceUnitService puService;
+    private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
     private final ModelNode model = new ModelNode();
-    public HibernateStatisticsResource(final String puName, final PersistenceUnitService puService) {
+    public HibernateStatisticsResource(final String puName, final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
         super(HibernateDescriptionConstants.CACHE, puName);
         this.puName = puName;
-        this.puService = puService;
+        this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
 
     @Override
@@ -173,7 +173,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public HibernateStatisticsResource clone() {
-        return new HibernateStatisticsResource(puName, puService);
+        return new HibernateStatisticsResource(puName, persistenceUnitRegistry);
     }
 
     private boolean hasCacheRegion(PathElement element) {
@@ -195,6 +195,6 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     }
 
     private Statistics getStatistics() {
-        return ManagementUtility.getStatistics(puService);
+        return ManagementUtility.getStatistics(persistenceUnitRegistry, puName);
     }
 }
