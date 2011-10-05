@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -45,7 +46,7 @@ import org.omg.CORBA.ORB;
  * Adds a recovery-environment to the Transactions subsystem's
  *
  */
-public class RecoveryEnvironmentAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class RecoveryEnvironmentAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     public static final RecoveryEnvironmentAdd INSTANCE = new RecoveryEnvironmentAdd();
 
@@ -71,7 +72,7 @@ public class RecoveryEnvironmentAdd extends AbstractAddStepHandler implements De
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
