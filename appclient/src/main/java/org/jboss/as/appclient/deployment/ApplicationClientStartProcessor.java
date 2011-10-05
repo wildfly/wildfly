@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.appclient.service.ApplicationClientStartService;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,6 +36,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
 /**
  * Processor that starts an application client deployment
+ *
  * @author Stuart Douglas
  */
 public class ApplicationClientStartProcessor implements DeploymentUnitProcessor {
@@ -48,7 +50,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentUnit topLevel = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
         Boolean activate = deploymentUnit.getAttachment(AppClientAttachments.START_APP_CLIENT);
@@ -65,10 +67,10 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         if (method == null) {
             throw new RuntimeException("Could not start app client " + deploymentUnit.getName() + " as no main main was found on main class " + mainClass);
         }
-        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters);
+        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters, moduleDescription.getNamespaceContextSelector());
         phaseContext.getServiceTarget()
                 .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME), startService)
-                .addDependency(ApplicationClientDeploymentService.SERVICE_NAME, ApplicationClientDeploymentService.class,  startService.getApplicationClientDeploymentServiceInjectedValue())
+                .addDependency(ApplicationClientDeploymentService.SERVICE_NAME, ApplicationClientDeploymentService.class, startService.getApplicationClientDeploymentServiceInjectedValue())
                 .install();
     }
 

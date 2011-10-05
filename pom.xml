@@ -4521,6 +4521,12 @@
             </dependency>
 
             <dependency>
+               <groupId>org.jboss.metadata</groupId>
+               <artifactId>jboss-metadata-appclient</artifactId>
+               <version>${version.org.jboss.metadata}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-common</artifactId>
                 <version>${version.org.jboss.metadata}</version>

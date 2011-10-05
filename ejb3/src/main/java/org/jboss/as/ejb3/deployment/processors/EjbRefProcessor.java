@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
@@ -35,9 +38,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.EJBLocalReferenceMetaData;
 import org.jboss.metadata.javaee.spec.EJBLocalReferencesMetaData;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.metadata.javaee.spec.EJBReferenceMetaData;
+import org.jboss.metadata.javaee.spec.EJBReferencesMetaData;
+import org.jboss.metadata.javaee.spec.Environment;
+import org.jboss.metadata.javaee.spec.RemoteEnvironment;
 
 /**
  * Deployment processor responsible for processing ejb references from deployment descriptors
@@ -57,22 +61,23 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
      * @return The bindings for the environment entries
      */
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
-        EJBLocalReferencesMetaData ejbLocalRefs = environment.getEnvironment().getEjbLocalReferences();
+        final RemoteEnvironment remoteEnvironment = environment.getEnvironment();
         List<BindingConfiguration> bindingDescriptions = new ArrayList<BindingConfiguration>();
-        //TODO: this needs a lot more work
-        if (ejbLocalRefs != null) {
-            for (EJBLocalReferenceMetaData ejbRef : ejbLocalRefs) {
+
+        EJBReferencesMetaData ejbRefs = remoteEnvironment.getEjbReferences();
+        if (ejbRefs != null) {
+            for (EJBReferenceMetaData ejbRef : ejbRefs) {
                 String name = ejbRef.getEjbRefName();
                 String ejbName = ejbRef.getLink();
                 String lookup = ejbRef.getLookupName();
-                String localInterface = ejbRef.getLocal();
-                Class<?> localInterfaceType = null;
+                String remoteInterface = ejbRef.getRemote();
+                Class<?> remoteInterfaceType = null;
 
-                if (!isEmpty(localInterface)) {
+                if (!isEmpty(remoteInterface)) {
                     try {
-                        localInterfaceType = classLoader.loadClass(localInterface);
+                        remoteInterfaceType = classLoader.loadClass(remoteInterface);
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load local interface type " + localInterface, e);
+                        throw new DeploymentUnitProcessingException("Could not load local interface type " + remoteInterface, e);
                     }
                 }
 
@@ -84,10 +89,10 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
                 //add any injection targets
-                localInterfaceType = processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, ejbRef, localInterfaceType);
+                remoteInterfaceType = processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, ejbRef, remoteInterfaceType);
 
-                if (localInterfaceType == null) {
-                    throw new DeploymentUnitProcessingException("Could not determine type of ejb-local-ref " + name + " for component " + componentDescription);
+                if (remoteInterfaceType == null) {
+                    throw new DeploymentUnitProcessingException("Could not determine type of ejb-ref " + name + " for component " + componentDescription);
                 }
                 final BindingConfiguration bindingConfiguration;
                 EjbInjectionSource ejbInjectionSource = null;
@@ -99,14 +104,67 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                         bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                     }
                 } else if (!isEmpty(ejbName)) {
-                    bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, localInterfaceType.getName()));
+                    bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, remoteInterfaceType.getName()));
                 } else {
-                    bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(localInterfaceType.getName()));
+                    bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(remoteInterfaceType.getName()));
                 }
                 if (ejbInjectionSource != null) {
                     deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.EJB_INJECTIONS, ejbInjectionSource);
                 }
                 bindingDescriptions.add(bindingConfiguration);
+            }
+        }
+
+        if (remoteEnvironment instanceof Environment) {
+            EJBLocalReferencesMetaData ejbLocalRefs = ((Environment) remoteEnvironment).getEjbLocalReferences();
+            if (ejbLocalRefs != null) {
+                for (EJBLocalReferenceMetaData ejbRef : ejbLocalRefs) {
+                    String name = ejbRef.getEjbRefName();
+                    String ejbName = ejbRef.getLink();
+                    String lookup = ejbRef.getLookupName();
+                    String localInterface = ejbRef.getLocal();
+                    Class<?> localInterfaceType = null;
+
+                    if (!isEmpty(localInterface)) {
+                        try {
+                            localInterfaceType = classLoader.loadClass(localInterface);
+                        } catch (ClassNotFoundException e) {
+                            throw new DeploymentUnitProcessingException("Could not load local interface type " + localInterface, e);
+                        }
+                    }
+
+                    if (!name.startsWith("java:")) {
+                        name = environment.getDefaultContext() + name;
+                    }
+
+                    // our injection (source) comes from the local (ENC) lookup, no matter what.
+                    LookupInjectionSource injectionSource = new LookupInjectionSource(name);
+
+                    //add any injection targets
+                    localInterfaceType = processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, ejbRef, localInterfaceType);
+
+                    if (localInterfaceType == null) {
+                        throw new DeploymentUnitProcessingException("Could not determine type of ejb-local-ref " + name + " for component " + componentDescription);
+                    }
+                    final BindingConfiguration bindingConfiguration;
+                    EjbInjectionSource ejbInjectionSource = null;
+
+                    if (!isEmpty(lookup)) {
+                        if (lookup.startsWith("ejb:")) {
+                            bindingConfiguration = new BindingConfiguration(name, new EjbLookupInjectionSource(lookup));
+                        } else {
+                            bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
+                        }
+                    } else if (!isEmpty(ejbName)) {
+                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(ejbName, localInterfaceType.getName()));
+                    } else {
+                        bindingConfiguration = new BindingConfiguration(name, ejbInjectionSource = new EjbInjectionSource(localInterfaceType.getName()));
+                    }
+                    if (ejbInjectionSource != null) {
+                        deploymentUnit.addToAttachmentList(EjbDeploymentAttachmentKeys.EJB_INJECTIONS, ejbInjectionSource);
+                    }
+                    bindingDescriptions.add(bindingConfiguration);
+                }
             }
         }
         return bindingDescriptions;

@@ -24,6 +24,8 @@ package org.jboss.as.appclient.service;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -46,6 +48,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     public static final ServiceName SERVICE_NAME = ServiceName.of("appClientStart");
 
     private final InjectedValue<ApplicationClientDeploymentService> applicationClientDeploymentServiceInjectedValue = new InjectedValue<ApplicationClientDeploymentService>();
+    private final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue;
     private final Method mainMethod;
     private final String[] parameters;
 
@@ -53,9 +56,10 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     private final Logger logger = Logger.getLogger(ApplicationClientStartService.class);
 
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
+        this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
     }
 
     @Override
@@ -66,6 +70,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
             public void run() {
                 try {
                     applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
+                    NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
                     mainMethod.invoke(null,new Object[] { parameters});
                 } catch (InvocationTargetException e) {
                     logger.error(e.getTargetException(), e.getTargetException());
@@ -74,6 +79,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                 } catch (InterruptedException e) {
                     logger.error(e);
                 } finally {
+                    NamespaceContextSelector.popCurrentSelector();
                     CurrentServiceContainer.getServiceContainer().shutdown();
                 }
             }
@@ -95,4 +101,5 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     public InjectedValue<ApplicationClientDeploymentService> getApplicationClientDeploymentServiceInjectedValue() {
         return applicationClientDeploymentServiceInjectedValue;
     }
+
 }
