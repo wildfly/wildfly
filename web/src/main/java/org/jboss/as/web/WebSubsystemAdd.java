@@ -70,6 +70,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
     private static final String DEFAULT_VIRTUAL_SERVER = "default-host";
     private static final boolean DEFAULT_NATIVE = true;
     private static final String TEMP_DIR = "jboss.server.temp.dir";
+    private static final boolean DISABLE_JBOSS_AUTHORIZATION = true;
 
     private WebSubsystemAdd() {
         //
@@ -113,6 +114,9 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         if(operation.hasDefined(Constants.INSTANCE_ID)) {
             model.get(Constants.INSTANCE_ID).set(operation.get(Constants.INSTANCE_ID));
         }
+        if(operation.hasDefined(Constants.DISABLE_JBOSS_AUTHORIZATION)) {
+            model.get(Constants.DISABLE_JBOSS_AUTHORIZATION).set(operation.get(Constants.DISABLE_JBOSS_AUTHORIZATION));
+        }
 
         model.get(Constants.CONTAINER_CONFIG).set(ourContainerConfig);
 
@@ -130,6 +134,8 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 operation.get(Constants.NATIVE).asBoolean() : DEFAULT_NATIVE;
         final String instanceId = operation.hasDefined(Constants.INSTANCE_ID) ? operation.get(
                 Constants.INSTANCE_ID).asString() : null;
+        final boolean disableJBossAuthorization = operation.hasDefined(Constants.DISABLE_JBOSS_AUTHORIZATION) ?
+                operation.get(Constants.DISABLE_JBOSS_AUTHORIZATION).asBoolean() : DISABLE_JBOSS_AUTHORIZATION;
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -152,7 +158,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JsfManagedBeanProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JsfAnnotationProcessor());
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer));
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new WarDeploymentProcessor(defaultVirtualServer, disableJBossAuthorization));
             }
         }, OperationContext.Stage.RUNTIME);
 

@@ -44,6 +44,7 @@ interface Constants {
     String DEVELOPMENT = "development";
     String DIRECTORY = "directory";
     String DISABLED = "disabled";
+    String DISABLE_JBOSS_AUTHORIZATION = "disable-jboss-authorization";
     String DISPLAY_SOURCE_FRAGMENT = "display-source-fragment";
     String DOMAIN = "domain";
     String DUMP_SMAP = "dump-smap";

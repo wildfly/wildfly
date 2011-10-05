@@ -80,6 +80,11 @@ class WebSubsystemDescriptions {
         node.get(ATTRIBUTES, Constants.INSTANCE_ID, DESCRIPTION).set(bundle.getString("web.instance-id"));
         node.get(ATTRIBUTES, Constants.INSTANCE_ID, REQUIRED).set(false);
 
+        node.get(ATTRIBUTES, Constants.DISABLE_JBOSS_AUTHORIZATION, TYPE).set(ModelType.BOOLEAN);
+        node.get(ATTRIBUTES, Constants.DISABLE_JBOSS_AUTHORIZATION, DESCRIPTION).set(bundle.getString("web.disable-jboss-authorization"));
+        node.get(ATTRIBUTES, Constants.DISABLE_JBOSS_AUTHORIZATION, REQUIRED).set(false);
+        node.get(ATTRIBUTES, Constants.DISABLE_JBOSS_AUTHORIZATION, DEFAULT).set(true);
+
         getConfigurationCommonDescription(node.get(ATTRIBUTES, Constants.CONTAINER_CONFIG), ATTRIBUTES, bundle);
         getConnectorCommonDescription(node.get(CHILDREN, Constants.CONNECTOR), ATTRIBUTES, bundle);
         getVirtualServerCommonDescription(node.get(CHILDREN, Constants.VIRTUAL_SERVER), ATTRIBUTES, bundle);
@@ -107,6 +112,11 @@ class WebSubsystemDescriptions {
         node.get(REQUEST_PROPERTIES, Constants.INSTANCE_ID, TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, Constants.INSTANCE_ID, DESCRIPTION).set(bundle.getString("web.instance-id"));
         node.get(REQUEST_PROPERTIES, Constants.INSTANCE_ID, REQUIRED).set(false);
+
+        node.get(REQUEST_PROPERTIES, Constants.DISABLE_JBOSS_AUTHORIZATION, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, Constants.DISABLE_JBOSS_AUTHORIZATION, DESCRIPTION).set(bundle.getString("web.disable-jboss-authorization"));
+        node.get(REQUEST_PROPERTIES, Constants.DISABLE_JBOSS_AUTHORIZATION, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, Constants.DISABLE_JBOSS_AUTHORIZATION, DEFAULT).set(true);
 
         getConfigurationCommonDescription(node.get(REQUEST_PROPERTIES, Constants.CONTAINER_CONFIG), REQUEST_PROPERTIES, bundle);
 

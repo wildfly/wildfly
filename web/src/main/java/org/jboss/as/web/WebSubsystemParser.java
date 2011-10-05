@@ -22,19 +22,6 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.Collections;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -106,6 +93,20 @@ import static org.jboss.as.web.Constants.VIRTUAL_SERVER;
 import static org.jboss.as.web.Constants.WEBDAV;
 import static org.jboss.as.web.Constants.WELCOME_FILE;
 
+import java.util.Collections;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
 /**
  * The web subsystem parser.
  *
@@ -130,6 +131,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         writeAttribute(writer, Attribute.NATIVE.getLocalName(), node);
         writeAttribute(writer, Attribute.DEFAULT_VIRTUAL_SERVER.getLocalName(), node);
         writeAttribute(writer, Attribute.INSTANCE_ID.getLocalName(), node);
+        writeAttribute(writer, Attribute.DISABLE_JBOSS_AUTHORIZATION.getLocalName(), node);
         if(node.hasDefined(CONTAINER_CONFIG)) {
             writeContainerConfig(writer, node.get(CONTAINER_CONFIG));
         }
@@ -363,13 +365,14 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-            case NATIVE:
-            case DEFAULT_VIRTUAL_SERVER:
-            case INSTANCE_ID:
-                subsystem.get(attribute.getLocalName()).set(value);
-                break;
-            default:
-                throw unexpectedAttribute(reader, i);
+                case NATIVE:
+                case DEFAULT_VIRTUAL_SERVER:
+                case INSTANCE_ID:
+                case DISABLE_JBOSS_AUTHORIZATION:
+                    subsystem.get(attribute.getLocalName()).set(value);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
         list.add(subsystem);

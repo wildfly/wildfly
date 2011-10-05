@@ -92,7 +92,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
             SecurityConstraint sc = constraints[i];
             SecurityCollection[] resources = sc.findCollections();
             String transport = sc.getUserConstraint();
-            if ((sc.getAuthConstraint() && sc.findAuthRoles().length == 0) || !sc.getAuthConstraint()) {
+            if ((sc.getAuthConstraint() && (sc.findAuthRoles().length == 0 && !sc.getAllRoles())) || !sc.getAuthConstraint()) {
                 // Process the permissions for the excluded/unchecked resources
                 for (int j = 0; j < resources.length; j++) {
                     SecurityCollection wrc = resources[j];
@@ -102,7 +102,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
                         String url = urlPatterns[n];
                         PatternInfo info = (PatternInfo) patternMap.get(url);
                         // Add the excluded methods
-                        if (sc.getAuthConstraint() && sc.findAuthRoles().length == 0) {
+                        if (sc.getAuthConstraint() && (sc.findAuthRoles().length == 0 && !sc.getAllRoles())) {
                             info.addExcludedMethods(Arrays.asList(httpMethods));
                         }
                         // SECURITY-63: Missing auth-constraint needs unchecked policy
@@ -124,20 +124,20 @@ public class WarJaccService extends JaccService<WarMetaData> {
                         String[] authRoles = sc.findAuthRoles();
                         for (int k = 0; k < authRoles.length; k++) {
                             String role = authRoles[k];
-                            if (role.equals("*")) {
-                                // JBAS-1824: Allow "*" to provide configurable authorization bypass
-                                if (metaData.getMergedJBossWebMetaData().isJaccAllStoreRole())
-                                    mappedRoles.add("*");
-                                else {
-                                    // The wildcard ref maps to all declared security-role names
-                                    String[] roles = context.findSecurityRoles();
-                                    for (int l = 0; l < roles.length; l++) {
-                                        role = roles[l];
-                                        mappedRoles.add(role);
-                                    }
+                            mappedRoles.add(role);
+                        }
+                        // was a wildcard role included?
+                        if (authRoles.length == 0 && sc.getAllRoles()) {
+                            // JBAS-1824: Allow "*" to provide configurable authorization bypass
+                            if (metaData.getMergedJBossWebMetaData().isJaccAllStoreRole())
+                                mappedRoles.add("*");
+                            else {
+                                // The wildcard ref maps to all declared security-role names
+                                String[] roles = context.findSecurityRoles();
+                                for (int l = 0; l < roles.length; l++) {
+                                    String role = roles[l];
+                                    mappedRoles.add(role);
                                 }
-                            } else {
-                                mappedRoles.add(role);
                             }
                         }
                         info.addRoles(mappedRoles, Arrays.asList(httpMethods));
