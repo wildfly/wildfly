@@ -21,15 +21,7 @@
  */
 package org.jboss.as.appclient.subsystem;
 
-import org.jboss.as.process.CommandLineConstants;
-import org.jboss.as.server.Bootstrap;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.SystemExiter;
-import org.jboss.logmanager.log4j.BridgeRepositorySelector;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceActivator;
-import org.jboss.stdio.StdioContext;
+import static org.jboss.as.process.Main.getVersionString;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +33,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.jboss.as.process.Main.getVersionString;
+import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.server.Bootstrap;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.SystemExiter;
+import org.jboss.logmanager.log4j.BridgeRepositorySelector;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.stdio.StdioContext;
 
 /**
  * The application client entry point
@@ -50,10 +50,12 @@ import static org.jboss.as.process.Main.getVersionString;
  */
 public final class Main {
 
+
     public static void usage() {
         System.out.println("Usage: ./appclient.sh [args...] myear.ear#appClient.jar [client args...]\n");
         System.out.println("where args include:");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
+        System.out.println("    -classpath                         Specify additional jars to make available on the applications class path");
         System.out.println("    -h                                 Display this message and exit");
         System.out.println("    --help                             Display this message and exit");
         System.out.println("    -P=<url>                           Load system properties from the given url");
@@ -82,11 +84,12 @@ public final class Main {
 
         try {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
-            final List<String> clientArgs = new ArrayList<String>();
-            ServerEnvironment serverEnvironment = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.APPCLIENT, clientArgs);
-            if (serverEnvironment == null) {
-                abort(null);
-            } else if(clientArgs.isEmpty()) {
+
+            ParsedOptions options = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.APPCLIENT);
+            ServerEnvironment serverEnvironment = options.environment;
+            final List<String> clientArgs = options.clientArguments;
+
+            if (clientArgs.isEmpty()) {
                 System.err.println("You must specify the application client to execute");
                 usage();
                 abort(null);
@@ -98,7 +101,7 @@ public final class Main {
                 final String earPath;
 
                 int pos = file.lastIndexOf("#");
-                if(pos == -1) {
+                if (pos == -1) {
                     earPath = file;
                     deploymentName = null;
                 } else {
@@ -108,7 +111,7 @@ public final class Main {
 
                 File realFile = new File(earPath);
 
-                if(!realFile.exists()) {
+                if (!realFile.exists()) {
                     throw new RuntimeException("Could not locate app client deployment " + realFile.getAbsolutePath());
                 }
 
@@ -116,7 +119,7 @@ public final class Main {
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
-                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName, params));
+                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName, options.additionalClassPath, params));
                 bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
             }
         } catch (Throwable t) {
@@ -134,7 +137,10 @@ public final class Main {
         }
     }
 
-    public static ServerEnvironment determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment, ServerEnvironment.LaunchType launchType, List<String> clientArguments) {
+    public static ParsedOptions determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment, ServerEnvironment.LaunchType launchType) {
+        List<String> clientArguments = new ArrayList<String>();
+        ParsedOptions ret = new ParsedOptions();
+        ret.clientArguments = clientArguments;
         final int argsLength = args.length;
         String serverConfig = null;
         boolean clientArgs = false;
@@ -185,6 +191,9 @@ public final class Main {
                     }
                     systemProperties.setProperty(name, value);
                     SecurityActions.setSystemProperty(name, value);
+                } else if (arg.startsWith(CommandLineConstants.CLASSPATH)) {
+                    String classPath = parseValue(arg, CommandLineConstants.CLASSPATH);
+                    ret.additionalClassPath = classPath;
                 } else {
                     clientArgs = true;
                     clientArguments.add(arg);
@@ -197,7 +206,8 @@ public final class Main {
             }
         }
 
-        return new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType);
+        ret.environment = new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType);
+        return ret;
     }
 
     private static String parseValue(final String arg, final String key) {
@@ -252,5 +262,11 @@ public final class Main {
         }
 
         return url;
+    }
+
+    private static final class ParsedOptions {
+        ServerEnvironment environment;
+        List<String> clientArguments;
+        String additionalClassPath = "";
     }
 }

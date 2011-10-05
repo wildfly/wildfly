@@ -21,11 +21,6 @@
  */
 package org.jboss.as.appclient.subsystem;
 
-import org.jboss.dmr.ModelNode;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -35,6 +30,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.dmr.ModelNode;
 
 /**
  * Class that contains the static application client server configuration
@@ -46,9 +46,9 @@ class AppClientServerConfiguration {
     private AppClientServerConfiguration() {
     }
 
-    public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final List<String> parameters) {
+    public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String additionalClassPath, final List<String> parameters) {
         List<ModelNode> ret = new ArrayList<ModelNode>();
-        appclient(ret, filePath, deploymentName, parameters);
+        appclient(ret, filePath, deploymentName, additionalClassPath, parameters);
         interfaces(ret);
         transactionSocketBindings(ret);
         transactions(ret);
@@ -60,7 +60,7 @@ class AppClientServerConfiguration {
         return ret;
     }
 
-    private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final List<String> parameters) {
+    private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String additionalClassPath, final List<String> parameters) {
         loadExtension(nodes, "org.jboss.as.appclient");
         ModelNode add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, "appclient");
@@ -75,6 +75,9 @@ class AppClientServerConfiguration {
             for (String param : parameters) {
                 add.get(Constants.PARAMETERS).add(param);
             }
+        }
+        if(additionalClassPath != null) {
+            add.get(Constants.ADDITIONAL_CLASS_PATH).set(additionalClassPath);
         }
         nodes.add(add);
     }

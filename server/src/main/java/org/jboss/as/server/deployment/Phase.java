@@ -279,9 +279,10 @@ public enum Phase {
     public static final int DEPENDENCIES_JPA = 0x1000;
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
-    public static final int DEPENDENCIES_JACORB                        = 0x1300;
+    public static final int DEPENDENCIES_JACORB                         = 0x1300;
+    public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x1400;
     //must be last
-    public static final int DEPENDENCIES_MODULE_INFO_SERVICE            = 0x1300;
+    public static final int DEPENDENCIES_MODULE_INFO_SERVICE            = 0x1500;
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;

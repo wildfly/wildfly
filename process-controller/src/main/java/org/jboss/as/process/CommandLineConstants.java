@@ -94,6 +94,9 @@ public class CommandLineConstants {
     public static final String PUBLIC_BIND_ADDRESS = "-b";
     public static final String DEFAULT_INTERFACE = "public";
 
+    /** Additional class path items, used only by app client*/
+    public static final String CLASSPATH = "-classpath";
+
     private CommandLineConstants() {
     }
 }

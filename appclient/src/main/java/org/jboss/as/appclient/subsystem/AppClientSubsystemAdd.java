@@ -22,7 +22,13 @@
 
 package org.jboss.as.appclient.subsystem;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
+import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientStartProcessor;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
@@ -38,11 +44,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Add operation handler for the application client subsystem.
@@ -70,11 +71,13 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
         model.get(Constants.FILE).set(operation.get(Constants.FILE));
         model.get(Constants.DEPLOYMENT).set(operation.get(Constants.DEPLOYMENT));
         model.get(Constants.PARAMETERS).set(operation.get(Constants.PARAMETERS));
+        model.get(Constants.ADDITIONAL_CLASS_PATH).set(operation.get(Constants.ADDITIONAL_CLASS_PATH));
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final String deployment = model.get(Constants.DEPLOYMENT).asString();
         final File file = new File(model.get(Constants.FILE).asString());
+        final String additionalClassPath = model.get(Constants.FILE).asString();
         final List<String> parameters = new ArrayList<String>();
         for (ModelNode param : model.get(Constants.PARAMETERS).asList()) {
             parameters.add(param.asString());
@@ -85,6 +88,11 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_MANIFEST, new ApplicationClientManifestProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_ACTIVE, new ActiveApplicationClientProcessor(deployment));
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APPLICATION_CLIENT, new ApplicationClientStartProcessor(parameters.toArray(EMPTY_STRING)));
+                if(additionalClassPath != null && !additionalClassPath.isEmpty()) {
+                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_APPLICATION_CLIENT, new ApplicationClientDependencyProcessor(additionalClassPath));
+
+                }
+
             }
         }, OperationContext.Stage.RUNTIME);
 

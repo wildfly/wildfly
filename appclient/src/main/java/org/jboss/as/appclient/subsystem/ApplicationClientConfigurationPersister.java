@@ -21,16 +21,16 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
-
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Application client configuration.
@@ -56,10 +56,16 @@ public class ApplicationClientConfigurationPersister implements ExtensibleConfig
      */
     private final List<String> parameters;
 
-    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final List<String> parameters) {
+    /**
+     * Any additional jars that should be availble to the deployment
+     */
+    private final String additionalClassPath;
+
+    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String additionalClassPath, final List<String> parameters) {
         this.filePath = filePath;
         this.deploymentName = deploymentName;
         this.parameters = parameters;
+        this.additionalClassPath = additionalClassPath;
     }
 
 
@@ -85,7 +91,7 @@ public class ApplicationClientConfigurationPersister implements ExtensibleConfig
 
     @Override
     public List<ModelNode> load() throws ConfigurationPersistenceException {
-        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, parameters);
+        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, additionalClassPath, parameters);
     }
 
     @Override
