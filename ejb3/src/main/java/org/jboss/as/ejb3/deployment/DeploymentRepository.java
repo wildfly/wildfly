@@ -6,9 +6,11 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -27,8 +29,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
      */
     private volatile Map<DeploymentModuleIdentifier, ModuleDeployment> modules;
 
-    // Copy-on-write set, since it's not updated frequently but will be traversed relatively more often
-    private final Collection<DeploymentRepositoryListener> listeners = new CopyOnWriteArraySet<DeploymentRepositoryListener>();
+    private final List<DeploymentRepositoryListener> listeners = new ArrayList<DeploymentRepositoryListener>();
 
 
     @Override
