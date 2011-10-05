@@ -346,15 +346,9 @@
             </capabilities>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0">
-<<<<<<< HEAD
             <connector name="remoting-connector" socket-binding="remoting-socket"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
-=======
-            <connector name="remoting-connector" socket-binding="remoting"/>
-        </subsystem>
-        <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
->>>>>>> Align with Brian's work on ResourceDefinition and also enable the remoting connector configuration in EJB3 subsystem
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>
