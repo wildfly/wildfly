@@ -68,7 +68,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                     applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
                     mainMethod.invoke(null,new Object[] { parameters});
                 } catch (InvocationTargetException e) {
-                    logger.error(e);
+                    logger.error(e.getTargetException(), e.getTargetException());
                 } catch (IllegalAccessException e) {
                     logger.error(e);
                 } catch (InterruptedException e) {
