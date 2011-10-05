@@ -342,7 +342,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
             if (xaDataSourceConfig.getUrlDelimiter() != null) {
                 try {
-                    xaManagedConnectionFactory.setURLDelimiter(dataSourceConfig.getUrlDelimiter());
+                    xaManagedConnectionFactory.setURLDelimiter(xaDataSourceConfig.getUrlDelimiter());
                 } catch (ResourceException e) {
                     throw MESSAGES.failedToGetUrlDelimiter(e);
                 }
@@ -371,6 +371,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             }
 
             setMcfProperties(xaManagedConnectionFactory, xaDataSourceConfig, xaDataSourceConfig.getStatement());
+            xaManagedConnectionFactory.setUserTransactionJndiName("java:comp/UserTransaction");
             return xaManagedConnectionFactory;
 
         }
