@@ -44,7 +44,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoFuture;
@@ -194,8 +193,13 @@ public class EJBClientAPIUsageTestCase {
         }
     }
 
+    /**
+     * Tests that invocations on a stateful session bean work after a session is created and the stateful
+     * session bean really acts as a stateful bean
+     *
+     * @throws Exception
+     */
     @Test
-    //@Ignore("SFSB session creation hasn't been properly implemented.")
     public void testSFSBInvocation() throws Exception {
         final Counter counter = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, CounterBean.class.getSimpleName(), Counter.class);
         Assert.assertNotNull("Received a null proxy", counter);
@@ -214,6 +218,27 @@ public class EJBClientAPIUsageTestCase {
         final int finalCount = counter.getCount();
         logger.info("Got final count " + finalCount);
         Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
+    }
+
+
+    /**
+     * Tests that invocation on a stateful session bean fails, if a session hasn't been created
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSFSBAccessFailureWithoutSession() throws Exception {
+        final Counter counter = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, CounterBean.class.getSimpleName(), Counter.class);
+        Assert.assertNotNull("Received a null proxy", counter);
+        // invoke the bean without creating a session
+        try {
+            final int initialCount = counter.getCount();
+            Assert.fail("Expected a EJBException for calling a stateful session bean without creating a session");
+        } catch (EJBException ejbe) {
+            // expected
+            logger.info("Received the expected exception", ejbe);
+
+        }
     }
 
     /**
