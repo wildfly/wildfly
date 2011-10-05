@@ -261,7 +261,7 @@ public class ModelDescriptionValidator {
             }
 
             if (!typeNode.hasDefined(DESCRIPTION)) {
-                errors.add(new ValidationFailure("Missing description for child type '" + type + "'", address));
+                errors.add(new ValidationFailure("Missing description for child type '" + type + "' on ModelNode '" + typeNode.toString()+"'", address));
             }
             ModelNode childType = typeNode.get(MODEL_DESCRIPTION);
             if (!childType.isDefined()) {
