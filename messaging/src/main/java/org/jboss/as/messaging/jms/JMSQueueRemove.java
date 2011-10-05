@@ -30,8 +30,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingDescriptions;
+import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Update handler removing a queue from the JMS subsystem. The
@@ -45,9 +48,10 @@ public class JMSQueueRemove extends AbstractRemoveStepHandler implements Descrip
     public static final JMSQueueRemove INSTANCE = new JMSQueueRemove();
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(JMSServices.JMS_QUEUE_BASE.append(name));
+        context.removeService(JMSServices.getJmsQueueBaseServiceName(hqServiceName).append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {

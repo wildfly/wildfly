@@ -27,8 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -45,8 +47,9 @@ public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler {
         final ModelNode operationAddress = operation.require(OP_ADDR);
         final PathAddress address = PathAddress.pathAddress(operationAddress);
         final String name = address.getLastElement().getValue();
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
-        context.removeService(MessagingServices.POOLED_CONNECTION_FACTORY_BASE.append(name));
+        context.removeService(JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {

@@ -10,7 +10,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Removes a queue.
@@ -27,9 +30,10 @@ public class QueueRemove extends AbstractRemoveStepHandler implements Descriptio
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(MessagingServices.CORE_QUEUE_BASE.append(name));
+        context.removeService(MessagingServices.getQueueBaseServiceName(hqServiceName).append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {

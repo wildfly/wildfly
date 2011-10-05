@@ -33,10 +33,13 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -85,7 +88,8 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
         } else {
 
             ServiceRegistry registry = context.getServiceRegistry(true);
-            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService == null) {
                 // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
                 return false;
@@ -111,7 +115,8 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
         AttributeDefinition attr = attributes.get(attributeName);
         if (!attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
             ServiceRegistry registry = context.getServiceRegistry(true);
-            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService != null && hqService.getState() == ServiceController.State.UP) {
                 // Create and execute a write-attribute operation that uses the valueToRestore
                 ModelNode revertOp = operation.clone();

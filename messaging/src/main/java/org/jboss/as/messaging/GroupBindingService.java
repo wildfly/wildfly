@@ -36,9 +36,9 @@ import org.jboss.msc.value.InjectedValue;
  */
 class GroupBindingService implements Service<SocketBinding> {
 
-    private static final ServiceName BASE = MessagingServices.JBOSS_MESSAGING.append("bindings");
-    static final ServiceName BROADCAST = BASE.append("broadcast");
-    static final ServiceName DISCOVERY = BASE.append("discovery");
+    private static final String BASE = "bindings";
+    private static final String BROADCAST = "broadcast";
+    private static final String DISCOVERY = "discovery";
 
     private final InjectedValue<SocketBinding> bindingRef = new InjectedValue<SocketBinding>();
 
@@ -59,5 +59,13 @@ class GroupBindingService implements Service<SocketBinding> {
 
     public InjectedValue<SocketBinding> getBindingRef() {
         return bindingRef;
+    }
+
+    public static ServiceName getBroadcastBaseServiceName(ServiceName hornetqServiceName) {
+        return hornetqServiceName.append(BASE).append(BROADCAST);
+    }
+
+    public static ServiceName getDiscoveryBaseServiceName(ServiceName hornetqServiceName) {
+        return hornetqServiceName.append(BASE).append(DISCOVERY);
     }
 }

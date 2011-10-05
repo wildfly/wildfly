@@ -70,7 +70,7 @@ class AddressSettingsWriteHandler implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final HornetQServer server = AddressSettingAdd.getServer(context);
+                    final HornetQServer server = AddressSettingAdd.getServer(context, operation);
                     PathAddress address = null;
                     HierarchicalRepository<AddressSettings> repository = null;
                     AddressSettings existingSettings = null;

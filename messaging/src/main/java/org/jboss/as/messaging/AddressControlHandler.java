@@ -44,6 +44,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Handles operations and attribute reads supported by a HornetQ {@link org.hornetq.api.core.management.AddressControl}.
@@ -146,7 +147,8 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler implements
 
     private AddressControl getAddressControl(final OperationContext context, final ModelNode operation) {
         final String addressName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-        ServiceController<?> hqService = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return AddressControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.CORE_ADDRESS + addressName));
     }

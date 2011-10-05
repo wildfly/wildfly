@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -30,15 +32,40 @@ import org.jboss.msc.service.ServiceName;
 public class MessagingServices {
 
     /** The service name "jboss.messaging". */
-    public static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
+    private static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
 
     /** The core queue name base. */
-    public static final ServiceName CORE_QUEUE_BASE = JBOSS_MESSAGING.append("queue");
-
-    public static final ServiceName POOLED_CONNECTION_FACTORY_BASE = JBOSS_MESSAGING.append("pooled-connection-factory");
+    private static final String CORE_QUEUE_BASE = "queue";
 
     public static enum TransportConfigType {
         Remote, InVM, Generic
     }
+
+   public static ServiceName getHornetQServiceName(PathAddress pathAddress) {
+         // We need to figure out what HornetQServer this operation is targeting.
+        // We can get that from the "address" element of the operation, as the "hornetq-server=x" part of
+        // the address will specify the name of the HornetQServer
+
+       // We are a handler for requests related to a jms-topic resource. Those reside on level below the hornetq-server
+        // resources in the resource tree. So we could look for the hornetq-server in the 2nd to last element
+        // in the PathAddress. But to be more generic and future-proof, we'll walk the tree looking
+        String hornetQServerName = null;
+        for (int i = pathAddress.size() - 1; i >=0; i--) {
+            PathElement pe = pathAddress.getElement(i);
+            if (CommonAttributes.HORNETQ_SERVER.equals(pe.getKey())) {
+                hornetQServerName = pe.getValue();
+                break;
+            }
+        }
+      return JBOSS_MESSAGING.append(hornetQServerName);
+   }
+
+   public static ServiceName getHornetQServiceName(String serverName) {
+      return JBOSS_MESSAGING.append(serverName);
+   }
+
+   public static ServiceName getQueueBaseServiceName(ServiceName hornetqServiceName) {
+       return hornetqServiceName.append(CORE_QUEUE_BASE);
+   }
 
 }

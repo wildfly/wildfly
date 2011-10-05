@@ -61,6 +61,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Basic {@link TransportConfiguration} (Acceptor/Connector) related operations.
@@ -156,7 +157,8 @@ class TransportConfigOperationHandlers {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
+                    final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(hqServiceName);
                     if(controller != null) {
                         context.reloadRequired();
                     }

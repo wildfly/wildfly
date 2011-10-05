@@ -28,10 +28,8 @@ import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -41,9 +39,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingDescriptions;
+import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -90,12 +90,13 @@ public class JMSQueueAdd extends AbstractAddStepHandler implements DescriptionPr
         final String name = address.getLastElement().getValue();
         final ModelNode selectorNode = SELECTOR.validateResolvedOperation(model);
         final String selector = selectorNode.isDefined() ? selectorNode.asString() : null;
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         final JMSQueueService service = new JMSQueueService(name, selector,
                 DURABLE.validateResolvedOperation(model).asBoolean(), JndiEntriesAttribute.getJndiBindings(operation));
-        final ServiceName serviceName = JMSServices.JMS_QUEUE_BASE.append(name);
+        final ServiceName serviceName = JMSServices.getJmsQueueBaseServiceName(hqServiceName).append(name);
         newControllers.add(context.getServiceTarget().addService(serviceName, service)
-                .addDependency(JMSServices.JMS_MANAGER, JMSServerManager.class, service.getJmsServer())
+                .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
                 .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
                 .install());
