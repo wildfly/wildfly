@@ -38,6 +38,7 @@ import java.util.Locale;
 
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -54,7 +55,7 @@ import org.omg.CORBA.ORB;
  * Adds a recovery-environment to the Transactions subsystem's
  *
  */
-public class CoreEnvironmentAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class CoreEnvironmentAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     public static final CoreEnvironmentAdd INSTANCE = new CoreEnvironmentAdd();
     private static final ServiceName INTERNAL_CORE_ENV_VAR_PATH = TxnServices.JBOSS_TXN_PATHS.append("core-var-dir");
@@ -81,7 +82,7 @@ public class CoreEnvironmentAdd extends AbstractAddStepHandler implements Descri
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
 

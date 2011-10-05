@@ -36,6 +36,7 @@ import java.util.Locale;
 
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -54,7 +55,7 @@ import org.jboss.msc.service.ServiceTarget;
  * Adds a recovery-environment to the Transactions subsystem's
  *
  */
-public class ObjectStoreAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class ObjectStoreAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     public static final ObjectStoreAdd INSTANCE = new ObjectStoreAdd();
     static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
@@ -79,7 +80,7 @@ public class ObjectStoreAdd extends AbstractAddStepHandler implements Descriptio
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
         final ModelNode objectStore = operation.get(OBJECT_STORE);
