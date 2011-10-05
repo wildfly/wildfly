@@ -81,10 +81,10 @@ abstract class AbstractMessageHandler implements MessageHandler {
         }
         // write attachment count
         output.writeByte(attachments.size());
-        for (int attachmentKey : attachments.keys()) {
+        for (RemotingAttachments.RemotingAttachment attachment : attachments.entries()) {
             // write attachment id
-            output.writeShort(attachmentKey);
-            final byte[] data = attachments.getPayloadAttachment(attachmentKey);
+            output.writeShort(attachment.getKey());
+            final byte[] data = attachment.getValue();
             // write data length
             PackedInteger.writePackedInteger(output, data.length);
             // write the data
