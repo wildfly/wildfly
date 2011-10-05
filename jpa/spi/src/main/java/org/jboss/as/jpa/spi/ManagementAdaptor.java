@@ -23,6 +23,7 @@
 package org.jboss.as.jpa.spi;
 
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 
 /**
  * Defines how JPA management is performed in AS7.
@@ -34,6 +35,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public interface ManagementAdaptor {
 
     void register(final ManagementResourceRegistration jpaSubsystemDeployments);
+
+    Resource createManagementResource(final String persistenceUnitName, final PersistenceUnitService persistenceUnitService);
 
     /**
      * Get the short identification string that represents the management adaptor (e.g Hibernate)
