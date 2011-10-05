@@ -22,7 +22,6 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
@@ -76,8 +75,22 @@ abstract class AbstractMessageHandler implements MessageHandler {
     }
 
     protected void writeAttachments(final DataOutput output, final RemotingAttachments attachments) throws IOException {
-        // TODO: Implement this
-        PackedInteger.writePackedInteger(output, 0); // TODO: This won't be needed once we write out the attachments
+        if (attachments == null) {
+            output.writeByte(0);
+            return;
+        }
+        // write attachment count
+        output.writeByte(attachments.size());
+        for (int attachmentKey : attachments.keys()) {
+            // write attachment id
+            output.writeShort(attachmentKey);
+            final byte[] data = attachments.getPayloadAttachment(attachmentKey);
+            // write data length
+            PackedInteger.writePackedInteger(output, data.length);
+            // write the data
+            output.write(data);
+
+        }
     }
 
     protected void writeInvocationFailure(final Channel channel, final byte messageHeader, final short invocationId, final String failureMessage) throws IOException {
@@ -107,7 +120,7 @@ abstract class AbstractMessageHandler implements MessageHandler {
     }
 
     protected void writeSessionNotActiveFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
-                                                final String distinctname, final String beanName) throws IOException {
+                                                       final String distinctname, final String beanName) throws IOException {
         final StringBuffer sb = new StringBuffer("Session not active for EJB[");
         sb.append("appname=").append(appName).append(", ");
         sb.append("modulename=").append(moduleName).append(", ");
@@ -117,8 +130,8 @@ abstract class AbstractMessageHandler implements MessageHandler {
     }
 
     protected void writeNoSuchEJBMethodFailureMessage(final Channel channel, final short invocationId, final String appName, final String moduleName,
-                                                final String distinctname, final String beanName, final String viewClassName,
-                                                final String methodName, final String[] methodParamTypes) throws IOException {
+                                                      final String distinctname, final String beanName, final String viewClassName,
+                                                      final String methodName, final String[] methodParamTypes) throws IOException {
         final StringBuffer sb = new StringBuffer("No such method ");
         sb.append(methodName).append("(");
         if (methodParamTypes != null) {

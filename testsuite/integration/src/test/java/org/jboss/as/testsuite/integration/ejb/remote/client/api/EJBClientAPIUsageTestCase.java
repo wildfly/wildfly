@@ -195,7 +195,7 @@ public class EJBClientAPIUsageTestCase {
     }
 
     @Test
-    @Ignore("SFSB session creation hasn't been properly implemented.")
+    //@Ignore("SFSB session creation hasn't been properly implemented.")
     public void testSFSBInvocation() throws Exception {
         final Counter counter = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, CounterBean.class.getSimpleName(), Counter.class);
         Assert.assertNotNull("Received a null proxy", counter);
@@ -203,13 +203,16 @@ public class EJBClientAPIUsageTestCase {
         EJBClient.createSession(counter);
         // invoke the bean
         final int initialCount = counter.getCount();
+        logger.info("Got initial count " + initialCount);
         Assert.assertEquals("Unexpected initial count from stateful bean", 0, initialCount);
         final int NUM_TIMES = 25;
         for (int i = 1; i <= NUM_TIMES; i++) {
             final int count = counter.incrementAndGetCount();
+            logger.info("Got next count " + count);
             Assert.assertEquals("Unexpected count after increment", i, count);
         }
         final int finalCount = counter.getCount();
+        logger.info("Got final count " + finalCount);
         Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
     }
 
