@@ -22,21 +22,9 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
-import javax.ejb.Local;
-import javax.ejb.LocalBean;
-import javax.ejb.Remote;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +33,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
+import javax.ejb.Local;
+import javax.ejb.LocalBean;
+import javax.ejb.Remote;
+
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 
 /**
  * Processes {@link Local @Local} and {@link @Remote} annotation of a session bean and sets up the {@link SessionBeanComponentDescription}
@@ -56,11 +57,6 @@ import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentia
  */
 public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor {
 
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(BusinessViewAnnotationProcessor.class);
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -69,12 +65,16 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             return;
         }
 
-        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
+            return;
+        }
+
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
         final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
         if (componentDescriptions == null || componentDescriptions.isEmpty()) {
             return;
         }
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ClassLoader moduleClassLoader = module.getClassLoader();
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription instanceof SessionBeanComponentDescription == false) {

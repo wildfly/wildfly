@@ -378,6 +378,7 @@
             <capabilities>
                 <!-- modules registered with the OSGi layer on startup -->
                 <capability name="javaee.api"/>
+                <capability name="javax.api"/>
                 <!-- bundles installed on startup -->
                 <capability name="org.apache.aries.util"/>
                 <capability name="org.jboss.osgi.webconsole"/>

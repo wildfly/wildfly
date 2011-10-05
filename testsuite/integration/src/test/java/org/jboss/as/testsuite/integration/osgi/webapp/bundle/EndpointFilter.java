@@ -24,26 +24,26 @@ package org.jboss.as.testsuite.integration.osgi.webapp.bundle;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
-@SuppressWarnings("serial")
-public class EndpointServlet extends HttpServlet {
+public class EndpointFilter implements Filter {
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        PrintWriter out = res.getWriter();
-        String testParam = req.getParameter("test");
-        if ("plain".equals(testParam)) {
-            out.println("Hello from Servlet");
-        } else if ("initProp".equals(testParam)) {
-            String value = getInitParameter(testParam);
-            out.println(testParam + "=" + value);
-        } else {
-            throw new IllegalArgumentException("Invalid 'test' parameter: " + testParam);
-        }
-        out.close();
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        new PrintWriter(response.getWriter()).print("(filtered)");
+        chain.doFilter(request, response);
+    }
+
+    @Override
+    public void destroy() {
     }
 }

@@ -1060,7 +1060,7 @@
 
         <dependency>
             <groupId>org.jboss.osgi.http</groupId>
-            <artifactId>jboss-osgi-http</artifactId>
+            <artifactId>jbosgi-http</artifactId>
         </dependency>
 
         <dependency>
