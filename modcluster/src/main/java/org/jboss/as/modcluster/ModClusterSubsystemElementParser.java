@@ -18,6 +18,7 @@ import static org.jboss.as.modcluster.CommonAttributes.CA_REVOCATION_URL;
 import static org.jboss.as.modcluster.CommonAttributes.CERTIFICATE_KEY_FILE;
 import static org.jboss.as.modcluster.CommonAttributes.CIPHER_SUITE;
 import static org.jboss.as.modcluster.CommonAttributes.CLASS;
+import static org.jboss.as.modcluster.CommonAttributes.CONFIGURATION;
 import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
 import static org.jboss.as.modcluster.CommonAttributes.DECAY;
 import static org.jboss.as.modcluster.CommonAttributes.DOMAIN;
@@ -132,7 +133,12 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
             writeDynamicLoadProvider(writer, config.get(DYNAMIC_LOAD_PROVIDER));
         }
         if (config.hasDefined(SSL)) {
-            writeSSL(writer, config.get(SSL));
+            ModelNode ssl;
+            if (config.get(SSL).isDefined() && config.get(SSL).has(CONFIGURATION))
+                ssl = config.get(SSL).get(CONFIGURATION);
+            else
+                ssl = config.get(SSL);
+            writeSSL(writer, ssl);
         }
         writer.writeEndElement();
     }
@@ -260,7 +266,7 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
                     conf.get(NODE_TIMEOUT).set(value);
                     break;
                 case BALANCER:
-                    conf.get(NODE_TIMEOUT).set(value);
+                    conf.get(BALANCER).set(value);
                     break;
                 case DOMAIN:
                     conf.get(DOMAIN).set(value);
