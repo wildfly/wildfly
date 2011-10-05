@@ -33,8 +33,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.MBeanServer;
 
@@ -182,6 +184,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             buffer.append("org.apache.log4j,");
             buffer.append("org.jboss.as.osgi,");
             buffer.append("org.jboss.logging,");
+            buffer.append("org.jboss.osgi.framework,");
             buffer.append("org.slf4j");
             props.put(PROP_JBOSS_OSGI_SYSTEM_MODULES, buffer.toString());
         }
@@ -314,15 +317,6 @@ public class FrameworkBootstrapService implements Service<Void> {
             ModuleSpec.Builder specBuilder = ModuleSpec.build(ModuleIdentifier.create(JBOSGI_PREFIX + ".framework"));
             specBuilder.addDependency(createSystemModuleDependency(systemLoader, systemIdentifier));
 
-            // Add a dependency on the default framework module
-            ModuleLoader bootLoader = Module.getBootModuleLoader();
-            ModuleIdentifier frameworkIdentifier = ModuleIdentifier.create("org.jboss.osgi.framework");
-            specBuilder.addDependency(createSystemModuleDependency(bootLoader, frameworkIdentifier));
-
-            // Add a dependency on the subsystem module
-            ModuleIdentifier subsystemIdentifier = ModuleIdentifier.create("org.jboss.as.osgi");
-            specBuilder.addDependency(createSystemModuleDependency(bootLoader, subsystemIdentifier));
-
             // Add the framework module dependencies
             String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
             if (sysmodules == null)
@@ -332,6 +326,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             if (extramodules != null)
                 sysmodules += "," + extramodules;
 
+            ModuleLoader bootLoader = Module.getBootModuleLoader();
             for (String moduleProp : sysmodules.split(",")) {
                 moduleProp = moduleProp.trim();
                 if (moduleProp.length() > 0) {

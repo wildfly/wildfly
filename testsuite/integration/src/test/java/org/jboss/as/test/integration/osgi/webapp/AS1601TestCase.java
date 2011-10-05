@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.osgi.webapp;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
@@ -35,9 +35,8 @@ import javax.servlet.http.HttpServlet;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
-import org.jboss.as.test.integration.osgi.OSGiTestSupport;
-import org.jboss.as.test.integration.osgi.webapp.bundle.EndpointServlet;
-import org.jboss.osgi.deployment.interceptor.LifecycleInterceptorException;
+import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
+import org.jboss.as.testsuite.integration.osgi.webapp.bundle.EndpointServlet;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -46,18 +45,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
- * A test that deployes a WAR bundle that contains no WEB-INF/web.xml
+ * [AS7-1601] Cannot deploy OSGi webap bundle with *.war suffix
  *
  * @author thomas.diesler@jboss.com
- * @since 26-Oct-2009
+ * @since 22-Sep-2011
  */
 @RunWith(Arquillian.class)
-public class WebAppNegativeTestCase extends OSGiTestSupport {
+public class AS1601TestCase extends OSGiTestSupport {
 
     @Inject
     public BundleContext context;
@@ -68,9 +66,9 @@ public class WebAppNegativeTestCase extends OSGiTestSupport {
     @Deployment
     @StartLevelAware(startLevel = 4)
     public static WebArchive createdeployment() {
-        final WebArchive archive = ShrinkWrap.create(WebArchive.class, "example-webapp-negative");
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, "as1601.war");
         archive.addClasses(OSGiTestSupport.class, EndpointServlet.class);
-        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
+        archive.addAsWebInfResource("osgi/webapp/webA.xml", "web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             public InputStream openStream() {
@@ -78,8 +76,7 @@ public class WebAppNegativeTestCase extends OSGiTestSupport {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addManifestHeader(Constants.BUNDLE_CLASSPATH, ".,WEB-INF/classes");
-                builder.addManifestHeader("Web-ContextPath", "example-webapp");
-                builder.addImportPackages(LifecycleInterceptorException.class);
+                builder.addManifestHeader("Web-ContextPath", "as1601");
                 builder.addImportPackages(StartLevel.class, HttpServlet.class, Servlet.class);
                 return builder.openStream();
             }
@@ -90,12 +87,12 @@ public class WebAppNegativeTestCase extends OSGiTestSupport {
     @Test
     public void testServletAccess() throws Exception {
         changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
-        try {
-            bundle.start();
-            fail("BundleException expected");
-        } catch (BundleException ex) {
-            Throwable cause = ex.getCause();
-            assertTrue(cause instanceof LifecycleInterceptorException);
-        }
+        bundle.start();
+        String line = getHttpResponse("/as1601/servlet?test=plain", 5000);
+        assertEquals("Hello from Servlet", line);
+    }
+
+    private String getHttpResponse(String reqPath, int timeout) throws IOException {
+        return getHttpResponse("localhost", 8090, reqPath, timeout);
     }
 }

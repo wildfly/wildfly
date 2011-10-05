@@ -1038,7 +1038,7 @@
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.http">
-            <maven-bundle group="org.jboss.osgi.http" artifact="jboss-osgi-http"/>
+            <maven-bundle group="org.jboss.osgi.http" artifact="jbosgi-http"/>
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.jmx">
