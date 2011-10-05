@@ -39,10 +39,15 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.jacorb.deployment.JacORBDependencyProcessor;
+import org.jboss.as.jacorb.deployment.JacORBJndiBindingProcessor;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.jacorb.service.CorbaPOAService;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -119,7 +124,12 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                                   List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         log.info("Activating JacORB Subsystem");
-
+        context.addStep(new AbstractDeploymentChainStep() {
+            public void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_JACORB, new JacORBDependencyProcessor());
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_JACORB_BIND, new JacORBJndiBindingProcessor());
+            }
+        }, OperationContext.Stage.RUNTIME);
         // get the list of ORB initializers.
         EnumSet<ORBInitializer> initializers = getORBInitializers(operation);
 

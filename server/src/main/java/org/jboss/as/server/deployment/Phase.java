@@ -279,6 +279,7 @@ public enum Phase {
     public static final int DEPENDENCIES_JPA = 0x1000;
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
+    public static final int DEPENDENCIES_JACORB                        = 0x1300;
     //must be last
     public static final int DEPENDENCIES_MODULE_INFO_SERVICE            = 0x1300;
 
@@ -337,6 +338,7 @@ public enum Phase {
     public static final int POST_MODULE_LOCAL_HOME                      = 0x1E00;
     public static final int POST_MODULE_APPLICATION_CLIENT_MANIFEST     = 0x1F00;
     public static final int POST_MODULE_APPLICATION_CLIENT_ACTIVE       = 0x2000;
+    public static final int POST_MODULE_JACORB_BIND                     = 0x2100;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
