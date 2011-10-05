@@ -251,7 +251,6 @@ public class EJBClientAPIUsageTestCase {
     }
 
     @Test
-    @Ignore("There's a marshalling/unmarshalling issue some where which causes this test to fail. I need to debug")
     public void testApplicationExceptionOnSLSBMethod() throws Exception {
         final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, ExceptionThrowingBean.class.getSimpleName(), ExceptionThrowingRemote.class);
         Assert.assertNotNull("Received a null proxy", exceptionThrowingBean);

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import org.jboss.logging.Logger;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.Marshalling;
@@ -46,6 +47,8 @@ import java.io.OutputStream;
  * User: jpai
  */
 class MarshallerFactory {
+
+    private static final Logger logger = Logger.getLogger(MarshallerFactory.class);
 
     public static Marshaller createMarshaller(final String marshallerType) throws IOException {
         if ("river".equals(marshallerType)) {
@@ -83,7 +86,8 @@ class MarshallerFactory {
             final OutputStream outputStream = new OutputStream() {
                 @Override
                 public void write(int b) throws IOException {
-                    output.write(b);
+                    final int byteToWrite = b & 0xff;
+                    output.write(byteToWrite);
                 }
             };
             final ByteOutput byteOutput = Marshalling.createByteOutput(outputStream);
@@ -123,7 +127,9 @@ class MarshallerFactory {
                 @Override
                 public int read() throws IOException {
                     try {
-                        return input.readByte();
+
+                        final int b = input.readByte();
+                        return b & 0xff;
                     } catch (EOFException eof) {
                         return -1;
                     }
@@ -164,7 +170,8 @@ class MarshallerFactory {
             final OutputStream os = new OutputStream() {
                 @Override
                 public void write(int b) throws IOException {
-                    JavaSerialMarshaller.this.dataOutput.write(b);
+                    final int byteToWrite = b & 0xff;
+                    JavaSerialMarshaller.this.dataOutput.write(byteToWrite);
                 }
             };
             final ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
@@ -196,7 +203,8 @@ class MarshallerFactory {
                 @Override
                 public int read() throws IOException {
                     try {
-                        return JavaSerialUnMarshaller.this.dataInput.readByte();
+                        final int b = JavaSerialUnMarshaller.this.dataInput.readByte();
+                        return b & 0xff;
                     } catch (EOFException eof) {
                         return -1;
                     }
