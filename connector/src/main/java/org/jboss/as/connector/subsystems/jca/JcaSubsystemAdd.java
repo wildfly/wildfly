@@ -58,6 +58,7 @@ import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.bootstrapcontext.BaseCloneableBootstrapContext;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.core.workmanager.WorkManagerImpl;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
@@ -160,7 +161,7 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
         builder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, wmService.getXaTerminatorInjector())
                 .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
-                .install());
+                .install();
 
         CloneableBootstrapContext ctx = new BaseCloneableBootstrapContext();
         final DefaultBootStrapContextService defaultBootCtxService = new DefaultBootStrapContextService(ctx);
