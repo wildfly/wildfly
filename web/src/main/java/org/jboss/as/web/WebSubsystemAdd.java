@@ -110,6 +110,9 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
         if(operation.hasDefined(Constants.DEFAULT_VIRTUAL_SERVER)) {
             model.get(Constants.DEFAULT_VIRTUAL_SERVER).set(operation.get(Constants.DEFAULT_VIRTUAL_SERVER));
         }
+        if(operation.hasDefined(Constants.INSTANCE_ID)) {
+            model.get(Constants.INSTANCE_ID).set(operation.get(Constants.INSTANCE_ID));
+        }
 
         model.get(Constants.CONTAINER_CONFIG).set(ourContainerConfig);
 
@@ -125,6 +128,8 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 operation.get(Constants.DEFAULT_VIRTUAL_SERVER).asString() : DEFAULT_VIRTUAL_SERVER;
         final boolean useNative = operation.hasDefined(Constants.NATIVE) ?
                 operation.get(Constants.NATIVE).asBoolean() : DEFAULT_NATIVE;
+        final String instanceId = operation.hasDefined(Constants.INSTANCE_ID) ? operation.get(
+                Constants.INSTANCE_ID).asString() : null;
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -151,7 +156,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
             }
         }, OperationContext.Stage.RUNTIME);
 
-        final WebServerService service = new WebServerService(defaultVirtualServer, useNative);
+        final WebServerService service = new WebServerService(defaultVirtualServer, useNative, instanceId);
         newControllers.add(context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB, service)
                 .addDependency(AbstractPathService.pathNameOf(TEMP_DIR), String.class, service.getPathInjector())
                 .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, service.getMbeanServer())

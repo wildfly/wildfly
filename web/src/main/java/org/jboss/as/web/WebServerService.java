@@ -42,6 +42,7 @@ class WebServerService implements WebServer, Service<WebServer> {
 
     private final String defaultHost;
     private final boolean useNative;
+    private final String instanceId;
 
     private Engine engine;
     private StandardServer server;
@@ -50,9 +51,10 @@ class WebServerService implements WebServer, Service<WebServer> {
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<String> pathInjector = new InjectedValue<String>();
 
-    public WebServerService(final String defaultHost, final boolean useNative) {
+    public WebServerService(final String defaultHost, final boolean useNative, final String instanceId) {
         this.defaultHost = defaultHost;
         this.useNative = useNative;
+        this.instanceId = instanceId;
     }
 
     /** {@inheritDoc} */
@@ -77,6 +79,9 @@ class WebServerService implements WebServer, Service<WebServer> {
         engine.setName(JBOSS_WEB);
         engine.setService(service);
         engine.setDefaultHost(defaultHost);
+        if (instanceId != null) {
+            engine.setJvmRoute(instanceId);
+        }
 
         service.setContainer(engine);
 
