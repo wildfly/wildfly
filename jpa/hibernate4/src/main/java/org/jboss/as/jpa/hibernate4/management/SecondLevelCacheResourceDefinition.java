@@ -67,7 +67,8 @@ public class SecondLevelCacheResourceDefinition extends SimpleResourceDefinition
             .build();
 
     private SecondLevelCacheResourceDefinition() {
-        super(PathElement.pathElement(HibernateDescriptionConstants.CACHE), HibernateDescriptions.getResourceDescriptionResolver("hibernate.statistics.second-level-cache"));
+        super(PathElement.pathElement(HibernateDescriptionConstants.CACHE),
+                HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.SECOND_LEVEL_CACHE));
     }
 
     @Override

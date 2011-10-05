@@ -58,6 +58,7 @@ public class HibernateDescriptionConstants {
     public static final String QUERY_CACHE_HIT_COUNT = "hibernate.statistics.query-cache-hit-count";
     public static final String QUERY_CACHE_MISS_COUNT = "hibernate.statistics.query-cache-miss-count";
     public static final String QUERY_CACHE_PUT_COUNT = "hibernate.statistics.query-cache-put-count";
+    public static final String SECOND_LEVEL_CACHE = "hibernate.statistics.second-level-cache";
     public static final String SECOND_LEVEL_CACHE_HIT_COUNT = "hibernate.statistics.second-level-cache.hit-count";
     public static final String SECOND_LEVEL_CACHE_MISS_COUNT = "hibernate.statistics.second-level-cache.miss-count";
     public static final String SECOND_LEVEL_CACHE_PUT_COUNT = "hibernate.statistics.second-level-cache.put-count";
