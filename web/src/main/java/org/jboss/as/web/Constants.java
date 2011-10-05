@@ -99,7 +99,6 @@ interface Constants {
     String SOCKET_BINDING = "socket-binding";
     String SOURCE_VM = "source-vm";
     String SSL = "ssl";
-    String SSO = "sso";
     String STATIC_RESOURCES = "static-resources";
     String SUBSTITUTION = "substitution";
     String SUBSYSTEM = "subsystem";

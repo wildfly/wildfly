@@ -119,11 +119,4 @@ class WebSubsystemDescriptionProviders {
 
     };
 
-    public static DescriptionProvider SSO = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return WebSubsystemDescriptions.getSSODescription(locale);
-        }
-
-    };
 }
