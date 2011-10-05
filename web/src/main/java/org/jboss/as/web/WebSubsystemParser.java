@@ -129,6 +129,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         ModelNode node = context.getModelNode();
         writeAttribute(writer, Attribute.NATIVE.getLocalName(), node);
         writeAttribute(writer, Attribute.DEFAULT_VIRTUAL_SERVER.getLocalName(), node);
+        writeAttribute(writer, Attribute.INSTANCE_ID.getLocalName(), node);
         if(node.hasDefined(CONTAINER_CONFIG)) {
             writeContainerConfig(writer, node.get(CONTAINER_CONFIG));
         }
@@ -364,6 +365,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             switch (attribute) {
             case NATIVE:
             case DEFAULT_VIRTUAL_SERVER:
+            case INSTANCE_ID:
                 subsystem.get(attribute.getLocalName()).set(value);
                 break;
             default:
