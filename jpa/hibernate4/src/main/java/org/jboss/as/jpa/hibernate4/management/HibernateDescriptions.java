@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jpa.hibernate4.management;
 
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -44,6 +46,10 @@ public class HibernateDescriptions {
     static final String RESOURCE_NAME = HibernateDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     private HibernateDescriptions() {
+    }
+
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, HibernateDescriptions.class.getClassLoader(), true, true);
     }
 
     static ModelNode describeTopLevelAttributes(Locale locale) {

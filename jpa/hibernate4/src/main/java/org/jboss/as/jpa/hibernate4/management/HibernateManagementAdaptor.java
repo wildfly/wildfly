@@ -23,6 +23,7 @@
 package org.jboss.as.jpa.hibernate4.management;
 
 import org.hibernate.stat.Statistics;
+import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -34,6 +35,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
+import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
@@ -98,24 +100,15 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
         registerStatisticOperations(jpaHibernateRegistration);
 
-        // setup 2lc statistics
-//        DescriptionProvider secondLevelCacheDescriptions = new DescriptionProvider() {
+        jpaHibernateRegistration.registerSubModel(SecondLevelCacheResourceDefinition.INSTANCE);
 //
-//            @Override
-//            public ModelNode getModelDescription(Locale locale) {
-//                // get description/type
-//                return HibernateDescriptions.describeSecondLevelCacheAttributes(locale);
-//            }
-//        };
+// TODO:  handle other stats
 
+    }
 
-//        final ManagementResourceRegistration secondLevelCacheRegistration =
-//            jpaHibernateRegistration.registerSubModel(PathElement.pathElement("cache"), secondLevelCacheDescriptions);
-
-//        registerSecondLevelCacheAttributes(secondLevelCacheRegistration);
-//
-// TODO:  handle 2lc and other stats
-
+    @Override
+    public Resource createManagementResource(String persistenceUnitName, PersistenceUnitService persistenceUnitService) {
+        return new HibernateStatisticsResource(persistenceUnitName, persistenceUnitService);
     }
 
     private void registerStatisticOperations(ManagementResourceRegistration jpaHibernateRegistration) {
@@ -484,12 +477,12 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
         return PROVIDER_LABEL;
     }
 
-    abstract static class AbstractMetricsHandler implements OperationStepHandler {
+    abstract static class AbstractMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         abstract void handle(ModelNode response, String name, Statistics stats, OperationContext context);
 
         @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
 
             final Resource jpa = context.getRootResource().navigate(address.subAddress(0, address.size() - 1));
@@ -497,17 +490,10 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
             final ModelNode node = jpa.requireChild(address.getLastElement()).getModel();
             final String puname = node.require("scoped-unit-name").asString();
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(final OperationContext context, final ModelNode operation) throws
-                    OperationFailedException {
-                    Statistics stats = ManagementUtility.getStatistics(context, puname);
-                    if (stats != null) {
-                        handle(context.getResult(), address.getLastElement().getValue(), stats, context);
-                    }
-                    context.completeStep();
-                }
-            }, OperationContext.Stage.RUNTIME);
+            Statistics stats = ManagementUtility.getStatistics(context, puname);
+            if (stats != null) {
+                handle(context.getResult(), address.getLastElement().getValue(), stats, context);
+            }
             context.completeStep();
         }
     }

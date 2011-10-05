@@ -45,12 +45,23 @@ public class ManagementUtility {
         if (controller != null) {
             // get the persistence unit service that represents the deployed persistence unit
             PersistenceUnitService persistenceUnitService = (PersistenceUnitService) controller.getValue();
+            stats = getStatistics(persistenceUnitService);
+        }
+        return stats;
+    }
+
+    public static Statistics getStatistics(final PersistenceUnitService persistenceUnitService) {
+        Statistics stats = null;
+        if (persistenceUnitService != null) {
+            // get the persistence unit service that represents the deployed persistence unit
             EntityManagerFactory entityManagerFactory = persistenceUnitService.getEntityManagerFactory();
-            // TODO:  with JPA 2.1, if unwrap is added to EMF, change cast to "entityManagerFactory.unwrap(HibernateEntityManagerFactory.class)"
-            HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
-            SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
-            if (sessionFactory != null) {
-                stats = sessionFactory.getStatistics();
+            if (entityManagerFactory != null) {
+                // TODO:  with JPA 2.1, if unwrap is added to EMF, change cast to "entityManagerFactory.unwrap(HibernateEntityManagerFactory.class)"
+                HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
+                SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
+                if (sessionFactory != null) {
+                    stats = sessionFactory.getStatistics();
+                }
             }
         }
         return stats;

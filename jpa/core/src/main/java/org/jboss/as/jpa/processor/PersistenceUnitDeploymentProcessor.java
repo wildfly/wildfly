@@ -22,8 +22,26 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.persistence.ValidationMode;
+import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceProviderResolverHolder;
+import javax.sql.DataSource;
+import javax.validation.ValidatorFactory;
+
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -38,6 +56,7 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.util.ManagementUtil;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -46,6 +65,7 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -69,21 +89,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
-
-import javax.persistence.ValidationMode;
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceProviderResolverHolder;
-import javax.sql.DataSource;
-import javax.validation.ValidatorFactory;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Handle the installation of the Persistence Unit service
@@ -318,7 +323,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                                 .install();
 
                         JPA_LOGGER.tracef("added PersistenceUnitService for '%s'.  PU is ready for injector action.", puServiceName);
-                        addManagementConsole(deploymentUnit, pu, adaptor);
+                        addManagementConsole(deploymentUnit, pu, service, adaptor);
 
                     } catch (ServiceRegistryException e) {
                         throw MESSAGES.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
@@ -514,16 +519,44 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
         }
     }
 
-    private void addManagementConsole(final DeploymentUnit deploymentUnit, final PersistenceUnitMetadata pu, final PersistenceProviderAdaptor adaptor) {
+    private void addManagementConsole(final DeploymentUnit deploymentUnit, final PersistenceUnitMetadata pu,
+                                      final PersistenceUnitService persistenceUnitService, final PersistenceProviderAdaptor adaptor) {
         ManagementAdaptor managementAdaptor = adaptor.getManagementAdaptor();
         if (managementAdaptor != null) {
             final String providerLabel = managementAdaptor.getIdentificationLabel();
             final String scopedPersistenceUnitName = pu.getScopedPersistenceUnitName();
             // path to management data will be: PROVIDER_LABEL/pu/ScopedPersistenceUnitName
-            final ModelNode node = deploymentUnit.getDeploymentSubsystemModel("jpa");
-            ModelNode perPuNode = deploymentUnit.createDeploymentSubModel("jpa", PathElement.pathElement(providerLabel,
-                ManagementUtil.filterScopedPuNameForManagement(scopedPersistenceUnitName)));
+//            final ModelNode node = deploymentUnit.getDeploymentSubsystemModel("jpa");
+//            ModelNode perPuNode = deploymentUnit.createDeploymentSubModel("jpa", PathElement.pathElement(providerLabel,
+//                ManagementUtil.filterScopedPuNameForManagement(scopedPersistenceUnitName)));
+//            perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
+            final String filteredPersistenceUnitName = ManagementUtil.filterScopedPuNameForManagement(scopedPersistenceUnitName);
+            Resource providerResource = managementAdaptor.createManagementResource(filteredPersistenceUnitName, persistenceUnitService);
+            ModelNode perPuNode = providerResource.getModel();
             perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
+            // TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API
+            AttachmentKey<Resource> key = AttachmentKey.create(Resource.class);
+            final Resource deploymentResource = deploymentUnit.getAttachment(key);
+            Resource subsystemResource;
+            synchronized (deploymentResource) {
+                subsystemResource = getOrCreateResource(deploymentResource, PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "jpa"));
+            }
+            synchronized (subsystemResource) {
+                subsystemResource.registerChild(PathElement.pathElement(providerLabel, filteredPersistenceUnitName), providerResource);
+            }
+        }
+    }
+
+    /** TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API */
+    private static Resource getOrCreateResource(final Resource parent, final PathElement element) {
+        synchronized(parent) {
+            if(parent.hasChild(element)) {
+                return parent.requireChild(element);
+            } else {
+                final Resource resource = Resource.Factory.create();
+                parent.registerChild(element, resource);
+                return resource;
+            }
         }
     }
 
