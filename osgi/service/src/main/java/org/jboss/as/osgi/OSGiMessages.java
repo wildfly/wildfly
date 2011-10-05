@@ -22,6 +22,8 @@
 
 package org.jboss.as.osgi;
 
+import java.io.File;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -29,8 +31,6 @@ import org.jboss.logging.Messages;
 import org.jboss.modules.Module;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.File;
 
 /**
  * Date: 27.06.2011
@@ -131,6 +131,14 @@ public interface OSGiMessages {
     IllegalArgumentException nullVar(String varName);
 
     /**
+     * A message indicating that the OSGi subsysem is not active
+     *
+     * @return the message.
+     */
+    @Message(value = "OSGi subsystem not active")
+    String osgiSubsystemNotActive();
+
+    /**
      * A message indicating the property already exists.
      *
      * @param name the property name.
@@ -139,4 +147,12 @@ public interface OSGiMessages {
      */
     @Message(value = "Property %s already exists")
     String propertyAlreadyExists(String name);
+
+    /**
+     * A message indicating that a service is not available.
+     *
+     * @return the message.
+     */
+    @Message(value = "Service not available")
+    String serviceNotAvailable();
 }

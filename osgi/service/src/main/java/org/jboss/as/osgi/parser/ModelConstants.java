@@ -23,23 +23,29 @@
 package org.jboss.as.osgi.parser;
 
 
-
 /**
  * An enumeration of the supported OSGi subsystem namespaces.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 13-Sep-2010
  */
 interface ModelConstants {
 
     String ACTIVATION = "activation";
+    String BUNDLE = "bundle";
     String CAPABILITY = "capability";
     String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
     String ENTRY = "entry";
     String FRAMEWORK_PROPERTY = "framework-property";
+    String ID = "id";
     String NAME = "name";
     String PID = "pid";
     String STARTLEVEL = "startlevel";
+    String STATE = "state";
+    String SYMBOLIC_NAME = "symbolic-name";
     String VALUE = "value";
+    String VERSION = "version";
+
 }
