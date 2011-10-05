@@ -76,7 +76,6 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
         model.get(Constants.ALIAS).set(operation.get(Constants.ALIAS));
         model.get(Constants.ACCESS_LOG).set(operation.get(Constants.ACCESS_LOG));
         model.get(Constants.REWRITE).set(operation.get(Constants.REWRITE));
-        model.get(Constants.SSO).set(operation.get(Constants.SSO));
         model.get(Constants.DEFAULT_WEB_MODULE).set(operation.get(Constants.DEFAULT_WEB_MODULE));
 
         final boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
@@ -103,10 +102,6 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
         if (operation.hasDefined(Constants.REWRITE)) {
             // there is a list of rule-n from the management logic
             service.setRewrite(operation.get(Constants.REWRITE).clone());
-        }
-        if (operation.hasDefined(Constants.SSO)) {
-            service.setSso(operation.get(Constants.SSO).clone());
-            // FIXME: If a cache container is defined, add the dependency and inject it
         }
 
         if (operation.hasDefined(Constants.DEFAULT_WEB_MODULE)) {
@@ -167,9 +162,6 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
         }
         if (subModel.hasDefined(Constants.REWRITE)) {
             operation.get(Constants.REWRITE).set(subModel.get(Constants.REWRITE));
-        }
-        if (subModel.hasDefined(Constants.SSO)) {
-            operation.get(Constants.SSO).set(subModel.get(Constants.SSO));
         }
         if (subModel.hasDefined(Constants.ENABLE_WELCOME_ROOT)) {
             operation.get(Constants.ENABLE_WELCOME_ROOT).set(subModel.get(Constants.ENABLE_WELCOME_ROOT));
