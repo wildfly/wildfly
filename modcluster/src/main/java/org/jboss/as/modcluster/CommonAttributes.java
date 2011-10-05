@@ -79,4 +79,5 @@ interface CommonAttributes {
     String VERIFY_CLIENT = "verify-client";
     String CA_CERTIFICATE_FILE = "ca-certificate-file";
     String CA_REVOCATION_URL = "ca-revocation-url";
+    String CONFIGURATION = "configuration";
 }
