@@ -33,6 +33,7 @@ import java.util.ResourceBundle;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
@@ -147,8 +148,11 @@ public class HibernateDescriptions {
         subsystem.get(ATTRIBUTES, "enabled", DESCRIPTION).set(bundle.getString(HibernateDescriptionConstants.CHECK_STATISTICS));
         subsystem.get(ATTRIBUTES, "enabled", TYPE).set(ModelType.BOOLEAN);
 
-        subsystem.get(OPERATIONS);
-        subsystem.get(CHILDREN).setEmptyObject();
+        subsystem.get(OPERATIONS);  // placeholder
+
+        subsystem.get(CHILDREN, "cache", DESCRIPTION).set(bundle.getString(HibernateDescriptionConstants.SECOND_LEVEL_CACHE));
+        subsystem.get(CHILDREN, "cache", MODEL_DESCRIPTION); // placeholder
+
         return subsystem;
     }
 
