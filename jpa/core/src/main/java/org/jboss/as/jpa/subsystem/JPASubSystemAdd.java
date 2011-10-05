@@ -69,14 +69,15 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
     }
 
     static final String OPERATION_NAME = ADD;
-    static final JPASubSystemAdd INSTANCE = new JPASubSystemAdd();
 
     private ParametersValidator modelValidator = new ParametersValidator();
     private ParametersValidator runtimeValidator = new ParametersValidator();
+    private final PersistenceUnitRegistryImpl persistenceUnitRegistry;
 
-    private JPASubSystemAdd() {
+    public JPASubSystemAdd(final PersistenceUnitRegistryImpl persistenceUnitRegistry) {
         modelValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, false, true));
         runtimeValidator.registerValidator(CommonAttributes.DEFAULT_DATASOURCE, new StringLengthValidator(0, Integer.MAX_VALUE, false, false));
+        this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
 
 
@@ -109,7 +110,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 // handles deploying a persistence provider
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENCE_PROVIDER, new PersistenceProviderProcessor());
                 // handles pu deployment (starts pu service)
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor(persistenceUnitRegistry));
             }
         }, OperationContext.Stage.RUNTIME);
 

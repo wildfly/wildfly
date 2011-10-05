@@ -34,9 +34,9 @@ import org.jboss.as.controller.registry.Resource;
  */
 public interface ManagementAdaptor {
 
-    void register(final ManagementResourceRegistration jpaSubsystemDeployments);
+    void register(final ManagementResourceRegistration jpaSubsystemDeployments, final PersistenceUnitServiceRegistry persistenceUnitRegistry);
 
-    Resource createManagementResource(final String persistenceUnitName, final PersistenceUnitService persistenceUnitService);
+    Resource createPersistenceUnitResource(final String persistenceUnitName);
 
     /**
      * Get the short identification string that represents the management adaptor (e.g Hibernate)

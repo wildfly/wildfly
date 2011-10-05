@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.hibernate4.management;
 
+import java.util.Locale;
+
 import org.hibernate.stat.Statistics;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -35,10 +37,8 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
-import org.jboss.as.jpa.spi.PersistenceUnitService;
+import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
 
 /**
  * Contains management support for Hibernate
@@ -80,8 +80,12 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
     public static final String OPERATION_CLOSE_STATEMENT_COUNT = "close-statement-count";
     public static final String OPERATION_OPTIMISTIC_FAILURE_COUNT = "optimistic-failure-count";
 
+    private PersistenceUnitServiceRegistry persistenceUnitRegistry;
+
     @Override
-    public void register(final ManagementResourceRegistration jpaSubsystemDeployments) {
+    public void register(final ManagementResourceRegistration jpaSubsystemDeployments, PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+
+        this.persistenceUnitRegistry = persistenceUnitRegistry;
 
         // setup top level statistics
         DescriptionProvider topLevelDescriptions = new DescriptionProvider() {
@@ -100,15 +104,15 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
         registerStatisticOperations(jpaHibernateRegistration);
 
-        jpaHibernateRegistration.registerSubModel(SecondLevelCacheResourceDefinition.INSTANCE);
+        jpaHibernateRegistration.registerSubModel(new SecondLevelCacheResourceDefinition(persistenceUnitRegistry));
 //
 // TODO:  handle other stats
 
     }
 
     @Override
-    public Resource createManagementResource(String persistenceUnitName, PersistenceUnitService persistenceUnitService) {
-        return new HibernateStatisticsResource(persistenceUnitName, persistenceUnitService);
+    public Resource createPersistenceUnitResource(String persistenceUnitName) {
+        return new HibernateStatisticsResource(persistenceUnitName, persistenceUnitRegistry);
     }
 
     private void registerStatisticOperations(ManagementResourceRegistration jpaHibernateRegistration) {
@@ -460,13 +464,9 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
                     response.set(stats.isStatisticsEnabled());
                 }
             },
-            StatisticsEnabledWriteHandler.INSTANCE,
+            new StatisticsEnabledWriteHandler(persistenceUnitRegistry),
             AttributeAccess.Storage.RUNTIME
         );
-
-    }
-
-    private void registerSecondLevelCacheAttributes(ManagementResourceRegistration extendedEntityRegistration) {
 
     }
 
@@ -477,20 +477,15 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
         return PROVIDER_LABEL;
     }
 
-    abstract static class AbstractMetricsHandler extends AbstractRuntimeOnlyHandler {
+    abstract class AbstractMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         abstract void handle(ModelNode response, String name, Statistics stats, OperationContext context);
 
         @Override
         protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-
-            final Resource jpa = context.getRootResource().navigate(address.subAddress(0, address.size() - 1));
-            final ModelNode subModel = jpa.getModel();
-
-            final ModelNode node = jpa.requireChild(address.getLastElement()).getModel();
-            final String puname = node.require("scoped-unit-name").asString();
-            Statistics stats = ManagementUtility.getStatistics(context, puname);
+            final String puResourceName = address.getLastElement().getValue();
+            Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);
             if (stats != null) {
                 handle(context.getResult(), address.getLastElement().getValue(), stats, context);
             }
