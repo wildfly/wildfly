@@ -34,11 +34,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Resource representing a HornetQ server.
+ * Resource representing a JPA PersistenceUnit (from a persistence.xml) deployment.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -177,8 +178,16 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     }
 
     private boolean hasCacheRegion(PathElement element) {
+        boolean result = false;
+        final PersistenceUnitService puService = persistenceUnitRegistry.getPersistenceUnitService(puName);
         final Statistics stats = getStatistics();
-        return stats == null ? false : stats.getSecondLevelCacheStatistics(element.getValue()) != null;
+        if (stats != null && puService != null) {
+            final String scopedPUName = puService.getScopedPersistenceUnitName();
+            final String unqualifiedRegionName = element.getValue();
+            final String qualifiedRegionName = scopedPUName + "." + unqualifiedRegionName;
+            result = stats.getSecondLevelCacheStatistics(qualifiedRegionName) != null;
+        }
+        return result;
     }
 
     private Set<String> getCacheRegionNames() {
@@ -187,8 +196,16 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
             return Collections.emptySet();
         } else {
             Set<String> result = new HashSet<String>();
-            for (String region : stats.getSecondLevelCacheRegionNames()) {
-                result.add(region);
+            String[] cacheRegionNames = stats.getSecondLevelCacheRegionNames();
+            if (cacheRegionNames != null) {
+                for (String region : cacheRegionNames) {
+
+                    // example regionName = "jpa_SecondLevelCacheTestCase.jar#mypc.org.jboss.as.testsuite.integration.jpa.hibernate.Employee"
+                    // remove the scoped PU name plus one for '.' the separator character added to it.
+                    // and replace period with underscore.  Filtered region name will be "org_jboss_as_testsuite_integration_jpa_hibernate_Employee"
+                    int stripUpTo = puName.length() + 1;
+                    result.add(region.substring(stripUpTo));
+                }
             }
             return result;
         }

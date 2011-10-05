@@ -62,6 +62,7 @@ public class SecondLevelCacheTestCase {
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "<property name=\"hibernate.generate_statistics\" value=\"true\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
             // second pu with 2lc
@@ -73,6 +74,7 @@ public class SecondLevelCacheTestCase {
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "<property name=\"hibernate.generate_statistics\" value=\"true\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
             // 3rd pu with 2lc enabled
@@ -84,6 +86,7 @@ public class SecondLevelCacheTestCase {
             "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
             "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
             "<property name=\"hibernate.cache.use_second_level_cache\" value=\"true\"/>" +
+            "<property name=\"hibernate.generate_statistics\" value=\"true\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";

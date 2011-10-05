@@ -22,6 +22,14 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
+
 import org.jboss.as.jpa.spi.JtaManager;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
@@ -33,19 +41,16 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.Map;
-import java.util.ServiceLoader;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
 /**
  * Loads persistence provider adaptors
  *
  * @author Scott Marlow
  */
 public class PersistenceProviderAdaptorLoader {
-    private static PersistenceProviderAdaptor noopAdaptor = new PersistenceProviderAdaptor() {
+    // need to keep an cache since the Hibernate4 adaptor has "management" state.
+    private static final Map<String, PersistenceProviderAdaptor> adaptorMap = Collections.synchronizedMap(new HashMap<String, PersistenceProviderAdaptor>());
+
+    private static final PersistenceProviderAdaptor noopAdaptor = new PersistenceProviderAdaptor() {
 
         @Override
         public void injectJtaManager(JtaManager jtaManager) {
@@ -89,21 +94,24 @@ public class PersistenceProviderAdaptorLoader {
             return noopAdaptor;
         }
 
-        PersistenceProviderAdaptor persistenceProviderAdaptor=null;
+        PersistenceProviderAdaptor persistenceProviderAdaptor = adaptorMap.get(adapterModule);
 
-        Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(adapterModule));
-        final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
-            module.loadService(PersistenceProviderAdaptor.class);
-        if (serviceLoader != null) {
-            for (PersistenceProviderAdaptor adaptor : serviceLoader) {
-                if (persistenceProviderAdaptor != null) {
-                    throw MESSAGES.multipleAdapters(adapterModule);
+        if (persistenceProviderAdaptor == null) {
+            Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(adapterModule));
+            final ServiceLoader<PersistenceProviderAdaptor> serviceLoader =
+                module.loadService(PersistenceProviderAdaptor.class);
+            if (serviceLoader != null) {
+                for (PersistenceProviderAdaptor adaptor : serviceLoader) {
+                    if (persistenceProviderAdaptor != null) {
+                        throw MESSAGES.multipleAdapters(adapterModule);
+                    }
+                    persistenceProviderAdaptor = adaptor;
+                    JPA_LOGGER.debugf("loaded persistence provider adapter %s", adapterModule);
                 }
-                persistenceProviderAdaptor = adaptor;
-                JPA_LOGGER.debugf("loaded persistence provider adapter %s", adapterModule);
-            }
-            if (persistenceProviderAdaptor != null) {
-                persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
+                if (persistenceProviderAdaptor != null) {
+                    persistenceProviderAdaptor.injectJtaManager(JtaManagerImpl.getInstance());
+                    adaptorMap.put(adapterModule, persistenceProviderAdaptor);
+                }
             }
         }
         return persistenceProviderAdaptor;

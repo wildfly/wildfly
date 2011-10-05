@@ -27,7 +27,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
@@ -56,14 +55,15 @@ public class SecondLevelCacheResourceDefinition extends SimpleResourceDefinition
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    public static final SimpleAttributeDefinition ELEMENT_COUNT_ON_DISK = new SimpleAttributeDefinitionBuilder("element-count-on-disk", ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+    // size in memory and element count on disk is not supported by org.hibernate.cache.infinispan.impl.BaseRegion
+    //public static final SimpleAttributeDefinition ELEMENT_COUNT_ON_DISK = new SimpleAttributeDefinitionBuilder("element-count-on-disk", ModelType.LONG)
+    //        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+    //        .build();
 
-    public static final SimpleAttributeDefinition SIZE_IN_MEMORY = new SimpleAttributeDefinitionBuilder("size-in-memory", ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .setMeasurementUnit(MeasurementUnit.BYTES)
-            .build();
+    //public static final SimpleAttributeDefinition SIZE_IN_MEMORY = new SimpleAttributeDefinitionBuilder("size-in-memory", ModelType.LONG)
+    //        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+    //        .setMeasurementUnit(MeasurementUnit.BYTES)
+    //        .build();
 
     private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
 
@@ -79,7 +79,7 @@ public class SecondLevelCacheResourceDefinition extends SimpleResourceDefinition
         resourceRegistration.registerMetric(MISS_COUNT, SecondLevelCacheMetricsHandler.getMissCount(persistenceUnitRegistry));
         resourceRegistration.registerMetric(PUT_COUNT, SecondLevelCacheMetricsHandler.getPutCount(persistenceUnitRegistry));
         resourceRegistration.registerMetric(ELEMENT_COUNT_IN_MEMORY, SecondLevelCacheMetricsHandler.getElementCountInMemory(persistenceUnitRegistry));
-        resourceRegistration.registerMetric(ELEMENT_COUNT_ON_DISK, SecondLevelCacheMetricsHandler.getElementCountOnDisk(persistenceUnitRegistry));
-        resourceRegistration.registerMetric(SIZE_IN_MEMORY, SecondLevelCacheMetricsHandler.getSizeInMemory(persistenceUnitRegistry));
+        // resourceRegistration.registerMetric(ELEMENT_COUNT_ON_DISK, SecondLevelCacheMetricsHandler.getElementCountOnDisk(persistenceUnitRegistry));
+        // resourceRegistration.registerMetric(SIZE_IN_MEMORY, SecondLevelCacheMetricsHandler.getSizeInMemory(persistenceUnitRegistry));
     }
 }

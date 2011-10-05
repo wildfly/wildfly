@@ -26,9 +26,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
-import org.jboss.as.jpa.util.ManagementUtil;
+import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 
@@ -56,7 +55,7 @@ public class PersistenceUnitRegistryImpl implements PersistenceUnitServiceRegist
 
         @Override
         public void inject(PersistenceUnitService value) throws InjectionException {
-            filteredPersistenceUnitName = ManagementUtil.filterScopedPuNameForManagement(value.getScopedPersistenceUnitName());
+            filteredPersistenceUnitName = value.getScopedPersistenceUnitName();
             registry.put(filteredPersistenceUnitName, value);
         }
 

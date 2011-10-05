@@ -59,7 +59,7 @@ public abstract class SecondLevelCacheMetricsHandler extends AbstractRuntimeOnly
     private SecondLevelCacheStatistics getSecondLevelCacheStatistics(ModelNode operation) {
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         final String puResourceName = address.getElement(address.size() - 2).getValue();
-        final String regionName = address.getLastElement().getValue();
+        final String regionName = puResourceName + "." + address.getLastElement().getValue();
         Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);
         return stats == null ? null : stats.getSecondLevelCacheStatistics(regionName);
     }
@@ -104,26 +104,5 @@ public abstract class SecondLevelCacheMetricsHandler extends AbstractRuntimeOnly
             }
         };
     }
-
-    static final SecondLevelCacheMetricsHandler getElementCountOnDisk(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
-        return new SecondLevelCacheMetricsHandler(persistenceUnitRegistry) {
-            @Override
-            protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
-                long count = statistics.getElementCountOnDisk();
-                context.getResult().set(count);
-            }
-        };
-    }
-
-    static final SecondLevelCacheMetricsHandler getSizeInMemory(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
-        return new SecondLevelCacheMetricsHandler(persistenceUnitRegistry) {
-            @Override
-            protected void handle(SecondLevelCacheStatistics statistics, OperationContext context, String attributeName) {
-                long size = statistics.getSizeInMemory();
-                context.getResult().set(size);
-            }
-        };
-    }
-
 
 }
