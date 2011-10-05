@@ -21,19 +21,17 @@
  */
 package org.jboss.as.appclient.service;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import org.jboss.msc.value.InjectedValue;
 
 
 /**
@@ -47,35 +45,33 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("appClientStart");
 
+    private final InjectedValue<ApplicationClientDeploymentService> applicationClientDeploymentServiceInjectedValue = new InjectedValue<ApplicationClientDeploymentService>();
     private final Method mainMethod;
-    private final ServiceName topLevelDeploymentName;
     private final String[] parameters;
 
     private Thread thread;
 
     private final Logger logger = Logger.getLogger(ApplicationClientStartService.class);
 
-    public ApplicationClientStartService(final Method mainMethod, final ServiceName topLevelDeploymentName, final String[] parameters) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters) {
         this.mainMethod = mainMethod;
-        this.topLevelDeploymentName = topLevelDeploymentName;
         this.parameters = parameters;
     }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        final DeploymentCompleteListener listener = new DeploymentCompleteListener();
-        final ServiceController<?> deployment = context.getController().getServiceContainer().getRequiredService(topLevelDeploymentName);
-        deployment.addListener(ServiceListener.Inheritance.ALL, listener);
 
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    listener.waitForDeploymentStart();
+                    applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
                     mainMethod.invoke(null,new Object[] { parameters});
                 } catch (InvocationTargetException e) {
                     logger.error(e);
                 } catch (IllegalAccessException e) {
+                    logger.error(e);
+                } catch (InterruptedException e) {
                     logger.error(e);
                 } finally {
                     CurrentServiceContainer.getServiceContainer().shutdown();
@@ -96,38 +92,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         return this;
     }
 
-
-    private final class DeploymentCompleteListener extends AbstractServiceListener {
-
-        private int outstanding = 0;
-
-        @Override
-        public synchronized void transition(final ServiceController serviceController, final ServiceController.Transition transition) {
-            if (transition.entersRestState()) {
-                outstanding--;
-                if (outstanding == 0) {
-                    notifyAll();
-                }
-            } else if (transition.leavesRestState()) {
-                outstanding++;
-            }
-        }
-
-        @Override
-        public synchronized void listenerAdded(final ServiceController serviceController) {
-            if (!serviceController.getSubstate().isRestState()) {
-                outstanding++;
-            }
-        }
-
-        public synchronized void waitForDeploymentStart() {
-            while (outstanding > 0) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+    public InjectedValue<ApplicationClientDeploymentService> getApplicationClientDeploymentServiceInjectedValue() {
+        return applicationClientDeploymentServiceInjectedValue;
     }
 }

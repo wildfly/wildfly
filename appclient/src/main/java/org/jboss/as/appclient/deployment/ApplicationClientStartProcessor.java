@@ -21,6 +21,9 @@
  */
 package org.jboss.as.appclient.deployment;
 
+import java.lang.reflect.Method;
+
+import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.appclient.service.ApplicationClientStartService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -29,8 +32,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-
-import java.lang.reflect.Method;
 
 /**
  * Processor that starts an application client deployment
@@ -64,9 +65,10 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         if (method == null) {
             throw new RuntimeException("Could not start app client " + deploymentUnit.getName() + " as no main main was found on main class " + mainClass);
         }
-        final ApplicationClientStartService startService = new ApplicationClientStartService(method, topLevel.getServiceName(), parameters);
+        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters);
         phaseContext.getServiceTarget()
                 .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME), startService)
+                .addDependency(ApplicationClientDeploymentService.SERVICE_NAME, ApplicationClientDeploymentService.class,  startService.getApplicationClientDeploymentServiceInjectedValue())
                 .install();
     }
 

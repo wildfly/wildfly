@@ -22,6 +22,21 @@
 
 package org.jboss.as.appclient.service;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
@@ -37,18 +52,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.Executors;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-
 /**
  * Service responsible for deploying the application client that was specified on the command line
  *
@@ -57,11 +60,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 public class ApplicationClientDeploymentService implements Service<ApplicationClientDeploymentService> {
 
 
-    public static final ServiceName SERVICE_NAME = ServiceName.of("appClientDeploymentService");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("appClientDeploymentService");
 
     private final File path;
     private ModelControllerClient controllerClient;
     private final InjectedValue<ModelController> controllerValue = new InjectedValue<ModelController>();
+    private final CountDownLatch deploymentCompleteLatch = new CountDownLatch(1);
 
 
     public ApplicationClientDeploymentService(final File path) {
@@ -129,7 +133,11 @@ public class ApplicationClientDeploymentService implements Service<ApplicationCl
         @Override
         public void run() {
             try {
-                controllerClient.execute(deploymentOp);
+                ModelNode result = controllerClient.execute(deploymentOp);
+                if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
+                    System.exit(1);
+                }
+                deploymentCompleteLatch.countDown();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -139,5 +147,9 @@ public class ApplicationClientDeploymentService implements Service<ApplicationCl
 
     public InjectedValue<ModelController> getControllerValue() {
         return controllerValue;
+    }
+
+    public CountDownLatch getDeploymentCompleteLatch() {
+        return deploymentCompleteLatch;
     }
 }
