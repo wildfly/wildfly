@@ -1405,6 +1405,26 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.ws.native</groupId>
+            <artifactId>jbossws-native-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.native</groupId>
+            <artifactId>jbossws-native-factories</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.native</groupId>
+            <artifactId>jbossws-native-services</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jbossxb</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
         </dependency>

@@ -390,6 +390,8 @@ public final class ASHelper {
         final boolean hasWebservicesMD = unit.hasAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
         final boolean hasJBossWebMD = getJBossWebMetaData(unit) != null;
 
+        // TODO: at least also check for jaxrpc mapping file element in WebservicesMD as a JAXWS deployment is also allowed to
+        // have webservices.xml despite that being very uncommon.
         if (hasWebservicesMD && hasJBossWebMD) {
             return getJaxrpcServlets(unit).size() > 0;
         }

@@ -38,6 +38,8 @@ public class ModuleClassLoaderProvider extends ClassLoaderProvider {
 
     private static final ModuleIdentifier ASIL = ModuleIdentifier.create("org.jboss.as.webservices.server.integration");
     private WeakReference<ClassLoader> integrationClassLoader;
+    private static final ModuleIdentifier JAXRPC_ASIL = ModuleIdentifier.create("org.jboss.as.webservices.server.jaxrpc-integration");
+    private WeakReference<ClassLoader> jaxrpcIntegrationClassLoader;
 
     @Override
     public ClassLoader getWebServiceSubsystemClassLoader() {
@@ -55,6 +57,19 @@ public class ModuleClassLoaderProvider extends ClassLoaderProvider {
             }
         }
         return integrationClassLoader.get();
+    }
+
+    @Override
+    public ClassLoader getServerJAXRPCIntegrationClassLoader() {
+        if (jaxrpcIntegrationClassLoader == null || jaxrpcIntegrationClassLoader.get() == null) {
+            try {
+                Module module = Module.getBootModuleLoader().loadModule(JAXRPC_ASIL);
+                jaxrpcIntegrationClassLoader = new WeakReference<ClassLoader>(module.getClassLoader());
+            } catch (ModuleLoadException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return jaxrpcIntegrationClassLoader.get();
     }
 
     public static void register() {
