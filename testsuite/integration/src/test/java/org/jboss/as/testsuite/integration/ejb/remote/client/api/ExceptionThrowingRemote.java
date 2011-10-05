@@ -28,4 +28,6 @@ package org.jboss.as.testsuite.integration.ejb.remote.client.api;
 public interface ExceptionThrowingRemote {
 
     void alwaysThrowApplicationException(final String state) throws StatefulApplicationException;
+
+    void alwaysThrowSystemException(final String state);
 }

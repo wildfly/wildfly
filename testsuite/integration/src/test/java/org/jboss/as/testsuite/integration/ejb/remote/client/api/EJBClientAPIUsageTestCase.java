@@ -52,6 +52,7 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
 
+import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
@@ -262,6 +263,23 @@ public class EJBClientAPIUsageTestCase {
             // expected
             logger.info("Received the expected exception", sae);
             Assert.assertEquals("Unexpected state in the application exception", exceptionState, sae.getState());
+        }
+    }
+
+    @Test
+    public void testSystemExceptionOnSLSBMethod() throws Exception {
+        final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, ExceptionThrowingBean.class.getSimpleName(), ExceptionThrowingRemote.class);
+        Assert.assertNotNull("Received a null proxy", exceptionThrowingBean);
+        final String exceptionState = "bafasfaj;l";
+        try {
+            exceptionThrowingBean.alwaysThrowSystemException(exceptionState);
+            Assert.fail("Expected a " + EJBException.class.getName() + " exception");
+        } catch (EJBException ejbe) {
+            // expected
+            logger.info("Received the expected exception", ejbe);
+            final Throwable cause = ejbe.getCause();
+            Assert.assertTrue("Unexpected cause in EJBException", cause instanceof RuntimeException);
+            Assert.assertEquals("Unexpected state in the system exception", exceptionState, cause.getMessage());
         }
     }
 }

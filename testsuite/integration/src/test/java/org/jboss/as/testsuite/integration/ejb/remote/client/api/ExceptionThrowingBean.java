@@ -36,4 +36,9 @@ public class ExceptionThrowingBean implements ExceptionThrowingRemote {
     public void alwaysThrowApplicationException(String state) throws StatefulApplicationException {
         throw new StatefulApplicationException(state);
     }
+
+    @Override
+    public void alwaysThrowSystemException(String state) {
+        throw new RuntimeException(state);
+    }
 }
