@@ -1,9 +1,9 @@
 package org.jboss.as.modcluster;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
 
 /**
  * Mod_cluster description providers.
@@ -16,6 +16,12 @@ public class ModClusterSubsystemDescriptionProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return ModClusterSubsystemDescriptions.getSubsystemDescription(locale);
+        }
+    };
+    public static DescriptionProvider SSL = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return ModClusterSubsystemDescriptions.getSSLDescription(locale);
         }
     };
 }
