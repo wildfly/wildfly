@@ -44,6 +44,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Base class for {@link org.jboss.as.controller.OperationStepHandler} implementations for handlers that interact
@@ -241,7 +242,8 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      * @return the control object
      */
     protected final T getHornetQComponentControl(final OperationContext context, final ModelNode operation, final boolean forWrite) {
-        ServiceController<?> hqService = context.getServiceRegistry(forWrite).getService(MessagingServices.JBOSS_MESSAGING);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = context.getServiceRegistry(forWrite).getService(hqServiceName);
         HornetQServer server = HornetQServer.class.cast(hqService.getValue());
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         return getHornetQComponentControl(server, address);

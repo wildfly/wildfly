@@ -43,6 +43,7 @@ import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -101,7 +102,8 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
         }
         else {
             ServiceRegistry registry = context.getServiceRegistry(true);
-            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService == null) {
                 // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
                 return false;
@@ -129,7 +131,8 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
 
         if (runtimeAttributes.containsKey(attributeName)) {
             ServiceRegistry registry = context.getServiceRegistry(true);
-            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService != null && hqService.getState() == ServiceController.State.UP) {
                 // Create and execute a write-attribute operation that uses the valueToRestore
                 ModelNode revertOp = operation.clone();

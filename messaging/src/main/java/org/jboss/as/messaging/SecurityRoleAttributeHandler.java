@@ -39,6 +39,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Emanuel Muckenhuber
@@ -65,7 +66,7 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
                                            ModelNode newValue, ModelNode currentValue,
                                            HandbackHolder<Set<Role>> handbackHolder) throws OperationFailedException {
 
-        final HornetQServer server = getServer(context);
+        final HornetQServer server = getServer(context, operation);
         if(server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String match = address.getElement(address.size() - 2).getValue();
@@ -90,7 +91,7 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Set<Role> handback) throws OperationFailedException {
         if (handback != null) {
-            final HornetQServer server = getServer(context);
+            final HornetQServer server = getServer(context, operation);
             if(server != null) {
                 final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
                 final String match = address.getElement(address.size() - 2).getValue();
@@ -99,8 +100,9 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
         }
     }
 
-    static HornetQServer getServer(final OperationContext context) {
-        final ServiceController<?> controller = context.getServiceRegistry(true).getService(MessagingServices.JBOSS_MESSAGING);
+    static HornetQServer getServer(final OperationContext context, ModelNode operation) {
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceController<?> controller = context.getServiceRegistry(true).getService(hqServiceName);
         if(controller != null) {
             return HornetQServer.class.cast(controller.getValue());
         }

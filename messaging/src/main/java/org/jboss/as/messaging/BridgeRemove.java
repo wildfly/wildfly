@@ -34,6 +34,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -54,7 +55,8 @@ public class BridgeRemove extends AbstractRemoveStepHandler implements Descripti
 
         final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ServiceRegistry registry = context.getServiceRegistry(true);
-        final ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceController<?> hqService = registry.getService(hqServiceName);
         if (hqService != null && hqService.getState() == ServiceController.State.UP) {
 
             HornetQServer server = HornetQServer.class.cast(hqService.getValue());
@@ -73,7 +75,8 @@ public class BridgeRemove extends AbstractRemoveStepHandler implements Descripti
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
-        final ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceController<?> hqService = registry.getService(hqServiceName);
         if (hqService != null && hqService.getState() == ServiceController.State.UP) {
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();

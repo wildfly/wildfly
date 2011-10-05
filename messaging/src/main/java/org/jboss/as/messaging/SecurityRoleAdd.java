@@ -37,6 +37,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 import java.util.Locale;
 import java.util.Set;
@@ -73,7 +74,7 @@ class SecurityRoleAdd implements OperationStepHandler, DescriptionProvider {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-                    final HornetQServer server = getServer(context);
+                    final HornetQServer server = getServer(context, operation);
                     if(server != null) {
                         final String match = address.getElement(address.size() - 2).getValue();
                         final String role = address.getLastElement().getValue();
@@ -116,8 +117,9 @@ class SecurityRoleAdd implements OperationStepHandler, DescriptionProvider {
         return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
     }
 
-    static HornetQServer getServer(final OperationContext context) {
-        final ServiceController<?> controller = context.getServiceRegistry(true).getService(MessagingServices.JBOSS_MESSAGING);
+    static HornetQServer getServer(final OperationContext context, ModelNode operation) {
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceController<?> controller = context.getServiceRegistry(true).getService(hqServiceName);
         if(controller != null) {
             return HornetQServer.class.cast(controller.getValue());
         }

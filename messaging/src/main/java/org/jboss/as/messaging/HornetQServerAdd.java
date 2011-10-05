@@ -90,7 +90,6 @@ import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -111,13 +110,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.jms.JMSService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -137,7 +135,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
     private static final String DEFAULT_PATH = "messaging";
     private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
-    static final ServiceName PATH_BASE = MessagingServices.JBOSS_MESSAGING.append("paths");
+    static final String PATH_BASE = "paths";
 
     static final String DEFAULT_BINDINGS_DIR = "bindings";
     static final String DEFAULT_JOURNAL_DIR = "journal";
@@ -204,21 +202,19 @@ class HornetQServerAdd implements OperationStepHandler {
                 final Configuration configuration = transformConfig(serverName, model);
 
                 // Create path services
-                final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, model.get(PATH, BINDINGS_DIRECTORY),
-                        serviceTarget, newControllers, verificationHandler);
-                final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, model.get(PATH, JOURNAL_DIRECTORY),
-                        serviceTarget, newControllers, verificationHandler);
-                final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, model.get(PATH, LARGE_MESSAGES_DIRECTORY),
-                        serviceTarget, newControllers, verificationHandler);
-                final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, model.get(PATH, PAGING_DIRECTORY),
-                        serviceTarget, newControllers, verificationHandler);
+
+                final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, model.get(PATH, BINDINGS_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
+                final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, model.get(PATH, JOURNAL_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
+                final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, model.get(PATH, LARGE_MESSAGES_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
+                final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, model.get(PATH, PAGING_DIRECTORY), serviceTarget, operation, newControllers, verificationHandler);
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService();
                 hqService.setConfiguration(configuration);
 
                 // Add the HornetQ Service
-                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(MessagingServices.JBOSS_MESSAGING, hqService)
+                ServiceName hqServiceName = MessagingServices.getHornetQServiceName(serverName);
+                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(hqServiceName, hqService)
                         .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
 
                 serviceBuilder.addDependency(bindingsPath, String.class, hqService.getPathInjector(DEFAULT_BINDINGS_DIR));
@@ -242,14 +238,14 @@ class HornetQServerAdd implements OperationStepHandler {
                 if(broadcastGroupConfigurations != null) {
                     for(final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                         final String name = config.getName();
-                        final ServiceName groupBinding = GroupBindingService.BROADCAST.append(name);
+                        final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name);
                         serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector("broadcast" + name));
                     }
                 }
                 if(discoveryGroupConfigurations != null) {
                     for(final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                         final String name = config.getName();
-                        final ServiceName groupBinding = GroupBindingService.DISCOVERY.append(name);
+                        final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name);
                         serviceBuilder.addDependency(groupBinding, SocketBinding.class, hqService.getGroupBindingInjector("discovery" + name));
                     }
                 }
@@ -262,7 +258,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 resource.setHornetQServerServiceController(hqServerServiceController);
 
                 newControllers.add(hqServerServiceController);
-                newControllers.add(JMSService.addService(serviceTarget, verificationHandler));
+                newControllers.add(JMSService.addService(serviceTarget, hqServiceName, verificationHandler));
 
                 context.completeStep();
             }
@@ -423,18 +419,21 @@ class HornetQServerAdd implements OperationStepHandler {
     /**
      * Create a path service for a given target.
      *
+     *
      * @param name          the path service name
      * @param path          the detyped path element
      * @param serviceTarget the service target
+     * @param operation
      * @return the created service name
      */
-    static ServiceName createDirectoryService(final String name, final ModelNode path, final ServiceTarget serviceTarget,
-                                              final List<ServiceController<?>> newControllers, final ServiceListener listener) {
-        final ServiceName serviceName = PATH_BASE.append(name);
-        final String relativeTo = path.hasDefined(RELATIVE_TO) ? path.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
-        final String pathName = path.hasDefined(PATH) ? path.get(PATH).asString() : DEFAULT_PATH + name;
-        RelativePathService.addService(serviceName, pathName, relativeTo, serviceTarget, newControllers, listener);
-        return serviceName;
-    }
+   static ServiceName createDirectoryService(final String name, final ModelNode path, final ServiceTarget serviceTarget, ModelNode operation,
+                                               final List<ServiceController<?>> newControllers, final ServiceListener listener) {
+         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+         final ServiceName serviceName = hqServiceName.append(name);
+         final String relativeTo = path.hasDefined(RELATIVE_TO) ? path.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
+         final String pathName = path.hasDefined(PATH) ? path.get(PATH).asString() : DEFAULT_PATH + name;
+         RelativePathService.addService(serviceName, pathName, relativeTo, serviceTarget, newControllers, listener);
+         return serviceName;
+     }
 
 }

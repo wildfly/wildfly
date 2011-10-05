@@ -30,6 +30,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -47,10 +48,10 @@ public class JMSService implements Service<JMSServerManager> {
     private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<HornetQServer>();
     private JMSServerManager jmsServer;
 
-    public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
+    public static ServiceController<?> addService(final ServiceTarget target, ServiceName hqServiceName, final ServiceListener<Object>... listeners) {
         final JMSService service = new JMSService();
-        return target.addService(JMSServices.JMS_MANAGER, service)
-            .addDependency(MessagingServices.JBOSS_MESSAGING, HornetQServer.class, service.getHornetQServer())
+        return target.addService(JMSServices.getJmsManagerBaseServiceName(hqServiceName), service)
+            .addDependency(hqServiceName, HornetQServer.class, service.getHornetQServer())
             .addListener(listeners)
             .setInitialMode(Mode.ACTIVE)
             .install();

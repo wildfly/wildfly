@@ -35,6 +35,7 @@ import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -46,6 +47,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Handles operations and attribute reads supported by a HornetQ {@link org.hornetq.api.core.management.HornetQServerControl}.
@@ -117,7 +119,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final String operationName = operation.require(OP).asString();
-        final HornetQServerControl serverControl = getServerControl(context);
+        final HornetQServerControl serverControl = getServerControl(context, operation);
 
         try {
             if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
@@ -375,8 +377,9 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private HornetQServerControl getServerControl(final OperationContext context) {
-        ServiceController<?> hqService = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
+    private HornetQServerControl getServerControl(final OperationContext context, ModelNode operation) {
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return hqServer.getHornetQServerControl();
     }

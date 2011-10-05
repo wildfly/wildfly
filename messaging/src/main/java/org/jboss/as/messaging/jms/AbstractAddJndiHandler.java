@@ -36,6 +36,7 @@ import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -73,7 +74,9 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler, De
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    ServiceController<?> hqService = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
+
+                    final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+                    ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
                     if (hqService != null) {
                         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
                         String resourceName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
