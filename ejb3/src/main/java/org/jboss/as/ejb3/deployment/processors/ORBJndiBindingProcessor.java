@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jacorb.deployment;
+package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -27,6 +27,7 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jacorb.deployment.JacORBDeploymentMarker;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -48,13 +49,18 @@ import org.omg.CORBA.ORB;
  *
  * @author Stuart Douglas
  */
-public class JacORBJndiBindingProcessor implements DeploymentUnitProcessor{
+public class ORBJndiBindingProcessor implements DeploymentUnitProcessor{
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
 
         if(moduleDescription == null) {
+            return;
+        }
+
+        //do not bind if jacORB not present
+        if(!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
             return;
         }
 
@@ -75,8 +81,7 @@ public class JacORBJndiBindingProcessor implements DeploymentUnitProcessor{
     }
 
     /**
-     * Binds the java:comp/UserTransaction service and the java:comp/TransactionSynchronizationRegistry
-     *
+     * Binds java:comp/ORB
      * @param serviceTarget The service target
      * @param contextServiceName The service name of the context to bind to
      */

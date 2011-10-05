@@ -261,6 +261,7 @@ public enum Phase {
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3700;
     public static final int PARSE_EJB_REMOTE_CLIENT_CONTEXT             = 0x3900;
+    public static final int PARSE_JACORB                                = 0x3A00;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_EJB                            = 0x0000;
@@ -339,7 +340,7 @@ public enum Phase {
     public static final int POST_MODULE_LOCAL_HOME                      = 0x1E00;
     public static final int POST_MODULE_APPLICATION_CLIENT_MANIFEST     = 0x1F00;
     public static final int POST_MODULE_APPLICATION_CLIENT_ACTIVE       = 0x2000;
-    public static final int POST_MODULE_JACORB_BIND                     = 0x2100;
+    public static final int POST_MODULE_EJB_ORB_BIND                    = 0x2100;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
