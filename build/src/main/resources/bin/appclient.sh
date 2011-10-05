@@ -120,11 +120,14 @@ if $cygwin; then
     MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
 fi
 
+CLASSPATH="$CLASSPATH:$JBOSS_HOME/jboss-modules.jar"
+
 # Execute the JVM in the foreground
 eval \"$JAVA\" $JAVA_OPTS \
+ -cp "$CLASSPATH" \
  \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/appclient/log/boot.log\" \
  \"-Dlogging.configuration=file:$JBOSS_HOME/appclient/configuration/logging.properties\" \
- -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+ org.jboss.modules.Main \
  -mp \"${MODULEPATH}\" \
  -logmodule "org.jboss.logmanager" \
  -jaxpmodule javax.xml.jaxp-provider \
