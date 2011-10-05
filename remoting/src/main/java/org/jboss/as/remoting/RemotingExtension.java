@@ -23,44 +23,31 @@
 package org.jboss.as.remoting;
 
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.xnio.sasl.SaslQop;
-import org.xnio.sasl.SaslStrength;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readArrayAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
@@ -69,6 +56,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElem
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import static org.jboss.as.remoting.CommonAttributes.ADD_CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
@@ -88,7 +78,6 @@ import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
-<<<<<<< HEAD
 
 import java.util.EnumSet;
 import java.util.List;
@@ -430,8 +419,7 @@ public class RemotingExtension implements Extension {
             if (node.hasDefined(CONNECTOR)) {
                 final ModelNode connector = node.get(CONNECTOR);
                 for (String name : connector.keys()) {
-                    if (connector.hasDefined(name)) {
-                        writeConnector(writer, connector.get(name), name);
+                        writeConnector(writer, connector.require(name), name);
                     }
                 }
             }
@@ -442,16 +430,15 @@ public class RemotingExtension implements Extension {
         private void writeConnector(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
             writer.writeStartElement(Element.CONNECTOR.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-            if (node.hasDefined(SOCKET_BINDING)) {
-                writeAttribute(writer, Attribute.SOCKET_BINDING, node.get(SOCKET_BINDING));
-            }
+            writeAttribute(writer, Attribute.SOCKET_BINDING, node.require(SOCKET_BINDING));
+
             if (node.hasDefined(AUTHENTICATION_PROVIDER)) {
                 writeSimpleChild(writer, Element.AUTHENTICATION_PROVIDER, Attribute.NAME, node.get(AUTHENTICATION_PROVIDER));
             }
-            if (node.hasDefined(PROPERTIES)) {
+            if (has(node, PROPERTIES)) {
                 writeProperties(writer, node.get(PROPERTIES));
             }
-            if (node.hasDefined(SASL)) {
+            if (has(node, SASL)) {
                 writeSasl(writer, node.get(SASL));
             }
             writer.writeEndElement();
@@ -460,7 +447,7 @@ public class RemotingExtension implements Extension {
         private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
             writer.writeStartElement(Element.PROPERTIES.getLocalName());
             for (String name : node.keys()) {
-                if (node.hasDefined(name)) {
+                if (has(node, name)) {
                     final ModelNode prop = node.get(name);
                     if (prop.getType() == ModelType.PROPERTY) {
                         writer.writeStartElement(Element.PROPERTY.getLocalName());
@@ -475,27 +462,27 @@ public class RemotingExtension implements Extension {
 
         private void writeSasl(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
             writer.writeStartElement(Element.SASL.getLocalName());
-            if (node.hasDefined(INCLUDE_MECHANISMS)) {
+            if (has(node, INCLUDE_MECHANISMS)) {
 
             }
-            if (node.hasDefined(QOP)) {
+            if (has(node, QOP)) {
                 //FIXME is this really an xml attribute?
                 writeSimpleChild(writer, Element.QOP, Attribute.VALUE, node.get(QOP));
             }
-            if (node.hasDefined(STRENGTH)) {
+            if (has(node, STRENGTH)) {
                 //FIXME is this really an xml attribute?
                 writeSimpleChild(writer, Element.STRENGTH, Attribute.VALUE, node.get(STRENGTH));
             }
-            if (node.hasDefined(REUSE_SESSION)) {
+            if (has(node, REUSE_SESSION)) {
                 writeSimpleChild(writer, Element.REUSE_SESSION, Attribute.VALUE, node.get(REUSE_SESSION));
             }
-            if (node.hasDefined(SERVER_AUTH)) {
+            if (has(node, SERVER_AUTH)) {
                 writeSimpleChild(writer, Element.SERVER_AUTH, Attribute.VALUE, node.get(SERVER_AUTH));
             }
-            if (node.hasDefined(POLICY)) {
+            if (has(node, POLICY)) {
                 writePolicy(writer, node.get(POLICY));
             }
-            if (node.hasDefined(PROPERTIES)) {
+            if (has(node, PROPERTIES)) {
                 writeProperties(writer, node.get(PROPERTIES));
             }
 
@@ -505,26 +492,30 @@ public class RemotingExtension implements Extension {
         private void writePolicy(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
             writer.writeStartElement(Element.POLICY.getLocalName());
 
-            if (node.hasDefined(FORWARD_SECRECY)) {
+            if (has(node, FORWARD_SECRECY)) {
                 writeSimpleChild(writer, Element.FORWARD_SECRECY, Attribute.VALUE, node.get(FORWARD_SECRECY));
             }
-            if (node.hasDefined(NO_ACTIVE)) {
+            if (has(node, NO_ACTIVE)) {
                 writeSimpleChild(writer, Element.NO_ACTIVE, Attribute.VALUE, node.get(NO_ACTIVE));
             }
-            if (node.hasDefined(NO_ANONYMOUS)) {
+            if (has(node, NO_ANONYMOUS)) {
                 writeSimpleChild(writer, Element.NO_ANONYMOUS, Attribute.VALUE, node.get(NO_ANONYMOUS));
             }
-            if (node.hasDefined(NO_DICTIONARY)) {
+            if (has(node, NO_DICTIONARY)) {
                 writeSimpleChild(writer, Element.NO_DICTIONARY, Attribute.VALUE, node.get(NO_DICTIONARY));
             }
-            if (node.hasDefined(NO_PLAINTEXT)) {
+            if (has(node, NO_PLAINTEXT)) {
                 writeSimpleChild(writer, Element.NO_PLAINTEXT, Attribute.VALUE, node.get(NO_PLAINTEXT));
             }
-            if (node.hasDefined(PASS_CREDENTIALS)) {
+            if (has(node, PASS_CREDENTIALS)) {
                 writeSimpleChild(writer, Element.PASS_CREDENTIALS, Attribute.VALUE, node.get(PASS_CREDENTIALS));
             }
 
             writer.writeEndElement();
+        }
+
+        private boolean has(ModelNode node, String name) {
+            return node.has(name) && node.get(name).isDefined();
         }
 
         private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
