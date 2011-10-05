@@ -26,21 +26,15 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
-import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Set;
@@ -157,16 +151,8 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         interceptorContext.setContextData(new HashMap<String, Object>());
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
-        interceptorContext.putPrivateData(RemotingAttachments.class, attachments);
-        // TODO: Hack!
-        if (attachments != null) {
-            final byte[] sessionIdBytes = attachments.getPayloadAttachment(0x0000);
-            if (sessionIdBytes != null) {
-                logger.info("Got session id " + sessionIdBytes);
-                final SessionID sessionID = SessionID.createSessionID(sessionIdBytes);
-                interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
-            }
-        }
+        // attach the remoting attachments
+        this.attachRemotingAttachments(interceptorContext, attachments);
         return componentView.invoke(interceptorContext);
     }
 
