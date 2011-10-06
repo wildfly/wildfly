@@ -21,12 +21,24 @@
  */
 package org.jboss.as.appclient.service;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -34,6 +46,15 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Registration;
+import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
+import org.xnio.Options;
+import org.xnio.Xnio;
 
 
 /**
@@ -66,30 +87,50 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
+        try {
+            //TODO: this is a complete hack
+            //we need a real way of setting up the remote EJB
 
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ClassLoader oldTccl = SecurityActions.getContextClassLoader();
-                try {
-                    SecurityActions.setContextClassLoader(classLoader);
-                    applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
-                    NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
-                    mainMethod.invoke(null, new Object[]{parameters});
-                } catch (InvocationTargetException e) {
-                    logger.error(e.getTargetException(), e.getTargetException());
-                } catch (IllegalAccessException e) {
-                    logger.error(e);
-                } catch (InterruptedException e) {
-                    logger.error(e);
-                } finally {
-                    SecurityActions.setContextClassLoader(oldTccl);
-                    NamespaceContextSelector.popCurrentSelector();
-                    CurrentServiceContainer.getServiceContainer().shutdown();
+            final Endpoint endpoint = Remoting.createEndpoint("endpoint", Executors.newSingleThreadExecutor(), OptionMap.EMPTY);
+            final Xnio xnio = Xnio.getInstance();
+            final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+
+
+            // open a connection
+            final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+            final Connection connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
+
+            thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+                    try {
+                        SecurityActions.setContextClassLoader(classLoader);
+
+                        EJBClientContext ejbClientContext = EJBClientContext.create();
+                        ejbClientContext.registerConnection(connection);
+                        applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
+                        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
+                        mainMethod.invoke(null, new Object[]{parameters});
+                    } catch (InvocationTargetException e) {
+                        logger.error(e.getTargetException(), e.getTargetException());
+                    } catch (IllegalAccessException e) {
+                        logger.error(e);
+                    } catch (InterruptedException e) {
+                        logger.error(e);
+                    } finally {
+                        SecurityActions.setContextClassLoader(oldTccl);
+                        NamespaceContextSelector.popCurrentSelector();
+                        CurrentServiceContainer.getServiceContainer().shutdown();
+                    }
                 }
-            }
-        });
-        thread.start();
+            });
+            thread.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -105,6 +146,24 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     public InjectedValue<ApplicationClientDeploymentService> getApplicationClientDeploymentServiceInjectedValue() {
         return applicationClientDeploymentServiceInjectedValue;
+    }
+
+    /**
+     * User: jpai
+     */
+    public class AnonymousCallbackHandler implements CallbackHandler {
+
+        @Override
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    ncb.setName("anonymous");
+                } else {
+                    throw new UnsupportedCallbackException(current);
+                }
+            }
+        }
     }
 
 }

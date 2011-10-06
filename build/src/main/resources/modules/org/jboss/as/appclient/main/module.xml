@@ -35,11 +35,13 @@
         <module name="org.jboss.as.server" export="true"/>
         <module name="javax.api"/>
         <module name="org.jboss.dmr"/>
+        <module name="org.jboss.ejb-client"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc" export="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager"/>
         <module name="org.jboss.logmanager.log4j"/>
+        <module name="org.jboss.remoting3"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.stdio"/>
         <module name="org.jboss.threads"/>
