@@ -104,9 +104,6 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                 }
             });
 
-            //do static injection etc
-            //TODO: this should be better
-            applicationClientComponent.getValue().createInstance();
 
             final Endpoint endpoint = Remoting.createEndpoint("endpoint", executor, OptionMap.EMPTY);
             final Xnio xnio = Xnio.getInstance();
@@ -127,6 +124,11 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                         EJBClientContext ejbClientContext = EJBClientContext.create();
                         ejbClientContext.registerConnection(connection);
                         applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
+
+                        //do static injection etc
+                        //TODO: this should be better
+                        applicationClientComponent.getValue().createInstance();
+
                         NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
                         mainMethod.invoke(null, new Object[]{parameters});
                     } catch (InvocationTargetException e) {
@@ -134,7 +136,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                     } catch (IllegalAccessException e) {
                         logger.error("IllegalAccessException running app client main", e);
                     } catch (InterruptedException e) {
-                        logger.error("InterruptedException running app client main" , e);
+                        logger.error("InterruptedException running app client main", e);
                     } finally {
                         SecurityActions.setContextClassLoader(oldTccl);
                         NamespaceContextSelector.popCurrentSelector();
