@@ -136,3 +136,4 @@ eval \"$JAVA\" $JAVA_OPTS \
  -Djboss.server.base.dir=\"$JBOSS_HOME/appclient\" \
  "$@"
 JBOSS_STATUS=$?
+exit $JBOSS_STATUS

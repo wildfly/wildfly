@@ -101,8 +101,8 @@ public class EjbInjectionSource extends InjectionSource {
             //we need to bind the remote proxy factory into JNDI instead to get the correct behaviour
 
             if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
-                final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
                 final EJBComponentDescription componentDescription = (EJBComponentDescription) description.getComponentDescription();
+                final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
                 remoteFactory = new RemoteViewManagedReferenceFactory(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful());
             }
         }

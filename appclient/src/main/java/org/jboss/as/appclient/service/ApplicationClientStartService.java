@@ -26,7 +26,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.callback.Callback;
@@ -90,8 +92,16 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         try {
             //TODO: this is a complete hack
             //we need a real way of setting up the remote EJB
-
-            final Endpoint endpoint = Remoting.createEndpoint("endpoint", Executors.newSingleThreadExecutor(), OptionMap.EMPTY);
+            ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactory() {
+                @Override
+                public Thread newThread(final Runnable r) {
+                    Thread t = new Thread(r);
+                    t.setName("App Client Remoting Thread");
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
+            final Endpoint endpoint = Remoting.createEndpoint("endpoint", executor, OptionMap.EMPTY);
             final Xnio xnio = Xnio.getInstance();
             final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
 
@@ -115,9 +125,9 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                     } catch (InvocationTargetException e) {
                         logger.error(e.getTargetException(), e.getTargetException());
                     } catch (IllegalAccessException e) {
-                        logger.error(e);
+                        logger.error("IllegalAccessException running app client main", e);
                     } catch (InterruptedException e) {
-                        logger.error(e);
+                        logger.error("InterruptedException running app client main" , e);
                     } finally {
                         SecurityActions.setContextClassLoader(oldTccl);
                         NamespaceContextSelector.popCurrentSelector();

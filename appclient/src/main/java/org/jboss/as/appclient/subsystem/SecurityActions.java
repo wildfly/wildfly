@@ -24,6 +24,8 @@ package org.jboss.as.appclient.subsystem;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.Provider;
+import java.security.Security;
 import java.util.Map;
 import java.util.Properties;
 
@@ -102,6 +104,21 @@ class SecurityActions {
             return AccessController.doPrivileged(new PrivilegedAction<Map<String, String>>() {
                 public Map<String, String> run() {
                     return System.getenv();
+                }
+            });
+        }
+    }
+
+    static void addProvider(final Provider provider) {
+        if (System.getSecurityManager() == null) {
+            Security.addProvider(provider);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                @Override
+                public Void run() {
+                    Security.addProvider(provider);
+                    return null;
                 }
             });
         }
