@@ -105,8 +105,9 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             // read the first byte to see what type of a message it is
             final int header = messageInputStream.read();
-            // TODO: Log at lower level after the code attains a bit of stability
-            logger.info("Got message with header 0x" + Integer.toHexString(header) + " on channel " + channel);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Got message with header 0x" + Integer.toHexString(header) + " on channel " + channel);
+            }
             MessageHandler messageHandler = null;
             switch (header) {
                 case HEADER_INVOCATION_REQUEST:
@@ -143,7 +144,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getModules();
         if (availableModules != null && !availableModules.isEmpty()) {
             try {
-                logger.info("Sending initial module availabilty message, containing " + availableModules.size() + " module(s) to channel " + this.channel);
+                logger.debug("Sending initial module availabilty message, containing " + availableModules.size() + " module(s) to channel " + this.channel);
                 this.sendModuleAvailability(availableModules.keySet().toArray(new DeploymentModuleIdentifier[availableModules.size()]));
             } catch (IOException e) {
                 logger.warn("Could not send initial module availability report to channel " + this.channel, e);
