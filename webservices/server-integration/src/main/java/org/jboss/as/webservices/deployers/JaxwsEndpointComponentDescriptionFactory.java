@@ -30,6 +30,7 @@ import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.ASHelper.isServlet;
 
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -38,9 +39,13 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.component.WSComponentDescription;
+import org.jboss.as.webservices.service.EndpointService;
+import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -62,8 +67,30 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
         } else {
             final String beanClassName = classInfo.name().toString();
             final ServiceName unitServiceName = unit.getServiceName();
-            final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(beanClassName, moduleDescription, unitServiceName, applicationClasses);
-            moduleDescription.addComponent(jaxwsEndpointDescription);
+            // TODO: refactor to convenient method that will return DD defined servlets matching class name
+            List<ServletMetaData> ddServlets = ASHelper.getJaxwsServlets(unit);
+            boolean found = false;
+            for (final ServletMetaData servletMD : ddServlets) {
+                if (beanClassName.equals(ASHelper.getEndpointClassName(servletMD))) {
+                    found = true;
+                    final String endpointName = ASHelper.getEndpointName(servletMD);
+                    final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(endpointName, beanClassName, moduleDescription, unitServiceName, applicationClasses);
+                    moduleDescription.addComponent(jaxwsEndpointDescription);
+                    // TODO: register dependency on WS endpoint service
+                    final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
+                    jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                }
+            }
+            if (!found) {
+                // TODO: JBWS-3276
+                /*
+                final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(beanClassName, beanClassName, moduleDescription, unitServiceName, applicationClasses);
+                moduleDescription.addComponent(jaxwsEndpointDescription);
+                // TODO: register dependency on WS endpoint service
+                final ServiceName serviceName = EndpointService.getServiceName(unit, beanClassName);
+                jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                */
+            }
         }
     }
 

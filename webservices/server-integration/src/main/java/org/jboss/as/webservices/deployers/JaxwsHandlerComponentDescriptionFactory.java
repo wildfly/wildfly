@@ -25,11 +25,14 @@ package org.jboss.as.webservices.deployers;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.DotNames.HANDLER_CHAIN_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.STATELESS_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINT_HANDLERS_MAPPING_KEY;
 
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -39,9 +42,14 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.component.WSComponentDescription;
 import org.jboss.as.webservices.component.WSEndpointHandlersMapping;
+import org.jboss.as.webservices.metadata.WebServiceDeclaration;
+import org.jboss.as.webservices.service.EndpointService;
+import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -60,10 +68,57 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
         final ServiceName unitServiceName = unit.getServiceName();
         final WSEndpointHandlersMapping mapping = getRequiredAttachment(unit, WS_ENDPOINT_HANDLERS_MAPPING_KEY);
         final String endpointClassName = classInfo.name().toString();
-        for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
-            if (moduleDescription.getComponentsByClassName(handlerClassName) == null) {
-                final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerClassName, moduleDescription, unitServiceName, applicationClasses);
-                moduleDescription.addComponent(jaxwsHandlerDescription);
+
+        if (isJaxwsEjb(classInfo)) {
+            for (final WebServiceDeclaration container : ASHelper.getJaxwsEjbs(unit)) {
+                if (endpointClassName.equals(container.getComponentClassName())) {
+                    for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
+                        final String ejbName = container.getComponentName();
+                        if (moduleDescription.getComponentsByClassName(handlerClassName) == null) {
+                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(ejbName, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
+                            moduleDescription.addComponent(jaxwsHandlerDescription);
+                            // TODO: register dependency on WS endpoint service
+                            final ServiceName serviceName = EndpointService.getServiceName(unit, ejbName);
+                            jaxwsHandlerDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                        }
+                    }
+                }
+            }
+            // Don't create component description for EJB3 endpoints.
+            // There's already one created by EJB3 subsystem.
+        } else {
+            // TODO: there can be multiple endpoints sharing handlers, create handlers per endpoint
+            List<ServletMetaData> ddServlets = ASHelper.getJaxwsServlets(unit);
+            boolean found = false;
+            for (final ServletMetaData servletMD : ddServlets) {
+                if (endpointClassName.equals(ASHelper.getEndpointClassName(servletMD))) {
+                    found = true;
+                    final String endpointName = ASHelper.getEndpointName(servletMD);
+
+                    for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
+                        if (moduleDescription.getComponentsByClassName(handlerClassName) == null) {
+                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(endpointName, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
+                            moduleDescription.addComponent(jaxwsHandlerDescription);
+                            // TODO: register dependency on WS endpoint service
+                            final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
+                            jaxwsHandlerDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                        }
+                    }
+                }
+            }
+            if (!found) {
+                // TODO: JBWS-3276
+                /*
+                for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
+                    if (moduleDescription.getComponentsByClassName(handlerClassName) == null) {
+                        final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(endpointClassName, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
+                        moduleDescription.addComponent(jaxwsHandlerDescription);
+                        // TODO: register dependency on WS endpoint service
+                        final ServiceName serviceName = EndpointService.getServiceName(unit, endpointClassName);
+                        jaxwsHandlerDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                    }
+                }
+                */
             }
         }
     }
@@ -87,6 +142,12 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
             return false;
         }
         return true;
+    }
+
+    private static boolean isJaxwsEjb(final ClassInfo clazz) { // TODO: refactor to ASHelper
+        final boolean isStateless = clazz.annotations().containsKey(STATELESS_ANNOTATION);
+        final boolean isSingleton = clazz.annotations().containsKey(SINGLETON_ANNOTATION);
+        return isStateless || isSingleton;
     }
 
 }

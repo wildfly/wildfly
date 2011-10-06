@@ -126,12 +126,24 @@ public final class ASHelper {
     }
 
     /**
+     * Returns endpoint name.
+     *
+     * @param servletMD servlet meta data
+     * @return endpoint name
+     */
+    public static String getEndpointName(final ServletMetaData servletMD) {
+        final String endpointName = servletMD.getName();
+
+        return endpointName != null ? endpointName.trim() : null;
+    }
+
+    /**
      * Returns endpoint class name.
      *
      * @param servletMD servlet meta data
      * @return endpoint class name
      */
-    public static String getEndpointName(final ServletMetaData servletMD) {
+    public static String getEndpointClassName(final ServletMetaData servletMD) {
         final String endpointClass = servletMD.getServletClass();
 
         return endpointClass != null ? endpointClass.trim() : null;
@@ -244,7 +256,7 @@ public final class ASHelper {
     }
 
     private static boolean isWebserviceEndpoint(final ServletMetaData servletMD, final CompositeIndex index, boolean jaxws) {
-        final String endpointClassName = getEndpointName(servletMD);
+        final String endpointClassName = getEndpointClassName(servletMD);
         if (isJSP(endpointClassName)) return false;
         final DotName endpointDotName = DotName.createSimple(endpointClassName);
         final ClassInfo endpointClassInfo = index.getClassByName(endpointDotName);
@@ -267,7 +279,7 @@ public final class ASHelper {
     }
 
     private static boolean isWebserviceEndpoint(final ServletMetaData servletMD, final ClassLoader loader, boolean jaxws) {
-        final String endpointClassName = getEndpointName(servletMD);
+        final String endpointClassName = getEndpointClassName(servletMD);
         if (isJSP(endpointClassName)) return false;
         final Class<?> endpointClass = getEndpointClass(endpointClassName, loader);
         if (endpointClass != null) {

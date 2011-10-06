@@ -22,8 +22,10 @@
 
 package org.jboss.as.webservices.component;
 
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.msc.service.ServiceName;
@@ -33,11 +35,18 @@ import org.jboss.msc.service.ServiceName;
  */
 public final class WSComponentDescription extends ComponentDescription {
 
-    public WSComponentDescription(final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
-        super(componentClassName, componentClassName, moduleDescription, applicationClassesDescription.getOrAddClassByName(componentClassName), deploymentUnitServiceName, applicationClassesDescription);
+    public WSComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
+        super(componentName, componentClassName, moduleDescription, applicationClassesDescription.getOrAddClassByName(componentClassName), deploymentUnitServiceName, applicationClassesDescription);
         setExcludeDefaultInterceptors(true);
         // TODO: customize WS view. Only WebMethods should be visible
         getViews().add(new ViewDescription(this, componentClassName));
+    }
+
+    @Override
+    public ComponentConfiguration createConfiguration(EEApplicationDescription applicationDescription) {
+        final ComponentConfiguration wsComponentConfiguration = new ComponentConfiguration(this, applicationDescription.getClassConfiguration(getComponentClassName()));
+        wsComponentConfiguration.setComponentCreateServiceFactory(new WSComponentCreateServiceFactory());
+        return wsComponentConfiguration;
     }
 
 }

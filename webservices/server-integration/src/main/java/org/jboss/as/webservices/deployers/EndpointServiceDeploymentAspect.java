@@ -21,9 +21,13 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.service.EndpointService;
+import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.EndpointLifecycleDeploymentAspect;
+import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
@@ -39,9 +43,10 @@ public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDepl
     public void start(Deployment dep) {
         super.start(dep);
         final ServiceTarget target = dep.getAttachment(ServiceTarget.class);
+        final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
         if (target != null) {
             for (Endpoint ep : dep.getService().getEndpoints()) {
-                EndpointService.install(target, ep);
+                EndpointService.install(target, ep, unit);
             }
         }
     }
