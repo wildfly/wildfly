@@ -215,6 +215,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
     private void processSessionBeanMetaData(final DeploymentUnit deploymentUnit, final SessionBeanMetaData sessionBean) throws DeploymentUnitProcessingException {
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final List<ComponentDescription> additionalComponents = deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS);
 
         final String beanName = sessionBean.getName();
         // the important bit is to skip already processed EJBs via annotations
@@ -230,6 +231,16 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
 
         final SessionType sessionType = sessionBean.getSessionType();
         if (sessionType == null) {
+            for (final ComponentDescription component : additionalComponents) {
+                if (component.getComponentName().equals(beanName)) {
+                    if (component instanceof SessionBeanComponentDescription) {
+                        ((SessionBeanComponentDescription) component).setDescriptorData(sessionBean);
+                    } else {
+                        throw new DeploymentUnitProcessingException("Session bean with name " + beanName + " referenced in ejb-jar.xml could not be created, as existing non session bean component with same name already exists: " + component);
+                    }
+                    return;
+                }
+            }
             throw new DeploymentUnitProcessingException("Unknown session-type for session bean: " + sessionBean.getName() + " in deployment unit: " + deploymentUnit);
         }
         final String beanClassName = sessionBean.getEjbClass();

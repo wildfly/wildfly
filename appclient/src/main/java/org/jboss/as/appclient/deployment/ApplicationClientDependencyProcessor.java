@@ -48,6 +48,7 @@ import org.jboss.modules.filter.PathFilters;
 public class ApplicationClientDependencyProcessor implements DeploymentUnitProcessor {
 
     public static final ModuleIdentifier APP_CLIENT_MODULE_ID = ModuleIdentifier.create("deployment.appclient.additionalClassPath");
+    public static ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
 
     private final String additionalClassPath;
 
@@ -58,13 +59,19 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ModuleLoader loader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
+
+        moduleSpecification.addSystemDependency(new ModuleDependency(loader, CORBA_ID, false, true, true));
+
+
         Boolean activate = deploymentUnit.getAttachment(AppClientAttachments.START_APP_CLIENT);
         if (activate == null || !activate) {
             return;
         }
 
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final ModuleLoader loader = deploymentUnit.getAttachment(Attachments.SERVICE_MODULE_LOADER);
         final ModuleDependency dependency = new ModuleDependency(loader, APP_CLIENT_MODULE_ID, false, true, true);
         dependency.addImportFilter(PathFilters.acceptAll(), true);
         moduleSpecification.addSystemDependency(dependency);

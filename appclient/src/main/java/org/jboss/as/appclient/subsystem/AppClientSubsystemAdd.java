@@ -32,6 +32,7 @@ import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientParsingDeploymentProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientStartProcessor;
+import org.jboss.as.appclient.deployment.ApplicationClientStructureProcessor;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.ModelController;
@@ -85,12 +86,14 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
         }
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-
+                if (deployment != null && !deployment.isEmpty()) {
+                    processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_APP_CLIENT, new ApplicationClientStructureProcessor(deployment));
+                }
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_APP_CLIENT_XML, new ApplicationClientParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_MANIFEST, new ApplicationClientManifestProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_ACTIVE, new ActiveApplicationClientProcessor(deployment));
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APPLICATION_CLIENT, new ApplicationClientStartProcessor(parameters.toArray(EMPTY_STRING)));
-                if(additionalClassPath != null && !additionalClassPath.isEmpty()) {
+                if (additionalClassPath != null && !additionalClassPath.isEmpty()) {
                     processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_APPLICATION_CLIENT, new ApplicationClientDependencyProcessor(additionalClassPath));
 
                 }
