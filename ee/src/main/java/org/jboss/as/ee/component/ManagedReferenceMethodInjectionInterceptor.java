@@ -22,13 +22,14 @@
 
 package org.jboss.as.ee.component;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An interceptor which constructs and injects a managed reference into a setter method.  The context key given
@@ -55,9 +56,14 @@ final class ManagedReferenceMethodInjectionInterceptor implements Interceptor {
      * {@inheritDoc}
      */
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        Object target = targetReference.get().getInstance();
-        if (target == null) {
-            throw new IllegalStateException("No injection target found");
+        Object target;
+        if (Modifier.isStatic(method.getModifiers())) {
+            target = null;
+        } else {
+            target = targetReference.get().getInstance();
+            if (target == null) {
+                throw new IllegalStateException("No injection target found");
+            }
         }
         ManagedReference reference = factory.getReference();
         boolean ok = false;

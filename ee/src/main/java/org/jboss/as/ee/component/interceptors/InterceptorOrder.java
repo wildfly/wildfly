@@ -38,6 +38,7 @@ public class InterceptorOrder {
 
         public static final int INITIAL_INTERCEPTOR                                         = 0x100;
         public static final int TCCL_INTERCEPTOR                                            = 0x200;
+        public static final int EJB_CLIENT_CONTEXT                                          = 0x250;
         public static final int JNDI_NAMESPACE_INTERCEPTOR                                  = 0x300;
         public static final int TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR                      = 0x310;
         public static final int CDI_REQUEST_SCOPE                                           = 0x320;

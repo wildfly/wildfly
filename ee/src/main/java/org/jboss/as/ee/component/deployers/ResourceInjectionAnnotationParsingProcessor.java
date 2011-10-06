@@ -22,6 +22,17 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+import javax.annotation.Resources;
+import javax.validation.ValidatorFactory;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.BindingConfigurator;
@@ -50,16 +61,6 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-
-import javax.annotation.Resource;
-import javax.annotation.Resources;
-import javax.validation.ValidatorFactory;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
@@ -264,8 +265,10 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
         if (valueSource == null) {
             // the ResourceInjectionConfiguration is created by LazyResourceInjection
-            LazyResourceInjection lazyResourceInjection = new LazyResourceInjection(targetDescription, localContextName , classDescription);
-            applicationClasses.addLazyResourceInjection(lazyResourceInjection);
+            if (targetDescription != null) {
+                LazyResourceInjection lazyResourceInjection = new LazyResourceInjection(targetDescription, localContextName, classDescription);
+                applicationClasses.addLazyResourceInjection(lazyResourceInjection);
+            }
         } else {
             // our injection comes from the local lookup, no matter what.
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
