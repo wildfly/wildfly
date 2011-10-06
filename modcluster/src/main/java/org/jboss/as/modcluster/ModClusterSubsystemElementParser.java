@@ -138,7 +138,8 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
                 ssl = config.get(SSL).get(CONFIGURATION);
             else
                 ssl = config.get(SSL);
-            writeSSL(writer, ssl);
+            if (ssl.isDefined())
+                writeSSL(writer, ssl);
         }
         writer.writeEndElement();
     }
