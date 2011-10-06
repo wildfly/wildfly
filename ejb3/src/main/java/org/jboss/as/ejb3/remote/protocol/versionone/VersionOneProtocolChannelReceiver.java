@@ -23,6 +23,10 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Map;
+
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
@@ -33,10 +37,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * User: jpai
@@ -79,6 +79,8 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             channel.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            this.deploymentRepository.removeListener(this);
         }
         throw new RuntimeException("NYI: .handleError");
     }
@@ -89,6 +91,8 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             channel.close();
         } catch (IOException e) {
             // ignore
+        } finally {
+            this.deploymentRepository.removeListener(this);
         }
     }
 
