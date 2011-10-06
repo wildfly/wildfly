@@ -73,7 +73,7 @@ public class JMSTopicService implements Service<Void> {
     public synchronized void stop(StopContext context) {
         final JMSServerManager jmsManager = jmsServer.getValue();
         try {
-            jmsManager.destroyTopic(name);
+            jmsManager.removeTopicFromJNDI(name);
         } catch (Exception e) {
             MESSAGING_LOGGER.failedToDestroy(e, "jms topic", name);
         }

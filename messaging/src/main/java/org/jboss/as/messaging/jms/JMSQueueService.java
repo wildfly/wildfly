@@ -67,7 +67,7 @@ public class JMSQueueService implements Service<Void> {
     public synchronized void stop(StopContext context) {
         final JMSServerManager jmsManager = jmsServer.getValue();
         try {
-            jmsManager.destroyQueue(queueName);
+            jmsManager.removeQueueFromJNDI(queueName);
         } catch (Exception e) {
             MESSAGING_LOGGER.failedToDestroy(e, "queue", queueName);
         }
