@@ -132,14 +132,8 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
         if (config.hasDefined(DYNAMIC_LOAD_PROVIDER)) {
             writeDynamicLoadProvider(writer, config.get(DYNAMIC_LOAD_PROVIDER));
         }
-        if (config.hasDefined(SSL)) {
-            ModelNode ssl;
-            if (config.get(SSL).isDefined() && config.get(SSL).has(CONFIGURATION))
-                ssl = config.get(SSL).get(CONFIGURATION);
-            else
-                ssl = config.get(SSL);
-            if (ssl.isDefined())
-                writeSSL(writer, ssl);
+        if (config.get(SSL).isDefined() && config.get(SSL).has(CONFIGURATION)) {
+            writeSSL(writer, config.get(SSL).get(CONFIGURATION));
         }
         writer.writeEndElement();
     }

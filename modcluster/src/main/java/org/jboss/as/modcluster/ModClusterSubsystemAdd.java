@@ -56,10 +56,10 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     protected void populateModel(final ModelNode operation, final Resource resource) {
          final ModelNode model = resource.getModel();
         populateModel(operation, model);
-        // Add ssl=configuration to be able to manage ssl.
-        resource.registerChild(SSLPath, Resource.Factory.create());
-        final Resource ssl = resource.getChild(SSLPath);
         if(model.hasDefined(CommonAttributes.SSL)) {
+            // Add ssl=configuration to be able to manage ssl.
+            resource.registerChild(SSLPath, Resource.Factory.create());
+            final Resource ssl = resource.getChild(SSLPath);
             ssl.getModel().set(model.get(CommonAttributes.SSL));
         }
     }
