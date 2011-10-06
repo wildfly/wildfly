@@ -29,6 +29,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -61,6 +69,22 @@ import org.jboss.modules.Module;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class AbstractDeploymentDescriptorBindingsProcessor implements DeploymentUnitProcessor {
+
+    private static final Map<Class<?>, Class<?>> BOXED_TYPES;
+
+    static {
+        Map<Class<?>, Class<?>> types = new HashMap<Class<?>, Class<?>>();
+        types.put(int.class, Integer.class);
+        types.put(byte.class, Byte.class);
+        types.put(short.class, Short.class);
+        types.put(long.class, Long.class);
+        types.put(char.class, Character.class);
+        types.put(float.class, Float.class);
+        types.put(double.class, Double.class);
+        types.put(boolean.class, Boolean.class);
+
+        BOXED_TYPES = Collections.unmodifiableMap(types);
+    }
 
     @Override
     public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -123,7 +147,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
     /**
      * Processes the injection targets of a resource binding
      *
-     *
      * @param applicationClasses
      * @param injectionSource           The injection source for the injection target
      * @param classLoader               The module class loader
@@ -140,12 +163,24 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                 final String injectionTargetClassName = injectionTarget.getInjectionTargetClass();
                 final String injectionTargetName = injectionTarget.getInjectionTargetName();
                 final AccessibleObject fieldOrMethod = getInjectionTarget(injectionTargetClassName, injectionTargetName, classLoader, deploymentReflectionIndex);
-                final Class<?> injectionTargetType = fieldOrMethod instanceof Field ? ((Field)fieldOrMethod).getType() : ((Method)fieldOrMethod).getParameterTypes()[0];
-                final String memberName = fieldOrMethod instanceof Field ? ((Field)fieldOrMethod).getName() : ((Method)fieldOrMethod).getName();
+                final Class<?> injectionTargetType = fieldOrMethod instanceof Field ? ((Field) fieldOrMethod).getType() : ((Method) fieldOrMethod).getParameterTypes()[0];
+                final String memberName = fieldOrMethod instanceof Field ? ((Field) fieldOrMethod).getName() : ((Method) fieldOrMethod).getName();
 
                 if (classType != null) {
                     if (!classType.isAssignableFrom(injectionTargetType)) {
-                        throw new DeploymentUnitProcessingException("Injection target " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " is not compatible with the type of injection");
+                        boolean ok = false;
+                        if (classType.isPrimitive()) {
+                            if (BOXED_TYPES.get(classType).equals(injectionTargetType)) {
+                                ok = true;
+                            }
+                        } else if (injectionTargetType.isPrimitive()) {
+                            if (BOXED_TYPES.get(injectionTargetType).equals(classType)) {
+                                ok = true;
+                            }
+                        }
+                        if (!ok) {
+                            throw new DeploymentUnitProcessingException("Injection target " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " is not compatible with the type of injection: " + classType);
+                        }
                     }
                 } else {
                     classType = injectionTargetType;
@@ -161,5 +196,4 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         }
         return classType;
     }
-
 }

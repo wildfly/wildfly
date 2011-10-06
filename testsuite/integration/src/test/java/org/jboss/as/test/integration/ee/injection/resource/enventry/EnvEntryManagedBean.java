@@ -36,11 +36,17 @@ public class EnvEntryManagedBean {
     @Resource
     private String existingString = "hi";
 
+    private byte byteField;
+
     public String getNonExistantString() {
         return nonExistantString;
     }
 
     public String getExistingString() {
         return existingString;
+    }
+
+    public byte getByteField() {
+        return byteField;
     }
 }

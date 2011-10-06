@@ -21,6 +21,13 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.TimeUnit;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.HttpRequest;
@@ -30,12 +37,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * A test for injection via env-entry in web.xml
@@ -83,6 +84,13 @@ public class EnvEntryInjectionTestCase {
         initialContext.lookup("java:module/env/" + EnvEntryManagedBean.class.getName() + "/nonExistantString");
     }
 
+    @Test
+    public void testBoxedUnboxedMismatch() throws NamingException {
+        final InitialContext initialContext = new InitialContext();
+        final EnvEntryManagedBean bean = (EnvEntryManagedBean) initialContext.lookup("java:module/" + EnvEntryManagedBean.class.getName());
+        Assert.assertEquals(10, bean.getByteField());
+    }
+
     private static StringAsset getWebXml() {
         return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "\n" +
@@ -105,6 +113,17 @@ public class EnvEntryInjectionTestCase {
                 "        <env-entry-name>" + EnvEntryManagedBean.class.getName() + "/existingString</env-entry-name>\n" +
                 "        <env-entry-value>bye</env-entry-value>\n" +
                 "        <env-entry-type>java.lang.String</env-entry-type>\n" +
+                "    </env-entry>\n" +
+                "\n" +
+                "\n" +
+                "    <env-entry>\n" +
+                "        <env-entry-name>otherByte</env-entry-name>\n" +
+                "        <env-entry-value>10</env-entry-value>\n" +
+                "        <env-entry-type>java.lang.Byte</env-entry-type>\n" +
+                "        <injection-target>" +
+                "           <injection-target-class>" + EnvEntryManagedBean.class.getName() + "</injection-target-class>" +
+                "           <injection-target-name>byteField</injection-target-name>" +
+                "        </injection-target>\n" +
                 "    </env-entry>\n" +
                 "\n" +
                 "</web-app>");
