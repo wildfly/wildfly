@@ -36,6 +36,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -71,6 +72,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     public static final ServiceName SERVICE_NAME = ServiceName.of("appClientStart");
 
     private final InjectedValue<ApplicationClientDeploymentService> applicationClientDeploymentServiceInjectedValue = new InjectedValue<ApplicationClientDeploymentService>();
+    private final InjectedValue<Component> applicationClientComponent = new InjectedValue<Component>();
     private final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue;
     private final Method mainMethod;
     private final String[] parameters;
@@ -101,6 +103,11 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                     return t;
                 }
             });
+
+            //do static injection etc
+            //TODO: this should be better
+            applicationClientComponent.getValue().createInstance();
+
             final Endpoint endpoint = Remoting.createEndpoint("endpoint", executor, OptionMap.EMPTY);
             final Xnio xnio = Xnio.getInstance();
             final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
@@ -156,6 +163,10 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     public InjectedValue<ApplicationClientDeploymentService> getApplicationClientDeploymentServiceInjectedValue() {
         return applicationClientDeploymentServiceInjectedValue;
+    }
+
+    public InjectedValue<Component> getApplicationClientComponent() {
+        return applicationClientComponent;
     }
 
     /**

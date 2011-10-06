@@ -23,8 +23,10 @@ package org.jboss.as.appclient.deployment;
 
 import java.lang.reflect.Method;
 
+import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.appclient.service.ApplicationClientStartService;
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -64,6 +66,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         if (mainClass == null) {
             throw new RuntimeException("Could not start app client " + deploymentUnit.getName() + " as no main class was found");
         }
+        final ApplicationClientComponentDescription component = deploymentUnit.getAttachment(AppClientAttachments.APPLICATION_CLIENT_COMPONENT);
 
         ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(mainClass);
         Method method = index.getMethod(void.class, "main", String[].class);
@@ -74,6 +77,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         phaseContext.getServiceTarget()
                 .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME), startService)
                 .addDependency(ApplicationClientDeploymentService.SERVICE_NAME, ApplicationClientDeploymentService.class, startService.getApplicationClientDeploymentServiceInjectedValue())
+                .addDependency(component.getCreateServiceName(), Component.class, startService.getApplicationClientComponent())
                 .install();
     }
 
