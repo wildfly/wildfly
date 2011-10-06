@@ -369,7 +369,7 @@ public abstract class AbstractSubsystemTest {
                 Assert.assertTrue("Missing: " + key + "\n" + node1 + "\n" + node2, node2.has(key));
                 final ModelNode child2 = node2.get(key);
                 if (child1.isDefined()) {
-                    Assert.assertTrue(child1.toString(), child2.isDefined());
+                    Assert.assertTrue("key="+ key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
                     stack.get().push(key + "/");
                     compare(child1, child2);
                     stack.get().pop();

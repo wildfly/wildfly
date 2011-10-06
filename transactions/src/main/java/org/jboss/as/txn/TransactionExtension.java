@@ -527,13 +527,41 @@ public class TransactionExtension implements Extension {
         static final TransactionDescribeHandler INSTANCE = new TransactionDescribeHandler();
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            ModelNode add = createEmptyAddOperation();
+            /*ModelNode add = createEmptyAddOperation();
 
             final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
             context.getResult().add(add);
 
-            context.completeStep();
+            context.completeStep();         */
+
+
+        final ModelNode result = context.getResult();
+        final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
+        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+
+        final ModelNode subsystemAdd = new ModelNode();
+        subsystemAdd.get(OP).set(ADD);
+        subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
+        if (subModel.hasDefined(CommonAttributes.CONFIGURATION)) {
+            subsystemAdd.get(CommonAttributes.CONFIGURATION).set(subModel.get(CommonAttributes.CONFIGURATION));
+        }
+        result.add(subsystemAdd);
+        /*if (subModel.hasDefined(Constants.CONNECTOR)) {
+            for (final Property connector : subModel.get(Constants.CONNECTOR).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(Constants.CONNECTOR, connector.getName());
+                result.add(WebConnectorAdd.getRecreateOperation(address, connector.getValue()));
+            }
+        }
+        if (subModel.hasDefined(Constants.VIRTUAL_SERVER)) {
+            for (final Property host : subModel.get(Constants.VIRTUAL_SERVER).asPropertyList()) {
+                final ModelNode address = rootAddress.toModelNode();
+                address.add(Constants.VIRTUAL_SERVER, host.getName());
+                result.add(WebVirtualHostAdd.getAddOperation(address, host.getValue()));
+            }
+        } */
+        context.completeStep();
         }
 
         @Override

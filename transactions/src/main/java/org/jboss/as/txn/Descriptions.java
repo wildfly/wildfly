@@ -4,10 +4,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -39,18 +42,19 @@ public class Descriptions {
             subsystem.get(ModelDescriptionConstants.ATTRIBUTES, statString, ModelDescriptionConstants.TYPE).set(ModelType.LONG);
         }
 
-        subsystem.get(CHILDREN, CommonAttributes.CORE_ENVIRONMENT, DESCRIPTION).set(bundle.getString("core-environment"));
-        subsystem.get(CHILDREN, CommonAttributes.CORE_ENVIRONMENT, MAX_OCCURS).set(1);
 
-        subsystem.get(CHILDREN, CommonAttributes.RECOVERY_ENVIRONMENT, DESCRIPTION).set(bundle.getString("recovery-environment"));
-        subsystem.get(CHILDREN, CommonAttributes.RECOVERY_ENVIRONMENT, MAX_OCCURS).set(1);
+        //subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.CORE_ENVIRONMENT, DESCRIPTION).set(bundle.getString("configuration"));
+        subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.CORE_ENVIRONMENT, MIN_OCCURS).set(1);
+        subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.CORE_ENVIRONMENT).set(getCoreEnvironmentDescription(locale));
 
-        subsystem.get(CHILDREN, CommonAttributes.COORDINATOR_ENVIRONMENT, DESCRIPTION).set(bundle.getString("coordinator-environment"));
-        subsystem.get(CHILDREN, CommonAttributes.COORDINATOR_ENVIRONMENT, MAX_OCCURS).set(1);
+        subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.RECOVERY_ENVIRONMENT, MIN_OCCURS).set(1);
+        subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.RECOVERY_ENVIRONMENT).set(getRecoveryEnvironmentDescription(locale));
 
-        subsystem.get(CHILDREN, CommonAttributes.OBJECT_STORE, DESCRIPTION).set(bundle.getString("object-store"));
-        subsystem.get(CHILDREN, CommonAttributes.OBJECT_STORE, MAX_OCCURS).set(1);
+        subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.COORDINATOR_ENVIRONMENT, MIN_OCCURS).set(1);
+        subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.COORDINATOR_ENVIRONMENT).set(getCoordinatorEnvironmentDescription(locale));
 
+        subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.OBJECT_STORE, MIN_OCCURS).set(1);
+        subsystem.get(CHILDREN, CommonAttributes.CONFIGURATION, CommonAttributes.OBJECT_STORE).set(getObjectStoreDescription(locale));
 
         return subsystem;
     }
@@ -180,8 +184,19 @@ public class Descriptions {
         op.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("txn.add"));
         op.get(OPERATION_NAME).set(ADD);
 
-        op.get(REQUEST_PROPERTIES).setEmptyObject();
-        op.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+        op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.CORE_ENVIRONMENT, MIN_OCCURS).set(1);
+                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.CORE_ENVIRONMENT).set(getCoreEnvironmentAddDescription(locale));
+
+                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.RECOVERY_ENVIRONMENT, MIN_OCCURS).set(1);
+                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.RECOVERY_ENVIRONMENT).set(getRecoveryEnvironmentAddDescription(locale));
+
+                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.COORDINATOR_ENVIRONMENT, MIN_OCCURS).set(1);
+                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.COORDINATOR_ENVIRONMENT).set(getCoordinatorEnvironmentAddDescription(locale));
+
+                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.OBJECT_STORE, MIN_OCCURS).set(1);
+                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.OBJECT_STORE).set(getObjectStoreAddDescription(locale));
+
+           op.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
 
         return op;
     }

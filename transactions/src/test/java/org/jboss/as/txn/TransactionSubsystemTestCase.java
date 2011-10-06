@@ -62,12 +62,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 return OperationContext.Type.MANAGEMENT;
             }
 
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1797
-                return null;
-            }
         };
     }
 }
