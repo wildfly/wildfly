@@ -51,15 +51,17 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue;
     private final Method mainMethod;
     private final String[] parameters;
+    private final ClassLoader classLoader;
 
     private Thread thread;
 
     private final Logger logger = Logger.getLogger(ApplicationClientStartService.class);
 
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
+        this.classLoader = classLoader;
     }
 
     @Override
@@ -68,10 +70,12 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                ClassLoader oldTccl = SecurityActions.getContextClassLoader();
                 try {
+                    SecurityActions.setContextClassLoader(classLoader);
                     applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
                     NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
-                    mainMethod.invoke(null,new Object[] { parameters});
+                    mainMethod.invoke(null, new Object[]{parameters});
                 } catch (InvocationTargetException e) {
                     logger.error(e.getTargetException(), e.getTargetException());
                 } catch (IllegalAccessException e) {
@@ -79,6 +83,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                 } catch (InterruptedException e) {
                     logger.error(e);
                 } finally {
+                    SecurityActions.setContextClassLoader(oldTccl);
                     NamespaceContextSelector.popCurrentSelector();
                     CurrentServiceContainer.getServiceContainer().shutdown();
                 }

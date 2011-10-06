@@ -22,6 +22,12 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
+
+import java.util.List;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -32,12 +38,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
-
-import java.util.List;
-
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -70,6 +70,9 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
                 for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                     applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
                 }
+                for (final ComponentDescription componentDescription : subdeployment.getAttachmentList(org.jboss.as.ee.component.Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
+                    applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
+                }
                 subdeployment.putAttachment(EE_APPLICATION_DESCRIPTION, applicationDescription);
             }
         } else if (deploymentUnit.getParent() == null) {
@@ -87,6 +90,9 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
                 return;
             }
             for (ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
+                applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
+            }
+            for (final ComponentDescription componentDescription : deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
                 applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
             }
         }

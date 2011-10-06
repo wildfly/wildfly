@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import java.util.Collection;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -35,8 +37,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-
-import java.util.Collection;
 
 /**
  * Deployment processor responsible for creating a {@link org.jboss.as.ee.component.EEModuleConfiguration} from a {@link org.jboss.as.ee.component.EEModuleDescription} and
@@ -66,12 +66,19 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
         final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
         if (componentDescriptions != null) {
             for (ComponentDescription componentDescription : componentDescriptions) {
-                logger.debug("Configuring component class: " + componentDescription.getComponentClassName() + " named " + componentDescription.getComponentName());
-                final ComponentConfiguration componentConfiguration = componentDescription.createConfiguration(applicationDescription);
-                for (ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
-                    componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
+                if (componentDescription.isInstall()) {
+                    logger.debug("Configuring component class: " + componentDescription.getComponentClassName() + " named " + componentDescription.getComponentName());
+                    final ComponentConfiguration componentConfiguration = componentDescription.createConfiguration(applicationDescription);
+                    for (ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
+                        if (componentDescription.isInstall()) {
+                            componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
+                        }
+                    }
+                    //give the configurators a chance to prevent component install
+                    if (componentDescription.isInstall()) {
+                        moduleConfiguration.addComponentConfiguration(componentConfiguration);
+                    }
                 }
-                moduleConfiguration.addComponentConfiguration(componentConfiguration);
             }
         }
 

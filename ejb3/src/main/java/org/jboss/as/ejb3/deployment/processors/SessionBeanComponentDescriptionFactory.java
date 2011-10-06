@@ -22,6 +22,13 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.lang.reflect.Modifier;
+import java.util.List;
+
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -46,12 +53,6 @@ import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionType;
 import org.jboss.msc.service.ServiceName;
 
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import java.lang.reflect.Modifier;
-import java.util.List;
-
 /**
  * User: jpai
  */
@@ -64,12 +65,22 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
     private static final DotName SINGLETON_ANNOTATION = DotName.createSimple(Singleton.class.getName());
 
     /**
+     * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
+     * the deployment, but do not actuall install them
+     */
+    private final boolean appclient;
+
+    public SessionBeanComponentDescriptionFactory(final boolean appclient) {
+        this.appclient = appclient;
+    }
+
+    /**
      * Process annotations and merge any available metadata at the same time.
      */
     @Override
     protected void processAnnotations(final DeploymentUnit deploymentUnit, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
 
-        if(MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
+        if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
             return;
         }
 
@@ -146,8 +157,14 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     throw new IllegalArgumentException("Unknown session bean type: " + sessionBeanType);
             }
 
-            // Add this component description to module description
-            ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
+            if (appclient) {
+                deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, sessionBeanDescription);
+                sessionBeanDescription.setInstall(false);
+
+            } else {
+                // Add this component description to module description
+                ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
+            }
         }
 
         EjbDeploymentMarker.mark(deploymentUnit);
@@ -203,8 +220,8 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         // the important bit is to skip already processed EJBs via annotations
         if (ejbJarDescription.hasComponent(beanName)) {
             final ComponentDescription description = eeModuleDescription.getComponentByName(beanName);
-            if(description instanceof SessionBeanComponentDescription) {
-                ((SessionBeanComponentDescription)description).setDescriptorData(sessionBean);
+            if (description instanceof SessionBeanComponentDescription) {
+                ((SessionBeanComponentDescription) description).setDescriptorData(sessionBean);
             } else {
                 throw new DeploymentUnitProcessingException("Session bean with name " + beanName + " referenced in ejb-jar.xml could not be created, as existing non session bean component with same name already exists: " + description);
             }
@@ -230,7 +247,14 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             default:
                 throw new IllegalArgumentException("Unknown session bean type: " + sessionType);
         }
-        ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
+        if (appclient) {
+            deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, sessionBeanDescription);
+            sessionBeanDescription.setInstall(false);
+
+        } else {
+            // Add this component description to module description
+            ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
+        }
         sessionBeanDescription.setDescriptorData(sessionBean);
     }
 

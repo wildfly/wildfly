@@ -25,14 +25,13 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 import javax.interceptor.InvocationContext;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -55,6 +54,12 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
      */
     private static final Logger logger = Logger.getLogger(SessionBeanXmlDescriptorProcessor.class);
 
+    private final boolean appclient;
+
+    public SessionBeanXmlDescriptorProcessor(final boolean appclient) {
+        this.appclient = appclient;
+    }
+
     @Override
     protected Class<SessionBeanMetaData> getMetaDataType() {
         return SessionBeanMetaData.class;
@@ -73,14 +78,26 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
     @Override
     protected void processBeanMetaData(SessionBeanMetaData sessionBean, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         // get the module description
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final String applicationName = moduleDescription.getApplicationName();
 
         final String beanName = sessionBean.getName();
-        final SessionBeanComponentDescription sessionBeanDescription = (SessionBeanComponentDescription) moduleDescription.getComponentByName(beanName);
+        SessionBeanComponentDescription sessionBeanDescription = (SessionBeanComponentDescription) moduleDescription.getComponentByName(beanName);
+
+        if (appclient) {
+            if (sessionBeanDescription == null) {
+                for (final ComponentDescription component : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
+                    if (component.getComponentName().equals(beanName)) {
+                        sessionBeanDescription = (SessionBeanComponentDescription) component;
+                        break;
+                    }
+                }
+            }
+        }
+        if (sessionBeanDescription == null) {
+            throw new DeploymentUnitProcessingException("Could not find session bean with name " + beanName);
+        }
 
         sessionBeanDescription.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", sessionBean));
 

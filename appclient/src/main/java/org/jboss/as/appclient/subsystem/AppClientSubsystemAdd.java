@@ -30,6 +30,7 @@ import java.util.Locale;
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
+import org.jboss.as.appclient.deployment.ApplicationClientParsingDeploymentProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientStartProcessor;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -85,6 +86,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_APP_CLIENT_XML, new ApplicationClientParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_MANIFEST, new ApplicationClientManifestProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_ACTIVE, new ActiveApplicationClientProcessor(deployment));
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APPLICATION_CLIENT, new ApplicationClientStartProcessor(parameters.toArray(EMPTY_STRING)));

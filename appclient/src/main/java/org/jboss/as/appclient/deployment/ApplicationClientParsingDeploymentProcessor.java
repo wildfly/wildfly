@@ -65,7 +65,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(xmlReader);
                 deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA, data);
-                DeploymentDescriptorEnvironment environment = new DeploymentDescriptorEnvironment("java:module/env",data.getEnvironmentRefsGroupMetaData() );
+                DeploymentDescriptorEnvironment environment = new DeploymentDescriptorEnvironment("java:module/env/",data.getEnvironmentRefsGroupMetaData() );
                 deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, environment);
 
             } catch (XMLStreamException e) {

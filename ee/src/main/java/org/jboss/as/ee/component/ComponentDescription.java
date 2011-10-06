@@ -22,6 +22,25 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -48,25 +67,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -117,6 +117,11 @@ public class ComponentDescription {
      * If this component is deployed in a bean deployment archive this stores the id of the BDA
      */
     private String beanDeploymentArchiveId;
+
+    /**
+     * If this is set to false it will prevent the component from being installed.
+     */
+    private boolean install = true;
 
     /**
      * Construct a new instance.
@@ -963,5 +968,13 @@ public class ComponentDescription {
 
     public void setBeanDeploymentArchiveId(final String beanDeploymentArchiveId) {
         this.beanDeploymentArchiveId = beanDeploymentArchiveId;
+    }
+
+    public boolean isInstall() {
+        return install;
+    }
+
+    public void setInstall(final boolean install) {
+        this.install = install;
     }
 }

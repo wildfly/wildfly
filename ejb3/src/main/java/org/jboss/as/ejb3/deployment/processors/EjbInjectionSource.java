@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
+
+import java.util.Set;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -41,10 +45,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Set;
-
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
 /**
  * Implementation of {@link InjectionSource} responsible for finding a specific bean instance with a bean name and interface.
@@ -74,7 +74,7 @@ public class EjbInjectionSource extends InjectionSource {
             throw new DeploymentUnitProcessingException(error);
         }
         if(remoteFactory != null) {
-            serviceBuilder.addDependency(resolvedViewName);
+            //because we are using the ejb: lookup namespace we do not need a dependency
             injector.inject(remoteFactory);
         } else {
             serviceBuilder.addDependency(resolvedViewName, ComponentView.class, new ViewManagedReferenceFactory.Injector(injector));
