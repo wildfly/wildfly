@@ -44,7 +44,7 @@ import org.osgi.framework.ServiceReference;
  *
  * @author thomas.diesler@jboss.com
  */
-@WebServlet(name = "SimpleClientServlet", urlPatterns = { "/servlet" })
+@WebServlet(name = "SimpleRestEndpoint", urlPatterns = { "/servlet" })
 public class SimpleClientServlet extends HttpServlet {
 
     @Resource

@@ -33,7 +33,7 @@ public class SimpleRestEndpoint {
     public Collection<String> listConfigurations() {
         ArrayList<String> list = new ArrayList<String>();
         try {
-            for (Configuration config : getService().listConfigurations(null)) {
+            for (Configuration config : getConfigurationAdmin().listConfigurations(null)) {
                 list.add(config.getPid());
             }
         } catch (Exception ex) {
@@ -44,12 +44,12 @@ public class SimpleRestEndpoint {
 
     // [TODO] initialize this in a defined lifecycle step
     private ConfigurationAdmin service;
-    private ConfigurationAdmin getService() {
+    private ConfigurationAdmin getConfigurationAdmin() {
         if (service == null) {
 
             if (context == null) {
                 log.warnf("BundleContext not injected");
-                context = getBundleContextFromClass(ConfigurationAdmin.class);
+                context = getBundleContextFromClass();
             }
 
             ServiceTracker tracker = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null) {
@@ -73,8 +73,9 @@ public class SimpleRestEndpoint {
         return service;
     }
 
-    private BundleContext getBundleContextFromClass(Class<?> serviceClass) {
-        Bundle bundle = ((BundleReference) serviceClass.getClassLoader()).getBundle();
+    private BundleContext getBundleContextFromClass() {
+        BundleReference bref = (BundleReference) ConfigurationAdmin.class.getClassLoader();
+        Bundle bundle = bref.getBundle();
         if (bundle.getState() != Bundle.ACTIVE) {
             try {
                 bundle.start();
