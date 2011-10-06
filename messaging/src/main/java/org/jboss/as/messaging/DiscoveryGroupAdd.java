@@ -152,8 +152,8 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
 
     static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final SocketBinding socketBinding) {
 
-        final String localAddress = socketBinding.getAddress().toString();
-        final String groupAddress = socketBinding.getMulticastAddress().toString();
+        final String localAddress = socketBinding.getAddress().getHostAddress();
+        final String groupAddress = socketBinding.getMulticastAddress().getHostAddress();
         final int groupPort = socketBinding.getMulticastPort();
         final long refreshTimeout = config.getRefreshTimeout();
         final long initialWaitTimeout = config.getDiscoveryInitialWaitTimeout();

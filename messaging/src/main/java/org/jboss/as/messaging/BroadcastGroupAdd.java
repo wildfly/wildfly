@@ -153,8 +153,8 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler implements Descrip
 
     static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final BroadcastGroupConfiguration config, final SocketBinding socketBinding) {
 
-        final String localAddress = socketBinding.getAddress().toString();
-        final String groupAddress = socketBinding.getMulticastAddress().toString();
+        final String localAddress = socketBinding.getAddress().getHostAddress();
+        final String groupAddress = socketBinding.getMulticastAddress().getHostAddress();
         final int localPort = socketBinding.getPort();
         final int groupPort = socketBinding.getMulticastPort();
         final long broadcastPeriod = config.getBroadcastPeriod();
