@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -535,6 +536,26 @@ class ModClusterSubsystemDescriptions {
 
         final ModelNode node = new ModelNode();
         getSSLCommonDescription(node, ATTRIBUTES, bundle);
+        return node;
+    }
+
+    public static ModelNode getModClusterAddSSL(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl-add"));
+
+        return node;
+    }
+
+    public static ModelNode getModClusterRemoveSSL(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(REMOVE);
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl-remove"));
+
         return node;
     }
 }

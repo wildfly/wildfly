@@ -22,7 +22,9 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 import java.util.Locale;
@@ -131,6 +133,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         // SSL children.
         final ManagementResourceRegistration ssl = registration.registerSubModel(sslConfigurationPath, ModClusterSubsystemDescriptionProviders.SSL);
+        ssl.registerOperationHandler(ADD, ModClusterAddSSL.INSTANCE, ModClusterAddSSL.INSTANCE, false);
+        ssl.registerOperationHandler(REMOVE, ModClusterRemoveSSL.INSTANCE, ModClusterRemoveSSL.INSTANCE, false);
         ssl.registerReadWriteAttribute(CommonAttributes.KEY_ALIAS, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         ssl.registerReadWriteAttribute(CommonAttributes.PASSWORD, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         ssl.registerReadWriteAttribute(CommonAttributes.CERTIFICATE_KEY_FILE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
