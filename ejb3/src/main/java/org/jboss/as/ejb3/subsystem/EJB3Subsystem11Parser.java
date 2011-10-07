@@ -161,7 +161,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                     switch (element) {
                         case MDB: {
                             // read <mdb>
-                            this.parseMDB(reader, operations);
+                            this.parseMDB(reader, operations, ejb3SubsystemAddOperation);
                             break;
                         }
                         case POOLS: {
@@ -171,7 +171,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                         }
                         case SESSION_BEAN: {
                             // read <session-bean>
-                            this.parseSessionBean(reader, operations);
+                            this.parseSessionBean(reader, operations, ejb3SubsystemAddOperation);
                             break;
                         }
                         case TIMER_SERVICE: {
@@ -314,7 +314,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
 
     }
 
-    private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         ModelNode mdbModelNode = new ModelNode();
         // no attributes expected
         requireNoAttributes(reader);
@@ -323,18 +323,12 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case BEAN_INSTANCE_POOL_REF: {
                     final String poolName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName());
-                    final ModelNode setDefaultMDBPoolOperation =
-                            this.createSetDefaultWriteAttributeOperation(EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL,
-                                    poolName, reader.getLocation());
-                    operations.add(setDefaultMDBPoolOperation);
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader.getLocation());
                     break;
                 }
                 case RESOURCE_ADAPTER_REF: {
                     final String resourceAdapterName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.RESOURCE_ADAPTER_NAME.getLocalName());
-                    final ModelNode setDefaultRANameOperation =
-                            this.createSetDefaultWriteAttributeOperation(EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME,
-                                    resourceAdapterName, reader.getLocation());
-                    operations.add(setDefaultRANameOperation);
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.parseAndSetParameter(resourceAdapterName, ejb3SubsystemAddOperation, reader.getLocation());
                     break;
                 }
                 default: {
@@ -346,14 +340,14 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
 
     }
 
-    private void parseSessionBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
+    private void parseSessionBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case STATELESS: {
-                    this.parseStatelessBean(reader, operations);
+                    this.parseStatelessBean(reader, operations, ejb3SubsystemAddOperation);
                     break;
                 }
                 default: {
@@ -363,7 +357,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
         }
     }
 
-    private void parseStatelessBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
+    private void parseStatelessBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
@@ -371,10 +365,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case BEAN_INSTANCE_POOL_REF: {
                     final String poolName = readStringAttributeElement(reader, EJB3SubsystemXMLAttribute.POOL_NAME.getLocalName());
-                    final ModelNode setDefaultSLSBPoolOperation =
-                            this.createSetDefaultWriteAttributeOperation(EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL,
-                                    poolName, reader.getLocation());
-                    operations.add(setDefaultSLSBPoolOperation);
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_SLSB_INSTANCE_POOL.parseAndSetParameter(poolName, ejb3SubsystemAddOperation, reader.getLocation());
                     break;
                 }
                 default: {
