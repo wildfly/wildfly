@@ -74,8 +74,9 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
                 if (endpointClassName.equals(container.getComponentClassName())) {
                     for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
                         final String ejbName = container.getComponentName();
-                        if (moduleDescription.getComponentsByClassName(handlerClassName) == null) {
-                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(ejbName, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
+                        final String handlerID = ejbName + "-" + handlerClassName;
+                        if (moduleDescription.getComponentByName(handlerID) == null) {
+                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerID, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
                             moduleDescription.addComponent(jaxwsHandlerDescription);
                             // TODO: register dependency on WS endpoint service
                             final ServiceName serviceName = EndpointService.getServiceName(unit, ejbName);
@@ -93,14 +94,15 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
             for (final ServletMetaData servletMD : ddServlets) {
                 if (endpointClassName.equals(ASHelper.getEndpointClassName(servletMD))) {
                     found = true;
-                    final String endpointName = ASHelper.getEndpointName(servletMD);
+                    final String pojoName = ASHelper.getEndpointName(servletMD);
 
                     for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
-                        if (moduleDescription.getComponentsByClassName(handlerClassName) == null) {
-                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(endpointName, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
+                        final String handlerID = pojoName + "-" + handlerClassName;
+                        if (moduleDescription.getComponentByName(handlerID) == null) {
+                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(pojoName + "-" + handlerClassName, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
                             moduleDescription.addComponent(jaxwsHandlerDescription);
                             // TODO: register dependency on WS endpoint service
-                            final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
+                            final ServiceName serviceName = EndpointService.getServiceName(unit, pojoName);
                             jaxwsHandlerDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
                         }
                     }

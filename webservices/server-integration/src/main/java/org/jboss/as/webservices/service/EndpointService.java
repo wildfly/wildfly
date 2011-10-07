@@ -43,8 +43,6 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
-import javax.management.ObjectName;
-
 /**
  * WS endpoint service; this is meant for setting the lazy deployment time info into the Endpoint (stuff coming from
  * dependencies upon other AS services that are started during the deployment)
@@ -115,4 +113,5 @@ public final class EndpointService implements Service<Endpoint> {
         return metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
                 .unprefixSecurityDomain(metaDataSecurityDomain.trim());
     }
+
 }
