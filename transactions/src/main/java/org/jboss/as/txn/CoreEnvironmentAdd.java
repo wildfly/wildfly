@@ -42,13 +42,22 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.omg.CORBA.ORB;
 
 /**
@@ -60,74 +69,133 @@ public class CoreEnvironmentAdd extends AbstractBoottimeAddStepHandler implement
     public static final CoreEnvironmentAdd INSTANCE = new CoreEnvironmentAdd();
     private static final ServiceName INTERNAL_CORE_ENV_VAR_PATH = TxnServices.JBOSS_TXN_PATHS.append("core-var-dir");
 
+    public static final SimpleAttributeDefinition NODE_IDENTIFIER = new SimpleAttributeDefinitionBuilder(CommonAttributes.NODE_IDENTIFIER, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("1"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
+    public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, false)
+            .setAlternatives("process-id-socket-binding")
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
+    public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("process-id-socket-binding", ModelType.STRING, false)
+            .setValidator(new StringLengthValidator(1, true))
+            .setAlternatives("process-id-uuid")
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setXmlName(Attribute.BINDING.getLocalName())
+            .build();
+
+    public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_MAX_PORTS = new SimpleAttributeDefinitionBuilder("process-id-socket-max-ports", ModelType.INT, true)
+            .setValidator(new IntRangeValidator(1, true))
+            .setDefaultValue(new ModelNode().set(10))
+            .setRequires("process-id-socket-binding")
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setXmlName(Attribute.SOCKET_PROCESS_ID_MAX_PORTS.getLocalName())
+            .build();
+
+    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
+    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("var"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
 
     /**
      * Description provider for the strict-max-pool add operation
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return Descriptions.getRecoveryEnvironmentAddDescription(locale);
+        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
+        return Descriptions.getCoreEnvironmentAddDescription(locale);
     }
 
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode coreEnvModel) throws OperationFailedException {
-        final String nodeIdentifier = operation.hasDefined(NODE_IDENTIFIER) ? operation.get(NODE_IDENTIFIER).asString() : "1";
-        final ModelNode processId = operation.require(PROCESS_ID);
 
-        coreEnvModel.get(PROCESS_ID).set(operation.get(PROCESS_ID));
-        coreEnvModel.get(NODE_IDENTIFIER).set(nodeIdentifier);
+        NODE_IDENTIFIER.validateAndSet(operation, coreEnvModel);
+        PATH.validateAndSet(operation, coreEnvModel);
+        RELATIVE_TO.validateAndSet(operation, coreEnvModel);
 
-
+        // We have some complex logic for the 'process-id' stuff because of the alternatives
+        if (operation.hasDefined(PROCESS_ID_UUID.getName()) && operation.get(PROCESS_ID_UUID.getName()).asBoolean()) {
+            PROCESS_ID_UUID.validateAndSet(operation, coreEnvModel);
+            if (operation.hasDefined(PROCESS_ID_SOCKET_BINDING.getName())) {
+                throw new OperationFailedException(new ModelNode().set(String.format("%s must be undefined if %s is 'true'.",
+                        PROCESS_ID_SOCKET_BINDING.getName(), PROCESS_ID_UUID.getName())));
+            } else if (operation.hasDefined(PROCESS_ID_SOCKET_MAX_PORTS.getName())) {
+                throw new OperationFailedException(new ModelNode().set(String.format("%s must be undefined if %s is 'true'.",
+                        PROCESS_ID_SOCKET_MAX_PORTS.getName(), PROCESS_ID_UUID.getName())));
+            }
+            coreEnvModel.get(PROCESS_ID_SOCKET_BINDING.getName());
+            coreEnvModel.get(PROCESS_ID_SOCKET_MAX_PORTS.getName());
+        } else if (operation.hasDefined(PROCESS_ID_SOCKET_BINDING.getName())) {
+            PROCESS_ID_SOCKET_BINDING.validateAndSet(operation, coreEnvModel);
+            PROCESS_ID_SOCKET_MAX_PORTS.validateAndSet(operation, coreEnvModel);
+            coreEnvModel.get(PROCESS_ID_UUID.getName()).set(false);
+        } else if (operation.hasDefined(PROCESS_ID_SOCKET_MAX_PORTS.getName())) {
+            throw new OperationFailedException(new ModelNode().set(String.format("%s must be defined if %s is defined.",
+                    PROCESS_ID_SOCKET_BINDING.getName(), PROCESS_ID_SOCKET_MAX_PORTS.getName())));
+        } else {
+            // not uuid and also not sockets!
+            throw new OperationFailedException(new ModelNode().set(String.format("Either %s must be 'true' or  %s must be defined.",
+                    PROCESS_ID_UUID.getName(), PROCESS_ID_SOCKET_BINDING.getName())));
+        }
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode coreEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
 
-        final String nodeIdentifier = operation.hasDefined(NODE_IDENTIFIER) ? operation.get(NODE_IDENTIFIER).asString() : "1";
-        final ModelNode processId = operation.hasDefined(PROCESS_ID) ? operation.get(PROCESS_ID) : new ModelNode();
-        final String varDirPathRef = operation.hasDefined(RELATIVE_TO) ? operation.get(RELATIVE_TO).asString() : "jboss.server.data.dir";
-        final String varDirPath = operation.hasDefined(PATH) ? operation.get(PATH).asString() : "var";
-        final int maxPorts = 10;
+        // Configure the core configuration.
+        final String nodeIdentifier = NODE_IDENTIFIER.validateResolvedOperation(coreEnvModel).asString();
+        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier);
+
+        String socketBindingName = null;
+        if (PROCESS_ID_UUID.validateResolvedOperation(coreEnvModel).asBoolean()) {
+            // Use the UUID based id
+            UuidProcessId id = new UuidProcessId();
+            coreEnvironmentService.setProcessImplementation(id);
+        } else {
+            // Use the socket process id
+            coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
+            socketBindingName = PROCESS_ID_SOCKET_BINDING.validateResolvedOperation(coreEnvModel).asString();
+            int ports = PROCESS_ID_SOCKET_MAX_PORTS.validateResolvedOperation(coreEnvModel).asInt();
+            coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
+        }
+
+        String varDirPathRef = null;
+        // Check for empty string value for relative-to, which disables the default
+        final ModelNode relativePathNode = coreEnvModel.get(RELATIVE_TO.getName());
+        if (!relativePathNode.isDefined() || relativePathNode.asString().length() > 0) {
+            varDirPathRef = RELATIVE_TO.validateResolvedOperation(coreEnvModel).asString();
+        }
+        final String varDirPath = PATH.validateResolvedOperation(coreEnvModel).asString();
 
         if (ROOT_LOGGER.isDebugEnabled()) {
             ROOT_LOGGER.debugf("nodeIdentifier=%s\n", nodeIdentifier);
             ROOT_LOGGER.debugf("varDirPathRef=%s, varDirPath=%s\n", varDirPathRef, varDirPath);
-
         }
 
-        // Configure the core configuration.
-        String socketBindingName = null;
-        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, varDirPath);
-        if (processId.hasDefined(ProcessIdType.UUID.getName())) {
-            // Use the UUID based id
-            UuidProcessId id = new UuidProcessId();
-            coreEnvironmentService.setProcessImplementation(id);
-        } else if (processId.hasDefined(ProcessIdType.SOCKET.getName())) {
-            // Use the socket process id
-            coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
-            ModelNode socket = processId.get(ProcessIdType.SOCKET.getName());
-            socketBindingName = socket.require(BINDING).asString();
-            if (socket.hasDefined(SOCKET_PROCESS_ID_MAX_PORTS)) {
-                int ports = socket.get(SOCKET_PROCESS_ID_MAX_PORTS).asInt(maxPorts);
-                coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
-            }
-        } else {
-            // Default to UUID implementation
-            UuidProcessId id = new UuidProcessId();
-            coreEnvironmentService.setProcessImplementation(id);
-        }
+        ServiceTarget target = context.getServiceTarget();
+        ServiceController<String> varDirRPS = varDirPathRef != null
+                ? RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, varDirPathRef, target)
+                : AbsolutePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, target);
+        controllers.add(varDirRPS);
+
         ServiceBuilder<?> coreEnvBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT, coreEnvironmentService);
         if (socketBindingName != null) {
             // Add a dependency on the socket id binding
             ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
             coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
         }
-        ServiceController<String> varDirRPS = RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, varDirPathRef, context.getServiceTarget());
-        controllers.add(varDirRPS);
-        controllers.add(coreEnvBuilder.addDependency(varDirRPS.getName(), String.class, coreEnvironmentService.getPathInjector())
+        controllers.add(coreEnvBuilder.addDependency(INTERNAL_CORE_ENV_VAR_PATH, String.class, coreEnvironmentService.getPathInjector())
                 .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());

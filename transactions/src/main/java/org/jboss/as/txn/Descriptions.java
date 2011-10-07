@@ -8,9 +8,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -19,8 +18,6 @@ import org.jboss.dmr.ModelType;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
-import javax.ejb.Local;
 
 public class Descriptions {
 
@@ -97,29 +94,12 @@ public class Descriptions {
         coreEnvModelNode.get(ModelDescriptionConstants.TAIL_COMMENT_ALLOWED).set(true);
         coreEnvModelNode.get(ModelDescriptionConstants.NAMESPACE).set(Namespace.TRANSACTIONS_1_0.getUriString());
 
-        // core-environment.node-identifier
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.NODE_IDENTIFIER, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("core-environment.node-identifier"));
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.NODE_IDENTIFIER, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.NODE_IDENTIFIER, ModelDescriptionConstants.DEFAULT).set(1);
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.NODE_IDENTIFIER, ModelDescriptionConstants.REQUIRED).set(false);
-        // core-environment/process-id
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.PROCESS_ID, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("core-environment.process-id"));
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.PROCESS_ID, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.PROCESS_ID, ModelDescriptionConstants.MIN_LENGTH).set(1);
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.PROCESS_ID, ModelDescriptionConstants.REQUIRED).set(true);
-        // core-environment/process-id/uuid
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.UUID, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("core-environment.process-id.uuid"));
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.UUID, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.UUID, ModelDescriptionConstants.MIN_LENGTH).set(0);
-        coreEnvModelNode.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.UUID, ModelDescriptionConstants.REQUIRED).set(false);
-
-
-        /* Not currently used
-        coreEnvModelNode.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, DESCRIPTION).set(bundle.getString("core-environment.socket-process-id-max-ports"));
-        coreEnvModelNode.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, TYPE).set(ModelType.INT);
-        coreEnvModelNode.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, DEFAULT).set(10);
-        coreEnvModelNode.get(ATTRIBUTES, CORE_ENVIRONMENT, VALUE_TYPE, SOCKET_PROCESS_ID_MAX_PORTS, REQUIRED).set(false);
-        */
+        CoreEnvironmentAdd.NODE_IDENTIFIER.addResourceAttributeDescription(bundle, "core-environment", coreEnvModelNode);
+        CoreEnvironmentAdd.PROCESS_ID_UUID.addResourceAttributeDescription(bundle, "core-environment", coreEnvModelNode);
+        CoreEnvironmentAdd.PROCESS_ID_SOCKET_BINDING.addResourceAttributeDescription(bundle, "core-environment", coreEnvModelNode);
+        CoreEnvironmentAdd.PROCESS_ID_SOCKET_MAX_PORTS.addResourceAttributeDescription(bundle, "core-environment", coreEnvModelNode);
+        CoreEnvironmentAdd.RELATIVE_TO.addResourceAttributeDescription(bundle, "core-environment", coreEnvModelNode);
+        CoreEnvironmentAdd.PATH.addResourceAttributeDescription(bundle, "core-environment", coreEnvModelNode);
 
         return coreEnvModelNode;
 
@@ -184,19 +164,24 @@ public class Descriptions {
         op.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("txn.add"));
         op.get(OPERATION_NAME).set(ADD);
 
-        op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.CORE_ENVIRONMENT, MIN_OCCURS).set(1);
-                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.CORE_ENVIRONMENT).set(getCoreEnvironmentAddDescription(locale));
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
 
-                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.RECOVERY_ENVIRONMENT, MIN_OCCURS).set(1);
-                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.RECOVERY_ENVIRONMENT).set(getRecoveryEnvironmentAddDescription(locale));
+        op.get(REPLY_PROPERTIES).setEmptyObject();
 
-                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.COORDINATOR_ENVIRONMENT, MIN_OCCURS).set(1);
-                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.COORDINATOR_ENVIRONMENT).set(getCoordinatorEnvironmentAddDescription(locale));
+        return op;
+    }
 
-                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.OBJECT_STORE, MIN_OCCURS).set(1);
-                op.get(REQUEST_PROPERTIES, CommonAttributes.CONFIGURATION, CommonAttributes.OBJECT_STORE).set(getObjectStoreAddDescription(locale));
 
-           op.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
+    static ModelNode getSubsystemRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("txn.remove"));
+        op.get(OPERATION_NAME).set(ADD);
+
+        op.get(REQUEST_PROPERTIES).setEmptyObject();
+
+        op.get(REPLY_PROPERTIES).setEmptyObject();
 
         return op;
     }
@@ -256,20 +241,12 @@ public class Descriptions {
         op.get(ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("core-environment.add"));
         op.get(OPERATION_NAME).set(ADD);
 
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.NODE_IDENTIFIER, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("core-environment.node-identifier"));
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.NODE_IDENTIFIER, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.NODE_IDENTIFIER, ModelDescriptionConstants.DEFAULT).set(1);
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.NODE_IDENTIFIER, ModelDescriptionConstants.REQUIRED).set(false);
-        // core-environment/process-id
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.PROCESS_ID, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("core-environment.process-id"));
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.PROCESS_ID, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.PROCESS_ID, ModelDescriptionConstants.MIN_LENGTH).set(1);
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.PROCESS_ID, ModelDescriptionConstants.REQUIRED).set(true);
-        // core-environment/process-id/uuid
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.UUID, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("core-environment.process-id.uuid"));
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.UUID, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.UUID, ModelDescriptionConstants.MIN_LENGTH).set(0);
-        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES, CommonAttributes.UUID, ModelDescriptionConstants.REQUIRED).set(false);
+        CoreEnvironmentAdd.NODE_IDENTIFIER.addOperationParameterDescription(bundle, "core-environment", op);
+        CoreEnvironmentAdd.PROCESS_ID_UUID.addOperationParameterDescription(bundle, "core-environment", op);
+        CoreEnvironmentAdd.PROCESS_ID_SOCKET_BINDING.addOperationParameterDescription(bundle, "core-environment", op);
+        CoreEnvironmentAdd.PROCESS_ID_SOCKET_MAX_PORTS.addOperationParameterDescription(bundle, "core-environment", op);
+        CoreEnvironmentAdd.RELATIVE_TO.addOperationParameterDescription(bundle, "core-environment", op);
+        CoreEnvironmentAdd.PATH.addOperationParameterDescription(bundle, "core-environment", op);
 
         op.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
 
@@ -323,7 +300,7 @@ public class Descriptions {
     }
 
 
-    static ModelNode getCoordiantorEnvironmentRemoveDescription(Locale locale) {
+    static ModelNode getCoordinatorEnvironmentRemoveDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode description = new ModelNode();
         description.get(OPERATION_NAME).set(REMOVE);
