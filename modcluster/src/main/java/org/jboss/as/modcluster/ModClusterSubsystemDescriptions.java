@@ -495,38 +495,38 @@ class ModClusterSubsystemDescriptions {
 
     private static void getSSLCommonDescription(ModelNode node, String type, ResourceBundle bundle) {
         node.get(TYPE).set(ModelType.OBJECT);
-        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl"));
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl"));
         node.get(REQUIRED).set(false);
 
         node.get(type, CommonAttributes.KEY_ALIAS, TYPE).set(ModelType.STRING);
-        node.get(type, CommonAttributes.KEY_ALIAS, DESCRIPTION).set(bundle.getString("web.connector.ssl.key-alias"));
+        node.get(type, CommonAttributes.KEY_ALIAS, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.key-alias"));
         node.get(type, CommonAttributes.KEY_ALIAS, REQUIRED).set(false);
         node.get(type, CommonAttributes.KEY_ALIAS, DEFAULT).set("changeit");
 
         node.get(type, CommonAttributes.PASSWORD, TYPE).set(ModelType.STRING);
-        node.get(type, CommonAttributes.PASSWORD, DESCRIPTION).set(bundle.getString("web.connector.ssl.password"));
+        node.get(type, CommonAttributes.PASSWORD, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.password"));
         node.get(type, CommonAttributes.PASSWORD, REQUIRED).set(false);
 
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, TYPE).set(ModelType.STRING);
-        node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.certificate-key-file"));
+        node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.certificate-key-file"));
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, REQUIRED).set(false);
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, DEFAULT).set("${user.home}/.keystore");
 
         node.get(type, CommonAttributes.CIPHER_SUITE, TYPE).set(ModelType.STRING);
-        node.get(type, CommonAttributes.CIPHER_SUITE, DESCRIPTION).set(bundle.getString("web.connector.ssl.cipher-suite"));
+        node.get(type, CommonAttributes.CIPHER_SUITE, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.cipher-suite"));
         node.get(type, CommonAttributes.CIPHER_SUITE, REQUIRED).set(false);
 
         node.get(type, CommonAttributes.PROTOCOL, TYPE).set(ModelType.STRING);
-        node.get(type, CommonAttributes.PROTOCOL, DESCRIPTION).set(bundle.getString("web.connector.ssl.protocol"));
+        node.get(type, CommonAttributes.PROTOCOL, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.protocol"));
         node.get(type, CommonAttributes.PROTOCOL, REQUIRED).set(false);
         node.get(type, CommonAttributes.PROTOCOL, DEFAULT).set("TLS");
 
         node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, TYPE).set(ModelType.STRING);
-        node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-certificate-file"));
+        node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.ca-certificate-file"));
         node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, REQUIRED).set(false);
 
         node.get(type, CommonAttributes.CA_REVOCATION_URL, TYPE).set(ModelType.STRING);
-        node.get(type, CommonAttributes.CA_REVOCATION_URL, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-revocation-url"));
+        node.get(type, CommonAttributes.CA_REVOCATION_URL, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.ca-revocation-url"));
         node.get(type, CommonAttributes.CA_REVOCATION_URL, REQUIRED).set(false);
 
     }
