@@ -21,6 +21,8 @@
  */
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -62,8 +64,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 /**
  * Service configuring and starting modcluster.
@@ -174,8 +174,10 @@ class ModClusterService implements ModCluster, Service<ModCluster> {
             config.setStopContextTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
             config.setStopContextTimeoutUnit(TimeUnit.SECONDS);
         }
-        if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT))
-            config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt());
+        if (modelconf.hasDefined(CommonAttributes.SOCKET_TIMEOUT)) {
+            // the default value is 20000 = 20 seconds.
+            config.setSocketTimeout(modelconf.get(CommonAttributes.SOCKET_TIMEOUT).asInt()*1000);
+        }
 
         if (modelconf.hasDefined(CommonAttributes.STICKY_SESSION))
             config.setStickySession(modelconf.get(CommonAttributes.STICKY_SESSION).asBoolean());

@@ -25,11 +25,13 @@ package org.jboss.as.modcluster;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -39,6 +41,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -60,7 +64,13 @@ class ModClusterSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
         node.get(NAMESPACE).set(Namespace.MODCLUSTER.getUriString());
-        getConfigurationCommonDescription(node.get(ATTRIBUTES, CommonAttributes.MOD_CLUSTER_CONFIG), ATTRIBUTES, bundle);
+
+        ModelNode description = node.get(ATTRIBUTES, CommonAttributes.MOD_CLUSTER_CONFIG);
+        description.get(TYPE).set(ModelType.OBJECT);
+        description.get(DESCRIPTION).set(bundle.getString("modcluster.configuration"));
+        description.get(REQUIRED).set(false);
+
+        getConfigurationCommonDescription(description, ATTRIBUTES, bundle);
 
         return node;
     }
@@ -71,6 +81,8 @@ class ModClusterSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("modcluster.add"));
+
+        getConfigurationCommonDescription(node, REQUEST_PROPERTIES, bundle);
         return node;
     }
 
@@ -343,21 +355,25 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.ADVERTISE_SOCKET, DESCRIPTION).set(bundle.getString("modcluster.configuration.advertise-socket"));
         node.get(type, CommonAttributes.ADVERTISE_SOCKET, REQUIRED).set(false);
         node.get(type, CommonAttributes.ADVERTISE_SOCKET, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.ADVERTISE_SOCKET,  DEFAULT).set("224.0.1.105:23364");
 
         node.get(type, CommonAttributes.PROXY_LIST, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.PROXY_LIST, DESCRIPTION).set(bundle.getString("modcluster.configuration.proxy-list"));
         node.get(type, CommonAttributes.PROXY_LIST, REQUIRED).set(false);
         node.get(type, CommonAttributes.PROXY_LIST, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.PROXY_LIST,  DEFAULT).set("");
 
         node.get(type, CommonAttributes.PROXY_URL, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.PROXY_URL, DESCRIPTION).set(bundle.getString("modcluster.configuration.proxy-url"));
         node.get(type, CommonAttributes.PROXY_URL, REQUIRED).set(false);
         node.get(type, CommonAttributes.PROXY_URL, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.PROXY_LIST,  DEFAULT).set("/");
 
         node.get(type, CommonAttributes.ADVERTISE, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.ADVERTISE, DESCRIPTION).set(bundle.getString("modcluster.configuration.advertise"));
         node.get(type, CommonAttributes.ADVERTISE, REQUIRED).set(false);
         node.get(type, CommonAttributes.ADVERTISE, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.ADVERTISE, DEFAULT).set(true);
 
         node.get(type, CommonAttributes.ADVERTISE_SECURITY_KEY, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.ADVERTISE_SECURITY_KEY, DESCRIPTION).set(bundle.getString("modcluster.configuration.advertise-security-key"));
@@ -368,61 +384,78 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.excluded-contexts"));
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, REQUIRED).set(false);
         node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.EXCLUDED_CONTEXTS, DEFAULT).set("ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console");
 
         node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.auto-enable-contexts"));
         node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, REQUIRED).set(false);
         node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.AUTO_ENABLE_CONTEXTS, DEFAULT).set(true);
 
         node.get(type, CommonAttributes.STOP_CONTEXT_TIMEOUT, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.STOP_CONTEXT_TIMEOUT, DESCRIPTION).set(bundle.getString("modcluster.configuration.stop-context-timeout"));
         node.get(type, CommonAttributes.STOP_CONTEXT_TIMEOUT, REQUIRED).set(false);
         node.get(type, CommonAttributes.STOP_CONTEXT_TIMEOUT, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.STOP_CONTEXT_TIMEOUT, DEFAULT).set(10);
+        node.get(type, CommonAttributes.STOP_CONTEXT_TIMEOUT, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
         node.get(type, CommonAttributes.SOCKET_TIMEOUT, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.SOCKET_TIMEOUT, DESCRIPTION).set(bundle.getString("modcluster.configuration.socket-timeout"));
         node.get(type, CommonAttributes.SOCKET_TIMEOUT, REQUIRED).set(false);
         node.get(type, CommonAttributes.SOCKET_TIMEOUT, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.SOCKET_TIMEOUT, DEFAULT).set(20);
+        node.get(type, CommonAttributes.SOCKET_TIMEOUT, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
         node.get(type, CommonAttributes.STICKY_SESSION, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.STICKY_SESSION, DESCRIPTION).set(bundle.getString("modcluster.configuration.sticky-session"));
         node.get(type, CommonAttributes.STICKY_SESSION, REQUIRED).set(false);
-        node.get(type, CommonAttributes.STICKY_SESSION, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.STICKY_SESSION, DEFAULT).set(1);
 
         node.get(type, CommonAttributes.STICKY_SESSION_REMOVE, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.STICKY_SESSION_REMOVE, DESCRIPTION).set(bundle.getString("modcluster.configuration.sticky-session-remove"));
         node.get(type, CommonAttributes.STICKY_SESSION_REMOVE, REQUIRED).set(false);
         node.get(type, CommonAttributes.STICKY_SESSION_REMOVE, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.STICKY_SESSION_REMOVE, DEFAULT).set(false);
 
         node.get(type, CommonAttributes.STICKY_SESSION_FORCE, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.STICKY_SESSION_FORCE, DESCRIPTION).set(bundle.getString("modcluster.configuration.sticky-session-force"));
         node.get(type, CommonAttributes.STICKY_SESSION_FORCE, REQUIRED).set(false);
         node.get(type, CommonAttributes.STICKY_SESSION_FORCE, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.STICKY_SESSION_FORCE, DEFAULT).set(true);
 
         node.get(type, CommonAttributes.WORKER_TIMEOUT, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.WORKER_TIMEOUT, DESCRIPTION).set(bundle.getString("modcluster.configuration.worker-timeout"));
         node.get(type, CommonAttributes.WORKER_TIMEOUT, REQUIRED).set(false);
         node.get(type, CommonAttributes.WORKER_TIMEOUT, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.WORKER_TIMEOUT, DEFAULT).set(-1);
+        node.get(type, CommonAttributes.WORKER_TIMEOUT, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
         node.get(type, CommonAttributes.MAX_ATTEMPTS, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.MAX_ATTEMPTS, DESCRIPTION).set(bundle.getString("modcluster.configuration.max-attemps"));
         node.get(type, CommonAttributes.MAX_ATTEMPTS, REQUIRED).set(false);
         node.get(type, CommonAttributes.MAX_ATTEMPTS, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.MAX_ATTEMPTS, DEFAULT).set(1);
 
         node.get(type, CommonAttributes.FLUSH_PACKETS, TYPE).set(ModelType.BOOLEAN);
         node.get(type, CommonAttributes.FLUSH_PACKETS, DESCRIPTION).set(bundle.getString("modcluster.configuration.flush-packets"));
         node.get(type, CommonAttributes.FLUSH_PACKETS, REQUIRED).set(false);
         node.get(type, CommonAttributes.FLUSH_PACKETS, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.FLUSH_PACKETS, DEFAULT).set(false);
+
 
         node.get(type, CommonAttributes.FLUSH_WAIT, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.FLUSH_WAIT, DESCRIPTION).set(bundle.getString("modcluster.configuration.flush-wait"));
         node.get(type, CommonAttributes.FLUSH_WAIT, REQUIRED).set(false);
         node.get(type, CommonAttributes.FLUSH_WAIT, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.FLUSH_WAIT, DEFAULT).set(-1);
+        node.get(type, CommonAttributes.FLUSH_WAIT, ModelDescriptionConstants.UNIT).set(MeasurementUnit.MILLISECONDS.getName());
 
         node.get(type, CommonAttributes.PING, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.PING, DESCRIPTION).set(bundle.getString("modcluster.configuration.ping"));
         node.get(type, CommonAttributes.PING, REQUIRED).set(false);
         node.get(type, CommonAttributes.PING, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.PING, DEFAULT).set(10);
+        node.get(type, CommonAttributes.PING, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
 
         node.get(type, CommonAttributes.SMAX, TYPE).set(ModelType.INT);
@@ -434,17 +467,23 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.TTL, DESCRIPTION).set(bundle.getString("modcluster.configuration.ttl"));
         node.get(type, CommonAttributes.TTL, REQUIRED).set(false);
         node.get(type, CommonAttributes.TTL, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.TTL, DEFAULT).set(60);
+        node.get(type, CommonAttributes.TTL, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
         node.get(type, CommonAttributes.NODE_TIMEOUT, TYPE).set(ModelType.INT);
         node.get(type, CommonAttributes.NODE_TIMEOUT, DESCRIPTION).set(bundle.getString("modcluster.configuration.node-timeout"));
         node.get(type, CommonAttributes.NODE_TIMEOUT, REQUIRED).set(false);
         node.get(type, CommonAttributes.NODE_TIMEOUT, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.NODE_TIMEOUT, DEFAULT).set(-1);
+        node.get(type, CommonAttributes.NODE_TIMEOUT, ModelDescriptionConstants.UNIT).set(MeasurementUnit.SECONDS.getName());
 
         node.get(type, CommonAttributes.BALANCER, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.BALANCER, DESCRIPTION).set(bundle.getString("modcluster.configuration.balancer"));
         node.get(type, CommonAttributes.BALANCER, REQUIRED).set(false);
         node.get(type, CommonAttributes.BALANCER, MAX_OCCURS).set(1);
+        node.get(type, CommonAttributes.BALANCER, DEFAULT).set("mycluster");
 
+        // That is the loadBalancingGroup :-(
         node.get(type, CommonAttributes.DOMAIN, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.DOMAIN, DESCRIPTION).set(bundle.getString("modcluster.configuration.domain"));
         node.get(type, CommonAttributes.DOMAIN, REQUIRED).set(false);
@@ -462,6 +501,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.KEY_ALIAS, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.KEY_ALIAS, DESCRIPTION).set(bundle.getString("web.connector.ssl.key-alias"));
         node.get(type, CommonAttributes.KEY_ALIAS, REQUIRED).set(false);
+        node.get(type, CommonAttributes.KEY_ALIAS, DEFAULT).set("changeit");
 
         node.get(type, CommonAttributes.PASSWORD, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.PASSWORD, DESCRIPTION).set(bundle.getString("web.connector.ssl.password"));
@@ -470,6 +510,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.certificate-key-file"));
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, REQUIRED).set(false);
+        node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, DEFAULT).set("${user.home}/.keystore");
 
         node.get(type, CommonAttributes.CIPHER_SUITE, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.CIPHER_SUITE, DESCRIPTION).set(bundle.getString("web.connector.ssl.cipher-suite"));
@@ -478,6 +519,7 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.PROTOCOL, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.PROTOCOL, DESCRIPTION).set(bundle.getString("web.connector.ssl.protocol"));
         node.get(type, CommonAttributes.PROTOCOL, REQUIRED).set(false);
+        node.get(type, CommonAttributes.PROTOCOL, DEFAULT).set("TLS");
 
         node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.CA_CERTIFICATE_FILE, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-certificate-file"));
@@ -487,5 +529,33 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.CA_REVOCATION_URL, DESCRIPTION).set(bundle.getString("web.connector.ssl.ca-revocation-url"));
         node.get(type, CommonAttributes.CA_REVOCATION_URL, REQUIRED).set(false);
 
+    }
+
+    public static ModelNode getSSLDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        getSSLCommonDescription(node, ATTRIBUTES, bundle);
+        return node;
+    }
+
+    public static ModelNode getModClusterAddSSL(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl-add"));
+
+        return node;
+    }
+
+    public static ModelNode getModClusterRemoveSSL(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(REMOVE);
+        node.get(DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl-remove"));
+
+        return node;
     }
 }

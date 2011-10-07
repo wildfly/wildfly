@@ -22,13 +22,18 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+
 import java.util.List;
 import java.util.Locale;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.web.WebServer;
@@ -38,8 +43,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
-
 /**
  * The managed subsystem add update.
  *
@@ -48,12 +51,25 @@ import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 class ModClusterSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
+    static final PathElement SSLPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
+    @Override
+    protected void populateModel(final ModelNode operation, final Resource resource) {
+         final ModelNode model = resource.getModel();
+        populateModel(operation, model);
+        if(model.hasDefined(CommonAttributes.SSL)) {
+            // Add ssl=configuration to be able to manage ssl.
+            resource.registerChild(SSLPath, Resource.Factory.create());
+            final Resource ssl = resource.getChild(SSLPath);
+            ssl.getModel().set(model.get(CommonAttributes.SSL));
+        }
+    }
 
-
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.set(operation.get(CommonAttributes.MOD_CLUSTER_CONFIG));
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         String bindingRef = null;
         if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
