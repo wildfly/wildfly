@@ -288,10 +288,27 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.ejbLocalHomeView = view;
     }
 
+    public void addRemoteHome(final String remoteHome) {
+        final EjbHomeViewDescription view = new EjbHomeViewDescription(this, remoteHome, MethodIntf.HOME);
+        getViews().add(view);
+        // setup server side view interceptors
+        setupViewInterceptors(view);
+        // setup client side view interceptors
+        setupClientViewInterceptors(view);
+        // return created view
+        this.ejbHomeView = view;
+    }
+
     public void addEjbLocalObjectView(final String viewClassName) {
         final EJBViewDescription view = registerView(viewClassName, MethodIntf.LOCAL);
         view.setEjb2xView(true);
         this.ejbLocalView = view;
+    }
+
+    public void addEjbObjectView(final String viewClassName) {
+        final EJBViewDescription view = registerView(viewClassName, MethodIntf.REMOTE);
+        view.setEjb2xView(true);
+        this.ejbRemoteView = view;
     }
 
     public TransactionManagementType getTransactionManagementType() {

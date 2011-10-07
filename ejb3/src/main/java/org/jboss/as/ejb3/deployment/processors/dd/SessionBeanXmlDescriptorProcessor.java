@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import javax.interceptor.InvocationContext;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -42,8 +44,6 @@ import org.jboss.metadata.ejb.spec.BusinessRemotesMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
-
-import javax.interceptor.InvocationContext;
 
 /**
  * @author Jaikiran Pai
@@ -100,6 +100,16 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         final String local = sessionBean.getLocal();
         if (local != null) {
             sessionBeanDescription.addEjbLocalObjectView(local);
+        }
+
+        final String remoteHome = sessionBean.getHome();
+        if (remoteHome != null) {
+            sessionBeanDescription.addRemoteHome(remoteHome);
+        }
+
+        final String remote = sessionBean.getRemote();
+        if (remote != null) {
+            sessionBeanDescription.addEjbObjectView(remote);
         }
 
         // remote business interface views
