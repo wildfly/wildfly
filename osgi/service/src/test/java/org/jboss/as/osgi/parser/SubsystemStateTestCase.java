@@ -40,6 +40,7 @@ import org.junit.Test;
  * @author David Bosschaert
  */
 public class SubsystemStateTestCase {
+
     @Test
     public void testConfiguration() {
         String pid = "myPid";
