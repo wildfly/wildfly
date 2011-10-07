@@ -21,6 +21,25 @@
  */
 package org.jboss.as.ejb3.component;
 
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Collections;
+import java.util.Map;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
@@ -38,24 +57,6 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Collections;
-import java.util.Map;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -71,6 +72,9 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
     private final Map<Class<?>, ApplicationExceptionDetails> applicationExceptions;
     private final EJBSecurityMetaData securityMetaData;
     private final Map<String, ServiceName> viewServices;
+    private final ServiceName ejbLocalHome;
+    private final ServiceName ejbHome;
+
     private final TimerService timerService;
     protected final Map<Method, InterceptorFactory> timeoutInterceptors;
     private final Method timeoutMethod;
@@ -104,19 +108,26 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         this.timerService = ejbComponentCreateService.getTimerService();
         this.timeoutInterceptors = ejbComponentCreateService.getTimeoutInterceptors();
         this.timeoutMethod = ejbComponentCreateService.getTimeoutMethod();
+        this.ejbLocalHome = ejbComponentCreateService.getEjbLocalHome();
+        this.ejbHome = ejbComponentCreateService.getEjbHome();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
         if (viewInterface == null)
             throw new IllegalArgumentException("View interface is null");
         if (viewServices.containsKey(viewInterface.getName())) {
-            final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(viewInterface.getName()));
-            final ComponentView view = (ComponentView) serviceController.getValue();
-            final ComponentViewInstance instance = view.createInstance(contextData);
-            return viewInterface.cast(instance.createProxy());
+            final ServiceName serviceName = viewServices.get(viewInterface.getName());
+            return createViewInstance(viewInterface, contextData, serviceName);
         } else {
             throw new IllegalStateException("View of type " + viewInterface + " not found on bean " + this);
         }
+    }
+
+    private <T> T createViewInstance(final Class<T> viewInterface, final Map<Object, Object> contextData, final ServiceName serviceName) {
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName);
+        final ComponentView view = (ComponentView) serviceController.getValue();
+        final ComponentViewInstance instance = view.createInstance(contextData);
+        return viewInterface.cast(instance.createProxy());
     }
 
     public ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass, Method invokedMethod) {
@@ -179,12 +190,12 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
 
     @Override
     public EJBHome getEJBHome() throws IllegalStateException {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getEJBHome");
+        return createViewInstance(EJBHome.class, Collections.emptyMap(), ejbHome);
     }
 
     @Override
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.EJBComponent.getEJBLocalHome");
+        return createViewInstance(EJBLocalHome.class, Collections.emptyMap(), ejbLocalHome);
     }
 
     @Override

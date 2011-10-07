@@ -21,12 +21,22 @@
  */
 package org.jboss.as.testsuite.integration.ejb.home.localhome;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
+
 /**
  * @author Stuart Douglas
  */
 public class SimpleStatelessLocalBean  {
 
+    @Resource
+    private SessionContext sessionContext;
+
     public String sayHello() {
         return "Hello World";
+    }
+
+    public String testGetEjbLocalHome() {
+        return  ((SimpleLocalHome)sessionContext.getEJBLocalHome()).createSimple().sayHello();
     }
 }

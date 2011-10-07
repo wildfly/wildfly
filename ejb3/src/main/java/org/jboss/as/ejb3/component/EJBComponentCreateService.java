@@ -22,6 +22,17 @@
 
 package org.jboss.as.ejb3.component;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -34,16 +45,6 @@ import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jaikiran Pai
@@ -65,6 +66,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final Map<Method, InterceptorFactory> timeoutInterceptors;
 
     private final Method timeoutMethod;
+
+    private final ServiceName ejbLocalHome;
+
+    private final ServiceName ejbHome;
 
     /**
      * Construct a new instance.
@@ -134,6 +139,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             viewServices.put(view.getViewClassName(), view.getServiceName());
         }
         this.viewServices = viewServices;
+        EjbHomeViewDescription localHome= ejbComponentDescription.getEjbLocalHomeView();
+        this.ejbLocalHome = localHome == null ? null : ejbComponentDescription.getEjbLocalHomeView().getServiceName();
+        EjbHomeViewDescription home = ejbComponentDescription.getEjbHomeView();
+        this.ejbHome = home == null ? null : home.getServiceName();
     }
 
     private static Method getComponentMethod(final ComponentConfiguration componentConfiguration, final String name, final Class<?>[] parameterTypes) {
@@ -203,5 +212,13 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public Method getTimeoutMethod() {
         return timeoutMethod;
+    }
+
+    public ServiceName getEjbHome() {
+        return ejbHome;
+    }
+
+    public ServiceName getEjbLocalHome() {
+        return ejbLocalHome;
     }
 }

@@ -21,21 +21,21 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.ComponentDescription;
-
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.ee.component.ComponentDescription;
+
 /**
  * @author Stuart Douglas
  */
-public class AbstractEjbHomeViewDescription extends EJBViewDescription {
+public class EjbHomeViewDescription extends EJBViewDescription {
 
     private final Set<Method> createMethods = new HashSet<Method>();
 
-    public AbstractEjbHomeViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf) {
+    public EjbHomeViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf) {
         super(componentDescription, viewClassName, methodIntf);
     }
 

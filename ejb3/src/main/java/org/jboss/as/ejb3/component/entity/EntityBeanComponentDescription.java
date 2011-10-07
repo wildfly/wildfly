@@ -29,7 +29,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.component.AbstractEjbHomeViewDescription;
+import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
@@ -110,7 +110,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         });
 
         //now we need to figure out if this is a home or object view
-        if (view instanceof AbstractEjbHomeViewDescription) {
+        if (view instanceof EjbHomeViewDescription) {
             view.getConfigurators().add(new EntityBeanHomeViewConfigurator());
         } else {
             view.getConfigurators().add(new EntityBeanObjectViewConfigurator());

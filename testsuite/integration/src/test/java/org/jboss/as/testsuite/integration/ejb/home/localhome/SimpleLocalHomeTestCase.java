@@ -22,6 +22,8 @@
 
 package org.jboss.as.testsuite.integration.ejb.home.localhome;
 
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -32,8 +34,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
 
 /**
  * Tests that lifecycle methods defined on classes in a different module to the component class
@@ -85,7 +85,12 @@ public class SimpleLocalHomeTestCase {
         final SimpleLocalInterface ejbInstance = home.createSimple();
         Assert.assertEquals("Hello World", ejbInstance.sayHello());
     }
-
+    @Test
+    public void testGetEjbLocalHome() throws Exception {
+        final SimpleLocalHome home = (SimpleLocalHome) iniCtx.lookup("java:module/SimpleLocalHomeBean!" + SimpleLocalHome.class.getName());
+        final SimpleLocalInterface ejbInstance = home.createSimple();
+        Assert.assertEquals("Hello World", ejbInstance.testGetEjbLocalHome());
+    }
     @Test
     public void testStatefulLocalHome() throws Exception {
         final String message = "Bean Message";

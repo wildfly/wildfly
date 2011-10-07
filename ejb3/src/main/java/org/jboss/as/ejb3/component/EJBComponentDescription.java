@@ -21,6 +21,22 @@
  */
 package org.jboss.as.ejb3.component;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -47,22 +63,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import javax.persistence.Basic;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -170,8 +170,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     /**
      * The ejb local home view
      */
-    private EjbLocalHomeViewDescription ejbLocalHomeView;
+    private EjbHomeViewDescription ejbLocalHomeView;
 
+    /**
+     * The EJB 2.x remote view
+     */
+    private EJBViewDescription ejbRemoteView;
+
+    /**
+     * The ejb local home view
+     */
+    private EjbHomeViewDescription ejbHomeView;
     /**
      * TODO: this should not be part of the description
      */
@@ -269,7 +278,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     public void addLocalHome(final String localHome) {
-        final EjbLocalHomeViewDescription view = new EjbLocalHomeViewDescription(this, localHome);
+        final EjbHomeViewDescription view = new EjbHomeViewDescription(this, localHome, MethodIntf.LOCAL_HOME);
         getViews().add(view);
         // setup server side view interceptors
         setupViewInterceptors(view);
@@ -828,8 +837,16 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return ejbLocalView;
     }
 
-    public EjbLocalHomeViewDescription getEjbLocalHomeView() {
+    public EjbHomeViewDescription getEjbLocalHomeView() {
         return ejbLocalHomeView;
+    }
+
+    public EjbHomeViewDescription getEjbHomeView() {
+        return ejbHomeView;
+    }
+
+    public EJBViewDescription getEjbRemoteView() {
+        return ejbRemoteView;
     }
 
     @Override
