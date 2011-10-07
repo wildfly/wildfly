@@ -48,7 +48,6 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     public static ModuleIdentifier RESTEASY_JACKSON = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jackson-provider");
     public static ModuleIdentifier RESTEASY_JSAPI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jsapi");
     public static ModuleIdentifier RESTEASY_MULTIPART = ModuleIdentifier.create("org.jboss.resteasy.resteasy-multipart-provider");
-    public static ModuleIdentifier ASYNC_HTTP_SERVLET_30 = ModuleIdentifier.create("org.jboss.resteasy.async-http-servlet-30");
     public static ModuleIdentifier JAXB_API = ModuleIdentifier.create("javax.xml.bind.api");
 
     /**
@@ -74,7 +73,6 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JACKSON);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_JSAPI);
         addDepdenency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART);
-        addDepdenency(moduleSpecification, moduleLoader, ASYNC_HTTP_SERVLET_30);
         addDepdenency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {

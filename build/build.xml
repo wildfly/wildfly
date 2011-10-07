@@ -784,10 +784,6 @@
             <maven-resource group="org.jboss.remoting3" artifact="jboss-remoting"/>
         </module-def>
 
-        <module-def name="org.jboss.resteasy.async-http-servlet-30">
-            <maven-resource group="org.jboss.resteasy" artifact="async-http-servlet-3.0"/>
-        </module-def>
-
         <module-def name="org.jboss.resteasy.resteasy-atom-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-atom-provider"  jandex="true"/>
         </module-def>
@@ -805,6 +801,7 @@
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-jaxrs">
+            <maven-resource group="org.jboss.resteasy" artifact="async-http-servlet-3.0"/>
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxrs" jandex="true"/>
         </module-def>
 

@@ -21,6 +21,17 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ws.rs.core.Application;
+
 import org.jboss.as.jaxrs.JaxrsAnnotations;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
@@ -47,16 +58,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrapClasses;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-
-import javax.ws.rs.core.Application;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Processor that finds jax-rs classes in the deployment
@@ -151,7 +152,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         boolean hasBoot = hasBootClasses(webdata);
         resteasyDeploymentData.setBootClasses(hasBoot);
 
-        Class<?> declaredApplicationClass = checkDeclaredApplicationClassAsServlet(du, webdata, classLoader);
+        Class<?> declaredApplicationClass = checkDeclaredApplicationClassAsServlet(webdata, classLoader);
         // Assume that checkDeclaredApplicationClassAsServlet created the dispatcher
         if (declaredApplicationClass != null) {
             resteasyDeploymentData.setDispatcherCreated(true);
@@ -273,7 +274,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    protected Class<?> checkDeclaredApplicationClassAsServlet(DeploymentUnit du, JBossWebMetaData webData,
+    protected Class<?> checkDeclaredApplicationClassAsServlet(JBossWebMetaData webData,
                                                               ClassLoader classLoader) throws DeploymentUnitProcessingException {
         if (webData.getServlets() == null)
             return null;

@@ -152,6 +152,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             JBossServletMetaData servlet = new JBossServletMetaData();
             servlet.setName(JAX_RS_SERVLET_NAME);
             servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
+            servlet.setAsyncSupported(true);
             addServlet(webdata, servlet);
             servletName = JAX_RS_SERVLET_NAME;
 
@@ -219,6 +220,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             JBossServletMetaData servlet = new JBossServletMetaData();
             servlet.setName(servletName);
             servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
+            servlet.setAsyncSupported(true);
             addServlet(webdata, servlet);
 
         }
