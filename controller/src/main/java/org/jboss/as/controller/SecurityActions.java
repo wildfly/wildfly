@@ -33,6 +33,34 @@ import java.security.PrivilegedAction;
  */
 class SecurityActions {
 
+    static String getSystemProperty(final String key) {
+        if (System.getSecurityManager() == null) {
+            return System.getProperty(key);
+        }
+
+        return AccessController.doPrivileged(new PrivilegedAction<String>() {
+
+            @Override
+            public String run() {
+                return System.getProperty(key);
+            }
+        });
+    }
+
+    static String getSystemProperty(final String key, final String defaultValue) {
+        if (System.getSecurityManager() == null) {
+            return System.getProperty(key, defaultValue);
+        }
+
+        return AccessController.doPrivileged(new PrivilegedAction<String>() {
+
+            @Override
+            public String run() {
+                return System.getProperty(key, defaultValue);
+            }
+        });
+    }
+
     static ClassLoader setThreadContextClassLoader(Class cl) {
         if (System.getSecurityManager() == null) {
             return SetThreadContextClassLoaderAction.NON_PRIVILEGED.setThreadContextClassLoader(cl);

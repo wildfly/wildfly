@@ -372,7 +372,15 @@ final class OperationContextImpl implements OperationContext {
             }
             assert resultAction != null;
         } catch (Throwable t) {
-            log.errorf(t, "Operation (%s) failed - address: (%s)", operation.get(OP), operation.get(OP_ADDR));
+            if (t instanceof StackOverflowError) {
+                log.errorf(t, "Operation (%s) failed - address: (%s) -- due to insufficient stack space for the thread used to " +
+                        "execute operations. If this error is occurring during server boot, setting " +
+                        "system property %s to a value higher than [%d] may resolve this problem.",
+                        operation.get(OP), operation.get(OP_ADDR), AbstractControllerService.BOOT_STACK_SIZE_PROPERTY,
+                        AbstractControllerService.DEFAULT_BOOT_STACK_SIZE);
+            } else {
+                log.errorf(t, "Operation (%s) failed - address: (%s)", operation.get(OP), operation.get(OP_ADDR));
+            }
             // If this block is entered, then the next step failed
             // The question is, did it fail before or after calling completeStep()?
             if (currentStage != Stage.DONE) {
@@ -570,7 +578,7 @@ final class OperationContextImpl implements OperationContext {
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        if (! (currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack() && ! modify)) {
+        if (! (!modify || currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack())) {
             throw new IllegalStateException("Get service registry only supported in runtime operations");
         }
         if (modify && !affectsRuntime) {
