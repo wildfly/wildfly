@@ -31,6 +31,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -45,6 +46,9 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public abstract class AbstractControllerService implements Service<ModelController> {
+
+    private static final Logger logger = Logger.getLogger(AbstractControllerService.class);
+
     private final OperationContext.Type controllerType;
     private final ConfigurationPersister configurationPersister;
     private final DescriptionProvider rootDescriptionProvider;
@@ -55,10 +59,10 @@ public abstract class AbstractControllerService implements Service<ModelControll
     /**
      * Construct a new instance.
      *
-     * @param controllerType the controller type for the new controller
-     * @param configurationPersister the configuration persister
+     * @param controllerType          the controller type for the new controller
+     * @param configurationPersister  the configuration persister
      * @param rootDescriptionProvider the root description provider
-     * @param prepareStep the prepare step to prepend to operation execution
+     * @param prepareStep             the prepare step to prepend to operation execution
      */
     protected AbstractControllerService(final OperationContext.Type controllerType, final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider, final OperationStepHandler prepareStep) {
@@ -80,16 +84,22 @@ public abstract class AbstractControllerService implements Service<ModelControll
         new Thread(new Runnable() {
             public void run() {
                 try {
-                    boot(new BootContext() {
-                        public ServiceTarget getServiceTarget() {
-                            return target;
-                        }
-                    });
-                } catch (ConfigurationPersistenceException e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    processState.setRunning();
+                    try {
+                        boot(new BootContext() {
+                            public ServiceTarget getServiceTarget() {
+                                return target;
+                            }
+                        });
+                    } catch (ConfigurationPersistenceException e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        processState.setRunning();
+                    }
+                } catch (Throwable t) {
+                    container.shutdown();
+                    logger.error("Error booting the container", t);
                 }
+
             }
         }, "Controller Boot Thread").start();
     }
@@ -98,7 +108,8 @@ public abstract class AbstractControllerService implements Service<ModelControll
      * Boot the controller.  Called during service start.
      *
      * @param context the boot context
-     * @throws ConfigurationPersistenceException if the configuration failed to be loaded
+     * @throws ConfigurationPersistenceException
+     *          if the configuration failed to be loaded
      */
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
         boot(configurationPersister.load());
