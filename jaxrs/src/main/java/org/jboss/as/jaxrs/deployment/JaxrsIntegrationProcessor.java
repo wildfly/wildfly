@@ -1,5 +1,12 @@
 package org.jboss.as.jaxrs.deployment;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.ApplicationPath;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -21,11 +28,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-
-import javax.ws.rs.ApplicationPath;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -58,6 +60,21 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
         if (resteasy == null)
             return;
+
+        //remove the resteasy.scan parameter
+        //because it is not needed
+        final List<ParamValueMetaData> params = webdata.getContextParams();
+        if(params != null) {
+            Iterator<ParamValueMetaData> it = params.iterator();
+            while(it.hasNext()) {
+                final ParamValueMetaData param = it.next();
+                if(param.getParamName().equals("resteasy.scan")) {
+                    it.remove();
+                    log.warn("resteasy.scan found in web.xml. This is not necessary, as Resteasy will use the container integration in the JAX-RS 1.1 specification in section 2.3.2");
+                }
+            }
+        }
+
 
         final Map<ModuleIdentifier, ResteasyDeploymentData> attachmentMap = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
         final List<ResteasyDeploymentData> additionalData = new ArrayList<ResteasyDeploymentData>();

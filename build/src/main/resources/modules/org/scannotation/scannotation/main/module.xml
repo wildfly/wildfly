@@ -23,11 +23,13 @@
   -->
 
 <module xmlns="urn:jboss:module:1.0" name="org.scannotation.scannotation">
-  <resources>
-    <!-- Insert resources here -->
-  </resources>
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 
-  <dependencies>
-    <module name="javax.api"/>
-  </dependencies>
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="org.javassist"/>
+    </dependencies>
 </module>
