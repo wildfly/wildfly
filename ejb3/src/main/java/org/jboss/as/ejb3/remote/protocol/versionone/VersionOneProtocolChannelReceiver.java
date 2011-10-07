@@ -26,6 +26,7 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -59,10 +60,13 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     private final String marshallingStrategy;
 
-    public VersionOneProtocolChannelReceiver(final Channel channel, final ServiceContainer serviceContainer, final String marshallingStrategy) {
+    private final ExecutorService executorService;
+
+    public VersionOneProtocolChannelReceiver(final Channel channel, final ServiceContainer serviceContainer, final String marshallingStrategy, final ExecutorService executorService) {
         this.serviceContainer = serviceContainer;
         this.marshallingStrategy = marshallingStrategy;
         this.channel = channel;
+        this.executorService = executorService;
 
         this.deploymentRepository = this.getDeploymentRepository();
     }
@@ -106,7 +110,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             MessageHandler messageHandler = null;
             switch (header) {
                 case HEADER_INVOCATION_REQUEST:
-                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallingStrategy);
+                    messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallingStrategy, this.executorService);
                     messageHandler.processMessage(channel, messageInputStream);
                     break;
                 case HEADER_SESSION_OPEN_REQUEST:

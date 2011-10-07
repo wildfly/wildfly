@@ -32,13 +32,11 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -62,18 +60,11 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    public static final SimpleAttributeDefinition CORE_THREADS =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CORE_THREADS, ModelType.INT, true)
-                    .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
-                    .setDefaultValue(new ModelNode().set(0))
+    public static final SimpleAttributeDefinition THREAD_POOL_NAME =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    public static final SimpleAttributeDefinition MAX_THREADS =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MAX_THREADS, ModelType.INT, true)
-                    .setValidator(new IntRangeValidator(1, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
 
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
@@ -81,8 +72,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
         map.put(PATH.getName(), PATH);
         map.put(RELATIVE_TO.getName(), RELATIVE_TO);
-        map.put(CORE_THREADS.getName(), CORE_THREADS);
-        map.put(MAX_THREADS.getName(), MAX_THREADS);
+        map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }

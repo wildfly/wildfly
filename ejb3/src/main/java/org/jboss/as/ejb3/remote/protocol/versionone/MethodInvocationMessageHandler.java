@@ -22,6 +22,14 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -31,13 +39,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Set;
 
 
 /**
@@ -52,8 +53,11 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
     private static final byte HEADER_METHOD_INVOCATION_RESPONSE = 0x05;
     private static final byte HEADER_METHOD_INVOCATION_APPLICATION_EXCEPTION = 0x06;
 
-    MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
+    private final ExecutorService executorService;
+
+    MethodInvocationMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy, final ExecutorService executorService) {
         super(deploymentRepository, marshallingStrategy);
+        this.executorService = executorService;
     }
 
     @Override
@@ -62,10 +66,7 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         // read the invocation id
         final short invocationId = input.readShort();
         // read the ejb module info
-        String appName = input.readUTF();
-        if (appName.isEmpty()) {
-            appName = null;
-        }
+        final String appName = input.readUTF();
         final String moduleName = input.readUTF();
         final String distinctName = input.readUTF();
         final String beanName = input.readUTF();
@@ -101,9 +102,6 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
 
         final Object[] methodParams = new Object[methodParamTypes.length];
         // un-marshall the method arguments
-        // TODO: The protocol should actually write out the number of object params being passed
-        // because even if the signature might have a param type the method could be invoked without
-        // params (for example: someMethod(String... optionalParams)
         if (methodParamTypes.length > 0) {
             final UnMarshaller unMarshaller = MarshallerFactory.createUnMarshaller(this.marshallingStrategy);
             final ClassLoader beanClassLoader = ejbDeploymentInformation.getDeploymentClassLoader();
@@ -121,26 +119,33 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
             unMarshaller.finish();
         }
 
-        // now invoke the target method
-        // TODO: The method invocation (and the subsequent writing of result to the channel stream) should happen
-        // on a different thread
-        Object result = null;
-        try {
-            result = this.invokeMethod(componentView, invokedMethod, methodParams, attachments);
-        } catch (Throwable throwable) {
-            try {
-                this.writeMethodInvocationFailure(channel, invocationId, throwable, attachments);
-            } catch (IOException ioe) {
-                // we couldn't write out a method invocation failure message. So let's atleast log the
-                // actual method invocation exception, for debugging/reference
-                logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName + " in app: " + appName + " module: " + moduleName +
-                        " distinctname: " + distinctName, throwable);
-                // now throw the IOException that happened while writing out the method invocation failure
-                throw ioe;
+        executorService.submit(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                Object result = null;
+                try {
+                    result = invokeMethod(componentView, invokedMethod, methodParams, attachments);
+                } catch (Throwable throwable) {
+                    try {
+                        writeMethodInvocationFailure(channel, invocationId, throwable, attachments);
+                    } catch (IOException ioe) {
+                        // we couldn't write out a method invocation failure message. So let's atleast log the
+                        // actual method invocation exception, for debugging/reference
+                        logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName + " in app: " + appName + " module: " + moduleName +
+                                " distinctname: " + distinctName, throwable);
+                        // now throw the IOException that happened while writing out the method invocation failure
+                    }
+                }
+                // write out the (successful) method invocation result to the channel output stream
+                writeMethodInvocationResponse(channel, invocationId, result, attachments);
+                } catch (IOException e) {
+                    logger.error("Error wring response for remote EJB " + componentView, e);
+                }
             }
-        }
-        // write out the (successful) method invocation result to the channel output stream
-        this.writeMethodInvocationResponse(channel, invocationId, result, attachments);
+        });
+
 
     }
 

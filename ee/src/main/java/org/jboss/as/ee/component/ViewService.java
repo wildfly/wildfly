@@ -22,6 +22,15 @@
 
 package org.jboss.as.ee.component;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
@@ -37,15 +46,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -217,6 +217,12 @@ public final class ViewService implements Service<ComponentView> {
         @Override
         public boolean isAsynchronous(final Method method) {
             return asyncMethods.contains(method);
+        }
+
+        @Override
+        public String toString() {
+            return "Component view " + viewClass + " for component "
+                    + component.getComponentClass();
         }
 
         class ViewInstance implements ComponentViewInstance {

@@ -34,6 +34,8 @@ public enum EJB3SubsystemXMLElement {
     // must be first
     UNKNOWN(null),
 
+    ASYNC("async"),
+
     BEAN_INSTANCE_POOLS("bean-instance-pools"),
     BEAN_INSTANCE_POOL_REF("bean-instance-pool-ref"),
 
@@ -53,6 +55,7 @@ public enum EJB3SubsystemXMLElement {
     STRICT_MAX_POOL("strict-max-pool"),
 
     THREAD_POOL("thread-pool"),
+    THREAD_POOLS("thread-pools"),
     TIMER_SERVICE("timer-service"),
 
     ;

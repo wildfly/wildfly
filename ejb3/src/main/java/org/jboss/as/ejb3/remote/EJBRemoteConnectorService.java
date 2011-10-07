@@ -21,6 +21,11 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
@@ -41,10 +46,6 @@ import org.jboss.remoting3.ServiceRegistrationException;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -57,6 +58,8 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
+
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
 
     private volatile Registration registration;
 
@@ -177,7 +180,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                     // TODO: Change this to 0x01
                     case 0x01:
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
-                        final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, this.serviceContainer, clientMarshallingStrategy);
+                        final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, this.serviceContainer, clientMarshallingStrategy, executorService.getValue());
                         receiver.startReceiving();
                         break;
 
@@ -195,5 +198,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
 
         }
+    }
+
+    public InjectedValue<ExecutorService> getExecutorService() {
+        return executorService;
     }
 }

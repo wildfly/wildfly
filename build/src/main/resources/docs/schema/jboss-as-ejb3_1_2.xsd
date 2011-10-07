@@ -39,6 +39,7 @@
         <xs:all>
             <xs:element name="mdb" type="mdbType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="async" type="asyncType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="session-bean" type="session-beanType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="pools" type="poolsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
@@ -56,8 +57,8 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="thread-pools" type="threadPoolsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
-        <xs:attribute name="lite" type="xs:boolean" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="mdbType">
@@ -68,9 +69,13 @@
     </xs:complexType>
 
     <xs:complexType name="remoteType">
-        <xs:attribute name="connector-ref" type="xs:string"/>
+        <xs:attribute name="connector-ref" type="xs:string" use="required"/>
+        <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
     </xs:complexType>
 
+    <xs:complexType name="asyncType">
+        <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
+    </xs:complexType>
 
     <xs:complexType name="session-beanType">
         <xs:all>
@@ -131,24 +136,36 @@
 
     <xs:complexType name="timerServiceType">
         <xs:sequence>
-            <xs:element name="thread-pool" type="threadPoolType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="data-store" type="dataStoreType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="threadPoolsType">
+        <xs:sequence>
+            <xs:element name="thread-pool" type="threadPoolType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="threadPoolType">
-        <xs:attribute name="core-threads" type="xs:int">
+        <xs:attribute name="name" type="xs:token" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    The number of threads that the the thread pool will keep alive. Defaults to 0.
+                    The name of this thread pool
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="max-threads" type="xs:int">
             <xs:annotation>
                 <xs:documentation>
-                    The maximum number of threads that will be used to run timer service tasks. Defaults to the
-                    number of processes as returned by Runtime.availableProcessors()
+                    The maximum number of threads in the thread pool. Defaults to the number of CPU cores.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="keepalive-time" type="xs:int">
+            <xs:annotation>
+                <xs:documentation>
+                    The time in milliseconds that a thread with nothing to do will stay around for.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

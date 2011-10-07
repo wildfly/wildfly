@@ -34,6 +34,8 @@ public interface EJB3SubsystemModel {
     //only set if this is a cut-down app client boot
     String APPCLIENT = "appclient";
 
+    String ASYNC = "async";
+
     String CONNECTOR_REF = "connector-ref";
 
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
@@ -45,8 +47,9 @@ public interface EJB3SubsystemModel {
     String MAX_POOL_SIZE = "max-pool-size";
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
 
-    String CORE_THREADS = "core-threads";
     String MAX_THREADS = "max-threads";
+    String KEEPALIVE_TIME = "keepalive-time";
+
     String RELATIVE_TO = "relative-to";
     String PATH = "path";
 
@@ -56,10 +59,14 @@ public interface EJB3SubsystemModel {
     String REMOTE = "remote";
     String SERVICE = "service";
     String TIMER_SERVICE = "timer-service";
+    String THREAD_POOL = "thread-pool";
+    String THREAD_POOL_NAME = "thread-pool-name";
     String DEFAULT = "default";
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
+    PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);
     PathElement TIMER_SERVICE_PATH = PathElement.pathElement(SERVICE, TIMER_SERVICE);
+    PathElement THREAD_POOL_PATH = PathElement.pathElement(THREAD_POOL);
 
 
 }

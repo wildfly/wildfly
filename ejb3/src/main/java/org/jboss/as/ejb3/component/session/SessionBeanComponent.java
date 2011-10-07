@@ -48,8 +48,6 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
     private static final Logger logger = Logger.getLogger(SessionBeanComponent.class);
 
-    public static final ServiceName ASYNC_EXECUTOR_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3-async");
-
     protected final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout;
     private final ExecutorService asyncExecutor;
 

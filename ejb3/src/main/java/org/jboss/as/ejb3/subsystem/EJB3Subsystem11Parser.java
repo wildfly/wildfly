@@ -22,24 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -62,7 +44,27 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * User: Jaikiran Pai
@@ -294,14 +296,7 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
 
     private void writeTimerService(final XMLExtendedStreamWriter writer, final ModelNode timerServiceModel) throws XMLStreamException {
 
-        // <thread-pool>
-        if (TimerServiceResourceDefinition.CORE_THREADS.isMarshallable(timerServiceModel)
-                || TimerServiceResourceDefinition.MAX_THREADS.isMarshallable(timerServiceModel)) {
-
-            writer.writeEmptyElement(EJB3SubsystemXMLElement.THREAD_POOL.getLocalName());
-            TimerServiceResourceDefinition.CORE_THREADS.marshallAsAttribute(timerServiceModel, writer);
-            TimerServiceResourceDefinition.MAX_THREADS.marshallAsAttribute(timerServiceModel, writer);
-        }
+        writer.writeAttribute(THREAD_POOL_NAME, "default");
 
         // <data-store>
         if (TimerServiceResourceDefinition.PATH.isMarshallable(timerServiceModel)
@@ -470,16 +465,10 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>>,
                         final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case CORE_THREADS:
-                                if (coreThreads != null) {
-                                    throw unexpectedAttribute(reader, i);
-                                }
-                                TimerServiceResourceDefinition.CORE_THREADS.parseAndSetParameter(value, timerServiceAdd, location);
+                                //ignore, no longer supported
                                 break;
                             case MAX_THREADS:
-                                if (maxThreads != null) {
-                                    throw unexpectedAttribute(reader, i);
-                                }
-                                TimerServiceResourceDefinition.MAX_THREADS.parseAndSetParameter(value, timerServiceAdd, location);
+                                //ignore, no longer supported
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);

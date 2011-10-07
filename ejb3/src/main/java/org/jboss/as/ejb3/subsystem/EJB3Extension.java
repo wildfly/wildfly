@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
+import java.util.Locale;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -46,11 +51,6 @@ import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanResourceDefinition;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 
 /**
  * Extension that provides the EJB3 subsystem.
@@ -86,7 +86,10 @@ public class EJB3Extension implements Extension {
         subsystemRegistration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         // subsystem=ejb3/service=remote
-        subsystemRegistration.registerSubModel(EJBRemoteResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(EJB3RemoteResourceDefinition.INSTANCE);
+
+        // subsystem=ejb3/service=async
+        subsystemRegistration.registerSubModel(EJB3AsyncResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/strict-max-bean-instance-pool=*
         subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
@@ -102,6 +105,9 @@ public class EJB3Extension implements Extension {
         deploymentsRegistration.registerSubModel(SingletonBeanResourceDefinition.INSTANCE);
         deploymentsRegistration.registerSubModel(StatelessSessionBeanResourceDefinition.INSTANCE);
         deploymentsRegistration.registerSubModel(StatefulSessionBeanResourceDefinition.INSTANCE);
+        // subsystem=ejb3/thread-pool=*
+        subsystemRegistration.registerSubModel(EJB3ThreadPoolResourceDefinition.INSTANCE);
+
     }
 
     /**

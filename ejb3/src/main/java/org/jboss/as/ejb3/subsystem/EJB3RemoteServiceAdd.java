@@ -21,19 +21,6 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
-import org.jboss.as.remoting.RemotingServices;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.remoting3.Endpoint;
-
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -41,6 +28,22 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTOR_REF;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.as.remoting.RemotingServices;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.remoting3.Endpoint;
 
 /**
  * A {@link AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
@@ -48,13 +51,13 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJBRemoteServiceAdd extends AbstractBoottimeAddStepHandler {
-    static final EJBRemoteServiceAdd INSTANCE = new EJBRemoteServiceAdd();
+public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
+    static final EJB3RemoteServiceAdd INSTANCE = new EJB3RemoteServiceAdd();
 
-    private EJBRemoteServiceAdd() {
+    private EJB3RemoteServiceAdd() {
     }
 
-    static ModelNode create(final String connectorName) {
+    static ModelNode create(final String connectorName, final String threadPoolName) {
         // set the address for this operation
         final ModelNode address = new ModelNode();
         address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
@@ -65,26 +68,36 @@ public class EJBRemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         operation.get(OP_ADDR).set(address);
 
         operation.get(CONNECTOR_REF).set(connectorName);
+        operation.get(THREAD_POOL_NAME).set(threadPoolName);
 
         return operation;
     }
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        newControllers.add(installRuntimeService(context, model, verificationHandler));
+    }
+
+    ServiceController<EJBRemoteConnectorService> installRuntimeService(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler) {
         final String connectorName = model.require(CONNECTOR_REF).asString();
+        final String threadPoolName = model.require(THREAD_POOL_NAME).asString();
         final ServiceTarget serviceTarget = context.getServiceTarget();
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
-        final EJBRemoteConnectorService service = new EJBRemoteConnectorService((byte) 0x01, new String[] {"river", "java-serial"});
-        newControllers.add(serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service)
+        final EJBRemoteConnectorService service = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river", "java-serial"});
+        final ServiceBuilder<EJBRemoteConnectorService> target = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service)
                 // TODO: inject the right connector
                 .addDependency(RemotingServices.ENDPOINT, Endpoint.class, service.getEndpointInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install()
-        );
+                .addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+        if (verificationHandler != null) {
+            target.addListener(verificationHandler);
+        }
+        return target.install();
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.get(CONNECTOR_REF).set(operation.require(CONNECTOR_REF).asString());
+        model.get(THREAD_POOL_NAME).set(operation.require(THREAD_POOL_NAME).asString());
     }
 }
