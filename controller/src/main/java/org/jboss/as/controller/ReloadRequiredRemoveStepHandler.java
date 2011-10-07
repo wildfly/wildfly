@@ -20,28 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.controller;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
+/**
+ * A handler for the "remove" operation that always puts the process in "reload-required" state.
+ *
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ */
+public class ReloadRequiredRemoveStepHandler extends AbstractRemoveStepHandler {
 
-public class ObjectStoreRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+    public static final ReloadRequiredRemoveStepHandler INSTANCE = new ReloadRequiredRemoveStepHandler();
 
-    public static final ObjectStoreRemove INSTANCE = new ObjectStoreRemove();
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return Descriptions.getObjectStoreRemoveDescription(locale);
+    protected ReloadRequiredRemoveStepHandler() {
     }
-
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        context.reloadRequired();
+    }
+
+    @Override
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        context.revertReloadRequired();
     }
 }

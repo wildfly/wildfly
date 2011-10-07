@@ -22,37 +22,31 @@
 
 package org.jboss.as.txn;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.txn.CommonAttributes.BINDING;
-import static org.jboss.as.txn.CommonAttributes.NODE_IDENTIFIER;
-import static org.jboss.as.txn.CommonAttributes.OBJECT_STORE;
-import static org.jboss.as.txn.CommonAttributes.PROCESS_ID;
-import static org.jboss.as.txn.CommonAttributes.SOCKET_PROCESS_ID_MAX_PORTS;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 import java.util.List;
 import java.util.Locale;
 
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.network.SocketBinding;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Adds a recovery-environment to the Transactions subsystem's
+ * Adds a recovery-environment to the Transactions subsystem
  *
  */
 public class ObjectStoreAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
@@ -60,6 +54,17 @@ public class ObjectStoreAdd extends AbstractBoottimeAddStepHandler implements De
     public static final ObjectStoreAdd INSTANCE = new ObjectStoreAdd();
     static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
 
+    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setXmlName(Attribute.RELATIVE_TO.getLocalName())
+            .build();
+
+    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("tx-object-store"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setXmlName(Attribute.PATH.getLocalName())
+            .build();
 
 
     /**
@@ -67,15 +72,16 @@ public class ObjectStoreAdd extends AbstractBoottimeAddStepHandler implements De
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return Descriptions.getRecoveryEnvironmentAddDescription(locale);
+        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
+        return Descriptions.getObjectStoreAddDescription(locale);
     }
 
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
 
-        objectStoreModel.get(RELATIVE_TO).set(operation.get(RELATIVE_TO));
-        objectStoreModel.get(PATH).set(operation.get(PATH));
+        RELATIVE_TO.validateAndSet(operation, objectStoreModel);
+        PATH.validateAndSet(operation, objectStoreModel);
 
     }
 
@@ -83,23 +89,30 @@ public class ObjectStoreAdd extends AbstractBoottimeAddStepHandler implements De
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
-        final ModelNode objectStore = operation.get(OBJECT_STORE);
-        final String objectStorePathRef = objectStore.hasDefined(RELATIVE_TO) ? objectStore.get(RELATIVE_TO).asString() : "jboss.server.data.dir";
-        final String objectStorePath = objectStore.hasDefined(PATH) ? objectStore.get(PATH).asString() : "tx-object-store";
+
+        String objectStorePathRef = null;
+        // Check for empty string value for relative-to, which disables the default
+        final ModelNode relativePathNode = recoveryEnvModel.get(RELATIVE_TO.getName());
+        if (!relativePathNode.isDefined() || relativePathNode.asString().length() > 0) {
+            objectStorePathRef = RELATIVE_TO.validateResolvedOperation(recoveryEnvModel).asString();
+        }
+        final String objectStorePath = PATH.validateResolvedOperation(recoveryEnvModel).asString();
         if (ROOT_LOGGER.isDebugEnabled()) {
-            ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePathRef=%s\n", objectStorePathRef, objectStorePath);
+            ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s\n", objectStorePathRef, objectStorePath);
         }
 
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
-        ServiceController<String> objectStoreRPS = RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
-        controllers.add(objectStoreRPS);
+        ServiceController<String> objectStorePS = objectStorePathRef != null
+                ? RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target)
+                : AbsolutePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, target);
+        controllers.add(objectStorePS);
 
         final boolean useHornetqJournalStore = "true".equals(System.getProperty("usehornetqstore")); // TODO wire to domain model instead.
 
         final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore);
         controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
-                .addDependency(objectStoreRPS.getName(), String.class, objStoreEnvironmentService.getPathInjector())
+                .addDependency(INTERNAL_OBJECTSTORE_PATH, String.class, objStoreEnvironmentService.getPathInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                 .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
 

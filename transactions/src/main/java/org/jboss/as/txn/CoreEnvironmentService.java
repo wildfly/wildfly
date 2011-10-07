@@ -43,11 +43,9 @@ public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
     /** A dependency on a socket binding for the socket process id */
     private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
     private final String nodeIdentifier;
-    private final String varPath;
 
-    public CoreEnvironmentService(String nodeIdentifier, String varPath) {
+    public CoreEnvironmentService(String nodeIdentifier) {
         this.nodeIdentifier = nodeIdentifier;
-        this.varPath = varPath;
     }
 
     @Override

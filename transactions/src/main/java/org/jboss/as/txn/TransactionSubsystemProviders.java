@@ -48,6 +48,13 @@ class TransactionSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider SUBSYSTEM_REMOVE = new DescriptionProvider() {
+
+        public ModelNode getModelDescription(final Locale locale) {
+            return Descriptions.getSubsystemRemove(locale);
+        }
+    };
+
     static final DescriptionProvider RECOVERY_ENVIRONMENT_DESC = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
@@ -107,7 +114,7 @@ class TransactionSubsystemProviders {
     static final DescriptionProvider REMOVE_COORDINATOR_ENVIRONMENT_DESC = new DescriptionProvider() {
 
         public ModelNode getModelDescription(final Locale locale) {
-            return Descriptions.getCoordiantorEnvironmentRemoveDescription(locale);
+            return Descriptions.getCoordinatorEnvironmentRemoveDescription(locale);
         }
     };
 

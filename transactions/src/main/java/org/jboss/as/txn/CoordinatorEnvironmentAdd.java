@@ -35,8 +35,14 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -50,38 +56,50 @@ public class CoordinatorEnvironmentAdd extends AbstractBoottimeAddStepHandler im
 
     public static final CoordinatorEnvironmentAdd INSTANCE = new CoordinatorEnvironmentAdd();
 
+    public static final SimpleAttributeDefinition ENABLE_STATISTICS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO should be runtime-changeable
+            .setXmlName(Attribute.ENABLE_STATISTICS.getLocalName())
+            .build();
+
+    public static final SimpleAttributeDefinition ENABLE_TSM_STATUS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_TSM_STATUS, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
+            .setXmlName(Attribute.ENABLE_TSM_STATUS.getLocalName())
+            .build();
+
+    public static final SimpleAttributeDefinition DEFAULT_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_TIMEOUT, ModelType.INT, true)
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
+            .setDefaultValue(new ModelNode().set(300))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
+            .setXmlName(Attribute.DEFAULT_TIMEOUT.getLocalName())
+            .build();
 
     /**
      * Description provider for the strict-max-pool add operation
      */
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return Descriptions.getRecoveryEnvironmentAddDescription(locale);
+        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
+        return Descriptions.getCoordinatorEnvironmentAddDescription(locale);
     }
 
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode coreEnvModel) throws OperationFailedException {
-        final boolean coordinatorEnableStatistics = operation.get(ENABLE_STATISTICS).asBoolean(true);
-        final boolean transactionStatusManagerEnable = operation.get(ENABLE_TSM_STATUS).asBoolean(false);
-        final int coordinatorDefaultTimeout = operation.get(DEFAULT_TIMEOUT).asInt(300);
-
-
-        coreEnvModel.get(ENABLE_STATISTICS).set(coordinatorEnableStatistics);
-        coreEnvModel.get(ENABLE_TSM_STATUS).set(transactionStatusManagerEnable);
-        coreEnvModel.get(DEFAULT_TIMEOUT).set(coordinatorDefaultTimeout);  // store the default so we write it -- TODO store all the defaults
-
-
+    protected void populateModel(ModelNode operation, ModelNode coordEnvModel) throws OperationFailedException {
+        ENABLE_STATISTICS.validateAndSet(operation, coordEnvModel);
+        ENABLE_TSM_STATUS.validateAndSet(operation, coordEnvModel);
+        DEFAULT_TIMEOUT.validateAndSet(operation, coordEnvModel);
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode coordEnvModel,
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
 
-        final boolean coordinatorEnableStatistics = operation.get(ENABLE_STATISTICS).asBoolean(true);
-        final boolean transactionStatusManagerEnable = operation.get(ENABLE_TSM_STATUS).asBoolean(false);
-        final int coordinatorDefaultTimeout = operation.get(DEFAULT_TIMEOUT).asInt(300);
+        final boolean coordinatorEnableStatistics = ENABLE_STATISTICS.validateResolvedOperation(coordEnvModel).asBoolean();
+        final boolean transactionStatusManagerEnable = ENABLE_TSM_STATUS.validateResolvedOperation(coordEnvModel).asBoolean();
+        final int coordinatorDefaultTimeout = DEFAULT_TIMEOUT.validateResolvedOperation(coordEnvModel).asInt();
 
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable);
         controllers.add(context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService)
