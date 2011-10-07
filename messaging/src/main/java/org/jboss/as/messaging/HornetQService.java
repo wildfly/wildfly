@@ -145,6 +145,8 @@ class HornetQService implements Service<HornetQServer> {
                     }
                     newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
                 }
+                configuration.getBroadcastGroupConfigurations().clear();
+                configuration.getBroadcastGroupConfigurations().addAll(newConfigs);
             }
             if(discoveryGroups != null) {
                 configuration.setDiscoveryGroupConfigurations(new HashMap<String, DiscoveryGroupConfiguration>());
