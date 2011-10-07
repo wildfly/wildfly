@@ -117,13 +117,13 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
             throw new IllegalArgumentException("View interface is null");
         if (viewServices.containsKey(viewInterface.getName())) {
             final ServiceName serviceName = viewServices.get(viewInterface.getName());
-            return createViewInstance(viewInterface, contextData, serviceName);
+            return createViewInstanceProxy(viewInterface, contextData, serviceName);
         } else {
             throw new IllegalStateException("View of type " + viewInterface + " not found on bean " + this);
         }
     }
 
-    private <T> T createViewInstance(final Class<T> viewInterface, final Map<Object, Object> contextData, final ServiceName serviceName) {
+    protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData, final ServiceName serviceName) {
         final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
         final ComponentViewInstance instance = view.createInstance(contextData);
@@ -190,12 +190,12 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
 
     @Override
     public EJBHome getEJBHome() throws IllegalStateException {
-        return createViewInstance(EJBHome.class, Collections.emptyMap(), ejbHome);
+        return createViewInstanceProxy(EJBHome.class, Collections.emptyMap(), ejbHome);
     }
 
     @Override
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
-        return createViewInstance(EJBLocalHome.class, Collections.emptyMap(), ejbLocalHome);
+        return createViewInstanceProxy(EJBLocalHome.class, Collections.emptyMap(), ejbLocalHome);
     }
 
     @Override

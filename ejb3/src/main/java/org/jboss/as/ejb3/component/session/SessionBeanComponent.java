@@ -22,24 +22,24 @@
 package org.jboss.as.ejb3.component.session;
 
 
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.as.ejb3.context.spi.SessionContext;
-import org.jboss.as.threads.ThreadsServices;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceName;
+import static java.util.Collections.emptyMap;
 
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.TransactionAttributeType;
-import java.io.Serializable;
-import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
-import static java.util.Collections.emptyMap;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+import javax.ejb.TransactionAttributeType;
+
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
+import org.jboss.as.ejb3.context.spi.SessionContext;
+import org.jboss.as.threads.ThreadsServices;
+import org.jboss.ejb.client.SessionID;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -52,6 +52,9 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
     protected final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout;
     private final ExecutorService asyncExecutor;
+
+    private final ServiceName ejbObjectView;
+    private final ServiceName ejbLocalObjectView;
 
     /**
      * Construct a new instance.
@@ -67,6 +70,8 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
         //if this bean has no async methods, then this will not be injected
         this.asyncExecutor = ejbComponentCreateService.getAsyncExecutorService().getOptionalValue();
+        this.ejbLocalObjectView = ejbComponentCreateService.getEjbLocalObjectView();
+        this.ejbObjectView = ejbComponentCreateService.getEjbObjectview();
     }
 
     @Override
@@ -77,18 +82,18 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         return createViewInstanceProxy(businessInterface, emptyMap());
     }
 
-    protected Serializable getSessionIdOf(final SessionContext ctx) {
+    protected SessionID getSessionIdOf(final SessionContext ctx) {
         return ((SessionBeanComponentInstance.SessionBeanComponentInstanceContext) ctx).getId();
     }
 
     @Override
     public EJBLocalObject getEJBLocalObject(SessionContext ctx) throws IllegalStateException {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.session.SessionBeanComponent.getEJBLocalObject");
+        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbLocalObjectView);
     }
 
     @Override
     public EJBObject getEJBObject(SessionContext ctx) throws IllegalStateException {
-        throw new RuntimeException("NYI: org.jboss.as.ejb3.component.session.SessionBeanComponent.getEJBObject");
+        return createViewInstanceProxy(EJBObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbObjectView);
     }
 
     /**

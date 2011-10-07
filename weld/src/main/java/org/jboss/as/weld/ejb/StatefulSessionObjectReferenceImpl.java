@@ -21,6 +21,17 @@
  */
 package org.jboss.as.weld.ejb;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ejb.NoSuchEJBException;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
@@ -30,16 +41,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
-
-import javax.ejb.NoSuchEJBException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Implementation for SFSB's
@@ -124,7 +125,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
         if (viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
             final ComponentView view = (ComponentView) serviceController.getValue();
-            final ComponentViewInstance instance = view.createInstance(Collections.<Object, Object>singletonMap(StatefulSessionComponent.SESSION_ATTACH_KEY, id));
+            final ComponentViewInstance instance = view.createInstance(Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, id));
             return (S) instance.createProxy();
         } else {
             throw new IllegalStateException("View of type " + businessInterfaceType + " not found on bean " + ejbComponent);

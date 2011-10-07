@@ -22,22 +22,25 @@
 
 package org.jboss.as.ejb3.component.session;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
-import org.jboss.as.ejb3.component.EJBBusinessMethod;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
-import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
-import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.msc.value.InjectedValue;
-
-import javax.ejb.LockType;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
+import javax.ejb.LockType;
+
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
+import org.jboss.as.ejb3.component.EJBBusinessMethod;
+import org.jboss.as.ejb3.component.EJBComponentCreateService;
+import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
+import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * User: jpai
@@ -50,6 +53,9 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodApplicableAccessTimeouts;
 
     private final InjectedValue<ExecutorService> asyncExecutorService = new InjectedValue<ExecutorService>();
+
+    private final ServiceName ejbObjectview;
+    private final ServiceName ejbLocalObjectView;
 
     /**
      * Construct a new instance.
@@ -80,7 +86,7 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
         if (methodAccessTimeouts == null) {
             this.methodApplicableAccessTimeouts = Collections.emptyMap();
         } else {
-            final Map<EJBBusinessMethod, AccessTimeoutDetails> accessTimeouts = new HashMap();
+            final Map<EJBBusinessMethod, AccessTimeoutDetails> accessTimeouts = new HashMap<EJBBusinessMethod, AccessTimeoutDetails>();
             for (Map.Entry<MethodIdentifier, AccessTimeoutDetails> entry : methodAccessTimeouts.entrySet()) {
                 final MethodIdentifier ejbMethodDescription = entry.getKey();
                 final EJBBusinessMethod ejbMethod = this.getEJBBusinessMethod(ejbMethodDescription);
@@ -89,12 +95,15 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
             this.methodApplicableAccessTimeouts = Collections.unmodifiableMap(accessTimeouts);
         }
 
-        if(sessionBeanComponentDescription.getScheduleMethods() != null) {
-            for(Method method : sessionBeanComponentDescription.getScheduleMethods().keySet()) {
-            processTxAttr(sessionBeanComponentDescription, MethodIntf.BEAN, method);
+        if (sessionBeanComponentDescription.getScheduleMethods() != null) {
+            for (Method method : sessionBeanComponentDescription.getScheduleMethods().keySet()) {
+                processTxAttr(sessionBeanComponentDescription, MethodIntf.BEAN, method);
             }
         }
-
+        final EJBViewDescription local = sessionBeanComponentDescription.getEjbLocalView();
+        ejbLocalObjectView = local == null ? null : local.getServiceName();
+        final EJBViewDescription remote = sessionBeanComponentDescription.getEjbRemoteView();
+        ejbObjectview = remote == null ? null : remote.getServiceName();
     }
 
     public Map<String, LockType> getBeanLockType() {
@@ -134,5 +143,13 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
     public InjectedValue<ExecutorService> getAsyncExecutorService() {
         return asyncExecutorService;
+    }
+
+    public ServiceName getEjbLocalObjectView() {
+        return ejbLocalObjectView;
+    }
+
+    public ServiceName getEjbObjectview() {
+        return ejbObjectview;
     }
 }

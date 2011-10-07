@@ -21,10 +21,16 @@
  */
 package org.jboss.as.testsuite.integration.ejb.home.localhome;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
+
 /**
  * @author Stuart Douglas
  */
 public class SimpleStatefulLocalBean  {
+
+    @Resource
+    private SessionContext sessionContext;
 
     private String message;
 
@@ -38,5 +44,9 @@ public class SimpleStatefulLocalBean  {
 
     public String sayHello() {
         return message;
+    }
+
+    public String otherMethod() {
+        return ((SimpleLocalInterface)sessionContext.getEJBLocalObject()).sayHello();
     }
 }

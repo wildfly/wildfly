@@ -30,5 +30,5 @@ public interface SimpleLocalInterface extends EJBLocalObject {
 
     public String sayHello();
 
-    public String testGetEjbLocalHome();
+    public String otherMethod();
 }

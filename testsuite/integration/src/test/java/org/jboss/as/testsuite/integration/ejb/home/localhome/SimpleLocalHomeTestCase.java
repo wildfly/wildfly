@@ -85,12 +85,14 @@ public class SimpleLocalHomeTestCase {
         final SimpleLocalInterface ejbInstance = home.createSimple();
         Assert.assertEquals("Hello World", ejbInstance.sayHello());
     }
+
     @Test
     public void testGetEjbLocalHome() throws Exception {
         final SimpleLocalHome home = (SimpleLocalHome) iniCtx.lookup("java:module/SimpleLocalHomeBean!" + SimpleLocalHome.class.getName());
         final SimpleLocalInterface ejbInstance = home.createSimple();
-        Assert.assertEquals("Hello World", ejbInstance.testGetEjbLocalHome());
+        Assert.assertEquals("Hello World", ejbInstance.otherMethod());
     }
+
     @Test
     public void testStatefulLocalHome() throws Exception {
         final String message = "Bean Message";
@@ -99,5 +101,15 @@ public class SimpleLocalHomeTestCase {
         Assert.assertEquals(message, ejbInstance.sayHello());
         ejbInstance = home.createComplex("hello", "world");
         Assert.assertEquals("hello world", ejbInstance.sayHello());
+    }
+
+    @Test
+    public void testgetEjbLocalObject() throws Exception {
+        final String message = "Bean Message";
+        final SimpleStatefulLocalHome home = (SimpleStatefulLocalHome) iniCtx.lookup("java:module/SimpleStatefulLocalHomeBean!" + SimpleStatefulLocalHome.class.getName());
+        SimpleLocalInterface ejbInstance = home.createSimple(message);
+        Assert.assertEquals(message, ejbInstance.otherMethod());
+        ejbInstance = home.createComplex("hello", "world");
+        Assert.assertEquals("hello world", ejbInstance.otherMethod());
     }
 }

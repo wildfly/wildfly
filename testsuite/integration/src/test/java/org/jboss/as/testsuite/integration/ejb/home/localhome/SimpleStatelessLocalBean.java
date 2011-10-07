@@ -36,7 +36,9 @@ public class SimpleStatelessLocalBean  {
         return "Hello World";
     }
 
-    public String testGetEjbLocalHome() {
+    public String otherMethod() {
         return  ((SimpleLocalHome)sessionContext.getEJBLocalHome()).createSimple().sayHello();
     }
+
+
 }

@@ -21,6 +21,19 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.ejb.AccessTimeout;
+import javax.ejb.TimerService;
+import javax.transaction.RollbackException;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.cache.Cache;
@@ -41,18 +54,6 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.StopContext;
 import org.jboss.tm.TxUtils;
 
-import javax.ejb.AccessTimeout;
-import javax.ejb.TimerService;
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 
 /**
  * Stateful Session Bean
@@ -60,8 +61,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulSessionComponent extends SessionBeanComponent {
-
-    public static final Object SESSION_ATTACH_KEY = new Object();
 
     public static final Object SESSION_ID_REFERENCE_KEY = new Object();
 
@@ -113,7 +112,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         if (businessInterface == null) {
             throw new IllegalStateException("Business interface type cannot be null");
         }
-        return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SESSION_ATTACH_KEY, getSessionIdOf(ctx)));
+        return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)));
     }
 
     @Override

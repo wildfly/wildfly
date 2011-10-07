@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
@@ -29,8 +31,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * User: jpai
@@ -48,7 +48,7 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
         context.getContextData().put(StatefulSessionComponent.SESSION_ID_REFERENCE_KEY, sessionIdReference);
 
         //if we are attaching to an existing instance this will not be null
-        final SessionID id = (SessionID) context.getContextData().get(StatefulSessionComponent.SESSION_ATTACH_KEY);
+        final SessionID id = (SessionID) context.getContextData().get(SessionID.SESSION_ID_KEY);
         if(id == null) {
             return new StatefulComponentSessionIdGeneratingInterceptor(sessionIdReference);
         } else {

@@ -21,15 +21,15 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.util.Collections;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.util.Collections;
 
 /**
  * Serialized form of a SFSB
@@ -50,6 +50,6 @@ public class StatefulSerializedProxy implements Serializable {
 
     private Object readResolve() throws ObjectStreamException {
         ServiceController<ComponentView> view = (ServiceController<ComponentView>) CurrentServiceContainer.getServiceContainer().getRequiredService(ServiceName.parse(viewName));
-        return view.getValue().createInstance(Collections.<Object, Object>singletonMap(StatefulSessionComponent.SESSION_ATTACH_KEY, sessionID)).createProxy();
+        return view.getValue().createInstance(Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, sessionID)).createProxy();
     }
 }

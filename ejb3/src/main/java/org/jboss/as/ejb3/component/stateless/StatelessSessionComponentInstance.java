@@ -22,15 +22,15 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
-import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.invocation.Interceptor;
-
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.ejb.client.SessionID;
+import org.jboss.invocation.Interceptor;
 
 /**
  * Author : Jaikiran Pai
@@ -53,7 +53,7 @@ public class StatelessSessionComponentInstance extends SessionBeanComponentInsta
     }
 
     @Override
-    protected Serializable getId() {
+    protected SessionID getId() {
         return null;
     }
 
