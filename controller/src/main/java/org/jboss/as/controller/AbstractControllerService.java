@@ -76,11 +76,11 @@ public abstract class AbstractControllerService implements Service<ModelControll
     public void start(final StartContext context) throws StartException {
         final ServiceController<?> serviceController = context.getController();
         final ServiceContainer container = serviceController.getServiceContainer();
-        final ModelControllerImpl controller = new ModelControllerImpl(container, context.getChildTarget(), ManagementResourceRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
+        final ServiceTarget target = context.getChildTarget();
+        final ModelControllerImpl controller = new ModelControllerImpl(container, target, ManagementResourceRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;
 
-        final ServiceTarget target = context.getChildTarget();
         new Thread(new Runnable() {
             public void run() {
                 try {
