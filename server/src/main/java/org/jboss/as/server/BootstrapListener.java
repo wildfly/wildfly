@@ -109,6 +109,7 @@ class BootstrapListener extends AbstractServiceListener<Object> {
                 break;
             }
             case REMOVING_to_REMOVED: {
+                System.out.println(controller.toString() + " REMOVED");
                 cancelLikely = true;
                 tick();
                 break;
@@ -137,6 +138,7 @@ class BootstrapListener extends AbstractServiceListener<Object> {
         }
         serviceTarget.removeListener(this);
         if (cancelLikely) {
+            System.out.println("CANCEL LIKELY!!");
             return;
         }
 

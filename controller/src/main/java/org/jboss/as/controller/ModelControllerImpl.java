@@ -23,15 +23,16 @@
 package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -85,13 +86,6 @@ class ModelControllerImpl implements ModelController {
     private final OperationStepHandler prepareStep;
     private final ControlledProcessState processState;
 
-    @Deprecated
-    ModelControllerImpl(final ModelNode model, final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
-                        final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
-                        final OperationStepHandler prepareStep, final ControlledProcessState processState) {
-        this(serviceRegistry, serviceTarget, rootRegistration, stateMonitor, persister, controllerType, prepareStep, processState);
-    }
-
     ModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
                         final OperationStepHandler prepareStep, final ControlledProcessState processState) {
@@ -133,14 +127,66 @@ class ModelControllerImpl implements ModelController {
     }
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
-        OperationContextImpl context = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class), handler, null, model, control, processState, bootingFlag.get());
-        ModelNode result = context.getResult();
+
+        // Execute all ops up to the last ExtensionAddHandler. This gets extensions registered before proceeding
+        final OperationContextImpl context = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class), handler, null, model, control, processState, bootingFlag.get());
+        final ModelNode result = context.getResult();
         result.setEmptyList();
+        boolean sawExtensionAdd = false;
+        List<ModelNode> postExtensionOps = null;
         for (ModelNode bootOp : bootList) {
-            final ModelNode response = result.add();
-            context.addStep(response, bootOp, new BootStepHandler(bootOp, response), OperationContext.Stage.MODEL);
+            if (postExtensionOps != null) {
+                postExtensionOps.add(bootOp);
+            } else {
+                final ModelNode response = result.add();
+                final PathAddress address = PathAddress.pathAddress(bootOp.require(ADDRESS));
+                final String operationName = bootOp.require(OP).asString();
+                final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+                if (stepHandler == null) {
+                    String msg = String.format("No handler for operation %s at address %s", operationName, address);
+                    log.error(msg);
+                    context.getFailureDescription().set(msg);
+                    // stop
+                    break;
+                } else if (stepHandler instanceof ExtensionAddHandler) {
+                    context.addStep(response, bootOp, stepHandler, OperationContext.Stage.MODEL);
+                    sawExtensionAdd = true;
+                } else if (!sawExtensionAdd) {
+                    context.addStep(response, bootOp, stepHandler, OperationContext.Stage.MODEL);
+                } else {
+                    // Start the postExtension list
+                    postExtensionOps = new ArrayList<ModelNode>();
+                    postExtensionOps.add(bootOp);
+                }
+            }
         }
-        context.completeStep();
+
+        // Run the steps up to the last ExtensionAddHandler
+        if (context.completeStep() == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
+
+            // Success. Now any extension handlers are registered. Continue with remaining ops
+            final OperationContextImpl postExtContext = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class), handler, null, model, control, processState, bootingFlag.get());
+            final ModelNode postExtResult = context.getResult();
+            postExtResult.setEmptyList();
+
+            for (ModelNode bootOp : postExtensionOps) {
+                final ModelNode response = postExtResult.add();
+                final PathAddress address = PathAddress.pathAddress(bootOp.require(ADDRESS));
+                final String operationName = bootOp.require(OP).asString();
+                final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+                if (stepHandler == null) {
+                    String msg = String.format("No handler for operation %s at address %s", operationName, address);
+                    log.error(msg);
+                    postExtContext.getFailureDescription().set(msg);
+                    // stop
+                    break;
+                } else {
+                    postExtContext.addStep(response, bootOp, stepHandler, OperationContext.Stage.MODEL);
+                }
+            }
+
+            postExtContext.completeStep();
+        }
     }
 
     void finshBoot() {
