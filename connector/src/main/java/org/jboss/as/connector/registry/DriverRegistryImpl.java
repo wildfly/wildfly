@@ -59,7 +59,7 @@ public class DriverRegistryImpl implements DriverRegistry {
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Removing deployment: %s", driver);
 
         synchronized (drivers) {
-            drivers.put(driver.getDriverName(), driver);
+            drivers.remove(driver.getDriverName());
         }
 
     }
