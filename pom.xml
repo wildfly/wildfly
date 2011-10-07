@@ -279,6 +279,7 @@
         <module>ejb3</module>
         <module>embedded</module>
         <module>host-controller</module>
+        <module>j2eemanagement</module>
         <module>jacorb</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -880,6 +881,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-host-controller</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-j2eemanagement</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

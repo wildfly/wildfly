@@ -145,6 +145,7 @@
                 </local-cache>
             </cache-container>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:j2eemanagement:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.0">
             <orb name="JBoss" print-version="off" giop-minor-version="2">
                 <connection max-managed-buf-size="24" outbuf-cache-timeout="-1"/>

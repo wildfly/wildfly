@@ -9,6 +9,7 @@
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
+        <extension module="org.jboss.as.j2eemanagement"/>
         <extension module="org.jboss.as.jacorb"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
@@ -154,6 +155,7 @@
                 </local-cache>
             </cache-container>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:j2eemanagement:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.1">

@@ -24,10 +24,8 @@ package org.jboss.as.jmx;
 
 import java.lang.management.ManagementFactory;
 
-import javax.management.MBeanServer;
-
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.jmx.model.ModelControllerMBeanServer;
+import org.jboss.as.jmx.model.ModelControllerMBeanServerPlugin;
 import org.jboss.as.jmx.tcl.TcclMBeanServer;
 import org.jboss.as.server.Services;
 import org.jboss.msc.service.Service;
@@ -47,13 +45,13 @@ import org.jboss.msc.value.InjectedValue;
  * @author John Bailey
  * @author Kabir Khan
  */
-public class MBeanServerService implements Service<MBeanServer> {
+public class MBeanServerService implements Service<PluggableMBeanServer> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
 
     private final boolean showModel;
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
 
-    private MBeanServer mBeanServer;
+    private PluggableMBeanServer mBeanServer;
 
     private MBeanServerService(final boolean showModel) {
         this.showModel = showModel;
@@ -70,9 +68,9 @@ public class MBeanServerService implements Service<MBeanServer> {
 
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
-        mBeanServer = new TcclMBeanServer(ManagementFactory.getPlatformMBeanServer());
+        mBeanServer = new PluggableMBeanServer(new TcclMBeanServer(ManagementFactory.getPlatformMBeanServer()));
         if (showModel) {
-            mBeanServer = new ModelControllerMBeanServer(mBeanServer, modelControllerValue.getValue());
+            mBeanServer.addDelegate(new ModelControllerMBeanServerPlugin(modelControllerValue.getValue()));
         }
     }
 
@@ -82,7 +80,7 @@ public class MBeanServerService implements Service<MBeanServer> {
     }
 
     /** {@inheritDoc} */
-    public synchronized MBeanServer getValue() throws IllegalStateException {
+    public synchronized PluggableMBeanServer getValue() throws IllegalStateException {
         return mBeanServer;
     }
 }
