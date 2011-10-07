@@ -30,14 +30,13 @@ package org.jboss.as.osgi.parser;
  * @author David Bosschaert
  * @since 13-Sep-2010
  */
-interface ModelConstants {
+public interface ModelConstants {
 
     String ACTIVATION = "activation";
     String BUNDLE = "bundle";
     String CAPABILITY = "capability";
     String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
-    String ENTRY = "entry";
     String FRAMEWORK_PROPERTY = "framework-property";
     String ID = "id";
     String NAME = "name";

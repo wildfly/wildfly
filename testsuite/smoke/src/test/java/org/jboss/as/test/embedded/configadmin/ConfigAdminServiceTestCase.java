@@ -23,6 +23,7 @@
 package org.jboss.as.test.embedded.configadmin;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -75,10 +76,10 @@ public class ConfigAdminServiceTestCase {
 
         // Verify that there is no config with this PID already
         ConfigAdminService configAdmin = getConfigAdminService();
-        Dictionary<String, String> config = configAdmin.getConfiguration(ConfiguredService.SERVICE_PID);
-        assertNull("Config null", config);
+        boolean hasconfig = configAdmin.hasConfiguration(ConfiguredService.SERVICE_PID);
+        assertFalse("Config null", hasconfig);
 
-        config = new Hashtable<String, String>();
+        Dictionary<String, String> config = new Hashtable<String, String>();
         config.put("foo", "bar");
 
         // Register a new config for the given PID
@@ -109,8 +110,8 @@ public class ConfigAdminServiceTestCase {
             oldConfig = configAdmin.removeConfiguration(ConfiguredService.SERVICE_PID);
             assertNotNull("Config not null", oldConfig);
 
-            config = configAdmin.getConfiguration(ConfiguredService.SERVICE_PID);
-            assertNull("Config null", config);
+            hasconfig = configAdmin.hasConfiguration(ConfiguredService.SERVICE_PID);
+            assertFalse("Config null", hasconfig);
         }
     }
 
@@ -184,6 +185,7 @@ public class ConfigAdminServiceTestCase {
             assertEquals("bar", service.getConfigValue("foo"));
         } finally {
             configAdmin.removeConfiguration(ConfiguredService.SERVICE_PID);
+            serviceContainer.getService(ConfiguredService.SERVICE_NAME).setMode(ServiceController.Mode.REMOVE);
         }
     }
 

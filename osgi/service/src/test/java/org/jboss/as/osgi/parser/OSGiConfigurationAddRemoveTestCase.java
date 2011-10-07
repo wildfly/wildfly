@@ -41,6 +41,7 @@ import org.mockito.Mockito;
  * @author Thomas.Diesler@jboss.com
  */
 public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBase {
+
     @Test
     public void testConfigurationAddRemove() throws Exception {
         SubsystemState stateService = new SubsystemState();
