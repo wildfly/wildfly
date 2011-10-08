@@ -5,7 +5,7 @@
         <session>
             <ejb-name>DescriptorScheduleBean</ejb-name>
             <local-bean />
-            <ejb-class>org.jboss.as.testsuite.timerservice.schedule.descriptor.DescriptorScheduleBean</ejb-class>
+            <ejb-class>org.jboss.as.testsuite.integration.ejb.timerservice.schedule.descriptor.DescriptorScheduleBean</ejb-class>
             <session-type>Stateless</session-type>
             <timer>
                 <description />

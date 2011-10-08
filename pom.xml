@@ -81,7 +81,7 @@
         <version.jaxbintros>1.0.2.GA</version.jaxbintros>
         <version.jline>0.9.94</version.jline>
         <version.joda-time>1.6.2</version.joda-time>
-        <version.junit>4.8.2</version.junit>
+        <version.junit>4.10</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.net.sourceforge.cssparser.cssparser>0.9.5</version.net.sourceforge.cssparser.cssparser>
         <version.net.sourceforge.htmlunit.htmlunit>2.8</version.net.sourceforge.htmlunit.htmlunit>
