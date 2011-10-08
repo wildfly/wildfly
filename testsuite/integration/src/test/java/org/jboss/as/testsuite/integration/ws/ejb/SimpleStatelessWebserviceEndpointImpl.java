@@ -20,43 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ee.injection.mappedname;
+package org.jboss.as.testsuite.integration.ws.ejb;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.jws.WebService;
+import javax.xml.ws.WebServiceContext;
 
 /**
- * User: jpai
+ * Webservice endpoint implementation.
+ *
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @Stateless
-public class MappedNameBean {
+@WebService(
+        endpointInterface = "org.jboss.as.testsuite.integration.wsejb.SimpleStatelessWebserviceEndpointIface",
+        targetNamespace = "org.jboss.as.testsuite.integration.wsejb",
+        serviceName = "SimpleService"
+)
+public class SimpleStatelessWebserviceEndpointImpl implements SimpleStatelessWebserviceEndpointIface {
 
-    @Resource(mappedName = "java:comp/env/ResourceFromWebXml")
-    private Object resourceByMappedName;
+    @Resource WebServiceContext ctx;
 
-    @Resource(lookup = "java:comp/env/ResourceFromWebXml")
-    private Object resourceByLookupName;
-
-    @EJB(lookup = "java:module/MappedNameBean")
-    private MappedNameBean selfByLookupName;
-
-    @EJB(mappedName = "java:module/MappedNameBean")
-    private MappedNameBean selfByMappedName;
-
-    public boolean isResourceWithMappedNameInjected() {
-        return this.resourceByMappedName != null;
+    @Override
+    public String echo(final String s) {
+        if (ctx == null) throw new RuntimeException("@Resource WebServiceContext not injected");
+        return s;
     }
 
-    public boolean isResourceWithLookupNameInjected() {
-        return this.resourceByLookupName != null;
-    }
-
-    public boolean isEJBWithLookupNameInjected() {
-        return this.selfByLookupName != null;
-    }
-
-    public boolean isEJBWithMappedNameInjected() {
-        return this.selfByMappedName != null;
-    }
 }

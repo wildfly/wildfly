@@ -19,11 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.beanvalidation.hibernate.scriptassert;
+package org.jboss.as.testsuite.integration.transaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -32,37 +31,32 @@ import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-
-import java.sql.SQLException;
-import java.util.Set;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
- * AS7-1110
- *
- * Tests that hibernate validator @ScriptAssert works correctly
- *
- * This is a non-standard extension provided by hibernate validator
- *
+ * Tests that the TransactionManager is bound to JNDI
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class ScriptAssertTestCase {
+public class TransactionManagerTest {
 
     @Deployment
-    public static Archive<?> deploy() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class,"testscriptassert.war");
-        war.addPackage(ScriptAssertTestCase.class.getPackage());
+    public static WebArchive deployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "tranaction.war");
+        war.addPackage(TransactionManagerTest.class.getPackage());
         return war;
-
     }
 
+    @Test
+    public void testTransactionManagerBoundToJndi() throws NamingException {
+        TransactionManager tm = (TransactionManager)new InitialContext().lookup("java:jboss/TransactionManager");
+        Assert.assertNotNull(tm);
+    }
 
     @Test
-    public void testScriptAssert() throws NamingException, SQLException {
-        Validator validator = (Validator) new InitialContext().lookup("java:comp/Validator");
-        final Set<ConstraintViolation<ScriptAssertBean>> result = validator.validate(new ScriptAssertBean());
-        Assert.assertEquals(1, result.size());
+    public void testTransactionSynchronizationRegistryBoundToJndi() throws NamingException {
+        TransactionSynchronizationRegistry tm = (TransactionSynchronizationRegistry)new InitialContext().lookup("java:jboss/TransactionSynchronizationRegistry");
+        Assert.assertNotNull(tm);
     }
 }

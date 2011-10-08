@@ -20,43 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ee.injection.mappedname;
+package org.jboss.as.testsuite.integration.ejb.mdb;
 
-import javax.annotation.Resource;
+import org.jboss.logging.Logger;
+
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
 
 /**
  * User: jpai
  */
-@Stateless
-public class MappedNameBean {
+public class DDBasedMDB implements MessageListener {
 
-    @Resource(mappedName = "java:comp/env/ResourceFromWebXml")
-    private Object resourceByMappedName;
+    @EJB
+    private JMSMessagingUtil jmsMessagingUtil;
 
-    @Resource(lookup = "java:comp/env/ResourceFromWebXml")
-    private Object resourceByLookupName;
+    private static final Logger logger = Logger.getLogger(DDBasedMDB.class);
 
-    @EJB(lookup = "java:module/MappedNameBean")
-    private MappedNameBean selfByLookupName;
-
-    @EJB(mappedName = "java:module/MappedNameBean")
-    private MappedNameBean selfByMappedName;
-
-    public boolean isResourceWithMappedNameInjected() {
-        return this.resourceByMappedName != null;
-    }
-
-    public boolean isResourceWithLookupNameInjected() {
-        return this.resourceByLookupName != null;
-    }
-
-    public boolean isEJBWithLookupNameInjected() {
-        return this.selfByLookupName != null;
-    }
-
-    public boolean isEJBWithMappedNameInjected() {
-        return this.selfByMappedName != null;
+    @Override
+    public void onMessage(Message message) {
+        logger.info("Received message " + message + " in MDB " + this.getClass().getName());
+        try {
+            final Destination replyTo = message.getJMSReplyTo();
+            if (replyTo == null) {
+                return;
+            }
+            logger.info("Sending a reply to destination " + replyTo);
+            jmsMessagingUtil.reply(message);
+        } catch (JMSException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

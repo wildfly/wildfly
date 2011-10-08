@@ -38,7 +38,7 @@ import javax.security.auth.login.LoginContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.integration.spec.common.HttpRequest;
+import org.jboss.as.testsuite.integration.common.HttpRequest;
 import org.jboss.as.testsuite.integration.ejb.security.authentication.EntryBean;
 import org.jboss.as.testsuite.integration.ejb.security.base.WhoAmIBean;
 import org.jboss.security.client.SecurityClient;
@@ -97,10 +97,10 @@ public class AuthenticationTestCase extends SecurityTest {
         return war;
     }
 
-    @EJB(mappedName = "java:global/ejb3security/WhoAmIBean")
+    @EJB(mappedName = "java:global/ejb3security/WhoAmIBean!org.jboss.as.testsuite.integration.ejb.security.WhoAmI")
     private WhoAmI whoAmIBean;
 
-    @EJB(mappedName = "java:global/ejb3security/EntryBean")
+    @EJB(mappedName = "java:global/ejb3security/EntryBean!org.jboss.as.testsuite.integration.ejb.security.Entry")
     private Entry entryBean;
 
     @Test

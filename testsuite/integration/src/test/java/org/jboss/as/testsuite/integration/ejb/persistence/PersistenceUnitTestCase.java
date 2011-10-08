@@ -22,6 +22,8 @@
 
 package org.jboss.as.testsuite.integration.ejb.persistence;
 
+import javax.ejb.EJB;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -30,8 +32,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJB;
 
 /**
  * User: jpai
@@ -51,7 +51,7 @@ public class PersistenceUnitTestCase {
 
 
 
-    @EJB (mappedName = "java:module/SingletonBean!org.jboss.as.test.spec.ejb3.persistence.SingletonBean")
+    @EJB (mappedName = "java:module/SingletonBean")
     private SingletonBean singletonBean;
 
     @Deployment

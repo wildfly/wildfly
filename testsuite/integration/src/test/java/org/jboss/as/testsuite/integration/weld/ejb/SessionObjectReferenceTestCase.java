@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.beans.XMLDecoder;
+import java.io.IOException;
 import java.io.StringBufferInputStream;
 import java.net.MalformedURLException;
 import java.util.List;
@@ -75,6 +76,8 @@ public class SessionObjectReferenceTestCase {
             throw new RuntimeException(e);
         } catch (TimeoutException e) {
             throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -102,7 +105,7 @@ public class SessionObjectReferenceTestCase {
             "    <!-- if I have a web.xml, annotations won't work anymore -->\n" +
             "    <servlet>\n" +
             "        <servlet-name>SimpleServlet</servlet-name>\n" +
-            "        <servlet-class>org.jboss.as.testsuite.integration.weldejb.SimpleServlet</servlet-class>\n" +
+            "        <servlet-class>org.jboss.as.testsuite.integration.weld.ejb.SimpleServlet</servlet-class>\n" +
             "    </servlet>\n" +
             "    <servlet-mapping>\n" +
             "        <servlet-name>SimpleServlet</servlet-name>\n" +

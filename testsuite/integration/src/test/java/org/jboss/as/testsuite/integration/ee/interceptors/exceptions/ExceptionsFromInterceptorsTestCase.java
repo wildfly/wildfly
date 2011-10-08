@@ -19,15 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.view.duplicateview;
+package org.jboss.as.testsuite.integration.ee.interceptors.exceptions;
 
-import java.util.logging.Logger;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import javax.ejb.EJB;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -37,25 +38,31 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 @RunWith(Arquillian.class)
-public class DuplicateViewDefinitionTestCase {
-    private static final Logger log = Logger.getLogger(DuplicateViewDefinitionTestCase.class.getName());
-
+public class ExceptionsFromInterceptorsTestCase {
     @Deployment
-    public static Archive<?> deployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "ejb3as7-1012.jar")
-                .addPackage(AnnotatedDoNothingBean.class.getPackage())
-                .addPackage(DoNothingBean.class.getPackage())
-                .addAsManifestResource("ejb3/as7_1012/ejb-jar.xml", "ejb-jar.xml");
-        log.info(archive.toString(true));
-        return archive;
+    public static JavaArchive deployment() {
+        return ShrinkWrap.create(JavaArchive.class, "interceptors-exceptions.jar")
+            .addPackage(ExceptionsFromInterceptorsTestCase.class.getPackage());
     }
 
-    @EJB(mappedName = "java:global/ejb3as7-1012/AnnotatedDoNothingBean!org.jboss.as.testsuite.integration.ejb.view.duplicateview.DoNothing")
-    private DoNothing bean;
+    private static <T> T lookup(final String name, final Class<T> cls) throws NamingException {
+        InitialContext ctx = new InitialContext();
+        try {
+            return cls.cast(ctx.lookup(name));
+        }
+        finally {
+            ctx.close();
+        }
+    }
 
     @Test
-    public void testDoNothing() {
-        // if it deploys, we are good to go
-        bean.doNothing();
+    public void testUndeclared() throws Exception {
+        try {
+            lookup("java:global/interceptors-exceptions/PitcherBean", PitcherBean.class).fastball();
+            fail("Should have thrown a (Runtime)Exception");
+        }
+        catch (Exception e) {
+            assertTrue("Did not declare exception - " + e, e instanceof RuntimeException);
+        }
     }
 }

@@ -78,10 +78,10 @@ public class MultiplePuTestCase {
         return jar;
     }
 
-    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU1!org.jboss.as.test.spec.jpa.SLSBPU1")
+    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU1")
     private SLSBPU1 slsbpu1;
 
-    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU2!org.jboss.as.test.spec.jpa.SLSBPU2")
+    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SLSBPU2")
     private SLSBPU2 slsbpu2;
 
 

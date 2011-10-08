@@ -44,32 +44,32 @@ public class RelativeDataSourceNameTestCase {
     private static final String ARCHIVE_NAME = "RelativeDataSourceNameTestCase";
 
     private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"mypc\">" +
-            "    <description>Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>jboss/datasources/ExampleDS" +
-                "</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+                    "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
+                    "  <persistence-unit name=\"mypc\">" +
+                    "    <description>Persistence Unit." +
+                    "    </description>" +
+                    "  <jta-data-source>jboss/datasources/ExampleDS" +
+                    "</jta-data-source>" +
+                    "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+                    "</properties>" +
+                    "  </persistence-unit>" +
+                    "</persistence>";
 
     @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(RelativeDataSourceNameTestCase.class,
-            Employee.class,
-            SFSB1.class
+                Employee.class,
+                SFSB1.class
         );
 
         jar.add(new StringAsset(persistence_xml), "META-INF/persistence.xml");
         return jar;
     }
 
-    @EJB(mappedName = "java:global/"+ARCHIVE_NAME+"/SFSB1!org.jboss.as.test.spec.jpa.SFSB1")
+    @EJB(mappedName = "java:global/" + ARCHIVE_NAME + "/SFSB1")
     private SFSB1 sfsb1;
 
     @Test

@@ -20,43 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ee.injection.mappedname;
+package org.jboss.as.testsuite.integration.ws.ejb;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 
 /**
- * User: jpai
+ * Webservice endpoint interface.
+ *
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-@Stateless
-public class MappedNameBean {
+@WebService
+@SOAPBinding
+public interface SimpleStatelessWebserviceEndpointIface {
 
-    @Resource(mappedName = "java:comp/env/ResourceFromWebXml")
-    private Object resourceByMappedName;
+    String echo(String s);
 
-    @Resource(lookup = "java:comp/env/ResourceFromWebXml")
-    private Object resourceByLookupName;
-
-    @EJB(lookup = "java:module/MappedNameBean")
-    private MappedNameBean selfByLookupName;
-
-    @EJB(mappedName = "java:module/MappedNameBean")
-    private MappedNameBean selfByMappedName;
-
-    public boolean isResourceWithMappedNameInjected() {
-        return this.resourceByMappedName != null;
-    }
-
-    public boolean isResourceWithLookupNameInjected() {
-        return this.resourceByLookupName != null;
-    }
-
-    public boolean isEJBWithLookupNameInjected() {
-        return this.selfByLookupName != null;
-    }
-
-    public boolean isEJBWithMappedNameInjected() {
-        return this.selfByMappedName != null;
-    }
 }

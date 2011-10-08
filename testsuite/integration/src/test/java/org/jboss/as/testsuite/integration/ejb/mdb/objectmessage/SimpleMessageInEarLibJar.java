@@ -20,43 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ee.injection.mappedname;
+package org.jboss.as.testsuite.integration.ejb.mdb.objectmessage;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import java.io.Serializable;
 
 /**
  * User: jpai
  */
-@Stateless
-public class MappedNameBean {
+public class SimpleMessageInEarLibJar implements Serializable {
 
-    @Resource(mappedName = "java:comp/env/ResourceFromWebXml")
-    private Object resourceByMappedName;
+    private final String msg;
 
-    @Resource(lookup = "java:comp/env/ResourceFromWebXml")
-    private Object resourceByLookupName;
-
-    @EJB(lookup = "java:module/MappedNameBean")
-    private MappedNameBean selfByLookupName;
-
-    @EJB(mappedName = "java:module/MappedNameBean")
-    private MappedNameBean selfByMappedName;
-
-    public boolean isResourceWithMappedNameInjected() {
-        return this.resourceByMappedName != null;
+    public SimpleMessageInEarLibJar(String msg) {
+        if (msg == null) {
+            throw new IllegalArgumentException("Message cannot be null");
+        }
+        this.msg = msg;
     }
 
-    public boolean isResourceWithLookupNameInjected() {
-        return this.resourceByLookupName != null;
+    public String getMessage() {
+        return this.msg;
     }
 
-    public boolean isEJBWithLookupNameInjected() {
-        return this.selfByLookupName != null;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SimpleMessageInEarLibJar that = (SimpleMessageInEarLibJar) o;
+
+        if (!msg.equals(that.msg)) return false;
+
+        return true;
     }
 
-    public boolean isEJBWithMappedNameInjected() {
-        return this.selfByMappedName != null;
+    @Override
+    public int hashCode() {
+        return msg.hashCode();
     }
 }

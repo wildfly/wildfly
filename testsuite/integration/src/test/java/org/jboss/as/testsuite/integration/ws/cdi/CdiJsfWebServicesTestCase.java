@@ -21,6 +21,11 @@
  */
 package org.jboss.as.testsuite.integration.ws.cdi;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,11 +38,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.MalformedURLException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * AS7-1429
@@ -65,7 +65,7 @@ public class CdiJsfWebServicesTestCase {
 
 
     @Test
-    public void testWebServicesDoNotBreakCDI() throws MalformedURLException, ExecutionException, TimeoutException {
+    public void testWebServicesDoNotBreakCDI() throws IOException, ExecutionException, TimeoutException {
         Assert.assertEquals("<html><body>" + MyBean.MESSAGE + "</body></html>", HttpRequest.get("http://localhost:8080/" + ARCHIVE_NAME + "/index.jsf", 20, TimeUnit.SECONDS));
     }
 

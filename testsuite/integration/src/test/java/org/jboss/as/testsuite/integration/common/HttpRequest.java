@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.testsuite.integration.common;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,11 +36,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.util.Base64;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class HttpRequest {
-    private static String execute(final Callable<String> task, final long timeout, final TimeUnit unit) throws TimeoutException, ExecutionException {
+    private static String execute(final Callable<String> task, final long timeout, final TimeUnit unit) throws TimeoutException, IOException {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         final Future<String> result = executor.submit(task);
         try {
@@ -53,7 +54,8 @@ public class HttpRequest {
             // should not happen
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
-            throw e;
+            // by virtue of the Callable redefinition above I can cast
+            throw (IOException) e.getCause();
         } finally {
             executor.shutdownNow();
             try {
@@ -64,12 +66,30 @@ public class HttpRequest {
         }
     }
 
-    public static String get(final String spec, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
+    public static String get(final String spec, final long timeout, final TimeUnit unit) throws IOException, ExecutionException, TimeoutException {
         final URL url = new URL(spec);
         Callable<String> task = new Callable<String>() {
             @Override
             public String call() throws Exception {
                 final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoInput(true);
+                return processResponse(conn);
+            }
+        };
+        return execute(task, timeout, unit);
+    }
+
+    public static String get(final String spec, final String username, final String password, final long timeout, final TimeUnit unit) throws IOException, TimeoutException {
+        final URL url = new URL(spec);
+        Callable<String> task = new Callable<String>() {
+            @Override
+            public String call() throws IOException {
+                final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                if (username != null) {
+                    final String userpassword = username + ":" + password;
+                    final String basicAuthorization = Base64.encodeBytes(userpassword.getBytes());
+                    conn.setRequestProperty("Authorization", "Basic " + basicAuthorization);
+                }
                 conn.setDoInput(true);
                 return processResponse(conn);
             }
@@ -112,7 +132,7 @@ public class HttpRequest {
 
     /**
      * Executes an HTTP request to write the specified message.
-     * 
+     *
      * @param spec The {@link URL} in String form
      * @param message Message to write
      * @param timeout TImeout value
@@ -124,11 +144,11 @@ public class HttpRequest {
      * @throws TimeoutException
      */
     private static String execRequestMethod(final String spec, final String message, final long timeout, final TimeUnit unit, final String requestMethod) throws MalformedURLException, ExecutionException, TimeoutException {
-        
+
         if(requestMethod==null||requestMethod.isEmpty()){
             throw new IllegalArgumentException("Request Method must be specified (ie. GET, PUT, DELETE etc)");
         }
-        
+
         final URL url = new URL(spec);
         Callable<String> task = new Callable<String>() {
             @Override
@@ -147,9 +167,13 @@ public class HttpRequest {
                 }
             }
         };
-        return execute(task, timeout, unit);
+        try {
+            return execute(task, timeout, unit);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-    
+
     public static String post(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
         return execRequestMethod(spec, message, timeout, unit, "POST");
     }
@@ -157,11 +181,11 @@ public class HttpRequest {
     public static String delete(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
         return execRequestMethod(spec, message, timeout, unit, "DELETE");
     }
-    
+
     public static String head(final String spec, final String message, final long timeout, final TimeUnit unit) throws MalformedURLException, ExecutionException, TimeoutException {
         return execRequestMethod(spec, message, timeout, unit, "HEAD");
     }
-    
+
     private static void write(OutputStream out, String message) throws IOException {
         final OutputStreamWriter writer = new OutputStreamWriter(out);
         writer.write(message);
