@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
@@ -28,12 +35,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Interceptor factory for entity beans that class the corresponding ejbCreate method.
@@ -46,10 +47,9 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
 
     public static final Object EXISTING_ID_CONTEXT_KEY = new Object();
 
-    private final Object primaryKeyContextKey;
+    public static final EntityBeanEjbCreateMethodInterceptorFactory INSTANCE = new EntityBeanEjbCreateMethodInterceptorFactory();
 
-    public EntityBeanEjbCreateMethodInterceptorFactory(Object primaryKeyContextKey) {
-        this.primaryKeyContextKey = primaryKeyContextKey;
+    private EntityBeanEjbCreateMethodInterceptorFactory() {
     }
 
     @Override
@@ -57,7 +57,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
         final Object existing = context.getContextData().get(EXISTING_ID_CONTEXT_KEY);
 
         final AtomicReference<Object> primaryKeyReference = new AtomicReference<Object>();
-        context.getContextData().put(this.primaryKeyContextKey, primaryKeyReference);
+        context.getContextData().put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKeyReference);
 
         final Method ejbCreate = (Method) context.getContextData().get(EntityBeanHomeCreateInterceptorFactory.EJB_CREATE_METHOD_KEY);
         final Method ejbPostCreate = (Method) context.getContextData().get(EntityBeanHomeCreateInterceptorFactory.EJB_POST_CREATE_METHOD_KEY);

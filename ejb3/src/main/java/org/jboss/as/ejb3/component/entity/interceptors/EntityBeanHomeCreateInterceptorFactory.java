@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.invocation.Interceptor;
@@ -28,9 +31,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.lang.reflect.Method;
-import java.util.HashMap;
 
 /**
  * Interceptor that hooks up create methods for Entity beans.
@@ -48,7 +48,6 @@ public class EntityBeanHomeCreateInterceptorFactory implements InterceptorFactor
 
     public static final Object EJB_CREATE_METHOD_KEY = new Object();
     public static final Object EJB_POST_CREATE_METHOD_KEY = new Object();
-
 
     public static final Object PARAMETERS_KEY = new Object();
 

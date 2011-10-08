@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
@@ -33,10 +37,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
-
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
  * {@link org.jboss.invocation.Interceptor} which manages {@link javax.transaction.Synchronization} semantics on an entity bean.
@@ -69,45 +69,50 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         if (log.isTraceEnabled()) {
             log.trace("Trying to acquire lock: " + lock + " for entity bean " + instance + " during invocation: " + context);
         }
+        lock.pushOwner(getLockOwner(transactionSynchronizationRegistry));
+        try {
+            // we obtain a lock in this synchronization interceptor because the lock needs to be tied to the synchronization
+            // so that it can released on the tx synchronization callbacks
+            lock.lock();
+            synchronized (lock) {
+                if (log.isTraceEnabled()) {
+                    log.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
+                }
 
-        // we obtain a lock in this synchronization interceptor because the lock needs to be tied to the synchronization
-        // so that it can released on the tx synchronization callbacks
-        lock.lock();
-        synchronized (lock) {
-            if (log.isTraceEnabled()) {
-                log.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
-            }
+                Object currentTransactionKey = null;
+                boolean wasTxSyncRegistered = false;
+                try {
+                    // get the key to current transaction associated with this thread
+                    currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
+                    // if this entity instance is already associated with a different transaction, then it's an error
 
-            Object currentTransactionKey = null;
-            boolean wasTxSyncRegistered = false;
-            try {
-                // get the key to current transaction associated with this thread
-                currentTransactionKey = transactionSynchronizationRegistry.getTransactionKey();
-                // if this entity instance is already associated with a different transaction, then it's an error
+                    // if the thread is currently associated with a tx, then register a tx synchronization
+                    if (currentTransactionKey != null) {
+                        // register a tx synchronization for this entity instance
+                        final Synchronization statefulSessionSync = new EntityBeanSynchronization(instance);
+                        transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
+                        wasTxSyncRegistered = true;
+                        if (log.isTraceEnabled()) {
+                            log.trace("Registered tx synchronization: " + statefulSessionSync + " for tx: " + currentTransactionKey +
+                                    " associated with stateful component instance: " + instance);
+                        }
+                    }
+                    // proceed with the invocation
+                    return context.proceed();
 
-                // if the thread is currently associated with a tx, then register a tx synchronization
-                if (currentTransactionKey != null) {
-                    // register a tx synchronization for this entity instance
-                    final Synchronization statefulSessionSync = new EntityBeanSynchronization(instance);
-                    transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
-                    wasTxSyncRegistered = true;
-                    if (log.isTraceEnabled()) {
-                        log.trace("Registered tx synchronization: " + statefulSessionSync + " for tx: " + currentTransactionKey +
-                                " associated with stateful component instance: " + instance);
+                } finally {
+                    // if the current call did *not* register a tx SessionSynchronization, then we have to explicitly mark the
+                    // SFSB instance as "no longer in use". If it registered a tx SessionSynchronization, then releasing the lock is
+                    // taken care off by a tx synchronization callbacks.
+                    if (!wasTxSyncRegistered) {
+                        instance.store();
+                        releaseInstance(instance, true);
                     }
                 }
-                // proceed with the invocation
-                return context.proceed();
-
-            } finally {
-                // if the current call did *not* register a tx SessionSynchronization, then we have to explicitly mark the
-                // SFSB instance as "no longer in use". If it registered a tx SessionSynchronization, then releasing the lock is
-                // taken care off by a tx synchronization callbacks.
-                if (!wasTxSyncRegistered) {
-                    instance.store();
-                    releaseInstance(instance, true);
-                }
             }
+        } finally {
+            lock.popOwner();
+
         }
     }
 
@@ -157,8 +162,14 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         @Override
         public void afterCompletion(int status) {
             synchronized (threadLock) {
+
+                lock.pushOwner(getLockOwner(componentInstance.getComponent().getTransactionSynchronizationRegistry()));
+                try {
                 // tx has completed, so mark the SFSB instance as no longer in use
                 releaseInstance(componentInstance, status == Status.STATUS_COMMITTED);
+                } finally {
+                    lock.popOwner();
+                }
             }
         }
 
@@ -171,6 +182,19 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
             return new EntityBeanSynchronizationInterceptor();
         }
     };
+
+
+    /**
+     * Use either the active transaction or the current thread as the lock owner
+     *
+     * @param transactionSynchronizationRegistry
+     *         The synronization registry
+     * @return The lock owner
+     */
+    private Object getLockOwner(final TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        Object owner = transactionSynchronizationRegistry.getTransactionKey();
+        return owner != null ? owner : Thread.currentThread();
+    }
 
 
 }

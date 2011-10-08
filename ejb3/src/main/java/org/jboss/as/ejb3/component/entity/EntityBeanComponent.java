@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
@@ -32,14 +36,12 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * @author Stuart Douglas
  */
 public class EntityBeanComponent extends EJBComponent {
+
+    public static final Object PRIMARY_KEY_CONTEXT_KEY = new Object();
 
     private final Pool<EntityBeanComponentInstance> pool;
     private final ReadyEntityCache cache;

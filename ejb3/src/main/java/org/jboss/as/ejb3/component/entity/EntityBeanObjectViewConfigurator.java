@@ -21,6 +21,11 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import java.lang.reflect.Method;
+
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.ComponentView;
@@ -32,6 +37,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanGetHomeInterceptorFactory;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanPrimaryKeyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanRemoveInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityIsIdenticalInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -39,10 +45,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.ServiceBuilder;
-
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import java.lang.reflect.Method;
 
 /**
  * configurator that sets up interceptors for an EJB's object view
@@ -58,8 +60,9 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
         final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final Object primaryKeyContextKey = new Object();
 
-        configuration.addClientPostConstructInterceptor(new EntityBeanEjbCreateMethodInterceptorFactory(primaryKeyContextKey), InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
-        configuration.addViewInterceptor(new EntityBeanAssociatingInterceptorFactory(primaryKeyContextKey), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+        configuration.addClientPostConstructInterceptor(EntityBeanEjbCreateMethodInterceptorFactory.INSTANCE, InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
+        configuration.addClientInterceptor(EntityBeanPrimaryKeyInterceptor.Factory.INSTANCE, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
+        configuration.addViewInterceptor(EntityBeanAssociatingInterceptorFactory.INSTANCE, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
 
 
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
@@ -70,11 +73,11 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
             } else if(method.getName().equals("remove") && method.getParameterTypes().length == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 Method remove = resolveRemoveMethod(componentConfiguration.getComponentClass(), index, componentConfiguration.getComponentName());
-                configuration.addViewInterceptor(method, new EntityBeanRemoveInterceptorFactory(remove, primaryKeyContextKey), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                configuration.addViewInterceptor(method, new EntityBeanRemoveInterceptorFactory(remove), InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if(method.getName().equals("isIdentical") && method.getParameterTypes().length == 1 &&
                     (method.getParameterTypes()[0] == EJBLocalObject.class || method.getParameterTypes()[0] == EJBObject.class)) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-                configuration.addViewInterceptor(method, new EntityIsIdenticalInterceptorFactory(primaryKeyContextKey), InterceptorOrder.View.COMPONENT_DISPATCHER);
+                configuration.addViewInterceptor(method, EntityIsIdenticalInterceptorFactory.INSTANCE, InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if(method.getName().equals("getEJBLocalHome") && method.getParameterTypes().length == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
 

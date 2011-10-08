@@ -21,6 +21,12 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import java.rmi.RemoteException;
+
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.NoSuchEJBException;
+
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
@@ -31,12 +37,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
 
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.NoSuchEJBException;
-import java.rmi.RemoteException;
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * Interceptor factory for entity beans that associates an invocation with a primary key
  *
@@ -46,22 +46,20 @@ public class EntityBeanAssociatingInterceptorFactory implements InterceptorFacto
 
     private final Logger log = Logger.getLogger(EntityBeanAssociatingInterceptorFactory.class);
 
-    private final Object primaryKeyContextKey;
+    public static final EntityBeanAssociatingInterceptorFactory INSTANCE = new EntityBeanAssociatingInterceptorFactory();
 
-    public EntityBeanAssociatingInterceptorFactory(Object primaryKeyContextKey) {
-        this.primaryKeyContextKey = primaryKeyContextKey;
+    private EntityBeanAssociatingInterceptorFactory() {
     }
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        final AtomicReference<Object> primaryKeyReference = (AtomicReference<Object>) context.getContextData().get(this.primaryKeyContextKey);
 
         return new AbstractEJBInterceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final EntityBeanComponent component = getComponent(context, EntityBeanComponent.class);
 
-                final Object primaryKey = primaryKeyReference.get();
+                final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
                 if (primaryKey == null) {
                     throw new NoSuchEJBException("Invocation was not associated with an instance, primary key was null, instance may have been removed");
                 }

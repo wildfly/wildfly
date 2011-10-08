@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import java.lang.reflect.Method;
+
+import javax.ejb.NoSuchEJBException;
+
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
@@ -30,10 +34,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
-
-import javax.ejb.NoSuchEJBException;
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Interceptor that calls the EJB remove method for BMP entity beans
@@ -45,23 +45,20 @@ public class EntityBeanRemoveInterceptorFactory implements InterceptorFactory {
     private final Logger log = Logger.getLogger(EntityBeanAssociatingInterceptorFactory.class);
 
     private final Method ejbRemove;
-    private final Object primaryKeyContextKey;
 
-    public EntityBeanRemoveInterceptorFactory(final Method ejbRemove, final Object primaryKeyContextKey) {
+    public EntityBeanRemoveInterceptorFactory(final Method ejbRemove) {
         this.ejbRemove = ejbRemove;
-        this.primaryKeyContextKey = primaryKeyContextKey;
     }
 
     @Override
     public Interceptor create(final InterceptorFactoryContext context) {
-        final AtomicReference<Object> primaryKeyReference = (AtomicReference<Object>) context.getContextData().get(this.primaryKeyContextKey);
 
         return new AbstractEJBInterceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 final EntityBeanComponent component = getComponent(context, EntityBeanComponent.class);
 
-                final Object primaryKey = primaryKeyReference.get();
+                final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
                 if (primaryKey == null) {
                     throw new NoSuchEJBException("Invocation was not associated with an instance, primary key was null, instance may have been removed");
                 }
