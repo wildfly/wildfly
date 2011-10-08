@@ -92,19 +92,9 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
             sessionBeanDescription.addLocalBusinessInterfaceViews(businessLocals);
         }
 
-        final String localHome = sessionBean.getLocalHome();
-        if (localHome != null) {
-            sessionBeanDescription.addLocalHome(localHome);
-        }
-
         final String local = sessionBean.getLocal();
         if (local != null) {
             sessionBeanDescription.addEjbLocalObjectView(local);
-        }
-
-        final String remoteHome = sessionBean.getHome();
-        if (remoteHome != null) {
-            sessionBeanDescription.addRemoteHome(remoteHome);
         }
 
         final String remote = sessionBean.getRemote();

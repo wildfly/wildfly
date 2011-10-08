@@ -21,6 +21,12 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
@@ -34,8 +40,8 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.component.session.SessionBeanHomeInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanHomeInterceptorFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -45,12 +51,6 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.ServiceBuilder;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Processor that hooks up home interfaces for session beans
@@ -157,6 +157,8 @@ public class SessionBeanLocalHomeProcessor extends AbstractComponentConfigProces
 
     /**
      * Resolves the correct view for a create method
+     *
+     * See EJB 3.1 21.4.5
      */
     private ViewDescription resolveViewDescription(final Method method, final EJBComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         if (componentDescription.getEjbLocalView() != null) {

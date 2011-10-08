@@ -19,34 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.home.localhome;
+package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
+import javax.ejb.LocalHome;
+
+import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 
 /**
+ * Processes the {@link javax.ejb.LocalHome} annotation on a session bean
+ *
  * @author Stuart Douglas
  */
-public class SimpleStatefulLocalBean  {
+public class LocalHomeAnnotationInformationFactory extends ClassAnnotationInformationFactory<LocalHome, String> {
 
-    @Resource
-    private SessionContext sessionContext;
-
-    private String message;
-
-    public void ejbCreateSimple(String message) {
-        this.message = message;
+    protected LocalHomeAnnotationInformationFactory() {
+        super(LocalHome.class, null);
     }
 
-    public void ejbCreateComplex(String first, String second) {
-        this.message = first + " " + second;
-    }
-
-    public String sayHello() {
-        return message;
-    }
-
-    public String otherMethod() {
-        return ((SimpleLocalInterface)sessionContext.getEJBLocalObject()).sayHello();
+    @Override
+    protected String fromAnnotation(final AnnotationInstance annotationInstance) {
+        AnnotationValue value = annotationInstance.value();
+        return value.asClass().toString();
     }
 }

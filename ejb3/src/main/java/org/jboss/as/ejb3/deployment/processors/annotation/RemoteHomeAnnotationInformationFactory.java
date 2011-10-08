@@ -19,26 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.ejb.home.localhome;
+package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
+import javax.ejb.RemoteHome;
+
+import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 
 /**
+ * Processes the {@link javax.ejb.RemoteHome} annotation on a session bean
+ *
  * @author Stuart Douglas
  */
-public class SimpleStatelessLocalBean  {
+public class RemoteHomeAnnotationInformationFactory extends ClassAnnotationInformationFactory<RemoteHome, String> {
 
-    @Resource
-    private SessionContext sessionContext;
-
-    public String sayHello() {
-        return "Hello World";
+    protected RemoteHomeAnnotationInformationFactory() {
+        super(RemoteHome.class, null);
     }
 
-    public String otherMethod() {
-        return  ((SimpleLocalHome)sessionContext.getEJBLocalHome()).createSimple().sayHello();
+    @Override
+    protected String fromAnnotation(final AnnotationInstance annotationInstance) {
+        AnnotationValue value = annotationInstance.value();
+        return value.asClass().toString();
     }
-
-
 }

@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import org.jboss.as.ee.metadata.AbstractEEAnnotationProcessor;
-import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.jboss.as.ee.metadata.AbstractEEAnnotationProcessor;
+import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 
 /**
  * Processes EJB annotations and attaches them to the {@link org.jboss.as.ee.component.EEModuleClassDescription}
@@ -67,6 +67,10 @@ public class EjbAnnotationProcessor extends AbstractEEAnnotationProcessor {
         factories.add(new RolesAllowedAnnotationInformationFactory());
         factories.add(new DenyAllAnnotationInformationFactory());
         factories.add(new PermitAllAnnotationInformationFactory());
+
+        //view annotations
+        factories.add(new LocalHomeAnnotationInformationFactory());
+        factories.add(new RemoteHomeAnnotationInformationFactory());
 
         this.factories = Collections.unmodifiableList(factories);
     }

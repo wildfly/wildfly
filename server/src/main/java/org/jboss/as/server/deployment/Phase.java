@@ -287,7 +287,8 @@ public enum Phase {
     public static final int POST_MODULE_TRANSFORMER                     = 0x0201;
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
-    public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0401;
+    public static final int POST_MODULE_EJB_HOME_MERGE                  = 0x0401;
+    public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0402;
     public static final int POST_MODULE_EJB_TIMER_METADATA_MERGE        = 0x0506;
     public static final int POST_MODULE_EJB_DD_INTERCEPTORS             = 0x0600;
     public static final int POST_MODULE_EJB_TIMER_SERVICE               = 0x0601;

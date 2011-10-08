@@ -76,7 +76,7 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
     @Override
     public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
-        if(businessInterface == null) {
+        if (businessInterface == null) {
             throw new IllegalStateException("Business interface type cannot be null");
         }
         return createViewInstanceProxy(businessInterface, emptyMap());
@@ -88,11 +88,17 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
 
     @Override
     public EJBLocalObject getEJBLocalObject(SessionContext ctx) throws IllegalStateException {
+        if (ejbLocalObjectView == null) {
+            throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBLocalObject");
+        }
         return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbLocalObjectView);
     }
 
     @Override
     public EJBObject getEJBObject(SessionContext ctx) throws IllegalStateException {
+        if (ejbObjectView == null) {
+            throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
+        }
         return createViewInstanceProxy(EJBObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbObjectView);
     }
 

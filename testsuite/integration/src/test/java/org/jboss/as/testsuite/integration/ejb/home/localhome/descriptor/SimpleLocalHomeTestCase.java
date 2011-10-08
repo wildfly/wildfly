@@ -20,13 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ejb.home.localhome;
+package org.jboss.as.testsuite.integration.ejb.home.localhome.descriptor;
 
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleLocalHome;
+import org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleLocalInterface;
+import org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleStatefulLocalHome;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -53,14 +56,14 @@ public class SimpleLocalHomeTestCase {
             "            <ejb-name>SimpleLocalHomeBean</ejb-name>\n" +
             "            <local-home>org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleLocalHome</local-home>\n" +
             "            <local>org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleLocalInterface</local>\n" +
-            "            <ejb-class>org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleStatelessLocalBean</ejb-class>\n" +
+            "            <ejb-class>org.jboss.as.testsuite.integration.ejb.home.localhome.descriptor.SimpleStatelessLocalBean</ejb-class>\n" +
             "            <session-type>Stateless</session-type>\n" +
             "        </session>\n" +
             "        <session>\n" +
             "            <ejb-name>SimpleStatefulLocalHomeBean</ejb-name>\n" +
             "            <local-home>org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleStatefulLocalHome</local-home>\n" +
             "            <local>org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleLocalInterface</local>\n" +
-            "            <ejb-class>org.jboss.as.testsuite.integration.ejb.home.localhome.SimpleStatefulLocalBean</ejb-class>\n" +
+            "            <ejb-class>org.jboss.as.testsuite.integration.ejb.home.localhome.descriptor.SimpleStatefulLocalBean</ejb-class>\n" +
             "            <session-type>Stateful</session-type>\n" +
             "        </session>\n" +
             "    </enterprise-beans>\n" +
@@ -75,6 +78,7 @@ public class SimpleLocalHomeTestCase {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME);
         war.addPackage(SimpleLocalHomeTestCase.class.getPackage());
+        war.addPackage(SimpleLocalInterface.class.getPackage());
         war.addAsWebInfResource(new StringAsset(EJB_JAR_XML), "ejb-jar.xml");
         return war;
     }

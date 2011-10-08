@@ -190,11 +190,17 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
 
     @Override
     public EJBHome getEJBHome() throws IllegalStateException {
+        if (ejbHome == null) {
+            throw new IllegalStateException("Bean " + getComponentName() + " does not have a Home interface");
+        }
         return createViewInstanceProxy(EJBHome.class, Collections.emptyMap(), ejbHome);
     }
 
     @Override
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
+        if (ejbLocalHome == null) {
+            throw new IllegalStateException("Bean " + getComponentName() + " does not have a Local Home interface");
+        }
         return createViewInstanceProxy(EJBLocalHome.class, Collections.emptyMap(), ejbLocalHome);
     }
 
