@@ -27,7 +27,7 @@
     <enterprise-beans>
         <session>
             <ejb-name>AnnotatedDoNothingBean</ejb-name>
-            <business-local>org.jboss.as.testsuite.integration.spec.ejb3.common.DoNothing</business-local>
+            <business-local>org.jboss.as.testsuite.integration.ejb.view.duplicateview.DoNothing</business-local>
         </session>
     </enterprise-beans>
 </ejb-jar>

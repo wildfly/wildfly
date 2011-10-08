@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.security;
+package org.jboss.as.testsuite.integration.web.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -30,7 +30,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.JSSE;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.TRUSTSTORE_PASSWORD;
+import static org.jboss.as.security.Constants.TRUSTSTORE_URL;
 import static org.junit.Assert.assertEquals;
 
 import java.net.InetAddress;
@@ -38,43 +42,44 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.cookie.Cookie;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.testsuite.integration.web.security.SecuredServlet;
-import org.jboss.as.testsuite.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Unit test for custom login modules in authentication.
+ * Unit test for CLIENT-CERT authentication.
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CustomLoginModuleTestCase {
+@Ignore("[AS7-734] Migrate to ARQ Beta1")
+public class WebSecurityCERTTestCase {
 
-    protected final String URL = "http://localhost:8080/" + getContextPath() + "/secured/";
+    protected final String URL = "https://localhost:8380/" + getContextPath() + "/secured/";
 
     /**
      * Base method to create a {@link WebArchive}
@@ -82,7 +87,7 @@ public class CustomLoginModuleTestCase {
      * @param name Name of the war file
      * @param servletClass a class that is the servlet
      * @param webxml {@link URL} to the web.xml. This can be null
-     * @return
+     * @return  the web archive
      */
     public static WebArchive create(String name, Class<?> servletClass, URL webxml) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, name);
@@ -90,10 +95,8 @@ public class CustomLoginModuleTestCase {
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
-        war.addAsWebResource(tccl.getResource("web-secure.war/login.jsp"), "login.jsp");
-        war.addAsWebResource(tccl.getResource("web-secure.war/error.jsp"), "error.jsp");
-        war.addAsWebInfResource(tccl.getResource("custom-login-module.war/jboss-web.xml"), "jboss-web.xml");
-        war.addClass(CustomTestLoginModule.class);
+        war.addAsResource(tccl.getResource("web-secure-client-cert.war/roles.properties"), "roles.properties");
+        war.addAsWebInfResource(tccl.getResource("web-secure-client-cert.war/jboss-web.xml"), "jboss-web.xml");
 
         if (webxml != null) {
             war.setWebXML(webxml);
@@ -107,6 +110,8 @@ public class CustomLoginModuleTestCase {
         // FIXME hack to get things prepared before the deployment happens
         try {
             final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+            // create the test connector
+            createTestConnector(client);
             // create required security domains
             createSecurityDomains(client);
         } catch (Exception e) {
@@ -114,8 +119,8 @@ public class CustomLoginModuleTestCase {
         }
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        URL webxml = tccl.getResource("web-secure.war/web.xml");
-        WebArchive war = create("custom-login-module.war", SecuredServlet.class, webxml);
+        URL webxml = tccl.getResource("web-secure-client-cert.war/web.xml");
+        WebArchive war = create("web-secure-client-cert.war", SecuredServlet.class, webxml);
         WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
@@ -123,86 +128,32 @@ public class CustomLoginModuleTestCase {
     @AfterClass
     public static void after() throws Exception {
         final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        // and remove the connector again
+        removeTestConnector(client);
         // remove test security domains
         removeSecurityDomains(client);
     }
 
     @Test
-    public void testSucessfulAuth() throws Exception {
-        makeCall("anil", "anil", 200);
+    public void testClientCertSucessfulAuth() throws Exception {
+        makeCall("test", 200);
     }
 
     @Test
-    public void testUnsucessfulAuth() throws Exception {
-        makeCall("marcus", "marcus", 403);
+    public void testClientCertUnsucessfulAuth() throws Exception {
+        makeCall("test2", 403);
     }
 
-    protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
+    protected void makeCall(String alias, int expectedStatusCode) throws Exception {
+        HttpClient httpclient = new DefaultHttpClient();
+        httpclient = wrapClient(httpclient, alias);
         try {
             HttpGet httpget = new HttpGet(URL);
 
             HttpResponse response = httpclient.execute(httpget);
 
-            HttpEntity entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
-
-            // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
-            System.out.println("Login form get: " + statusLine);
-            assertEquals(200, statusLine.getStatusCode());
-
-            System.out.println("Initial set of cookies:");
-            List<Cookie> cookies = httpclient.getCookieStore().getCookies();
-            if (cookies.isEmpty()) {
-                System.out.println("None");
-            } else {
-                for (int i = 0; i < cookies.size(); i++) {
-                    System.out.println("- " + cookies.get(i).toString());
-                }
-            }
-
-            // We should now login with the user name and password
-            HttpPost httpost = new HttpPost(URL + "/j_security_check");
-
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            nvps.add(new BasicNameValuePair("j_username", user));
-            nvps.add(new BasicNameValuePair("j_password", pass));
-
-            httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-
-            response = httpclient.execute(httpost);
-            entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
-
-            statusLine = response.getStatusLine();
-
-            // Post authentication - we have a 302
-            assertEquals(302, statusLine.getStatusCode());
-            Header locationHeader = response.getFirstHeader("Location");
-            String location = locationHeader.getValue();
-
-            HttpGet httpGet = new HttpGet(location);
-            response = httpclient.execute(httpGet);
-
-            entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
-
-            System.out.println("Post logon cookies:");
-            cookies = httpclient.getCookieStore().getCookies();
-            if (cookies.isEmpty()) {
-                System.out.println("None");
-            } else {
-                for (int i = 0; i < cookies.size(); i++) {
-                    System.out.println("- " + cookies.get(i).toString());
-                }
-            }
-
-            // Either the authentication passed or failed based on the expected status code
-            statusLine = response.getStatusLine();
+            System.out.println("Response: " + statusLine);
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
         } finally {
             // When HttpClient instance is no longer needed,
@@ -212,15 +163,81 @@ public class CustomLoginModuleTestCase {
         }
     }
 
+    public static void createTestConnector(final ModelControllerClient client) throws Exception {
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
+        op.get(OP_ADDR).add("socket-binding", "https-test");
+        op.get("interface").set("default");
+        op.get("port").set(8380);
+
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "web");
+        op.get(OP_ADDR).add("connector", "testConnector");
+        op.get("socket-binding").set("https-test");
+        op.get("enabled").set(true);
+        op.get("protocol").set("HTTP/1.1");
+        op.get("scheme").set("https");
+        op.get("secure").set(true);
+        ModelNode ssl = new ModelNode();
+        ssl.setEmptyObject();
+        ssl.get("name").set("https-test");
+        ssl.get("key-alias").set("test");
+        ssl.get("password").set("changeit");
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        URL keystore = tccl.getResource("security/server.keystore");
+        ssl.get("certificate-key-file").set(keystore.getPath());
+        ssl.get("protocol").set("TLS");
+        ssl.get("verify-client").set(true);
+        op.get("ssl").set(ssl);
+
+        updates.add(op);
+        applyUpdates(updates, client);
+    }
+
     public static void createSecurityDomains(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "custom-login-module");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, "cert-test");
         ModelNode loginModule = op.get(AUTHENTICATION).add();
-        loginModule.get(CODE).set(CustomTestLoginModule.class.getName());
+        loginModule.get(CODE).set("CertificateRoles");
         loginModule.get(FLAG).set("required");
+        ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
+        moduleOptions.add("securityDomain", "cert");
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, "cert");
+        ModelNode jsse = op.get(JSSE);
+        jsse.get(TRUSTSTORE_PASSWORD).set("changeit");
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        URL keystore = tccl.getResource("security/jsse.keystore");
+        jsse.get(TRUSTSTORE_URL).set(keystore.getPath());
+        updates.add(op);
+
+        applyUpdates(updates, client);
+    }
+
+    public static void removeTestConnector(final ModelControllerClient client) throws Exception {
+        final List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
+        op.get(OP).set(REMOVE);
+        op.get(OP_ADDR).add(SUBSYSTEM, "web");
+        op.get(OP_ADDR).add("connector", "testConnector");
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(REMOVE);
+        op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
+        op.get(OP_ADDR).add("socket-binding", "https-test");
         updates.add(op);
 
         applyUpdates(updates, client);
@@ -228,10 +245,17 @@ public class CustomLoginModuleTestCase {
 
     public static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
+
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
-        op.get(OP_ADDR).add(SECURITY_DOMAIN, "custom-login-module");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, "cert-test");
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(REMOVE);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, "cert");
         updates.add(op);
 
         applyUpdates(updates, client);
@@ -257,7 +281,31 @@ public class CustomLoginModuleTestCase {
     }
 
     public String getContextPath() {
-        return "custom-login-module";
+        return "web-secure-client-cert";
+    }
+
+    public static HttpClient wrapClient(HttpClient base, String alias) {
+        try {
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            JBossJSSESecurityDomain jsseSecurityDomain = new JBossJSSESecurityDomain("client-cert");
+            jsseSecurityDomain.setKeyStorePassword("changeit");
+            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            URL keystore = tccl.getResource("security/client.keystore");
+            jsseSecurityDomain.setKeyStoreURL(keystore.getPath());
+            jsseSecurityDomain.setClientAlias(alias);
+            jsseSecurityDomain.reloadKeyAndTrustStore();
+            KeyManager[] keyManagers = jsseSecurityDomain.getKeyManagers();
+            TrustManager[] trustManagers = jsseSecurityDomain.getTrustManagers();
+            ctx.init(keyManagers, trustManagers, null);
+            SSLSocketFactory ssf = new SSLSocketFactory(ctx, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            ClientConnectionManager ccm = base.getConnectionManager();
+            SchemeRegistry sr = ccm.getSchemeRegistry();
+            sr.register(new Scheme("https", 8380, ssf));
+            return new DefaultHttpClient(ccm, base.getParams());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
 }
