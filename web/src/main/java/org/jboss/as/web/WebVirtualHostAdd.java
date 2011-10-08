@@ -87,7 +87,7 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
             final ModelNode accessLog = operation.get(Constants.ACCESS_LOG);
             service.setAccessLog(accessLog.clone());
             // Create the access log service
-            accessLogService(name, accessLog, serviceTarget);
+            accessLogService(name, accessLog, serviceTarget, newControllers, verificationHandler);
             serviceBuilder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(name, Constants.ACCESS_LOG), String.class, service.getAccessLogPathInjector());
         }
         if (operation.hasDefined(Constants.REWRITE)) {
@@ -130,16 +130,16 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
         return NO_ALIASES;
     }
 
-    static void accessLogService(final String hostName, final ModelNode node, final ServiceTarget target) {
+    static void accessLogService(final String hostName, final ModelNode node, final ServiceTarget target, List<ServiceController<?>> newControllers, ServiceVerificationHandler verificationHandler) {
         if (node.has(Constants.DIRECTORY)) {
             final ModelNode directory = node.get(Constants.DIRECTORY);
             final String relativeTo = directory.hasDefined(RELATIVE_TO) ? directory.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
             final String path = directory.hasDefined(PATH) ? directory.get(PATH).asString() : hostName;
             RelativePathService.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName, Constants.ACCESS_LOG),
-                    path, relativeTo, target);
+                    path, relativeTo, target, newControllers, verificationHandler);
         } else {
             RelativePathService.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName, Constants.ACCESS_LOG),
-                    hostName, DEFAULT_RELATIVE_TO, target);
+                    hostName, DEFAULT_RELATIVE_TO, target, newControllers, verificationHandler);
         }
     }
 

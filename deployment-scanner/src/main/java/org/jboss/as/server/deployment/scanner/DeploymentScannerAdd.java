@@ -86,8 +86,8 @@ class DeploymentScannerAdd extends AbstractAddStepHandler implements Description
         final Long deploymentTimeout = operation.hasDefined(CommonAttributes.DEPLOYMENT_TIMEOUT) ? operation.get(CommonAttributes.DEPLOYMENT_TIMEOUT).asLong() : 60L;
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        newControllers.add(DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS,
-                autoDeployZip, autoDeployExp, enabled, deploymentTimeout, verificationHandler));
+        DeploymentScannerService.addService(serviceTarget, name, relativeTo, path, interval, TimeUnit.MILLISECONDS,
+                autoDeployZip, autoDeployExp, enabled, deploymentTimeout, newControllers, verificationHandler);
     }
 
     @Override

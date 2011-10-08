@@ -167,8 +167,8 @@ class TransactionSubsystemAdd implements OperationStepHandler {
                                 ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
                                 coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
                             }
-                            ServiceController<String> varDirRPS = RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, varDirPathRef, target);
-                            controllers.add(varDirRPS);
+                            ServiceController<String> varDirRPS = RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH,
+                                    varDirPath, varDirPathRef, target, controllers, verificationHandler);
                             controllers.add(coreEnvBuilder.addDependency(varDirRPS.getName(), String.class, coreEnvironmentService.getPathInjector())
                                     .addListener(verificationHandler)
                                     .setInitialMode(Mode.ACTIVE)
@@ -179,8 +179,8 @@ class TransactionSubsystemAdd implements OperationStepHandler {
                             controllers.add(target.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService).setInitialMode(Mode.ACTIVE).install());
 
                             // Configure the ObjectStoreEnvironmentBeans
-                            ServiceController<String> objectStoreRPS = RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target);
-                            controllers.add(objectStoreRPS);
+                            ServiceController<String> objectStoreRPS = RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH,
+                                    objectStorePath, objectStorePathRef, target, controllers, verificationHandler);
 
                             final boolean useHornetqJournalStore = "true".equals(System.getProperty("usehornetqstore")); // TODO wire to domain model instead.
 

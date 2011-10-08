@@ -23,12 +23,15 @@
 package org.jboss.as.server.services.path;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
 import java.io.File;
+import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
@@ -46,21 +49,42 @@ public class RelativePathService extends AbstractPathService {
 
     public static ServiceController<String> addService(final String name, final String relativePath,
             final String relativeTo, final ServiceTarget serviceTarget) {
-        return addService(pathNameOf(name), relativePath, relativeTo, serviceTarget);
+        return addService(pathNameOf(name), relativePath, relativeTo, serviceTarget, null);
+    }
+
+    public static ServiceController<String> addService(final String name, final String relativePath,
+            final String relativeTo, final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
+            final ServiceListener... listeners) {
+        return addService(pathNameOf(name), relativePath, relativeTo, serviceTarget, newControllers, listeners);
     }
 
     public static ServiceController<String> addService(final ServiceName name, final String relativePath,
             final String relativeTo, final ServiceTarget serviceTarget) {
+        return addService(name, relativePath, relativeTo, serviceTarget, null);
+    }
+
+    public static ServiceController<String> addService(final ServiceName name, final String relativePath,
+            final String relativeTo, final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
+            final ServiceListener... listeners) {
         RelativePathService service = new RelativePathService(relativePath);
-        return serviceTarget.addService(name, service)
-            .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath)
-            .install();
+        ServiceBuilder<String> builder =  serviceTarget.addService(name, service)
+            .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath);
+        if (listeners != null) {
+            for (ServiceListener listener : listeners) {
+                builder.addListener(listener);
+            }
+        }
+        ServiceController<String> svc = builder.install();
+        if (newControllers != null) {
+            newControllers.add(svc);
+        }
+        return svc;
     }
 
     public static void addService(final ServiceName name, final ModelNode element, final ServiceTarget serviceTarget) {
         final String relativePath = element.require(PATH).asString();
         final String relativeTo = element.require(RELATIVE_TO).asString();
-        addService(name, relativePath, relativeTo, serviceTarget);
+        addService(name, relativePath, relativeTo, serviceTarget, null);
     }
 
     public RelativePathService(final String relativePath) {

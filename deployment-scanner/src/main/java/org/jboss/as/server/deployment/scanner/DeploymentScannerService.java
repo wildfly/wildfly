@@ -24,6 +24,7 @@ package org.jboss.as.server.deployment.scanner;
 
 import java.io.File;
 import java.security.AccessController;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -95,16 +96,19 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @return
      */
     public static ServiceController<?> addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
-                                  final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip, final Boolean autoDeployExploded, final Boolean scanEnabled, final Long deploymentTimeout, final ServiceListener<Object>... listeners) {
+                                  final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip,
+                                  final Boolean autoDeployExploded, final Boolean scanEnabled, final Long deploymentTimeout,
+                                  final List<ServiceController<?>> newControllers,
+                                  final ServiceListener<Object>... listeners) {
         final DeploymentScannerService service = new DeploymentScannerService(relativeTo, scanInterval, unit, autoDeployZip, autoDeployExploded, scanEnabled, deploymentTimeout);
         final ServiceName serviceName = getServiceName(name);
         final ServiceName pathService = serviceName.append("path");
         final ServiceName relativePathService = relativeTo != null ? RelativePathService.pathNameOf(relativeTo) : null;
 
         if (relativeTo != null) {
-            RelativePathService.addService(pathService, path, relativeTo, serviceTarget);
+            RelativePathService.addService(pathService, path, relativeTo, serviceTarget, newControllers, listeners);
         } else {
-            AbsolutePathService.addService(pathService, path, serviceTarget);
+            AbsolutePathService.addService(pathService, path, serviceTarget, newControllers, listeners);
         }
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("DeploymentScanner-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
         final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory);
@@ -120,8 +124,11 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
             builder.addDependency(relativePathService, String.class, service.relativePathValue);
         }
         builder.addListener(listeners);
-        return builder.setInitialMode(Mode.ACTIVE)
-                .install();
+        ServiceController<?> svc = builder.setInitialMode(Mode.ACTIVE).install();
+        if (newControllers != null) {
+            newControllers.add(svc);
+        }
+        return svc;
     }
 
     DeploymentScannerService(final String relativeTo, final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,

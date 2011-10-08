@@ -122,6 +122,7 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -203,10 +204,14 @@ class HornetQServerAdd implements OperationStepHandler {
                 final Configuration configuration = transformConfig(serverName, model);
 
                 // Create path services
-                final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, model.get(PATH, BINDINGS_DIRECTORY), serviceTarget);
-                final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, model.get(PATH, JOURNAL_DIRECTORY), serviceTarget);
-                final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, model.get(PATH, LARGE_MESSAGES_DIRECTORY), serviceTarget);
-                final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, model.get(PATH, PAGING_DIRECTORY), serviceTarget);
+                final ServiceName bindingsPath = createDirectoryService(DEFAULT_BINDINGS_DIR, model.get(PATH, BINDINGS_DIRECTORY),
+                        serviceTarget, newControllers, verificationHandler);
+                final ServiceName journalPath = createDirectoryService(DEFAULT_JOURNAL_DIR, model.get(PATH, JOURNAL_DIRECTORY),
+                        serviceTarget, newControllers, verificationHandler);
+                final ServiceName largeMessagePath = createDirectoryService(DEFAULT_LARGE_MESSSAGE_DIR, model.get(PATH, LARGE_MESSAGES_DIRECTORY),
+                        serviceTarget, newControllers, verificationHandler);
+                final ServiceName pagingPath = createDirectoryService(DEFAULT_PAGING_DIR, model.get(PATH, PAGING_DIRECTORY),
+                        serviceTarget, newControllers, verificationHandler);
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService();
@@ -423,11 +428,12 @@ class HornetQServerAdd implements OperationStepHandler {
      * @param serviceTarget the service target
      * @return the created service name
      */
-    static ServiceName createDirectoryService(final String name, final ModelNode path, final ServiceTarget serviceTarget) {
+    static ServiceName createDirectoryService(final String name, final ModelNode path, final ServiceTarget serviceTarget,
+                                              final List<ServiceController<?>> newControllers, final ServiceListener listener) {
         final ServiceName serviceName = PATH_BASE.append(name);
         final String relativeTo = path.hasDefined(RELATIVE_TO) ? path.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
         final String pathName = path.hasDefined(PATH) ? path.get(PATH).asString() : DEFAULT_PATH + name;
-        RelativePathService.addService(serviceName, pathName, relativeTo, serviceTarget);
+        RelativePathService.addService(serviceName, pathName, relativeTo, serviceTarget, newControllers, listener);
         return serviceName;
     }
 

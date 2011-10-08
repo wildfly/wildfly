@@ -45,7 +45,8 @@ public class SpecifiedPathAddHandler extends PathAddHandler {
         super(true);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
+                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
         ModelNode pathNode = operation.get(PATH);
@@ -55,9 +56,9 @@ public class SpecifiedPathAddHandler extends PathAddHandler {
 
         final ServiceTarget target = context.getServiceTarget();
         if (relativeTo == null) {
-            newControllers.add(AbsolutePathService.addService(name, path, target));
+            newControllers.add(AbsolutePathService.addService(name, path, target, newControllers, verificationHandler));
         } else {
-            newControllers.add(RelativePathService.addService(name, path, relativeTo, target));
+            newControllers.add(RelativePathService.addService(name, path, relativeTo, target, newControllers, verificationHandler));
         }
     }
 

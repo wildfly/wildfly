@@ -23,11 +23,14 @@
 package org.jboss.as.server.services.path;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 import java.io.File;
+import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
@@ -42,17 +45,39 @@ public class AbsolutePathService extends AbstractPathService {
     private final String absolutePath;
 
     public static ServiceController<String> addService(final String name, final String abstractPath, final ServiceTarget serviceTarget) {
-        return addService(pathNameOf(name), abstractPath, serviceTarget);
+        return addService(pathNameOf(name), abstractPath, serviceTarget, null);
+    }
+
+    public static ServiceController<String> addService(final String name, final String abstractPath,
+                                                       final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
+                                                       final ServiceListener... listeners) {
+        return addService(pathNameOf(name), abstractPath, serviceTarget, newControllers, listeners);
     }
 
     public static ServiceController<String> addService(final ServiceName sname, final String abstractPath, final ServiceTarget serviceTarget) {
+        return addService(sname, abstractPath, serviceTarget, null);
+    }
+
+    public static ServiceController<String> addService(final ServiceName sname, final String abstractPath,
+                                                       final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
+                                                       final ServiceListener... listeners) {
         AbsolutePathService service = new AbsolutePathService(abstractPath);
-        return serviceTarget.addService(sname, service).install();
+        ServiceBuilder<String> builder = serviceTarget.addService(sname, service);
+        if (listeners != null) {
+            for (ServiceListener listener : listeners) {
+                builder.addListener(listener);
+            }
+        }
+        ServiceController<String> svc = builder.install();
+        if (newControllers != null) {
+            newControllers.add(svc);
+        }
+        return svc;
     }
 
     public static void addService(final ServiceName name, final ModelNode element, final ServiceTarget serviceTarget) {
         final String path = element.require(PATH).asString();
-        addService(name, path, serviceTarget);
+        addService(name, path, serviceTarget, null);
     }
 
     public AbsolutePathService(final String abstractPath) {
