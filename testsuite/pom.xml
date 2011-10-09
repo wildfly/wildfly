@@ -201,7 +201,6 @@
                 <module>clustering</module>
                 <module>compat</module>
                 <module>domain</module>
-                <module>timerservice</module>
             </modules>
         </profile>
 

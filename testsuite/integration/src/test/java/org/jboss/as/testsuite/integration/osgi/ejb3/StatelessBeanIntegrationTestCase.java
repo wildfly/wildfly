@@ -42,6 +42,7 @@ import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -56,6 +57,7 @@ import org.osgi.framework.ServiceReference;
  * @since 13-May-2011
  */
 @RunWith(Arquillian.class)
+@Ignore
 public class StatelessBeanIntegrationTestCase {
 
     static final String EJB3_DEPLOYMENT_NAME = "ejb3-osgi.jar";
@@ -96,7 +98,7 @@ public class StatelessBeanIntegrationTestCase {
     public void testStatelessBean() throws Exception {
         deployer.deploy(EJB3_DEPLOYMENT_NAME);
         try {
-            String jndiname = "java:global/ejb3-osgi/SimpleStatelessSessionBean!org.jboss.as.testsuite.integration.osgi.xservice.api.Echo";
+            String jndiname = "java:global/ejb3-osgi/SimpleStatelessSessionBean!org.jboss.as.testsuite.integration.osgi.ejb3.SimpleStatelessSessionBean";
             Echo service = (Echo) new InitialContext().lookup(jndiname);
             assertNotNull("StatelessBean not null", service);
             assertEquals("ejb3-osgi-target", service.echo(BUNDLE_SYMBOLICNAME));
