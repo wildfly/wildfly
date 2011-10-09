@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,32 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.integration.ws.ejb;
+package org.jboss.as.testsuite.smoke.embedded.demos.ejb3.jndi;
 
-import javax.annotation.Resource;
+import javax.ejb.Local;
+import javax.ejb.LocalBean;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
 
 /**
- * Webservice endpoint implementation.
- *
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author Jaikiran Pai
  */
 @Stateless
-@WebService(
-        endpointInterface = "org.jboss.as.testsuite.integration.ws.ejb.SimpleStatelessWebserviceEndpointIface",
-        targetNamespace = "org.jboss.as.testsuite.integration.ws.ejb",
-        serviceName = "SimpleService"
-)
-public class SimpleStatelessWebserviceEndpointImpl implements SimpleStatelessWebserviceEndpointIface {
-
-    @Resource WebServiceContext ctx;
+@LocalBean
+@Local (Echo.class)
+@Remote(RemoteEcho.class)
+// TODO: Add all other views @LocalHome and @RemoteHome
+public class SampleSLSB implements Echo {
 
     @Override
-    public String echo(final String s) {
-        if (ctx == null) throw new RuntimeException("@Resource WebServiceContext not injected");
-        return s;
+    public String echo(String msg) {
+        return msg;
     }
-
 }

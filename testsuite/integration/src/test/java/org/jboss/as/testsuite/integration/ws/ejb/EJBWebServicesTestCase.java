@@ -47,7 +47,7 @@ public class EJBWebServicesTestCase {
 
     @Test
     public void testSingleton() throws Exception {
-        final String message = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:test=\"http://wsejb.integration.testsuite.as.jboss.org/\">"
+        final String message = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:test=\"http://ejb.ws.integration.testsuite.as.jboss.org/\">"
                 + "  <soapenv:Header/>"
                 + "  <soapenv:Body>"
                 + "    <test:setState>"

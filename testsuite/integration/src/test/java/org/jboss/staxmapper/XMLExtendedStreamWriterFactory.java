@@ -19,33 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.staxmapper;
 
-package org.jboss.as.testsuite.integration.ws.ejb;
+import javax.xml.stream.XMLStreamWriter;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
+import org.jboss.staxmapper.FormattingXMLStreamWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Webservice endpoint implementation.
- *
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * Expose the package protected {@link org.jboss.staxmapper.FormattingXMLStreamWriter} to tests.
+ * @author Paul Ferraro
  */
-@Stateless
-@WebService(
-        endpointInterface = "org.jboss.as.testsuite.integration.ws.ejb.SimpleStatelessWebserviceEndpointIface",
-        targetNamespace = "org.jboss.as.testsuite.integration.ws.ejb",
-        serviceName = "SimpleService"
-)
-public class SimpleStatelessWebserviceEndpointImpl implements SimpleStatelessWebserviceEndpointIface {
-
-    @Resource WebServiceContext ctx;
-
-    @Override
-    public String echo(final String s) {
-        if (ctx == null) throw new RuntimeException("@Resource WebServiceContext not injected");
-        return s;
+public class XMLExtendedStreamWriterFactory {
+    public static XMLExtendedStreamWriter create(XMLStreamWriter writer) {
+        return new FormattingXMLStreamWriter(writer);
     }
-
 }

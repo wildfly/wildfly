@@ -51,8 +51,6 @@ public class SimpleStatelessWebserviceEndpointTestCase {
     public static JavaArchive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "stateless-ws-endpoint-example.jar");
         jar.addPackage(SimpleStatelessWebserviceEndpointImpl.class.getPackage());
-        jar.addClass(SimpleStatelessWebserviceEndpointIface.class);
-        jar.addClass(SimpleStatelessWebserviceEndpointImpl.class);
         log.info(jar.toString(true));
         return jar;
     }
@@ -60,7 +58,7 @@ public class SimpleStatelessWebserviceEndpointTestCase {
     @Ignore(value="[CXF-3675] - enable this test once CXF 2.4.2 is available in AS distro")
     @Test
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
-        final QName serviceName = new QName("org.jboss.as.testsuite.integration.wsejb", "SimpleService");
+        final QName serviceName = new QName("org.jboss.as.testsuite.integration.ws.ejb", "SimpleService");
         final URL wsdlURL = new URL("http://localhost:8080/stateless-ws-endpoint-example/SimpleService/SimpleStatelessWebserviceEndpointImpl?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
         final SimpleStatelessWebserviceEndpointIface port = service.getPort(SimpleStatelessWebserviceEndpointIface.class);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.smoke.embedded.deployment;
 
-package org.jboss.as.testsuite.integration.ws.ejb;
+import java.rmi.RemoteException;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
+import javax.ejb.EJBObject;
 
-/**
- * Webservice endpoint implementation.
- *
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
- */
-@Stateless
-@WebService(
-        endpointInterface = "org.jboss.as.testsuite.integration.ws.ejb.SimpleStatelessWebserviceEndpointIface",
-        targetNamespace = "org.jboss.as.testsuite.integration.ws.ejb",
-        serviceName = "SimpleService"
-)
-public class SimpleStatelessWebserviceEndpointImpl implements SimpleStatelessWebserviceEndpointIface {
-
-    @Resource WebServiceContext ctx;
-
-    @Override
-    public String echo(final String s) {
-        if (ctx == null) throw new RuntimeException("@Resource WebServiceContext not injected");
-        return s;
-    }
-
+public interface Echo extends EJBObject
+{
+   String echo(String echo) throws RemoteException;
 }

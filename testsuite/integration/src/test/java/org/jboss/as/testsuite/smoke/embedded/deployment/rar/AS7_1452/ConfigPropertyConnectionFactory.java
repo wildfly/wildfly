@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.smoke.embedded.deployment.rar.AS7_1452;
 
-package org.jboss.as.testsuite.integration.ws.ejb;
+import java.io.Serializable;
 
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
+import javax.resource.Referenceable;
+import javax.resource.ResourceException;
 
 /**
- * Webservice endpoint implementation.
+ * ConfigPropertyConnectionFactory
  *
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @version $Revision: $
  */
-@Stateless
-@WebService(
-        endpointInterface = "org.jboss.as.testsuite.integration.ws.ejb.SimpleStatelessWebserviceEndpointIface",
-        targetNamespace = "org.jboss.as.testsuite.integration.ws.ejb",
-        serviceName = "SimpleService"
-)
-public class SimpleStatelessWebserviceEndpointImpl implements SimpleStatelessWebserviceEndpointIface {
-
-    @Resource WebServiceContext ctx;
-
-    @Override
-    public String echo(final String s) {
-        if (ctx == null) throw new RuntimeException("@Resource WebServiceContext not injected");
-        return s;
-    }
-
+public interface ConfigPropertyConnectionFactory extends Serializable, Referenceable
+{
+   /**
+    * Get connection from factory
+    *
+    * @return ConfigPropertyConnection instance
+    * @exception javax.resource.ResourceException Thrown if a connection can't be obtained
+    */
+   public ConfigPropertyConnection getConnection() throws ResourceException;
 }
