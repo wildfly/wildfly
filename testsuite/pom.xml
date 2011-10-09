@@ -180,6 +180,15 @@
 
     <profiles>
         <profile>
+            <id>integration</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>integration</module>
+            </modules>
+        </profile>
+        <profile>
             <id>allTests</id>
             <activation>
 	          <property>
