@@ -45,8 +45,10 @@ import org.jboss.modules.Module;
 public class ApplicationClientStartProcessor implements DeploymentUnitProcessor {
 
     private final String[] parameters;
+    private final String hostUrl;
 
-    public ApplicationClientStartProcessor(final String[] parameters) {
+    public ApplicationClientStartProcessor(final String hostUrl, final String[] parameters) {
+        this.hostUrl = hostUrl;
         this.parameters = parameters;
     }
 
@@ -73,7 +75,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         if (method == null) {
             throw new RuntimeException("Could not start app client " + deploymentUnit.getName() + " as no main main was found on main class " + mainClass);
         }
-        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters, moduleDescription.getNamespaceContextSelector(), module.getClassLoader());
+        final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters, hostUrl, moduleDescription.getNamespaceContextSelector(), module.getClassLoader());
         phaseContext.getServiceTarget()
                 .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME), startService)
                 .addDependency(ApplicationClientDeploymentService.SERVICE_NAME, ApplicationClientDeploymentService.class, startService.getApplicationClientDeploymentServiceInjectedValue())

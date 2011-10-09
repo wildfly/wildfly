@@ -46,9 +46,9 @@ class AppClientServerConfiguration {
     private AppClientServerConfiguration() {
     }
 
-    public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String additionalClassPath, final List<String> parameters) {
+    public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String additionalClassPath, final String hostUrl, final List<String> parameters) {
         List<ModelNode> ret = new ArrayList<ModelNode>();
-        appclient(ret, filePath, deploymentName, additionalClassPath, parameters);
+        appclient(ret, filePath, deploymentName, additionalClassPath, hostUrl, parameters);
         interfaces(ret);
         transactionSocketBindings(ret);
         transactions(ret);
@@ -60,7 +60,7 @@ class AppClientServerConfiguration {
         return ret;
     }
 
-    private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String additionalClassPath, final List<String> parameters) {
+    private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String additionalClassPath, final String hostUrl, final List<String> parameters) {
         loadExtension(nodes, "org.jboss.as.appclient");
         ModelNode add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, "appclient");
@@ -79,6 +79,7 @@ class AppClientServerConfiguration {
         if(additionalClassPath != null) {
             add.get(Constants.ADDITIONAL_CLASS_PATH).set(additionalClassPath);
         }
+        add.get(Constants.HOST_URL).set(hostUrl);
         nodes.add(add);
     }
 

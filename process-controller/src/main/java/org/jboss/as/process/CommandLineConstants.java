@@ -96,6 +96,8 @@ public class CommandLineConstants {
 
     /** Additional class path items, used only by app client*/
     public static final String CLASSPATH = "-classpath";
+    public static final String SHORT_HOST = "-H";
+    public static final String HOST = "--host";
 
     private CommandLineConstants() {
     }

@@ -28,6 +28,8 @@ class Constants {
 
     public static final String SUBSYSTEM_NAME = "appclient";
 
+    public static final String HOST_URL ="host-url";
+
     public static final String FILE = "file";
     public static final String DEPLOYMENT = "deployment";
     public static final String PARAMETERS = "parameters";

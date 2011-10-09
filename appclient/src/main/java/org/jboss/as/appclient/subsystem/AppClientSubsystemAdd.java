@@ -74,12 +74,14 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
         model.get(Constants.DEPLOYMENT).set(operation.get(Constants.DEPLOYMENT));
         model.get(Constants.PARAMETERS).set(operation.get(Constants.PARAMETERS));
         model.get(Constants.ADDITIONAL_CLASS_PATH).set(operation.get(Constants.ADDITIONAL_CLASS_PATH));
+        model.get(Constants.HOST_URL).set(operation.get(Constants.HOST_URL));
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final String deployment = model.get(Constants.DEPLOYMENT).asString();
         final File file = new File(model.get(Constants.FILE).asString());
         final String additionalClassPath = model.get(Constants.FILE).asString();
+        final String hostUrl = model.get(Constants.HOST_URL).asString();
         final List<String> parameters = new ArrayList<String>();
         for (ModelNode param : model.get(Constants.PARAMETERS).asList()) {
             parameters.add(param.asString());
@@ -92,7 +94,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements De
                 processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_APP_CLIENT_XML, new ApplicationClientParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_MANIFEST, new ApplicationClientManifestProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_ACTIVE, new ActiveApplicationClientProcessor(deployment));
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APPLICATION_CLIENT, new ApplicationClientStartProcessor(parameters.toArray(EMPTY_STRING)));
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APPLICATION_CLIENT, new ApplicationClientStartProcessor(hostUrl, parameters.toArray(EMPTY_STRING)));
                 if (additionalClassPath != null && !additionalClassPath.isEmpty()) {
                     processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_APPLICATION_CLIENT, new ApplicationClientDependencyProcessor(additionalClassPath));
 

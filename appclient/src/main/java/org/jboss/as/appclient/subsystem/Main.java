@@ -55,6 +55,9 @@ public final class Main {
     public static void usage() {
         System.out.println("Usage: ./appclient.sh [args...] myear.ear#appClient.jar [client args...]\n");
         System.out.println("where args include:");
+        System.out.println("    -H <url>                           Set the url of the AS7 instance to connect to");
+        System.out.println("    -H=<url>                           Set the url of the AS7 instance to connect to");
+        System.out.println("    --host=<url>                       Set the url of the AS7 instance to connect to");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
         System.out.println("    -classpath                         Specify additional jars to make available on the applications class path");
         System.out.println("    -h                                 Display this message and exit");
@@ -121,7 +124,7 @@ public final class Main {
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
-                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName, options.additionalClassPath, params));
+                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName, options.additionalClassPath, options.hostUrl, params));
                 bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
             }
         } catch (Throwable t) {
@@ -179,7 +182,13 @@ public final class Main {
                     if (urlSpec == null || !processProperties(arg, urlSpec)) {
                         return null;
                     }
-                } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
+                } else if (arg.startsWith(CommandLineConstants.SHORT_HOST)) {
+                    String urlSpec = parseValue(arg, CommandLineConstants.SHORT_HOST);
+                    ret.hostUrl = urlSpec;
+                } else if (arg.startsWith(CommandLineConstants.HOST)) {
+                    String urlSpec = parseValue(arg, CommandLineConstants.HOST);
+                    ret.hostUrl = urlSpec;
+                }else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
 
                     // set a system property
                     String name, value;
@@ -270,5 +279,6 @@ public final class Main {
         ServerEnvironment environment;
         List<String> clientArguments;
         String additionalClassPath = "";
+        String hostUrl = "remote://localhost:9999";
     }
 }

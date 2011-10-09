@@ -61,9 +61,15 @@ public class ApplicationClientConfigurationPersister implements ExtensibleConfig
      */
     private final String additionalClassPath;
 
-    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String additionalClassPath, final List<String> parameters) {
+    /**
+     * The URL of the AS7 instance to connect to
+     */
+    private final String hostUrl;
+
+    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String additionalClassPath, final String hostUrl, final List<String> parameters) {
         this.filePath = filePath;
         this.deploymentName = deploymentName;
+        this.hostUrl = hostUrl;
         this.parameters = parameters;
         this.additionalClassPath = additionalClassPath;
     }
@@ -91,7 +97,7 @@ public class ApplicationClientConfigurationPersister implements ExtensibleConfig
 
     @Override
     public List<ModelNode> load() throws ConfigurationPersistenceException {
-        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, additionalClassPath, parameters);
+        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, additionalClassPath, hostUrl, parameters);
     }
 
     @Override

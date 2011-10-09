@@ -77,16 +77,18 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private final Method mainMethod;
     private final String[] parameters;
     private final ClassLoader classLoader;
+    final String hostUrl;
 
     private Thread thread;
 
     private final Logger logger = Logger.getLogger(ApplicationClientStartService.class);
 
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
+        this.hostUrl = hostUrl;
     }
 
     @Override
@@ -111,7 +113,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
 
             // open a connection
-            final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+            final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
             final Connection connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
 
             thread = new Thread(new Runnable() {
