@@ -31,7 +31,13 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.h2.server.web.WebApp;
+import org.jboss.as.testsuite.integration.ws.tools.jbws3207.service.EndpointImpl;
 import org.jboss.as.webservices.deployer.RemoteDeployer;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployer.Deployer;
@@ -50,8 +56,12 @@ public class JBWS3207TestCase {
         Deployer deployer = spiProvider.getSPI(Deployer.class);
         assertTrue(deployer instanceof RemoteDeployer);
         final String basedir = System.getProperty("basedir");
-        final String testdir = basedir + File.separatorChar + "target" + File.separatorChar + "test-libs";
+        final String testdir = basedir + File.separatorChar + "target" + File.separatorChar ;
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, "jbws3207.war" );
+        archive.addAsWebInfResource(new StringAsset(WEB_XML), "web.xml");
+        archive.addPackage(EndpointImpl.class.getPackage());
         File archiveFile = new File( testdir, "jbws3207.war");
+        archive.as(ZipExporter.class).exportTo(archiveFile);
         URL archiveURL = archiveFile.toURI().toURL();
         try {
             deployer.deploy(archiveURL);
@@ -116,4 +126,21 @@ public class JBWS3207TestCase {
             safeClose(in);
         }
     }
+
+    private final String WEB_XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<web-app version=\"2.4\" xmlns=\"http://java.sun.com/xml/ns/j2ee\"\n" +
+            "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+            "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd\">\n" +
+            "\n" +
+            "   <servlet>\n" +
+            "      <servlet-name>TestEndpoint</servlet-name>\n" +
+            "      <servlet-class>org.jboss.as.testsuite.integration.ws.tools.jbws3207.service.EndpointImpl</servlet-class>\n" +
+            "   </servlet>\n" +
+            "\n" +
+            "   <servlet-mapping>\n" +
+            "      <servlet-name>TestEndpoint</servlet-name>\n" +
+            "      <url-pattern>/*</url-pattern>\n" +
+            "   </servlet-mapping>\n" +
+            "\n" +
+            "</web-app>";
 }
