@@ -44,13 +44,11 @@
             <artifactId>jboss-as-webservices-tests-integration</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-arquillian-container-managed</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-demos-legacy</artifactId>
@@ -125,7 +123,6 @@
 
     <profiles>
 
-        <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
         <profile>
             <id>smoke-tests</id>
             <activation>
@@ -171,8 +168,6 @@
                     <name>allTests</name>
                 </property>
             </activation>
-            <dependencies>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -224,7 +219,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>preview</id>
+                                <id>seconds-run-tests</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>

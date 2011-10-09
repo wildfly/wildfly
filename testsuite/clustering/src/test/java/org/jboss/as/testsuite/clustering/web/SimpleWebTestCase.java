@@ -35,6 +35,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,12 +47,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SimpleWebTestCase {    
+public class SimpleWebTestCase {
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
-        war.setWebXML("distributable.war/WEB-INF/web.xml");
+        war.addAsWebInfResource(new StringAsset(WEB_XML), "web-xml.xml");
         System.out.println(war.toString(true));
         return war;
     }
@@ -65,7 +66,7 @@ public class SimpleWebTestCase {
             Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 1);
             Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
-            
+
             response = client.execute(new HttpGet("http://localhost:8080/distributable/simple"));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(Integer.parseInt(response.getFirstHeader("value").getValue()), 2);
@@ -76,4 +77,12 @@ public class SimpleWebTestCase {
             client.getConnectionManager().shutdown();
         }
     }
+
+    private static final String WEB_XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<web-app xmlns=\"http://java.sun.com/xml/ns/javaee\"\n" +
+            "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+            "      xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\"\n" +
+            "      version=\"3.0\">\n" +
+            "    <distributable/>\n" +
+            "</web-app>";
 }

@@ -38,10 +38,6 @@
 
     <name>JBoss Application Server Test Suite: Aggregator</name>
 
-    <modules>
-        <module>smoke</module>
-    </modules>
-
     <packaging>pom</packaging>
 
     <properties>
@@ -198,9 +194,9 @@
                 <!--<module>stress</module>
                 <module>benchmark</module>-->
                 <module>integration</module>
-                <module>clustering</module>
                 <module>compat</module>
                 <module>domain</module>
+                <module>clustering</module>
             </modules>
         </profile>
 
