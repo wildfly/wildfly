@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.util.Collection;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -36,8 +38,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.modules.Module;
-
-import java.util.Collection;
 
 /**
  * Superclass for the EJB metadata merging processors
@@ -69,7 +69,11 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
 
         for (ComponentDescription componentConfiguration : componentConfigurations) {
             if (typeParam.isAssignableFrom(componentConfiguration.getClass())) {
+                try {
                     processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (T) componentConfiguration);
+                } catch (Exception e) {
+                    throw new DeploymentUnitProcessingException("Could not merge data for " + componentConfiguration.getComponentName(), e);
+                }
             }
         }
     }

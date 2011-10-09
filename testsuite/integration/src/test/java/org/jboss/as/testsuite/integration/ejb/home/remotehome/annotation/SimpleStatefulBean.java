@@ -19,23 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.home.localhome.annotation;
+package org.jboss.as.testsuite.integration.ejb.home.remotehome.annotation;
 
 import javax.annotation.Resource;
-import javax.ejb.Local;
-import javax.ejb.LocalHome;
+import javax.ejb.Remote;
+import javax.ejb.RemoteHome;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 
-import org.jboss.as.test.integration.ejb.home.localhome.SimpleLocalInterface;
-import org.jboss.as.test.integration.ejb.home.localhome.SimpleStatefulLocalHome;
+import org.jboss.as.testsuite.integration.ejb.home.remotehome.SimpleInterface;
+import org.jboss.as.testsuite.integration.ejb.home.remotehome.SimpleStatefulHome;
 
 /**
  * @author Stuart Douglas
  */
 @Stateful
-@LocalHome(SimpleStatefulLocalHome.class)
-public class SimpleStatefulLocalBean  {
+@RemoteHome(SimpleStatefulHome.class)
+public class SimpleStatefulBean {
 
     @Resource
     private SessionContext sessionContext;
@@ -55,6 +55,6 @@ public class SimpleStatefulLocalBean  {
     }
 
     public String otherMethod() {
-        return ((SimpleLocalInterface)sessionContext.getEJBLocalObject()).sayHello();
+        return ((SimpleInterface)sessionContext.getEJBObject()).sayHello();
     }
 }

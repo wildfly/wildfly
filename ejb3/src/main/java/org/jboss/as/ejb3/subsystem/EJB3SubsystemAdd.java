@@ -62,7 +62,7 @@ import org.jboss.as.ejb3.deployment.processors.ImplicitLocalViewProcessor;
 import org.jboss.as.ejb3.deployment.processors.MessageDrivenComponentDescriptionFactory;
 import org.jboss.as.ejb3.deployment.processors.ORBJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.SessionBeanComponentDescriptionFactory;
-import org.jboss.as.ejb3.deployment.processors.SessionBeanLocalHomeProcessor;
+import org.jboss.as.ejb3.deployment.processors.SessionBeanHomeProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceJndiBindingProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.EjbAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.dd.AssemblyDescriptorProcessor;
@@ -200,12 +200,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_STATEFUL_TIMEOUT, new StatefulTimeoutMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_SESSION_SYNCHRONIZATION, new SessionSynchronizationMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_INIT_METHOD, new InitMethodMergingProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LOCAL_HOME, new SessionBeanLocalHomeProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_LOCAL_HOME, new SessionBeanHomeProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ORB_BIND, new ORBJndiBindingProcessor());
 
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPENDS_ON_ANNOTATION, new EjbDependsOnMergingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_DEPLOYMENT_REPOSITORY, new DeploymentRepositoryProcessor());
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EJB_MANAGEMENT_RESOURCES, new EjbManagementDeploymentUnitProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EJB_MANAGEMENT_RESOURCES, new EjbManagementDeploymentUnitProcessor());
 
                 }
 

@@ -23,9 +23,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -39,7 +37,6 @@ import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanHomeInterceptorFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -57,7 +54,7 @@ import org.jboss.msc.service.ServiceBuilder;
  *
  * @author Stuart Douglas
  */
-public class SessionBeanLocalHomeProcessor extends AbstractComponentConfigProcessor {
+public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
 
     @Override
     protected void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
@@ -68,44 +65,57 @@ public class SessionBeanLocalHomeProcessor extends AbstractComponentConfigProces
             //check for EJB's with a local home interface
             if (ejbComponentDescription.getEjbLocalHomeView() != null) {
                 final EJBViewDescription view = ejbComponentDescription.getEjbLocalHomeView();
-                view.getConfigurators().add(new ViewConfigurator() {
-
-                    @Override
-                    public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                        final DeploymentReflectionIndex reflectionIndex = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-
-                        configuration.addClientPostConstructInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
-                        configuration.addClientPreDestroyInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
-
-                        configuration.addViewPostConstructInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPostConstruct.TERMINAL_INTERCEPTOR);
-                        configuration.addViewPreDestroyInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPreDestroy.TERMINAL_INTERCEPTOR);
-
-                        //loop over methods looking for create methods:
-                        final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(configuration.getViewClass());
-                        for (Method method : classIndex.getMethods()) {
-                            if (method.getName().startsWith("create")) {
-                                //we have a create method
-                                final ViewDescription createdView = resolveViewDescription(method, ejbComponentDescription);
-
-                                Method initMethod = resolveInitMethod(ejbComponentDescription, method);
-                                final SessionBeanHomeInterceptorFactory factory = new SessionBeanHomeInterceptorFactory(initMethod);
-                                //add a dependency on the view to create
-                                componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
-                                    @Override
-                                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
-                                        serviceBuilder.addDependency(createdView.getServiceName(), ComponentView.class, factory.getViewToCreate());
-                                    }
-                                });
-                                //add the interceptor
-                                configuration.addClientInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
-
-                            }
-                        }
-                    }
-
-                });
+                final EJBViewDescription ejbLocalView = ejbComponentDescription.getEjbLocalView();
+                configureHome(phaseContext, componentDescription, ejbComponentDescription, view, ejbLocalView);
+            }
+            if (ejbComponentDescription.getEjbHomeView() != null) {
+                final EJBViewDescription view = ejbComponentDescription.getEjbHomeView();
+                final EJBViewDescription ejbRemoteView = ejbComponentDescription.getEjbRemoteView();
+                configureHome(phaseContext, componentDescription, ejbComponentDescription, view, ejbRemoteView);
             }
         }
+    }
+
+    private void configureHome(final DeploymentPhaseContext phaseContext, final ComponentDescription componentDescription, final SessionBeanComponentDescription ejbComponentDescription, final EJBViewDescription homeView, final EJBViewDescription ejbObjectView) {
+        homeView.getConfigurators().add(new ViewConfigurator() {
+
+            @Override
+            public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                final DeploymentReflectionIndex reflectionIndex = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+
+                configuration.addClientPostConstructInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
+                configuration.addClientPreDestroyInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
+
+                configuration.addViewPostConstructInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPostConstruct.TERMINAL_INTERCEPTOR);
+                configuration.addViewPreDestroyInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPreDestroy.TERMINAL_INTERCEPTOR);
+
+                //loop over methods looking for create methods:
+                final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(configuration.getViewClass());
+                for (Method method : classIndex.getMethods()) {
+                    if (method.getName().startsWith("create")) {
+                        //we have a create method
+                        if(ejbObjectView == null) {
+                            throw new RuntimeException(componentDescription.getComponentName() + " does not have a EJB 2.x local interface");
+                        }
+                        final ViewDescription createdView = ejbObjectView;
+
+                        Method initMethod = resolveInitMethod(ejbComponentDescription, method);
+                        final SessionBeanHomeInterceptorFactory factory = new SessionBeanHomeInterceptorFactory(initMethod);
+                        //add a dependency on the view to create
+                        componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+                            @Override
+                            public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
+                                serviceBuilder.addDependency(createdView.getServiceName(), ComponentView.class, factory.getViewToCreate());
+                            }
+                        });
+                        //add the interceptor
+                        configuration.addClientInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
+
+                    }
+                }
+            }
+
+        });
     }
 
 
@@ -155,30 +165,4 @@ public class SessionBeanLocalHomeProcessor extends AbstractComponentConfigProces
         return initMethod;
     }
 
-    /**
-     * Resolves the correct view for a create method
-     *
-     * See EJB 3.1 21.4.5
-     */
-    private ViewDescription resolveViewDescription(final Method method, final EJBComponentDescription componentDescription) throws DeploymentUnitProcessingException {
-        if (componentDescription.getEjbLocalView() != null) {
-            return componentDescription.getEjbLocalView();
-        }
-        final Set<ViewDescription> local = new HashSet<ViewDescription>();
-        for (final ViewDescription view : componentDescription.getViews()) {
-            if (view instanceof EJBViewDescription) {
-                final EJBViewDescription ejbView = (EJBViewDescription) view;
-                if (ejbView.getMethodIntf() == MethodIntf.LOCAL) {
-                    if (ejbView.getViewClassName().equals(method.getReturnType().getName())) {
-                        return ejbView;
-                    }
-                    local.add(view);
-                }
-            }
-        }
-        if (local.size() == 1) {
-            return local.iterator().next();
-        }
-        throw new DeploymentUnitProcessingException("Could not determine correct local view to create for EJB Home 'create' method " + method);
-    }
 }
