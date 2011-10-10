@@ -22,7 +22,7 @@
 package org.jboss.as.webservices.util;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.webservices.component.WSEndpointHandlersMapping;
+import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.as.webservices.webserviceref.WSReferences;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
