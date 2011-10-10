@@ -61,6 +61,7 @@ public class WebExtension implements Extension {
 
     private static final PathElement accesslogPath = PathElement.pathElement(Constants.ACCESS_LOG, "configuration");
     private static final PathElement rewritePath = PathElement.pathElement(Constants.REWRITE);
+    private static final PathElement ssoPath = PathElement.pathElement(Constants.SSO, "configuration");
 
     private static final PathElement directoryPath = PathElement.pathElement(Constants.DIRECTORY, "configuration");
     private static final PathElement rewritecondPath = PathElement.pathElement(Constants.CONDITION);
@@ -139,6 +140,15 @@ public class WebExtension implements Extension {
         accesslog.registerReadWriteAttribute(Constants.PREFIX, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
         accesslog.registerReadWriteAttribute(Constants.ROTATE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
 
+        // sso valve.
+        final ManagementResourceRegistration sso = hosts.registerSubModel(ssoPath, WebSubsystemDescriptionProviders.SSO);
+        sso.registerOperationHandler(ADD, WebSSOAdd.INSTANCE, WebSSOAdd.INSTANCE, false);
+        sso.registerOperationHandler(REMOVE, WebSSORemove.INSTANCE, WebSSORemove.INSTANCE, false);
+
+        sso.registerReadWriteAttribute(Constants.CACHE_CONTAINER, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        sso.registerReadWriteAttribute(Constants.DOMAIN, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true), Storage.CONFIGURATION);
+        sso.registerReadWriteAttribute(Constants.REAUTHENTICATE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN, true), Storage.CONFIGURATION);
+
         // rewrite valve.
         final ManagementResourceRegistration rewrite = hosts.registerSubModel(rewritePath, WebSubsystemDescriptionProviders.REWRITE);
         rewrite.registerOperationHandler(ADD, WebReWriteAdd.INSTANCE, WebReWriteAdd.INSTANCE, false);
@@ -178,7 +188,8 @@ public class WebExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), WebSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.WEB_1_1.getUriString(), WebSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.WEB_1_0.getUriString(), WebSubsystemParser.getInstance());
     }
 
 }

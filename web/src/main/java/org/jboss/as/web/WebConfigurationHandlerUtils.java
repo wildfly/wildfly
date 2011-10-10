@@ -50,6 +50,7 @@ import static org.jboss.as.web.Constants.SENDFILE;
 import static org.jboss.as.web.Constants.SMAP;
 import static org.jboss.as.web.Constants.SOURCE_VM;
 import static org.jboss.as.web.Constants.SSL;
+import static org.jboss.as.web.Constants.SSO;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
 import static org.jboss.as.web.Constants.TAG_POOLING;
 import static org.jboss.as.web.Constants.TARGET_VM;
@@ -91,6 +92,7 @@ class WebConfigurationHandlerUtils {
     static final PathElement RESOURCE = PathElement.pathElement(CONTAINER_CONFIG, STATIC_RESOURCES);
     static final PathElement CONTAINER = PathElement.pathElement(CONTAINER_CONFIG, Constants.CONTAINER);
     static final PathElement SSLPATH = PathElement.pathElement(SSL, "configuration");
+    static final PathElement SSOPATH = PathElement.pathElement(SSO, "configuration");
     static final PathElement REWRITEPATH = PathElement.pathElement(REWRITE, "configuration");
     static final PathElement ACCESSLOG = PathElement.pathElement(ACCESS_LOG, "configuration");
     static final PathElement DIRECTORYPATH = PathElement.pathElement(DIRECTORY, "configuration");
@@ -142,6 +144,10 @@ class WebConfigurationHandlerUtils {
                 final Resource directory = accesslog.getChild(DIRECTORYPATH);
 
                 populateAccessLog(accesslog.getModel(), operation.get(ACCESS_LOG), directory);
+             } else if (attribute.equals(SSO) && operation.get(SSO).isDefined())  {
+                 resource.registerChild(SSOPATH, Resource.Factory.create());
+                 final Resource sso = resource.getChild(SSOPATH);
+                 populateModel(sso.getModel(), operation.get(SSO));
              }
         }
     }
