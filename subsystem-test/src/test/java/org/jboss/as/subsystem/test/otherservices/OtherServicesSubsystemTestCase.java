@@ -21,7 +21,6 @@
 */
 package org.jboss.as.subsystem.test.otherservices;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -131,10 +130,7 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(OtherServicesSubsystemExtension.SUBSYSTEM_NAME));
 
         ModelNode iface = model.require(INTERFACE).require(ControllerInitializer.INTERFACE_NAME);
-        Assert.assertEquals(ControllerInitializer.INTERFACE_NAME, iface.get(NAME).asString());
-        List<ModelNode> criteria = iface.require(CRITERIA).asList();
-        Assert.assertEquals(1, criteria.size());
-        Assert.assertEquals("127.0.0.1", criteria.get(0).require(INET_ADDRESS).asString());
+        Assert.assertEquals("127.0.0.1", iface.require(INET_ADDRESS).asString());
 
         ModelNode group = model.require(SOCKET_BINDING_GROUP).require(ControllerInitializer.SOCKET_BINDING_GROUP_NAME);
         Assert.assertEquals(ControllerInitializer.INTERFACE_NAME, group.require(DEFAULT_INTERFACE).asString());

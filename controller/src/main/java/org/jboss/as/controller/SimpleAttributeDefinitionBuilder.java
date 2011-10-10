@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller;
 
-import java.util.EnumSet;
+import java.util.Arrays;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -100,6 +100,17 @@ public class SimpleAttributeDefinitionBuilder {
         return this;
     }
 
+    public SimpleAttributeDefinitionBuilder addAlternatives(String... alternatives) {
+        if(this.alternatives == null) {
+            this.alternatives = alternatives;
+        } else {
+            String[] newAlternatives = Arrays.copyOf(this.alternatives, this.alternatives.length + alternatives.length);
+            System.arraycopy(alternatives, 0, newAlternatives, this.alternatives.length, alternatives.length);
+            this.alternatives = newAlternatives;
+        }
+        return this;
+    }
+
     public SimpleAttributeDefinitionBuilder setRequires(String... requires) {
         this.requires = requires;
         return this;
@@ -110,5 +121,8 @@ public class SimpleAttributeDefinitionBuilder {
         return this;
     }
 
+    public static SimpleAttributeDefinitionBuilder create(final String name, final ModelType type) {
+        return new SimpleAttributeDefinitionBuilder(name, type);
+    }
 
 }

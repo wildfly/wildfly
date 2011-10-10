@@ -191,7 +191,9 @@ final class OperationContextImpl implements OperationContext {
             throw new IllegalStateException("Stage " + stage + " is already complete");
         }
         if (contextType == Type.MANAGEMENT && stage.compareTo(Stage.MODEL) > 0) {
-            throw new IllegalArgumentException("Invalid step stage for this context type");
+            if(stage != Stage.VERIFY) { // allow verification also in mgmt mode
+                throw new IllegalArgumentException("Invalid step stage for this context type");
+            }
         }
         if (stage == Stage.DOMAIN && contextType != Type.HOST) {
             throw new IllegalStateException("Stage " + stage + " is not valid for context type " + contextType);

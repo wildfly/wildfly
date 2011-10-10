@@ -25,6 +25,7 @@ package org.jboss.as.subsystem.test;
 import java.io.IOException;
 import java.util.List;
 
+import junit.framework.Assert;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -120,6 +121,8 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         // Test the describe operation
         final ModelNode operation = createDescribeOperation();
         final ModelNode result = servicesB.executeOperation(operation);
+        Assert.assertTrue("the subsystem describe operation has to generate a list of operations to recreate the subsystem",
+                result.hasDefined(ModelDescriptionConstants.RESULT));
         final List<ModelNode> operations = result.get(ModelDescriptionConstants.RESULT).asList();
         servicesB.shutdown();
 

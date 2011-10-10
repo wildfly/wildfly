@@ -19,9 +19,8 @@
 package org.jboss.as.controller.operations.common;
 
 
+import org.jboss.as.controller.AttributeDefinition;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
@@ -42,19 +41,24 @@ import org.jboss.msc.service.ServiceController;
  * Handler for the interface resource add operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Emanuel Muckenhuber
  */
 public class InterfaceAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
+    private static final AttributeDefinition[] ATTRIBUTES = InterfaceDescription.ROOT_ATTRIBUTES;
     public static final String OPERATION_NAME = ADD;
 
     public static ModelNode getAddInterfaceOperation(ModelNode address, ModelNode criteria) {
         ModelNode op = Util.getEmptyOperation(ADD, address);
-        op.get(CRITERIA).set(criteria);
+        for(final AttributeDefinition def : ATTRIBUTES) {
+            if(criteria.hasDefined(def.getName())) {
+                op.get(def.getName()).set(criteria.get(def.getName()));
+            }
+        }
         return op;
     }
 
     public static final InterfaceAddHandler NAMED_INSTANCE = new InterfaceAddHandler(false);
-
     public static final InterfaceAddHandler SPECIFIED_INSTANCE = new InterfaceAddHandler(true);
 
     private final boolean specified;
@@ -66,13 +70,30 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
         this.specified = specified;
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        final ModelNode opAddr = operation.get(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(opAddr);
-        String name = address.getLastElement().getValue();
-        model.get(NAME).set(name);
-        ModelNode criteriaNode = operation.get(CRITERIA);
-        model.get(CRITERIA).set(criteriaNode);
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        for(final AttributeDefinition definition : ATTRIBUTES) {
+            if(specified) {
+                validateAndSet(definition, operation, model);
+            } else {
+                if(operation.hasDefined(definition.getName())) {
+                    validateAndSet(definition, operation, model);
+                }
+            }
+        }
+    }
+
+    protected void validateAndSet(final AttributeDefinition definition, final ModelNode operation, final ModelNode subModel) throws OperationFailedException {
+        final String attributeName = definition.getName();
+        final boolean has = operation.has(attributeName);
+        if(! has && definition.isRequired(operation)) {
+            throw new OperationFailedException(new ModelNode().set(attributeName + " is required"));
+        }
+        if(has) {
+            if(! definition.isAllowed(operation)) {
+                throw new OperationFailedException(new ModelNode().set(attributeName + " is invalid"));
+            }
+            definition.validateAndSet(operation, subModel);
+        }
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -85,15 +106,12 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
     }
 
     protected String getInterfaceName(ModelNode operation) {
-        final ModelNode opAddr = operation.get(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(opAddr);
-        String name = address.getLastElement().getValue();
-        return name;
+        final ModelNode opAddr = operation.require(OP_ADDR);
+        return PathAddress.pathAddress(opAddr).getLastElement().getValue();
     }
 
     protected ParsedInterfaceCriteria getCriteria(ModelNode operation) {
-        ModelNode criteriaNode = operation.get(CRITERIA);
-        return ParsedInterfaceCriteria.parse(criteriaNode.clone(), specified);
+        return ParsedInterfaceCriteria.parse(operation, specified);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, String name, ParsedInterfaceCriteria criteria) {
