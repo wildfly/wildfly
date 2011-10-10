@@ -688,7 +688,7 @@ public class CommandLineMain {
             }
             try {
                 if (password) {
-                    return console.readLine(prompt, '*');
+                    return console.readLine(prompt, (char) 0x00);
                 } else {
                     return console.readLine(prompt);
                 }
