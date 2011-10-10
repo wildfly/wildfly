@@ -22,13 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
-
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Iterator;
-
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -39,6 +32,13 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.value.Value;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Iterator;
+
+import static org.jboss.as.server.deployment.Attachments.MODULE;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -62,11 +62,14 @@ public final class MethodInjectionTarget extends InjectionTarget {
         } catch (ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException(e);
         }
-        Collection<Method> methods;
+        Collection<Method> methods = null;
         if (paramType != null) {
             // find the methods with the specific name and the param types
             methods = ClassReflectionIndexUtil.findMethods(reflectionIndex, classIndex, name, paramType);
-        } else {
+        }
+        // either paramType is not set, or we may need to find autoboxing methods
+        // e.g. setMyBoolean(boolean) for a Boolean
+        if (methods == null || methods.isEmpty()) {
             // find all the methods with the specific name and which accept just 1 parameter.
             methods = ClassReflectionIndexUtil.findAllMethods(reflectionIndex, classIndex, name, 1);
         }
