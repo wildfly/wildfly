@@ -86,9 +86,12 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
                 if (!isEjb3Endpoint) {
                     // only POJO endpoints have to be initialized. EJB3 endpoints are handled by the EJB3 susbystem.
                     final ServiceName endpointComponentName = getEndpointComponentServiceName();
-                    final BasicComponent endpointComponent = getComponentController(endpointComponentName).getValue();
-                    final ComponentInstance endpointComponentInstance = endpointComponent.createInstance(delegate.getInstance(className));
-                    return cacheAndGet(endpointComponentInstance.getInstance());
+                    final ServiceController<BasicComponent> endpointController = getComponentController(endpointComponentName);
+                    if (endpointController != null) {
+                        final BasicComponent endpointComponent = endpointController.getValue();
+                        final ComponentInstance endpointComponentInstance = endpointComponent.createInstance(delegate.getInstance(className));
+                        return cacheAndGet(endpointComponentInstance.getInstance());
+                    }
                 }
             } else {
                 // handle JAXWS handler instantiation
