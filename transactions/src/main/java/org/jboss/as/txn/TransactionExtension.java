@@ -99,30 +99,6 @@ public class TransactionExtension implements Extension {
             registration.registerMetric(stat.toString(), TxStatsHandler.INSTANCE);
         }
 
-        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
-        final ManagementResourceRegistration recoveryEnv = registration.registerSubModel(PathElement.pathElement(CONFIGURATION, RECOVERY_ENVIRONMENT),
-                TransactionSubsystemProviders.RECOVERY_ENVIRONMENT_DESC);
-        recoveryEnv.registerOperationHandler(ADD, RecoveryEnvironmentAdd.INSTANCE, TransactionSubsystemProviders.ADD_RECOVERY_ENVIRONMENT_DESC, reloadFlags);
-        recoveryEnv.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, TransactionSubsystemProviders.REMOVE_RECOVERY_ENVIRONMENT_DESC, reloadFlags);
-
-        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
-        final ManagementResourceRegistration coreEnv = registration.registerSubModel(PathElement.pathElement(CONFIGURATION, CORE_ENVIRONMENT),
-                TransactionSubsystemProviders.CORE_ENVIRONMENT_DESC);
-        coreEnv.registerOperationHandler(ADD, CoreEnvironmentAdd.INSTANCE, TransactionSubsystemProviders.ADD_CORE_ENVIRONMENT_DESC, reloadFlags);
-        coreEnv.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, TransactionSubsystemProviders.REMOVE_CORE_ENVIRONMENT_DESC, reloadFlags);
-
-        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
-        final ManagementResourceRegistration coordinatorEnv = registration.registerSubModel(PathElement.pathElement(CONFIGURATION, COORDINATOR_ENVIRONMENT),
-                TransactionSubsystemProviders.COORDINATOR_ENVIRONMENT_DESC);
-        coordinatorEnv.registerOperationHandler(ADD, CoordinatorEnvironmentAdd.INSTANCE, TransactionSubsystemProviders.ADD_COORDINATOR_ENVIRONMENT_DESC, reloadFlags);
-        coordinatorEnv.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, TransactionSubsystemProviders.REMOVE_COORDINATOR_ENVIRONMENT_DESC, reloadFlags);
-
-        // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
-        final ManagementResourceRegistration objectStore = registration.registerSubModel(PathElement.pathElement(CONFIGURATION, OBJECT_STORE),
-                TransactionSubsystemProviders.OBJECT_STORE_DESC);
-        objectStore.registerOperationHandler(ADD, ObjectStoreAdd.INSTANCE, TransactionSubsystemProviders.ADD_OBJECT_STORE_DESC, reloadFlags);
-        objectStore.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, TransactionSubsystemProviders.REMOVE_OBJECT_STORE_DESC, reloadFlags);
-
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -152,22 +128,6 @@ public class TransactionExtension implements Extension {
 
             list.add(subsystem);
 
-            //Object store is always required
-            final ModelNode objectStoreNode = address.clone();
-            final ModelNode objectStoreOperation = new ModelNode();
-            objectStoreOperation.get(OP).set(ADD);
-            objectStoreNode.add(CONFIGURATION, OBJECT_STORE);
-            objectStoreNode.protect();
-            objectStoreOperation.get(OP_ADDR).set(objectStoreNode);
-
-            final ModelNode coordinatorNode = address.clone();
-            final ModelNode coordinatorOperatrion = new ModelNode();
-            coordinatorOperatrion.get(OP).set(ADD);
-            coordinatorNode.add(CONFIGURATION, COORDINATOR_ENVIRONMENT);
-            coordinatorNode.protect();
-            coordinatorOperatrion.get(OP_ADDR).set(coordinatorNode);
-
-
             // elements
             final EnumSet<Element> required = EnumSet.of(Element.RECOVERY_ENVIRONMENT, Element.CORE_ENVIRONMENT);
             final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -181,19 +141,19 @@ public class TransactionExtension implements Extension {
                         }
                         switch (element) {
                             case RECOVERY_ENVIRONMENT: {
-                                parseRecoveryEnvironmentElement(reader, list, address);
+                                parseRecoveryEnvironmentElement(reader, subsystem);
                                 break;
                             }
                             case CORE_ENVIRONMENT: {
-                                parseCoreEnvironmentElement(reader, list, address);
+                                parseCoreEnvironmentElement(reader, subsystem);
                                 break;
                             }
                             case COORDINATOR_ENVIRONMENT: {
-                                parseCoordinatorEnvironmentElement(reader, coordinatorOperatrion);
+                                parseCoordinatorEnvironmentElement(reader, subsystem);
                                 break;
                             }
                             case OBJECT_STORE: {
-                                parseObjectStoreEnvironmentElementAndEnrichOperation(reader, objectStoreOperation);
+                                parseObjectStoreEnvironmentElementAndEnrichOperation(reader, subsystem);
                                 break;
                             }
                             default: {
@@ -207,8 +167,6 @@ public class TransactionExtension implements Extension {
                     }
                 }
             }
-            list.add(objectStoreOperation);
-            list.add(coordinatorOperatrion);
             if (! required.isEmpty()) {
                 throw missingRequiredElement(reader, required);
             }
@@ -224,10 +182,10 @@ public class TransactionExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case RELATIVE_TO:
-                        ObjectStoreAdd.RELATIVE_TO.parseAndSetParameter(value, operation, location);
+                        TransactionSubsystemAdd.OBJECT_STORE_RELATIVE_TO.parseAndSetParameter(value, operation, location);
                         break;
                     case PATH:
-                        ObjectStoreAdd.PATH.parseAndSetParameter(value, operation, location);
+                        TransactionSubsystemAdd.OBJECT_STORE_PATH.parseAndSetParameter(value, operation, location);
                         break;
                     default:
                         throw unexpectedAttribute(reader, i);
@@ -248,13 +206,13 @@ public class TransactionExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ENABLE_STATISTICS:
-                        CoordinatorEnvironmentAdd.ENABLE_STATISTICS.parseAndSetParameter(value, operation, location);
+                        TransactionSubsystemAdd.ENABLE_STATISTICS.parseAndSetParameter(value, operation, location);
                         break;
                     case ENABLE_TSM_STATUS:
-                        CoordinatorEnvironmentAdd.ENABLE_TSM_STATUS.parseAndSetParameter(value, operation, location);
+                        TransactionSubsystemAdd.ENABLE_TSM_STATUS.parseAndSetParameter(value, operation, location);
                         break;
                     case DEFAULT_TIMEOUT:
-                        CoordinatorEnvironmentAdd.DEFAULT_TIMEOUT.parseAndSetParameter(value, operation, location);
+                        TransactionSubsystemAdd.DEFAULT_TIMEOUT.parseAndSetParameter(value, operation, location);
                         break;
                     default:
                         throw unexpectedAttribute(reader, i);
@@ -271,15 +229,7 @@ public class TransactionExtension implements Extension {
          * @return ModelNode for the core-environment
          * @throws XMLStreamException
          */
-        static void parseCoreEnvironmentElement(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException {
-
-            final ModelNode env = parentAddress.clone();
-            env.add(CONFIGURATION, CORE_ENVIRONMENT);
-            env.protect();
-
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(ADD);
-            operation.get(OP_ADDR).set(env);
+        static void parseCoreEnvironmentElement(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
 
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i ++) {
@@ -288,13 +238,13 @@ public class TransactionExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case NODE_IDENTIFIER:
-                        CoreEnvironmentAdd.NODE_IDENTIFIER.parseAndSetParameter(value, operation, reader.getLocation());
+                        TransactionSubsystemAdd.NODE_IDENTIFIER.parseAndSetParameter(value, operation, reader.getLocation());
                         break;
                     case PATH:
-                        CoreEnvironmentAdd.PATH.parseAndSetParameter(value, operation, reader.getLocation());
+                        TransactionSubsystemAdd.PATH.parseAndSetParameter(value, operation, reader.getLocation());
                         break;
                     case RELATIVE_TO:
-                        CoreEnvironmentAdd.RELATIVE_TO.parseAndSetParameter(value, operation, reader.getLocation());
+                        TransactionSubsystemAdd.RELATIVE_TO.parseAndSetParameter(value, operation, reader.getLocation());
                         break;
                     default:
                         throw unexpectedAttribute(reader, i);
@@ -321,7 +271,6 @@ public class TransactionExtension implements Extension {
             if (! required.isEmpty()) {
                 throw missingRequiredElement(reader, required);
             }
-            list.add(operation);
         }
 
         /**
@@ -344,7 +293,7 @@ public class TransactionExtension implements Extension {
                           throw unexpectedElement(reader);
                       }
                       encountered = true;
-                      coreEnvironmentAdd.get(CoreEnvironmentAdd.PROCESS_ID_UUID.getName()).set(true);
+                      coreEnvironmentAdd.get(TransactionSubsystemAdd.PROCESS_ID_UUID.getName()).set(true);
                       requireNoContent(reader);
                       break;
                   case SOCKET: {
@@ -376,10 +325,10 @@ public class TransactionExtension implements Extension {
                 required.remove(attribute);
                 switch (attribute) {
                     case BINDING:
-                        CoreEnvironmentAdd.PROCESS_ID_SOCKET_BINDING.parseAndSetParameter(value, coreEnvironmentAdd, reader.getLocation());
+                        TransactionSubsystemAdd.PROCESS_ID_SOCKET_BINDING.parseAndSetParameter(value, coreEnvironmentAdd, reader.getLocation());
                         break;
                     case SOCKET_PROCESS_ID_MAX_PORTS:
-                        CoreEnvironmentAdd.PROCESS_ID_SOCKET_MAX_PORTS.parseAndSetParameter(value, coreEnvironmentAdd, reader.getLocation());
+                        TransactionSubsystemAdd.PROCESS_ID_SOCKET_MAX_PORTS.parseAndSetParameter(value, coreEnvironmentAdd, reader.getLocation());
                         break;
                     default:
                         throw unexpectedAttribute(reader, i);
@@ -392,14 +341,7 @@ public class TransactionExtension implements Extension {
             requireNoContent(reader);
         }
 
-        static void parseRecoveryEnvironmentElement(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException {
-            final ModelNode recoveryEnvAddress = parentAddress.clone();
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(ADD);
-            recoveryEnvAddress.add(CONFIGURATION, RECOVERY_ENVIRONMENT);
-            recoveryEnvAddress.protect();
-
-            operation.get(OP_ADDR).set(recoveryEnvAddress);
+        static void parseRecoveryEnvironmentElement(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
 
             Set<Attribute> required = EnumSet.of(Attribute.BINDING, Attribute.STATUS_BINDING);
             final int count = reader.getAttributeCount();
@@ -411,13 +353,13 @@ public class TransactionExtension implements Extension {
                 required.remove(attribute);
                 switch (attribute) {
                     case BINDING:
-                        RecoveryEnvironmentAdd.BINDING.parseAndSetParameter(value, operation, location);
+                        TransactionSubsystemAdd.BINDING.parseAndSetParameter(value, operation, location);
                         break;
                     case STATUS_BINDING:
-                        RecoveryEnvironmentAdd.STATUS_BINDING.parseAndSetParameter(value, operation, location);
+                        TransactionSubsystemAdd.STATUS_BINDING.parseAndSetParameter(value, operation, location);
                         break;
                     case RECOVERY_LISTENER:
-                        RecoveryEnvironmentAdd.RECOVERY_LISTENER.parseAndSetParameter(value, operation, location);
+                        TransactionSubsystemAdd.RECOVERY_LISTENER.parseAndSetParameter(value, operation, location);
                         break;
                     default:
                         unexpectedAttribute(reader, i);
@@ -429,7 +371,7 @@ public class TransactionExtension implements Extension {
             }
             // Handle elements
             requireNoContent(reader);
-            list.add(operation);
+
         }
 
         /** {@inheritDoc} */
@@ -440,61 +382,48 @@ public class TransactionExtension implements Extension {
 
             ModelNode node = context.getModelNode();
 
-            if (hasDefined(node, CONFIGURATION)) {
-                List<Property> configurations = node.get(CONFIGURATION).asPropertyList();
-                for (Property config : configurations) {
-                    if (config.getName().equals(CORE_ENVIRONMENT)) {
-                        writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
 
-                        final ModelNode core = config.getValue();
-                        CoreEnvironmentAdd.NODE_IDENTIFIER.marshallAsAttribute(core, writer);
-                        CoreEnvironmentAdd.PATH.marshallAsAttribute(core, writer);
-                        CoreEnvironmentAdd.RELATIVE_TO.marshallAsAttribute(core, writer);
+            writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
 
-                        writeProcessId(writer, core);
+            TransactionSubsystemAdd.NODE_IDENTIFIER.marshallAsAttribute(node, writer);
+            TransactionSubsystemAdd.PATH.marshallAsAttribute(node, writer);
+            TransactionSubsystemAdd.RELATIVE_TO.marshallAsAttribute(node, writer);
 
-                        writer.writeEndElement();
-                    }
-                    if (config.getName().equals(RECOVERY_ENVIRONMENT) && config.getValue().isDefined()) {
-                        writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
-                        final ModelNode env = config.getValue();
-                        if (hasDefined(env, BINDING)) {
-                            writeAttribute(writer, Attribute.BINDING, env.get(BINDING));
-                        }
-                        if (hasDefined(env, STATUS_BINDING)) {
-                            writeAttribute(writer, Attribute.STATUS_BINDING, env.get(STATUS_BINDING));
-                        }
-                        if (hasDefined(env, RECOVERY_LISTENER)) {
-                            writeAttribute(writer, Attribute.RECOVERY_LISTENER, env.get(RECOVERY_LISTENER));
-                        }
-                        writer.writeEndElement();
-                    }
-                    if (config.getName().equals(COORDINATOR_ENVIRONMENT)) {
-                        final ModelNode env = config.getValue();
-                        if (CoordinatorEnvironmentAdd.ENABLE_STATISTICS.isMarshallable(env)
-                                || CoordinatorEnvironmentAdd.ENABLE_TSM_STATUS.isMarshallable(env)
-                                || CoordinatorEnvironmentAdd.DEFAULT_TIMEOUT.isMarshallable(env)) {
+            writeProcessId(writer, node);
 
-                            writer.writeStartElement(Element.COORDINATOR_ENVIRONMENT.getLocalName());
+            writer.writeEndElement();
 
-                            CoordinatorEnvironmentAdd.ENABLE_STATISTICS.marshallAsAttribute(env, writer);
-                            CoordinatorEnvironmentAdd.ENABLE_TSM_STATUS.marshallAsAttribute(env, writer);
-                            CoordinatorEnvironmentAdd.DEFAULT_TIMEOUT.marshallAsAttribute(env, writer);
+            if (TransactionSubsystemAdd.BINDING.isMarshallable(node) ||
+                    TransactionSubsystemAdd.STATUS_BINDING.isMarshallable(node) ||
+                    TransactionSubsystemAdd.RECOVERY_LISTENER.isMarshallable(node)) {
+                writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
+                TransactionSubsystemAdd.BINDING.marshallAsAttribute(node, writer);
 
-                            writer.writeEndElement();
-                        }
-                    }
-                    if (config.getName().equals(OBJECT_STORE)) {
-                        final ModelNode env = config.getValue();
-                        if (ObjectStoreAdd.RELATIVE_TO.isMarshallable(env)
-                                || ObjectStoreAdd.PATH.isMarshallable(env)) {
-                            writer.writeStartElement(Element.OBJECT_STORE.getLocalName());
-                            ObjectStoreAdd.PATH.marshallAsAttribute(env, writer);
-                            ObjectStoreAdd.RELATIVE_TO.marshallAsAttribute(env, writer);
-                            writer.writeEndElement();
-                        }
-                    }
-                }
+                TransactionSubsystemAdd.STATUS_BINDING.marshallAsAttribute(node, writer);
+
+                TransactionSubsystemAdd.RECOVERY_LISTENER.marshallAsAttribute(node, writer);
+
+                writer.writeEndElement();
+            }
+            if (TransactionSubsystemAdd.ENABLE_STATISTICS.isMarshallable(node)
+                    || TransactionSubsystemAdd.ENABLE_TSM_STATUS.isMarshallable(node)
+                    || TransactionSubsystemAdd.DEFAULT_TIMEOUT.isMarshallable(node)) {
+
+                writer.writeStartElement(Element.COORDINATOR_ENVIRONMENT.getLocalName());
+
+                TransactionSubsystemAdd.ENABLE_STATISTICS.marshallAsAttribute(node, writer);
+                TransactionSubsystemAdd.ENABLE_TSM_STATUS.marshallAsAttribute(node, writer);
+                TransactionSubsystemAdd.DEFAULT_TIMEOUT.marshallAsAttribute(node, writer);
+
+                writer.writeEndElement();
+            }
+
+            if (TransactionSubsystemAdd.OBJECT_STORE_RELATIVE_TO.isMarshallable(node)
+                    || TransactionSubsystemAdd.OBJECT_STORE_PATH.isMarshallable(node)) {
+                writer.writeStartElement(Element.OBJECT_STORE.getLocalName());
+                TransactionSubsystemAdd.OBJECT_STORE_PATH.marshallAsAttribute(node, writer);
+                TransactionSubsystemAdd.OBJECT_STORE_RELATIVE_TO.marshallAsAttribute(node, writer);
+                writer.writeEndElement();
             }
 
             writer.writeEndElement();
@@ -509,12 +438,12 @@ public class TransactionExtension implements Extension {
         }
         private void writeProcessId(final XMLExtendedStreamWriter writer, final ModelNode value) throws XMLStreamException {
             writer.writeStartElement(Element.PROCESS_ID.getLocalName());
-            if(value.get(CoreEnvironmentAdd.PROCESS_ID_UUID.getName()).asBoolean()) {
+            if(value.get(TransactionSubsystemAdd.PROCESS_ID_UUID.getName()).asBoolean()) {
                 writer.writeEmptyElement(Element.UUID.getLocalName());
             } else {
                 writer.writeStartElement(Element.SOCKET.getLocalName());
-                CoreEnvironmentAdd.PROCESS_ID_SOCKET_BINDING.marshallAsAttribute(value, writer);
-                CoreEnvironmentAdd.PROCESS_ID_SOCKET_MAX_PORTS.marshallAsAttribute(value, writer);
+                TransactionSubsystemAdd.PROCESS_ID_SOCKET_BINDING.marshallAsAttribute(value, writer);
+                TransactionSubsystemAdd.PROCESS_ID_SOCKET_MAX_PORTS.marshallAsAttribute(value, writer);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
