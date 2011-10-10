@@ -22,13 +22,6 @@
 
 package org.jboss.as.osgi.configadmin;
 
-import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Vector;
-
 import org.apache.felix.cm.PersistenceManager;
 import org.jboss.as.osgi.service.ConfigAdminService;
 import org.jboss.msc.service.ServiceContainer;
@@ -38,6 +31,12 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 
+import java.io.IOException;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
 /**
  * An implementation of the Apache Felix ConfigAdmin {@link PersistenceManager} that delegates
  * to the {@link ConfigAdminService}
@@ -45,7 +44,6 @@ import org.osgi.framework.ServiceReference;
  * @author Thomas.Diesler@jboss.com
  * @since 01-Dec-2010
  */
-@SuppressWarnings("rawtypes")
 public class DomainModelPersistenceManager implements PersistenceManager, BundleActivator {
 
     private ConfigAdminService configadminService;
@@ -93,9 +91,16 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
     }
 
     @Override
-    @SuppressWarnings({ "unchecked" })
-    public void store(String pid, Dictionary properties) throws IOException {
-        configadminService.putConfiguration(pid, properties);
+    public void store(String pid, Dictionary source) throws IOException {
+        Dictionary<String, String> copy = new Hashtable<String, String>();
+        if (source != null) {
+            Enumeration keys = source.keys();
+            while (keys.hasMoreElements()) {
+                String key = keys.nextElement().toString();
+                copy.put(key, source.get(key).toString());
+            }
+        }
+        configadminService.putConfiguration(pid, copy);
     }
 
     @Override
@@ -103,28 +108,16 @@ public class DomainModelPersistenceManager implements PersistenceManager, Bundle
         configadminService.removeConfiguration(pid);
     }
 
-    @SuppressWarnings("unchecked")
-    private Dictionary<String, String> addStandardProperties(final String pid, final Dictionary<String, String> props) {
-        if (props == null)
-            return new Hashtable<String, String>();
-        Dictionary<String, String> result = copy(props);
-        result.put(Constants.SERVICE_PID, pid);
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Dictionary copy(final Dictionary source) {
-
-        Hashtable copy = new Hashtable();
-        if (source instanceof Map) {
-            copy.putAll((Map) source);
-        } else {
-            Enumeration keys = source.keys();
+    private Dictionary<String, String> addStandardProperties(final String pid, final Dictionary<String, String> source) {
+        Dictionary<String, String> copy = new Hashtable<String, String>();
+        if (source != null) {
+            Enumeration<String> keys = source.keys();
             while (keys.hasMoreElements()) {
-                Object key = keys.nextElement();
+                String key = keys.nextElement();
                 copy.put(key, source.get(key));
             }
         }
+        copy.put(Constants.SERVICE_PID, pid);
         return copy;
     }
 }
