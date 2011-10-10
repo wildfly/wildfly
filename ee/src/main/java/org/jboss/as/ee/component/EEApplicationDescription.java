@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.vfs.VirtualFile;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+
+import org.jboss.vfs.VirtualFile;
 
 /**
  * @author John Bailey
@@ -139,7 +139,10 @@ public class EEApplicationDescription {
         }
         if (componentName.contains("#")) {
             final String[] parts = componentName.split("#");
-            final String path = parts[0];
+            String path = parts[0];
+            if(!path.startsWith("../")) {
+                path = "../" + path;
+            }
             final VirtualFile virtualPath = deploymentRoot.getChild(path);
             final String name = parts[1];
             final Set<ViewDescription> ret = new HashSet<ViewDescription>();
