@@ -20,24 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.webservices.component;
+package org.jboss.as.webservices.injection;
 
-import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentCreateService;
-import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WSComponentCreateService extends BasicComponentCreateService {
+public final class WSComponentDescription extends ComponentDescription {
 
-    public WSComponentCreateService(final ComponentConfiguration componentConfiguration) {
-        super(componentConfiguration);
-    }
-
-    @Override
-    protected BasicComponent createComponent() {
-        return new WSComponent(this);
+    public WSComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
+        super(componentName, componentClassName, moduleDescription, applicationClassesDescription.getOrAddClassByName(componentClassName), deploymentUnitServiceName, applicationClassesDescription);
+        setExcludeDefaultInterceptors(true);
+        getViews().add(new ViewDescription(this, componentClassName));
     }
 
 }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.webservices.deployers;
+package org.jboss.as.webservices.injection;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -35,8 +35,6 @@ import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.InstanceProvider;
 
 /**
- * TODO: move to injection package!
- *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
@@ -50,12 +48,6 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
         }
     }
 
-    @Override
-    public void stop(final Deployment dep) {
-        // TODO: deregister new InstantiationHandler
-    }
-
-    // TODO: handler undeployment - destroy instance & call @PreDestroy
     private void setInjectionAwareInstanceProvider(final Endpoint ep) {
         final InstanceProvider stackInstanceProvider = ep.getInstanceProvider();
         final DeploymentUnit unit = ep.getService().getDeployment().getAttachment(DeploymentUnit.class);
@@ -81,24 +73,28 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
 
         @Override
         public Object getInstance(final String className) {
-            // TODO: hacks first !
-            if (className.equals("org.jboss.ws.common.invocation.RecordingServerHandler")) return delegate.getInstance(className);
-            if (className.equals("org.jboss.ws.extensions.security.jaxws.WSSecurityHandlerServer")) return delegate.getInstance(className);
-            // TODO: implement cache to prevent multiple instantiations
             if (className.equals(endpointClass)) {
-                if (isEjb3Endpoint) return delegate.getInstance(className); // TODO: ooops! Fix me
-                // handle POJO endpoint instantiation
-                final ServiceName endpointComponentName = getEndpointComponentServiceName();
-                final BasicComponent endpointComponent = ((ServiceController<BasicComponent>)WSServices.getContainerRegistry().getRequiredService(endpointComponentName)).getValue();
-                final ComponentInstance endpointComponentInstance = endpointComponent.createInstance(delegate.getInstance(className));
-                return endpointComponentInstance.getInstance();
+                // handle endpoint instantiation
+                if (!isEjb3Endpoint) {
+                    // only POJO endpoints have to be initialized. EJB3 endpoints are handled by the EJB3 susbystem.
+                    final ServiceName endpointComponentName = getEndpointComponentServiceName();
+                    final BasicComponent endpointComponent = getComponentController(endpointComponentName).getValue();
+                    final ComponentInstance endpointComponentInstance = endpointComponent.createInstance(delegate.getInstance(className));
+                    return endpointComponentInstance.getInstance();
+                }
             } else {
                 // handle JAXWS handler instantiation
                 final ServiceName handlerComponentName = getHandlerComponentServiceName(className);
-                final BasicComponent handlerComponent = ((ServiceController<BasicComponent>)WSServices.getContainerRegistry().getRequiredService(handlerComponentName)).getValue();
-                final ComponentInstance handlerComponentInstance = handlerComponent.createInstance(delegate.getInstance(className));
-                return handlerComponentInstance.getInstance();
+                final ServiceController<BasicComponent> handlerComponentController = getComponentController(handlerComponentName);
+                if (handlerComponentController != null) {
+                    // we support initialization only on non system JAXWS handlers
+                    final BasicComponent handlerComponent = handlerComponentController.getValue();
+                    final ComponentInstance handlerComponentInstance = handlerComponent.createInstance(delegate.getInstance(className));
+                    return handlerComponentInstance.getInstance();
+                }
             }
+            // fallback for EJB3 endpoints & system JAXWS handlers
+            return delegate.getInstance(className);
         }
 
         private ServiceName getEndpointComponentServiceName() {
@@ -109,8 +105,9 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
             return componentPrefix.append(endpointName + "-" + handlerClassName).append(componentSuffix);
         }
 
-        private InstanceProvider getDelegate() {
-            return this.delegate;
+        @SuppressWarnings("unchecked")
+        private static ServiceController<BasicComponent> getComponentController(final ServiceName componentName) {
+            return (ServiceController<BasicComponent>)WSServices.getContainerRegistry().getService(componentName);
         }
 
     }

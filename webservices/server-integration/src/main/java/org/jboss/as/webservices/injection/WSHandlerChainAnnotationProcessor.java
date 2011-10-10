@@ -20,7 +20,7 @@
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
 
-package org.jboss.as.webservices.component;
+package org.jboss.as.webservices.injection;
 
 import static org.jboss.as.server.deployment.Attachments.ANNOTATION_INDEX;
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;

@@ -20,14 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.webservices.deployers;
+package org.jboss.as.webservices.injection;
 
+import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.STATELESS_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
-import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
-import static org.jboss.as.webservices.util.ASHelper.isServlet;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -38,7 +37,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.webservices.component.WSComponentDescription;
+import org.jboss.as.webservices.deployers.WSComponentDescriptionFactory;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.jandex.AnnotationInstance;
@@ -72,11 +71,12 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
             boolean found = false;
             for (final ServletMetaData servletMD : ddServlets) {
                 if (beanClassName.equals(ASHelper.getEndpointClassName(servletMD))) {
+                    // creating component description for POJO endpoint
                     found = true;
                     final String endpointName = ASHelper.getEndpointName(servletMD);
                     final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(endpointName, beanClassName, moduleDescription, unitServiceName, applicationClasses);
                     moduleDescription.addComponent(jaxwsEndpointDescription);
-                    // TODO: register dependency on WS endpoint service
+                    // registering dependency on WS endpoint service
                     final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
                     jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
                 }
@@ -94,7 +94,6 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
         }
     }
 
-    // TODO: @WebService can be specified on interfaces too. Create component description only for real endpoints!!!
     @Override
     protected boolean matches(final ClassInfo clazz, final CompositeIndex index) {
         // assert WS endpoint class - TODO: refactor common code
