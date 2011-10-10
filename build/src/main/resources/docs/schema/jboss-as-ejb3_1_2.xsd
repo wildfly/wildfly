@@ -113,10 +113,13 @@
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:token">
+            <xs:enumeration value="DAYS"/>
             <xs:enumeration value="HOURS"/>
             <xs:enumeration value="MINUTES"/>
             <xs:enumeration value="SECONDS"/>
             <xs:enumeration value="MILLISECONDS"/>
+            <xs:enumeration value="MICROSECONDS"/>
+            <xs:enumeration value="NANOSECONDS"/>
         </xs:restriction>
     </xs:simpleType>
 
