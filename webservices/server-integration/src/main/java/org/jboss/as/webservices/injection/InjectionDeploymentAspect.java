@@ -31,11 +31,13 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.ws.common.deployment.ReferenceFactory;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.InstanceProvider;
+import org.jboss.wsf.spi.deployment.Reference;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -65,8 +67,7 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
         private final boolean isEjb3Endpoint;
         private final ServiceName componentPrefix;
         private static final String componentSuffix = "START";
-        private final Map<String, Object> cache = new HashMap<String, Object>();
-
+        private final Map<String, Reference> cache = new HashMap<String, Reference>();
 
         private InjectionAwareInstanceProvider(final InstanceProvider delegate, final Endpoint endpoint, final DeploymentUnit unit) {
             this.delegate = delegate;
@@ -77,8 +78,8 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
         }
 
         @Override
-        public synchronized Object getInstance(final String className) {
-            Object instance = cache.get(className);
+        public synchronized Reference getInstance(final String className) {
+            Reference instance = cache.get(className);
             if (instance != null) return instance;
 
             if (className.equals(endpointClass)) {
@@ -89,8 +90,11 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
                     final ServiceController<BasicComponent> endpointController = getComponentController(endpointComponentName);
                     if (endpointController != null) {
                         final BasicComponent endpointComponent = endpointController.getValue();
-                        final ComponentInstance endpointComponentInstance = endpointComponent.createInstance(delegate.getInstance(className));
-                        return cacheAndGet(endpointComponentInstance.getInstance());
+                        final ComponentInstance endpointComponentInstance = endpointComponent.createInstance(delegate.getInstance(className).getValue());
+                        final Object endpointInstance = endpointComponentInstance.getInstance();
+                        // mark reference as initialized because JBoss server initialized it
+                        final Reference endpointReference = ReferenceFactory.newInitializedReference(endpointInstance);
+                        return cacheAndGet(endpointReference);
                     }
                 }
             } else {
@@ -100,16 +104,21 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
                 if (handlerComponentController != null) {
                     // we support initialization only on non system JAXWS handlers
                     final BasicComponent handlerComponent = handlerComponentController.getValue();
-                    final ComponentInstance handlerComponentInstance = handlerComponent.createInstance(delegate.getInstance(className));
-                    return cacheAndGet(handlerComponentInstance.getInstance());
+                    final ComponentInstance handlerComponentInstance = handlerComponent.createInstance(delegate.getInstance(className).getValue());
+                    final Object handlerInstance = handlerComponentInstance.getInstance();
+                    // mark reference as initialized because JBoss server initialized it
+                    final Reference handlerReference = ReferenceFactory.newInitializedReference(handlerInstance);
+                    return cacheAndGet(handlerReference);
                 }
             }
             // fallback for EJB3 endpoints & system JAXWS handlers
-            return cacheAndGet(delegate.getInstance(className));
+            final Reference fallbackInstance = delegate.getInstance(className);
+            final Reference fallbackReference = ReferenceFactory.newUninitializedReference(fallbackInstance);
+            return cacheAndGet(fallbackReference);
         }
 
-        private Object cacheAndGet(final Object instance) {
-            cache.put(instance.getClass().getName(), instance);
+        private Reference cacheAndGet(final Reference instance) {
+            cache.put(instance.getValue().getClass().getName(), instance);
             return instance;
         }
 
