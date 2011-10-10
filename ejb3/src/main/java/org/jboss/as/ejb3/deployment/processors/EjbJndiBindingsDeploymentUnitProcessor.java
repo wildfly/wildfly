@@ -36,6 +36,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.ear.spec.Ear6xMetaData;
+import org.jboss.metadata.ear.spec.EarMetaData;
 
 import java.util.Collection;
 
@@ -87,8 +89,10 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             return;
         }
 
-        // In case of EJB bindings, appname == .ear file name (if it's an .ear deployment)
-        final String applicationName = this.getEarName(deploymentUnit);
+        // In case of EJB bindings, appname == .ear file name/application-name set in the application.xml (if it's an .ear deployment)
+        // NOTE: Do NOT use the app name from the EEModuleDescription because the Java EE spec has a different and conflicting meaning for app name
+        // (where app name == module name in the absence of a .ear)
+        final String applicationName = this.getApplicationName(deploymentUnit);
         final String globalJNDIBaseName = "java:global/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String appJNDIBaseName = "java:app/" + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String moduleJNDIBaseName = "java:module/" + sessionBean.getEJBName();
@@ -163,25 +167,39 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
     }
 
     /**
-     * Returns the name (stripped off the .ear suffix) of the top level .ear deployment for the passed <code>deploymentUnit</code>.
-     * Returns null if the passed <code>deploymentUnit</code> doesn't belong to a .ear deployment.
+     * Returns the application name for the passed deployment. If the passed deployment isn't an .ear or doesn't belong
+     * to a .ear, then this method returns null. Else it returns the application-name set in the application.xml of the .ear
+     * or if that's not set, will return the .ear deployment unit name (stripped off the .ear suffix).
      *
-     * @param deploymentUnit
+     * @param deploymentUnit The deployment unit
      */
-    private String getEarName(DeploymentUnit deploymentUnit) {
-        DeploymentUnit parentDU = deploymentUnit.getParent();
+    private String getApplicationName(DeploymentUnit deploymentUnit) {
+        final DeploymentUnit parentDU = deploymentUnit.getParent();
         if (parentDU == null) {
-            String duName = deploymentUnit.getName();
-            if (duName.endsWith(".ear")) {
-                return duName.substring(0, duName.length() - ".ear".length());
+            final EarMetaData earMetaData = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
+            if (earMetaData != null && earMetaData instanceof Ear6xMetaData) {
+                final String overriddenAppName = ((Ear6xMetaData) earMetaData).getApplicationName();
+                if (overriddenAppName == null) {
+                    return this.getEarName(deploymentUnit);
+                }
+                return overriddenAppName;
+            } else {
+                return this.getEarName(deploymentUnit);
             }
-            return null;
         }
         // traverse to top level DU
-        while (parentDU.getParent() != null) {
-            parentDU = parentDU.getParent();
-        }
-        String duName = parentDU.getName();
+        return this.getApplicationName(parentDU);
+    }
+
+    /**
+     * Returns the name (stripped off the .ear suffix) of the passed <code>deploymentUnit</code>.
+     * Returns null if the passed <code>deploymentUnit</code>'s name doesn't end with .ear suffix.
+     *
+     * @param deploymentUnit Deployment unit
+     * @return
+     */
+    private String getEarName(final DeploymentUnit deploymentUnit) {
+        final String duName = deploymentUnit.getName();
         if (duName.endsWith(".ear")) {
             return duName.substring(0, duName.length() - ".ear".length());
         }
