@@ -177,6 +177,8 @@ public class CommandLineMain {
             String defaultControllerHost = null;
             int defaultControllerPort = -1;
             boolean version = false;
+            String username = null;
+            char[] password = null;
             for(String arg : args) {
                 if(arg.startsWith("--controller=") || arg.startsWith("controller=")) {
                     final String value;
@@ -258,7 +260,11 @@ public class CommandLineMain {
                     }
                     final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
                     commands = new String[]{value};
-                } else if(arg.equals("--help") || arg.equals("-h")) {
+                } else if (arg.startsWith("--user=") || arg.startsWith("user=")) {
+                    username = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
+                } else if (arg.startsWith("--password=") || arg.startsWith("password=")) {
+                    password = (arg.startsWith("--") ? arg.substring(11) : arg.substring(9)).toCharArray();
+                } else if (arg.equals("--help") || arg.equals("-h")) {
                     commands = new String[]{"help"};
                 } else {
                     // assume it's commands
@@ -286,12 +292,12 @@ public class CommandLineMain {
             }
 
             if(file != null) {
-                processFile(file, defaultControllerHost, defaultControllerPort, connect);
+                processFile(file, defaultControllerHost, defaultControllerPort, connect, username, password);
                 return;
             }
 
             if(commands != null) {
-                processCommands(commands, defaultControllerHost, defaultControllerPort, connect);
+                processCommands(commands, defaultControllerHost, defaultControllerPort, connect, username, password);
                 return;
             }
 
@@ -307,6 +313,8 @@ public class CommandLineMain {
             }));
             console.addCompletor(cmdCtx.cmdCompleter);
 
+            cmdCtx.username = username;
+            cmdCtx.password = password;
             if(defaultControllerHost != null) {
                 cmdCtx.defaultControllerHost = defaultControllerHost;
             }
@@ -342,7 +350,7 @@ public class CommandLineMain {
         System.exit(0);
     }
 
-    private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect) {
+    private static void processCommands(String[] commands, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) {
 
         final CommandContextImpl cmdCtx = new CommandContextImpl();
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
@@ -352,7 +360,9 @@ public class CommandLineMain {
             }
         }));
 
-        if(defaultControllerHost != null) {
+        cmdCtx.username = username;
+        cmdCtx.password = password;
+        if (defaultControllerHost != null) {
             cmdCtx.defaultControllerHost = defaultControllerHost;
         }
         if(defaultControllerPort != -1) {
@@ -377,7 +387,7 @@ public class CommandLineMain {
         }
     }
 
-    private static void processFile(File file, String defaultControllerHost, int defaultControllerPort, final boolean connect) {
+    private static void processFile(File file, String defaultControllerHost, int defaultControllerPort, final boolean connect, final String username, final char[] password) {
 
         final CommandContextImpl cmdCtx = new CommandContextImpl();
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
@@ -387,7 +397,9 @@ public class CommandLineMain {
             }
         }));
 
-        if(defaultControllerHost != null) {
+        cmdCtx.username = username;
+        cmdCtx.password = password;
+        if (defaultControllerHost != null) {
             cmdCtx.defaultControllerHost = defaultControllerHost;
         }
         if(defaultControllerPort != -1) {
@@ -566,6 +578,10 @@ public class CommandLineMain {
         private String controllerHost;
         /** the port of the controller */
         private int controllerPort = -1;
+        /** the command line specified username */
+        private String username;
+        /** the command line specified password */
+        private char[] password;
         /** various key/value pairs */
         private Map<String, Object> map = new HashMap<String, Object>();
         /** operation request address prefix */
@@ -979,15 +995,23 @@ public class CommandLineMain {
             // for this reason we cache the entered values to allow for re-use without pestering the end
             // user.
 
+            private String realm = null;
             private boolean realmShown = false;
 
-            private String userName = null;
-            private char[] password = null;
+            private String username;
+            private char[] password;
+
+            private AuthenticationCallbackHandler() {
+                // A local cache is used for scenarios where no values are specified on the command line
+                // and the user wishes to use the connect command to establish a new connection.
+                username = CommandContextImpl.this.username;
+                password = CommandContextImpl.this.password;
+            }
 
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                 // Special case for anonymous authentication to avoid prompting user for their name.
                 if (callbacks.length == 1 && callbacks[0] instanceof NameCallback) {
-                    ((NameCallback)callbacks[0]).setName("anonymous CLI user");
+                    ((NameCallback) callbacks[0]).setName("anonymous CLI user");
                     return;
                 }
 
@@ -995,22 +1019,21 @@ public class CommandLineMain {
                     if (current instanceof RealmCallback) {
                         RealmCallback rcb = (RealmCallback) current;
                         String defaultText = rcb.getDefaultText();
+                        realm = defaultText;
                         rcb.setText(defaultText); // For now just use the realm suggested.
-                        if (realmShown == false) {
-                            realmShown = true;
-                            printLine("Authenticating against security realm: " + defaultText);
-                        }
                     } else if (current instanceof RealmChoiceCallback) {
                         throw new UnsupportedCallbackException(current, "Realm choice not currently supported.");
                     } else if (current instanceof NameCallback) {
                         NameCallback ncb = (NameCallback) current;
-                        if (userName == null) {
-                            userName = readLine("Username:", false, true);
+                        if (username == null) {
+                            showRealm();
+                            username = readLine("Username:", false, true);
                         }
-                        ncb.setName(userName);
+                        ncb.setName(username);
                     } else if (current instanceof PasswordCallback) {
                         PasswordCallback pcb = (PasswordCallback) current;
                         if (password == null) {
+                            showRealm();
                             String temp = readLine("Password:", true, false);
                             if (temp != null) {
                                 password = temp.toCharArray();
@@ -1021,6 +1044,13 @@ public class CommandLineMain {
                         printLine("Unexpected Callback " + current.getClass().getName());
                         throw new UnsupportedCallbackException(current);
                     }
+                }
+            }
+
+            private void showRealm() {
+                if (realmShown == false && realm != null) {
+                    realmShown = true;
+                    printLine("Authenticating against security realm: " + realm);
                 }
             }
 
