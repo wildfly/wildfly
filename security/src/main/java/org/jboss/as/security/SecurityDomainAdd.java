@@ -356,6 +356,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                     List<ModelNode> lms = lmsNode.asList();
                     for (ModelNode lmNode : lms) {
                         String code = lmNode.require(CODE).asString();
+                        if (ModulesMap.AUTHENTICATION_MAP.containsKey(code))
+                            code = ModulesMap.AUTHENTICATION_MAP.get(code);
                         LoginModuleControlFlag controlFlag = getControlFlag(lmNode.require(FLAG).asString());
                         Map<String, Object> options = new HashMap<String, Object>();
                         if (lmNode.hasDefined(MODULE_OPTIONS)) {
@@ -372,6 +374,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             List<ModelNode> authModules = authModuleNode.asList();
             for (ModelNode authModule : authModules) {
                 String code = authModule.require(CODE).asString();
+                if (ModulesMap.AUTHENTICATION_MAP.containsKey(code))
+                    code = ModulesMap.AUTHENTICATION_MAP.get(code);
                 String loginStackRef = null;
                 if (authModule.hasDefined(LOGIN_MODULE_STACK_REF))
                     loginStackRef = authModule.get(LOGIN_MODULE_STACK_REF).asString();
