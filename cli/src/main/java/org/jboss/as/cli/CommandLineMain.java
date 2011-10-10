@@ -661,6 +661,25 @@ public class CommandLineMain {
             }
         }
 
+        private String readLine(String prompt, boolean password, boolean disableHistory) throws IOException {
+            boolean useHistory = console.getUseHistory();
+            if (useHistory && disableHistory) {
+                console.setUseHistory(false);
+            }
+            try {
+                if (password) {
+                    return console.readLine(prompt);
+                } else {
+                    return console.readLine(prompt, '*');
+                }
+
+            } finally {
+                if (disableHistory && useHistory) {
+                    console.setUseHistory(true);
+                }
+            }
+        }
+
         @Override
         public void printColumns(Collection<String> col) {
             if(outputTarget != null) {
@@ -982,13 +1001,13 @@ public class CommandLineMain {
                     } else if (current instanceof NameCallback) {
                         NameCallback ncb = (NameCallback) current;
                         if (userName == null) {
-                            userName = console.readLine("Username:");
+                            userName = readLine("Username:", false, true);
                         }
                         ncb.setName(userName);
                     } else if (current instanceof PasswordCallback) {
                         PasswordCallback pcb = (PasswordCallback) current;
                         if (password == null) {
-                            String temp = console.readLine("Password:", '*');
+                            String temp = readLine("Password:", true, false);
                             if (temp != null) {
                                 password = temp.toCharArray();
                             }
