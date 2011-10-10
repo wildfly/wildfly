@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -171,7 +172,14 @@ public abstract class AttributeDefinition {
     public ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
 
         ModelNode node = new ModelNode();
-        if (operationObject.has(name)) {
+        final boolean has = operationObject.has(name);
+        if(! has && isRequired(operationObject)) {
+            throw new OperationFailedException(new ModelNode().set(name + " is required"));
+        }
+        if (has) {
+            if(operationObject.hasDefined(name) && ! isAllowed(operationObject)) {
+                throw new OperationFailedException(new ModelNode().set(name + " is not allowed"));
+            }
             node.set(operationObject.get(name));
         }
         if (isAllowExpression() && node.getType() == ModelType.STRING) {
@@ -213,8 +221,15 @@ public abstract class AttributeDefinition {
      * @throws OperationFailedException if the value is not valid
      */
     public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
-        ModelNode node = new ModelNode();
-        if (operationObject.has(name)) {
+        final ModelNode node = new ModelNode();
+        final boolean has = operationObject.has(name);
+        if(! has && isRequired(operationObject)) {
+            throw new OperationFailedException(new ModelNode().set(name + " is required"));
+        }
+        if (has) {
+            if(operationObject.hasDefined(name) && ! isAllowed(operationObject)) {
+                throw new OperationFailedException(new ModelNode().set(name + " is not allowed"));
+            }
             node.set(operationObject.get(name));
         }
         if (!node.isDefined() && defaultValue.isDefined()) {
@@ -229,7 +244,7 @@ public abstract class AttributeDefinition {
     public boolean isAllowed(final ModelNode operationObject) {
         if(alternatives != null) {
             for(final String alternative : alternatives) {
-                if(operationObject.has(alternative)) {
+                if(operationObject.hasDefined(alternative)) {
                     return false;
                 }
             }
@@ -344,7 +359,7 @@ public abstract class AttributeDefinition {
         return bundle.getString(bundleKey);
     }
 
-    private ModelNode getNoTextDescription(boolean forOperation) {
+    public ModelNode getNoTextDescription(boolean forOperation) {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.TYPE).set(type);
         result.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
