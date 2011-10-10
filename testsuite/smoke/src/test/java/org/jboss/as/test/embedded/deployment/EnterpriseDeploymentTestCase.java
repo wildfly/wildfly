@@ -77,6 +77,7 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
+@Ignore("See sporadic failures")
 public class EnterpriseDeploymentTestCase {
 
     private static final String WAR_JBOSS_FILE = "WEB-INF/jboss-web.xml";
