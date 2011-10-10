@@ -36,10 +36,11 @@ import org.jboss.wsf.spi.deployment.ServletDelegateFactory;
 public class ServletDelegateFactoryImpl implements ServletDelegateFactory {
 
     @Override
-    public ServletDelegate newServletDelegate(String servletClassName) {
+    public ServletDelegate newServletDelegate(final String servletClassName, final boolean isJaxWs) {
+        final ClassLoaderProvider provider = ClassLoaderProvider.getDefaultProvider();
+        final ClassLoader classLoader = isJaxWs ? provider.getServerIntegrationClassLoader() : provider.getServerJAXRPCIntegrationClassLoader();
         try {
-            ClassLoader classLoader = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-            Class<?> clazz = classLoader.loadClass(servletClassName);
+            final Class<?> clazz = classLoader.loadClass(servletClassName);
             return (ServletDelegate) clazz.newInstance();
         } catch (Exception e) {
             throw new RuntimeException("Could not create servlet delegate: " + servletClassName, e);

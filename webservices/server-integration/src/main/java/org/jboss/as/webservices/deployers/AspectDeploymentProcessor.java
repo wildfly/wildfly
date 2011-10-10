@@ -29,6 +29,7 @@ import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
@@ -38,7 +39,7 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  * @since 17-Jan-2011
  */
-public final class AspectDeploymentProcessor extends TCCLDeploymentProcessor implements DeploymentUnitProcessor {
+public final class AspectDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static Logger log = Logger.getLogger(AspectDeploymentProcessor.class);
 
@@ -56,37 +57,59 @@ public final class AspectDeploymentProcessor extends TCCLDeploymentProcessor imp
 
     public AspectDeploymentProcessor(DeploymentAspect aspect) {
         this.aspect = aspect;
+        this.clazz = aspect.getClass();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void internalDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         if (ASHelper.isWebServiceDeployment(unit)) {
-            if (aspect == null) {
+            ensureAspectInitialised();
+            final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
+            if (aspect.canHandle(dep)) {
+                log.debug(this.aspect + " start: " + unit.getName());
+                ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
                 try {
-                    if (clazz == null) {
-                        clazz = (Class<? extends DeploymentAspect>) SecurityActions.getContextClassLoader().loadClass(aspectClass);
-                    }
-                    aspect = clazz.newInstance();
-                } catch (Exception e) {
-                    throw new DeploymentUnitProcessingException(e);
+                    SecurityActions.setContextClassLoader(aspect.getLoader());
+                    dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
+                    aspect.start(dep);
+                    dep.removeAttachment(ServiceTarget.class);
+                } finally {
+                    SecurityActions.setContextClassLoader(origClassLoader);
                 }
             }
-            log.debug(this.aspect + " start: " + unit.getName());
-            final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
-            dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
-            aspect.start(dep);
-            dep.removeAttachment(ServiceTarget.class);
         }
     }
 
     @Override
-    public void internalUndeploy(org.jboss.as.server.deployment.DeploymentUnit context) {
+    public void undeploy(final DeploymentUnit context) {
         if (ASHelper.isWebServiceDeployment(context)) {
-            log.debug(this.aspect + " stop: " + context.getName());
             final Deployment dep = ASHelper.getRequiredAttachment(context, WSAttachmentKeys.DEPLOYMENT_KEY);
-            aspect.stop(dep);
+            if (aspect.canHandle(dep)) {
+                log.debug(this.aspect + " stop: " + context.getName());
+                ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
+                try {
+                    SecurityActions.setContextClassLoader(aspect.getLoader());
+                    aspect.stop(dep);
+                } finally {
+                    SecurityActions.setContextClassLoader(origClassLoader);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void ensureAspectInitialised() throws DeploymentUnitProcessingException {
+        if (aspect == null) {
+            try {
+                if (clazz == null) {
+                    clazz = (Class<? extends DeploymentAspect>) ClassLoaderProvider.getDefaultProvider()
+                            .getServerIntegrationClassLoader().loadClass(aspectClass);
+                }
+                aspect = clazz.newInstance();
+            } catch (Exception e) {
+                throw new DeploymentUnitProcessingException(e);
+            }
         }
     }
 }

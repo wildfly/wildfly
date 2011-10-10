@@ -97,6 +97,8 @@ final class WebMetaDataModifier {
                     final List<ParamValueMetaData> initParams = WebMetaDataHelper.getServletInitParams(servletMD);
                     // configure transport class name
                     WebMetaDataHelper.newParamValue(WSFServlet.STACK_SERVLET_DELEGATE_CLASS, transportClassName, initParams);
+                    // configure the integration classloader to be used (JAXRPC or JAXWS)
+                    WebMetaDataHelper.newParamValue(WSFServlet.INTEGRATION_CLASSLOADER, dep.getType().toString(), initParams);
                     // configure webservice endpoint
                     WebMetaDataHelper.newParamValue(Endpoint.SEPID_DOMAIN_ENDPOINT, endpointClassName, initParams);
                 }

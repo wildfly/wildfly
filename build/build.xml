@@ -621,7 +621,11 @@
         </module-def>
 
         <module-def name="org.jboss.as.webservices.server.integration">
-            <!-- this is just dependencies wrapper module - to support multiple JBossWS SOAP stacks -->
+            <!-- this is a dependencies only wrapper module - to support multiple JBossWS SOAP stacks -->
+        </module-def>
+
+        <module-def name="org.jboss.as.webservices.server.jaxrpc-integration">
+            <!-- this is a dependencies only module for JAXRPC functionalities provided by JBossWS Native stack -->
         </module-def>
 
         <module-def name="org.jboss.as.weld">
@@ -889,6 +893,18 @@
             <maven-resource group="org.jboss.ws.projects" artifact="jaxws-jboss-httpserver-httpspi"/>
         </module-def>
 
+        <module-def name="org.jboss.ws.native.jbossws-native-core">
+            <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-core"/>
+        </module-def>
+
+        <module-def name="org.jboss.ws.native.jbossws-native-factories">
+            <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-factories"/>
+        </module-def>
+
+        <module-def name="org.jboss.ws.native.jbossws-native-services">
+            <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-services"/>
+        </module-def>
+
         <module-def name="org.jboss.ws.api">
             <maven-resource group="org.jboss.ws" artifact="jbossws-api"/>
         </module-def>
@@ -908,6 +924,10 @@
         </module-def>
 
         <module-def name="org.jboss.ws.tools.wsconsume">
+        </module-def>
+
+        <module-def name="org.jboss.xb">
+            <maven-resource group="org.jboss" artifact="jbossxb"/>
         </module-def>
 
         <module-def name="org.jboss.xnio">
