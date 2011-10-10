@@ -30,13 +30,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.modules.Module;
-
-import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
 
 /**
  * Deployment descriptor that resolves interceptor methods definined in ejb-jar.xml that could not be resolved at
@@ -57,6 +52,10 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
             if (component instanceof EJBComponentDescription) {
                 final EJBComponentDescription ejb = (EJBComponentDescription) component;
                 if (!ejb.getAroundInvokeDDMethods().isEmpty() || !ejb.getPostConstructDDMethods().isEmpty() || !ejb.getPreDestroyDDMethods().isEmpty()) {
+                    if(0 == 0) {
+                        throw new RuntimeException("FIXME");
+                    }
+                    /*
                     try {
                         final Class<?> clazz = module.getClassLoader().loadClass(ejb.getComponentClassName());
                         for (String aroundInvoke : ejb.getAroundInvokeDDMethods()) {
@@ -77,7 +76,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
 
                     } catch (ClassNotFoundException e) {
                         throw new DeploymentUnitProcessingException("Could not load component class " + ejb.getComponentClassName());
-                    }
+                    }*/
 
                 }
             }

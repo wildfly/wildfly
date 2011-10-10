@@ -22,15 +22,25 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
+import javax.persistence.PersistenceUnit;
+import javax.persistence.spi.PersistenceUnitTransactionType;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
+import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
@@ -55,16 +65,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.msc.service.ServiceName;
-
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
-import javax.persistence.PersistenceUnit;
-import javax.persistence.spi.PersistenceUnitTransactionType;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
@@ -117,16 +117,16 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             if (annotationTarget instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) annotationTarget;
                 declaringClass = fieldInfo.declaringClass();
-                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.addOrGetLocalClassDescription(declaringClass.name().toString());
                 this.processField(deploymentUnit, annotation, fieldInfo, eeModuleClassDescription);
             } else if (annotationTarget instanceof MethodInfo) {
                 MethodInfo methodInfo = (MethodInfo) annotationTarget;
                 declaringClass = methodInfo.declaringClass();
-                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.addOrGetLocalClassDescription(declaringClass.name().toString());
                 this.processMethod(deploymentUnit, annotation, methodInfo, eeModuleClassDescription);
             } else if (annotationTarget instanceof ClassInfo) {
                 declaringClass = (ClassInfo) annotationTarget;
-                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.addOrGetLocalClassDescription(declaringClass.name().toString());
                 this.processClass(deploymentUnit, annotation, eeModuleClassDescription);
             }
         }

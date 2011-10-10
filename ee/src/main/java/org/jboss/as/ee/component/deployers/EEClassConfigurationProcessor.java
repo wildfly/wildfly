@@ -22,6 +22,14 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ClassConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -38,14 +46,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 /**
  * Deployment processor responsible for creating class configuration data for the whole deployment. It only runs for
@@ -81,11 +81,11 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
             // Add the application description
             final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
             for (DeploymentUnit subdeployment : subdeployments) {
-                processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, subdeployment, processed);
+                processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, subdeployment, processed, moduleDescription);
             }
-            processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, deploymentUnit, processed);
+            processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, deploymentUnit, processed, moduleDescription);
         } else if (deploymentUnit.getParent() == null) {
-            final Collection<EEModuleClassDescription> classDescriptions = applicationClasses.getClassDescriptions();
+            final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
             if (classDescriptions != null) {
                 for (EEModuleClassDescription classDescription : classDescriptions) {
                     handleClassDescription(phaseContext, applicationDescription, deploymentReflectionIndex, processed, module, classDescription);
@@ -95,15 +95,14 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private void processClasses(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final DeploymentUnit subdeployment, final Set<String> processed) throws DeploymentUnitProcessingException {
+    private void processClasses(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final DeploymentUnit subdeployment, final Set<String> processed, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
         final EEModuleDescription subModuleDescription = subdeployment.getAttachment(EE_MODULE_DESCRIPTION);
         if (subModuleDescription == null) {
             // Not an EE deployment.
             return;
         }
         final Module subModule = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final EEApplicationClasses applicationClasses = subdeployment.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final Collection<EEModuleClassDescription> classDescriptions = applicationClasses.getClassDescriptions();
+        final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
         if (classDescriptions != null) {
             for (final EEModuleClassDescription classDescription : classDescriptions) {
 

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import javax.interceptor.InvocationContext;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -38,8 +40,6 @@ import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
-
-import javax.interceptor.InvocationContext;
 
 /**
  * Processor that handles the &lt;interceptor\&gt; element of an ejb-jar.xml file.
@@ -68,8 +68,11 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
 
         for (InterceptorMetaData interceptor : metaData.getInterceptors()) {
             String interceptorClassName = interceptor.getInterceptorClass();
+            if(0 == 0) {
+                throw new RuntimeException("FIXME");
+            }
             // get (or create the interceptor description)
-            EEModuleClassDescription interceptorModuleClassDescription = applicationClassesDescription.getOrAddClassByName(interceptorClassName);
+            EEModuleClassDescription interceptorModuleClassDescription = null;// applicationClassesDescription.getOrAddClassByName(interceptorClassName);
             // around-invoke(s) of the interceptor configured (if any) in the deployment descriptor
             AroundInvokesMetaData aroundInvokes = interceptor.getAroundInvokes();
             if (aroundInvokes != null) {

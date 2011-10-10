@@ -22,6 +22,12 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.interceptor.InvocationContext;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -39,11 +45,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.interceptor.InvocationContext;
-import java.util.List;
 
 /**
  * Deployment processor responsible for finding @PostConstruct and @PreDestroy annotated methods.
@@ -80,7 +81,7 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
         }
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
-        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
+        final EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
 
         final Type[] args = methodInfo.args();
         if (args.length > 1) {

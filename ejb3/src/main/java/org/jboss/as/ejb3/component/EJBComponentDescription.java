@@ -227,7 +227,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param ejbJarDescription  the module
      */
     public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
-        super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), ejbJarDescription.getApplicationClassesDescription().getOrAddClassByName(componentClassName), deploymentUnitServiceName, ejbJarDescription.getApplicationClassesDescription());
+        super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), deploymentUnitServiceName, ejbJarDescription.getApplicationClassesDescription());
         if (ejbJarDescription.isWar()) {
             setNamingMode(ComponentNamingMode.USE_MODULE);
         } else {

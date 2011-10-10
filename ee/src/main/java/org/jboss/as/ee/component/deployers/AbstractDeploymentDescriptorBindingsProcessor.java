@@ -42,12 +42,10 @@ import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
-import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LazyResourceInjection;
@@ -190,8 +188,9 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                         new MethodInjectionTarget(injectionTargetClassName, memberName, classType.getName());
 
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTargetDescription, injectionSource);
-                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(injectionTargetClassName);
-                eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+                throw new RuntimeException("FIXME");
+                //EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(injectionTargetClassName);
+                //eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
             }
         }
         return classType;

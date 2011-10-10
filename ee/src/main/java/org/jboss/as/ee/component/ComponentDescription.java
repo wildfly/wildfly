@@ -87,7 +87,6 @@ public class ComponentDescription {
     private final String componentClassName;
     private final EEApplicationClasses applicationClassesDescription;
     private final EEModuleDescription moduleDescription;
-    private final EEModuleClassDescription classDescription;
 
     private List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
     private List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
@@ -128,13 +127,11 @@ public class ComponentDescription {
      * @param componentName                 the component name
      * @param componentClassName            the component instance class name
      * @param moduleDescription             the EE module description
-     * @param classDescription              the component class' description
      * @param deploymentUnitServiceName     the service name of the DU containing this component
      * @param applicationClassesDescription
      */
-    public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final EEModuleClassDescription classDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
+    public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
         this.moduleDescription = moduleDescription;
-        this.classDescription = classDescription;
         this.applicationClassesDescription = applicationClassesDescription;
         if (componentName == null) {
             throw new IllegalArgumentException("name is null");
@@ -144,9 +141,6 @@ public class ComponentDescription {
         }
         if (moduleDescription == null) {
             throw new IllegalArgumentException("moduleName is null");
-        }
-        if (classDescription == null) {
-            throw new IllegalArgumentException("classDescription is null");
         }
         if (deploymentUnitServiceName == null) {
             throw new IllegalArgumentException("deploymentUnitServiceName is null");
@@ -264,9 +258,6 @@ public class ComponentDescription {
      * @param classInterceptors
      */
     public void setClassInterceptors(List<InterceptorDescription> classInterceptors) {
-        for (InterceptorDescription clazz : classInterceptors) {
-            applicationClassesDescription.getOrAddClassByName(clazz.getInterceptorClassName());
-        }
         this.classInterceptors = classInterceptors;
         this.allInterceptors = null;
     }
@@ -344,8 +335,6 @@ public class ComponentDescription {
      */
     public void addClassInterceptor(InterceptorDescription description) {
         String name = description.getInterceptorClassName();
-        // add the interceptor class to the EEModuleDescription
-        this.applicationClassesDescription.getOrAddClassByName(name);
         classInterceptors.add(description);
         this.allInterceptors = null;
     }
@@ -391,7 +380,6 @@ public class ComponentDescription {
         }
         final String name = description.getInterceptorClassName();
         // add the interceptor class to the EEModuleDescription
-        this.applicationClassesDescription.getOrAddClassByName(name);
         interceptors.add(description);
         this.allInterceptors = null;
     }
@@ -433,10 +421,6 @@ public class ComponentDescription {
 
     public EEModuleDescription getModuleDescription() {
         return moduleDescription;
-    }
-
-    public EEModuleClassDescription getClassDescription() {
-        return classDescription;
     }
 
     /**

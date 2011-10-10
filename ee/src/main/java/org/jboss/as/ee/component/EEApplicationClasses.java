@@ -23,13 +23,10 @@
 package org.jboss.as.ee.component;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Stores a deployments {@link EEModuleClassDescription}.
@@ -41,8 +38,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class EEApplicationClasses {
 
-    private final ConcurrentMap<String, EEModuleClassDescription> classesByName = new ConcurrentHashMap<String, EEModuleClassDescription>();
-    private final EEApplicationClasses parent;
+    //TODO: should we build a map of the available classes
+    private final List<EEModuleDescription> availableModules;
 
     /**
      * Resource injections that only get installed if a binding is set up
@@ -50,43 +47,27 @@ public final class EEApplicationClasses {
      */
     private final Map<String, List<LazyResourceInjection>> lazyResourceInjections = Collections.synchronizedMap(new HashMap<String, List<LazyResourceInjection>>());
 
-    public EEApplicationClasses(final EEApplicationClasses parent) {
-        this.parent = parent;
+    public EEApplicationClasses(final List<EEModuleDescription> availableModules) {
+        this.availableModules = availableModules;
     }
 
-    public EEApplicationClasses() {
-        this.parent = null;
-    }
 
+    /**
+     * Look for a class description in all available modules.
+     * @param name The class to lookup
+     * @return
+     */
     public EEModuleClassDescription getClassByName(String name) {
-        return classesByName.get(name);
-    }
-
-    public EEModuleClassDescription getOrAddClassByName(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("Name cannot be null");
-        }
-
-        EEModuleClassDescription description = classesByName.get(name);
-
-        if (description == null && parent != null) {
-            description = parent.getOrAddClassByName(name);
-            classesByName.put(name, description);
-        } else {
-            description = new EEModuleClassDescription(name);
-            EEModuleClassDescription existing = classesByName.putIfAbsent(name, description);
-            if (existing != null) {
-                return existing;
+        for(EEModuleDescription module : availableModules) {
+            final EEModuleClassDescription desc = module.getClassDescription(name);
+            if(desc != null) {
+                return desc;
             }
         }
-        return description;
+        return null;
     }
 
     public void addLazyResourceInjection(LazyResourceInjection injection) {
-        if (parent != null) {
-            parent.addLazyResourceInjection(injection);
-            return;
-        }
         //TODO: lazy binding and comp/module aliasing is not really compatible
         String name = injection.getLocalContextName();
         //we store all the bindings as absolute bindings
@@ -112,13 +93,8 @@ public final class EEApplicationClasses {
     }
 
     public Map<String, List<LazyResourceInjection>> getLazyResourceInjections() {
-        if (parent != null) {
-            return parent.getLazyResourceInjections();
-        }
+
         return lazyResourceInjections;
     }
 
-    public Collection<EEModuleClassDescription> getClassDescriptions() {
-        return classesByName.values();
-    }
 }

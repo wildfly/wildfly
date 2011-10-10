@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +30,8 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -43,6 +43,7 @@ public final class EEModuleDescription {
     private volatile String distinctName = "";
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
+    private final Map<String, EEModuleClassDescription> classDescriptions = new HashMap<String, EEModuleClassDescription>();
 
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
@@ -58,6 +59,45 @@ public final class EEModuleDescription {
     public EEModuleDescription(final String applicationName, final String moduleName) {
         this.applicationName = applicationName;
         this.moduleName = moduleName;
+    }
+
+    /**
+     * Adds or retrieves an existing EEModuleClassDescription for the local module. This method should only be used
+     * for classes that reside within the current deployment unit, usually by annotation scanners that are attaching annotation
+     * information.
+     *
+     * This
+     *
+     * @param className The class name
+     * @return The new or existing {@link EEModuleClassDescription}
+     */
+    public EEModuleClassDescription addOrGetLocalClassDescription(final String className) {
+        if (className == null) {
+            throw new IllegalArgumentException("Name cannot be null");
+        }
+        EEModuleClassDescription ret = classDescriptions.get(className);
+        if(ret == null) {
+            classDescriptions.put(className, ret = new EEModuleClassDescription(className));
+        }
+        return ret;
+    }
+
+    /**
+     * Returns a class that is local to this module
+     *
+     * @param className The class
+     * @return The description, or null if not found
+     */
+    EEModuleClassDescription getClassDescription(final String className) {
+        return classDescriptions.get(className);
+    }
+
+    /**
+     * Returns all class descriptions in this module
+     * @return All class descriptions
+     */
+    public Collection<EEModuleClassDescription> getClassDescriptions() {
+        return classDescriptions.values();
     }
 
     /**

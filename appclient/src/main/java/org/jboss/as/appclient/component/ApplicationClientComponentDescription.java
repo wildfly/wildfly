@@ -41,7 +41,7 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
     public static final String APP_CLIENT_COMPONENT_NAME = "AppClientComponent";
 
     public ApplicationClientComponentDescription( final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
-        super(APP_CLIENT_COMPONENT_NAME, componentClassName, moduleDescription, applicationClassesDescription.getOrAddClassByName(componentClassName), deploymentUnitServiceName, applicationClassesDescription);
+        super(APP_CLIENT_COMPONENT_NAME, componentClassName, moduleDescription, deploymentUnitServiceName, applicationClassesDescription);
         setExcludeDefaultInterceptors(true);
 
     }

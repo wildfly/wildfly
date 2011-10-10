@@ -21,6 +21,11 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.enterprise.inject.spi.InterceptionType;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -48,10 +53,6 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import javax.enterprise.inject.spi.InterceptionType;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Deployment unit processor that add the {@link org.jboss.as.weld.injection.WeldManagedReferenceFactory} instantiator
@@ -99,7 +100,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                             interceptorClasses.add(clazz.getModuleClass());
                         }
                     }
-
 
                     addWeldIntegration(context.getServiceTarget(), configuration, description, componentClass, beanName, weldServiceName, interceptorClasses, classLoader, description.getBeanDeploymentArchiveId());
 

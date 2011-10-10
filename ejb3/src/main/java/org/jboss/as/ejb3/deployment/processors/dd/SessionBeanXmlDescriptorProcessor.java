@@ -22,27 +22,21 @@
 
 package org.jboss.as.ejb3.deployment.processors.dd;
 
-import javax.interceptor.InvocationContext;
-
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.ejb.spec.AroundInvokeMetaData;
 import org.jboss.metadata.ejb.spec.BusinessLocalsMetaData;
 import org.jboss.metadata.ejb.spec.BusinessRemotesMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 
 /**
  * @author Jaikiran Pai
@@ -138,7 +132,10 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
 
         //for interceptor methods that specify a null class we cannot deal with them here
         //instead we stick them on the component configuration, and deal with them once we have a module
-
+        if(0 ==0 ) {
+            throw new RuntimeException("FIXME");
+        }
+        /*
         if (enterpriseBean.getAroundInvokes() != null) {
             for (AroundInvokeMetaData interceptor : enterpriseBean.getAroundInvokes()) {
 
@@ -174,7 +171,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
                 }
             }
         }
-
+*/
     }
 
 

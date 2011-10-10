@@ -22,6 +22,13 @@
 
 package org.jboss.as.ee.datasource;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.sql.DataSourceDefinition;
+import javax.annotation.sql.DataSourceDefinitions;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.BindingConfigurator;
@@ -38,12 +45,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-
-import javax.annotation.sql.DataSourceDefinition;
-import javax.annotation.sql.DataSourceDefinitions;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Deployment processor responsible for processing {@link DataSourceDefinition} and {@link DataSourceDefinitions}
@@ -105,7 +106,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
     private void processDataSourceDefinition(final EEModuleDescription eeModuleDescription, final AnnotationInstance datasourceDefinition, final ClassInfo targetClass, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         // create BindingConfiguration out of the @DataSource annotation
         final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(datasourceDefinition);
-        EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(targetClass.name().toString());
+        EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(targetClass.name().toString());
         // add the binding configuration via a class configurator
         classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
     }

@@ -22,6 +22,12 @@
 
 package org.jboss.as.ee.managedbean.processors;
 
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.ManagedBean;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -47,11 +53,6 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
-
-import javax.annotation.ManagedBean;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.
@@ -101,7 +102,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
-            final ComponentDescription componentDescription = new ComponentDescription(beanName, beanClassName, moduleDescription, applicationClasses.getOrAddClassByName(beanClassName), deploymentUnit.getServiceName(), applicationClasses);
+            final ComponentDescription componentDescription = new ComponentDescription(beanName, beanClassName, moduleDescription, deploymentUnit.getServiceName(), applicationClasses);
 
             // Add the view
             ViewDescription viewDescription = new ViewDescription(componentDescription, beanClassName);

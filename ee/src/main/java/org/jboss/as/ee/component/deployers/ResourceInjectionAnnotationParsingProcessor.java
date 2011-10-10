@@ -144,16 +144,16 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             if (annotationTarget instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) annotationTarget;
                 ClassInfo classInfo = fieldInfo.declaringClass();
-                EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
+                EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
                 processFieldResource(phaseContext, fieldInfo, name, type, classDescription, annotation, eeModuleDescription, module, applicationClasses);
             } else if (annotationTarget instanceof MethodInfo) {
                 MethodInfo methodInfo = (MethodInfo) annotationTarget;
                 ClassInfo classInfo = methodInfo.declaringClass();
-                EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
+                EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
                 processMethodResource(phaseContext, methodInfo, name, type, classDescription, annotation, eeModuleDescription, module, applicationClasses);
             } else if (annotationTarget instanceof ClassInfo) {
                 ClassInfo classInfo = (ClassInfo) annotationTarget;
-                EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
+                EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
                 processClassResource(phaseContext, name, type, classDescription, annotation, eeModuleDescription, module, applicationClasses);
             }
         }
@@ -168,7 +168,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                     final String name = nameValue != null ? nameValue.asString() : null;
                     final AnnotationValue typeValue = annotation.value("type");
                     final String type = typeValue != null ? typeValue.asClass().name().toString() : null;
-                    EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
+                    EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
                     processClassResource(phaseContext, name, type, classDescription, annotation, eeModuleDescription, module, applicationClasses);
                 }
             }

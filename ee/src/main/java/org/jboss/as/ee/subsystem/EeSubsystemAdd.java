@@ -22,11 +22,14 @@
 
 package org.jboss.as.ee.subsystem;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
+import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcessor;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
@@ -66,8 +69,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
 
 /**
  * Handler for adding the ee subsystem.
@@ -136,6 +137,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new JavaEEDependencyProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_GLOBAL_MODULES, moduleDependencyProcessor);
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EE_CLASS_DESCRIPTIONS, new ApplicationClassesAggregationProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_VALIDATOR_FACTORY, new BeanValidationFactoryDeployer());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EAR_DEPENDENCY, new EarDependencyProcessor());
