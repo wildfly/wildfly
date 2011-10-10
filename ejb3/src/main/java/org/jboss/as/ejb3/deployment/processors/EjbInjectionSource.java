@@ -100,7 +100,7 @@ public class EjbInjectionSource extends InjectionSource {
             //for remote interfaces we do not want to use a normal binding
             //we need to bind the remote proxy factory into JNDI instead to get the correct behaviour
 
-            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
+            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
                 final EJBComponentDescription componentDescription = (EJBComponentDescription) description.getComponentDescription();
                 final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
                 remoteFactory = new RemoteViewManagedReferenceFactory(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), description.getViewClassName(), componentDescription.isStateful());

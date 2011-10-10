@@ -51,20 +51,27 @@ import org.jboss.modules.Module;
  */
 public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
 
+    private final boolean appclient;
+
+    public HomeViewMergingProcessor(final boolean appclient) {
+        this.appclient = appclient;
+    }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+
+        if(eeModuleDescription == null) {
+             return;
+        }
+
         final Collection<ComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
+
+
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-
-
-        if (componentConfigurations == null || componentConfigurations.isEmpty()) {
-            return;
-        }
 
         for (ComponentDescription componentConfiguration : componentConfigurations) {
             if (componentConfiguration instanceof SessionBeanComponentDescription) {
@@ -72,6 +79,17 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                     processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
                 } catch (Exception e) {
                     throw new DeploymentUnitProcessingException("Could not merge data for " + componentConfiguration.getComponentName(), e);
+                }
+            }
+        }
+        if (appclient) {
+            for (ComponentDescription componentDescription : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
+                if (componentDescription instanceof SessionBeanComponentDescription) {
+                    try {
+                        processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentDescription);
+                    } catch (Exception e) {
+                        throw new DeploymentUnitProcessingException("Could not merge data for " + componentDescription.getComponentName(), e);
+                    }
                 }
             }
         }
