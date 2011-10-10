@@ -543,7 +543,7 @@ public class CommandLineMain {
 
     static class CommandContextImpl implements CommandContext {
 
-        private final jline.ConsoleReader console;
+        private jline.ConsoleReader console;
         private final CommandHistory history;
 
         /** whether the session should be terminated*/
@@ -662,15 +662,19 @@ public class CommandLineMain {
         }
 
         private String readLine(String prompt, boolean password, boolean disableHistory) throws IOException {
+            if (console == null) {
+                console = initConsoleReader();
+            }
+
             boolean useHistory = console.getUseHistory();
             if (useHistory && disableHistory) {
                 console.setUseHistory(false);
             }
             try {
                 if (password) {
-                    return console.readLine(prompt);
-                } else {
                     return console.readLine(prompt, '*');
+                } else {
+                    return console.readLine(prompt);
                 }
 
             } finally {
