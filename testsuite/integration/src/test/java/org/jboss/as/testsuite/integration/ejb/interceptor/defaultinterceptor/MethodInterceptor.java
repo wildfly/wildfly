@@ -29,7 +29,7 @@ import javax.interceptor.InvocationContext;
  */
 public class MethodInterceptor {
 
-      public static final String MESSAGE = "ClassInterceptor ";
+      public static final String MESSAGE = "MethodInterceptor ";
 
 
     @AroundInvoke

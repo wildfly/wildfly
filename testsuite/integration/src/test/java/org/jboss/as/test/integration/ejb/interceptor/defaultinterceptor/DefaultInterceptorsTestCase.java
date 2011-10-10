@@ -123,7 +123,7 @@ public class DefaultInterceptorsTestCase {
         InitialContext ctx = new InitialContext();
         NoDefaultInterceptorsSLSB bean = (NoDefaultInterceptorsSLSB) ctx.lookup("java:module/" + NoDefaultInterceptorsSLSB.class.getSimpleName());
         final String message = bean.noClassLevel();
-        Assert.assertEquals("Hello", MethodInterceptor.MESSAGE + message);
+        Assert.assertEquals(MethodInterceptor.MESSAGE + "Hello", message);
         Assert.assertTrue(!bean.isPostConstructCalled());
     }
 
