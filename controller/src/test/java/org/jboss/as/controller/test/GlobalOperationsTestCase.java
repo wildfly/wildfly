@@ -71,7 +71,6 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -151,7 +150,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         ModelNode result = executeForResult(operation);
         assertNotNull(result);
 
-        checkNonRecursiveSubsystem1(result);
+        checkNonRecursiveSubsystem1(result, false);
     }
 
     @Test
@@ -369,6 +368,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
     public void testReadChildrenResources() throws Exception {
         ModelNode operation = createOperation(READ_CHILDREN_RESOURCES_OPERATION, "profile", "profileA");
         operation.get(CHILD_TYPE).set("subsystem");
+        operation.get(INCLUDE_RUNTIME).set(true);
 
         ModelNode result = executeForResult(operation);
         assertNotNull(result);
@@ -384,7 +384,7 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
             }
         }
         assertNotNull(subsystem1);
-        checkNonRecursiveSubsystem1(subsystem1);
+        checkNonRecursiveSubsystem1(subsystem1, true);
         assertNotNull(subsystem2);
         checkRecursiveSubsystem2(subsystem2);
 
@@ -727,8 +727,8 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         checkType2Description(result);
     }
 
-    private void checkNonRecursiveSubsystem1(ModelNode result) {
-        assertEquals(3, result.keys().size());
+    private void checkNonRecursiveSubsystem1(ModelNode result, boolean includeRuntime) {
+        assertEquals(includeRuntime ? 5 : 3, result.keys().size());
         ModelNode content = result.require("attr1");
         List<ModelNode> list = content.asList();
         assertEquals(2, list.size());
@@ -742,6 +742,10 @@ public class GlobalOperationsTestCase extends AbstractControllerTestBase {
         assertEquals(1, result.require("type2").keys().size());
         assertTrue(result.require("type2").has("other"));
         assertFalse(result.require("type2").get("other").isDefined());
+        if (includeRuntime) {
+            assertEquals(ModelType.INT, result.require("metric1").getType());
+            assertEquals(ModelType.INT, result.require("metric2").getType());
+        }
     }
 
     private void checkRecursiveSubsystem1(ModelNode result) {

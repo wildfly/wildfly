@@ -628,26 +628,33 @@ public class GlobalOperationHandlers {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-            Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
-            boolean failed = false;
-            for (Map.Entry<PathElement, ModelNode> entry : resources.entrySet()) {
-                PathElement path = entry.getKey();
-                ModelNode value = entry.getValue();
-                if (!value.has(FAILURE_DESCRIPTION)) {
-                    sortedChildren.put(path.getValue(), value.get(RESULT));
-                } else if (!failed && value.hasDefined(FAILURE_DESCRIPTION)) {
-                    context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
-                    failed = true;
-                }
-            }
-            if (!failed) {
-                final ModelNode result = context.getResult();
-                result.setEmptyObject();
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    Map<String, ModelNode> sortedChildren = new TreeMap<String, ModelNode>();
+                    boolean failed = false;
+                    for (Map.Entry<PathElement, ModelNode> entry : resources.entrySet()) {
+                        PathElement path = entry.getKey();
+                        ModelNode value = entry.getValue();
+                        if (!value.has(FAILURE_DESCRIPTION)) {
+                            sortedChildren.put(path.getValue(), value.get(RESULT));
+                        } else if (!failed && value.hasDefined(FAILURE_DESCRIPTION)) {
+                            context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                            failed = true;
+                        }
+                    }
+                    if (!failed) {
+                        final ModelNode result = context.getResult();
+                        result.setEmptyObject();
 
-                for (Map.Entry<String, ModelNode> entry : sortedChildren.entrySet()) {
-                    result.get(entry.getKey()).set(entry.getValue());
+                        for (Map.Entry<String, ModelNode> entry : sortedChildren.entrySet()) {
+                            result.get(entry.getKey()).set(entry.getValue());
+                        }
+                    }
+
+                    context.completeStep();
                 }
-            }
+            }, OperationContext.Stage.VERIFY);
 
             context.completeStep();
         }
