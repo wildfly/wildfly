@@ -22,6 +22,9 @@
 
 package org.jboss.as.webservices.injection;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -62,6 +65,8 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
         private final boolean isEjb3Endpoint;
         private final ServiceName componentPrefix;
         private static final String componentSuffix = "START";
+        private final Map<String, Object> cache = new HashMap<String, Object>();
+
 
         private InjectionAwareInstanceProvider(final InstanceProvider delegate, final Endpoint endpoint, final DeploymentUnit unit) {
             this.delegate = delegate;
@@ -72,7 +77,10 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
         }
 
         @Override
-        public Object getInstance(final String className) {
+        public synchronized Object getInstance(final String className) {
+            Object instance = cache.get(className);
+            if (instance != null) return instance;
+
             if (className.equals(endpointClass)) {
                 // handle endpoint instantiation
                 if (!isEjb3Endpoint) {
@@ -80,7 +88,7 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
                     final ServiceName endpointComponentName = getEndpointComponentServiceName();
                     final BasicComponent endpointComponent = getComponentController(endpointComponentName).getValue();
                     final ComponentInstance endpointComponentInstance = endpointComponent.createInstance(delegate.getInstance(className));
-                    return endpointComponentInstance.getInstance();
+                    return cacheAndGet(endpointComponentInstance.getInstance());
                 }
             } else {
                 // handle JAXWS handler instantiation
@@ -90,11 +98,16 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
                     // we support initialization only on non system JAXWS handlers
                     final BasicComponent handlerComponent = handlerComponentController.getValue();
                     final ComponentInstance handlerComponentInstance = handlerComponent.createInstance(delegate.getInstance(className));
-                    return handlerComponentInstance.getInstance();
+                    return cacheAndGet(handlerComponentInstance.getInstance());
                 }
             }
             // fallback for EJB3 endpoints & system JAXWS handlers
-            return delegate.getInstance(className);
+            return cacheAndGet(delegate.getInstance(className));
+        }
+
+        private Object cacheAndGet(final Object instance) {
+            cache.put(instance.getClass().getName(), instance);
+            return instance;
         }
 
         private ServiceName getEndpointComponentServiceName() {
