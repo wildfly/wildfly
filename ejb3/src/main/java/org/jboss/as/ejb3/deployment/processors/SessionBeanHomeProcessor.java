@@ -109,6 +109,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                             }
                         });
                         //add the interceptor
+                        configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                         configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
 
                     }

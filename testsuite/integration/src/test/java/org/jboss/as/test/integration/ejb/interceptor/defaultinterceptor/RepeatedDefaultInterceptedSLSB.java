@@ -23,6 +23,8 @@ package org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.interceptor.ExcludeClassInterceptors;
+import javax.interceptor.ExcludeDefaultInterceptors;
 import javax.interceptor.Interceptors;
 
 /**
@@ -30,12 +32,23 @@ import javax.interceptor.Interceptors;
  */
 @Stateless
 @LocalBean
-@Interceptors(DefaultInterceptor.class)
+@Interceptors({DefaultInterceptor.class, DefaultInterceptor.class})
 public class RepeatedDefaultInterceptedSLSB implements SessionBean {
 
     private boolean postConstructCalled;
 
     public String message() {
+        return "Hello";
+    }
+
+    @ExcludeClassInterceptors
+    public String noClassLevel() {
+        return "Hello";
+    }
+
+    @ExcludeClassInterceptors
+    @ExcludeDefaultInterceptors
+    public String noClassLevelOrDefault() {
         return "Hello";
     }
 

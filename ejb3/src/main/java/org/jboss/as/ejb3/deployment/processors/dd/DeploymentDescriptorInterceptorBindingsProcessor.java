@@ -21,6 +21,15 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -40,15 +49,6 @@ import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.modules.Module;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Processor that handles interceptor bindings that are defined in the deployment descriptor.
@@ -277,7 +277,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                 Boolean excludeDefaultInterceptors = methodLevelExcludeDefaultInterceptors.get(method);
                 excludeDefaultInterceptors = excludeDefaultInterceptors == null ? false : excludeDefaultInterceptors;
                 if (!excludeDefaultInterceptors) {
-                    excludeDefaultInterceptors = componentDescription.isExcludeDefaultInterceptors(methodIdentifier);
+                    excludeDefaultInterceptors = componentDescription.isExcludeDefaultInterceptors() || componentDescription.isExcludeDefaultInterceptors(methodIdentifier);
                 }
 
                 Boolean excludeClassInterceptors = methodLevelExcludeClassInterceptors.get(method);

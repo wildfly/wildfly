@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.defaultinterceptor;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -30,9 +33,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * Tests that default interceptors are correctly applied
@@ -55,11 +55,26 @@ public class DefaultInterceptorsTestCase {
                 "      <interceptor>\n" +
                 "         <interceptor-class>" + DefaultInterceptor.class.getName() + "</interceptor-class>\n" +
                 "      </interceptor>\n" +
+                "      <interceptor>\n" +
+                "         <interceptor-class>" + ClassInterceptor.class.getName() + "</interceptor-class>\n" +
+                "      </interceptor>\n" +
+                "      <interceptor>\n" +
+                "         <interceptor-class>" + MethodInterceptor.class.getName() + "</interceptor-class>\n" +
+                "      </interceptor>\n" +
                 "    </interceptors>\n" +
                 "   <assembly-descriptor>\n" +
                 "      <interceptor-binding>\n" +
                 "         <ejb-name>*</ejb-name>\n" +
                 "         <interceptor-class>" + DefaultInterceptor.class.getName() + "</interceptor-class>\n" +
+                "      </interceptor-binding>\n" +
+                "      <interceptor-binding>\n" +
+                "         <ejb-name>NoDefaultInterceptorsSLSB</ejb-name>\n" +
+                "         <interceptor-class>" + ClassInterceptor.class.getName() + "</interceptor-class>\n" +
+                "      </interceptor-binding>\n" +
+                "      <interceptor-binding>\n" +
+                "         <ejb-name>NoDefaultInterceptorsSLSB</ejb-name>\n" +
+                "         <interceptor-class>" + MethodInterceptor.class.getName() + "</interceptor-class>\n" +
+                "         <method><method-name>noClassLevel</method-name></method>" +
                 "      </interceptor-binding>\n" +
                 "   </assembly-descriptor>\n" +
                 "\n" +
@@ -79,7 +94,7 @@ public class DefaultInterceptorsTestCase {
 
     /**
      * AS7-1436
-     *
+     * <p/>
      * Test interceptor is applied twice, if it is both class level and a default interceptor
      *
      * @throws NamingException
@@ -89,7 +104,7 @@ public class DefaultInterceptorsTestCase {
         InitialContext ctx = new InitialContext();
         RepeatedDefaultInterceptedSLSB bean = (RepeatedDefaultInterceptedSLSB) ctx.lookup("java:module/" + RepeatedDefaultInterceptedSLSB.class.getSimpleName());
         final String message = bean.message();
-        Assert.assertEquals(DefaultInterceptor.MESSAGE + DefaultInterceptor.MESSAGE + "Hello", message);
+        Assert.assertEquals(DefaultInterceptor.MESSAGE + DefaultInterceptor.MESSAGE + DefaultInterceptor.MESSAGE + "Hello", message);
         Assert.assertTrue(bean.isPostConstructCalled());
     }
 
@@ -99,8 +114,35 @@ public class DefaultInterceptorsTestCase {
         InitialContext ctx = new InitialContext();
         NoDefaultInterceptorsSLSB bean = (NoDefaultInterceptorsSLSB) ctx.lookup("java:module/" + NoDefaultInterceptorsSLSB.class.getSimpleName());
         final String message = bean.message();
-        Assert.assertEquals("Hello", message);
+        Assert.assertEquals(ClassInterceptor.MESSAGE + "Hello", message);
         Assert.assertTrue(!bean.isPostConstructCalled());
+    }
+
+    @Test
+    public void testClassLevelExcludeDefaultMethodLevelExcludeClassInterceptors() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        NoDefaultInterceptorsSLSB bean = (NoDefaultInterceptorsSLSB) ctx.lookup("java:module/" + NoDefaultInterceptorsSLSB.class.getSimpleName());
+        final String message = bean.noClassLevel();
+        Assert.assertEquals("Hello", MethodInterceptor.MESSAGE + message);
+        Assert.assertTrue(!bean.isPostConstructCalled());
+    }
+
+    @Test
+    public void testMethodLevelExcludeDefaultInterceptors() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        RepeatedDefaultInterceptedSLSB bean = (RepeatedDefaultInterceptedSLSB) ctx.lookup("java:module/" + RepeatedDefaultInterceptedSLSB.class.getSimpleName());
+        final String message = bean.noClassLevel();
+        Assert.assertEquals(DefaultInterceptor.MESSAGE + "Hello", message);
+        Assert.assertTrue(bean.isPostConstructCalled());
+    }
+
+    @Test
+    public void testMethodLevelExcludeDefaultAndClassInterceptors() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        RepeatedDefaultInterceptedSLSB bean = (RepeatedDefaultInterceptedSLSB) ctx.lookup("java:module/" + RepeatedDefaultInterceptedSLSB.class.getSimpleName());
+        final String message = bean.noClassLevelOrDefault();
+        Assert.assertEquals("Hello", message);
+        Assert.assertTrue(bean.isPostConstructCalled());
     }
 
 }

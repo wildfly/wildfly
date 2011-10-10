@@ -93,7 +93,6 @@ public class ComponentDescription {
     private List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
 
     private final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = new HashMap<MethodIdentifier, List<InterceptorDescription>>();
-    private final Map<MethodIdentifier, Set<String>> methodInterceptorsSet = new HashMap<MethodIdentifier, Set<String>>();
 
     private final Set<MethodIdentifier> methodExcludeDefaultInterceptors = new HashSet<MethodIdentifier>();
     private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
@@ -342,18 +341,13 @@ public class ComponentDescription {
      * Add a class level interceptor.
      *
      * @param description the interceptor class description
-     * @return {@code true} if the class interceptor was not already defined, {@code false} if it was
      */
-    public boolean addClassInterceptor(InterceptorDescription description) {
+    public void addClassInterceptor(InterceptorDescription description) {
         String name = description.getInterceptorClassName();
         // add the interceptor class to the EEModuleDescription
         this.applicationClassesDescription.getOrAddClassByName(name);
-        if (classInterceptors.contains(description)) {
-            return false;
-        }
         classInterceptors.add(description);
         this.allInterceptors = null;
-        return true;
     }
 
     /**
@@ -387,27 +381,19 @@ public class ComponentDescription {
      *
      * @param method      the method
      * @param description the interceptor descriptor
-     * @return {@code true} if the interceptor class was not already associated with the method, {@code false} if it was
      */
-    public boolean addMethodInterceptor(MethodIdentifier method, InterceptorDescription description) {
+    public void addMethodInterceptor(MethodIdentifier method, InterceptorDescription description) {
         //we do not add method level interceptors to the set of interceptor classes,
         //as their around invoke annotations
         List<InterceptorDescription> interceptors = methodInterceptors.get(method);
-        Set<String> interceptorClasses = methodInterceptorsSet.get(method);
         if (interceptors == null) {
             methodInterceptors.put(method, interceptors = new ArrayList<InterceptorDescription>());
-            methodInterceptorsSet.put(method, interceptorClasses = new HashSet<String>());
         }
         final String name = description.getInterceptorClassName();
         // add the interceptor class to the EEModuleDescription
         this.applicationClassesDescription.getOrAddClassByName(name);
-        if (interceptorClasses.contains(name)) {
-            return false;
-        }
         interceptors.add(description);
-        interceptorClasses.add(name);
         this.allInterceptors = null;
-        return true;
     }
 
     /**
