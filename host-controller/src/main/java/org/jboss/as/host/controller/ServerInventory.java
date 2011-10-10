@@ -24,6 +24,7 @@ package org.jboss.as.host.controller;
 
 import javax.security.auth.callback.CallbackHandler;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.process.ProcessInfo;
@@ -36,14 +37,75 @@ import org.jboss.dmr.ModelNode;
  * @author Kabir Khan
    */
 public interface ServerInventory extends ManagedServerLifecycleCallback {
-    void stopServers(int gracefulTimeout);
+
+    /**
+     * Get the process name for a server {@see ManagedServer#getServerProcessName(String)}.
+     *
+     * @param serverName the server name
+     * @return the server process name
+     */
     String getServerProcessName(String serverName);
-    Map<String, ProcessInfo> determineRunningProcesses();
+
+    /**
+     * Determine the current status of a server.
+     *
+     * @param serverName the server name
+     * @return the server status
+     */
     ServerStatus determineServerStatus(final String serverName);
+
+    /**
+     * Start a server.
+     *
+     * @param serverName the server name
+     * @param domainModel the current domain model
+     * @return the server status
+     */
     ServerStatus startServer(final String serverName, final ModelNode domainModel);
-    void reconnectServer(final String serverName, final ModelNode domainModel, final boolean running);
+
+    /**
+     * Restart a server.
+     *
+     * @param serverName the server name
+     * @param gracefulTimeout the graceful timeout in ms
+     * @param domainModel the domain model
+     * @return the server status
+     */
     ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode domainModel);
+
+    /**
+     * Stop a server.
+     *
+     * @param serverName the server nam
+     * @param gracefulTimeout the graceful timeout in ms
+     * @return the server status
+     */
     ServerStatus stopServer(final String serverName, final int gracefulTimeout);
+
+    /**
+     * Reconnect to a running managed server.
+     *
+     * @param serverName the server name
+     * @param domainModel the domain model
+     * @param running whether the server is running or not
+     */
+    void reconnectServer(final String serverName, final ModelNode domainModel, final boolean running);
+
+    /**
+     * Stop all running servers.
+     *
+     * @param gracefulTimeout the graceful timeout in ms
+     */
+    void stopServers(int gracefulTimeout);
+
+    /**
+     * Get the server callback handler.
+     *
+     * @return the callback handler
+     */
     CallbackHandler getServerCallbackHandler();
+
+    // TODO remove
+    Map<String, ProcessInfo> determineRunningProcesses();
 
 }

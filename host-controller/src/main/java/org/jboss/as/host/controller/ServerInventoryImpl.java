@@ -36,11 +36,15 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ProxyController;
@@ -50,6 +54,7 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.process.AsyncProcessControllerClient;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -66,20 +71,18 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  *
  * @author Emanuel Muckenhuber
  * @author Kabir Khan
-   */
-public class ServerInventoryImpl implements ServerInventory {
+ */
+class ServerInventoryImpl implements ServerInventory {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
     private final Map<String, ManagedServer> servers = Collections.synchronizedMap(new HashMap<String, ManagedServer>());
 
     private final HostControllerEnvironment environment;
-    private final ProcessControllerClient processControllerClient;
+    private final AsyncProcessControllerClient processControllerClient;
     private final InetSocketAddress managementAddress;
     private final DomainController domainController;
-    private volatile CountDownLatch processInventoryLatch;
-    private volatile Map<String, ProcessInfo> processInfos;
 
-    ServerInventoryImpl(final DomainController domainController, final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final ProcessControllerClient processControllerClient) {
+    ServerInventoryImpl(final DomainController domainController, final HostControllerEnvironment environment, final InetSocketAddress managementAddress, final AsyncProcessControllerClient processControllerClient) {
         this.domainController = domainController;
         this.environment = environment;
         this.managementAddress = managementAddress;
@@ -94,28 +97,11 @@ public class ServerInventoryImpl implements ServerInventory {
         return ManagedServer.getServerName(processName);
     }
 
-    public synchronized Map<String, ProcessInfo> determineRunningProcesses(){
-        processInventoryLatch = new CountDownLatch(1);
+    public Map<String, ProcessInfo> determineRunningProcesses(){
         try {
-            processControllerClient.requestProcessInventory();
-        } catch (IOException e) {
+            return processControllerClient.requestProcessInventory().get(1, TimeUnit.MINUTES);
+        } catch (final Exception e) {
             throw new RuntimeException(e);
-        }
-        try {
-            if (!processInventoryLatch.await(30, TimeUnit.SECONDS)){
-                throw new RuntimeException("Could not get the server inventory in 30 seconds");
-            }
-        } catch (InterruptedException e) {
-        }
-        return processInfos;
-
-    }
-
-    @Override
-    public void processInventory(Map<String, ProcessInfo> processInfos) {
-        this.processInfos = processInfos;
-        if (processInventoryLatch != null){
-            processInventoryLatch.countDown();
         }
     }
 
@@ -199,22 +185,6 @@ public class ServerInventoryImpl implements ServerInventory {
 
     public ServerStatus restartServer(String serverName, final int gracefulTimeout, final ModelNode domainModel) {
         stopServer(serverName, gracefulTimeout);
-        ServerStatus status;
-        // FIXME total hack; set up some sort of notification scheme
-        for (int i = 0; i < 50; i++) {
-            status = determineServerStatus(serverName);
-            if (status == ServerStatus.STOPPING) {
-                try {
-                    Thread.sleep(100);
-                } catch (final InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-            else {
-                break;
-            }
-        }
         return startServer(serverName, domainModel);
     }
 
@@ -233,11 +203,18 @@ public class ServerInventoryImpl implements ServerInventory {
                     // Workaround until the above is fixed
                     log.warnf("Graceful shutdown of server %s was requested but is not presently supported. " +
                             "Falling back to rapid shutdown.", serverName);
-                    server.stopServerProcess();
+                    // TODO we might need to call a mgmt operation instead of stopping the process directly
+                    final Future<Void> future = server.stopServerProcess();
+                    try {
+                        future.get(gracefulTimeout, TimeUnit.MILLISECONDS);
+                    } catch(Exception e) {
+                        log.warnf("server (%s) failed to shutdown within graceful timeout %d ms", serverName, gracefulTimeout);
+                    }
                     server.removeServerProcess();
                 }
                 else {
-                    server.stopServerProcess();
+                    // TODO we might need to call a mgmt operation instead of stopping the process directly
+                    server.stopServerProcess().get();
                     server.removeServerProcess();
                 }
             }
@@ -325,11 +302,18 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     public void stopServers(int gracefulTimeout) {
-        Map<String, ProcessInfo> processInfoMap = determineRunningProcesses();
+        final Map<String, ProcessInfo> processInfoMap = determineRunningProcesses();
+        final Set<String> serverNames = new LinkedHashSet<String>(servers.keySet());
+        for(final String serverName : serverNames) {
+            stopServer(serverName, gracefulTimeout);
+            processInfoMap.remove(ManagedServer.getServerProcessName(serverName));
+        }
+        //
         for (String serverProcessName : processInfoMap.keySet()) {
             if (ManagedServer.isServerProcess(serverProcessName)) {
                 String serverName = ManagedServer.getServerName(serverProcessName);
                 stopServer(serverName, gracefulTimeout);
+                log.warnf("stopping unmanaged server process '%s'", serverProcessName);
             }
         }
     }

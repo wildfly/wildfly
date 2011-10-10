@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.process.AsyncProcessControllerClient;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.net.InetSocketAddress;
@@ -48,7 +49,7 @@ class NewServerInventoryService implements Service<ServerInventory> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "server-inventory");
 
-    private final InjectedValue<ProcessControllerConnectionService> client = new InjectedValue<ProcessControllerConnectionService>();
+    private final InjectedValue<AsyncProcessControllerClient> client = new InjectedValue<AsyncProcessControllerClient>();
     private final NetworkInterfaceBinding interfaceBinding;
     private final DomainController domainController;
     private final HostControllerEnvironment environment;
@@ -73,7 +74,7 @@ class NewServerInventoryService implements Service<ServerInventory> {
 
         final NewServerInventoryService inventory = new NewServerInventoryService(domainController, environment, interfaceBinding, port);
         serviceTarget.addService(NewServerInventoryService.SERVICE_NAME, inventory)
-                .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, inventory.getClient())
+                .addDependency(ProcessControllerConnectionService.SERVICE_NAME, AsyncProcessControllerClient.class, inventory.getClient())
                 .install();
         return inventory.futureInventory;
     }
@@ -84,14 +85,31 @@ class NewServerInventoryService implements Service<ServerInventory> {
         log.debug("Starting Host Controller Server Inventory");
         final ServerInventory serverInventory;
         try {
-            final ProcessControllerClient client = this.client.getValue().getClient();
+            final AsyncProcessControllerClient client = this.client.getValue();
             final InetSocketAddress binding = new InetSocketAddress(interfaceBinding.getAddress(), port);
             serverInventory = new ServerInventoryImpl(domainController, environment, binding, client);
+            client.registerEventListener(new AsyncProcessControllerClient.ProcessEventListener() {
+                @Override
+                public void onEvent(final AsyncProcessControllerClient.ProcessEvent event) {
+                    if(! event.isLifecycleEvent()) {
+                        return;
+                    }
+                    final String processName = event.getAttachment(String.class);
+                    if(!ManagedServer.isServerProcess(processName)) {
+                        return;
+                    }
+                    switch (event.getEventType()) {
+                        case STOPPED:
+                            serverInventory.serverStopped(processName);
+                            break;
+                    }
+                }
+            });
+
         } catch (Exception e) {
             throw new StartException(e);
         }
         this.serverInventory = serverInventory;
-        client.getValue().setServerInventory(serverInventory);
         futureInventory.setInventory(serverInventory);
     }
 
@@ -102,9 +120,8 @@ class NewServerInventoryService implements Service<ServerInventory> {
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(StopContext context) {
-        this.serverInventory.stopServers(-1); // TODO graceful shutdown // TODO async
+        // TODO unregister process event listener
         this.serverInventory = null;
-        client.getValue().setServerInventory(null);
     }
 
     /** {@inheritDoc} */
@@ -117,7 +134,7 @@ class NewServerInventoryService implements Service<ServerInventory> {
         return serverInventory;
     }
 
-    InjectedValue<ProcessControllerConnectionService> getClient() {
+    InjectedValue<AsyncProcessControllerClient> getClient() {
         return client;
     }
 

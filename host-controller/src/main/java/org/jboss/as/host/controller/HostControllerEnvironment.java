@@ -174,8 +174,6 @@ public class HostControllerEnvironment {
         this.hostControllerPort = hostControllerPort;
         this.isRestart = isRestart;
 
-
-
         File home = getFileFromProperty(HOME_DIR);
         if (home == null) {
            home = new File(System.getProperty("user.dir"));

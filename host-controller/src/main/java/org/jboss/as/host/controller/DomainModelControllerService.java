@@ -79,6 +79,7 @@ import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryServ
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.process.AsyncProcessControllerClient;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -114,7 +115,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final FileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
     private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
-    private final InjectedValue<ProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<ProcessControllerConnectionService>();
+    private final InjectedValue<AsyncProcessControllerClient> injectedProcessControllerConnection = new InjectedValue<AsyncProcessControllerClient>();
     private final Map<String, ProxyController> hostProxies;
     private final Map<String, ProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
@@ -140,7 +141,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 hostProxies, serverProxies, prepareStepHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
-                .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
+                .addDependency(ProcessControllerConnectionService.SERVICE_NAME, AsyncProcessControllerClient.class, service.injectedProcessControllerConnection)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
@@ -473,10 +474,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         public String getServerProcessName(String serverName) {
             return serverInventory.getServerProcessName(serverName);
-        }
-
-        public void processInventory(Map<String, ProcessInfo> processInfos) {
-            serverInventory.processInventory(processInfos);
         }
 
         public Map<String, ProcessInfo> determineRunningProcesses() {
