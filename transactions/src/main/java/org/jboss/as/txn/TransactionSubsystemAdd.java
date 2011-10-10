@@ -30,19 +30,11 @@ import java.util.Locale;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -55,7 +47,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.path.AbsolutePathService;
 import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -75,110 +66,16 @@ import org.omg.CORBA.ORB;
  * @author Emanuel Muckenhuber
  * @author Scott Stark (sstark@redhat.com) (C) 2011 Red Hat Inc.
  */
-class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
+class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final TransactionSubsystemAdd INSTANCE = new TransactionSubsystemAdd();
 
-    //recovery environment
-    public static final SimpleAttributeDefinition BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.BINDING, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setXmlName(Attribute.BINDING.getLocalName())
-            .build();
-
-    public static final SimpleAttributeDefinition STATUS_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.STATUS_BINDING, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setXmlName(Attribute.STATUS_BINDING.getLocalName())
-            .build();
-
-    public static final SimpleAttributeDefinition RECOVERY_LISTENER = new SimpleAttributeDefinitionBuilder(CommonAttributes.RECOVERY_LISTENER, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setXmlName(Attribute.RECOVERY_LISTENER.getLocalName())
-            .build();
-
-    //core environment
     private static final ServiceName INTERNAL_CORE_ENV_VAR_PATH = TxnServices.JBOSS_TXN_PATHS.append("core-var-dir");
-
-    public static final SimpleAttributeDefinition NODE_IDENTIFIER = new SimpleAttributeDefinitionBuilder(CommonAttributes.NODE_IDENTIFIER, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("1"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, false)
-            .setAlternatives("process-id-socket-binding")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("process-id-socket-binding", ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1, true))
-            .setAlternatives("process-id-uuid")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setXmlName(Attribute.BINDING.getLocalName())
-            .build();
-
-    public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_MAX_PORTS = new SimpleAttributeDefinitionBuilder("process-id-socket-max-ports", ModelType.INT, true)
-            .setValidator(new IntRangeValidator(1, true))
-            .setDefaultValue(new ModelNode().set(10))
-            .setRequires("process-id-socket-binding")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setXmlName(Attribute.SOCKET_PROCESS_ID_MAX_PORTS.getLocalName())
-            .build();
-
-    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("var"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    //coordinator environment
-    public static final SimpleAttributeDefinition ENABLE_STATISTICS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO should be runtime-changeable
-            .setXmlName(Attribute.ENABLE_STATISTICS.getLocalName())
-            .build();
-
-    public static final SimpleAttributeDefinition ENABLE_TSM_STATUS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_TSM_STATUS, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
-            .setXmlName(Attribute.ENABLE_TSM_STATUS.getLocalName())
-            .build();
-
-    public static final SimpleAttributeDefinition DEFAULT_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_TIMEOUT, ModelType.INT, true)
-            .setMeasurementUnit(MeasurementUnit.SECONDS)
-            .setDefaultValue(new ModelNode().set(300))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
-            .setXmlName(Attribute.DEFAULT_TIMEOUT.getLocalName())
-            .build();
-
-    //object store
-    static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
-
-    public static final SimpleAttributeDefinition OBJECT_STORE_RELATIVE_TO = new SimpleAttributeDefinitionBuilder(CommonAttributes.OBJECT_STORE_RELATIVE_TO, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setXmlName(Attribute.RELATIVE_TO.getLocalName())
-            .build();
-
-    public static final SimpleAttributeDefinition OBJECT_STORE_PATH = new SimpleAttributeDefinitionBuilder(CommonAttributes.OBJECT_STORE_PATH, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("tx-object-store"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setXmlName(Attribute.PATH.getLocalName())
-            .build();
+    private static final ServiceName INTERNAL_OBJECTSTORE_PATH = TxnServices.JBOSS_TXN_PATHS.append("object-store");
 
 
     private TransactionSubsystemAdd() {
         //
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return Descriptions.getSubsystemAdd(locale);
     }
 
 
@@ -196,54 +93,54 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler implements 
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
 
-        OBJECT_STORE_RELATIVE_TO.validateAndSet(operation, objectStoreModel);
-        OBJECT_STORE_PATH.validateAndSet(operation, objectStoreModel);
+        TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.validateAndSet(operation, objectStoreModel);
+        TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.validateAndSet(operation, objectStoreModel);
 
     }
 
     private void populateModelWithCoordinatorEnvConfig(ModelNode operation, ModelNode coordEnvModel) throws OperationFailedException {
-        ENABLE_STATISTICS.validateAndSet(operation, coordEnvModel);
-        ENABLE_TSM_STATUS.validateAndSet(operation, coordEnvModel);
-        DEFAULT_TIMEOUT.validateAndSet(operation, coordEnvModel);
+        TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS.validateAndSet(operation, coordEnvModel);
+        TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.validateAndSet(operation, coordEnvModel);
+        TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.validateAndSet(operation, coordEnvModel);
     }
 
     private void populateModelWithCoreEnvConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
         //core environment
-        NODE_IDENTIFIER.validateAndSet(operation, model);
-        PATH.validateAndSet(operation, model);
-        RELATIVE_TO.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.PATH.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.RELATIVE_TO.validateAndSet(operation, model);
 
         // We have some complex logic for the 'process-id' stuff because of the alternatives
-        if (operation.hasDefined(PROCESS_ID_UUID.getName()) && operation.get(PROCESS_ID_UUID.getName()).asBoolean()) {
-            PROCESS_ID_UUID.validateAndSet(operation, model);
-            if (operation.hasDefined(PROCESS_ID_SOCKET_BINDING.getName())) {
+        if (operation.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()) && operation.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
+            TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.validateAndSet(operation, model);
+            if (operation.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName())) {
                 throw new OperationFailedException(new ModelNode().set(String.format("%s must be undefined if %s is 'true'.",
-                        PROCESS_ID_SOCKET_BINDING.getName(), PROCESS_ID_UUID.getName())));
-            } else if (operation.hasDefined(PROCESS_ID_SOCKET_MAX_PORTS.getName())) {
+                        TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName(), TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName())));
+            } else if (operation.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.getName())) {
                 throw new OperationFailedException(new ModelNode().set(String.format("%s must be undefined if %s is 'true'.",
-                        PROCESS_ID_SOCKET_MAX_PORTS.getName(), PROCESS_ID_UUID.getName())));
+                        TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.getName(), TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName())));
             }
-            model.get(PROCESS_ID_SOCKET_BINDING.getName());
-            model.get(PROCESS_ID_SOCKET_MAX_PORTS.getName());
-        } else if (operation.hasDefined(PROCESS_ID_SOCKET_BINDING.getName())) {
-            PROCESS_ID_SOCKET_BINDING.validateAndSet(operation, model);
-            PROCESS_ID_SOCKET_MAX_PORTS.validateAndSet(operation, model);
-            model.get(PROCESS_ID_UUID.getName()).set(false);
-        } else if (operation.hasDefined(PROCESS_ID_SOCKET_MAX_PORTS.getName())) {
+            model.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName());
+            model.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.getName());
+        } else if (operation.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName())) {
+            TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.validateAndSet(operation, model);
+            TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.validateAndSet(operation, model);
+            model.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).set(false);
+        } else if (operation.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.getName())) {
             throw new OperationFailedException(new ModelNode().set(String.format("%s must be defined if %s is defined.",
-                    PROCESS_ID_SOCKET_BINDING.getName(), PROCESS_ID_SOCKET_MAX_PORTS.getName())));
+                    TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName(), TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.getName())));
         } else {
             // not uuid and also not sockets!
             throw new OperationFailedException(new ModelNode().set(String.format("Either %s must be 'true' or  %s must be defined.",
-                    PROCESS_ID_UUID.getName(), PROCESS_ID_SOCKET_BINDING.getName())));
+                    TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName(), TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName())));
         }
     }
 
     private void populateModelWithRecoveryEnvConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
         //recovery environment
-        BINDING.validateAndSet(operation, model);
-        STATUS_BINDING.validateAndSet(operation, model);
-        RECOVERY_LISTENER.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.BINDING.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.STATUS_BINDING.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateAndSet(operation, model);
     }
 
     @Override
@@ -338,11 +235,11 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler implements 
 
         String objectStorePathRef = null;
         // Check for empty string value for relative-to, which disables the default
-        final ModelNode relativePathNode = recoveryEnvModel.get(OBJECT_STORE_RELATIVE_TO.getName());
+        final ModelNode relativePathNode = recoveryEnvModel.get(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.getName());
         if (!relativePathNode.isDefined() || relativePathNode.asString().length() > 0) {
-            objectStorePathRef = OBJECT_STORE_RELATIVE_TO.validateResolvedOperation(recoveryEnvModel).asString();
+            objectStorePathRef = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.validateResolvedOperation(recoveryEnvModel).asString();
         }
-        final String objectStorePath = OBJECT_STORE_PATH.validateResolvedOperation(recoveryEnvModel).asString();
+        final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.validateResolvedOperation(recoveryEnvModel).asString();
         if (ROOT_LOGGER.isDebugEnabled()) {
             ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s\n", objectStorePathRef, objectStorePath);
         }
@@ -374,29 +271,29 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler implements 
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
         // Configure the core configuration.
-        final String nodeIdentifier = NODE_IDENTIFIER.validateResolvedOperation(coreEnvModel).asString();
+        final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.validateResolvedOperation(coreEnvModel).asString();
         final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier);
 
         String socketBindingName = null;
-        if (PROCESS_ID_UUID.validateResolvedOperation(coreEnvModel).asBoolean()) {
+        if (TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.validateResolvedOperation(coreEnvModel).asBoolean()) {
             // Use the UUID based id
             UuidProcessId id = new UuidProcessId();
             coreEnvironmentService.setProcessImplementation(id);
         } else {
             // Use the socket process id
             coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
-            socketBindingName = PROCESS_ID_SOCKET_BINDING.validateResolvedOperation(coreEnvModel).asString();
-            int ports = PROCESS_ID_SOCKET_MAX_PORTS.validateResolvedOperation(coreEnvModel).asInt();
+            socketBindingName = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.validateResolvedOperation(coreEnvModel).asString();
+            int ports = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.validateResolvedOperation(coreEnvModel).asInt();
             coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
         }
 
         String varDirPathRef = null;
         // Check for empty string value for relative-to, which disables the default
-        final ModelNode relativePathNode = coreEnvModel.get(RELATIVE_TO.getName());
+        final ModelNode relativePathNode = coreEnvModel.get(TransactionSubsystemRootResourceDefinition.RELATIVE_TO.getName());
         if (!relativePathNode.isDefined() || relativePathNode.asString().length() > 0) {
-            varDirPathRef = RELATIVE_TO.validateResolvedOperation(coreEnvModel).asString();
+            varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.validateResolvedOperation(coreEnvModel).asString();
         }
-        final String varDirPath = PATH.validateResolvedOperation(coreEnvModel).asString();
+        final String varDirPath = TransactionSubsystemRootResourceDefinition.PATH.validateResolvedOperation(coreEnvModel).asString();
 
         if (ROOT_LOGGER.isDebugEnabled()) {
             ROOT_LOGGER.debugf("nodeIdentifier=%s\n", nodeIdentifier);
@@ -425,9 +322,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler implements 
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
         //recovery environment
-        final String recoveryBindingName = BINDING.validateResolvedOperation(model).asString();
-        final String recoveryStatusBindingName = STATUS_BINDING.validateResolvedOperation(model).asString();
-        final boolean recoveryListener = RECOVERY_LISTENER.validateResolvedOperation(model).asBoolean();
+        final String recoveryBindingName = TransactionSubsystemRootResourceDefinition.BINDING.validateResolvedOperation(model).asString();
+        final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.validateResolvedOperation(model).asString();
+        final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateResolvedOperation(model).asBoolean();
 
         final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener);
         controllers.add(context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService)
@@ -445,9 +342,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler implements 
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
 
-        final boolean coordinatorEnableStatistics = ENABLE_STATISTICS.validateResolvedOperation(coordEnvModel).asBoolean();
-        final boolean transactionStatusManagerEnable = ENABLE_TSM_STATUS.validateResolvedOperation(coordEnvModel).asBoolean();
-        final int coordinatorDefaultTimeout = DEFAULT_TIMEOUT.validateResolvedOperation(coordEnvModel).asInt();
+        final boolean coordinatorEnableStatistics = TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS.validateResolvedOperation(coordEnvModel).asBoolean();
+        final boolean transactionStatusManagerEnable = TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.validateResolvedOperation(coordEnvModel).asBoolean();
+        final int coordinatorDefaultTimeout = TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.validateResolvedOperation(coordEnvModel).asInt();
 
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable);
         controllers.add(context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService)
