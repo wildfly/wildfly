@@ -542,7 +542,12 @@ public class StandaloneXml extends CommonXml {
     private void writeServerProfile(final XMLExtendedStreamWriter writer, final ModelMarshallingContext context)
             throws XMLStreamException {
 
-        ModelNode profileNode = context.getModelNode();
+        final ModelNode profileNode = context.getModelNode();
+        // In case there are no subsystems defined
+        if(! profileNode.hasDefined(SUBSYSTEM)) {
+            writer.writeEmptyElement(Element.PROFILE.getLocalName());
+            return;
+        }
 
         writer.writeStartElement(Element.PROFILE.getLocalName());
         Set<String> subsystemNames = profileNode.get(SUBSYSTEM).keys();

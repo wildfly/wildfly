@@ -3,10 +3,10 @@
  */
 package org.jboss.as.domain.controller.operations.coordination;
 
+import org.jboss.as.controller.AttributeDefinition;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
@@ -260,7 +261,7 @@ public class ServerOperationResolver {
         if (forDomain && hostModel.hasDefined(INTERFACE) && hostModel.get(INTERFACE).keys().contains(pathName)) {
             // Host will take precedence; ignore the domain
             result = Collections.emptyMap();
-        } else if (ADD.equals(operation.get(OP).asString()) && ! operation.has(CRITERIA)) {
+        } else if (ADD.equals(operation.get(OP).asString()) && InterfaceDescription.isOperationDefined(operation)) {
             // don't create named interfaces
             result = Collections.emptyMap();
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {

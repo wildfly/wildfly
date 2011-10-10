@@ -23,7 +23,6 @@
 package org.jboss.as.demos.domain.host.runner;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -113,7 +112,7 @@ public class ExampleRunner {
         operation.get(OP).set(ADD);
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("new");
-        operation.get(CRITERIA).set("any-address");
+        operation.get("any-address").set(true);
 
         final ModelNode reversing = new ModelNode();
         reversing.get(OP).set("remove");
