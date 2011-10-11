@@ -42,6 +42,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -124,7 +125,6 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        // TODO - Add the ModelDescription
-        return new ModelNode();
+        return HostRootDescription.getRemoteDomainControllerAdd(locale);
     }
 }
