@@ -39,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
@@ -51,6 +52,7 @@ public abstract class HandlerUpdateProperties extends AbstractModelUpdateHandler
 
     @Override
     protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        NAME.validateAndSet(operation, model);
         LEVEL.validateAndSet(operation, model);
         FORMATTER.validateAndSet(operation, model);
         ENCODING.validateAndSet(operation, model);
@@ -89,4 +91,15 @@ public abstract class HandlerUpdateProperties extends AbstractModelUpdateHandler
     }
 
     protected abstract void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException;
+
+    /**
+     * Copies the attribute, represented by the {@code name} parameter, from one {@link ModelNode} to another.
+     *
+     * @param name the name of the attribute to copy.
+     * @param from the model node to copy the value from.
+     * @param to   the model node to copy the value to.
+     */
+    protected void copy(final String name, final ModelNode from, final ModelNode to) {
+        to.get(name).set(from.get(name));
+    }
 }

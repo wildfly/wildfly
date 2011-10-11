@@ -41,7 +41,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.sasl.util.AbstractSaslServer;
 
 import java.util.EnumSet;
 
@@ -98,6 +97,7 @@ public class LoggingExtension implements Extension {
         asyncHandler.registerReadWriteAttribute(CommonAttributes.LEVEL, null, AsyncHandlerUpdateProperties.INSTANCE);
         asyncHandler.registerReadWriteAttribute(CommonAttributes.FORMATTER, null, AsyncHandlerUpdateProperties.INSTANCE);
         asyncHandler.registerReadWriteAttribute(CommonAttributes.OVERFLOW_ACTION, null, AsyncHandlerUpdateProperties.INSTANCE);
+        asyncHandler.registerReadWriteAttribute(CommonAttributes.QUEUE_LENGTH, null, AsyncHandlerUpdateProperties.INSTANCE);
 
         //  Console handlers
         final ManagementResourceRegistration consoleHandler = registration.registerSubModel(consoleHandlersPath, LoggingSubsystemProviders.CONSOLE_HANDLER);
@@ -152,7 +152,7 @@ public class LoggingExtension implements Extension {
         customHandler.registerOperationHandler(HandlerLevelChange.OPERATION_NAME, HandlerLevelChange.INSTANCE, LoggingSubsystemProviders.HANDLER_CHANGE_LEVEL, false);
         customHandler.registerOperationHandler(CustomHandlerUpdateProperties.OPERATION_NAME, CustomHandlerUpdateProperties.INSTANCE, LoggingSubsystemProviders.CUSTOM_HANDLER_UPDATE, false);
         addCommonReadWriteAttributes(customHandler, CustomHandlerUpdateProperties.INSTANCE);
-        customHandler.registerReadWriteAttribute(CommonAttributes.PROPERTIES, null, CustomHandlerUpdateProperties.INSTANCE);
+        customHandler.registerReadWriteAttribute(CommonAttributes.PROPERTIES, null, CustomHandlerUpdateProperties.INSTANCE, EnumSet.noneOf(AttributeAccess.Flag.class));
     }
 
     /**

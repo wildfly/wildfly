@@ -41,12 +41,12 @@ public class CustomHandlerUpdateProperties extends HandlerUpdateProperties {
     @Override
     protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         super.updateModel(operation, model);
-        PROPERTIES.validateAndSet(operation, model);
+        copy(PROPERTIES, operation, model);
     }
 
     @Override
     protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
-        final ModelNode properties = PROPERTIES.validateResolvedOperation(operation);
+        final ModelNode properties = operation.get(PROPERTIES);
         if (properties.isDefined()) {
             setProperties(handler, properties.asPropertyList());
         }

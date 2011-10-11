@@ -48,7 +48,7 @@ interface LoggingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11520, value = "Could not instantiate %s.")
+    @Message(id = 11520, value = "Could not access %s.")
     StartException cannotAccessClass(@Cause Throwable cause, String className);
 
     /**
@@ -141,7 +141,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11534, value = "Overflow action %s is invalid.")
+    @Message(id = 11529, value = "Overflow action %s is invalid.")
     String invalidOverflowAction(String overflowAction);
 
     /**
@@ -149,7 +149,7 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11529, value = "Invalid value for target name")
+    @Message(id = 11530, value = "Invalid value for target name")
     String invalidTargetName();
 
     /**
@@ -161,7 +161,7 @@ interface LoggingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11530, value = "'%s' is not a valid %s.")
+    @Message(id = 11531, value = "'%s' is not a valid %s.")
     StartException invalidType(String className, Class<?> type);
 
     /**
@@ -169,15 +169,25 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11531, value = "Missing required nested filter element")
+    @Message(id = 11532, value = "Missing required nested filter element")
     String missingRequiredNestedFilterElement();
+
+    /**
+     * A message indicating the variable, represented by the {@code varName} parameter, is {@code null}.
+     *
+     * @param varName the variable name.
+     *
+     * @return the message.
+     */
+    @Message(id = 11533, value = "%s is null.")
+    String nullVar(String varName);
 
     /**
      * Creates an exception indicating the service has not yet been started.
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11532, value = "Service not started")
+    @Message(id = 11534, value = "Service not started")
     IllegalStateException serviceNotStarted();
 
     /**
@@ -190,6 +200,6 @@ interface LoggingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11533, value = "Unknown parameter type (%s) for property '%s' on '%s'")
+    @Message(id = 11535, value = "Unknown parameter type (%s) for property '%s' on '%s'")
     IllegalArgumentException unknownParameterType(Class<?> type, String propertyName, Class<?> clazz);
 }

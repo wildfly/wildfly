@@ -26,7 +26,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
@@ -46,7 +45,7 @@ class CustomHandlerAdd extends HandlerAddProperties<CustomHandlerService> {
         super.populateModel(operation, model);
         MODULE.validateAndSet(operation, model);
         CLASS.validateAndSet(operation, model);
-        PROPERTIES.validateAndSet(operation, model);
+        copy(PROPERTIES, operation, model);
     }
 
     @Override
@@ -58,7 +57,7 @@ class CustomHandlerAdd extends HandlerAddProperties<CustomHandlerService> {
 
     @Override
     protected void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final CustomHandlerService service, final ModelNode model) throws OperationFailedException {
-        final ModelNode properties = PROPERTIES.validateResolvedOperation(model);
+        final ModelNode properties = model.get(PROPERTIES);
         if (properties.isDefined()) {
             service.addProperties(properties.asPropertyList());
         }
