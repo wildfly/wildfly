@@ -315,7 +315,7 @@ class OperationValidator {
 
     private void checkList(final ModelNode operation, final String paramName, final ModelType modelType, final ModelNode describedProperty, final ModelNode value) {
         if (describedProperty.get(TYPE).asType() == ModelType.LIST) {
-            if (describedProperty.hasDefined(VALUE_TYPE)) {
+            if (describedProperty.hasDefined(VALUE_TYPE) && describedProperty.get(VALUE_TYPE).getType() == ModelType.TYPE) {
                 ModelType elementType = describedProperty.get(VALUE_TYPE).asType();
                 for (ModelNode element : value.asList()) {
                     try {
