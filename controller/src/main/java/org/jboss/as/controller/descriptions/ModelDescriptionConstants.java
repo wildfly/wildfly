@@ -112,7 +112,7 @@ public class ModelDescriptionConstants {
     public static final String LDAP = "ldap";
     public static final String LOCAL = "local";
     public static final String LOCALE = "locale";
-    public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-element";
+    public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MANAGEMENT = "management";
     public static final String MANAGEMENT_INTERFACE = "management-interface";
     public static final String MASK = "mask";

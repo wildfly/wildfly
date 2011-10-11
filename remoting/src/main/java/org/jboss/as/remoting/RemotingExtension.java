@@ -36,7 +36,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElem
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.remoting.CommonAttributes.ADD_CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
@@ -524,7 +523,7 @@ public class RemotingExtension implements Extension {
             if (model.hasDefined(CONNECTOR)) {
                 for (org.jboss.dmr.Property prop : model.get(CONNECTOR).asPropertyList()) {
                     final ModelNode connector = prop.getValue();
-                    final ModelNode add = Util.getEmptyOperation(ADD_CONNECTOR, address.append(PathElement.pathElement(CONNECTOR, prop.getName())).toModelNode());
+                    final ModelNode add = Util.getEmptyOperation(ADD, address.append(PathElement.pathElement(CONNECTOR, prop.getName())).toModelNode());
                     if (connector.hasDefined(SOCKET_BINDING)) {
                         add.get(SOCKET_BINDING).set(connector.get(SOCKET_BINDING));
                     }
