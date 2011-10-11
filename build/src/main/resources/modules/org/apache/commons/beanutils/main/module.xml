@@ -29,5 +29,6 @@
 
     <dependencies>
         <module name="org.apache.commons.logging"/>
+        <module name="org.apache.commons.collections"/>
     </dependencies>
 </module>
