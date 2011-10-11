@@ -22,8 +22,14 @@
 package org.jboss.as.threads;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 
 /**
@@ -38,6 +44,18 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
         super(ThreadFactoryAdd.ATTRIBUTES, ThreadFactoryAdd.RW_ATTRIBUTES);
     }
 
+    @Override
+    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
+        final ServiceName serviceName = ThreadsServices.threadFactoryName(name);
+        ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
+        if(controller == null) {
+            throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));
+        }
+        return controller;
+    }
+
+    @Override
     protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
 
         final ThreadFactoryService tf = (ThreadFactoryService) service.getService();
