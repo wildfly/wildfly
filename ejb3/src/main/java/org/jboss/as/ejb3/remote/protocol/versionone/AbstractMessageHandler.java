@@ -26,7 +26,9 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.ejb.client.Locator;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.InterceptorContext;
@@ -162,26 +164,30 @@ abstract class AbstractMessageHandler implements MessageHandler {
         return moduleDeployment.getEjbs().get(beanName);
     }
 
-    protected void attachRemotingAttachments(final InterceptorContext interceptorContext, final RemotingAttachments remotingAttachments) {
-        if (remotingAttachments == null) {
-            return;
-        }
-        // attach the RemotingAttachments
-        interceptorContext.putPrivateData(RemotingAttachments.class, remotingAttachments);
-        // we also attach the known individual keys so that the interceptors themselves don't have to
-        // dig into the RemotingAttachments to find them
-        for (RemotingAttachments.RemotingAttachment attachment : remotingAttachments) {
-            final int attachmentId = attachment.getKey();
-            switch (attachmentId) {
-                case 0x0000:
-                    final byte[] sessionIdBytes = attachment.getValue();
-                    final SessionID sessionID = SessionID.createSessionID(sessionIdBytes);
-                    // add it to the interceptor context
-                    interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
-                    break;
-                default:
-                    break;
+    protected void attachRemotingAttachments(final InterceptorContext interceptorContext, final Locator ejbLocator, final RemotingAttachments remotingAttachments) {
+        if (remotingAttachments != null) {
+            // attach the RemotingAttachments
+            interceptorContext.putPrivateData(RemotingAttachments.class, remotingAttachments);
+            // we also attach the known individual keys so that the interceptors themselves don't have to
+            // dig into the RemotingAttachments to find them
+            for (RemotingAttachments.RemotingAttachment attachment : remotingAttachments) {
+                final int attachmentId = attachment.getKey();
+                switch (attachmentId) {
+    //                case 0x0000:
+    //                    final byte[] sessionIdBytes = attachment.getValue();
+    //                    final SessionID sessionID = SessionID.createSessionID(sessionIdBytes);
+    //                    // add it to the interceptor context
+    //                    interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
+    //                    break;
+                    default:
+                        break;
+                }
             }
+        }
+
+        // add the session id to the interceptor context, if it's a stateful ejb locator
+        if (ejbLocator instanceof StatefulEJBLocator) {
+            interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, ((StatefulEJBLocator) ejbLocator).getSessionId());
         }
     }
 

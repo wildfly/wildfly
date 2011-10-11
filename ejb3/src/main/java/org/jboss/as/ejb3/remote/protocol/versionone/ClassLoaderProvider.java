@@ -22,19 +22,10 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.io.DataInput;
-import java.io.IOException;
-
 /**
- * TODO: Use the one from the ejb-client API project, once the contract is settled
- * <p/>
  * User: jpai
  */
-interface UnMarshaller {
+interface ClassLoaderProvider {
 
-    void start(DataInput input, ClassLoaderProvider classLoaderProvider) throws IOException;
-
-    Object readObject() throws ClassNotFoundException, IOException;
-
-    void finish() throws IOException;
+    ClassLoader provideClassLoader();
 }

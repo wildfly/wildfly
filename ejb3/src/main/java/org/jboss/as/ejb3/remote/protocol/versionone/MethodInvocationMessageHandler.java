@@ -29,6 +29,7 @@ import org.jboss.as.ejb3.component.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.ejb.client.Locator;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
@@ -69,24 +70,8 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         final DataInputStream input = new DataInputStream(messageInputStream);
         // read the invocation id
         final short invocationId = input.readShort();
-        // read the ejb module info
-        final String appName = input.readUTF();
-        final String moduleName = input.readUTF();
-        final String distinctName = input.readUTF();
-        final String beanName = input.readUTF();
-        final String viewClassName = input.readUTF();
 
-        final EjbDeploymentInformation ejbDeploymentInformation = this.findEJB(appName, moduleName, distinctName, beanName);
-        if (ejbDeploymentInformation == null) {
-            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
-            return;
-        }
-        if (!ejbDeploymentInformation.getViewNames().contains(viewClassName)) {
-            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
-            return;
-        }
-        // TODO: Add a check for remote view
-        final ComponentView componentView = ejbDeploymentInformation.getView(viewClassName);
+        // read the method name
         final String methodName = input.readUTF();
         // method signature
         String[] methodParamTypes = null;
@@ -96,33 +81,67 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         } else {
             methodParamTypes = signature.split(String.valueOf(METHOD_PARAM_TYPE_SEPARATOR));
         }
+        // read the attachments
+        final RemotingAttachments attachments = this.readAttachments(input);
+
+        // read the Locator
+        final UnMarshaller unMarshaller = MarshallerFactory.createUnMarshaller(this.marshallingStrategy);
+        final ClassLoaderSwitchingClassLoaderProvider classLoaderProvider = new ClassLoaderSwitchingClassLoaderProvider(Thread.currentThread().getContextClassLoader());
+        unMarshaller.start(input, classLoaderProvider);
+        // read the EJB info
+        final String appName;
+        final String moduleName;
+        final String distinctName;
+        final String beanName;
+        try {
+            appName = (String) unMarshaller.readObject();
+            moduleName = (String) unMarshaller.readObject();
+            distinctName = (String) unMarshaller.readObject();
+            beanName = (String) unMarshaller.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        final EjbDeploymentInformation ejbDeploymentInformation = this.findEJB(appName, moduleName, distinctName, beanName);
+        if (ejbDeploymentInformation == null) {
+            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, null);
+            return;
+        }
+        // now switch the CL to the EJB deployment's CL so that the unmarshaller can use the
+        // correct CL for the rest of the unmarshalling of the stream
+        classLoaderProvider.switchClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
+        // read the Locator
+        final Locator locator;
+        try {
+            locator = (Locator) unMarshaller.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        final String viewClassName = locator.getInterfaceType().getName();
+        if (!ejbDeploymentInformation.getViewNames().contains(viewClassName)) {
+            this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
+            return;
+        }
+        // TODO: Add a check for remote view
+        final ComponentView componentView = ejbDeploymentInformation.getView(viewClassName);
         final Method invokedMethod = this.findMethod(componentView, methodName, methodParamTypes);
         if (invokedMethod == null) {
             this.writeNoSuchEJBMethodFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName, methodName, methodParamTypes);
             return;
         }
-        // read the attachments
-        final RemotingAttachments attachments = this.readAttachments(input);
 
         final Object[] methodParams = new Object[methodParamTypes.length];
         // un-marshall the method arguments
         if (methodParamTypes.length > 0) {
-            final UnMarshaller unMarshaller = MarshallerFactory.createUnMarshaller(this.marshallingStrategy);
-            final ClassLoader beanClassLoader = ejbDeploymentInformation.getDeploymentClassLoader();
-
-            unMarshaller.start(input, beanClassLoader);
             for (int i = 0; i < methodParamTypes.length; i++) {
                 try {
                     methodParams[i] = unMarshaller.readObject();
                 } catch (ClassNotFoundException cnfe) {
                     // TODO: Write out invocation failure to channel outstream
-                    //throw new RuntimeException(cnfe);
-                    return;
+                    throw new RuntimeException(cnfe);
                 }
             }
-            unMarshaller.finish();
         }
-
+        unMarshaller.finish();
         // invoke the method and write out the response on a separate thread
         executorService.submit(new Runnable() {
 
@@ -143,7 +162,7 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
                 // invoke the method
                 Object result = null;
                 try {
-                    result = invokeMethod(componentView, invokedMethod, methodParams, attachments);
+                    result = invokeMethod(componentView, invokedMethod, methodParams, locator, attachments);
                 } catch (Throwable throwable) {
                     try {
                         // write out the failure
@@ -151,11 +170,11 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
                     } catch (IOException ioe) {
                         // we couldn't write out a method invocation failure message. So let's atleast log the
                         // actual method invocation exception, for debugging/reference
-                        logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName + " in app: " + appName + " module: " + moduleName +
-                                " distinctname: " + distinctName, throwable);
+                        logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName
+                                + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName, throwable);
                         // now log why we couldn't send back the method invocation failure message
-                        logger.error("Could not write method invocation failure for method " + invokedMethod + " on bean named " + beanName + " in app: " + appName + " module: " + moduleName +
-                                " distinctname: " + distinctName + " due to ", ioe);
+                        logger.error("Could not write method invocation failure for method " + invokedMethod + " on bean named " + beanName
+                                + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
                         return;
                     }
                 }
@@ -163,8 +182,8 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
                 try {
                     writeMethodInvocationResponse(channel, invocationId, result, attachments);
                 } catch (IOException ioe) {
-                    logger.error("Could not write method invocation result for method " + invokedMethod + " on bean named " + beanName + " in app: " + appName + " module: " + moduleName +
-                            " distinctname: " + distinctName + " due to ", ioe);
+                    logger.error("Could not write method invocation result for method " + invokedMethod + " on bean named " + beanName
+                            + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
                     return;
                 }
             }
@@ -173,7 +192,7 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
 
     }
 
-    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final RemotingAttachments attachments) throws Throwable {
+    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final Locator ejbLocator, final RemotingAttachments attachments) throws Throwable {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(args);
         interceptorContext.setMethod(method);
@@ -181,7 +200,7 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
         // attach the remoting attachments
-        this.attachRemotingAttachments(interceptorContext, attachments);
+        this.attachRemotingAttachments(interceptorContext, ejbLocator, attachments);
         if (componentView.isAsynchronous(method)) {
             final Component component = componentView.getComponent();
             if (!(component instanceof SessionBeanComponent)) {
@@ -284,6 +303,24 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
             outputStream.writeShort(invocationId);
         } finally {
             outputStream.close();
+        }
+    }
+
+    private class ClassLoaderSwitchingClassLoaderProvider implements ClassLoaderProvider {
+
+        private ClassLoader currentClassLoader;
+
+        ClassLoaderSwitchingClassLoaderProvider(final ClassLoader classLoader) {
+            this.currentClassLoader = classLoader;
+        }
+
+        @Override
+        public ClassLoader provideClassLoader() {
+            return this.currentClassLoader;
+        }
+
+        void switchClassLoader(final ClassLoader newCL) {
+            this.currentClassLoader = newCL;
         }
     }
 }

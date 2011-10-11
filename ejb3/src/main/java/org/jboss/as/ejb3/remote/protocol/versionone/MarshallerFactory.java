@@ -23,16 +23,15 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.logging.Logger;
+import org.jboss.marshalling.AbstractClassResolver;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.SimpleClassResolver;
 import org.jboss.marshalling.Unmarshaller;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +75,7 @@ class MarshallerFactory {
 
         JBossMarshaller(final String marshallerType) throws IOException {
             final MarshallingConfiguration marshallingConfiguration = new MarshallingConfiguration();
+            marshallingConfiguration.setClassTable(new ProtocolV1ClassTable());
             marshallingConfiguration.setVersion(2);
             org.jboss.marshalling.MarshallerFactory factory = Marshalling.getProvidedMarshallerFactory(marshallerType);
             this.delegate = factory.createMarshaller(marshallingConfiguration);
@@ -117,10 +117,11 @@ class MarshallerFactory {
         }
 
         @Override
-        public void start(final DataInput input, final ClassLoader classLoader) throws IOException {
+        public void start(final DataInput input, final ClassLoaderProvider classLoaderProvider) throws IOException {
             final MarshallingConfiguration marshallingConfiguration = new MarshallingConfiguration();
             marshallingConfiguration.setVersion(2);
-            marshallingConfiguration.setClassResolver(new SimpleClassResolver(classLoader));
+            marshallingConfiguration.setClassTable(new ProtocolV1ClassTable());
+            marshallingConfiguration.setClassResolver(new LazyClassLoaderClassResolver(classLoaderProvider));
             org.jboss.marshalling.MarshallerFactory factory = Marshalling.getProvidedMarshallerFactory(marshallerType);
             this.delegate = factory.createUnmarshaller(marshallingConfiguration);
             final InputStream is = new InputStream() {
@@ -153,6 +154,20 @@ class MarshallerFactory {
                 throw new IllegalStateException("Unmarshalling hasn't yet been marked for start");
             }
             this.delegate.finish();
+        }
+
+        private class LazyClassLoaderClassResolver extends AbstractClassResolver {
+
+            private final ClassLoaderProvider classLoaderProvider;
+
+            LazyClassLoaderClassResolver(final ClassLoaderProvider classLoaderProvider) {
+                this.classLoaderProvider = classLoaderProvider;
+            }
+
+            @Override
+            protected ClassLoader getClassLoader() {
+                return this.classLoaderProvider.provideClassLoader();
+            }
         }
     }
 
@@ -189,11 +204,11 @@ class MarshallerFactory {
 
         private DataInput dataInput;
 
-        private ClassLoader cl;
+        private ClassLoaderProvider classLoaderProvider;
 
         @Override
-        public void start(final DataInput input, final ClassLoader classLoader) throws IOException {
-            this.cl = classLoader;
+        public void start(final DataInput input, final ClassLoaderProvider classLoaderProvider) throws IOException {
+            this.classLoaderProvider = classLoaderProvider;
             this.dataInput = input;
         }
 
@@ -216,7 +231,7 @@ class MarshallerFactory {
                     String name = desc.getName();
                     try {
                         // Use Class.forName instead of ClassLoader.loadClass to avoid issues with loading arrays
-                        return Class.forName(name, false, JavaSerialUnMarshaller.this.cl);
+                        return Class.forName(name, false, JavaSerialUnMarshaller.this.classLoaderProvider.provideClassLoader());
                     } catch (ClassNotFoundException e) {
                         return super.resolveClass(desc);
                     }
