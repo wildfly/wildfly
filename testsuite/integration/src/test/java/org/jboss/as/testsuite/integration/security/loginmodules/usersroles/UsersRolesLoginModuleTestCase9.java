@@ -22,7 +22,8 @@
 package org.jboss.as.testsuite.integration.security.loginmodules.usersroles;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
-import static org.jboss.as.security.Constants.*;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.security.Constants.FLAG;
 import static org.junit.Assert.assertEquals;
 
 import java.io.*;

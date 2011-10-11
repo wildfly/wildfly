@@ -26,7 +26,10 @@ import org.jboss.as.testsuite.integration.security.loginmodules.AbstractLoginMod
 import org.jboss.as.testsuite.integration.security.loginmodules.common.Utils;
 import org.junit.AfterClass;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
