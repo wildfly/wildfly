@@ -76,7 +76,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>**/*TestCase.java</include>
+                        <include>**/*TestCase*.java</include>
                     </includes>
                     <excludes>
                         <!-- Messaging tests are excluded since the default/web profile doesn't support messaging -->
