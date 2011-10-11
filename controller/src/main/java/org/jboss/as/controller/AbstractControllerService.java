@@ -63,7 +63,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
      *
      * @see #BOOT_STACK_SIZE_PROPERTY
      */
-    public static final int DEFAULT_BOOT_STACK_SIZE = 1024 * 1024;
+    public static final int DEFAULT_BOOT_STACK_SIZE = 2 * 1024 * 1024;
 
     private static int getBootStackSize() {
         String prop = SecurityActions.getSystemProperty(BOOT_STACK_SIZE_PROPERTY);
