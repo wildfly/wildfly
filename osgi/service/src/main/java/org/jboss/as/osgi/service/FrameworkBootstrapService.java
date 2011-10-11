@@ -181,6 +181,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             buffer.append("org.apache.commons.logging,");
             buffer.append("org.apache.log4j,");
             buffer.append("org.jboss.as.osgi,");
+            buffer.append("org.jboss.logging,");
             buffer.append("org.slf4j");
             props.put(PROP_JBOSS_OSGI_SYSTEM_MODULES, buffer.toString());
         }
