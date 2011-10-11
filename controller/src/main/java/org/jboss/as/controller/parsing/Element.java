@@ -35,6 +35,7 @@ public enum Element {
     UNKNOWN(null),
 
     // Domain 1.0 elements in alpha order
+    ADVANCED_FILTER("advanced-filter"),
     AGENT_LIB("agent-lib"),
     AGENT_PATH("agent-path"),
     ANY("any"),
@@ -132,6 +133,7 @@ public enum Element {
 
     UP("up"),
     USER("user"),
+    USERNAME_FILTER("username-filter"),
     USERS("users"),
 
     VARIABLE("variable"),

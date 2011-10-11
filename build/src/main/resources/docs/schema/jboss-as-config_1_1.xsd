@@ -330,6 +330,35 @@
                 Definition to use LDAP as the user repository.
             </xs:documentation>
         </xs:annotation>
+        <xs:choice>
+            <xs:element name="username-filter">
+                <xs:complexType>
+                    <xs:attribute name="attribute" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The name of the attribute to search for the user, this filter will then perform
+                                a simple search where the username entered by the user matches the attribute
+                                specified here.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="advanced-filter">
+                <xs:complexType>
+                    <xs:attribute name="filter" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The fully defined filter to be used to search for the user based on their entered
+                                user ID. The filter should contain a variable in the form {0} - this will be
+                                replaced with the username supplied by the user.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:choice>
+
         <xs:attribute name="connection" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -341,13 +370,6 @@
             <xs:annotation>
                 <xs:documentation>
                     The base distinguished name to commence the search for the user.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="username-attribute" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    The name of the attribute to search for the user.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

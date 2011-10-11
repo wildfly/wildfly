@@ -40,6 +40,7 @@ public enum Attribute {
 
     // domain 1.0 attributes in alpha order
     AUTO_START("auto-start"),
+    ATTRIBUTE("attribute"),
     BASE_DN("base-dn"),
     BOOT_TIME("boot-time"),
     CODE("code"),
@@ -51,6 +52,7 @@ public enum Attribute {
     ENABLED("enabled"),
     ENV_CLASSPATH_IGNORED("env-classpath-ignored"),
     FILE("file"),
+    FILTER("filter"),
     FIXED_PORT("fixed-port"),
     GROUP("group"),
     HOST("host"),

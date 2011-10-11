@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
@@ -92,6 +93,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAU
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
@@ -759,7 +761,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             switch (element) {
                 case LDAP: {
-                    parseLdapAuthentication(reader, authentication);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                            parseLdapAuthentication_1_0(reader, authentication);
+                            break;
+                        default:
+                            parseLdapAuthentication_1_1(reader, expectedNs, authentication);
+                    }
                     break;
                 }
                 case PROPERTIES: {
@@ -778,7 +786,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseLdapAuthentication(final XMLExtendedStreamReader reader, final ModelNode authentication)
+    protected void parseLdapAuthentication_1_0(final XMLExtendedStreamReader reader, final ModelNode authentication)
             throws XMLStreamException {
         ModelNode ldapAuthentication = authentication.get(LDAP);
 
@@ -846,6 +854,102 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
         if (userDN != null) {
             ldapAuthentication.get(USER_DN).set(userDN);
+        }
+    }
+
+    protected void parseLdapAuthentication_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode authentication)
+            throws XMLStreamException {
+        ModelNode ldapAuthentication = authentication.get(LDAP);
+
+        String connection = null;
+        String baseDN = null;
+        String recursive = null;
+        String userDN = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case CONNECTION: {
+                        connection = value;
+                        break;
+                    }
+                    case BASE_DN: {
+                        baseDN = value;
+                        break;
+                    }
+                    case RECURSIVE: {
+                        recursive = value;
+                        break;
+                    }
+                    case USER_DN: {
+                        userDN = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        Set<Attribute> missingAttributes = new HashSet<Attribute>();
+        if (connection == null)
+            missingAttributes.add(Attribute.CONNECTION);
+        if (baseDN == null)
+            missingAttributes.add(Attribute.BASE_DN);
+        // recursive is optional with a default of false
+        // userDN is optional with a default of "dn"
+
+        if (missingAttributes.size() > 0)
+            throw missingRequired(reader, missingAttributes);
+
+        ldapAuthentication.get(CONNECTION).set(connection);
+        ldapAuthentication.get(BASE_DN).set(baseDN);
+
+        if (recursive != null) {
+            ldapAuthentication.get(RECURSIVE).set(Boolean.valueOf(recursive));
+        }
+        if (userDN != null) {
+            ldapAuthentication.get(USER_DN).set(userDN);
+        }
+
+        boolean choiceFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            if (choiceFound) {
+                throw unexpectedElement(reader);
+            }
+            choiceFound = true;
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ADVANCED_FILTER:
+                    requireSingleAttribute(reader, Attribute.FILTER.getLocalName());
+                    // After double checking the name of the only attribute we can retrieve it.
+                    String filter = reader.getAttributeValue(0);
+                    ldapAuthentication.get(ADVANCED_FILTER).set(filter);
+                    requireNoContent(reader);
+                    break;
+                case USERNAME_FILTER: {
+                    requireSingleAttribute(reader, Attribute.ATTRIBUTE.getLocalName());
+                    // After double checking the name of the only attribute we can retrieve it.
+                    String usernameAttr = reader.getAttributeValue(0);
+                    ldapAuthentication.get(USERNAME_ATTRIBUTE).set(usernameAttr);
+                    requireNoContent(reader);
+                    break;
+                }
+
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (choiceFound == false) {
+            throw missingOneOf(reader, EnumSet.of(Element.ADVANCED_FILTER, Element.USERNAME_FILTER));
         }
     }
 
@@ -2524,13 +2628,21 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         writer.writeStartElement(Element.LDAP.getLocalName());
                         writer.writeAttribute(Attribute.CONNECTION.getLocalName(), userLdap.require(CONNECTION).asString());
                         writer.writeAttribute(Attribute.BASE_DN.getLocalName(), userLdap.require(BASE_DN).asString());
-                        writer.writeAttribute(Attribute.USERNAME_ATTRIBUTE.getLocalName(), userLdap.require(USERNAME_ATTRIBUTE)
-                                .asString());
                         if (userLdap.has(RECURSIVE)) {
                             writer.writeAttribute(Attribute.RECURSIVE.getLocalName(), userLdap.require(RECURSIVE).asString());
                         }
                         if (userLdap.hasDefined(USER_DN)) {
                             writer.writeAttribute(Attribute.USER_DN.getLocalName(), userLdap.require(USER_DN).asString());
+                        }
+
+                        if (userLdap.hasDefined(USERNAME_ATTRIBUTE)) {
+                            writer.writeStartElement(Element.USERNAME_FILTER.getLocalName());
+                            writer.writeAttribute(Attribute.ATTRIBUTE.getLocalName(), userLdap.require(USERNAME_ATTRIBUTE).asString());
+                            writer.writeEndElement();
+                        } else if (userLdap.hasDefined(ADVANCED_FILTER)) {
+                            writer.writeStartElement(Element.ADVANCED_FILTER.getLocalName());
+                            writer.writeAttribute(Attribute.FILTER.getLocalName(), userLdap.require(ADVANCED_FILTER).asString());
+                            writer.writeEndElement();
                         }
                         writer.writeEndElement();
                     } else if (authentication.hasDefined(PROPERTIES)) {
