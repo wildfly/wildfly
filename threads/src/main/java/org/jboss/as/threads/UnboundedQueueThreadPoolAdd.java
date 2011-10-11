@@ -57,6 +57,9 @@ public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler implemen
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY};
 
+    static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
+        PoolAttributeDefinitions.MAX_THREADS};
+
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ThreadsSubsystemProviders.ADD_UNBOUNDED_QUEUE_THREAD_POOL_DESC.getModelDescription(locale);

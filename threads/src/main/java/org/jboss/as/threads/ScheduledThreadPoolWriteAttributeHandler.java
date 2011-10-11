@@ -24,14 +24,9 @@ package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.threads.CommonAttributes.COUNT;
-import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
 import static org.jboss.as.threads.CommonAttributes.PER_CPU;
-import static org.jboss.as.threads.CommonAttributes.TIME;
-import static org.jboss.as.threads.CommonAttributes.UNIT;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,55 +40,21 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Alexey Loubyansky
  */
-public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
+public class ScheduledThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
 
-    public static final BoundedQueueThreadPoolWriteAttributeHandler INSTANCE = new BoundedQueueThreadPoolWriteAttributeHandler();
+    public static final ScheduledThreadPoolWriteAttributeHandler INSTANCE = new ScheduledThreadPoolWriteAttributeHandler();
 
-    private BoundedQueueThreadPoolWriteAttributeHandler() {
-        super(BoundedQueueThreadPoolAdd.ATTRIBUTES, BoundedQueueThreadPoolAdd.RW_ATTRIBUTES);
+    private ScheduledThreadPoolWriteAttributeHandler() {
+        super(ScheduledThreadPoolAdd.ATTRIBUTES, ScheduledThreadPoolAdd.RW_ATTRIBUTES);
     }
 
     protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
 
-        final BoundedQueueThreadPoolService pool =  (BoundedQueueThreadPoolService) service.getService();
-        try {
-            final ModelNode value = operation.require(CommonAttributes.VALUE);
-            if (CommonAttributes.KEEPALIVE_TIME.equals(attributeName)) {
-                if (!value.hasDefined(TIME)) {
-                    throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
-                }
-                if (!value.hasDefined(UNIT)) {
-                    throw new IllegalArgumentException("Missing '" + UNIT + "' for '" + KEEPALIVE_TIME + "'");
-                }
-                final TimeUnit unit;
-                try {
-                unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
-                } catch(IllegalArgumentException e) {
-                    throw new OperationFailedException(new ModelNode().set("Failed to parse '" + UNIT + "', allowed values are: " + Arrays.asList(TimeUnit.values())));
-                }
-                final TimeSpec spec = new TimeSpec(unit, value.get(TIME).asLong());
-                pool.setKeepAlive(spec);
-            } else if(CommonAttributes.MAX_THREADS.equals(attributeName)) {
-                pool.setMaxThreads(getScaledCount(CommonAttributes.MAX_THREADS, value));
-            } else if(CommonAttributes.CORE_THREADS.equals(attributeName)) {
-                pool.setCoreThreads(getScaledCount(CommonAttributes.CORE_THREADS, value));
-            } else if(CommonAttributes.QUEUE_LENGTH.equals(attributeName)) {
-                pool.setQueueLength(getScaledCount(CommonAttributes.QUEUE_LENGTH, value));
-            } else if(CommonAttributes.ALLOW_CORE_TIMEOUT.equals(attributeName)) {
-                pool.setAllowCoreTimeout(value.asBoolean());
-            } else if(CommonAttributes.BLOCKING.equals(attributeName)) {
-                pool.setBlocking(value.asBoolean());
-            } else {
-                throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
+        //final UnboundedQueueThreadPoolService pool =  (UnboundedQueueThreadPoolService) service.getService();
     }
 
-    protected int getScaledCount(String attributeName, final ModelNode value) {
+/*    protected int getScaledCount(String attributeName, final ModelNode value) {
         if (!value.hasDefined(COUNT)) {
             throw new IllegalArgumentException("Missing '" + COUNT + "' for '" + attributeName + "'");
         }
@@ -116,7 +77,7 @@ public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAtt
 
         return new ScaledCount(count, perCpu).getScaledCount();
     }
-
+*/
     @Override
     protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String name = Util.getNameFromAddress(operation.require(OP_ADDR));

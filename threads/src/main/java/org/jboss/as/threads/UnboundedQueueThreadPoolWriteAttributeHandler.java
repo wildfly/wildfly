@@ -45,17 +45,17 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Alexey Loubyansky
  */
-public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
+public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAttributeOperationHandler {
 
-    public static final BoundedQueueThreadPoolWriteAttributeHandler INSTANCE = new BoundedQueueThreadPoolWriteAttributeHandler();
+    public static final UnboundedQueueThreadPoolWriteAttributeHandler INSTANCE = new UnboundedQueueThreadPoolWriteAttributeHandler();
 
-    private BoundedQueueThreadPoolWriteAttributeHandler() {
-        super(BoundedQueueThreadPoolAdd.ATTRIBUTES, BoundedQueueThreadPoolAdd.RW_ATTRIBUTES);
+    private UnboundedQueueThreadPoolWriteAttributeHandler() {
+        super(UnboundedQueueThreadPoolAdd.ATTRIBUTES, UnboundedQueueThreadPoolAdd.RW_ATTRIBUTES);
     }
 
     protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
 
-        final BoundedQueueThreadPoolService pool =  (BoundedQueueThreadPoolService) service.getService();
+        final UnboundedQueueThreadPoolService pool =  (UnboundedQueueThreadPoolService) service.getService();
         try {
             final ModelNode value = operation.require(CommonAttributes.VALUE);
             if (CommonAttributes.KEEPALIVE_TIME.equals(attributeName)) {
@@ -75,14 +75,6 @@ public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAtt
                 pool.setKeepAlive(spec);
             } else if(CommonAttributes.MAX_THREADS.equals(attributeName)) {
                 pool.setMaxThreads(getScaledCount(CommonAttributes.MAX_THREADS, value));
-            } else if(CommonAttributes.CORE_THREADS.equals(attributeName)) {
-                pool.setCoreThreads(getScaledCount(CommonAttributes.CORE_THREADS, value));
-            } else if(CommonAttributes.QUEUE_LENGTH.equals(attributeName)) {
-                pool.setQueueLength(getScaledCount(CommonAttributes.QUEUE_LENGTH, value));
-            } else if(CommonAttributes.ALLOW_CORE_TIMEOUT.equals(attributeName)) {
-                pool.setAllowCoreTimeout(value.asBoolean());
-            } else if(CommonAttributes.BLOCKING.equals(attributeName)) {
-                pool.setBlocking(value.asBoolean());
             } else {
                 throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
             }
