@@ -180,6 +180,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
         if (sysmodules == null) {
             StringBuffer buffer = new StringBuffer();
+            buffer.append("javax.inject.api,");
             buffer.append("org.apache.commons.logging,");
             buffer.append("org.apache.log4j,");
             buffer.append("org.jboss.as.osgi,");
@@ -193,6 +194,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         String syspackages = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_PACKAGES);
         if (syspackages == null) {
             StringBuffer buffer = new StringBuffer();
+            buffer.append("javax.inject,");
             buffer.append("org.apache.commons.logging;version=1.1.1,");
             buffer.append("org.apache.log4j;version=1.2,");
             buffer.append("org.jboss.as.osgi.service;version=7.0,");
