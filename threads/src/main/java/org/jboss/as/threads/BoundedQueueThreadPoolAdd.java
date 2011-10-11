@@ -58,6 +58,10 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
         PoolAttributeDefinitions.CORE_THREADS, PoolAttributeDefinitions.QUEUE_LENGTH, PoolAttributeDefinitions.HANDOFF_EXECUTOR,
         PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.BLOCKING};
 
+    static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
+        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.CORE_THREADS, PoolAttributeDefinitions.QUEUE_LENGTH,
+        PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.BLOCKING};
+
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ThreadsSubsystemProviders.ADD_BOUNDED_QUEUE_THREAD_POOL_DESC.getModelDescription(locale);

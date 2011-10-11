@@ -33,14 +33,10 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAttributeOperationHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -52,7 +48,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWriteAttributeHandler<Boolean> {
 
-    private static final Logger log = Logger.getLogger("org.jboss.as.threads");
+//    private static final Logger log = Logger.getLogger("org.jboss.as.threads");
 
     private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
     private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
@@ -136,15 +132,7 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
         }
     }
 
-    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
-        final ServiceName serviceName = ThreadsServices.threadFactoryName(name);
-        ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
-        if(controller == null) {
-            throw new OperationFailedException(new ModelNode().set("Service " + serviceName + " not found."));
-        }
-        return controller;
-    }
+    protected abstract ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException;
 
     protected abstract void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service);
 }

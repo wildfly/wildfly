@@ -101,6 +101,7 @@ public class ThreadsExtension implements Extension {
         boundedQueueThreadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE,
                 BoundedQueueThreadPoolRemove.INSTANCE, false);
         BoundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
+        BoundedQueueThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
 
         final ManagementResourceRegistration unboundedQueueThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL), UNBOUNDED_QUEUE_THREAD_POOL_DESC);
