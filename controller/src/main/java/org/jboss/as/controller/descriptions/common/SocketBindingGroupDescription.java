@@ -124,6 +124,7 @@ public class SocketBindingGroupDescription {
         root.get(REQUEST_PROPERTIES, PORT_OFFSET, TYPE).set(ModelType.INT);
         root.get(REQUEST_PROPERTIES, PORT_OFFSET, DESCRIPTION).set(bundle.getString("server-socket_binding_group.add.port-offset"));
         root.get(REQUEST_PROPERTIES, PORT_OFFSET, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, PORT_OFFSET, EXPRESSIONS_ALLOWED).set(true);
         return root;
     }
 
@@ -144,6 +145,7 @@ public class SocketBindingGroupDescription {
         root.get(REQUEST_PROPERTIES, DEFAULT_INTERFACE, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, DEFAULT_INTERFACE, DESCRIPTION).set(bundle.getString("socket_binding_group.add.default-interface"));
         root.get(REQUEST_PROPERTIES, DEFAULT_INTERFACE, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, DEFAULT_INTERFACE, EXPRESSIONS_ALLOWED).set(true);
         root.get(REQUEST_PROPERTIES, DEFAULT_INTERFACE, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, DEFAULT_INTERFACE, NILLABLE).set(false);
         root.get(REPLY_PROPERTIES).setEmptyObject();
@@ -241,11 +243,13 @@ public class SocketBindingGroupDescription {
         root.get(REQUEST_PROPERTIES, INTERFACE, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, INTERFACE, DESCRIPTION).set(bundle.getString("socket_binding.add.interface"));
         root.get(REQUEST_PROPERTIES, INTERFACE, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, INTERFACE, EXPRESSIONS_ALLOWED).set(true);
         root.get(REQUEST_PROPERTIES, INTERFACE, MIN_LENGTH).set(1);
         root.get(REQUEST_PROPERTIES, INTERFACE, NILLABLE).set(true);
         root.get(REQUEST_PROPERTIES, PORT, TYPE).set(ModelType.INT);
         root.get(REQUEST_PROPERTIES, PORT, DESCRIPTION).set(bundle.getString("socket_binding.add.port"));
         root.get(REQUEST_PROPERTIES, PORT, REQUIRED).set(true);
+        root.get(REQUEST_PROPERTIES, PORT, EXPRESSIONS_ALLOWED).set(true);
         root.get(REQUEST_PROPERTIES, PORT, MIN).set(0);
         root.get(REQUEST_PROPERTIES, PORT, MAX).set(65535);
         root.get(REQUEST_PROPERTIES, FIXED_PORT, TYPE).set(ModelType.INT);
@@ -254,10 +258,12 @@ public class SocketBindingGroupDescription {
         root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, TYPE).set(ModelType.INT);
         root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, DESCRIPTION).set(bundle.getString("socket_binding.add.multicast-address"));
         root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, EXPRESSIONS_ALLOWED).set(true);
         root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, NILLABLE).set(true);
         root.get(REQUEST_PROPERTIES, MULTICAST_PORT, TYPE).set(ModelType.INT);
         root.get(REQUEST_PROPERTIES, MULTICAST_PORT, DESCRIPTION).set(bundle.getString("socket_binding.add.multicast-port"));
         root.get(REQUEST_PROPERTIES, MULTICAST_PORT, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, MULTICAST_PORT, EXPRESSIONS_ALLOWED).set(true);
         root.get(REQUEST_PROPERTIES, MULTICAST_PORT, MIN).set(1);
         root.get(REQUEST_PROPERTIES, MULTICAST_PORT, MAX).set(65535);
         root.get(REPLY_PROPERTIES).setEmptyObject();
