@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -52,6 +53,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ProxyMetadataSource;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -86,7 +88,6 @@ public class ComponentDescription {
     private ServiceName contextServiceName;
     private final String componentName;
     private final String componentClassName;
-    private final EEApplicationClasses applicationClassesDescription;
     private final EEModuleDescription moduleDescription;
 
     private List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
@@ -113,6 +114,11 @@ public class ComponentDescription {
     private final Deque<ComponentConfigurator> configurators = new ArrayDeque<ComponentConfigurator>();
 
     /**
+     * Interceptors methods that have been defined by the deployment descriptor
+     */
+    private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
+
+    /**
      * If this component is deployed in a bean deployment archive this stores the id of the BDA
      */
     private String beanDeploymentArchiveId;
@@ -125,15 +131,13 @@ public class ComponentDescription {
     /**
      * Construct a new instance.
      *
-     * @param componentName                 the component name
-     * @param componentClassName            the component instance class name
-     * @param moduleDescription             the EE module description
-     * @param deploymentUnitServiceName     the service name of the DU containing this component
-     * @param applicationClassesDescription
+     * @param componentName             the component name
+     * @param componentClassName        the component instance class name
+     * @param moduleDescription         the EE module description
+     * @param deploymentUnitServiceName the service name of the DU containing this component
      */
-    public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
+    public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName) {
         this.moduleDescription = moduleDescription;
-        this.applicationClassesDescription = applicationClassesDescription;
         if (componentName == null) {
             throw new IllegalArgumentException("name is null");
         }
@@ -390,13 +394,23 @@ public class ComponentDescription {
      * <p/>
      * This is used to set the final interceptor order after it has been modifier by the deployment descriptor
      *
-     * @param identifier
-     * @param interceptorDescriptions
+     * @param identifier              the method identifier
+     * @param interceptorDescriptions The interceptors
      */
     public void setMethodInterceptors(MethodIdentifier identifier, List<InterceptorDescription> interceptorDescriptions) {
         methodInterceptors.put(identifier, interceptorDescriptions);
         methodExcludeClassInterceptors.add(identifier);
         methodExcludeDefaultInterceptors.add(identifier);
+    }
+
+    /**
+     * Adds an interceptor class method override, merging it with existing overrides (if any)
+     *
+     * @param className The class name
+     * @param override  The method override
+     */
+    public void addInterceptorMethodOverride(final String className, final InterceptorClassDescription override) {
+        interceptorClassOverrides.put(className, InterceptorClassDescription.merge(interceptorClassOverrides.get(className), override));
     }
 
     /**
@@ -420,6 +434,9 @@ public class ComponentDescription {
         this.namingMode = namingMode;
     }
 
+    /**
+     * @return The module description for the component
+     */
     public EEModuleDescription getModuleDescription() {
         return moduleDescription;
     }
@@ -527,9 +544,10 @@ public class ComponentDescription {
             final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
             final Object instanceKey = BasicComponentInstance.INSTANCE_KEY;
             final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-            final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
             final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+            final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
             final ProxyMetadataSource proxyReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.PROXY_REFLECTION_INDEX);
+            final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
 
             // Module stuff
 
@@ -575,7 +593,10 @@ public class ComponentDescription {
             new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
 
                 @Override
-                public void handle(EEModuleClassConfiguration classConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                public void handle(Class<?> clazz, EEModuleClassConfiguration classConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    if (classConfiguration == null) {
+                        return;
+                    }
                     for (final ResourceInjectionConfiguration injectionConfiguration : classConfiguration.getInjectionConfigurations()) {
                         final Object valueContextKey = new Object();
                         final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
@@ -596,20 +617,20 @@ public class ComponentDescription {
 
             for (final InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
                 final String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                final Class<?> interceptorClass;
+                final ClassIndex interceptorClass;
                 try {
-                    interceptorClass = module.getClassLoader().loadClass(interceptorClassName);
+                    interceptorClass = classIndex.classIndex(interceptorClassName);
                 } catch (ClassNotFoundException e) {
-                    throw new DeploymentUnitProcessingException("Could not load interceptor class " + interceptorClassName + " on component " + configuration.getComponentClass(), e);
+                    throw new RuntimeException("Could not load interceptor class " + interceptorClassName, e);
                 }
 
 
                 //we store the interceptor instance under the class key
-                final Object contextKey = interceptorClass;
+                final Object contextKey = interceptorClass.getModuleClass();
 
-                final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
+                final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass.getModuleClass());
                 final Constructor<?> constructor = interceptorIndex.getConstructor(EMPTY_CLASS_ARRAY);
-                if(constructor == null) {
+                if (constructor == null) {
                     throw new DeploymentUnitProcessingException("No default constructor for interceptor class " + interceptorClassName + " on component " + configuration.getComponentClass());
                 }
 
@@ -619,27 +640,34 @@ public class ComponentDescription {
 
                 final boolean interceptorHasLifecycleCallbacks = interceptorWithLifecycleCallbacks.contains(interceptorDescription);
 
-                new ClassDescriptionTraversal(interceptorClass, applicationClasses) {
+                new ClassDescriptionTraversal(interceptorClass.getModuleClass(), applicationClasses) {
                     @Override
-                    public void handle(EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                        final ClassReflectionIndex<?> interceptorClassIndex = deploymentReflectionIndex.getClassIndex(interceptorClassConfiguration.getModuleClass());
-
-                        for (final ResourceInjectionConfiguration injectionConfiguration : interceptorClassConfiguration.getInjectionConfigurations()) {
-                            final Object valueContextKey = new Object();
-                            final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
-                            configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
-                            injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(contextKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
-                            uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
+                    public void handle(final Class<?> clazz, EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                        final ClassReflectionIndex<?> interceptorClassIndex = deploymentReflectionIndex.getClassIndex(clazz);
+                        if (interceptorClassConfiguration != null) {
+                            for (final ResourceInjectionConfiguration injectionConfiguration : interceptorClassConfiguration.getInjectionConfigurations()) {
+                                final Object valueContextKey = new Object();
+                                final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
+                                configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
+                                injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(contextKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
+                                uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
+                            }
+                        }
+                        final InterceptorClassDescription interceptorConfig;
+                        if (classDescription != null) {
+                            interceptorConfig = InterceptorClassDescription.merge(classDescription.getInterceptorClassDescription(), moduleDescription.getInterceptorClassOverride(clazz.getName()));
+                        } else {
+                            interceptorConfig = InterceptorClassDescription.merge(null, moduleDescription.getInterceptorClassOverride(clazz.getName()));
                         }
                         // Only class level interceptors are processed for postconstruct/predestroy methods.
                         // Method level interceptors aren't supposed to be processed for postconstruct/predestroy lifecycle
                         // methods, as per interceptors spec
                         if (interceptorHasLifecycleCallbacks) {
-                            final MethodIdentifier postConstructMethodIdentifier = classDescription.getPostConstructMethod();
+                            final MethodIdentifier postConstructMethodIdentifier = interceptorConfig.getPostConstruct();
                             if (postConstructMethodIdentifier != null) {
                                 final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, postConstructMethodIdentifier);
 
-                                if (isNotOverriden(interceptorClassConfiguration, method, interceptorIndex, deploymentReflectionIndex)) {
+                                if (isNotOverriden(clazz, method, interceptorIndex, deploymentReflectionIndex)) {
                                     InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true, true);
                                     List<InterceptorFactory> userPostConstruct = userPostConstructByInterceptorClass.get(interceptorClassName);
                                     if (userPostConstruct == null) {
@@ -648,10 +676,10 @@ public class ComponentDescription {
                                     userPostConstruct.add(interceptorFactory);
                                 }
                             }
-                            final MethodIdentifier preDestroyMethodIdentifier = classDescription.getPreDestroyMethod();
+                            final MethodIdentifier preDestroyMethodIdentifier = interceptorConfig.getPreDestroy();
                             if (preDestroyMethodIdentifier != null) {
                                 final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, preDestroyMethodIdentifier);
-                                if (isNotOverriden(interceptorClassConfiguration, method, interceptorIndex, deploymentReflectionIndex)) {
+                                if (isNotOverriden(clazz, method, interceptorIndex, deploymentReflectionIndex)) {
                                     InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, true, true);
                                     List<InterceptorFactory> userPreDestroy = userPreDestroyByInterceptorClass.get(interceptorClassName);
                                     if (userPreDestroy == null) {
@@ -661,10 +689,10 @@ public class ComponentDescription {
                                 }
                             }
                         }
-                        final MethodIdentifier aroundInvokeMethodIdentifier = classDescription.getAroundInvokeMethod();
+                        final MethodIdentifier aroundInvokeMethodIdentifier = interceptorConfig.getAroundInvoke();
                         if (aroundInvokeMethodIdentifier != null) {
                             final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, aroundInvokeMethodIdentifier);
-                            if (isNotOverriden(interceptorClassConfiguration, method, interceptorIndex, deploymentReflectionIndex)) {
+                            if (isNotOverriden(clazz, method, interceptorIndex, deploymentReflectionIndex)) {
                                 List<InterceptorFactory> interceptors;
                                 if ((interceptors = userAroundInvokesByInterceptorClass.get(interceptorClassName)) == null) {
                                     userAroundInvokesByInterceptorClass.put(interceptorClassName, interceptors = new ArrayList<InterceptorFactory>());
@@ -673,10 +701,10 @@ public class ComponentDescription {
                             }
                         }
                         if (description.isTimerServiceApplicable()) {
-                            final MethodIdentifier aroundTimeoutMethodIdentifier = classDescription.getAroundTimeoutMethod();
+                            final MethodIdentifier aroundTimeoutMethodIdentifier = interceptorConfig.getAroundTimeout();
                             if (aroundTimeoutMethodIdentifier != null) {
                                 final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, interceptorClassIndex, aroundTimeoutMethodIdentifier);
-                                if (isNotOverriden(interceptorClassConfiguration, method, interceptorIndex, deploymentReflectionIndex)) {
+                                if (isNotOverriden(clazz, method, interceptorIndex, deploymentReflectionIndex)) {
                                     List<InterceptorFactory> interceptors;
                                     if ((interceptors = userAroundTimeoutsByInterceptorClass.get(interceptorClassName)) == null) {
                                         userAroundTimeoutsByInterceptorClass.put(interceptorClassName, interceptors = new ArrayList<InterceptorFactory>());
@@ -707,37 +735,41 @@ public class ComponentDescription {
 
             new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
                 @Override
-                public void handle(EEModuleClassConfiguration configuration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(configuration.getModuleClass());
-                    final MethodIdentifier componentPostConstructMethodIdentifier = classDescription.getPostConstructMethod();
+                public void handle(final Class<?> clazz, EEModuleClassConfiguration classConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(clazz);
+
+                    final InterceptorClassDescription interceptorConfig = mergeInterceptorConfig(clazz, classDescription, description);
+
+                    final MethodIdentifier componentPostConstructMethodIdentifier = interceptorConfig.getPostConstruct();
                     if (componentPostConstructMethodIdentifier != null) {
                         final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, componentPostConstructMethodIdentifier);
-                        if (isNotOverriden(configuration, method, componentClassIndex, deploymentReflectionIndex)) {
+
+                        if (isNotOverriden(clazz, method, componentClassIndex, deploymentReflectionIndex)) {
                             InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true, true);
                             userPostConstruct.addLast(interceptorFactory);
                         }
                     }
-                    final MethodIdentifier componentPreDestroyMethodIdentifier = classDescription.getPreDestroyMethod();
+                    final MethodIdentifier componentPreDestroyMethodIdentifier = interceptorConfig.getPreDestroy();
                     if (componentPreDestroyMethodIdentifier != null) {
                         final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, componentPreDestroyMethodIdentifier);
-                        if (isNotOverriden(configuration, method, componentClassIndex, deploymentReflectionIndex)) {
+                        if (isNotOverriden(clazz, method, componentClassIndex, deploymentReflectionIndex)) {
                             InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, true, true);
                             userPreDestroy.addLast(interceptorFactory);
                         }
                     }
-                    final MethodIdentifier componentAroundInvokeMethodIdentifier = classDescription.getAroundInvokeMethod();
+                    final MethodIdentifier componentAroundInvokeMethodIdentifier = interceptorConfig.getAroundInvoke();
                     if (componentAroundInvokeMethodIdentifier != null) {
                         final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, componentAroundInvokeMethodIdentifier);
 
-                        if (isNotOverriden(configuration, method, componentClassIndex, deploymentReflectionIndex)) {
+                        if (isNotOverriden(clazz, method, componentClassIndex, deploymentReflectionIndex)) {
                             componentUserAroundInvoke.add(new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false));
                         }
                     }
                     if (description.isTimerServiceApplicable()) {
-                        final MethodIdentifier componentAroundTimeoutMethodIdentifier = classDescription.getAroundTimeoutMethod();
+                        final MethodIdentifier componentAroundTimeoutMethodIdentifier = interceptorConfig.getAroundTimeout();
                         if (componentAroundTimeoutMethodIdentifier != null) {
                             final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, classReflectionIndex, componentAroundTimeoutMethodIdentifier);
-                            if (isNotOverriden(configuration, method, componentClassIndex, deploymentReflectionIndex)) {
+                            if (isNotOverriden(clazz, method, componentClassIndex, deploymentReflectionIndex)) {
                                 componentUserAroundTimeout.add(new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, false));
                             }
                         }
@@ -913,8 +945,18 @@ public class ComponentDescription {
             });
         }
 
-        private boolean isNotOverriden(final EEModuleClassConfiguration configuration, final Method method, final ClassReflectionIndex<?> componentClassIndex, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-            return Modifier.isPrivate(method.getModifiers()) || ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, componentClassIndex, method).getDeclaringClass() == configuration.getModuleClass();
+        private InterceptorClassDescription mergeInterceptorConfig(final Class<?> clazz, final EEModuleClassDescription classDescription, final ComponentDescription description) {
+            final InterceptorClassDescription interceptorConfig;
+            if (classDescription != null) {
+                interceptorConfig = InterceptorClassDescription.merge(classDescription.getInterceptorClassDescription(), description.interceptorClassOverrides.get(clazz.getName()));
+            } else {
+                interceptorConfig = InterceptorClassDescription.merge(null, description.interceptorClassOverrides.get(clazz.getName()));
+            }
+            return interceptorConfig;
+        }
+
+        private boolean isNotOverriden(final Class<?> clazz, final Method method, final ClassReflectionIndex<?> componentClassIndex, final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
+            return Modifier.isPrivate(method.getModifiers()) || ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, componentClassIndex, method).getDeclaringClass() == clazz;
         }
     }
 

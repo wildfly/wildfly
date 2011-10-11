@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceName;
 public final class WebComponentDescription extends ComponentDescription {
 
     public WebComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
-        super(componentName, componentClassName, moduleDescription, deploymentUnitServiceName, applicationClassesDescription);
+        super(componentName, componentClassName, moduleDescription, deploymentUnitServiceName);
         setExcludeDefaultInterceptors(true);
     }
 

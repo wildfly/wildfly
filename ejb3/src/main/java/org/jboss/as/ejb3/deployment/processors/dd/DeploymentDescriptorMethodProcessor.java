@@ -21,17 +21,26 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import javax.interceptor.InvocationContext;
+
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.modules.Module;
+import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.AroundInvokeMetaData;
+import org.jboss.metadata.ejb.spec.AroundInvokesMetaData;
+import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
+import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
+import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
 
 /**
  * Deployment descriptor that resolves interceptor methods definined in ejb-jar.xml that could not be resolved at
@@ -42,45 +51,85 @@ import org.jboss.modules.Module;
 public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentReflectionIndex index = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
-        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
 
-        for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
-            if (component instanceof EJBComponentDescription) {
-                final EJBComponentDescription ejb = (EJBComponentDescription) component;
-                if (!ejb.getAroundInvokeDDMethods().isEmpty() || !ejb.getPostConstructDDMethods().isEmpty() || !ejb.getPreDestroyDDMethods().isEmpty()) {
-                    if(0 == 0) {
-                        return;
-                    }
-                    /*
+        if (eeModuleDescription != null) {
+            for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
+                if (component instanceof SessionBeanComponentDescription) {
                     try {
-                        final Class<?> clazz = module.getClassLoader().loadClass(ejb.getComponentClassName());
-                        for (String aroundInvoke : ejb.getAroundInvokeDDMethods()) {
-                            final MethodIdentifier aroundInvokeIdentifier = MethodIdentifier.getIdentifier(Object.class, aroundInvoke, InvocationContext.class);
-                            Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), aroundInvokeIdentifier);
-                            applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setAroundInvokeMethod(aroundInvokeIdentifier);
-                        }
-                        for (String preDestroy : ejb.getPreDestroyDDMethods()) {
-                            final MethodIdentifier preDestroyIdentifier = MethodIdentifier.getIdentifier(void.class, preDestroy);
-                            final Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), preDestroyIdentifier);
-                            applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setPreDestroyMethod(preDestroyIdentifier);
-                        }
-                        for (String postConstruct : ejb.getPostConstructDDMethods()) {
-                            final MethodIdentifier postConstructIdentifier = MethodIdentifier.getIdentifier(void.class, postConstruct);
-                            final Method method = ClassReflectionIndexUtil.findRequiredMethod(index, index.getClassIndex(clazz), postConstructIdentifier);
-                            applicationClassesDescription.getOrAddClassByName(method.getDeclaringClass().getName()).setPostConstructMethod(postConstructIdentifier);
-                        }
-
+                        handleSessionBean((SessionBeanComponentDescription)component, classIndex, reflectionIndex);
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load component class " + ejb.getComponentClassName());
-                    }*/
-
+                        throw new DeploymentUnitProcessingException("Could not load component class", e);
+                    }
                 }
             }
         }
+
+
+    }
+
+    private void handleSessionBean(final SessionBeanComponentDescription component, final DeploymentClassIndex classIndex, final DeploymentReflectionIndex reflectionIndex) throws ClassNotFoundException, DeploymentUnitProcessingException {
+
+        if(component.getDescriptorData() == null) {
+            return;
+        }
+        final ClassIndex componentClass = classIndex.classIndex(component.getComponentClassName());
+
+        final SessionBeanMetaData metaData = component.getDescriptorData();
+
+            AroundInvokesMetaData aroundInvokes = metaData.getAroundInvokes();
+            if (aroundInvokes != null) {
+                for (AroundInvokeMetaData aroundInvoke : aroundInvokes) {
+                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                    String methodName = aroundInvoke.getMethodName();
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, InvocationContext.class);
+                    builder.setAroundInvoke(methodIdentifier);
+                    if (aroundInvoke.getClassName() == null || aroundInvoke.getClassName().isEmpty()) {
+                        final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), methodIdentifier).getDeclaringClass().getName();
+                        component.addInterceptorMethodOverride(className, builder.build());
+                    } else {
+                        component.addInterceptorMethodOverride(aroundInvoke.getClassName(), builder.build());
+                    }
+                }
+            }
+
+            // post-construct(s) of the interceptor configured (if any) in the deployment descriptor
+            LifecycleCallbacksMetaData postConstructs = metaData.getPostConstructs();
+            if (postConstructs != null) {
+                for (LifecycleCallbackMetaData postConstruct : postConstructs) {
+                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                    String methodName = postConstruct.getMethodName();
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
+                    builder.setPostConstruct(methodIdentifier);
+                    if (postConstruct.getClassName() == null || postConstruct.getClassName().isEmpty()) {
+                        final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()) , methodIdentifier).getDeclaringClass().getName();
+                        component.addInterceptorMethodOverride(className, builder.build());
+                    } else {
+                        component.addInterceptorMethodOverride(postConstruct.getClassName(), builder.build());
+                    }
+                }
+            }
+
+            // pre-destroy(s) of the interceptor configured (if any) in the deployment descriptor
+            LifecycleCallbacksMetaData preDestroys = metaData.getPreDestroys();
+            if (preDestroys != null) {
+                for (LifecycleCallbackMetaData preDestroy : preDestroys) {
+                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
+                    String methodName = preDestroy.getMethodName();
+                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
+                    builder.setPreDestroy(methodIdentifier);
+                    if (preDestroy.getClassName() == null || preDestroy.getClassName().isEmpty()) {
+                        final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()) , methodIdentifier).getDeclaringClass().getName();
+                        component.addInterceptorMethodOverride(className, builder.build());
+                    } else {
+                        component.addInterceptorMethodOverride(preDestroy.getClassName(), builder.build());
+                    }
+                }
+            }
     }
 
     @Override

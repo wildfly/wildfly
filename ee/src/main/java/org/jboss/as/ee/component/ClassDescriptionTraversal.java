@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ee.component;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
@@ -40,18 +40,25 @@ public abstract class ClassDescriptionTraversal {
 
     public void run() throws DeploymentUnitProcessingException {
         Class<?> clazz = this.clazz;
-        final Deque<EEModuleClassConfiguration> queue = new ArrayDeque<EEModuleClassConfiguration>();
+        final List<EEModuleClassConfiguration> queue = new ArrayList<EEModuleClassConfiguration>();
+        final List<Class<?>> classQueue = new ArrayList<Class<?>>();
         while (clazz != null && clazz != Object.class) {
-            EEModuleClassConfiguration configuration = applicationClasses.getClassConfiguration(clazz.getName());
-            if (configuration != null) {
-                queue.addFirst(configuration);
-            }
+            final EEModuleClassConfiguration configuration = applicationClasses.getClassConfiguration(clazz.getName());
+            queue.add(configuration);
+            classQueue.add(clazz);
             clazz = clazz.getSuperclass();
         }
+        for (int i = queue.size() - 1; i >= 0; --i) {
+            final EEModuleClassConfiguration config = queue.get(i);
+            if(config != null) {
+                handle(classQueue.get(i), config, config.getModuleClassDescription());
+            } else {
+                handle(classQueue.get(i), null, null);
+            }
+        }
         for (EEModuleClassConfiguration configuration : queue) {
-            handle(configuration, configuration.getModuleClassDescription());
         }
     }
 
-    protected abstract void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
+    protected abstract void handle(final Class<?> clazz, final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
 }

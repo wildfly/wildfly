@@ -29,8 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
-import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
  * The description of a (possibly annotated) class in an EE module.
@@ -44,13 +44,10 @@ public final class EEModuleClassDescription {
 
     private final String className;
     private final Deque<ClassConfigurator> configurators = new LinkedBlockingDeque<ClassConfigurator>();
-    private MethodIdentifier postConstructMethod;
-    private MethodIdentifier preDestroyMethod;
-    private MethodIdentifier aroundInvokeMethod;
-    private MethodIdentifier aroundTimeoutMethod;
     private boolean invalid;
     private StringBuilder invalidMessageBuilder;
     private final Map<Class<? extends Annotation>, ClassAnnotationInformation<?,?>> annotationInformation = Collections.synchronizedMap(new HashMap<Class<? extends Annotation>, ClassAnnotationInformation<?, ?>>());
+    private InterceptorClassDescription interceptorClassDescription = InterceptorClassDescription.EMPTY_INSTANCE;
 
     public EEModuleClassDescription(final String className) {
         this.className = className;
@@ -65,76 +62,15 @@ public final class EEModuleClassDescription {
         return className;
     }
 
-    /**
-     * Get the method, if any, which has been marked as an around-invoke interceptor.
-     *
-     * @return the around-invoke method or {@code null} for none
-     */
-    public MethodIdentifier getAroundInvokeMethod() {
-        return aroundInvokeMethod;
+    public InterceptorClassDescription getInterceptorClassDescription() {
+        return interceptorClassDescription;
     }
 
-    /**
-     * Set the method which has been marked as an around-invoke interceptor.
-     *
-     * @param aroundInvokeMethod the around-invoke method or {@code null} for none
-     */
-    public void setAroundInvokeMethod(final MethodIdentifier aroundInvokeMethod) {
-        this.aroundInvokeMethod = aroundInvokeMethod;
-    }
-
-    /**
-     * Get the method, if any, which has been marked as an around-timeout interceptor.
-     *
-     * @return the around-timout method or {@code null} for none
-     */
-    public MethodIdentifier getAroundTimeoutMethod() {
-        return aroundTimeoutMethod;
-    }
-
-    /**
-     * Set the method which has been marked as an around-timeout interceptor.
-     *
-     * @param aroundTimeoutMethod the around-timeout method or {@code null} for none
-     */
-    public void setAroundTimeoutMethod(final MethodIdentifier aroundTimeoutMethod) {
-        this.aroundTimeoutMethod = aroundTimeoutMethod;
-    }
-
-    /**
-     * Get the method, if any, which has been marked as a post-construct interceptor.
-     *
-     * @return the post-construct method or {@code null} for none
-     */
-    public MethodIdentifier getPostConstructMethod() {
-        return postConstructMethod;
-    }
-
-    /**
-     * Set the method which has been marked as a post-construct interceptor.
-     *
-     * @param postConstructMethod the post-construct method or {@code null} for none
-     */
-    public void setPostConstructMethod(final MethodIdentifier postConstructMethod) {
-        this.postConstructMethod = postConstructMethod;
-    }
-
-    /**
-     * Get the method, if any, which has been marked as a pre-destroy interceptor.
-     *
-     * @return the pre-destroy method or {@code null} for none
-     */
-    public MethodIdentifier getPreDestroyMethod() {
-        return preDestroyMethod;
-    }
-
-    /**
-     * Set the method which has been marked as a pre-destroy interceptor.
-     *
-     * @param preDestroyMethod the pre-destroy method or {@code null} for none
-     */
-    public void setPreDestroyMethod(final MethodIdentifier preDestroyMethod) {
-        this.preDestroyMethod = preDestroyMethod;
+    public void setInterceptorClassDescription(final InterceptorClassDescription interceptorClassDescription) {
+        if(interceptorClassDescription == null) {
+            throw new IllegalArgumentException("InterceptorClassDescription cannot be null");
+        }
+        this.interceptorClassDescription = interceptorClassDescription;
     }
 
     /**

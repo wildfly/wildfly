@@ -27,7 +27,6 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -119,60 +118,12 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
             sessionBeanDescription.addRemoteBusinessInterfaceViews(businessRemotes);
         }
 
-        // interceptors
-        this.processInterceptors(sessionBean, sessionBeanDescription, applicationClassesDescription);
-
         // process EJB3.1 specific session bean description
         if (sessionBean instanceof SessionBean31MetaData) {
             this.processSessionBean31((SessionBean31MetaData) sessionBean, sessionBeanDescription);
         }
     }
 
-    protected void processInterceptors(SessionBeanMetaData enterpriseBean, EJBComponentDescription ejbComponentDescription, final EEApplicationClasses applicationClassesDescription) {
-
-        //for interceptor methods that specify a null class we cannot deal with them here
-        //instead we stick them on the component configuration, and deal with them once we have a module
-        if(0 ==0 ) {
-            return;
-        }
-        /*
-        if (enterpriseBean.getAroundInvokes() != null) {
-            for (AroundInvokeMetaData interceptor : enterpriseBean.getAroundInvokes()) {
-
-                if (interceptor.getClassName() == null) {
-                    ejbComponentDescription.getAroundInvokeDDMethods().add(interceptor.getMethodName());
-                } else {
-                    EEModuleClassDescription interceptorModuleClassDescription = applicationClassesDescription.getOrAddClassByName(interceptor.getClassName());
-                    final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
-                    interceptorModuleClassDescription.setAroundInvokeMethod(identifier);
-                }
-            }
-        }
-        if (enterpriseBean.getPreDestroys() != null) {
-            for (LifecycleCallbackMetaData interceptor : enterpriseBean.getPreDestroys()) {
-                if (interceptor.getClassName() == null) {
-                    ejbComponentDescription.getPreDestroyDDMethods().add(interceptor.getMethodName());
-                } else {
-                    final EEModuleClassDescription interceptorModuleClassDescription = applicationClassesDescription.getOrAddClassByName(interceptor.getClassName());
-                    final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
-                    interceptorModuleClassDescription.setPreDestroyMethod(identifier);
-                }
-            }
-        }
-
-        if (enterpriseBean.getPostConstructs() != null) {
-            for (LifecycleCallbackMetaData interceptor : enterpriseBean.getPostConstructs()) {
-                if (interceptor.getClassName() == null) {
-                    ejbComponentDescription.getPostConstructDDMethods().add(interceptor.getMethodName());
-                } else {
-                    final EEModuleClassDescription interceptorModuleClassDescription = applicationClassesDescription.getOrAddClassByName(interceptor.getClassName());
-                    final MethodIdentifier identifier = MethodIdentifier.getIdentifier(Object.class, interceptor.getMethodName(), InvocationContext.class);
-                    interceptorModuleClassDescription.setPostConstructMethod(identifier);
-                }
-            }
-        }
-*/
-    }
 
 
     private void processSessionBean31(SessionBean31MetaData sessionBean31MetaData, SessionBeanComponentDescription sessionBeanComponentDescription) {

@@ -39,7 +39,6 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
@@ -187,8 +186,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             // The bindings for the component class
             new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
                 @Override
-                protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
+                protected void handle(final Class<?> clazz, final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    if (classConfiguration != null) {
+                        processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
+                    }
                 }
             }.run();
 
@@ -203,8 +204,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 if (interceptorClass != null) {
                     new ClassDescriptionTraversal(interceptorClass, applicationClasses) {
                         @Override
-                        protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
+                        protected void handle(final Class<?> clazz, final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                            if (classConfiguration != null) {
+                                processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
+                            }
                         }
                     }.run();
                 }

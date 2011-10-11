@@ -22,12 +22,10 @@
 
 package org.jboss.as.ee.component;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -70,11 +68,6 @@ public final class EEModuleClassConfiguration {
     // MSC dependencies
     private final Map<ServiceName, InjectedValue<Object>> dependencyInjections = new HashMap<ServiceName, InjectedValue<Object>>();
 
-
-    /**
-     * Lazily initialized set of all methods on the class, taken from the deployment reflection index.
-     */
-    private volatile Set<Method> classMethods;
 
     public EEModuleClassConfiguration(final Class<?> moduleClass, EEModuleClassDescription moduleClassDescription) {
         this.moduleClass = moduleClass;

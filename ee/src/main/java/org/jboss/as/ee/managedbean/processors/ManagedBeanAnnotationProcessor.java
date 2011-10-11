@@ -102,7 +102,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
-            final ComponentDescription componentDescription = new ComponentDescription(beanName, beanClassName, moduleDescription, deploymentUnit.getServiceName(), applicationClasses);
+            final ComponentDescription componentDescription = new ComponentDescription(beanName, beanClassName, moduleDescription, deploymentUnit.getServiceName());
 
             // Add the view
             ViewDescription viewDescription = new ViewDescription(componentDescription, beanClassName);

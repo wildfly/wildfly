@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -98,10 +99,12 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
         } else {
             methodIdentifier = MethodIdentifier.getIdentifier(Void.TYPE, methodInfo.name(), InvocationContext.class);
         }
+        final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder(classDescription.getInterceptorClassDescription());
         if (annotationType == POST_CONSTRUCT_ANNOTATION) {
-            classDescription.setPostConstructMethod(methodIdentifier);
+            builder.setPostConstruct(methodIdentifier);
         } else {
-            classDescription.setPreDestroyMethod(methodIdentifier);
+            builder.setPreDestroy(methodIdentifier);
         }
+        classDescription.setInterceptorClassDescription(builder.build());
     }
 }

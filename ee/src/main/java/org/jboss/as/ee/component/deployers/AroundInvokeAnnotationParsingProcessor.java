@@ -30,6 +30,7 @@ import javax.interceptor.InvocationContext;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -76,7 +77,9 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
         final EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
 
         validateArgumentType(classInfo, methodInfo);
-        classDescription.setAroundInvokeMethod(MethodIdentifier.getIdentifier(Object.class, methodInfo.name(), InvocationContext.class));
+        InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder(classDescription.getInterceptorClassDescription());
+        builder.setAroundInvoke(MethodIdentifier.getIdentifier(Object.class, methodInfo.name(), InvocationContext.class));
+        classDescription.setInterceptorClassDescription(builder.build());
     }
 
     private void validateArgumentType(final ClassInfo classInfo, final MethodInfo methodInfo) {

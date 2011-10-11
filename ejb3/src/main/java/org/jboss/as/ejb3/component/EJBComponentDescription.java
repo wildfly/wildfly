@@ -145,14 +145,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
 
     /**
-     * Stores around invoke methods that are referenced in the DD that cannot be resolved until the module is loaded
-     */
-    private final List<String> aroundInvokeDDMethods = new ArrayList<String>(0);
-    private final List<String> preDestroyDDMethods = new ArrayList<String>(0);
-    private final List<String> postConstructDDMethods = new ArrayList<String>(0);
-
-
-    /**
      * @Schedule methods
      */
     private final Map<Method, List<AutoTimer>> scheduleMethods = new IdentityHashMap<Method, List<AutoTimer>>();
@@ -227,7 +219,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param ejbJarDescription  the module
      */
     public EJBComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription, final ServiceName deploymentUnitServiceName) {
-        super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), deploymentUnitServiceName, ejbJarDescription.getApplicationClassesDescription());
+        super(componentName, componentClassName, ejbJarDescription.getEEModuleDescription(), deploymentUnitServiceName);
         if (ejbJarDescription.isWar()) {
             setNamingMode(ComponentNamingMode.USE_MODULE);
         } else {
@@ -802,17 +794,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
     }
 
-    public List<String> getAroundInvokeDDMethods() {
-        return aroundInvokeDDMethods;
-    }
-
-    public List<String> getPostConstructDDMethods() {
-        return postConstructDDMethods;
-    }
-
-    public List<String> getPreDestroyDDMethods() {
-        return preDestroyDDMethods;
-    }
 
     public TimerService getTimerService() {
         return timerService;

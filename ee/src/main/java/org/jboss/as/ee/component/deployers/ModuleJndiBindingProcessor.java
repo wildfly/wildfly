@@ -140,7 +140,10 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         for (final Class<?> clazz : classes) {
             new ClassDescriptionTraversal(clazz, applicationClasses) {
                 @Override
-                protected void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                protected void handle(final Class<?> currentClass, final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    if(configuration == null) {
+                        return;
+                    }
                     if (classDescription.isInvalid()) {
                         throw new DeploymentUnitProcessingException("Component class " + classDescription.getClassName() + " for component " + componentName + " has errors: \n " + classDescription.getInvalidMessage());
                     }

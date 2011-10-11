@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 
 /**
@@ -46,7 +47,7 @@ public final class EEModuleDescription {
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
     private final Map<String, EEModuleClassDescription> classDescriptions = new HashMap<String, EEModuleClassDescription>();
     private Map<String, LazyValue<EEModuleClassConfiguration>> classConfigurations;
-
+    private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
 
@@ -213,5 +214,23 @@ public final class EEModuleDescription {
             throw new IllegalArgumentException("Distinct name cannot be null");
         }
         this.distinctName = distinctName;
+    }
+
+    /**
+     * Get module level interceptor method overrides that are set up in ejb-jar.xml
+     * @param className The class name
+     * @return The overrides, or null if no overrides have been set up
+     */
+    public InterceptorClassDescription getInterceptorClassOverride(final String className) {
+        return interceptorClassOverrides.get(className);
+    }
+
+    /**
+     * Adds a module level interceptor class override, it is merged with any existing overrides if they exist
+     * @param className The class name
+     * @param override The override
+     */
+    public void addInterceptorMethodOverride(final String className, final InterceptorClassDescription override) {
+        interceptorClassOverrides.put(className, InterceptorClassDescription.merge(interceptorClassOverrides.get(className), override));
     }
 }
