@@ -23,7 +23,7 @@ package org.jboss.as.testsuite.integration.security.loginmodules.usersroles;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.jboss.as.testsuite.integration.security.loginmodules.common.Utils.*;
+import static org.jboss.as.testsuite.integration.security.loginmodules.common.Utils.hash;
 
 import java.util.HashMap;
 

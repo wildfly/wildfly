@@ -26,7 +26,9 @@ import static org.jboss.as.security.Constants.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.*;
+
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.RuntimeException;
 import java.net.InetAddress;
 import java.net.URL;
@@ -44,7 +46,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.security.Constants;
-import org.jboss.as.testsuite.integration.websecurity.*;
+import org.jboss.as.testsuite.integration.websecurity.UnsecuredEJB;
+import org.jboss.as.testsuite.integration.websecurity.UnsecuredEJBImpl;
+import org.jboss.as.testsuite.integration.websecurity.UnsecuredServlet;
+import org.jboss.as.testsuite.integration.websecurity.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
