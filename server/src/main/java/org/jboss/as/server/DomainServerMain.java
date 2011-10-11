@@ -157,7 +157,7 @@ public final class DomainServerMain {
             connection.removeListener(connectionListener);
 
             //Connect to the new HC address
-            addCommunicationServices(container, name, processName, authKey, new InetSocketAddress(InetAddress.getByName(hostName), port), managementSubsystemEndpoint);
+            addCommunicationServices(container, name, processName, authKey, new InetSocketAddress(InetAddress.getByName(hostName), port), managementSubsystemEndpoint, true);
 
         } catch (InterruptedIOException e) {
             Thread.interrupted();
@@ -176,13 +176,15 @@ public final class DomainServerMain {
     }
 
     private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final String serverProcessName, final byte[] authKey,
-            final InetSocketAddress managementSocket, final boolean managementSubsystemEndpoint) {
+            final InetSocketAddress managementSocket, final boolean managementSubsystemEndpoint, final boolean isReconnect) {
 
 
         final ServiceName endpointName;
         if (!managementSubsystemEndpoint) {
             endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
-            ManagementRemotingServices.installManagementRemotingEndpoint(serviceTarget, SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME));
+            if (!isReconnect) {
+                ManagementRemotingServices.installManagementRemotingEndpoint(serviceTarget, SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME));
+            }
         } else {
             endpointName = RemotingServices.SUBSYSTEM_ENDPOINT;
         }
@@ -217,7 +219,7 @@ public final class DomainServerMain {
         public void activate(final ServiceActivatorContext serviceActivatorContext) {
             final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
             // TODO - Correct the authKey propagation.
-            addCommunicationServices(serviceTarget, serverName, serverProcessName, authKey, managementSocket, managementSubsystemEndpoint);
+            addCommunicationServices(serviceTarget, serverName, serverProcessName, authKey, managementSocket, managementSubsystemEndpoint, false);
         }
     }
 

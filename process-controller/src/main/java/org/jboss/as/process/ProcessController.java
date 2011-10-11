@@ -22,6 +22,9 @@
 
 package org.jboss.as.process;
 
+import static org.jboss.as.process.ProcessLogger.ROOT_LOGGER;
+import static org.jboss.as.process.ProcessMessages.MESSAGES;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,20 +33,15 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import static org.jboss.as.process.ProcessLogger.SERVER_LOGGER;
 import org.jboss.as.process.protocol.Connection;
 import org.jboss.as.process.protocol.ProtocolServer;
 import org.jboss.as.process.protocol.StreamUtils;
-
-import static org.jboss.as.process.ProcessLogger.ROOT_LOGGER;
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -313,7 +311,7 @@ public final class ProcessController {
         }
     }
 
-    public void sendReconnectProcess(String processName, String hostName, int port) {
+    public void sendReconnectProcess(String processName, String hostName, int port, boolean managementSubsystemEndpoint) {
         synchronized (lock) {
             ManagedProcess process = processes.get(processName);
             if (process == null) {
@@ -321,7 +319,7 @@ public final class ProcessController {
                 // ignore
                 return;
             }
-            process.reconnect(hostName, port);
+            process.reconnect(hostName, port, managementSubsystemEndpoint);
         }
     }
 
