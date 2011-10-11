@@ -1027,14 +1027,14 @@ public class CommandLineMain {
                         NameCallback ncb = (NameCallback) current;
                         if (username == null) {
                             showRealm();
-                            username = readLine("Username:", false, true);
+                            username = readLine("Username: ", false, true);
                         }
                         ncb.setName(username);
                     } else if (current instanceof PasswordCallback) {
                         PasswordCallback pcb = (PasswordCallback) current;
                         if (password == null) {
                             showRealm();
-                            String temp = readLine("Password:", true, false);
+                            String temp = readLine("Password: ", true, false);
                             if (temp != null) {
                                 password = temp.toCharArray();
                             }
