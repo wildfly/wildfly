@@ -59,6 +59,7 @@ public class AsyncHandlerAssignSubhandler extends AbstractModelUpdateHandler {
 
     @Override
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        NAME.validateAndSet(operation, model);
         String handlerName = NAME.validateOperation(operation).asString();
         ModelNode assignedHandlers = model.get(SUBHANDLERS);
         if (assignedHandlers.isDefined() && assignedHandlers.asList().contains(operation.get(handlerName)))

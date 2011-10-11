@@ -43,6 +43,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
@@ -59,6 +60,7 @@ public class AsyncHandlerUpdateProperties extends AbstractModelUpdateHandler {
 
     @Override
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        NAME.validateAndSet(operation, model);
         LEVEL.validateAndSet(operation, model);
         FILTER.validateAndSet(operation, model);
         FORMATTER.validateAndSet(operation, model);
@@ -95,10 +97,6 @@ public class AsyncHandlerUpdateProperties extends AbstractModelUpdateHandler {
             }
             final AsyncHandler asyncHandler = AsyncHandler.class.cast(handler);
             asyncHandler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.validateResolvedOperation(operation).asString()));
-
-            // TODO (jrp) requires restart since it's in the AysncHandler constructor
-            if (queueLength.isDefined()) {
-            }
         }
     }
 }

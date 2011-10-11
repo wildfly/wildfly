@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.CATEGORY;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
@@ -49,6 +50,7 @@ class LoggerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         LEVEL.validateAndSet(operation, model);
+        CATEGORY.validateAndSet(operation, model);
         model.get(HANDLERS).set(operation.get(HANDLERS));
     }
 
@@ -59,12 +61,11 @@ class LoggerAdd extends AbstractAddStepHandler {
         final ModelNode handlers = model.get(HANDLERS);
 
         final ServiceTarget target = context.getServiceTarget();
-        final String loggerName = name;
         try {
             // Install logger service
-            final LoggerService service = new LoggerService(loggerName);
+            final LoggerService service = new LoggerService(name);
             if (level.isDefined()) service.setLevel(Level.parse(level.asString()));
-            newControllers.add(target.addService(LogServices.loggerName(loggerName), service)
+            newControllers.add(target.addService(LogServices.loggerName(name), service)
                     .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install());
@@ -74,7 +75,7 @@ class LoggerAdd extends AbstractAddStepHandler {
         try {
             // install logger handler services
             if (handlers.isDefined()) {
-                newControllers.addAll(LogServices.installLoggerHandlers(target, loggerName, handlers, verificationHandler));
+                newControllers.addAll(LogServices.installLoggerHandlers(target, name, handlers, verificationHandler));
             }
         } catch (Throwable t) {
             throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));

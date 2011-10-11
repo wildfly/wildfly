@@ -40,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 
 /**
  * Date: 23.09.2011
@@ -50,6 +51,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        NAME.validateAndSet(operation, model);
         ENCODING.validateAndSet(operation, model);
         FORMATTER.validateAndSet(operation, model);
         LEVEL.validateAndSet(operation, model);
@@ -93,4 +95,15 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
     protected abstract T createHandlerService(ModelNode model) throws OperationFailedException;
 
     protected abstract void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final T service, final ModelNode model) throws OperationFailedException;
+
+    /**
+     * Copies the attribute, represented by the {@code name} parameter, from one {@link ModelNode} to another.
+     *
+     * @param name the name of the attribute to copy.
+     * @param from the model node to copy the value from.
+     * @param to   the model node to copy the value to.
+     */
+    protected void copy(final String name, final ModelNode from, final ModelNode to) {
+        to.get(name).set(from.get(name));
+    }
 }

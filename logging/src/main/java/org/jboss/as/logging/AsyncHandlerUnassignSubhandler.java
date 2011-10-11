@@ -57,6 +57,7 @@ public class AsyncHandlerUnassignSubhandler extends AbstractModelUpdateHandler {
 
     @Override
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        NAME.validateAndSet(operation, model);
         ModelNode handlerNameNode = NAME.validateOperation(operation);
         String handlerName = handlerNameNode.asString();
         // Get a list of the current sub-handlers

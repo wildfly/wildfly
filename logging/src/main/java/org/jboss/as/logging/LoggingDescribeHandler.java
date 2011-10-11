@@ -37,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.CATEGORY;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.CONSOLE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
@@ -50,6 +51,7 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGER;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
@@ -86,6 +88,8 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
         if (model.hasDefined(LOGGER)) {
             for (Property prop : model.get(LOGGER).asPropertyList()) {
                 ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(LOGGER, prop.getName())).toModelNode());
+                copy(NAME, prop.getValue(), add);
+                copy(CATEGORY, prop.getValue(), add);
                 copy(USE_PARENT_HANDLERS, prop.getValue(), add);
                 copy(HANDLERS, prop.getValue(), add);
                 copy(LEVEL, prop.getValue(), add);
@@ -128,6 +132,7 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
     private ModelNode defineAsynchHandler(final String name, final ModelNode handler, final PathAddress rootAddress) throws OperationFailedException {
         ModelNode add = Util.getEmptyOperation(ADD, rootAddress.append(PathElement.pathElement(ASYNC_HANDLER, name)).toModelNode());
 
+        copy(NAME, handler, add);
         copy(LEVEL, handler, add);
         copy(FILTER, handler, add);
         copy(QUEUE_LENGTH, handler, add);
@@ -186,6 +191,7 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
 
         copyCommonFlushingHandlerAttributes(handler, add);
         copy(FILE, handler, add);
+        copy(APPEND, handler, add);
         copy(MAX_BACKUP_INDEX, handler, add);
         copy(ROTATE_SIZE, handler, add);
 
@@ -198,6 +204,7 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
     }
 
     private void copyCommonHandlerAttributes(final ModelNode from, final ModelNode to) throws OperationFailedException {
+        copy(NAME, from, to);
         copy(ENCODING, from, to);
         copy(FORMATTER, from, to);
         copy(LEVEL, from, to);
@@ -210,7 +217,7 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
     }
 
     private void copy(final AttributeDefinition definition, final ModelNode from, final ModelNode to) throws OperationFailedException {
-        definition.validateAndSet(definition.validateResolvedOperation(from), to);
+        copy(definition.getName(), from, to);
     }
 
     private void copy(final String name, final ModelNode from, final ModelNode to) {

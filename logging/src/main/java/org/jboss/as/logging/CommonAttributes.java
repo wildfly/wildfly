@@ -26,6 +26,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -42,13 +43,13 @@ interface CommonAttributes {
 
     String ANY = "any";
 
-    SimpleAttributeDefinition APPEND = new SimpleAttributeDefinitionBuilder("append", ModelType.BOOLEAN, false).
+    SimpleAttributeDefinition APPEND = new SimpleAttributeDefinitionBuilder("append", ModelType.BOOLEAN, true).
             setDefaultValue(new ModelNode().set(true)).
             build();
 
     String ASYNC_HANDLER = "async-handler";
 
-    SimpleAttributeDefinition AUTOFLUSH = new SimpleAttributeDefinitionBuilder("autoflush", ModelType.BOOLEAN, false).
+    SimpleAttributeDefinition AUTOFLUSH = new SimpleAttributeDefinitionBuilder("autoflush", ModelType.BOOLEAN, true).
             setDefaultValue(new ModelNode().set(true)).
             build();
 
@@ -82,7 +83,7 @@ interface CommonAttributes {
 
     String HANDLERS = "handlers";
 
-    SimpleAttributeDefinition LEVEL = new SimpleAttributeDefinitionBuilder("level", ModelType.STRING).
+    SimpleAttributeDefinition LEVEL = new SimpleAttributeDefinitionBuilder("level", ModelType.STRING, true).
             setDefaultValue(new ModelNode().set(Level.INFO.getName())).
             setValidator(new LogLevelValidator(false)).
             build();
@@ -135,11 +136,10 @@ interface CommonAttributes {
 
     SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinitionBuilder("property", ModelType.PROPERTY).build();
 
-    PropertiesAttributeDefinition PROPERTIES = PropertiesAttributeDefinition.Builder.of("properties", PROPERTY, NAME, VALUE).
-            setAllowNull(true).
-            build();
+    String PROPERTIES = "properties";
 
     SimpleAttributeDefinition QUEUE_LENGTH = new SimpleAttributeDefinitionBuilder("queue-length", ModelType.INT).
+            setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).
             setValidator(new IntRangeValidator(1, false)).
             build();
 
@@ -166,7 +166,7 @@ interface CommonAttributes {
 
     SimpleAttributeDefinition SUFFIX = new SimpleAttributeDefinitionBuilder("suffix", ModelType.STRING, true).build();
 
-    SimpleAttributeDefinition TARGET = new SimpleAttributeDefinitionBuilder("target", ModelType.STRING).
+    SimpleAttributeDefinition TARGET = new SimpleAttributeDefinitionBuilder("target", ModelType.STRING, true).
             setDefaultValue(new ModelNode().set(Target.SYSTEM_OUT.toString())).
             setValidator(new TargetValidator(false)).
             build();

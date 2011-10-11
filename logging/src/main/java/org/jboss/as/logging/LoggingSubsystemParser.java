@@ -65,7 +65,6 @@ import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.HANDLER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGER;
@@ -85,7 +84,6 @@ import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.VALUE;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
@@ -213,6 +211,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(LOGGER, name);
+        node.get(CATEGORY.getName()).set(name);
         node.get(USE_PARENT_HANDLERS.getName()).set(useParentHandlers);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -249,7 +248,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     static void parseAsyncHandlerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
-        boolean autoflush = true;
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -277,9 +275,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(ASYNC_HANDLER, name);
+        node.get(NAME.getName()).set(name);
 
         // Elements
-        OverflowAction overflowAction = OverflowAction.BLOCK;
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -388,6 +386,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(CONSOLE_HANDLER, name);
+        node.get(NAME.getName()).set(name);
         node.get(AUTOFLUSH.getName()).set(autoflush);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
@@ -459,6 +458,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(FILE_HANDLER, name);
+        node.get(NAME.getName()).set(name);
         node.get(AUTOFLUSH.getName()).set(autoflush);
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
@@ -541,6 +541,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(CUSTOM_HANDLER, name);
+        node.get(NAME.getName()).set(name);
         node.get(CLASS.getName()).set(className);
         node.get(MODULE.getName()).set(moduleName);
 
@@ -610,6 +611,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(PERIODIC_ROTATING_FILE_HANDLER, name);
+        node.get(NAME.getName()).set(name);
         node.get(AUTOFLUSH.getName()).set(autoflush);
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE, Element.SUFFIX);
@@ -690,6 +692,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final ModelNode node = new ModelNode();
         node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address).add(SIZE_ROTATING_FILE_HANDLER, name);
+        node.get(NAME.getName()).set(name);
         node.get(AUTOFLUSH.getName()).set(autoflush);
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
@@ -804,7 +807,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
-        String formatterSpec = null;
+        final String formatterSpec;
         if (reader.nextTag() != START_ELEMENT) {
             throw new XMLStreamException(MESSAGES.missingRequiredNestedFilterElement(), reader.getLocation());
         }
@@ -883,7 +886,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (name == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
             }
-            PROPERTIES.parseAndAddParameterElement(name, value, node, reader.getLocation());
+            node.get(PROPERTIES).set(new Property(name, new ModelNode().set(value)));
             if (reader.nextTag() != END_ELEMENT) {
                 throw unexpectedElement(reader);
             }
@@ -1160,9 +1163,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     }
 
     private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(PROPERTIES.getName())) {
+        if (node.hasDefined(PROPERTIES)) {
             writer.writeStartElement(Element.PROPERTIES.getLocalName());
-            final List<Property> props = node.get(PROPERTIES.getName()).asPropertyList();
+            final List<Property> props = node.get(PROPERTIES).asPropertyList();
             for (Property prop : props) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
