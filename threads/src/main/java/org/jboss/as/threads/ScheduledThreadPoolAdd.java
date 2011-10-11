@@ -55,6 +55,8 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler implements De
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY};
 
+    static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[]{};
+
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ThreadsSubsystemProviders.ADD_SCHEDULED_THREAD_POOL_DESC.getModelDescription(locale);
