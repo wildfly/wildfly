@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -81,6 +82,7 @@ public class ComponentDescription {
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
 
     private final ServiceName serviceName;
+    private ServiceName contextServiceName;
     private final String componentName;
     private final String componentClassName;
     private final EEApplicationClasses applicationClassesDescription;
@@ -162,6 +164,31 @@ public class ComponentDescription {
      */
     public String getComponentName() {
         return componentName;
+    }
+
+    /**
+     * Set context service name.
+     *
+     * @param contextServiceName
+     */
+    public void setContextServiceName(final ServiceName contextServiceName) {
+        this.contextServiceName = contextServiceName;
+    }
+
+    /**
+     * Get the context service name.
+     *
+     * @return the context service name
+     */
+    public ServiceName getContextServiceName() {
+        if (contextServiceName != null) return contextServiceName;
+        if (getNamingMode() == ComponentNamingMode.CREATE) {
+            return ContextNames.contextServiceNameOfComponent(getApplicationName(), getModuleName(), getComponentName());
+        } else if (getNamingMode() == ComponentNamingMode.USE_MODULE) {
+            return ContextNames.contextServiceNameOfModule(getApplicationName(), getModuleName());
+        } else {
+            throw new IllegalStateException();
+        }
     }
 
     /**

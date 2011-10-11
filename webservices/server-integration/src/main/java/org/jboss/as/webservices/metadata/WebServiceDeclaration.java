@@ -21,8 +21,10 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * A minimum web service meta data representation that offers a generic
@@ -59,4 +61,19 @@ public interface WebServiceDeclaration {
     * @return
     */
    AnnotationInstance getAnnotation(DotName dotName);
+
+   /**
+    * Get EJB context service name.
+    *
+    * @return
+    */
+   ServiceName getContextServiceName();
+
+   /**
+    * Get EJB descriptor environment.
+    *
+    * @return
+    */
+   DeploymentDescriptorEnvironment getDeploymentDescriptorEnvironment();
+
 }
