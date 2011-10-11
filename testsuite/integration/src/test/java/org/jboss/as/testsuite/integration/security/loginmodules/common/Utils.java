@@ -110,7 +110,7 @@ public class Utils {
       }
    }
 
-   public static void quicklog(String message) {
+   /*public static void quicklog(String message) {
       logToFile(message, "/tmp/as7demo/log");
    }
 
@@ -124,7 +124,7 @@ public class Utils {
             continue;
          }
       }
-   }
+   }*/
 
    public static URL getResource(String name) {
       ClassLoader tccl = Thread.currentThread().getContextClassLoader();
