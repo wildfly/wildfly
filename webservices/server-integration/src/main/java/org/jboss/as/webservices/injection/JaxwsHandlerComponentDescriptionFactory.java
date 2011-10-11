@@ -35,6 +35,7 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -74,6 +75,8 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
                     for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
                         final String ejbName = container.getComponentName();
                         final String handlerID = ejbName + "-" + handlerClassName;
+                        final ServiceName ejbContextServiceName = container.getContextServiceName();
+                        final DeploymentDescriptorEnvironment ejbEnv = container.getDeploymentDescriptorEnvironment();
                         if (moduleDescription.getComponentByName(handlerID) == null) {
                             // register JAXWS handler component for EJB3 endpoint
                             final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerID, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
@@ -81,6 +84,10 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
                             // registering dependency on WS endpoint service
                             final ServiceName serviceName = EndpointService.getServiceName(unit, ejbName);
                             jaxwsHandlerDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                            // configure JAXWS EJB3 handler to be able to see EJB3 environment
+                            jaxwsHandlerDescription.setContextServiceName(ejbContextServiceName);
+                            jaxwsHandlerDescription.setDeploymentDescriptorEnvironment(ejbEnv);
+                            jaxwsHandlerDescription.addDependency(ejbContextServiceName, ServiceBuilder.DependencyType.REQUIRED);
                         }
                     }
                 }
