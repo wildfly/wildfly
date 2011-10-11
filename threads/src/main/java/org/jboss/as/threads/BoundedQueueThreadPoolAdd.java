@@ -98,7 +98,7 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
 
         //TODO add the handoffExceutor injection
 
-        final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+        final ServiceBuilder<ManagedQueueExecutorService> serviceBuilder = target.addService(serviceName, service);
         ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.install();
