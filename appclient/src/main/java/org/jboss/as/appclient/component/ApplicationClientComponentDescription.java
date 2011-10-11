@@ -26,10 +26,10 @@ package org.jboss.as.appclient.component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -52,8 +52,8 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(final EEApplicationDescription applicationDescription) {
-        final ComponentConfiguration configuration =  super.createConfiguration(applicationDescription);
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
+        final ComponentConfiguration configuration =  super.createConfiguration(classIndex);
         configuration.setInstanceFactory(new ManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {

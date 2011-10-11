@@ -55,15 +55,15 @@ public class ApplicationClassesAggregationProcessor implements DeploymentUnitPro
         descriptions.add(eeModuleDescription);
         buildModuleMap(deploymentUnit, modules);
 
-        for(final ModuleDependency dependency : moduleSpec.getAllDependencies()) {
-            final EEModuleDescription desc  = modules.get(dependency.getIdentifier());
-            if(desc != null) {
+        for (final ModuleDependency dependency : moduleSpec.getAllDependencies()) {
+            final EEModuleDescription desc = modules.get(dependency.getIdentifier());
+            if (desc != null) {
                 descriptions.add(desc);
             }
         }
 
 
-        final EEApplicationClasses classes= new EEApplicationClasses(descriptions);
+        final EEApplicationClasses classes = new EEApplicationClasses(descriptions);
         deploymentUnit.putAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION, classes);
     }
 

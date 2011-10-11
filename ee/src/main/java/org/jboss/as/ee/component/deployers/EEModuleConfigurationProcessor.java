@@ -28,13 +28,13 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
@@ -51,8 +51,8 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         if (moduleDescription == null) {
             return;
         }
@@ -68,7 +68,12 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             for (ComponentDescription componentDescription : componentDescriptions) {
                 if (componentDescription.isInstall()) {
                     logger.debug("Configuring component class: " + componentDescription.getComponentClassName() + " named " + componentDescription.getComponentName());
-                    final ComponentConfiguration componentConfiguration = componentDescription.createConfiguration(applicationDescription);
+                    final ComponentConfiguration componentConfiguration;
+                    try {
+                        componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()));
+                    } catch (ClassNotFoundException e) {
+                        throw new DeploymentUnitProcessingException("Could not load component class " + componentDescription.getComponentClassName(), e);
+                    }
                     for (ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
                         if (componentDescription.isInstall()) {
                             componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);

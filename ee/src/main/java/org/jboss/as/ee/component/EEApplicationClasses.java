@@ -67,6 +67,21 @@ public final class EEApplicationClasses {
         return null;
     }
 
+    /**
+     *
+     * @param className The class name
+     * @return The class configuration
+     */
+    public EEModuleClassConfiguration getClassConfiguration(final String className) {
+        for(EEModuleDescription module : availableModules) {
+            final EEModuleClassConfiguration desc = module.getClassConfiguration(className);
+            if(desc != null) {
+                return desc;
+            }
+        }
+        return null;
+    }
+
     public void addLazyResourceInjection(LazyResourceInjection injection) {
         //TODO: lazy binding and comp/module aliasing is not really compatible
         String name = injection.getLocalContextName();

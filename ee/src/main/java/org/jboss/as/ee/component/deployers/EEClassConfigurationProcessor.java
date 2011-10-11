@@ -26,24 +26,21 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ClassConfigurator;
-import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.LazyValue;
-import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 
@@ -52,6 +49,7 @@ import org.jboss.modules.Module;
  * top level deployments
  *
  * @author John Bailey
+ * @author Stuart Douglas
  */
 public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
 
@@ -59,88 +57,63 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
-        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        if (moduleDescription == null) {
+
+        //top level processor only, all the classes should be configured at the same time
+        //as sub deployments may need to access each others classes
+        if (deploymentUnit.getParent() != null) {
             return;
         }
+
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (module == null) {
             return;
         }
 
-        DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-
-        final Set<String> processed = new HashSet<String>();
-        if (deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.DEPLOYMENT_TYPE) == DeploymentType.EAR) {
-            /*
-             * We are an EAR, so we must inspect all of our subdeployments and aggregate all their component views
-             * into a single index, so that inter-module resolution will work.
-             */
-            // Add the application description
-            final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
-            for (DeploymentUnit subdeployment : subdeployments) {
-                processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, subdeployment, processed, moduleDescription);
-            }
-            processClasses(phaseContext, applicationDescription, deploymentReflectionIndex, deploymentUnit, processed, moduleDescription);
-        } else if (deploymentUnit.getParent() == null) {
-            final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
-            if (classDescriptions != null) {
-                for (EEModuleClassDescription classDescription : classDescriptions) {
-                    handleClassDescription(phaseContext, applicationDescription, deploymentReflectionIndex, processed, module, classDescription);
-                }
-            }
+        final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
+        for (DeploymentUnit subdeployment : subdeployments) {
+            processClasses(phaseContext, subdeployment);
         }
+        processClasses(phaseContext, deploymentUnit);
+
 
     }
 
-    private void processClasses(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final DeploymentUnit subdeployment, final Set<String> processed, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
-        final EEModuleDescription subModuleDescription = subdeployment.getAttachment(EE_MODULE_DESCRIPTION);
-        if (subModuleDescription == null) {
+    private void processClasses(final DeploymentPhaseContext phaseContext, final DeploymentUnit subdeployment) throws DeploymentUnitProcessingException {
+        final EEModuleDescription eeModuleDescription = subdeployment.getAttachment(EE_MODULE_DESCRIPTION);
+        final DeploymentClassIndex classIndex = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
+        if (eeModuleDescription == null) {
             // Not an EE deployment.
             return;
         }
-        final Module subModule = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final Collection<EEModuleClassDescription> classDescriptions = moduleDescription.getClassDescriptions();
+        final Module module = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final Collection<EEModuleClassDescription> classDescriptions = eeModuleDescription.getClassDescriptions();
+        final Map<String, LazyValue<EEModuleClassConfiguration>> results = new HashMap<String, LazyValue<EEModuleClassConfiguration>>();
         if (classDescriptions != null) {
             for (final EEModuleClassDescription classDescription : classDescriptions) {
 
-                handleClassDescription(phaseContext, applicationDescription, deploymentReflectionIndex, processed, subModule, classDescription);
+                final LazyValue<EEModuleClassConfiguration> future = handleClassDescription(phaseContext, classDescription, classIndex);
+                results.put(classDescription.getClassName(), future);
             }
         }
+        eeModuleDescription.addConfiguredClasses(results);
     }
 
-    private void handleClassDescription(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final DeploymentReflectionIndex deploymentReflectionIndex, final Set<String> processed, final Module subModule, final EEModuleClassDescription classDescription) {
-        if (processed.contains(classDescription.getClassName())) {
-            return;
-        }
-        processed.add(classDescription.getClassName());
+    private LazyValue<EEModuleClassConfiguration> handleClassDescription(final DeploymentPhaseContext phaseContext, final EEModuleClassDescription classDescription, final DeploymentClassIndex deploymentClassIndex) {
         //EEModuleClass's are computed in a lazy manner, as there is no guarantee that they will actually be
         //needed by a component.
         LazyValue<EEModuleClassConfiguration> future = new LazyValue<EEModuleClassConfiguration>() {
 
             @Override
             protected EEModuleClassConfiguration compute() {
-
                 //as the module configurations are lazily generated if no component uses the class
                 //then the exception will not be thrown
-                if(classDescription.isInvalid()) {
+                if (classDescription.isInvalid()) {
                     throw new RuntimeException("Could not get class configuration for " + classDescription.getClassName() + " due to the following errors: " + classDescription.getInvalidMessage());
                 }
-
-                Class<?> clazz = null;
-                //we need to make sure we load the class with the correct context class loader
-                ClassLoader oldCl = SecurityActions.getContextClassLoader();
                 try {
-                    SecurityActions.setContextClassLoader(subModule.getClassLoader());
-                    try {
-                        clazz = Class.forName(classDescription.getClassName(), false, subModule.getClassLoader());
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException("Failed to load class " + classDescription.getClassName(), e);
-                    }
-                    final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(clazz, classDescription, deploymentReflectionIndex);
-                    logger.debug("Configuring EE module class: " + clazz);
+                    ClassIndex index = deploymentClassIndex.classIndex(classDescription.getClassName());
+                    final EEModuleClassConfiguration classConfiguration = new EEModuleClassConfiguration(index.getModuleClass(), classDescription);
+                    logger.debug("Configuring EE module class: " + index.getModuleClass());
                     for (ClassConfigurator classConfigurator : classDescription.getConfigurators()) {
                         try {
                             classConfigurator.configure(phaseContext, classDescription, classConfiguration);
@@ -149,14 +122,14 @@ public class EEClassConfigurationProcessor implements DeploymentUnitProcessor {
                         }
                     }
                     return classConfiguration;
-                } finally {
-                    SecurityActions.setContextClassLoader(oldCl);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException("Failed to load class " + classDescription.getClassName(), e);
                 }
+
 
             }
         };
-
-        applicationDescription.addClass(classDescription.getClassName(), future);
+        return future;
     }
 
     public void undeploy(DeploymentUnit context) {

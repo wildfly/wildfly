@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -105,8 +106,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final String applicationName = configuration.getApplicationName();
         final String moduleName = configuration.getModuleName();
         final String componentName = configuration.getComponentName();
-        final ServiceName baseName = configuration.getComponentDescription().getServiceName();
-        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
         //create additional injectors
 
@@ -184,7 +185,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
 
             // The bindings for the component class
-            new ClassDescriptionTraversal(configuration.getModuleClassConfiguration(), applicationDescription) {
+            new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
                 @Override
                 protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                     processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
@@ -193,10 +194,14 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
 
             for (InterceptorDescription interceptor : configuration.getComponentDescription().getAllInterceptors()) {
-                final EEModuleClassConfiguration interceptorClass = applicationDescription.getClassConfiguration(interceptor.getInterceptorClassName());
-
+                final Class<?> interceptorClass;
+                try {
+                    interceptorClass = module.getClassLoader().loadClass(interceptor.getInterceptorClassName());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load interceptor class " + interceptor.getInterceptorClassName() + " on component " + configuration.getComponentClass(), e);
+                }
                 if (interceptorClass != null) {
-                    new ClassDescriptionTraversal(interceptorClass, applicationDescription) {
+                    new ClassDescriptionTraversal(interceptorClass, applicationClasses) {
                         @Override
                         protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                             processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);

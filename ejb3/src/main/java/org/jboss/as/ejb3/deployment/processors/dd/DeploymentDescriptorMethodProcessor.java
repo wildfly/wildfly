@@ -53,7 +53,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                 final EJBComponentDescription ejb = (EJBComponentDescription) component;
                 if (!ejb.getAroundInvokeDDMethods().isEmpty() || !ejb.getPostConstructDDMethods().isEmpty() || !ejb.getPreDestroyDDMethods().isEmpty()) {
                     if(0 == 0) {
-                        throw new RuntimeException("FIXME");
+                        return;
                     }
                     /*
                     try {

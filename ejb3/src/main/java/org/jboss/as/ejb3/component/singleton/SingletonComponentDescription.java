@@ -35,7 +35,6 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -49,6 +48,7 @@ import org.jboss.as.ejb3.tx.SingletonLifecycleCMTTxInterceptorFactory;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
@@ -85,9 +85,9 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(EEApplicationDescription applicationDescription) {
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
 
-        ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, applicationDescription.getClassConfiguration(getComponentClassName()));
+        ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, classIndex);
         // setup the component create service
         singletonComponentConfiguration.setComponentCreateServiceFactory(new SingletonComponentCreateServiceFactory(this.isInitOnStartup(), dependsOn));
 

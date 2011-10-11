@@ -69,7 +69,7 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
         for (InterceptorMetaData interceptor : metaData.getInterceptors()) {
             String interceptorClassName = interceptor.getInterceptorClass();
             if(0 == 0) {
-                throw new RuntimeException("FIXME");
+                return;
             }
             // get (or create the interceptor description)
             EEModuleClassDescription interceptorModuleClassDescription = null;// applicationClassesDescription.getOrAddClassByName(interceptorClassName);

@@ -22,19 +22,15 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Configuration for a class in an EE module.  Each interceptor and component corresponds to one of these.
@@ -74,20 +70,15 @@ public final class EEModuleClassConfiguration {
     // MSC dependencies
     private final Map<ServiceName, InjectedValue<Object>> dependencyInjections = new HashMap<ServiceName, InjectedValue<Object>>();
 
-    // Instantiation
-    private ManagedReferenceFactory instantiator;
-
-    private final DeploymentReflectionIndex deploymentReflectionIndex;
 
     /**
      * Lazily initialized set of all methods on the class, taken from the deployment reflection index.
      */
     private volatile Set<Method> classMethods;
 
-    public EEModuleClassConfiguration(final Class<?> moduleClass, EEModuleClassDescription moduleClassDescription, final DeploymentReflectionIndex deploymentReflectionIndex) {
+    public EEModuleClassConfiguration(final Class<?> moduleClass, EEModuleClassDescription moduleClassDescription) {
         this.moduleClass = moduleClass;
         this.moduleClassDescription = moduleClassDescription;
-        this.deploymentReflectionIndex = deploymentReflectionIndex;
     }
 
     /**
@@ -124,41 +115,6 @@ public final class EEModuleClassConfiguration {
      */
     public Map<ServiceName, InjectedValue<Object>> getDependencyInjections() {
         return dependencyInjections;
-    }
-
-    /**
-     * Get the class instantiator.
-     *
-     * @return the class instantiator
-     */
-    public ManagedReferenceFactory getInstantiator() {
-        return instantiator;
-    }
-
-    public Set<Method> getClassMethods() {
-        if (classMethods == null) {
-            synchronized (this) {
-                if (classMethods == null) {
-                    final Set<Method> methods = Collections.newSetFromMap(new IdentityHashMap<Method, Boolean>());
-                    Class<?> clazz = this.moduleClass;
-                    while (clazz != null) {
-                        methods.addAll(deploymentReflectionIndex.getClassIndex(clazz).getMethods());
-                        clazz = clazz.getSuperclass();
-                    }
-                    this.classMethods = methods;
-                }
-            }
-        }
-        return classMethods;
-    }
-
-    /**
-     * Set the class instantiator.
-     *
-     * @param instantiator the class instantiator
-     */
-    public void setInstantiator(final ManagedReferenceFactory instantiator) {
-        this.instantiator = instantiator;
     }
 
     public EEModuleClassDescription getModuleClassDescription() {

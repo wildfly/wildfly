@@ -22,25 +22,15 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.metadata.ClassAnnotationInformation;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.msc.value.ConstructedValue;
-import org.jboss.msc.value.Value;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+import org.jboss.as.ee.metadata.ClassAnnotationInformation;
+import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
  * The description of a (possibly annotated) class in an EE module.
@@ -51,7 +41,6 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
  */
 public final class EEModuleClassDescription {
 
-    private static final DefaultConfigurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
 
     private final String className;
     private final Deque<ClassConfigurator> configurators = new LinkedBlockingDeque<ClassConfigurator>();
@@ -65,7 +54,6 @@ public final class EEModuleClassDescription {
 
     public EEModuleClassDescription(final String className) {
         this.className = className;
-        configurators.addFirst(DEFAULT_CONFIGURATOR);
     }
 
     /**
@@ -164,28 +152,6 @@ public final class EEModuleClassDescription {
 
     public <A extends Annotation, T> ClassAnnotationInformation<A, T> getAnnotationInformation(Class<A> annotationType) {
         return (ClassAnnotationInformation<A, T>) this.annotationInformation.get(annotationType);
-    }
-
-    private static class DefaultConfigurator implements ClassConfigurator {
-
-        private static final Class<?>[] NO_CLASSES = new Class<?>[0];
-
-        public void configure(final DeploymentPhaseContext context, final EEModuleClassDescription description, final EEModuleClassConfiguration configuration) throws DeploymentUnitProcessingException {
-            DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(REFLECTION_INDEX);
-            Class<?> moduleClass = configuration.getModuleClass();
-            ClassReflectionIndex<?> classIndex = index.getClassIndex(moduleClass);
-            // Use the basic instantiator if none was set up
-            if (configuration.getInstantiator() == null) {
-                Constructor<?> constructor = classIndex.getConstructor(NO_CLASSES);
-                if (constructor != null) {
-                    configuration.setInstantiator(new ValueManagedReferenceFactory(createConstructedValue(constructor)));
-                }
-            }
-        }
-
-        private static <T> ConstructedValue<T> createConstructedValue(final Constructor<T> constructor) {
-            return new ConstructedValue<T>(constructor, Collections.<Value<?>>emptyList());
-        }
     }
 
     public synchronized void setInvalid(String message) {

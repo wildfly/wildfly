@@ -39,7 +39,6 @@ import org.jboss.vfs.VirtualFile;
 public class EEApplicationDescription {
     private final Map<String, List<ViewInformation>> componentsByViewName = new HashMap<String, List<ViewInformation>>();
     private final Map<String, List<Description>> componentsByName = new HashMap<String, List<Description>>();
-    private final Map<String, LazyValue<EEModuleClassConfiguration>> classesByName = new HashMap<String, LazyValue<EEModuleClassConfiguration>>();
 
     /**
      * Add a component to this application.
@@ -170,24 +169,6 @@ public class EEApplicationDescription {
                 return thisDeployment;
             }
             return all;
-        }
-    }
-
-    public void addClass(final String className, LazyValue<EEModuleClassConfiguration> eeModuleClassDescription) {
-        classesByName.put(className, eeModuleClassDescription);
-    }
-
-    public EEModuleClassConfiguration getClassConfiguration(String name) {
-        LazyValue<EEModuleClassConfiguration> result =  classesByName.get(name);
-        if(result == null) {
-            return null;
-        }
-        try {
-            return result.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
         }
     }
 

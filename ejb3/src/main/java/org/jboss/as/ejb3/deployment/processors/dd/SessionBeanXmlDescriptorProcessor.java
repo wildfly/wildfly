@@ -133,7 +133,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         //for interceptor methods that specify a null class we cannot deal with them here
         //instead we stick them on the component configuration, and deal with them once we have a module
         if(0 ==0 ) {
-            throw new RuntimeException("FIXME");
+            return;
         }
         /*
         if (enterpriseBean.getAroundInvokes() != null) {

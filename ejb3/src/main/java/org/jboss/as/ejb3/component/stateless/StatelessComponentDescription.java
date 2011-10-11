@@ -23,13 +23,16 @@
 package org.jboss.as.ejb3.component.stateless;
 
 
+import java.lang.reflect.Method;
+
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.ee.component.DependencyConfigurator;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -42,14 +45,12 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
 
 /**
  * User: jpai
@@ -71,8 +72,8 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(EEApplicationDescription applicationDescription) {
-        final ComponentConfiguration statelessComponentConfiguration = new ComponentConfiguration(this, applicationDescription.getClassConfiguration(getComponentClassName()));
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
+        final ComponentConfiguration statelessComponentConfiguration = new ComponentConfiguration(this, classIndex);
         // setup the component create service
         statelessComponentConfiguration.setComponentCreateServiceFactory(new StatelessComponentCreateServiceFactory());
 

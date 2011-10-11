@@ -23,22 +23,31 @@
 package org.jboss.as.ejb3.component.stateful;
 
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -48,14 +57,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * User: jpai
@@ -158,9 +159,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(EEApplicationDescription applicationDescription) {
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
 
-        final ComponentConfiguration statefulComponentConfiguration = new ComponentConfiguration(this, applicationDescription.getClassConfiguration(getComponentClassName()));
+        final ComponentConfiguration statefulComponentConfiguration = new ComponentConfiguration(this, classIndex);
         // setup the component create service
         statefulComponentConfiguration.setComponentCreateServiceFactory(new StatefulComponentCreateServiceFactory());
 

@@ -21,28 +21,28 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 /**
  * throwaway utility class for traversing a class configuration from most general superclass down
  */
 public abstract class ClassDescriptionTraversal {
-    final EEModuleClassConfiguration classConfiguration;
-    final EEApplicationDescription applicationDescription;
+    final Class<?> clazz;
+    final EEApplicationClasses applicationClasses;
 
-    public ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEApplicationDescription applicationDescription) {
-        this.classConfiguration = classConfiguration;
-        this.applicationDescription = applicationDescription;
+    public ClassDescriptionTraversal(final Class<?> clazz, final EEApplicationClasses applicationClasses) {
+        this.clazz = clazz;
+        this.applicationClasses = applicationClasses;
     }
 
     public void run() throws DeploymentUnitProcessingException {
-        Class clazz = classConfiguration.getModuleClass();
+        Class<?> clazz = this.clazz;
         final Deque<EEModuleClassConfiguration> queue = new ArrayDeque<EEModuleClassConfiguration>();
         while (clazz != null && clazz != Object.class) {
-            EEModuleClassConfiguration configuration = applicationDescription.getClassConfiguration(clazz.getName());
+            EEModuleClassConfiguration configuration = applicationClasses.getClassConfiguration(clazz.getName());
             if (configuration != null) {
                 queue.addFirst(configuration);
             }

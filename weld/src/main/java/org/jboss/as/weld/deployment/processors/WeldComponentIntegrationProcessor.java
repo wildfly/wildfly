@@ -32,7 +32,6 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationDescription;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
@@ -42,6 +41,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.weld.WeldContainer;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.ejb.EjbRequestScopeActivationInterceptor;
@@ -65,6 +66,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
 
         if (!WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
             return;
@@ -86,7 +88,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
             component.getConfigurators().addFirst(new ComponentConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    final Class<?> componentClass = configuration.getModuleClassConfiguration().getModuleClass();
+                    final Class<?> componentClass = configuration.getComponentClass();
                     final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
                     final ModuleClassLoader classLoader = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
                     final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION);
@@ -95,9 +97,11 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                     //get the interceptors so they can be injected as well
                     final Set<Class<?>> interceptorClasses = new HashSet<Class<?>>();
                     for (InterceptorDescription interceptorDescription : description.getAllInterceptors()) {
-                        final EEModuleClassConfiguration clazz = applicationDescription.getClassConfiguration(interceptorDescription.getInterceptorClassName());
-                        if (clazz != null) {
-                            interceptorClasses.add(clazz.getModuleClass());
+                        try {
+                            final ClassIndex index = classIndex.classIndex(interceptorDescription.getInterceptorClassName());
+                            interceptorClasses.add(index.getModuleClass());
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException("Could not load interceptor class", e);
                         }
                     }
 

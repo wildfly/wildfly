@@ -21,13 +21,19 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassDescriptionTraversal;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentNamingMode;
-import org.jboss.as.ee.component.EEApplicationDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
@@ -49,12 +55,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Processor that sets up JNDI bindings that are owned by the module. It also handles class level jndi bindings
  * that belong to components that do not have their own java:comp namespace, and class level bindings declared in
@@ -75,7 +75,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
         if (moduleConfiguration == null) {
             return;
@@ -122,22 +122,23 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         final Set<String> handledClasses = new HashSet<String>();
 
         for (final ComponentConfiguration componentConfiguration : moduleConfiguration.getComponentConfigurations()) {
-            final Set<EEModuleClassConfiguration> classConfigurations = new HashSet<EEModuleClassConfiguration>();
-            classConfigurations.add(componentConfiguration.getModuleClassConfiguration());
+            final Set<Class<?>> classConfigurations = new HashSet<Class<?>>();
+            classConfigurations.add(componentConfiguration.getComponentClass());
+
             for (final InterceptorDescription interceptor : componentConfiguration.getComponentDescription().getAllInterceptors()) {
-                final EEModuleClassConfiguration interceptorClass = applicationDescription.getClassConfiguration(interceptor.getInterceptorClassName());
+                final EEModuleClassConfiguration interceptorClass = applicationClasses.getClassConfiguration(interceptor.getInterceptorClassName());
                 if (interceptorClass != null) {
-                    classConfigurations.add(interceptorClass);
+                    classConfigurations.add(interceptorClass.getModuleClass());
                 }
             }
-            processClassConfigurations(phaseContext, applicationDescription, moduleConfiguration, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName(), moduleOwnerName, moduleCount, dependencies);
+            processClassConfigurations(phaseContext, applicationClasses, moduleConfiguration, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName(), moduleOwnerName, moduleCount, dependencies);
         }
 
     }
 
-    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationDescription applicationDescription, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<EEModuleClassConfiguration> classConfigurations, final String componentName, final ServiceName ownerName, final IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
-        for (final EEModuleClassConfiguration classConfiguration : classConfigurations) {
-            new ClassDescriptionTraversal(classConfiguration, applicationDescription) {
+    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationClasses applicationClasses, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<Class<?>> classes, final String componentName, final ServiceName ownerName, final IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
+        for (final Class<?> clazz : classes) {
+            new ClassDescriptionTraversal(clazz, applicationClasses) {
                 @Override
                 protected void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                     if (classDescription.isInvalid()) {
