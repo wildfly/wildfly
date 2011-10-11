@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,33 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.lock;
+package org.jboss.as.clustering.web.impl;
 
-import org.jboss.as.clustering.ClusterNode;
-
-import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+import org.jboss.as.clustering.ClusteringLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MessageLogger;
 
 /**
- * Thrown to indicate failure to acquire a lock within a specified timeout.
+ * Date: 30.08.2011
  *
- * @author Brian Stansberry
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class TimeoutException extends java.util.concurrent.TimeoutException {
-    /** The serialVersionUID */
-    private static final long serialVersionUID = 7786468949269669386L;
+@MessageLogger(projectCode = "JBAS")
+interface ClusteringWebLogger extends ClusteringLogger{
 
-    private ClusterNode owner;
-
-    public TimeoutException(ClusterNode owner) {
-        super((owner == null ? MESSAGES.cannotAcquireHeldLock() : MESSAGES.cannotAcquireHeldLock(owner)));
-        this.owner = owner;
-    }
-
-    public TimeoutException(String msg) {
-        super(msg);
-    }
-
-    public ClusterNode getOwner() {
-        return owner;
-    }
+    /**
+     * A logger with a category for the root clustering.
+     */
+    ClusteringWebLogger ROOT_LOGGER = Logger.getMessageLogger(ClusteringWebLogger.class, ROOT_LOGGER_CATEGORY);
 }

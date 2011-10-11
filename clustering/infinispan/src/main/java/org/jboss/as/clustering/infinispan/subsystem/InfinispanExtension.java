@@ -46,11 +46,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
 /**
  * @author Paul Ferraro
@@ -70,8 +71,6 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
             return LocalDescriptions.getCacheContainerDescription(locale);
         }
     };
-
-    private static final Logger log = Logger.getLogger(InfinispanExtension.class);
 
     /**
      * {@inheritDoc}
@@ -614,7 +613,7 @@ public class InfinispanExtension implements Extension, XMLElementReader<List<Mod
                     break;
                 }
                 case INTERVAL: {
-                    log.warnf("The %s attribute of the %s element is deprecated.  See ISPN-1268");
+                    ROOT_LOGGER.deprecatedAttribute(attribute.getLocalName(), Element.EVICTION.getLocalName(), "ISPN-1268");
                     break;
                 }
                 default: {

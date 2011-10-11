@@ -32,17 +32,17 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
 
+import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
+
 /**
  * @author Paul Ferraro
  */
 public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
-    private static final Logger log = Logger.getLogger(InfinispanSubsystemAdd.class.getPackage().getName());
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
@@ -70,7 +70,7 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler implements De
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        log.info("Activating Infinispan subsystem.");
+        ROOT_LOGGER.activatingSubsystem();
         ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(EmbeddedCacheManagerDefaultsService.SERVICE_NAME, new EmbeddedCacheManagerDefaultsService())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

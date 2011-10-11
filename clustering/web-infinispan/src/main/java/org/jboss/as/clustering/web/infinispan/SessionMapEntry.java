@@ -59,13 +59,12 @@ public enum SessionMapEntry {
      * @param value the entry value
      * @return the old entry value, or null if no previous entry existed
      */
-    public <T> T put(Map<Object, Object> map, Object value) {
+    public <T> T put(Map<Object, Object> map, Object value) throws IllegalArgumentException {
         if (value == null)
             return null;
 
         if (!this.targetClass.isInstance(value)) {
-            throw new IllegalArgumentException(String.format("Attempt to put value of type %s into %s entry", value.getClass()
-                    .getName(), this));
+            throw InfinispanWebMessages.MESSAGES.invalidMapValue(value.getClass().getName(), this);
         }
 
         return this.<T> cast(map.put(this.key(), value));
