@@ -64,7 +64,7 @@ final class ManagedProcess {
     private final RespawnPolicy respawnPolicy;
 
     private OutputStream stdin;
-    private State state = State.DOWN;
+    private volatile State state = State.DOWN;
     private Process process;
     private boolean shutdown;
     private boolean stopRequested = false;
@@ -150,6 +150,7 @@ final class ManagedProcess {
     }
 
     public void sendStdin(final InputStream msg) {
+        assert holdsLock(lock); // Call under lock
         try {
             StreamUtils.copyStream(msg, stdin);
             stdin.flush();
@@ -159,6 +160,7 @@ final class ManagedProcess {
     }
 
     public void reconnect(String hostName, int port) {
+        assert holdsLock(lock); // Call under lock
         try {
             StreamUtils.writeUTFZBytes(stdin, hostName);
             StreamUtils.writeInt(stdin, port);
@@ -169,8 +171,8 @@ final class ManagedProcess {
     }
 
     void doStart(boolean restart) {
-        // Call under lock
-        assert holdsLock(lock);
+        assert holdsLock(lock); // Call under lock
+
         stopRequested = false;
         final List<String> command = new ArrayList<String>(this.command);
         if(restart) {
@@ -275,6 +277,7 @@ final class ManagedProcess {
             }
             boolean respawn = false;
             int respawnCount = 0;
+
             synchronized (lock) {
 
                 final long endTime = System.currentTimeMillis();

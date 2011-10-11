@@ -29,8 +29,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.process.AsyncProcessControllerClient;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.server.ServerStartTask;
@@ -91,7 +94,7 @@ class ManagedServer {
     private final String serverName;
     private final String serverProcessName;
     private final Object lock = new Object();
-    private final ProcessControllerClient processControllerClient;
+    private final AsyncProcessControllerClient processControllerClient;
     private final AtomicInteger respawnCount = new AtomicInteger();
     private final InetSocketAddress managementSocket;
     private final ManagedServerBootConfiguration bootConfiguration;
@@ -99,7 +102,7 @@ class ManagedServer {
     private volatile ServerState state;
     private volatile ManagementChannel serverManagementChannel;
 
-    public ManagedServer(final String serverName, final ProcessControllerClient processControllerClient,
+    public ManagedServer(final String serverName, final AsyncProcessControllerClient processControllerClient,
             final InetSocketAddress managementSocket, final ManagedServerBootConfiguration bootConfiguration) {
         assert serverName  != null : "serverName is null";
         assert processControllerClient != null : "processControllerSlave is null";
@@ -172,10 +175,12 @@ class ManagedServer {
 
             final List<ModelNode> bootUpdates = bootConfiguration.getBootUpdates();
 
+            // Launch the server process
             processControllerClient.startProcess(serverProcessName);
             ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommuncationActivator(managementSocket, serverName, serverProcessName, authKey);
             ServerStartTask startTask = new ServerStartTask(serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
+            // Send the StartTask to the process
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);
             marshaller.start(Marshalling.createByteOutput(os));
             marshaller.writeObject(startTask);
@@ -193,15 +198,15 @@ class ManagedServer {
         }
     }
 
-    void stopServerProcess() throws IOException {
+    Future<Void> stopServerProcess() throws IOException {
         synchronized(lock) {
-            processControllerClient.stopProcess(serverProcessName);
+            return processControllerClient.stopProcess(serverProcessName);
         }
     }
 
-    void removeServerProcess() throws IOException {
+    Future<Void> removeServerProcess() throws IOException {
         synchronized(lock) {
-            processControllerClient.removeProcess(serverProcessName);
+            return processControllerClient.removeProcess(serverProcessName);
         }
     }
 
