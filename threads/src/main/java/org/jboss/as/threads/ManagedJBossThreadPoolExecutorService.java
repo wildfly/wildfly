@@ -28,17 +28,17 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.threads.EventListener;
 import org.jboss.threads.JBossExecutors;
-import org.jboss.threads.QueueExecutor;
+import org.jboss.threads.JBossThreadPoolExecutor;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class ManagedQueueExecutorService extends ManagedExecutorService implements BlockingExecutor {
+public class ManagedJBossThreadPoolExecutorService extends ManagedExecutorService implements BlockingExecutor {
 
-    private final QueueExecutor executor;
+    private final JBossThreadPoolExecutor executor;
 
-    public ManagedQueueExecutorService(QueueExecutor executor) {
+    public ManagedJBossThreadPoolExecutorService(JBossThreadPoolExecutor executor) {
         super(executor);
         this.executor = executor;
     }
@@ -94,12 +94,32 @@ public class ManagedQueueExecutorService extends ManagedExecutorService implemen
         executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
     }
 
-    public int getCurrentThreadCount() {
-        return executor.getCurrentThreadCount();
+    public int getRejectedCount() {
+        return executor.getRejectedCount();
+    }
+
+    public long getTaskCount() {
+        return executor.getTaskCount();
     }
 
     public int getLargestThreadCount() {
         return executor.getLargestThreadCount();
+    }
+
+    public int getLargestPoolSize() {
+        return executor.getLargestPoolSize();
+    }
+
+    public int getCurrentThreadCount() {
+        return executor.getCurrentThreadCount();
+    }
+
+    public long getCompletedTaskCount() {
+        return executor.getCompletedTaskCount();
+    }
+
+    public int getActiveCount() {
+        return executor.getActiveCount();
     }
 
     <A> void addShutdownListener(final EventListener<A> shutdownListener, final A attachment) {

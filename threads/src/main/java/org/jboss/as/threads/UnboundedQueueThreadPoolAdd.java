@@ -23,7 +23,6 @@ package org.jboss.as.threads;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -87,7 +86,7 @@ public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler implemen
         ServiceTarget target = context.getServiceTarget();
         final ServiceName serviceName = ThreadsServices.executorName(params.getName());
         final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
-        final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+        final ServiceBuilder<ManagedJBossThreadPoolExecutorService> serviceBuilder = target.addService(serviceName, service);
         ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.install();

@@ -28,17 +28,17 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.threads.EventListener;
 import org.jboss.threads.JBossExecutors;
-import org.jboss.threads.QueueExecutor;
+import org.jboss.threads.QueuelessExecutor;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class ManagedQueueExecutorService extends ManagedExecutorService implements BlockingExecutor {
+public class ManagedQueuelessExecutorService extends ManagedExecutorService implements BlockingExecutor {
 
-    private final QueueExecutor executor;
+    private final QueuelessExecutor executor;
 
-    public ManagedQueueExecutorService(QueueExecutor executor) {
+    public ManagedQueuelessExecutorService(QueuelessExecutor executor) {
         super(executor);
         this.executor = executor;
     }
@@ -51,23 +51,6 @@ public class ManagedQueueExecutorService extends ManagedExecutorService implemen
     @Override
     void internalShutdown() {
         executor.shutdown();
-    }
-
-    public int getCoreThreads() {
-        return executor.getCoreThreads();
-    }
-
-    // Package protected for subsys write-attribute handlers
-    void setCoreThreads(int coreThreads) {
-        executor.setCoreThreads(coreThreads);
-    }
-
-    public boolean isAllowCoreTimeout() {
-        return executor.isAllowCoreThreadTimeout();
-    }
-
-    void setAllowCoreTimeout(boolean allowCoreTimeout) {
-        executor.setAllowCoreThreadTimeout(allowCoreTimeout);
     }
 
     public boolean isBlocking() {
@@ -90,8 +73,12 @@ public class ManagedQueueExecutorService extends ManagedExecutorService implemen
         return executor.getKeepAliveTime();
     }
 
-    void setKeepAlive(TimeSpec keepAlive) {
-        executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
+    void setKeepAlive(long milliseconds) {
+        executor.setKeepAliveTime(milliseconds);
+    }
+
+    public int getRejectedCount() {
+        return executor.getRejectedCount();
     }
 
     public int getCurrentThreadCount() {
