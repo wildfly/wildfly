@@ -31,7 +31,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.threads.BlockingExecutorService;
 import org.jboss.threads.JBossExecutors;
 
 
@@ -39,16 +38,22 @@ import org.jboss.threads.JBossExecutors;
  *
  * @author Alexey Loubyansky
  */
-public class ManagedExecutorService implements ExecutorService {
+public abstract class ManagedExecutorService implements ExecutorService {
 
     private final ExecutorService executor;
 
-    public ManagedExecutorService(BlockingExecutorService executor) {
+    public ManagedExecutorService(ExecutorService executor) {
         if(executor == null) {
             throw new IllegalArgumentException("Executor is null.");
         }
-        this.executor = JBossExecutors.protectedBlockingExecutorService(executor);
+        this.executor = protectExecutor(executor);
     }
+
+    protected ExecutorService protectExecutor(ExecutorService executor) {
+        return JBossExecutors.protectedExecutorService(executor);
+    }
+
+    abstract void internalShutdown();
 
     /**
      * {@inheritDoc}
@@ -66,10 +71,6 @@ public class ManagedExecutorService implements ExecutorService {
     @Override
     public void shutdown() {
         // Don't shutdown managed executor
-    }
-
-    void internalShutdown() {
-        executor.shutdown();
     }
 
     /**
@@ -106,7 +107,7 @@ public class ManagedExecutorService implements ExecutorService {
      */
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        return this.executor.isTerminated();
+        return executor.awaitTermination(timeout, unit);
     }
 
     /**

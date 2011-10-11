@@ -23,7 +23,6 @@ package org.jboss.as.threads;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
