@@ -24,6 +24,7 @@ package org.jboss.as.remoting;
 import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
+import static org.xnio.Options.SASL_PROPERTIES;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+import org.xnio.Property;
 import org.xnio.Sequence;
 
 /**
@@ -55,6 +57,8 @@ import org.xnio.Sequence;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class RealmAuthenticationProvider implements ServerAuthenticationProvider {
+
+    static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
 
     static final String ANONYMOUS = "ANONYMOUS";
 
@@ -72,7 +76,8 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
 
     OptionMap getSaslOptionMap() {
         if (digestMd5Supported()) {
-            return OptionMap.create(SASL_MECHANISMS, Sequence.of(DIGEST_MD5));
+            return OptionMap.create(SASL_MECHANISMS, Sequence.of(DIGEST_MD5),
+                    SASL_PROPERTIES, Sequence.of(Property.of(REALM_PROPERTY, realm.getName())));
         }
 
         if (plainSupported()) {
@@ -105,34 +110,12 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         CallbackHandler realmCallbackHandler = null;
 
         // We must have a match in this block or throw an IllegalStateException.
-        if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported()) {
-            final CallbackHandler realHandler = realm.getCallbackHandler();
-            // TODO - Correct JBoss Remoting so that the realm can be specified independently of the endpoint name.
-            // TODO - AS7-1093 / XNIO-96
-            // In the meantime
-            final CallbackHandler realmNameFix = new CallbackHandler() {
-
-                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    List<Callback> filteredCallbacks = new ArrayList<Callback>(callbacks.length - 1);
-                    for (Callback current : callbacks) {
-                        if (current instanceof RealmCallback == false) {
-                            filteredCallbacks.add(current);
-                        }
-                    }
-                    realHandler.handle(filteredCallbacks.toArray(new Callback[filteredCallbacks.size()]));
-
-                }
-
-            };
-
-            realmCallbackHandler = realmNameFix;
-        } else if (PLAIN.equals(mechanismName) && plainSupported()) {
-            // No fancy wrapping needed for this one ;-)
+        if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported() ||
+                PLAIN.equals(mechanismName) && plainSupported()) {
             realmCallbackHandler = realm.getCallbackHandler();
         } else {
             throw new IllegalStateException("Unsupported Callback '" + mechanismName + "'");
         }
-
 
         // If there is not serverCallbackHandler then we don't need to wrap it so we can just return the realm
         // name fix handler which is already wrapping the real handler.
