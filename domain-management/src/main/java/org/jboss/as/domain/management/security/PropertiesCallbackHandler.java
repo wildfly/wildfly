@@ -31,11 +31,13 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+
 import org.jboss.logging.Logger;
 
 import org.jboss.dmr.ModelNode;
@@ -50,16 +52,20 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PropertiesCallbackHandler implements Service<PropertiesCallbackHandler>, DomainCallbackHandler {
+public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>, DomainCallbackHandler {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.domain-management");
     public static final String SERVICE_SUFFIX = "properties";
     private static final Class[] supportedCallbacks = {AuthorizeCallback.class, RealmCallback.class,
-                                                       NameCallback.class, PasswordCallback.class};
+            NameCallback.class, PasswordCallback.class};
 
     private final String realm;
     private final String path;
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
-    private final Properties users = new Properties();
+
+    private File propertiesFile;
+    private volatile long fileUpdated = -1;
+    private volatile Properties userProperties = null;
 
     public PropertiesCallbackHandler(String realm, ModelNode properties) {
         this.realm = realm;
@@ -74,27 +80,63 @@ public class PropertiesCallbackHandler implements Service<PropertiesCallbackHand
         String relativeTo = this.relativeTo.getOptionalValue();
         String file = relativeTo == null ? path : relativeTo + "/" + path;
 
-        File propertiesFile = new File(file);
+        propertiesFile = new File(file);
         try {
-            users.load(propertiesFile.toURI().toURL().openStream());
-
-            final String admin = "admin";
-            if (users.contains(admin) && admin.equals(users.get(admin))) {
-                Logger.getLogger("org.jboss.as.domain-management")
-                        .warn("Properties file defined with default user and password, this will be easy to guess.");
-            }
-        } catch (MalformedURLException mue) {
-            throw new StartException("Unable to load properties", mue);
+            getUsersProperties();
         } catch (IOException ioe) {
             throw new StartException("Unable to load properties", ioe);
         }
     }
 
-    public void stop(StopContext context) {
-        users.clear();
+    private Properties getUsersProperties() throws IOException {
+        /*
+         *  This method does attempt to minimise the effect of race conditions, however this is not overly critical
+         *  as if you have users attempting to authenticate at the exact point their details are added to the file there
+         *  is also a change of a race.
+         */
+
+        boolean loadRequired = userProperties == null || fileUpdated != propertiesFile.lastModified();
+
+        if (loadRequired) {
+            synchronized (this) {
+                // Cache the value as there is still a chance of further modification.
+                long fileLastModified = propertiesFile.lastModified();
+                boolean loadReallyRequired = userProperties == null || fileUpdated != fileLastModified;
+                if (loadReallyRequired) {
+                    log.debugf("Reloading properties file '%s%", propertiesFile.getAbsolutePath());
+                    Properties props = new Properties();
+                    InputStream is = new FileInputStream(propertiesFile);
+                    try {
+                        props.load(is);
+                    } finally {
+                        is.close();
+                    }
+                    checkWeakPasswords(props);
+
+                    userProperties = props;
+                    // Update this last otherwise the check outside the synchronized block could return true before the file is set.
+                    fileUpdated = fileLastModified;
+                }
+            }
+        }
+
+        return userProperties;
     }
 
-    public PropertiesCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    private void checkWeakPasswords(final Properties properties) {
+        final String admin = "admin";
+        if (properties.contains(admin) && admin.equals(properties.get(admin))) {
+            log.warn("Properties file defined with default user and password, this will be easy to guess.");
+        }
+    }
+
+    public void stop(StopContext context) {
+        userProperties.clear();
+        userProperties = null;
+        propertiesFile = null;
+    }
+
+    public DomainCallbackHandler getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -125,6 +167,7 @@ public class PropertiesCallbackHandler implements Service<PropertiesCallbackHand
 
         // First Pass - is to double check no unsupported callbacks and to retrieve
         // information from the callbacks passing in information.
+        Properties users = getUsersProperties();
         for (Callback current : callbacks) {
 
             if (current instanceof AuthorizeCallback) {
