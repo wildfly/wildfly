@@ -200,9 +200,8 @@ public class ArquillianService implements Service<ArquillianService> {
             OSGiMetaDataBuilder builder = OSGiMetaDataBuilder.createBuilder("arquillian-service");
             builder.addExportPackages("org.jboss.arquillian.container.test.api", "org.jboss.arquillian.junit");
             builder.addExportPackages("org.jboss.arquillian.osgi", "org.jboss.arquillian.test.api");
-            builder.addExportPackages("org.jboss.osgi.testing");
             builder.addExportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
-            builder.addExportPackages("org.junit", "org.junit.runner", "javax.inject", "org.osgi.framework");
+            builder.addExportPackages("org.junit", "org.junit.runner");
             try {
                 log.infof("Register arquillian service with OSGi layer");
                 bundleManager.registerModule(serviceTarget, module, builder.getOSGiMetaData());

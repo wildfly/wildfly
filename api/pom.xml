@@ -171,13 +171,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.osgi.http</groupId>
-      <artifactId>jboss-osgi-http</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jboss.osgi.spi</groupId>
-          <artifactId>jbosgi-spi</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>jbosgi-http</artifactId>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>

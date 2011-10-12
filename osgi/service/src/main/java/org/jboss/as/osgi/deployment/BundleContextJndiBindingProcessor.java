@@ -123,10 +123,11 @@ public class BundleContextJndiBindingProcessor implements DeploymentUnitProcesso
      */
     private void bindServices(DeploymentUnit depUnit, ServiceTarget serviceTarget, EEModuleDescription description, String componentName, ServiceName contextServiceName) {
         final ServiceName serviceName = contextServiceName.append("BundleContext");
-        BinderService bindingService = new BinderService("BundleContext");
-        ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(serviceName, bindingService);
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, new ManagedReferenceInjector<BundleContext>(bindingService.getManagedObjectInjector()));
-        builder.addDependency(contextServiceName, ServiceBasedNamingStore.class, bindingService.getNamingStoreInjector());
+        BinderService binderService = new BinderService("BundleContext");
+        ROOT_LOGGER.debugf("Install BundleContext binder service: %s", binderService);
+        ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(serviceName, binderService);
+        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, new ManagedReferenceInjector<BundleContext>(binderService.getManagedObjectInjector()));
+        builder.addDependency(contextServiceName, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
         builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
         builder.install();
     }
