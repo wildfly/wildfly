@@ -22,17 +22,15 @@
 
 package org.jboss.as.web;
 
+import java.util.Locale;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Locale;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -44,7 +42,6 @@ class WebSubsystemDescribe implements OperationStepHandler, DescriptionProvider 
     static final WebSubsystemDescribe INSTANCE = new WebSubsystemDescribe();
 
     /** {@inheritDoc} */
-    @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode result = context.getResult();
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());

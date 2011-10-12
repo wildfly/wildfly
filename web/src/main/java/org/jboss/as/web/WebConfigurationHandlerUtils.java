@@ -22,12 +22,9 @@
 
 package org.jboss.as.web;
 
-import static org.jboss.as.web.Constants.ACCESS_LOG;
 import static org.jboss.as.web.Constants.CHECK_INTERVAL;
-import static org.jboss.as.web.Constants.CONDITION;
 import static org.jboss.as.web.Constants.CONTAINER_CONFIG;
 import static org.jboss.as.web.Constants.DEVELOPMENT;
-import static org.jboss.as.web.Constants.DIRECTORY;
 import static org.jboss.as.web.Constants.DISABLED;
 import static org.jboss.as.web.Constants.DISPLAY_SOURCE_FRAGMENT;
 import static org.jboss.as.web.Constants.DUMP_SMAP;
@@ -40,20 +37,19 @@ import static org.jboss.as.web.Constants.KEEP_GENERATED;
 import static org.jboss.as.web.Constants.LISTINGS;
 import static org.jboss.as.web.Constants.MAPPED_FILE;
 import static org.jboss.as.web.Constants.MAX_DEPTH;
-import static org.jboss.as.web.Constants.MIME_MAPPING;
 import static org.jboss.as.web.Constants.MODIFIFICATION_TEST_INTERVAL;
 import static org.jboss.as.web.Constants.READ_ONLY;
 import static org.jboss.as.web.Constants.RECOMPILE_ON_FAIL;
-import static org.jboss.as.web.Constants.REWRITE;
 import static org.jboss.as.web.Constants.SCRATCH_DIR;
+import static org.jboss.as.web.Constants.SECRET;
 import static org.jboss.as.web.Constants.SENDFILE;
 import static org.jboss.as.web.Constants.SMAP;
 import static org.jboss.as.web.Constants.SOURCE_VM;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
 import static org.jboss.as.web.Constants.TAG_POOLING;
 import static org.jboss.as.web.Constants.TARGET_VM;
+import static org.jboss.as.web.Constants.TRIM_SPACES;
 import static org.jboss.as.web.Constants.WEBDAV;
-import static org.jboss.as.web.Constants.WELCOME_FILE;
 import static org.jboss.as.web.Constants.X_POWERED_BY;
 
 import org.jboss.as.controller.PathElement;
@@ -71,28 +67,13 @@ import org.jboss.dmr.ModelType;
  */
 class WebConfigurationHandlerUtils {
 
-
-    /**
-
-     subsystem=web
-
-       - configuration=jsp
-       - configuration=static
-       - configuration=container
-
-           - welcome files (list)
-
-           - mime-mapping=$name
-
-     */
-
     static final PathElement JSP = PathElement.pathElement(CONTAINER_CONFIG, JSP_CONFIGURATION);
     static final PathElement RESOURCE = PathElement.pathElement(CONTAINER_CONFIG, STATIC_RESOURCES);
-    static final PathElement CONTAINER = PathElement.pathElement(CONTAINER_CONFIG, Constants.CONTAINER);
-    static final PathElement REWRITEPATH = PathElement.pathElement(REWRITE, "configuration");
-    static final PathElement ACCESSLOG = PathElement.pathElement(ACCESS_LOG, "configuration");
-    static final PathElement DIRECTORYPATH = PathElement.pathElement(DIRECTORY, "configuration");
-    static final PathElement REWRITECOND = PathElement.pathElement(CONDITION, "configuration");
+
+    static final String[] RESOURCE_CONFIGURATION_ATTRIBUTES = new String[] { LISTINGS, SENDFILE, FILE_ENCONDING, READ_ONLY, WEBDAV, SECRET, MAX_DEPTH, DISABLED };
+    static final String[] JSP_CONFIGURATION_ATTRIBUTES = new String[] { DEVELOPMENT, DISABLED, KEEP_GENERATED, TRIM_SPACES, TAG_POOLING, MAPPED_FILE, CHECK_INTERVAL,
+                            MODIFIFICATION_TEST_INTERVAL, RECOMPILE_ON_FAIL, SMAP, DUMP_SMAP, GENERATE_STRINGS_AS_CHAR_ARRAYS, SCRATCH_DIR, SOURCE_VM, TARGET_VM,
+                            JAVA_ENCODING, X_POWERED_BY, DISPLAY_SOURCE_FRAGMENT };
 
     /**
      * Initialize the configuration model, since add/remove operations would
@@ -105,85 +86,21 @@ class WebConfigurationHandlerUtils {
         // Create the child resources
         resource.registerChild(JSP, Resource.Factory.create());
         resource.registerChild(RESOURCE, Resource.Factory.create());
-        resource.registerChild(CONTAINER, Resource.Factory.create());
 
         final Resource jsp = resource.getChild(JSP);
         final Resource resources = resource.getChild(RESOURCE);
 
-        final Resource container = resource.getChild(CONTAINER);
+        System.out.println("initializeConfiguration: " + operation.get(CONTAINER_CONFIG, JSP_CONFIGURATION).keys());
 
-        for(final String attribute :  operation.get(CONTAINER_CONFIG).keys()) {
-            if (attribute.equals(JSP_CONFIGURATION)) {
-                populateModel(jsp.getModel(), operation.get(CONTAINER_CONFIG, JSP_CONFIGURATION));
-            } else if (attribute.equals(STATIC_RESOURCES)) {
-                populateModel(resources.getModel(), operation.get(CONTAINER_CONFIG, STATIC_RESOURCES));
-            } else if (attribute.equals(MIME_MAPPING)) {
-                container.getModel().get(MIME_MAPPING).set(operation.get(CONTAINER_CONFIG, MIME_MAPPING));
-            }  else if (attribute.equals(WELCOME_FILE)){
-                for(final ModelNode file : operation.get(CONTAINER_CONFIG, WELCOME_FILE).asList()) {
-                    container.getModel().get(WELCOME_FILE).add(file.asString());
-                }
-            }
+        if(operation.hasDefined(CONTAINER_CONFIG) && operation.get(CONTAINER_CONFIG).hasDefined(JSP_CONFIGURATION)) {
+            populateModel(jsp.getModel(), operation.get(CONTAINER_CONFIG, JSP_CONFIGURATION));
+        }
+
+        if(operation.hasDefined(CONTAINER_CONFIG) && operation.get(CONTAINER_CONFIG).hasDefined(STATIC_RESOURCES)) {
+            populateModel(resources.getModel(), operation.get(CONTAINER_CONFIG, STATIC_RESOURCES));
         }
     }
 
-    static void initializeHost(final Resource resource, final ModelNode operation) {
-        for(final String attribute :  operation.keys()) {
-            if (attribute.equals(REWRITE) && operation.get(REWRITE).isDefined()) {
-                populateReWrite(operation, resource);
-            } else if (attribute.equals(ACCESS_LOG) && operation.get(ACCESS_LOG).isDefined())  {
-                resource.registerChild(ACCESSLOG, Resource.Factory.create());
-                final Resource accesslog = resource.getChild(ACCESSLOG);
-                populateAccessLog(accesslog.getModel(), operation.get(ACCESS_LOG), accesslog);
-             }
-        }
-    }
-    static void populateReWrite(final ModelNode operation, final Resource resource) {
-        int num = 0;
-        for(final ModelNode entry : resource.getModel().get(REWRITE).asList()) {
-            String name = "rule-" + num++;
-            PathElement rewritepath = PathElement.pathElement(REWRITE, name);
-            resource.registerChild(rewritepath, Resource.Factory.create());
-            final Resource rewritevalve = resource.getChild(rewritepath);
-
-            for(final String attribute : entry.keys()) {
-                if(entry.hasDefined(attribute)) {
-                    if (attribute.equals(CONDITION)) {
-                        // Create condition-n list.
-                        int j = 0;
-                        for(final ModelNode cond : entry.get(CONDITION).asList()) {
-                            String condname = "condition-" + j++;
-                            PathElement conditionpath = PathElement.pathElement(CONDITION, condname);
-                            rewritevalve.registerChild(conditionpath, Resource.Factory.create());
-                            final Resource condition = rewritevalve.getChild(conditionpath);
-                            populateModel(condition.getModel(),  cond);
-
-                        }
-                    } else {
-                        rewritevalve.getModel().get(attribute).set(entry.get(attribute));
-                   }
-                }
-            }
-        }
-    }
-
-    static void populateAccessLog(final ModelNode subModel, final ModelNode operation, final Resource accesslog) {
-        boolean create = false;
-        for(final String attribute : operation.keys()) {
-            if(operation.hasDefined(attribute)) {
-                if (attribute.equals(DIRECTORY)) {
-                    accesslog.registerChild(DIRECTORYPATH, Resource.Factory.create());
-                    final Resource directory = accesslog.getChild(DIRECTORYPATH);
-                    create = true;
-                    populateModel(directory.getModel(),  operation.get(DIRECTORY));
-                } else
-                    subModel.get(attribute).set(operation.get(attribute));
-            }
-        }
-        if (!create) {
-            accesslog.registerChild(DIRECTORYPATH, Resource.Factory.create());
-        }
-    }
 
     static void populateModel(final ModelNode subModel, final ModelNode operation) {
         for(final String attribute : operation.keys()) {

@@ -42,7 +42,6 @@ import static org.jboss.as.web.Constants.CERTIFICATE_KEY_FILE;
 import static org.jboss.as.web.Constants.CIPHER_SUITE;
 import static org.jboss.as.web.Constants.CONDITION;
 import static org.jboss.as.web.Constants.CONNECTOR;
-import static org.jboss.as.web.Constants.CONTAINER;
 import static org.jboss.as.web.Constants.CONTAINER_CONFIG;
 import static org.jboss.as.web.Constants.DEFAULT_WEB_MODULE;
 import static org.jboss.as.web.Constants.DIRECTORY;
@@ -129,7 +128,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
-
         writeAttribute(writer, Attribute.NATIVE.getLocalName(), node);
         writeAttribute(writer, Attribute.DEFAULT_VIRTUAL_SERVER.getLocalName(), node);
         writeAttribute(writer, Attribute.INSTANCE_ID.getLocalName(), node);
@@ -196,13 +194,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                         writer.writeAttribute(NAME, alias.asString());
                     }
                 }
-                ModelNode accessLog;
-                if (config.get(ACCESS_LOG).isDefined() && config.get(ACCESS_LOG).has("configuration")) {
-                    accessLog = config.get(ACCESS_LOG).get("configuration");
-                } else {
-                    accessLog = config.get(ACCESS_LOG);
-                }
-                if (accessLog.isDefined() && !accessLog.keys().isEmpty()) {
+                if(config.hasDefined(ACCESS_LOG)) {
                     writer.writeStartElement(Element.ACCESS_LOG.getLocalName());
                     final ModelNode accessLog = config.get(ACCESS_LOG);
                     writeAttribute(writer, Attribute.PATTERN.getLocalName(), accessLog);
@@ -211,43 +203,22 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     writeAttribute(writer, Attribute.PREFIX.getLocalName(), accessLog);
                     writeAttribute(writer, Attribute.ROTATE.getLocalName(), accessLog);
                     if(accessLog.has(DIRECTORY)) {
-                        ModelNode directory;
-                        if (accessLog.get(DIRECTORY).has("configuration"))
-                            directory = accessLog.get(DIRECTORY).get("configuration");
-                        else
-                            directory = accessLog.get(DIRECTORY);
-                        if (directory.isDefined()) {
-                            writer.writeStartElement(Element.DIRECTORY.getLocalName());
-                            writeAttribute(writer, Attribute.PATH.getLocalName(), directory);
-                            writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), directory);
-                            writer.writeEndElement();
-                        }
+                        final ModelNode directory = accessLog.get(DIRECTORY);
+                        writer.writeEmptyElement(DIRECTORY);
+                        writeAttribute(writer, Attribute.PATH.getLocalName(), directory);
+                        writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), directory);
                     }
                     writer.writeEndElement();
                 }
-
                 if (config.hasDefined(REWRITE)) {
-                    for (final ModelNode rewritenode : config.get(REWRITE).asList()) {
-                        String name = getAddedRule(rewritenode);
-                        ModelNode rewrite;
-                        if (rewritenode.hasDefined(name))
-                            rewrite = rewritenode.get(name);
-                        else
-                            rewrite = rewritenode;
+                    for (final ModelNode rewrite : config.get(REWRITE).asList()) {
                         writer.writeStartElement(REWRITE);
                         writeAttribute(writer, Attribute.PATTERN.getLocalName(), rewrite);
                         writeAttribute(writer, Attribute.SUBSTITUTION.getLocalName(), rewrite);
                         writeAttribute(writer, Attribute.FLAGS.getLocalName(), rewrite);
-
                         if (rewrite.hasDefined(CONDITION)) {
-                            for (final ModelNode conditionnode : rewrite.get(CONDITION).asList()) {
-                                String condname = getAddedConditionName(conditionnode);
-                                ModelNode condition;
-                                if (conditionnode.hasDefined(condname))
-                                    condition = conditionnode.get(condname);
-                                else
-                                    condition = conditionnode;
-                                writer.writeStartElement(CONDITION);
+                            for (final ModelNode condition : rewrite.get(CONDITION).asList()) {
+                                writer.writeEmptyElement(CONDITION);
                                 writeAttribute(writer, Attribute.TEST.getLocalName(), condition);
                                 writeAttribute(writer, Attribute.PATTERN.getLocalName(), condition);
                                 writeAttribute(writer, Attribute.FLAGS.getLocalName(), condition);
@@ -269,22 +240,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         writer.writeEndElement();
     }
 
-    private String getAddedConditionName(ModelNode conditionnode) {
-        for(final String attribute : conditionnode.keys()) {
-            if (attribute.startsWith("condition-"))
-                return attribute;
-        }
-        return "condition-0";
-    }
-
-    private String getAddedRule(ModelNode rewritenode) {
-        for(final String attribute : rewritenode.keys()) {
-            if (attribute.startsWith("rule-"))
-                return attribute;
-        }
-        return "rule-0";
-    }
-
     private void writeContainerConfig(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         boolean containerConfigStartWritten = false;
         if(config.hasDefined(STATIC_RESOURCES)) {
@@ -293,28 +248,23 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         if(config.hasDefined(JSP_CONFIGURATION)) {
             containerConfigStartWritten = writeJSPConfiguration(writer, config.get(JSP_CONFIGURATION), containerConfigStartWritten) || containerConfigStartWritten ;
         }
-        ModelNode container = config;
-        if(config.hasDefined(CONTAINER)) {
-            // this has been added to get the stuff manageable
-            container = config.get(CONTAINER);
-        }
-        if(container.hasDefined(MIME_MAPPING)) {
+        if(config.hasDefined(MIME_MAPPING)) {
             if (!containerConfigStartWritten) {
                 writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
                 containerConfigStartWritten = true;
             }
-            for(final Property entry : container.get(MIME_MAPPING).asPropertyList()) {
+            for(final Property entry : config.get(MIME_MAPPING).asPropertyList()) {
                 writer.writeEmptyElement(Element.MIME_MAPPING.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), entry.getName());
                 writer.writeAttribute(Attribute.VALUE.getLocalName(), entry.getValue().asString());
             }
         }
-        if(container.hasDefined(WELCOME_FILE)) {
+        if(config.hasDefined(WELCOME_FILE)) {
             if (!containerConfigStartWritten) {
                 writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
                 containerConfigStartWritten = true;
             }
-            for(final ModelNode file : container.get(WELCOME_FILE).asList()) {
+            for(final ModelNode file : config.get(WELCOME_FILE).asList()) {
                 writer.writeStartElement(Element.WELCOME_FILE.getLocalName());
                 writer.writeCharacters(file.asString());
                 writer.writeEndElement();
@@ -678,7 +628,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 rewrite.get(SUBSTITUTION).set(value);
                 break;
             case FLAGS:
-                rewrite.get(FLAGS).set(value);
+                rewrite.get(REWRITE).set(value);
                 break;
             default:
                 throw unexpectedAttribute(reader, i);
