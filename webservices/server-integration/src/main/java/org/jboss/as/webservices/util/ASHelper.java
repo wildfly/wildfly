@@ -227,7 +227,7 @@ public final class ASHelper {
      */
     private static List<ServletMetaData> getWebServiceServlets(final DeploymentUnit unit, final boolean jaxws) {
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
-        return selectWebServiceServlets(unit, jbossWebMD.getServlets(), jaxws);
+        return selectWebServiceServlets(unit, jbossWebMD != null ? jbossWebMD.getServlets() : null, jaxws);
     }
 
     /**
