@@ -42,12 +42,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.osgi.service.ConfigAdminListener;
 import org.jboss.as.osgi.service.ConfigAdminService;
-import org.jboss.as.testsuite.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -68,7 +70,13 @@ public class ConfigAdminServiceTestCase {
 
     @Deployment
     public static Archive<?> deployment() {
-        return ShrinkWrapUtils.createJavaArchive("configadmin.jar", ConfiguredService.class);
+
+        return ShrinkWrap.create(JavaArchive.class, "configadmin.jar")
+                .addPackage(ConfiguredService.class.getPackage())
+                .addAsManifestResource(new StringAsset(
+                        "Manifest-Version: 1.0\n" +
+                        "Dependencies: org.jboss.as.osgi,javax.inject.api\n"
+                ), "MANIFEST.MF");
     }
 
     @Test

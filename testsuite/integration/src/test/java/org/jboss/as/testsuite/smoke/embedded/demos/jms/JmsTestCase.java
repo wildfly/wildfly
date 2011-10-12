@@ -38,10 +38,10 @@ import javax.naming.InitialContext;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
@@ -69,7 +69,8 @@ public class JmsTestCase {
 
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
-        JavaArchive archive = ShrinkWrapUtils.createJavaArchive("demos/jms-example.jar", JmsTestCase.class.getPackage());
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jms-example.jar")
+        .addPackage(JmsTestCase.class.getPackage());
         return archive;
     }
 

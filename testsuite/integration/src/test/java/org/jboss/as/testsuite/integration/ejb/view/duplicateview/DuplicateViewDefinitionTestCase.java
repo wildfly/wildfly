@@ -42,10 +42,11 @@ public class DuplicateViewDefinitionTestCase {
 
     @Deployment
     public static Archive<?> deployment() {
+
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "ejb3as7-1012.jar")
                 .addPackage(AnnotatedDoNothingBean.class.getPackage())
                 .addPackage(DoNothingBean.class.getPackage())
-                .addAsManifestResource("ejb3/as7_1012/ejb-jar.xml", "ejb-jar.xml");
+                .addAsManifestResource(DuplicateViewDefinitionTestCase.class.getPackage(), "ejb-jar.xml");
         log.info(archive.toString(true));
         return archive;
     }

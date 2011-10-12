@@ -28,11 +28,10 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
 import junit.framework.Assert;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +46,7 @@ public class DsTestCase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-        JavaArchive archive = ShrinkWrapUtils.createJavaArchive("demos/ds-example.jar");
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "ds-example.jar");
         archive.addClass(DsTestCase.class);
         return archive;
     }
