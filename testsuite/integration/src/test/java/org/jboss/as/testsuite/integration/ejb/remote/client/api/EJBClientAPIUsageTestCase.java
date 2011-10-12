@@ -216,7 +216,6 @@ public class EJBClientAPIUsageTestCase {
      * @throws Exception
      */
     @Test
-    //@Ignore
     public void testSFSBInvocation() throws Exception {
         // open a session for the SFSB
         final SessionID sessionID = EJBClient.createSession(APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "");
@@ -227,7 +226,7 @@ public class EJBClientAPIUsageTestCase {
         final int initialCount = counter.getCount();
         logger.info("Got initial count " + initialCount);
         Assert.assertEquals("Unexpected initial count from stateful bean", 0, initialCount);
-        final int NUM_TIMES = 25;
+        final int NUM_TIMES = 50;
         for (int i = 1; i <= NUM_TIMES; i++) {
             final int count = counter.incrementAndGetCount();
             logger.info("Got next count " + count);
@@ -245,7 +244,8 @@ public class EJBClientAPIUsageTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore
+    @Ignore ("No longer appropriate, since a proxy can no longer be created without a session, for a SFSB. " +
+            "Need to think if there's a different way to test this. Else just remove this test")
     public void testSFSBAccessFailureWithoutSession() throws Exception {
         // create a locator without a session
         final StatefulEJBLocator<Counter> locator = new StatefulEJBLocator<Counter>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "", null);

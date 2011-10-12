@@ -86,6 +86,8 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
 
         // read the Locator
         final UnMarshaller unMarshaller = MarshallerFactory.createUnMarshaller(this.marshallingStrategy);
+        // we use a mutable ClassLoaderProvider, so that we can switch to a different (and correct deployment CL)
+        // midway through the unmarshalling of the stream
         final ClassLoaderSwitchingClassLoaderProvider classLoaderProvider = new ClassLoaderSwitchingClassLoaderProvider(Thread.currentThread().getContextClassLoader());
         unMarshaller.start(input, classLoaderProvider);
         // read the EJB info
@@ -306,7 +308,10 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         }
     }
 
-    private class ClassLoaderSwitchingClassLoaderProvider implements ClassLoaderProvider {
+    /**
+     * A mutable {@link org.jboss.as.ejb3.remote.protocol.versionone.UnMarshaller.ClassLoaderProvider}
+     */
+    private class ClassLoaderSwitchingClassLoaderProvider implements UnMarshaller.ClassLoaderProvider {
 
         private ClassLoader currentClassLoader;
 
@@ -319,6 +324,11 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
             return this.currentClassLoader;
         }
 
+        /**
+         * Sets the passed <code>newCL</code> as the classloader which will be returned on
+         * subsequent calls to {@link #provideClassLoader()}
+         * @param newCL
+         */
         void switchClassLoader(final ClassLoader newCL) {
             this.currentClassLoader = newCL;
         }
