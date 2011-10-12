@@ -74,6 +74,7 @@ import junit.framework.AssertionFailedError;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.AbstractControllerService;
+import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
@@ -102,6 +103,7 @@ import org.jboss.as.controller.parsing.DomainXml;
 import org.jboss.as.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.StandaloneXml;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -659,9 +661,9 @@ public class ParseAndMarshalModelsTestCase {
         }
 
         @Override
-        public void start(StartContext context) throws StartException {
+        protected void boot(BootContext context) throws ConfigurationPersistenceException {
             try {
-                super.start(context);
+                super.boot(context);
             } finally {
                 latch.countDown();
             }
