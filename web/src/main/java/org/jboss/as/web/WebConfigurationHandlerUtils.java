@@ -231,9 +231,9 @@ class WebConfigurationHandlerUtils {
     }
 
     public static void initializeConnector(Resource resource, ModelNode model) {
+        resource.registerChild(SSLPATH, Resource.Factory.create());
+        final Resource ssl = resource.getChild(SSLPATH);
         if (model.hasDefined(SSL)) {
-            resource.registerChild(SSLPATH, Resource.Factory.create());
-            final Resource ssl = resource.getChild(SSLPATH);
             populateModel(ssl.getModel(),  model.get(SSL));
         }
     }
