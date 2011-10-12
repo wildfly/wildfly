@@ -150,9 +150,9 @@ class ModelControllerImpl implements ModelController {
                 }
             } else {
                 final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName);
-                if (stepHandler == null) {
+                if (!sawExtensionAdd && stepHandler == null) {
                     // Odd case. An op prior to the first extension add where there is no handler. This would really
-                    // only happen during development
+                    // only happen during AS development
                     String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
                     log.error(msg);
                     context.getFailureDescription().set(msg);

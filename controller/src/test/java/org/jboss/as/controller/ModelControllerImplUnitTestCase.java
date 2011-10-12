@@ -69,6 +69,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -142,7 +143,11 @@ public class ModelControllerImplUnitTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
 
         ModelControllerService(final ControlledProcessState processState) {
-            super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, DESC_PROVIDER, null);
+            this(processState, new NullConfigurationPersister());
+        }
+
+        ModelControllerService(final ControlledProcessState processState, final ConfigurationPersister configurationPersister) {
+            super(OperationContext.Type.SERVER, configurationPersister, processState, DESC_PROVIDER, null);
         }
 
         @Override
