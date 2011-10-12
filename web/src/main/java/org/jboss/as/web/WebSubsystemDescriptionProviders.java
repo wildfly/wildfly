@@ -109,21 +109,5 @@ class WebSubsystemDescriptionProviders {
             return WebSubsystemDescriptions.getReWriteCondDescription(locale);
         }
 
-    };
-
-    public static DescriptionProvider SSL= new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return WebSubsystemDescriptions.getSSLDescription(locale);
-        }
-
-    };
-
-    public static DescriptionProvider SSO = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return WebSubsystemDescriptions.getSSODescription(locale);
-        }
-
-    };
+    };;
 }

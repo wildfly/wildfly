@@ -853,19 +853,4 @@ class WebSubsystemDescriptions {
         node.get(REQUIRED).set(false);
         return node;
     }
-
-    public static ModelNode getSSLDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode node = new ModelNode();
-        return getSSLCommonDescription(node, ATTRIBUTES, bundle);
-    }
-
-    public static ModelNode getSSODescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
-        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso"));
-        node.get(REQUIRED).set(false);
-        return node;
-    }
 }
