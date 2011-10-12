@@ -22,10 +22,14 @@
 
 package org.jboss.as.testsuite.integration.ejb.remote.client.api;
 
+import java.util.concurrent.Future;
+
 /**
  * User: jpai
  */
 public interface EchoRemote {
 
     String echo(String message);
+
+    Future<String> asyncEcho(String message, long delayInMilliSec);
 }

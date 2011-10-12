@@ -59,6 +59,14 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
 
+import javax.ejb.EJBException;
+import javax.ejb.NoSuchEJBException;
+import java.net.URI;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Tests the various common use cases of the EJB remote client API
  * <p/>
@@ -280,6 +288,12 @@ public class EJBClientAPIUsageTestCase {
         }
     }
 
+    /**
+     * Tests that an {@link javax.ejb.ApplicationException} thrown by a SLSB method is returned back to the
+     * client correctly
+     *
+     * @throws Exception
+     */
     @Test
     public void testApplicationExceptionOnSLSBMethod() throws Exception {
         final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, ExceptionThrowingBean.class.getSimpleName(), ExceptionThrowingRemote.class);
@@ -295,6 +309,11 @@ public class EJBClientAPIUsageTestCase {
         }
     }
 
+    /**
+     * Tests that a system exception thrown from a SLSB method is conveyed back to the client
+     *
+     * @throws Exception
+     */
     @Test
     public void testSystemExceptionOnSLSBMethod() throws Exception {
         final ExceptionThrowingRemote exceptionThrowingBean = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, ExceptionThrowingBean.class.getSimpleName(), ExceptionThrowingRemote.class);
@@ -310,5 +329,32 @@ public class EJBClientAPIUsageTestCase {
             Assert.assertTrue("Unexpected cause in EJBException", cause instanceof RuntimeException);
             Assert.assertEquals("Unexpected state in the system exception", exceptionState, cause.getMessage());
         }
+    }
+
+    /**
+     * Tests that a SLSB method which is marked as asynchronous and returns a {@link java.util.concurrent.Future}
+     * is invoked asynchronously and the client isn't blocked for the lifetime of the method
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testAsyncFutureMethodOnSLSB() throws Exception {
+        final EchoRemote echoRemote = EJBClient.getProxy(APP_NAME, MODULE_NAME, null, EchoBean.class.getSimpleName(), EchoRemote.class);
+        Assert.assertNotNull("Received a null proxy", echoRemote);
+        final String message = "You are supposed to be an asynchronous method";
+        final long DELAY = 5000;
+        final long start = System.currentTimeMillis();
+        // invoke the asynchronous method
+        final Future<String> futureEcho = echoRemote.asyncEcho(message, DELAY);
+        final long end = System.currentTimeMillis();
+        logger.info("Asynchronous invocation returned a Future: " + futureEcho + " in " + (end - start) + " milli seconds");
+        // test that the invocation did not act like a synchronous invocation and instead returned "immediately"
+        Assert.assertFalse("Asynchronous invocation behaved like a synchronous invocation", (end - start) >= DELAY);
+        Assert.assertNotNull("Future is null", futureEcho);
+        // Check if the result is marked as complete (it shouldn't be this soon)
+        Assert.assertFalse("Future result is unexpectedly completed", futureEcho.isDone());
+        // wait for the result
+        final String echo = futureEcho.get();
+        Assert.assertEquals("Unexpected echo message", message, echo);
     }
 }

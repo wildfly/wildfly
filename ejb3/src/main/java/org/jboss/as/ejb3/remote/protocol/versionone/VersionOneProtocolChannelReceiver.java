@@ -23,11 +23,6 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
@@ -36,8 +31,14 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
  * User: jpai
@@ -72,6 +73,8 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     }
 
     public void startReceiving() {
+        this.channel.addCloseHandler(new ChannelCloseHandler());
+
         this.channel.receiveMessage(this);
         // listen to module availability/unavailability events
         this.deploymentRepository.addListener(this);
@@ -196,4 +199,13 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         }
     }
 
+    private class ChannelCloseHandler implements CloseHandler<Channel> {
+
+        @Override
+        public void handleClose(Channel closedChannel, IOException exception) {
+            logger.debug("Channel " + closedChannel + " closed. removing deployment listener " + this);
+            VersionOneProtocolChannelReceiver.this.deploymentRepository.removeListener(VersionOneProtocolChannelReceiver.this);
+        }
+
+    }
 }

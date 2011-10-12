@@ -24,15 +24,18 @@ package org.jboss.as.testsuite.integration.ejb.remote.client.api;
 
 import org.jboss.logging.Logger;
 
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
+import java.util.concurrent.Future;
 
 /**
  * User: jpai
  */
 @Stateless
-@Remote (EchoRemote.class)
+@Remote(EchoRemote.class)
 @Interceptors(InterceptorOne.class)
 public class InterceptedEchoBean implements EchoRemote {
 
@@ -43,5 +46,18 @@ public class InterceptedEchoBean implements EchoRemote {
     public String echo(String message) {
         logger.info(this.getClass().getSimpleName() + " echoing message " + message);
         return message;
+    }
+
+    @Asynchronous
+    @Override
+    public Future<String> asyncEcho(String message, long delayInMilliSec) {
+        logger.info("Going to delay the echo of \"" + message + "\" for " + delayInMilliSec + " milli seconds");
+        try {
+            Thread.sleep(delayInMilliSec);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        logger.info(this.getClass().getSimpleName() + " echoing message: " + message);
+        return new AsyncResult<String>(message);
     }
 }
