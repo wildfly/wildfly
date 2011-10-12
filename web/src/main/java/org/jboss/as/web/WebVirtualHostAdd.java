@@ -136,10 +136,10 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
             final String relativeTo = directory.hasDefined(RELATIVE_TO) ? directory.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
             final String path = directory.hasDefined(PATH) ? directory.get(PATH).asString() : hostName;
             RelativePathService.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName, Constants.ACCESS_LOG),
-                    path, relativeTo, target, newControllers, verificationHandler);
+                    path, false, relativeTo, target, newControllers, verificationHandler);
         } else {
             RelativePathService.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName, Constants.ACCESS_LOG),
-                    hostName, DEFAULT_RELATIVE_TO, target, newControllers, verificationHandler);
+                    hostName, false, DEFAULT_RELATIVE_TO, target, newControllers, verificationHandler);
         }
     }
 
