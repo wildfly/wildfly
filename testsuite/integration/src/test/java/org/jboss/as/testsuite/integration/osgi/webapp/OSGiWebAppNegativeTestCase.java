@@ -21,9 +21,9 @@
  */
 package org.jboss.as.testsuite.integration.osgi.webapp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
@@ -37,6 +37,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
 import org.jboss.as.testsuite.integration.osgi.OSGiTestSupport;
 import org.jboss.as.testsuite.integration.osgi.webapp.bundle.EndpointServlet;
+import org.jboss.osgi.deployment.interceptor.LifecycleInterceptorException;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -45,17 +46,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
- * A test that deployes a WAR bundle
+ * A test that deployes a WAR bundle that contains no WEB-INF/web.xml
  *
  * @author thomas.diesler@jboss.com
- * @since 06-Oct-2009
+ * @since 26-Oct-2009
  */
 @RunWith(Arquillian.class)
-public class WebAppTestCase extends OSGiTestSupport {
+public class OSGiWebAppNegativeTestCase extends OSGiTestSupport {
 
     @Inject
     public BundleContext context;
@@ -66,10 +68,9 @@ public class WebAppTestCase extends OSGiTestSupport {
     @Deployment
     @StartLevelAware(startLevel = 4)
     public static WebArchive createdeployment() {
-        final WebArchive archive = ShrinkWrap.create(WebArchive.class, "example-webapp");
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, "example-webapp-negative");
         archive.addClasses(OSGiTestSupport.class, EndpointServlet.class);
-        archive.addAsWebResource("osgi/webapp/message.txt", "message.txt");
-        archive.addAsWebInfResource("osgi/webapp/webA.xml", "web.xml");
+        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             public InputStream openStream() {
@@ -78,6 +79,7 @@ public class WebAppTestCase extends OSGiTestSupport {
                 builder.addBundleManifestVersion(2);
                 builder.addManifestHeader(Constants.BUNDLE_CLASSPATH, ".,WEB-INF/classes");
                 builder.addManifestHeader("Web-ContextPath", "example-webapp");
+                builder.addImportPackages(LifecycleInterceptorException.class);
                 builder.addImportPackages(StartLevel.class, HttpServlet.class, Servlet.class);
                 return builder.openStream();
             }
@@ -88,26 +90,12 @@ public class WebAppTestCase extends OSGiTestSupport {
     @Test
     public void testServletAccess() throws Exception {
         changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
-        bundle.start();
-        String line = getHttpResponse("/example-webapp/servlet?test=plain", 5000);
-        assertEquals("Hello from Servlet", line);
-    }
-
-    @Test
-    public void testServletInitProps() throws Exception {
-        bundle.start();
-        String line = getHttpResponse("/example-webapp/servlet?test=initProp", 5000);
-        assertEquals("initProp=SomeValue", line);
-    }
-
-    @Test
-    public void testResourceAccess() throws Exception {
-        bundle.start();
-        String line = getHttpResponse("/example-webapp/message.txt", 5000);
-        assertEquals("Hello from Resource", line);
-    }
-
-    private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return getHttpResponse("localhost", 8090, reqPath, timeout);
+        try {
+            bundle.start();
+            fail("BundleException expected");
+        } catch (BundleException ex) {
+            Throwable cause = ex.getCause();
+            assertTrue(cause instanceof LifecycleInterceptorException);
+        }
     }
 }

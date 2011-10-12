@@ -20,11 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.web.deployment;
+package org.jboss.as.server.deployment.module;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -32,21 +29,19 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.MountExplodedMarker;
 
 /**
- * Processor that marks a war deployment.
+ * Processor that marks a deployment as exploded.
  *
- * @author John Bailey
+ * @author Thomas.Diesler@jboss.com
+ * @since  05-Oct-2011
  */
-public class WarDeploymentInitializingProcessor implements DeploymentUnitProcessor {
+public class DeploymentRootExplodedMountProcessor implements DeploymentUnitProcessor {
 
     static final String WAR_EXTENSION = ".war";
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if(deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
-            return;
-        }
         if(deploymentUnit.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
-            DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
+            MountExplodedMarker.setMountExploded(deploymentUnit);
         }
     }
 
