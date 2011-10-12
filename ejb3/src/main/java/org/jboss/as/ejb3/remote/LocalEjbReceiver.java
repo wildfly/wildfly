@@ -47,6 +47,7 @@ import org.jboss.ejb.client.EJBReceiverContext;
 import org.jboss.ejb.client.EJBReceiverInvocationContext;
 import org.jboss.ejb.client.Locator;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
@@ -123,8 +124,8 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         context.putPrivateData(Component.class, ejbComponent);
         context.putPrivateData(ComponentView.class, view);
 
-        final SessionID sessionID = invocation.getProxyAttachment(SessionID.SESSION_ID_KEY);
-        if(sessionID != null) {
+        if (locator instanceof StatefulEJBLocator) {
+            final SessionID sessionID = ((StatefulEJBLocator) locator).getSessionId();
             context.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
         }
 
