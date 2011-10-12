@@ -23,31 +23,12 @@
 package org.jboss.as.remoting;
 
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readArrayAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
@@ -56,10 +37,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElem
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import static org.jboss.as.remoting.CommonAttributes.ADD_CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
@@ -144,7 +121,9 @@ public class RemotingExtension implements Extension {
         connectors.registerSubModel(PathElement.pathElement(SASL), RemotingSubsystemProviders.SASL_SPEC);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewRemotingSubsystemParser.INSTANCE);
@@ -165,7 +144,7 @@ public class RemotingExtension implements Extension {
             address.protect();
 
             final int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i ++) {
+            for (int i = 0; i < count; i++) {
                 requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -214,7 +193,7 @@ public class RemotingExtension implements Extension {
             String socketBinding = null;
             final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.SOCKET_BINDING);
             final int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i ++) {
+            for (int i = 0; i < count; i++) {
                 requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -232,7 +211,7 @@ public class RemotingExtension implements Extension {
                         throw unexpectedAttribute(reader, i);
                 }
             }
-            if (! required.isEmpty()) {
+            if (!required.isEmpty()) {
                 throw missingRequired(reader, required);
             }
             assert name != null;
@@ -303,7 +282,7 @@ public class RemotingExtension implements Extension {
                         switch (element) {
                             case INCLUDE_MECHANISMS: {
                                 final ModelNode includes = saslElement.get(INCLUDE_MECHANISMS);
-                                for(final String s : readArrayAttributeElement(reader, "value", String.class)) {
+                                for (final String s : readArrayAttributeElement(reader, "value", String.class)) {
                                     includes.add().set(s);
                                 }
                                 break;
@@ -410,7 +389,9 @@ public class RemotingExtension implements Extension {
             }
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
@@ -419,10 +400,10 @@ public class RemotingExtension implements Extension {
             if (node.hasDefined(CONNECTOR)) {
                 final ModelNode connector = node.get(CONNECTOR);
                 for (String name : connector.keys()) {
-                        writeConnector(writer, connector.require(name), name);
-                    }
+                    writeConnector(writer, connector.require(name), name);
                 }
             }
+
             writer.writeEndElement();
 
         }

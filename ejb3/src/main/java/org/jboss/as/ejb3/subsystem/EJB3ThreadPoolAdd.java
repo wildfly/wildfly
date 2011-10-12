@@ -27,7 +27,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_THREADS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.NAME;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +36,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
 import org.jboss.as.threads.ThreadFactoryService;
 import org.jboss.as.threads.TimeSpec;
 import org.jboss.as.threads.UnboundedQueueThreadPoolService;
@@ -89,7 +89,7 @@ public class EJB3ThreadPoolAdd extends AbstractBoottimeAddStepHandler {
         }
 
         final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(maxThreads,  new TimeSpec(TimeUnit.MILLISECONDS, keepAlive));
-        ServiceBuilder<ExecutorService> builder = serviceTarget.addService(BASE_SERVICE_NAME.append(name), service)
+        ServiceBuilder<ManagedJBossThreadPoolExecutorService> builder = serviceTarget.addService(BASE_SERVICE_NAME.append(name), service)
                 .addDependency(threadFactoryServiceName, ThreadFactory.class, service.getThreadFactoryInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         if (verificationHandler != null) {

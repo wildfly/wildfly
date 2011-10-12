@@ -38,7 +38,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
-import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -86,7 +86,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final EJBRemoteConnectorService service = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river", "java-serial"});
         final ServiceBuilder<EJBRemoteConnectorService> target = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service)
                 // TODO: inject the right connector
-                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, service.getEndpointInjector())
+                //TODO: we should not be piggy backing on management
+                .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.getEndpointInjector())
                 .addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         if (verificationHandler != null) {

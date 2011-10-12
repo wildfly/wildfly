@@ -450,7 +450,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
         operations.add(EJB3AsyncServiceAdd.create(threadPoolName));
     }
 
-    private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    private ModelNode parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         ModelNode mdbModelNode = new ModelNode();
         // no attributes expected
         requireNoAttributes(reader);

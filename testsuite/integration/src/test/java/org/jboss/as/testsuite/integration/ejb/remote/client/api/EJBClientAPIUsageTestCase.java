@@ -22,6 +22,14 @@
 
 package org.jboss.as.testsuite.integration.ejb.remote.client.api;
 
+import java.net.URI;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.ejb.EJBException;
+import javax.ejb.NoSuchEJBException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -50,13 +58,6 @@ import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
-
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchEJBException;
-import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Tests the various common use cases of the EJB remote client API
