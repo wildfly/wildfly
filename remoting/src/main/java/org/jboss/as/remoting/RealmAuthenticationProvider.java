@@ -40,8 +40,10 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
+import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.xnio.OptionMap;
+import org.xnio.OptionMap.Builder;
 import org.xnio.Options;
 import org.xnio.Property;
 import org.xnio.Sequence;
@@ -59,6 +61,7 @@ import org.xnio.Sequence;
 public class RealmAuthenticationProvider implements ServerAuthenticationProvider {
 
     static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
+    static final String PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
 
     static final String ANONYMOUS = "ANONYMOUS";
 
@@ -76,8 +79,19 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
 
     OptionMap getSaslOptionMap() {
         if (digestMd5Supported()) {
-            return OptionMap.create(SASL_MECHANISMS, Sequence.of(DIGEST_MD5),
-                    SASL_PROPERTIES, Sequence.of(Property.of(REALM_PROPERTY, realm.getName())));
+            Builder builder = OptionMap.builder();
+            builder.set(SASL_MECHANISMS, Sequence.of("DIGEST-MD5"));
+
+            Sequence<Property> properties;
+            if (contains(DigestHashCallback.class, realm.getCallbackHandler().getSupportedCallbacks())) {
+                properties = Sequence.of(Property.of(REALM_PROPERTY, realm.getName()), Property.of(PRE_DIGESTED_PROPERTY, Boolean.TRUE.toString()));
+            } else {
+                properties = Sequence.of(Property.of(REALM_PROPERTY, realm.getName()));
+            }
+
+            builder.set(SASL_PROPERTIES, properties);
+
+            return builder.getMap();
         }
 
         if (plainSupported()) {
@@ -166,7 +180,8 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         if (contains(RealmCallback.class, callbacks) == false) {
             return false;
         }
-        if (contains(PasswordCallback.class, callbacks) == false) {
+        if (contains(PasswordCallback.class, callbacks) == false &&
+                contains(DigestHashCallback.class, callbacks) == false) {
             return false;
         }
         if (contains(AuthorizeCallback.class, callbacks) == false) {
