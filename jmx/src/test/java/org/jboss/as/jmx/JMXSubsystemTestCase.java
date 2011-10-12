@@ -244,6 +244,11 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
+        Assert.assertTrue(marshalled.contains(Namespace.JMX_1_1.getUriString()));
+        marshalled = marshalled.replace(Namespace.JMX_1_1.getUriString(), Namespace.JMX_1_0.getUriString());
+
+        System.out.println(marshalled);
+
         Assert.assertEquals(normalizeXML(subsystemXml), normalizeXML(marshalled));
 
         //Install the persisted xml from the first controller into a second controller
