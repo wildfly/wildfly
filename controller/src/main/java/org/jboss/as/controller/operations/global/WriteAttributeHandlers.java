@@ -26,8 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -85,10 +85,7 @@ public class WriteAttributeHandlers {
             final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
             final ModelNode currentValue = submodel.get(name).clone();
 
-            if (!value.isDefined())
-                submodel.get(name).clear();
-            else
-                submodel.get(name).set(value);
+            submodel.get(name).set(value);
 
             modelChanged(context, operation, name, value, currentValue);
         }
