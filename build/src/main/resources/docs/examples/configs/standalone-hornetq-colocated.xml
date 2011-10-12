@@ -49,7 +49,7 @@
 
     <management>
         <security-realms>
-            <security-realm name="PropertiesMgmtSecurityRealm">
+            <security-realm name="ManagementRealm">
                 <authentication>
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>

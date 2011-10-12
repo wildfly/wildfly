@@ -1,9 +1,9 @@
 ##
 ## Basic script which can be run against the default host.xml configuration to
-## secure the Host Controller's management interfaces. This requires the 'PropertiesMgmtSecurityRealm'
+## secure the Host Controller's management interfaces. This requires the 'ManagementRealm'
 ## security-realm to be configured. It also requires that the host controller is running.
 ##
-## ./jboss-admin.sh -c --file=bin/scripts/secure-host-controller-mgmt.cli
+## ./jboss-admin.sh -c --file=scripts/secure-host-controller-mgmt.cli
 ##
 ## Note that the commands below are addressed to "host=master", which is the name of the host in
 ## in the default host.xml that comes with the JBoss Application Server distribution. You must
@@ -14,11 +14,11 @@
 batch
 
 ## first validate that the security-realm exist
-/host=master/core-service=management/security-realm=PropertiesMgmtSecurityRealm:validate-address
+/host=master/core-service=management/security-realm=ManagementRealm:validate-address
 
 ## update the native and http management interfaces
-/host=master/core-service=management/management-interface=http-interface:write-attribute(name=security-realm,value=PropertiesMgmtSecurityRealm)
-/host=master/core-service=management/management-interface=native-interface:write-attribute(name=security-realm,value=PropertiesMgmtSecurityRealm)
+/host=master/core-service=management/management-interface=http-interface:write-attribute(name=security-realm,value=ManagementRealm)
+/host=master/core-service=management/management-interface=native-interface:write-attribute(name=security-realm,value=ManagementRealm)
 
 # Execute the operations
 run-batch
