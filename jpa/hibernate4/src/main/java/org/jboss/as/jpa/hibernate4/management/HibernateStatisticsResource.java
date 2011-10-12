@@ -22,7 +22,10 @@
 
 package org.jboss.as.jpa.hibernate4.management;
 
-import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.CACHE;
+import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.ENTITYCACHE;
+import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.COLLECTION;
+import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.ENTITY;
+import static org.jboss.as.jpa.hibernate4.management.HibernateDescriptionConstants.QUERYCACHE;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,10 +51,13 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     private final String puName;
     private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
     private final ModelNode model = new ModelNode();
-    public HibernateStatisticsResource(final String puName, final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
-        super(HibernateDescriptionConstants.CACHE, puName);
+    private final String providerLabel;
+
+    public HibernateStatisticsResource(final String puName, final PersistenceUnitServiceRegistry persistenceUnitRegistry, final String providerLabel) {
+        super(providerLabel, puName);
         this.puName = puName;
         this.persistenceUnitRegistry = persistenceUnitRegistry;
+        this.providerLabel = providerLabel;
     }
 
     @Override
@@ -66,8 +72,14 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public boolean hasChild(PathElement element) {
-        if (CACHE.equals(element.getKey())) {
+        if (ENTITYCACHE.equals(element.getKey())) {
             return hasCacheRegion(element);
+        } else if (ENTITY.equals(element.getKey())) {
+            return hasEntity(element);
+        } else if (COLLECTION.equals(element.getKey())) {
+            return hasCollection(element);
+        } else if (QUERYCACHE.equals(element.getKey())) {
+            return hasQuery(element);
         } else {
             return super.hasChild(element);
         }
@@ -75,8 +87,14 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public Resource getChild(PathElement element) {
-        if (CACHE.equals(element.getKey())) {
+        if (ENTITYCACHE.equals(element.getKey())) {
             return hasCacheRegion(element) ? PlaceholderResource.INSTANCE : null;
+        } else if (ENTITY.equals(element.getKey())) {
+            return hasEntity(element) ? PlaceholderResource.INSTANCE : null;
+        } else if (COLLECTION.equals(element.getKey())) {
+            return hasCollection(element) ? PlaceholderResource.INSTANCE : null;
+        } else if (QUERYCACHE.equals(element.getKey())) {
+            return hasQuery(element) ? PlaceholderResource.INSTANCE : null;
         } else {
             return super.getChild(element);
         }
@@ -84,8 +102,23 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public Resource requireChild(PathElement element) {
-        if (CACHE.equals(element.getKey())) {
+        if (ENTITYCACHE.equals(element.getKey())) {
             if (hasCacheRegion(element)) {
+                return PlaceholderResource.INSTANCE;
+            }
+            throw new NoSuchElementException(element.toString());
+        } else if (ENTITY.equals(element.getKey())) {
+            if (hasEntity(element)) {
+                return PlaceholderResource.INSTANCE;
+            }
+            throw new NoSuchElementException(element.toString());
+        } else if (COLLECTION.equals(element.getKey())) {
+            if (hasCollection(element)) {
+                return PlaceholderResource.INSTANCE;
+            }
+            throw new NoSuchElementException(element.toString());
+        } else if (QUERYCACHE.equals(element.getKey())) {
+            if (hasQuery(element)) {
                 return PlaceholderResource.INSTANCE;
             }
             throw new NoSuchElementException(element.toString());
@@ -96,8 +129,14 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public boolean hasChildren(String childType) {
-        if (CACHE.equals(childType)) {
-            return getChildrenNames(CACHE).size() > 0;
+        if (ENTITYCACHE.equals(childType)) {
+            return getChildrenNames(ENTITYCACHE).size() > 0;
+        } else if (ENTITY.equals(childType)) {
+            return getChildrenNames(ENTITY).size() > 0;
+        } else if (COLLECTION.equals(childType)) {
+            return getChildrenNames(COLLECTION).size() > 0;
+        } else if (QUERYCACHE.equals(childType)) {
+            return getChildrenNames(QUERYCACHE).size() > 0;
         } else {
             return super.hasChildren(childType);
         }
@@ -105,7 +144,22 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public Resource navigate(PathAddress address) {
-        if (address.size() > 0 && CACHE.equals(address.getElement(0).getKey())) {
+        if (address.size() > 0 && ENTITYCACHE.equals(address.getElement(0).getKey())) {
+            if (address.size() > 1) {
+                throw new NoSuchElementException(address.subAddress(1).toString());
+            }
+            return PlaceholderResource.INSTANCE;
+        } else if (address.size() > 0 && ENTITY.equals(address.getElement(0).getKey())) {
+            if (address.size() > 1) {
+                throw new NoSuchElementException(address.subAddress(1).toString());
+            }
+            return PlaceholderResource.INSTANCE;
+        } else if (address.size() > 0 && COLLECTION.equals(address.getElement(0).getKey())) {
+            if (address.size() > 1) {
+                throw new NoSuchElementException(address.subAddress(1).toString());
+            }
+            return PlaceholderResource.INSTANCE;
+        } else if (address.size() > 0 && QUERYCACHE.equals(address.getElement(0).getKey())) {
             if (address.size() > 1) {
                 throw new NoSuchElementException(address.subAddress(1).toString());
             }
@@ -118,14 +172,23 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     @Override
     public Set<String> getChildTypes() {
         Set<String> result = new HashSet<String>(super.getChildTypes());
-        result.add(CACHE);
+        result.add(ENTITYCACHE);
+        result.add(ENTITY);
+        result.add(COLLECTION);
+        result.add(QUERYCACHE);
         return result;
     }
 
     @Override
     public Set<String> getChildrenNames(String childType) {
-        if (CACHE.equals(childType)) {
+        if (ENTITYCACHE.equals(childType)) {
             return getCacheRegionNames();
+        } else if (ENTITY.equals(childType)) {
+            return getEntityNames();
+        } else if (COLLECTION.equals(childType)) {
+            return getCollectionNames();
+        } else if (QUERYCACHE.equals(childType)) {
+            return getQueryNames();
         } else {
             return super.getChildrenNames(childType);
         }
@@ -133,10 +196,28 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
-        if (CACHE.equals(childType)) {
+        if (ENTITYCACHE.equals(childType)) {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
             for (String name : getCacheRegionNames()) {
-                result.add(new PlaceholderResource.PlaceholderResourceEntry(CACHE, name));
+                result.add(new PlaceholderResource.PlaceholderResourceEntry(ENTITYCACHE, name));
+            }
+            return result;
+        } else if (ENTITY.equals(childType)) {
+            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            for (String name : getEntityNames()) {
+                result.add(new PlaceholderResource.PlaceholderResourceEntry(ENTITY, name));
+            }
+            return result;
+        } else if (COLLECTION.equals(childType)) {
+            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            for (String name : getCollectionNames()) {
+                result.add(new PlaceholderResource.PlaceholderResourceEntry(COLLECTION, name));
+            }
+            return result;
+        } else if (QUERYCACHE.equals(childType)) {
+            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+            for (String name : getQueryNames()) {
+                result.add(new PlaceholderResource.PlaceholderResourceEntry(QUERYCACHE, name));
             }
             return result;
         } else {
@@ -146,8 +227,11 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        if (CACHE.equals(address.getKey())) {
-            throw new UnsupportedOperationException(String.format("Resources of type %s cannot be registered", CACHE));
+        if (ENTITYCACHE.equals(address.getKey()) ||
+            ENTITY.equals(address.getKey())||
+            COLLECTION.equals(address.getKey())||
+            QUERYCACHE.equals(address.getKey())) {
+            throw new UnsupportedOperationException(String.format("Resources of type %s cannot be registered", address.getKey()));
         } else {
             super.registerChild(address, resource);
         }
@@ -155,8 +239,11 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public Resource removeChild(PathElement address) {
-        if (CACHE.equals(address.getKey())) {
-            throw new UnsupportedOperationException(String.format("Resources of type %s cannot be removed", CACHE));
+        if (ENTITYCACHE.equals(address.getKey()) ||
+            ENTITY.equals(address.getKey())||
+            COLLECTION.equals(address.getKey())||
+            QUERYCACHE.equals(address.getKey())) {
+            throw new UnsupportedOperationException(String.format("Resources of type %s cannot be removed", address.getKey()));
         } else {
             return super.removeChild(address);
         }
@@ -174,7 +261,33 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
 
     @Override
     public HibernateStatisticsResource clone() {
-        return new HibernateStatisticsResource(puName, persistenceUnitRegistry);
+        return new HibernateStatisticsResource(puName, persistenceUnitRegistry, providerLabel);
+    }
+
+    private boolean hasEntity(PathElement element) {
+        boolean result = false;
+        final Statistics stats = getStatistics();
+        if (stats != null) {
+            final String emtityName = element.getValue();
+            result = stats.getEntityStatistics(emtityName) != null;
+        }
+        return result;
+    }
+
+    private Set<String> getEntityNames() {
+        final Statistics stats = getStatistics();
+        if (stats == null) {
+            return Collections.emptySet();
+        } else {
+            Set<String> result = new HashSet<String>();
+            String[] entityNames = stats.getEntityNames();
+            if (entityNames != null) {
+                for (String entity : entityNames) {
+                    result.add(entity);
+                }
+            }
+            return result;
+        }
     }
 
     private boolean hasCacheRegion(PathElement element) {
@@ -210,6 +323,63 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
             return result;
         }
     }
+
+    private boolean hasQuery(PathElement element) {
+        boolean result = false;
+        final PersistenceUnitService puService = persistenceUnitRegistry.getPersistenceUnitService(puName);
+        final Statistics stats = getStatistics();
+        if (stats != null && puService != null) {
+            final String scopedPUName = puService.getScopedPersistenceUnitName();
+            final String unqualifiedQueryName = element.getValue();
+            final String queryName = scopedPUName + "." + unqualifiedQueryName;
+            result = stats.getQueryStatistics(queryName) != null;
+        }
+        return result;
+    }
+
+
+    private Set<String> getQueryNames() {
+        final Statistics stats = getStatistics();
+        if (stats == null) {
+            return Collections.emptySet();
+        } else {
+            Set<String> result = new HashSet<String>();
+            String[] queries = stats.getQueries();
+            if (queries != null) {
+                for (String query : queries) {
+                    result.add(QueryName.queryName(query).getDisplayName());
+                }
+            }
+            return result;
+        }
+    }
+
+    private boolean hasCollection(PathElement element) {
+        boolean result = false;
+        final Statistics stats = getStatistics();
+        if (stats != null) {
+            final String collectionName = element.getValue();
+            result = stats.getCollectionStatistics(collectionName) != null;
+        }
+        return result;
+    }
+
+    private Set<String> getCollectionNames() {
+        final Statistics stats = getStatistics();
+        if (stats == null) {
+            return Collections.emptySet();
+        } else {
+            Set<String> result = new HashSet<String>();
+            String[] collectionNames = stats.getCollectionRoleNames();
+            if (collectionNames != null) {
+                for (String entity : collectionNames) {
+                    result.add(entity);
+                }
+            }
+            return result;
+        }
+    }
+
 
     private Statistics getStatistics() {
         return ManagementUtility.getStatistics(persistenceUnitRegistry, puName);

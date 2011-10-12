@@ -22,13 +22,13 @@
 
 package org.jboss.as.jpa.hibernate4.management;
 
+import javax.persistence.EntityManagerFactory;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.stat.Statistics;
-import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
-
-import javax.persistence.EntityManagerFactory;
+import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 
 /**
  * Utility class for management stuff

@@ -68,7 +68,7 @@ public class SecondLevelCacheResourceDefinition extends SimpleResourceDefinition
     private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
 
     SecondLevelCacheResourceDefinition(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
-        super(PathElement.pathElement(HibernateDescriptionConstants.CACHE),
+        super(PathElement.pathElement(HibernateDescriptionConstants.ENTITYCACHE),
                 HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.SECOND_LEVEL_CACHE));
         this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
