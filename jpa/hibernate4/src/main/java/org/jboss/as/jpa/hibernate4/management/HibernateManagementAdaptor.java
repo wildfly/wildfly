@@ -56,8 +56,12 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
     public static final String OPERATION_ENTITY_LOAD_COUNT = "entity-load-count";
     public static final String OPERATION_ENTITY_FETCH_COUNT = "entity-fetch-count";
     public static final String OPERATION_ENTITY_UPDATE_COUNT = "entity-update-count";
+    public static final String ATTRIBUTE_QUERY_NAME = "query-name";
     public static final String OPERATION_QUERY_EXECUTION_COUNT = "query-execution-count";
+    public static final String OPERATION_QUERY_EXECUTION_ROW_COUNT = "query-execution-row-count";
+    public static final String OPERATION_QUERY_EXECUTION_AVG_TIME = "query-execution-average-time";
     public static final String OPERATION_QUERY_EXECUTION_MAX_TIME = "query-execution-max-time";
+    public static final String OPERATION_QUERY_EXECUTION_MIN_TIME = "query-execution-min-time";
     public static final String OPERATION_QUERY_EXECUTION_MAX_TIME_QUERY_STRING = "query-execution-max-time-query-string";
     public static final String OPERATION_QUERY_CACHE_HIT_COUNT = "query-cache-hit-count";
     public static final String OPERATION_QUERY_CACHE_MISS_COUNT = "query-cache-miss-count";
@@ -105,14 +109,18 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
         registerStatisticOperations(jpaHibernateRegistration);
 
         jpaHibernateRegistration.registerSubModel(new SecondLevelCacheResourceDefinition(persistenceUnitRegistry));
+        jpaHibernateRegistration.registerSubModel(new QueryResourceDefinition(persistenceUnitRegistry));
+        jpaHibernateRegistration.registerSubModel(new EntityResourceDefinition(persistenceUnitRegistry));
+        jpaHibernateRegistration.registerSubModel(new CollectionResourceDefinition(persistenceUnitRegistry));
+
 //
 // TODO:  handle other stats
 
     }
 
     @Override
-    public Resource createPersistenceUnitResource(String persistenceUnitName) {
-        return new HibernateStatisticsResource(persistenceUnitName, persistenceUnitRegistry);
+    public Resource createPersistenceUnitResource(final String persistenceUnitName, final String providerLabel) {
+        return new HibernateStatisticsResource(persistenceUnitName, persistenceUnitRegistry, providerLabel);
     }
 
     private void registerStatisticOperations(ManagementResourceRegistration jpaHibernateRegistration) {

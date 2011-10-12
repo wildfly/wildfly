@@ -31,9 +31,11 @@ public class HibernateDescriptionConstants {
 
     // Hibernate Constants in alphabetical order
 
-    public static final String CACHE = "cache";
+    public static final String ENTITYCACHE = "entity-cache";
     public static final String CLEAR_STATISTICS = "clear";
     public static final String CLOSE_STATEMENT_COUNT = "hibernate.statistics.close-statement-count";
+    public static final String COLLECTION = "collection";
+    public static final String COLLECTION_STATISTICS = "hibernate.statistics.collection";
     public static final String COLLECTION_LOAD_COUNT = "hibernate.statistics.collection-load-count";
     public static final String COLLECTION_FETCH_COUNT = "hibernate.statistics.collection-fetch-count";
     public static final String COLLECTION_UPDATE_COUNT = "hibernate.statistics.collection-update-count";
@@ -42,6 +44,8 @@ public class HibernateDescriptionConstants {
     public static final String COMPLETED_TRANSACTION_COUNT = "hibernate.statistics.completed-transaction-count";
     public static final String CONNECT_COUNT = "hibernate.statistics.connect-count";
     public static final String CHECK_STATISTICS = "hibernate.statistics.enabled";
+    public static final String ENTITY = "entity";
+    public static final String ENTITY_STATISTICS = "hibernate.statistics.entity";
     public static final String ENTITY_DELETE_COUNT = "hibernate.statistics.entity-delete-count";
     public static final String ENTITY_FETCH_COUNT = "hibernate.statistics.entity-fetch-count";
     public static final String ENTITY_INSERT_COUNT = "hibernate.statistics.entity-insert-count";
@@ -52,6 +56,8 @@ public class HibernateDescriptionConstants {
     public static final String OPERATION_PREFIX = "hibernate.statistics";
     public static final String OPTIMISTIC_FAILURE_COUNT = "hibernate.statistics.optimistic-failure-count";
     public static final String PREPARED_STATEMENT_COUNT = "hibernate.statistics.prepared-statement-count";
+    public static final String QUERYCACHE = "query-cache";
+    public static final String QUERY_STATISTICS = "hibernate.statistics.query";
     public static final String QUERY_EXECUTION_COUNT = "hibernate.statistics.query-execution-count";
     public static final String QUERY_EXECUTION_MAX_TIME = "hibernate.statistics.query-execution-max-time";
     public static final String QUERY_EXECUTION_MAX_TIME_QUERY_STRING = "hibernate.statistics.query-execution-max-time-query-string";

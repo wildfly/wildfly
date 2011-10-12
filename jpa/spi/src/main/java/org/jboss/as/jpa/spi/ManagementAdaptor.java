@@ -36,7 +36,7 @@ public interface ManagementAdaptor {
 
     void register(final ManagementResourceRegistration jpaSubsystemDeployments, final PersistenceUnitServiceRegistry persistenceUnitRegistry);
 
-    Resource createPersistenceUnitResource(final String persistenceUnitName);
+    Resource createPersistenceUnitResource(final String persistenceUnitName, final String providerLabel);
 
     /**
      * Get the short identification string that represents the management adaptor (e.g Hibernate)

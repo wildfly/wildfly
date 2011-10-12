@@ -551,7 +551,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             final String providerLabel = managementAdaptor.getIdentificationLabel();
             final String scopedPersistenceUnitName = pu.getScopedPersistenceUnitName();
 
-            Resource providerResource = managementAdaptor.createPersistenceUnitResource(scopedPersistenceUnitName);
+            Resource providerResource = managementAdaptor.createPersistenceUnitResource(scopedPersistenceUnitName, providerLabel);
             ModelNode perPuNode = providerResource.getModel();
             perPuNode.get("scoped-unit-name").set(pu.getScopedPersistenceUnitName());
             // TODO this is a temporary hack into internals until DeploymentUnit exposes a proper Resource-based API
