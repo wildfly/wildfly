@@ -69,6 +69,7 @@ public enum Attribute {
     PASSWORD("password"),
     PATH("path"),
     PATTERN("pattern"),
+    PLAIN_TEXT("plain-text"),
     PORT("port"),
     PORT_OFFSET("port-offset"),
     PREFIX("prefix"),

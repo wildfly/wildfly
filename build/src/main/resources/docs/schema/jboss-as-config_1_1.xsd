@@ -423,6 +423,9 @@
         <xs:annotation>
             <xs:documentation>
                 Declaration of users stored within properties files.
+
+                The entries within the properties file are username={credentials} with each user
+                being specified on it's own line.
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="relative-to" use="optional" type="xs:string">
@@ -439,6 +442,15 @@
             <xs:annotation>
                 <xs:documentation>
                     The path of the properties file containing the users.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="plain-text" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Are the credentials within the properties file stored in plain text, if not
+                    the {credential} is expected to be the hex encoded Digest hash
+                    of 'username : realm : password'.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

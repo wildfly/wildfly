@@ -27,7 +27,7 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
-                    <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir"/>
+                    <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" plain-text="true"/>
                 </authentication>
             </security-realm>
         </security-realms>

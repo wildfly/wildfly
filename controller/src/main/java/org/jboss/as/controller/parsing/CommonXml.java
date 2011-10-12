@@ -60,6 +60,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
@@ -771,7 +772,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     break;
                 }
                 case PROPERTIES: {
-                    parsePropertiesAuthentication(reader, authentication);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                            parsePropertiesAuthentication_1_0(reader, authentication);
+                            break;
+                        default:
+                            parsePropertiesAuthentication_1_1(reader, authentication);
+                            break;
+                    }
                     break;
                 }
                 case USERS: {
@@ -953,7 +961,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parsePropertiesAuthentication(final XMLExtendedStreamReader reader, final ModelNode authentication)
+    protected void parsePropertiesAuthentication_1_0(final XMLExtendedStreamReader reader, final ModelNode authentication)
             throws XMLStreamException {
         ModelNode properties = authentication.get(PROPERTIES);
 
@@ -990,6 +998,57 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         properties.get(PATH).set(path);
         if (relativeTo != null) {
             properties.get(RELATIVE_TO).set(relativeTo);
+        }
+        // This property was not supported in version 1.0 of the schema, however it is set to true here to ensure
+        // the default behaviour is a document based on 1.0 of the schema is parsed, 1.1 now defaults this to false.
+        properties.get(PLAIN_TEXT).set(true);
+    }
+
+    protected void parsePropertiesAuthentication_1_1(final XMLExtendedStreamReader reader, final ModelNode authentication)
+            throws XMLStreamException {
+        ModelNode properties = authentication.get(PROPERTIES);
+
+        String path = null;
+        String relativeTo = null;
+        Boolean plainText = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PATH:
+                        path = value;
+                        break;
+                    case RELATIVE_TO: {
+                        relativeTo = value;
+                        break;
+                    }
+                    case PLAIN_TEXT: {
+                        plainText = Boolean.valueOf(value);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (path == null)
+            throw missingRequired(reader, Collections.singleton(Attribute.PATH));
+
+        requireNoContent(reader);
+
+        properties.get(PATH).set(path);
+        if (relativeTo != null) {
+            properties.get(RELATIVE_TO).set(relativeTo);
+        }
+        if (plainText != null) {
+            properties.get(PLAIN_TEXT).set(plainText);
         }
     }
 
@@ -2697,6 +2756,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (properties.hasDefined(RELATIVE_TO)) {
                             writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), properties.require(RELATIVE_TO)
                                     .asString());
+                        }
+                        if (properties.hasDefined(PLAIN_TEXT)) {
+                            writer.writeAttribute(Attribute.PLAIN_TEXT.getLocalName(), properties.require(PLAIN_TEXT).asString());
                         }
 
                         writer.writeEndElement();

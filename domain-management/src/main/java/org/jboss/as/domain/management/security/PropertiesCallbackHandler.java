@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -46,6 +47,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.sasl.callback.DigestHashCallback;
 
 /**
  * A CallbackHandler obtaining the users and their passwords from a properties file.
@@ -56,11 +58,19 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
 
     private static final Logger log = Logger.getLogger("org.jboss.as.domain-management");
     public static final String SERVICE_SUFFIX = "properties";
-    private static final Class[] supportedCallbacks = {AuthorizeCallback.class, RealmCallback.class,
+
+    // Technically this CallbackHandler could also support the VerifyCallback callback, however at the moment
+    // this is only likely to be used with the Digest mechanism so no need to add that support.
+    private static final Class[] PLAIN_CALLBACKS = {AuthorizeCallback.class, RealmCallback.class,
             NameCallback.class, PasswordCallback.class};
+    private static final Class[] DIGEST_CALLBACKS = {AuthorizeCallback.class, RealmCallback.class,
+            NameCallback.class, DigestHashCallback.class};
+
+    private final Class[] supportedCallbacks;
 
     private final String realm;
     private final String path;
+    private final boolean plainText;
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 
     private File propertiesFile;
@@ -70,6 +80,12 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
     public PropertiesCallbackHandler(String realm, ModelNode properties) {
         this.realm = realm;
         path = properties.require(PATH).asString();
+        if (properties.hasDefined(PLAIN_TEXT)) {
+            plainText = properties.require(PLAIN_TEXT).asBoolean();
+        } else {
+            plainText = false;
+        }
+        supportedCallbacks = plainText ? PLAIN_CALLBACKS : DIGEST_CALLBACKS;
     }
 
     /*
@@ -176,7 +192,9 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
                 NameCallback nameCallback = (NameCallback) current;
                 userName = nameCallback.getDefaultName();
                 userFound = users.containsKey(userName);
-            } else if (current instanceof PasswordCallback) {
+            } else if (current instanceof PasswordCallback && plainText) {
+                toRespondTo.add(current);
+            } else if (current instanceof DigestHashCallback && plainText == false) {
                 toRespondTo.add(current);
             } else if (current instanceof RealmCallback) {
                 String realm = ((RealmCallback) current).getDefaultText();
@@ -201,6 +219,12 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
                 }
                 String password = users.get(userName).toString();
                 ((PasswordCallback) current).setPassword(password.toCharArray());
+            } else if (current instanceof DigestHashCallback) {
+                if (userFound == false) {
+                    throw new UserNotFoundException(userName);
+                }
+                String hash = users.get(userName).toString();
+                ((DigestHashCallback) current).setHexHash(hash);
             }
         }
 
