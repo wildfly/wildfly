@@ -1,9 +1,9 @@
 package org.jboss.as.web;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Locale;
 
 /**
  * Common web description providers.
@@ -47,19 +47,4 @@ class WebSubsystemDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider JSP_CONFIGURATION = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return WebSubsystemDescriptions.getJspConfigurationDescription(locale);
-        }
-
-    };
-
-    public static final DescriptionProvider STATIC_RESOURCES= new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return WebSubsystemDescriptions.getStaticResourceDescription(locale);
-        }
-
-    };
 }

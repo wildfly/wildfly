@@ -28,22 +28,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.web.deployment.ServletDeploymentStats;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
+
+import java.util.Locale;
 
 /**
  * The web extension.
@@ -57,8 +53,6 @@ public class WebExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "web";
     private static final PathElement connectorPath =  PathElement.pathElement(Constants.CONNECTOR);
     private static final PathElement hostPath = PathElement.pathElement(Constants.VIRTUAL_SERVER);
-    private static final PathElement jspconfigurationPath = PathElement.pathElement(Constants.CONFIGURATION, Constants.JSP_CONFIGURATION);
-    private static final PathElement resourcesPath = PathElement.pathElement(Constants.CONTAINER_CONFIG, Constants.STATIC_RESOURCES);
 
     /** {@inheritDoc} */
     @Override
@@ -84,24 +78,6 @@ public class WebExtension implements Extension {
 
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebSubsystemDescriptionProviders.DEPLOYMENT);
         final ManagementResourceRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), WebSubsystemDescriptionProviders.SERVLET);
-        // Attributes
-        registration.registerReadWriteAttribute(Constants.NATIVE, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
-        registration.registerReadWriteAttribute(Constants.DEFAULT_VIRTUAL_SERVER, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), Storage.CONFIGURATION);
-
-        // Configuration...
-        final ManagementResourceRegistration jsp = registration.registerSubModel(jspconfigurationPath, WebSubsystemDescriptionProviders.JSP_CONFIGURATION);
-        WebConfigurationHandlerUtils.initJSPAttributes(jsp); // Register write attributes
-        final ManagementResourceRegistration resources = registration.registerSubModel(resourcesPath, WebSubsystemDescriptionProviders.STATIC_RESOURCES);
-        WebConfigurationHandlerUtils.initResourcesAttribtues(resources); // Register write attributes
-
-        DescriptionProvider NULL = new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return new ModelNode();
-            }
-        };
-        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(NULL);
-        final ManagementResourceRegistration servlets = deployments.registerSubModel(PathElement.pathElement("servlet"), NULL);
         ServletDeploymentStats.register(servlets);
     }
 
