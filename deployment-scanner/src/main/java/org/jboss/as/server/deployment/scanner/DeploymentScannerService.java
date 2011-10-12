@@ -106,7 +106,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         final ServiceName relativePathService = relativeTo != null ? RelativePathService.pathNameOf(relativeTo) : null;
 
         if (relativeTo != null) {
-            RelativePathService.addService(pathService, path, relativeTo, serviceTarget, newControllers, listeners);
+            RelativePathService.addService(pathService, path, false, relativeTo, serviceTarget, newControllers, listeners);
         } else {
             AbsolutePathService.addService(pathService, path, serviceTarget, newControllers, listeners);
         }

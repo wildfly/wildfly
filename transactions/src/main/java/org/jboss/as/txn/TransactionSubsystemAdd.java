@@ -233,12 +233,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> controllers) throws OperationFailedException {
 
-        String objectStorePathRef = null;
-        // Check for empty string value for relative-to, which disables the default
-        final ModelNode relativePathNode = recoveryEnvModel.get(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.getName());
-        if (!relativePathNode.isDefined() || relativePathNode.asString().length() > 0) {
-            objectStorePathRef = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.validateResolvedOperation(recoveryEnvModel).asString();
-        }
+        final String objectStorePathRef =TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.validateResolvedOperation(recoveryEnvModel).asString();
         final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.validateResolvedOperation(recoveryEnvModel).asString();
         if (ROOT_LOGGER.isDebugEnabled()) {
             ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s\n", objectStorePathRef, objectStorePath);
@@ -246,10 +241,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
-        ServiceController<String> objectStorePS = objectStorePathRef != null
-                ? RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, objectStorePathRef, target)
-                : AbsolutePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, target);
-        controllers.add(objectStorePS);
+        RelativePathService.addService(INTERNAL_OBJECTSTORE_PATH, objectStorePath, true, objectStorePathRef, target, controllers, verificationHandler);
 
         final boolean useHornetqJournalStore = "true".equals(System.getProperty("usehornetqstore")); // TODO wire to domain model instead.
 
@@ -287,12 +279,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
         }
 
-        String varDirPathRef = null;
-        // Check for empty string value for relative-to, which disables the default
-        final ModelNode relativePathNode = coreEnvModel.get(TransactionSubsystemRootResourceDefinition.RELATIVE_TO.getName());
-        if (!relativePathNode.isDefined() || relativePathNode.asString().length() > 0) {
-            varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.validateResolvedOperation(coreEnvModel).asString();
-        }
+        final String varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.validateResolvedOperation(coreEnvModel).asString();
         final String varDirPath = TransactionSubsystemRootResourceDefinition.PATH.validateResolvedOperation(coreEnvModel).asString();
 
         if (ROOT_LOGGER.isDebugEnabled()) {
@@ -301,10 +288,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         ServiceTarget target = context.getServiceTarget();
-        ServiceController<String> varDirRPS = varDirPathRef != null
-                ? RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, varDirPathRef, target)
-                : AbsolutePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, target);
-        controllers.add(varDirRPS);
+        RelativePathService.addService(INTERNAL_CORE_ENV_VAR_PATH, varDirPath, true, varDirPathRef, target, controllers, verificationHandler);
 
         ServiceBuilder<?> coreEnvBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT, coreEnvironmentService);
         if (socketBindingName != null) {

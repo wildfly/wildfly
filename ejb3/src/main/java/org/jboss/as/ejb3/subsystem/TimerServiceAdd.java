@@ -98,7 +98,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
                     //install the ejb timer service data store path service
                     if (path != null) {
                         if (relativeTo != null) {
-                            RelativePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path, relativeTo,
+                            RelativePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path, false, relativeTo,
                                     context.getServiceTarget(), newControllers, verificationHandler);
                         } else {
                             AbsolutePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path,

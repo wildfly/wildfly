@@ -49,24 +49,45 @@ public class RelativePathService extends AbstractPathService {
 
     public static ServiceController<String> addService(final String name, final String relativePath,
             final String relativeTo, final ServiceTarget serviceTarget) {
-        return addService(pathNameOf(name), relativePath, relativeTo, serviceTarget, null);
+        return addService(pathNameOf(name), relativePath, false, relativeTo, serviceTarget, null);
     }
 
     public static ServiceController<String> addService(final String name, final String relativePath,
             final String relativeTo, final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
             final ServiceListener... listeners) {
-        return addService(pathNameOf(name), relativePath, relativeTo, serviceTarget, newControllers, listeners);
+        return addService(pathNameOf(name), relativePath, false, relativeTo, serviceTarget, newControllers, listeners);
     }
 
     public static ServiceController<String> addService(final ServiceName name, final String relativePath,
             final String relativeTo, final ServiceTarget serviceTarget) {
-        return addService(name, relativePath, relativeTo, serviceTarget, null);
+        return addService(name, relativePath, false, relativeTo, serviceTarget, null);
     }
 
-    public static ServiceController<String> addService(final ServiceName name, final String relativePath,
-            final String relativeTo, final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
-            final ServiceListener... listeners) {
-        RelativePathService service = new RelativePathService(relativePath);
+    /**
+     * Installs a path service.
+     *
+     * @param name  the name to use for the service
+     * @param path the relative portion of the path
+     * @param possiblyAbsolute {@code true} if {@code path} may be an {@link #isAbsoluteUnixOrWindowsPath(String) absolute path}
+     *                         and should be {@link AbsolutePathService installed as such} if it is, with any
+     *                         {@code relativeTo} parameter ignored
+     * @param relativeTo the name of the path that {@code path} may be relative to
+     * @param serviceTarget the {@link ServiceTarget} to use to install the service
+     * @param newControllers list of service controllers that are being installed as part of the operation that has
+     *                       led to this invocation. May be {@code null}. If not {@code null} the returned
+     *                       ServiceController will be added to this list
+     * @param listeners listeners to add to the service. May be {@code null}
+     * @return the ServiceController for the path service
+     */
+    public static ServiceController<String> addService(final ServiceName name, final String path,
+                                                       boolean possiblyAbsolute, final String relativeTo, final ServiceTarget serviceTarget, final List<ServiceController<?>> newControllers,
+                                                       final ServiceListener... listeners) {
+
+        if (possiblyAbsolute && isAbsoluteUnixOrWindowsPath(path)) {
+            return AbsolutePathService.addService(name, path, serviceTarget, newControllers, listeners);
+        }
+
+        RelativePathService service = new RelativePathService(path);
         ServiceBuilder<String> builder =  serviceTarget.addService(name, service)
             .addDependency(pathNameOf(relativeTo), String.class, service.injectedPath);
         if (listeners != null) {
@@ -84,7 +105,7 @@ public class RelativePathService extends AbstractPathService {
     public static void addService(final ServiceName name, final ModelNode element, final ServiceTarget serviceTarget) {
         final String relativePath = element.require(PATH).asString();
         final String relativeTo = element.require(RELATIVE_TO).asString();
-        addService(name, relativePath, relativeTo, serviceTarget, null);
+        addService(name, relativePath, false, relativeTo, serviceTarget, null);
     }
 
     public RelativePathService(final String relativePath) {

@@ -75,13 +75,11 @@
                 The "node-identifier" attribute is used to set the node identifier on the core environment.
 
                 The "path" attribute denotes a relative or absolute filesystem path denoting where the transaction
-                manager core should store data. By default the value is treated as relative to the path
-                denoted by the "relative-to" attribute.
+                manager core should store data.
 
                 The "relative-to" attribute references a global path configuration in the domain model, defaulting
-                to the JBoss Application Server data directory (jboss.server.data.dir). The value of the "path" attribute
-                will treated as relative to this path. Use an empty string to disable the default behavior and force
-                the value of the "path" attribute to be treated as an absolute path.
+                to the JBoss Application Server data directory (jboss.server.data.dir). If the value of the "path" attribute
+                does not specify an absolute pathname, it will treated as relative to this path.
             ]]>
             </xs:documentation>
         </xs:annotation>
@@ -155,13 +153,11 @@
                 The object store configuration.
 
                 The "path" attribute denotes a relative or absolute filesystem path denoting where the transaction
-                manager object store should store data. By default the value is treated as relative to the path
-                denoted by the "relative-to" attribute.
+                manager object store should store data.
 
                 The "relative-to" attribute references a global path configuration in the domain model, defaulting
-                to the JBoss Application Server data directory (jboss.server.data.dir). The value of the "path" attribute
-                will treated as relative to this path. Use an empty string to disable the default behavior and force
-                the value of the "path" attribute to be treated as an absolute path.
+                to the JBoss Application Server data directory (jboss.server.data.dir). If the value of the "path" attribute
+                does not specify an absolute pathname, it will treated as relative to this path.
             ]]>
             </xs:documentation>
         </xs:annotation>

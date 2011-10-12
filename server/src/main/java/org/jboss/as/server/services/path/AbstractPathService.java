@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.services.path;
 
+import java.io.File;
+import java.util.regex.Pattern;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -43,6 +46,46 @@ public abstract class AbstractPathService implements Service<String> {
         }
         return SERVICE_NAME_BASE.append(pathName);
     }
+
+    /**
+     * Checks whether the given path looks like an absolute Unix or Windows filesystem pathname <strong>without
+     * regard for what the filesystem is underlying the Java Virtual Machine</strong>. A UNIX pathname is
+     * absolute if its prefix is <code>"/"</code>.  A Microsoft Windows pathname is absolute if its prefix is a drive
+     * specifier followed by <code>"\\"</code>, or if its prefix is <code>"\\\\"</code>.
+     * <p>
+     * <strong>This method differs from simply creating a new {@code File} and calling {@link File#isAbsolute()} in that
+     * its results do not change depending on what the filesystem underlying the Java Virtual Machine is. </strong>
+     * </p>
+     *
+     * @param path the path
+     *
+     * @return  {@code true} if {@code path} looks like an absolute Unix or Windows pathname
+     */
+    public static boolean isAbsoluteUnixOrWindowsPath(final String path) {
+        if (path != null) {
+            int length = path.length();
+            if (length > 0) {
+                char c0 = path.charAt(0);
+                if (c0 == '/') {
+                    return true;   // Absolute Unix path
+                } else if (length > 1) {
+                    char c1 = path.charAt(1);
+                    if (c0 == '\\' && c1 == '\\') {
+                        return true;   // Absolute UNC pathname "\\\\foo"
+                    } else if (length > 2 && c1 == ':' && path.charAt(2) == '\\' && isDriveLetter(c0) ) {
+                        return true; // Absolute local pathname "z:\\foo"
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
+
+    private static boolean isDriveLetter(char c) {
+        return ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'));
+    }
+
 
     private String path;
 

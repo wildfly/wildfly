@@ -432,7 +432,7 @@ class HornetQServerAdd implements OperationStepHandler {
          final ServiceName serviceName = hqServiceName.append(name);
          final String relativeTo = path.hasDefined(RELATIVE_TO) ? path.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
          final String pathName = path.hasDefined(PATH) ? path.get(PATH).asString() : DEFAULT_PATH + name;
-         RelativePathService.addService(serviceName, pathName, relativeTo, serviceTarget, newControllers, listener);
+         RelativePathService.addService(serviceName, pathName, true, relativeTo, serviceTarget, newControllers, listener);
          return serviceName;
      }
 
