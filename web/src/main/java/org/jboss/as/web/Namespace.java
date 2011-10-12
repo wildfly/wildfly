@@ -32,13 +32,12 @@ enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    WEB_1_0("urn:jboss:domain:web:1.0"),
-    WEB_1_1("urn:jboss:domain:web:1.1");
+    WEB_1_0("urn:jboss:domain:web:1.0");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = WEB_1_1;
+    public static final Namespace CURRENT = WEB_1_0;
 
     private final String name;
 

@@ -32,7 +32,6 @@ interface Constants {
     String CA_CERTIFICATE_FILE = "ca-certificate-file";
     String CA_REVOCATION_URL = "ca-revocation-url";
     String CACHE_CONTAINER = "cache-container";
-    String CACHE_NAME = "cache-name";
     String CERTIFICATE_FILE = "certificate-file";
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CHECK_INTERVAL = "check-interval";
@@ -100,7 +99,6 @@ interface Constants {
     String SOCKET_BINDING = "socket-binding";
     String SOURCE_VM = "source-vm";
     String SSL = "ssl";
-    String SSO = "sso";
     String STATIC_RESOURCES = "static-resources";
     String SUBSTITUTION = "substitution";
     String SUBSYSTEM = "subsystem";

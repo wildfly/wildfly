@@ -84,7 +84,6 @@ import static org.jboss.as.web.Constants.SESSION_CACHE_SIZE;
 import static org.jboss.as.web.Constants.SESSION_TIMEOUT;
 import static org.jboss.as.web.Constants.SOCKET_BINDING;
 import static org.jboss.as.web.Constants.SSL;
-import static org.jboss.as.web.Constants.SSO;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
 import static org.jboss.as.web.Constants.SUBSTITUTION;
 import static org.jboss.as.web.Constants.TEST;
@@ -184,7 +183,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                         writer.writeAttribute(NAME, virtualServer.asString());
                     }
                 }
-
                 writer.writeEndElement();
             }
         }
@@ -255,17 +253,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                         }
                         writer.writeEndElement();
                     }
-                }
-
-                if(config.hasDefined(SSO) && config.get(SSO).has("configuration")) {
-                    final ModelNode sso;
-                    sso = config.get(SSO).get("configuration");
-                    writer.writeStartElement(SSO);
-                    writeAttribute(writer, Attribute.CACHE_CONTAINER.getLocalName(), sso);
-                    writeAttribute(writer, Attribute.CACHE_NAME.getLocalName(), sso);
-                    writeAttribute(writer, Attribute.DOMAIN.getLocalName(), sso);
-                    writeAttribute(writer, Attribute.REAUTHENTICATE.getLocalName(), sso);
-                    writer.writeEndElement();
                 }
 
                 // End of the VIRTUAL_SERVER
@@ -434,8 +421,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         // elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case WEB_1_0:
-                case WEB_1_1:{
+                case WEB_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
@@ -638,55 +624,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 }
                 break;
             }
-            case WEB_1_1: {
-                final Element element = Element.forName(reader.getLocalName());
-                switch (element) {
-                case ALIAS:
-                    host.get(ALIAS).add(readStringAttributeElement(reader, Attribute.NAME.getLocalName()));
-                    break;
-                case ACCESS_LOG:
-                    final ModelNode log = parseHostAccessLog(reader);
-                    host.get(ACCESS_LOG).set(log);
-                    break;
-                case REWRITE:
-                    final ModelNode rewrite = parseHostRewrite(reader);
-                    host.get(REWRITE).add(rewrite);
-                    break;
-                case SSO:
-                    final ModelNode sso = parseSso(reader);
-                    host.get(SSO).set(sso);
-                    break;
-                default:
-                    throw unexpectedElement(reader);
-                }
-                break;
-            }
             default:
                 throw unexpectedElement(reader);
             }
         }
-    }
-
-    static ModelNode parseSso(XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode sso = new ModelNode();
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-            case CACHE_CONTAINER:
-            case CACHE_NAME:
-            case DOMAIN:
-            case REAUTHENTICATE:
-                sso.get(attribute.getLocalName()).set(value);
-                break;
-            default:
-                throw unexpectedAttribute(reader, i);
-            }
-        }
-        requireNoContent(reader);
-        return sso;
     }
 
     static ModelNode parseHostRewrite(XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -713,8 +654,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case WEB_1_0:
-            case WEB_1_1: {
+            case WEB_1_0: {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                 case CONDITION:
@@ -784,8 +724,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         }
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case WEB_1_0:
-            case WEB_1_1: {
+            case WEB_1_0: {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                 case DIRECTORY:
@@ -899,8 +838,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         connector.get(OP_ADDR).set(address).add(CONNECTOR, name);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case WEB_1_0:
-            case WEB_1_1: {
+            case WEB_1_0: {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                 case SSL:
