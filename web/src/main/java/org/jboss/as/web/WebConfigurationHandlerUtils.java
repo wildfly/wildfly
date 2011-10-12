@@ -50,6 +50,7 @@ import static org.jboss.as.web.Constants.SENDFILE;
 import static org.jboss.as.web.Constants.SMAP;
 import static org.jboss.as.web.Constants.SOURCE_VM;
 import static org.jboss.as.web.Constants.SSL;
+import static org.jboss.as.web.Constants.SSO;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
 import static org.jboss.as.web.Constants.TAG_POOLING;
 import static org.jboss.as.web.Constants.TARGET_VM;
@@ -91,6 +92,7 @@ class WebConfigurationHandlerUtils {
     static final PathElement RESOURCE = PathElement.pathElement(CONTAINER_CONFIG, STATIC_RESOURCES);
     static final PathElement CONTAINER = PathElement.pathElement(CONTAINER_CONFIG, Constants.CONTAINER);
     static final PathElement SSLPATH = PathElement.pathElement(SSL, "configuration");
+    static final PathElement SSOPATH = PathElement.pathElement(SSO, "configuration");
     static final PathElement REWRITEPATH = PathElement.pathElement(REWRITE, "configuration");
     static final PathElement ACCESSLOG = PathElement.pathElement(ACCESS_LOG, "configuration");
     static final PathElement DIRECTORYPATH = PathElement.pathElement(DIRECTORY, "configuration");
@@ -131,6 +133,8 @@ class WebConfigurationHandlerUtils {
 
     /* create the sso=configuration, the rewrite=rule-n (if defined) and the access-log=configuration/directory=configuration */
     static void initializeHost(final Resource resource, final ModelNode operation) {
+        resource.registerChild(SSOPATH, Resource.Factory.create());
+        final Resource sso = resource.getChild(SSOPATH);
         resource.registerChild(ACCESSLOG, Resource.Factory.create());
         final Resource accesslog = resource.getChild(ACCESSLOG);
 
@@ -142,6 +146,8 @@ class WebConfigurationHandlerUtils {
                 populateReWrite(operation, resource);
             } else if (attribute.equals(ACCESS_LOG) && operation.get(ACCESS_LOG).isDefined())  {
                 populateAccessLog(accesslog.getModel(), operation.get(ACCESS_LOG), directory);
+             } else if (attribute.equals(SSO) && operation.get(SSO).isDefined())  {
+                 populateModel(sso.getModel(), operation.get(SSO));
              }
         }
     }

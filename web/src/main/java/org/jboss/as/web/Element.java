@@ -41,6 +41,7 @@ enum Element {
     MIME_MAPPING(Constants.MIME_MAPPING),
     REWRITE(Constants.REWRITE),
     SSL(Constants.SSL),
+    SSO(Constants.SSO),
     STATIC_RESOURCES(Constants.STATIC_RESOURCES),
     SUBSYSTEM(Constants.SUBSYSTEM),
     VIRTUAL_SERVER(Constants.VIRTUAL_SERVER),

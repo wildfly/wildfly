@@ -84,6 +84,7 @@ import static org.jboss.as.web.Constants.SESSION_CACHE_SIZE;
 import static org.jboss.as.web.Constants.SESSION_TIMEOUT;
 import static org.jboss.as.web.Constants.SOCKET_BINDING;
 import static org.jboss.as.web.Constants.SSL;
+import static org.jboss.as.web.Constants.SSO;
 import static org.jboss.as.web.Constants.STATIC_RESOURCES;
 import static org.jboss.as.web.Constants.SUBSTITUTION;
 import static org.jboss.as.web.Constants.TEST;
@@ -264,6 +265,20 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                                 writeAttribute(writer, Attribute.FLAGS.getLocalName(), condition);
                             }
                         }
+                        writer.writeEndElement();
+                    }
+                }
+                if(config.hasDefined(SSO)) {
+                    final ModelNode sso;
+                    if (config.get(SSO).has("configuration"))
+                        sso = config.get(SSO).get("configuration");
+                    else
+                        sso = config.get(SSO);
+                    if (sso.isDefined() && !sso.keys().isEmpty()) {
+                        writer.writeStartElement(SSO);
+                        writeAttribute(writer, Attribute.CACHE_CONTAINER.getLocalName(), sso);
+                        writeAttribute(writer, Attribute.DOMAIN.getLocalName(), sso);
+                        writeAttribute(writer, Attribute.REAUTHENTICATE.getLocalName(), sso);
                         writer.writeEndElement();
                     }
                 }
@@ -630,6 +645,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     final ModelNode rewrite = parseHostRewrite(reader);
                     host.get(REWRITE).add(rewrite);
                     break;
+                case SSO:
+                    final ModelNode sso = parseSso(reader);
+                    host.get(SSO).set(sso);
+                    break;
                 default:
                     throw unexpectedElement(reader);
                 }
@@ -639,6 +658,27 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 throw unexpectedElement(reader);
             }
         }
+    }
+
+    static ModelNode parseSso(XMLExtendedStreamReader reader) throws XMLStreamException {
+        final ModelNode sso = new ModelNode();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+            case CACHE_CONTAINER:
+            case DOMAIN:
+            case REAUTHENTICATE:
+                sso.get(attribute.getLocalName()).set(value);
+                break;
+            default:
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        return sso;
     }
 
     static ModelNode parseHostRewrite(XMLExtendedStreamReader reader) throws XMLStreamException {
