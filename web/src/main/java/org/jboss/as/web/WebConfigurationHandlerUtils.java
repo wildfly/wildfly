@@ -131,16 +131,16 @@ class WebConfigurationHandlerUtils {
 
     /* create the sso=configuration, the rewrite=rule-n (if defined) and the access-log=configuration/directory=configuration */
     static void initializeHost(final Resource resource, final ModelNode operation) {
+        resource.registerChild(ACCESSLOG, Resource.Factory.create());
+        final Resource accesslog = resource.getChild(ACCESSLOG);
 
-       for(final String attribute :  operation.keys()) {
+        accesslog.registerChild(DIRECTORYPATH, Resource.Factory.create());
+        final Resource directory = accesslog.getChild(DIRECTORYPATH);
+
+        for(final String attribute :  operation.keys()) {
             if (attribute.equals(REWRITE) && operation.get(REWRITE).isDefined()) {
                 populateReWrite(operation, resource);
             } else if (attribute.equals(ACCESS_LOG) && operation.get(ACCESS_LOG).isDefined())  {
-                resource.registerChild(ACCESSLOG, Resource.Factory.create());
-                final Resource accesslog = resource.getChild(ACCESSLOG);
-                accesslog.registerChild(DIRECTORYPATH, Resource.Factory.create());
-                final Resource directory = accesslog.getChild(DIRECTORYPATH);
-
                 populateAccessLog(accesslog.getModel(), operation.get(ACCESS_LOG), directory);
              }
         }

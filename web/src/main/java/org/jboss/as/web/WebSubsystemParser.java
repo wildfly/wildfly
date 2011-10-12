@@ -201,26 +201,40 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                         writer.writeAttribute(NAME, alias.asString());
                     }
                 }
-
+                ModelNode accessLog;
                 if (config.get(ACCESS_LOG).isDefined() && config.get(ACCESS_LOG).has("configuration")) {
-                    ModelNode accessLog = config.get(ACCESS_LOG).get("configuration");
-                    writer.writeStartElement(Element.ACCESS_LOG.getLocalName());
-                    writeAttribute(writer, Attribute.PATTERN.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.EXTENDED.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.PREFIX.getLocalName(), accessLog);
-                    writeAttribute(writer, Attribute.ROTATE.getLocalName(), accessLog);
+                    accessLog = config.get(ACCESS_LOG).get("configuration");
+                } else {
+                    accessLog = config.get(ACCESS_LOG);
+                }
+                if (accessLog.isDefined() && !accessLog.keys().isEmpty()) {
+                    boolean startwritten = false;
+                    String name = Element.ACCESS_LOG.getLocalName();
+                    startwritten = writeAttribute(writer, Attribute.PATTERN.getLocalName(), accessLog, startwritten, name);
+                    startwritten = writeAttribute(writer, Attribute.RESOLVE_HOSTS.getLocalName(), accessLog, startwritten, name);
+                    startwritten = writeAttribute(writer, Attribute.EXTENDED.getLocalName(), accessLog, startwritten, name);
+                    startwritten = writeAttribute(writer, Attribute.PREFIX.getLocalName(), accessLog, startwritten, name);
+                    startwritten = writeAttribute(writer, Attribute.ROTATE.getLocalName(), accessLog, startwritten, name);
 
-                    if(accessLog.has(DIRECTORY) && accessLog.get(DIRECTORY).has("configuration")) {
-                        ModelNode directory = accessLog.get(DIRECTORY).get("configuration");
-                        String name = Element.DIRECTORY.getLocalName();
-                        boolean startwritten = false;
-                        startwritten = writeAttribute(writer, Attribute.PATH.getLocalName(), directory, startwritten, name);
-                        startwritten = writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), directory, startwritten, name);
-                        if (startwritten)
+                    if(accessLog.has(DIRECTORY)) {
+                        ModelNode directory;
+                        if (accessLog.get(DIRECTORY).has("configuration"))
+                            directory = accessLog.get(DIRECTORY).get("configuration");
+                        else
+                            directory = accessLog.get(DIRECTORY);
+                        if (directory.isDefined()) {
+                            if (!startwritten) {
+                                writer.writeStartElement(name);
+                                startwritten = true;
+                            }
+                            writer.writeStartElement(Element.DIRECTORY.getLocalName());
+                            writeAttribute(writer, Attribute.PATH.getLocalName(), directory);
+                            writeAttribute(writer, Attribute.RELATIVE_TO.getLocalName(), directory);
                             writer.writeEndElement();
+                        }
                     }
-                    writer.writeEndElement();
+                    if (startwritten)
+                        writer.writeEndElement();
                 }
 
                 if (config.hasDefined(REWRITE)) {
@@ -248,14 +262,11 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                                 writeAttribute(writer, Attribute.TEST.getLocalName(), condition);
                                 writeAttribute(writer, Attribute.PATTERN.getLocalName(), condition);
                                 writeAttribute(writer, Attribute.FLAGS.getLocalName(), condition);
-                                writer.writeEndElement();
                             }
                         }
                         writer.writeEndElement();
                     }
                 }
-
-                // End of the VIRTUAL_SERVER
                 writer.writeEndElement();
             }
         }
