@@ -148,7 +148,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ?
             new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(bindingName)) : null;
         if (injectionConfiguration != null) {
-            classDescription.getInjectionConfigurations().add(injectionConfiguration);
+            classDescription.addResourceInjection(injectionConfiguration);
         }
     }
 

@@ -159,8 +159,6 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
 
             if (appclient) {
                 deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, sessionBeanDescription);
-                sessionBeanDescription.setInstall(false);
-
             } else {
                 // Add this component description to module description
                 ejbJarDescription.getEEModuleDescription().addComponent(sessionBeanDescription);
@@ -260,7 +258,6 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         }
         if (appclient) {
             deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, sessionBeanDescription);
-            sessionBeanDescription.setInstall(false);
 
         } else {
             // Add this component description to module description

@@ -60,30 +60,23 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription, phaseContext, module);
+        final EEModuleConfiguration moduleConfiguration = new EEModuleConfiguration(moduleDescription);
         deploymentUnit.putAttachment(Attachments.EE_MODULE_CONFIGURATION, moduleConfiguration);
 
         final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
         if (componentDescriptions != null) {
             for (ComponentDescription componentDescription : componentDescriptions) {
-                if (componentDescription.isInstall()) {
-                    logger.debug("Configuring component class: " + componentDescription.getComponentClassName() + " named " + componentDescription.getComponentName());
-                    final ComponentConfiguration componentConfiguration;
-                    try {
-                        componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()));
-                    } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load component class " + componentDescription.getComponentClassName(), e);
-                    }
-                    for (ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
-                        if (componentDescription.isInstall()) {
-                            componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
-                        }
-                    }
-                    //give the configurators a chance to prevent component install
-                    if (componentDescription.isInstall()) {
-                        moduleConfiguration.addComponentConfiguration(componentConfiguration);
-                    }
+                logger.debug("Configuring component class: " + componentDescription.getComponentClassName() + " named " + componentDescription.getComponentName());
+                final ComponentConfiguration componentConfiguration;
+                try {
+                    componentConfiguration = componentDescription.createConfiguration(classIndex.classIndex(componentDescription.getComponentClassName()));
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load component class " + componentDescription.getComponentClassName(), e);
                 }
+                for (ComponentConfigurator componentConfigurator : componentDescription.getConfigurators()) {
+                    componentConfigurator.configure(phaseContext, componentDescription, componentConfiguration);
+                }
+                moduleConfiguration.addComponentConfiguration(componentConfiguration);
             }
         }
 

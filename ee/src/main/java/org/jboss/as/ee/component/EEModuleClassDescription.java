@@ -49,7 +49,7 @@ public final class EEModuleClassDescription {
     private InterceptorClassDescription interceptorClassDescription = InterceptorClassDescription.EMPTY_INSTANCE;
 
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
-    private final List<ResourceInjectionConfiguration> injectionConfigurations = new ArrayList<ResourceInjectionConfiguration>();
+    private final Map<InjectionTarget, ResourceInjectionConfiguration> injectionConfigurations = new HashMap<InjectionTarget, ResourceInjectionConfiguration>();
 
     public EEModuleClassDescription(final String className) {
         this.className = className;
@@ -90,8 +90,12 @@ public final class EEModuleClassDescription {
      *
      * @return the resource injection configuration
      */
-    public List<ResourceInjectionConfiguration> getInjectionConfigurations() {
+    public Map<InjectionTarget, ResourceInjectionConfiguration> getInjectionConfigurations() {
         return injectionConfigurations;
+    }
+
+    public void addResourceInjection(final ResourceInjectionConfiguration injection) {
+        injectionConfigurations.put(injection.getTarget(), injection);
     }
 
     public void addAnnotationInformation(ClassAnnotationInformation annotationInformation) {

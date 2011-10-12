@@ -42,8 +42,6 @@ import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleConfiguration;
-import org.jboss.as.ee.component.EEModuleConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
 import org.jboss.as.ee.component.InjectionSource;
@@ -104,12 +102,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         if (environment != null) {
             final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
             handleLazyBindings(applicationClasses, bindings);
-            description.getConfigurators().add(new EEModuleConfigurator() {
-                @Override
-                public void configure(DeploymentPhaseContext context, EEModuleDescription description, EEModuleConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.getBindingConfigurations().addAll(bindings);
-                }
-            });
+            description.getBindingConfigurations().addAll(bindings);
         }
         for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
@@ -155,7 +148,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      * @throws DeploymentUnitProcessingException
      *          If the injection points could not be resolved
      */
-    protected Class<?> processInjectionTargets(EEModuleDescription moduleDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaData entry, Class<?> classType) throws DeploymentUnitProcessingException {
+    protected Class<?> processInjectionTargets(final  EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaData entry, Class<?> classType) throws DeploymentUnitProcessingException {
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
                 final String injectionTargetClassName = injectionTarget.getInjectionTargetClass();
@@ -188,9 +181,12 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                         new MethodInjectionTarget(injectionTargetClassName, memberName, classType.getName());
 
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTargetDescription, injectionSource);
-                throw new RuntimeException("FIXME");
-                //EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(injectionTargetClassName);
-                //eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+
+                if(componentDescription == null) {
+                    moduleDescription.addResourceInjection(injectionConfiguration);
+                } else {
+                    componentDescription.addResourceInjection(injectionConfiguration);
+                }
             }
         }
         return classType;

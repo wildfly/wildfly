@@ -78,10 +78,8 @@ import org.jboss.msc.value.Value;
  */
 public class ComponentDescription {
 
-    private static final DefaultFirstConfigurator FIRST_CONFIGURATOR = new DefaultFirstConfigurator();
-
+    private static final DefaultComponentConfigurator FIRST_CONFIGURATOR = new DefaultComponentConfigurator();
     private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
-
     private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
 
     private final ServiceName serviceName;
@@ -89,44 +87,40 @@ public class ComponentDescription {
     private final String componentName;
     private final String componentClassName;
     private final EEModuleDescription moduleDescription;
-
-    private List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
-    private List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
-
-    private final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = new HashMap<MethodIdentifier, List<InterceptorDescription>>();
-
-    private final Set<MethodIdentifier> methodExcludeDefaultInterceptors = new HashSet<MethodIdentifier>();
-    private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
-
-    private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
-
-    private Set<InterceptorDescription> allInterceptors;
-
-    private ComponentNamingMode namingMode = ComponentNamingMode.USE_MODULE;
-    private boolean excludeDefaultInterceptors = false;
-    private DeploymentDescriptorEnvironment deploymentDescriptorEnvironment;
-
     private final Set<ViewDescription> views = new HashSet<ViewDescription>();
-
-    // Bindings
-    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
-
-    private final Deque<ComponentConfigurator> configurators = new ArrayDeque<ComponentConfigurator>();
 
     /**
      * Interceptors methods that have been defined by the deployment descriptor
      */
     private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
 
+    private List<InterceptorDescription> classInterceptors = new ArrayList<InterceptorDescription>();
+    private List<InterceptorDescription> defaultInterceptors = new ArrayList<InterceptorDescription>();
+    private final Map<MethodIdentifier, List<InterceptorDescription>> methodInterceptors = new HashMap<MethodIdentifier, List<InterceptorDescription>>();
+    private final Set<MethodIdentifier> methodExcludeDefaultInterceptors = new HashSet<MethodIdentifier>();
+    private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
+    private Set<InterceptorDescription> allInterceptors;
+    private boolean excludeDefaultInterceptors = false;
+
+    private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
+
+    private ComponentNamingMode namingMode = ComponentNamingMode.USE_MODULE;
+
+    private DeploymentDescriptorEnvironment deploymentDescriptorEnvironment;
+
+
+    // Bindings
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+    //injections that have been set in the components deployment descriptor
+    private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<String, Map<InjectionTarget, ResourceInjectionConfiguration>>();
+
+    private final Deque<ComponentConfigurator> configurators = new ArrayDeque<ComponentConfigurator>();
+
+
     /**
      * If this component is deployed in a bean deployment archive this stores the id of the BDA
      */
     private String beanDeploymentArchiveId;
-
-    /**
-     * If this is set to false it will prevent the component from being installed.
-     */
-    private boolean install = true;
 
     /**
      * Construct a new instance.
@@ -537,7 +531,7 @@ public class ComponentDescription {
         };
     }
 
-    private static class DefaultFirstConfigurator implements ComponentConfigurator {
+    private static class DefaultComponentConfigurator implements ComponentConfigurator {
 
         public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
             final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
@@ -591,19 +585,9 @@ public class ComponentDescription {
             destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
 
             new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
-
                 @Override
                 public void handle(Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    if (classDescription == null) {
-                        return;
-                    }
-                    for (final ResourceInjectionConfiguration injectionConfiguration : classDescription.getInjectionConfigurations()) {
-                        final Object valueContextKey = new Object();
-                        final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
-                        configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
-                        injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(instanceKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
-                        uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
-                    }
+                    mergeInjectionsForClass(clazz, classDescription, moduleDescription, description, configuration, context, injectors, instanceKey, uninjectors);
                 }
             }.run();
 
@@ -644,15 +628,7 @@ public class ComponentDescription {
                     @Override
                     public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                         final ClassReflectionIndex<?> interceptorClassIndex = deploymentReflectionIndex.getClassIndex(clazz);
-                        if (classDescription != null) {
-                            for (final ResourceInjectionConfiguration injectionConfiguration : classDescription.getInjectionConfigurations()) {
-                                final Object valueContextKey = new Object();
-                                final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
-                                configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
-                                injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(contextKey, valueContextKey, managedReferenceFactoryValue, deploymentUnit));
-                                uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
-                            }
-                        }
+                        mergeInjectionsForClass(clazz, classDescription, moduleDescription, description, configuration, context, injectors, contextKey, uninjectors);
                         final InterceptorClassDescription interceptorConfig;
                         if (classDescription != null) {
                             interceptorConfig = InterceptorClassDescription.merge(classDescription.getInterceptorClassDescription(), moduleDescription.getInterceptorClassOverride(clazz.getName()));
@@ -945,6 +921,40 @@ public class ComponentDescription {
             });
         }
 
+        /**
+         * Sets up all resource injections for a class. This takes into account injections that have been specified in the module and component deployment descriptors
+         *
+         * Note that this does not take superclasses into consideration, only injections on the current class
+         *
+         *
+         * @param clazz The class to perform injection for
+         * @param classDescription The class description, may be null
+         * @param moduleDescription The module description
+         * @param description The component description
+         * @param configuration The component configuration
+         * @param context The phase context
+         * @param injectors The list of injectors for the current component
+         * @param instanceKey The key that identifies the instance to inject in the interceptor context
+         * @param uninjectors The list of uninjections for the current component
+         * @throws DeploymentUnitProcessingException
+         */
+        private void mergeInjectionsForClass(final Class<?> clazz, final EEModuleClassDescription classDescription, final EEModuleDescription moduleDescription, final ComponentDescription description, final ComponentConfiguration configuration, final DeploymentPhaseContext context, final Deque<InterceptorFactory> injectors, final Object instanceKey, final Deque<InterceptorFactory> uninjectors) throws DeploymentUnitProcessingException {
+            final Map<InjectionTarget, ResourceInjectionConfiguration> mergedInjections = new HashMap<InjectionTarget, ResourceInjectionConfiguration>();
+            if (classDescription != null) {
+                mergedInjections.putAll(classDescription.getInjectionConfigurations());
+            }
+            mergedInjections.putAll(moduleDescription.getResourceInjections(clazz.getName()));
+            mergedInjections.putAll(description.getResourceInjections(clazz.getName()));
+
+            for (final ResourceInjectionConfiguration injectionConfiguration : mergedInjections.values()) {
+                final Object valueContextKey = new Object();
+                final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
+                configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
+                injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(instanceKey, valueContextKey, managedReferenceFactoryValue, context.getDeploymentUnit()));
+                uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
+            }
+        }
+
         private InterceptorClassDescription mergeInterceptorConfig(final Class<?> clazz, final EEModuleClassDescription classDescription, final ComponentDescription description) {
             final InterceptorClassDescription interceptorConfig;
             if (classDescription != null) {
@@ -993,11 +1003,21 @@ public class ComponentDescription {
         this.beanDeploymentArchiveId = beanDeploymentArchiveId;
     }
 
-    public boolean isInstall() {
-        return install;
+    public void addResourceInjection(final ResourceInjectionConfiguration injection) {
+        String className = injection.getTarget().getClassName();
+        Map<InjectionTarget, ResourceInjectionConfiguration> map = resourceInjections.get(className);
+        if (map == null) {
+            resourceInjections.put(className, map = new HashMap<InjectionTarget, ResourceInjectionConfiguration>());
+        }
+        map.put(injection.getTarget(), injection);
     }
 
-    public void setInstall(final boolean install) {
-        this.install = install;
+    public Map<InjectionTarget, ResourceInjectionConfiguration> getResourceInjections(final String className) {
+        Map<InjectionTarget, ResourceInjectionConfiguration> injections = resourceInjections.get(className);
+        if (injections == null) {
+            return Collections.emptyMap();
+        } else {
+            return Collections.unmodifiableMap(injections);
+        }
     }
 }

@@ -159,7 +159,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             // source is always local ENC jndi
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
-            eeModuleClassDescription.getInjectionConfigurations().add(injectionConfiguration);
+            eeModuleClassDescription.addResourceInjection(injectionConfiguration);
         }
     }
 
@@ -195,7 +195,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
 
-            eeModuleClassDescription.getInjectionConfigurations().add(injectionConfiguration);
+            eeModuleClassDescription.addResourceInjection(injectionConfiguration);
         }
     }
 

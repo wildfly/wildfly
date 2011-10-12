@@ -48,7 +48,8 @@ public class LazyResourceInjection {
     public void install() {
         if(!installed) {
             final ResourceInjectionConfiguration resource = new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(localContextName));
-            classDescription.getInjectionConfigurations().add(resource);
+            if(0 ==0) throw new RuntimeException("FIXME");
+            classDescription.addResourceInjection(resource);
             installed = true;
         }
     }

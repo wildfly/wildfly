@@ -169,7 +169,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
         classDescription.getBindingConfigurations().add(bindingConfiguration);
         if (injectionConfiguration != null) {
-            classDescription.getInjectionConfigurations().add(injectionConfiguration);
+            classDescription.addResourceInjection(injectionConfiguration);
         }
     }
 

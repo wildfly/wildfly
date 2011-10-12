@@ -22,11 +22,9 @@
 
 package org.jboss.as.ee.component;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +47,11 @@ public final class EEModuleDescription {
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
 
-    private final Deque<EEModuleConfigurator> moduleConfigurators = new ArrayDeque<EEModuleConfigurator>();
+    // Module Bindings
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+    //injections that have been set in the components deployment descriptor
+    private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<String, Map<InjectionTarget, ResourceInjectionConfiguration>>();
+
 
     /**
      * Construct a new instance.
@@ -66,7 +68,7 @@ public final class EEModuleDescription {
      * Adds or retrieves an existing EEModuleClassDescription for the local module. This method should only be used
      * for classes that reside within the current deployment unit, usually by annotation scanners that are attaching annotation
      * information.
-     *
+     * <p/>
      * This
      *
      * @param className The class name
@@ -77,7 +79,7 @@ public final class EEModuleDescription {
             throw new IllegalArgumentException("Name cannot be null");
         }
         EEModuleClassDescription ret = classDescriptions.get(className);
-        if(ret == null) {
+        if (ret == null) {
             classDescriptions.put(className, ret = new EEModuleClassDescription(className));
         }
         return ret;
@@ -95,6 +97,7 @@ public final class EEModuleDescription {
 
     /**
      * Returns all class descriptions in this module
+     *
      * @return All class descriptions
      */
     public Collection<EEModuleClassDescription> getClassDescriptions() {
@@ -155,10 +158,6 @@ public final class EEModuleDescription {
         return componentsByName.values();
     }
 
-    public Deque<EEModuleConfigurator> getConfigurators() {
-        return this.moduleConfigurators;
-    }
-
     public InjectedEENamespaceContextSelector getNamespaceContextSelector() {
         return namespaceContextSelector;
     }
@@ -180,6 +179,7 @@ public final class EEModuleDescription {
 
     /**
      * Get module level interceptor method overrides that are set up in ejb-jar.xml
+     *
      * @param className The class name
      * @return The overrides, or null if no overrides have been set up
      */
@@ -189,10 +189,34 @@ public final class EEModuleDescription {
 
     /**
      * Adds a module level interceptor class override, it is merged with any existing overrides if they exist
+     *
      * @param className The class name
-     * @param override The override
+     * @param override  The override
      */
     public void addInterceptorMethodOverride(final String className, final InterceptorClassDescription override) {
         interceptorClassOverrides.put(className, InterceptorClassDescription.merge(interceptorClassOverrides.get(className), override));
+    }
+
+    public List<BindingConfiguration> getBindingConfigurations() {
+        return bindingConfigurations;
+    }
+
+
+    public void addResourceInjection(final ResourceInjectionConfiguration injection) {
+        String className = injection.getTarget().getClassName();
+        Map<InjectionTarget, ResourceInjectionConfiguration> map = resourceInjections.get(className);
+        if(map == null) {
+            resourceInjections.put(className, map = new HashMap<InjectionTarget, ResourceInjectionConfiguration>());
+        }
+        map.put(injection.getTarget(), injection);
+    }
+
+    public Map<InjectionTarget, ResourceInjectionConfiguration> getResourceInjections(final  String className) {
+        Map<InjectionTarget, ResourceInjectionConfiguration> injections = resourceInjections.get(className);
+        if(injections == null) {
+            return Collections.emptyMap();
+        } else {
+            return Collections.unmodifiableMap(injections);
+        }
     }
 }

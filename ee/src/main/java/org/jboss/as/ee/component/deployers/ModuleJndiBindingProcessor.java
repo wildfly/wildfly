@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -78,6 +79,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         if (moduleConfiguration == null) {
             return;
@@ -91,7 +93,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
         // handle these duplicates?
         IntHolder moduleCount = new IntHolder();
-        final List<BindingConfiguration> bindingConfigurations = moduleConfiguration.getBindingConfigurations();
+        final List<BindingConfiguration> bindingConfigurations = eeModuleDescription.getBindingConfigurations();
         final ServiceName moduleOwnerName = deploymentUnit.getServiceName().append("module").append(moduleConfiguration.getApplicationName()).append(moduleConfiguration.getModuleName());
         for (BindingConfiguration binding : bindingConfigurations) {
 

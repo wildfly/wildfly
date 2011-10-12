@@ -40,28 +40,14 @@ public abstract class InjectionTarget {
 
     /**
      *
-     * @param className
-     * @param name
-     * @param declaredValueClassName
+     * @param className The class to inject into
+     * @param name The target name
+     * @param declaredValueClassName The type of injection
      */
     protected InjectionTarget(final String className, final String name, final String declaredValueClassName) {
         this.className = className;
         this.name = name;
         this.declaredValueClassName = declaredValueClassName;
-    }
-
-    /**
-     * The injection target type.
-     */
-    public enum Type {
-        /**
-         * Method target type.
-         */
-        METHOD,
-        /**
-         * Field target type.
-         */
-        FIELD,
     }
 
     /**
@@ -104,4 +90,25 @@ public abstract class InjectionTarget {
      */
     public abstract InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException;
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final InjectionTarget that = (InjectionTarget) o;
+
+        if (className != null ? !className.equals(that.className) : that.className != null) return false;
+        if (declaredValueClassName != null ? !declaredValueClassName.equals(that.declaredValueClassName) : that.declaredValueClassName != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = className != null ? className.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (declaredValueClassName != null ? declaredValueClassName.hashCode() : 0);
+        return result;
+    }
 }

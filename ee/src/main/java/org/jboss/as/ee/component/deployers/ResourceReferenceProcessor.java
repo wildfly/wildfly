@@ -81,7 +81,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
-            classType = processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
+            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
             if (classType == null) {
                 throw new DeploymentUnitProcessingException("Could not determine type for resource-env-ref " + name);
             }
@@ -132,7 +132,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-            classType = processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
+            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
             if (classType == null) {
                 throw new DeploymentUnitProcessingException("Could not determine type for resource-ref " + name);
             }
@@ -186,7 +186,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-            classType = processInjectionTargets(moduleDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
+            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, envEntry, classType);
             if (classType == null) {
                 throw new DeploymentUnitProcessingException("Could not determine type for <env-entry> " + name + " please specify the <env-entry-type>.");
             }
