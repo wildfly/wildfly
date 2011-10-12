@@ -22,11 +22,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:web:1.0"
-           xmlns="urn:jboss:domain:web:1.0"
+           targetNamespace="urn:jboss:domain:web:1.1"
+           xmlns="urn:jboss:domain:web:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.0">
+           version="1.1">
 
    <!-- The web subsystem root element -->
    <xs:element name="subsystem" type="web-containerType" />
