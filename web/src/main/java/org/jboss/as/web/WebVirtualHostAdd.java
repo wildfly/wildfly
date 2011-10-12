@@ -75,6 +75,7 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.get(Constants.ALIAS).set(operation.get(Constants.ALIAS));
         model.get(Constants.ACCESS_LOG).set(operation.get(Constants.ACCESS_LOG));
+        model.get(Constants.ACCESS_LOG).get(Constants.DIRECTORY).set(operation.get(Constants.ACCESS_LOG).get(Constants.DIRECTORY));
         model.get(Constants.REWRITE).set(operation.get(Constants.REWRITE));
         model.get(Constants.SSO).set(operation.get(Constants.SSO));
         model.get(Constants.DEFAULT_WEB_MODULE).set(operation.get(Constants.DEFAULT_WEB_MODULE));
