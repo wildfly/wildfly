@@ -80,15 +80,17 @@ public abstract class InjectionTarget {
     /**
      * Get an interceptor factory which will carry out injection into this target.
      *
+     *
      * @param targetContextKey the interceptor context key for the target
      * @param valueContextKey  the interceptor context key for the value
      * @param factoryValue     the value to inject
      * @param deploymentUnit   the deployment unit
+     * @param optional         If this is an optional injection
      * @return the interceptor factory
      * @throws DeploymentUnitProcessingException
      *          if an error occurs
      */
-    public abstract InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException;
+    public abstract InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException;
 
     @Override
     public boolean equals(final Object o) {

@@ -46,7 +46,6 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
-import org.jboss.as.ee.component.LazyResourceInjection;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -101,30 +100,12 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
 
         if (environment != null) {
             final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, environment, description, null, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
-            handleLazyBindings(applicationClasses, bindings);
             description.getBindingConfigurations().addAll(bindings);
         }
         for (final ComponentDescription componentDescription : description.getComponentDescriptions()) {
             if (componentDescription.getDeploymentDescriptorEnvironment() != null) {
                 final List<BindingConfiguration> bindings = processDescriptorEntries(deploymentUnit, componentDescription.getDeploymentDescriptorEnvironment(), description, componentDescription, module.getClassLoader(), deploymentReflectionIndex, applicationClasses);
-                handleLazyBindings(applicationClasses, bindings);
                 componentDescription.getBindingConfigurations().addAll(bindings);
-            }
-        }
-    }
-
-    private void handleLazyBindings(final EEApplicationClasses description, final List<BindingConfiguration> bindings) {
-        for (final BindingConfiguration binding : bindings) {
-            String name = binding.getName();
-            if (!name.startsWith("java:")) {
-                name = "java:comp/" + name;
-            }
-            final List<LazyResourceInjection> lazyInjections = description.getLazyResourceInjections().get(name);
-            if (lazyInjections != null) {
-                for (final LazyResourceInjection injection : lazyInjections) {
-                    injection.install();
-                }
-                description.getLazyResourceInjections().remove(name);
             }
         }
     }

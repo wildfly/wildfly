@@ -49,7 +49,7 @@ public final class MethodInjectionTarget extends InjectionTarget {
         super(className, name, paramType);
     }
 
-    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
         final String paramType = getDeclaredValueClassName();
@@ -81,6 +81,6 @@ public final class MethodInjectionTarget extends InjectionTarget {
             throw new DeploymentUnitProcessingException("More than one matching method found for method '" + name + "(" + paramType + ")" +
                     " on " + className);
         }
-        return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method);
+        return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method, optional);
     }
 }

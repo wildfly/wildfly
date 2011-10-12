@@ -22,13 +22,16 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
-
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptors;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -47,4 +50,34 @@ final class ManagedReferenceMethodInterceptorFactory implements InterceptorFacto
         final AtomicReference<ManagedReference> ref = (AtomicReference<ManagedReference>) context.getContextData().get(contextKey);
         return new ManagedReferenceMethodInterceptor(ref, method);
     }
+
+
+    static final class ManagedReferenceMethodInterceptor implements Interceptor {
+
+        private final AtomicReference<ManagedReference> instanceRef;
+        private final Method method;
+
+        ManagedReferenceMethodInterceptor(final AtomicReference<ManagedReference> instanceRef, final Method method) {
+            this.method = method;
+            this.instanceRef = instanceRef;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            final ManagedReference reference = instanceRef.get();
+            final Object instance = reference.getInstance();
+            try {
+                return method.invoke(instance, context.getParameters());
+            } catch (IllegalAccessException e) {
+                final IllegalAccessError n = new IllegalAccessError(e.getMessage());
+                n.setStackTrace(e.getStackTrace());
+                throw n;
+            } catch (InvocationTargetException e) {
+                throw Interceptors.rethrow(e.getCause());
+            }
+        }
+    }
+
 }

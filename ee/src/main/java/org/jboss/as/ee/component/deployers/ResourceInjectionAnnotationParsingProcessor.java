@@ -41,9 +41,9 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
-import org.jboss.as.ee.component.LazyResourceInjection;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
+import org.jboss.as.ee.component.OptionalLookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -264,8 +264,9 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         if (valueSource == null) {
             // the ResourceInjectionConfiguration is created by LazyResourceInjection
             if (targetDescription != null) {
-                LazyResourceInjection lazyResourceInjection = new LazyResourceInjection(targetDescription, localContextName, classDescription);
-                applicationClasses.addLazyResourceInjection(lazyResourceInjection);
+                OptionalLookupInjectionSource optionalInjection = new OptionalLookupInjectionSource(localContextName);
+                final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(targetDescription, optionalInjection, true);
+                classDescription.addResourceInjection(injectionConfiguration);
             }
         } else {
             // our injection comes from the local lookup, no matter what.
