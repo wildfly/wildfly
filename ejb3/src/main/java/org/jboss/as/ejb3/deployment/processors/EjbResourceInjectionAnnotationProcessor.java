@@ -29,11 +29,9 @@ import javax.ejb.EJBs;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
-import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
@@ -169,10 +167,9 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         // Create the binding from whence our injection comes.
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
-        // TODO: class hierarchies? shared bindings?
-        classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+        classDescription.getBindingConfigurations().add(bindingConfiguration);
         if (injectionConfiguration != null) {
-            classDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+            classDescription.getInjectionConfigurations().add(injectionConfiguration);
         }
     }
 

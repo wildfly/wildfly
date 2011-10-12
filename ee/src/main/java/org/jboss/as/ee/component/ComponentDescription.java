@@ -593,11 +593,11 @@ public class ComponentDescription {
             new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
 
                 @Override
-                public void handle(Class<?> clazz, EEModuleClassConfiguration classConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    if (classConfiguration == null) {
+                public void handle(Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    if (classDescription == null) {
                         return;
                     }
-                    for (final ResourceInjectionConfiguration injectionConfiguration : classConfiguration.getInjectionConfigurations()) {
+                    for (final ResourceInjectionConfiguration injectionConfiguration : classDescription.getInjectionConfigurations()) {
                         final Object valueContextKey = new Object();
                         final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
                         configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
@@ -642,10 +642,10 @@ public class ComponentDescription {
 
                 new ClassDescriptionTraversal(interceptorClass.getModuleClass(), applicationClasses) {
                     @Override
-                    public void handle(final Class<?> clazz, EEModuleClassConfiguration interceptorClassConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                         final ClassReflectionIndex<?> interceptorClassIndex = deploymentReflectionIndex.getClassIndex(clazz);
-                        if (interceptorClassConfiguration != null) {
-                            for (final ResourceInjectionConfiguration injectionConfiguration : interceptorClassConfiguration.getInjectionConfigurations()) {
+                        if (classDescription != null) {
+                            for (final ResourceInjectionConfiguration injectionConfiguration : classDescription.getInjectionConfigurations()) {
                                 final Object valueContextKey = new Object();
                                 final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
                                 configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
@@ -735,7 +735,7 @@ public class ComponentDescription {
 
             new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
                 @Override
-                public void handle(final Class<?> clazz, EEModuleClassConfiguration classConfiguration, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                     final ClassReflectionIndex classReflectionIndex = deploymentReflectionIndex.getClassIndex(clazz);
 
                     final InterceptorClassDescription interceptorConfig = mergeInterceptorConfig(clazz, classDescription, description);

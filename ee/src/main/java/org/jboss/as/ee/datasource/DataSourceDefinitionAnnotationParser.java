@@ -31,7 +31,6 @@ import javax.annotation.sql.DataSourceDefinitions;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -108,7 +107,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
         final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(datasourceDefinition);
         EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(targetClass.name().toString());
         // add the binding configuration via a class configurator
-        classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+        classDescription.getBindingConfigurations().add(bindingConfiguration);
     }
 
     private BindingConfiguration getBindingConfiguration(final AnnotationInstance datasourceAnnotation) {

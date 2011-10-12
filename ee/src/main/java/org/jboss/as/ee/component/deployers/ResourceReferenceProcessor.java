@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
@@ -37,9 +40,6 @@ import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Deployment processor that sets up env-entry, resource-ref and resource-env-ref bindings

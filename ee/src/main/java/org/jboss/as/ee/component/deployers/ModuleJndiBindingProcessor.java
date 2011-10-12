@@ -34,7 +34,6 @@ import org.jboss.as.ee.component.ClassDescriptionTraversal;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.InjectionSource;
@@ -48,6 +47,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.DuplicateServiceException;
@@ -77,6 +78,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
+        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         if (moduleConfiguration == null) {
             return;
         }
@@ -126,9 +128,11 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             classConfigurations.add(componentConfiguration.getComponentClass());
 
             for (final InterceptorDescription interceptor : componentConfiguration.getComponentDescription().getAllInterceptors()) {
-                final EEModuleClassConfiguration interceptorClass = applicationClasses.getClassConfiguration(interceptor.getInterceptorClassName());
-                if (interceptorClass != null) {
+                try {
+                    final ClassIndex interceptorClass = classIndex.classIndex(interceptor.getInterceptorClassName());
                     classConfigurations.add(interceptorClass.getModuleClass());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load interceptor class", e);
                 }
             }
             processClassConfigurations(phaseContext, applicationClasses, moduleConfiguration, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName(), moduleOwnerName, moduleCount, dependencies);
@@ -140,8 +144,8 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         for (final Class<?> clazz : classes) {
             new ClassDescriptionTraversal(clazz, applicationClasses) {
                 @Override
-                protected void handle(final Class<?> currentClass, final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    if(configuration == null) {
+                protected void handle(final Class<?> currentClass, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    if (classDescription == null) {
                         return;
                     }
                     if (classDescription.isInvalid()) {
@@ -154,7 +158,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     handledClasses.add(classDescription.getClassName());
                     // TODO: Should the view configuration just return a Set instead of a List? Or is there a better way to
                     // handle these duplicates?
-                    final Set<BindingConfiguration> classLevelBindings = new HashSet<BindingConfiguration>(configuration.getBindingConfigurations());
+                    final Set<BindingConfiguration> classLevelBindings = new HashSet<BindingConfiguration>(classDescription.getBindingConfigurations());
                     for (BindingConfiguration binding : classLevelBindings) {
                         final String bindingName = binding.getName();
                         final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");

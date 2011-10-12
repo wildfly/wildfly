@@ -40,25 +40,23 @@ public abstract class ClassDescriptionTraversal {
 
     public void run() throws DeploymentUnitProcessingException {
         Class<?> clazz = this.clazz;
-        final List<EEModuleClassConfiguration> queue = new ArrayList<EEModuleClassConfiguration>();
+        final List<EEModuleClassDescription> queue = new ArrayList<EEModuleClassDescription>();
         final List<Class<?>> classQueue = new ArrayList<Class<?>>();
         while (clazz != null && clazz != Object.class) {
-            final EEModuleClassConfiguration configuration = applicationClasses.getClassConfiguration(clazz.getName());
+            final EEModuleClassDescription configuration = applicationClasses.getClassByName(clazz.getName());
             queue.add(configuration);
             classQueue.add(clazz);
             clazz = clazz.getSuperclass();
         }
         for (int i = queue.size() - 1; i >= 0; --i) {
-            final EEModuleClassConfiguration config = queue.get(i);
+            final EEModuleClassDescription config = queue.get(i);
             if(config != null) {
-                handle(classQueue.get(i), config, config.getModuleClassDescription());
+                handle(classQueue.get(i), config);
             } else {
-                handle(classQueue.get(i), null, null);
+                handle(classQueue.get(i), null);
             }
-        }
-        for (EEModuleClassConfiguration configuration : queue) {
         }
     }
 
-    protected abstract void handle(final Class<?> clazz, final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
+    protected abstract void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
 }

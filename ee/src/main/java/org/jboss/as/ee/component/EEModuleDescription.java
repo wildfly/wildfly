@@ -30,7 +30,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
@@ -46,7 +45,6 @@ public final class EEModuleDescription {
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
     private final Map<String, EEModuleClassDescription> classDescriptions = new HashMap<String, EEModuleClassDescription>();
-    private Map<String, LazyValue<EEModuleClassConfiguration>> classConfigurations;
     private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
@@ -84,42 +82,6 @@ public final class EEModuleDescription {
         }
         return ret;
     }
-
-
-    /**
-     * Adds all configured classes to the module
-     * TODO: move this to a different class
-     * @param configuredClasses The classes
-     */
-    public void addConfiguredClasses(final Map<String, LazyValue<EEModuleClassConfiguration>> configuredClasses) {
-        if(classConfigurations != null) {
-            throw new RuntimeException("Configured classes have already been added");
-        }
-        classConfigurations = configuredClasses;
-    }
-
-    /**
-     * Gets the EEModuleClassConfiguration for a given class
-     * @param name The class name
-     * @return The configuration, or null
-     */
-    public EEModuleClassConfiguration getClassConfiguration(String name) {
-        if(classConfigurations == null) {
-            throw new IllegalStateException("getClassConfiguration called to early, before the classes have been configured");
-        }
-        LazyValue<EEModuleClassConfiguration> result =  classConfigurations.get(name);
-        if(result == null) {
-            return null;
-        }
-        try {
-            return result.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     /**
      * Returns a class that is local to this module

@@ -33,7 +33,6 @@ import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcesso
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
-import org.jboss.as.ee.component.deployers.EEClassConfigurationProcessor;
 import org.jboss.as.ee.component.deployers.EECleanUpProcessor;
 import org.jboss.as.ee.component.deployers.EEDistinctNameProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleConfigurationProcessor;
@@ -150,7 +149,6 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS, new ModuleJndiBindingProcessor());
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_CLASS_CONFIG, new EEClassConfigurationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_MODULE_CONFIG, new EEModuleConfigurationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
 

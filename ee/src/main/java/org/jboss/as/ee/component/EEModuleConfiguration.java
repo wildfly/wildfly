@@ -25,9 +25,7 @@ package org.jboss.as.ee.component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,7 +40,6 @@ public final class EEModuleConfiguration {
     private final String applicationName;
     private final String moduleName;
     private final List<ComponentConfiguration> componentConfigurations;
-    private final Map<String, LazyValue<EEModuleClassConfiguration>> classesByName = new HashMap<String, LazyValue<EEModuleClassConfiguration>>();
 
     // Module Bindings
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();

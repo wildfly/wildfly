@@ -23,11 +23,11 @@
 package org.jboss.as.ee.component;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingDeque;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
@@ -43,11 +43,13 @@ public final class EEModuleClassDescription {
 
 
     private final String className;
-    private final Deque<ClassConfigurator> configurators = new LinkedBlockingDeque<ClassConfigurator>();
     private boolean invalid;
     private StringBuilder invalidMessageBuilder;
     private final Map<Class<? extends Annotation>, ClassAnnotationInformation<?,?>> annotationInformation = Collections.synchronizedMap(new HashMap<Class<? extends Annotation>, ClassAnnotationInformation<?, ?>>());
     private InterceptorClassDescription interceptorClassDescription = InterceptorClassDescription.EMPTY_INSTANCE;
+
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+    private final List<ResourceInjectionConfiguration> injectionConfigurations = new ArrayList<ResourceInjectionConfiguration>();
 
     public EEModuleClassDescription(final String className) {
         this.className = className;
@@ -73,13 +75,23 @@ public final class EEModuleClassDescription {
         this.interceptorClassDescription = interceptorClassDescription;
     }
 
+
     /**
-     * Get the configurators for this class.
+     * Get the binding configurations for this EE module class.
      *
-     * @return the configurators
+     * @return the binding configurations
      */
-    public Deque<ClassConfigurator> getConfigurators() {
-        return configurators;
+    public List<BindingConfiguration> getBindingConfigurations() {
+        return bindingConfigurations;
+    }
+
+    /**
+     * Get the resource injection configurations for this EE module class.
+     *
+     * @return the resource injection configuration
+     */
+    public List<ResourceInjectionConfiguration> getInjectionConfigurations() {
+        return injectionConfigurations;
     }
 
     public void addAnnotationInformation(ClassAnnotationInformation annotationInformation) {

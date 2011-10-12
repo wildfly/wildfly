@@ -35,12 +35,10 @@ import javax.persistence.spi.PersistenceUnitTransactionType;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
-import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
@@ -154,14 +152,14 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType, eeModuleClassDescription);
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
-            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+            eeModuleClassDescription.getBindingConfigurations().add(bindingConfiguration);
 
             // setup the injection target
             final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString());
             // source is always local ENC jndi
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
-            eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+            eeModuleClassDescription.getInjectionConfigurations().add(injectionConfiguration);
         }
     }
 
@@ -189,7 +187,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType, eeModuleClassDescription);
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
-            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+            eeModuleClassDescription.getBindingConfigurations().add(bindingConfiguration);
 
             // setup the injection configuration
             final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
@@ -197,7 +195,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
 
-            eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+            eeModuleClassDescription.getInjectionConfigurations().add(injectionConfiguration);
         }
     }
 
@@ -214,7 +212,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, type, eeModuleClassDescription);
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, bindingSource);
-            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+            eeModuleClassDescription.getBindingConfigurations().add(bindingConfiguration);
         }
     }
 

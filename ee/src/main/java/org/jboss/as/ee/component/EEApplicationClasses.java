@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Stores a deployments {@link EEModuleClassDescription}.
- * <p/>
- * For sub deployments creation of the description is delegated to the parent, to ensure that
- * no more than 1 EEModuleClassDescription can be created per class.
+ * Allows a deployment to get old of class descriptions from all sub deployments it has access to.
+ *
+ * This maintains a list of all {@link EEModuleDescription}s that this sub deployment has access to,
+ * in the same order they appear in the dependencies list.
  *
  * @author Stuart Douglas
  */
@@ -42,6 +42,8 @@ public final class EEApplicationClasses {
     private final List<EEModuleDescription> availableModules;
 
     /**
+     * TODO: delete this
+     *
      * Resource injections that only get installed if a binding is set up
      * See EE 5.4.1.3
      */
@@ -60,21 +62,6 @@ public final class EEApplicationClasses {
     public EEModuleClassDescription getClassByName(String name) {
         for(EEModuleDescription module : availableModules) {
             final EEModuleClassDescription desc = module.getClassDescription(name);
-            if(desc != null) {
-                return desc;
-            }
-        }
-        return null;
-    }
-
-    /**
-     *
-     * @param className The class name
-     * @return The class configuration
-     */
-    public EEModuleClassConfiguration getClassConfiguration(final String className) {
-        for(EEModuleDescription module : availableModules) {
-            final EEModuleClassConfiguration desc = module.getClassConfiguration(className);
             if(desc != null) {
                 return desc;
             }

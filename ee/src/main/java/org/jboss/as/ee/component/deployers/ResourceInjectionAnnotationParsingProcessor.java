@@ -35,12 +35,10 @@ import javax.validation.ValidatorFactory;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
-import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LazyResourceInjection;
@@ -278,10 +276,10 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             // TODO: class hierarchies? shared bindings?
             if (createBindingFinal) {
                 final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
-                classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+                classDescription.getBindingConfigurations().add(bindingConfiguration);
             }
             if (injectionConfiguration != null) {
-                classDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+                classDescription.getInjectionConfigurations().add(injectionConfiguration);
             }
         }
     }
