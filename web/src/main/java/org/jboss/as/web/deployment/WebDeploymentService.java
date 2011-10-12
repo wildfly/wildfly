@@ -82,6 +82,9 @@ class WebDeploymentService implements Service<Context> {
             } catch (LifecycleException e) {
                 throw new StartException("failed to start context", e);
             }
+            if (context.getState() != 1) {
+                throw new StartException("failed to start context");
+            }
             log.info("registering web context: " + context.getName());
 
         } finally {
