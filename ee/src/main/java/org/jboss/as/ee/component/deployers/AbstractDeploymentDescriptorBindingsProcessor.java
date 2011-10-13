@@ -129,7 +129,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
      * @throws DeploymentUnitProcessingException
      *          If the injection points could not be resolved
      */
-    protected Class<?> processInjectionTargets(final  EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaData entry, Class<?> classType) throws DeploymentUnitProcessingException {
+    protected Class<?> processInjectionTargets(final EEModuleDescription moduleDescription, final ComponentDescription componentDescription, final EEApplicationClasses applicationClasses, InjectionSource injectionSource, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionMetaData entry, Class<?> classType) throws DeploymentUnitProcessingException {
         if (entry.getInjectionTargets() != null) {
             for (ResourceInjectionTargetMetaData injectionTarget : entry.getInjectionTargets()) {
                 final String injectionTargetClassName = injectionTarget.getInjectionTargetClass();
@@ -153,6 +153,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                         if (!ok) {
                             throw new DeploymentUnitProcessingException("Injection target " + injectionTarget.getInjectionTargetName() + " on class " + injectionTarget.getInjectionTargetClass() + " is not compatible with the type of injection: " + classType);
                         }
+                        classType = injectionTargetType;
                     }
                 } else {
                     classType = injectionTargetType;
@@ -163,7 +164,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
 
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTargetDescription, injectionSource);
 
-                if(componentDescription == null) {
+                if (componentDescription == null) {
                     moduleDescription.addResourceInjection(injectionConfiguration);
                 } else {
                     componentDescription.addResourceInjection(injectionConfiguration);
