@@ -20,40 +20,49 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.modcluster;
+package org.jboss.as.web;
+
+
+import static org.jboss.as.web.Constants.MIME_MAPPING;
 
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
-public class ModClusterDisable implements OperationStepHandler, DescriptionProvider{
+public class MimeMappingRemove implements OperationStepHandler, DescriptionProvider{
 
-    static final ModClusterDisable INSTANCE = new ModClusterDisable();
+    static final MimeMappingRemove INSTANCE = new MimeMappingRemove();
+    private final ParametersValidator runtimeValidator = new ParametersValidator();
 
+    private MimeMappingRemove() {
+        runtimeValidator.registerValidator("name", new StringLengthValidator(0, Integer.MAX_VALUE, false, false));
+    }
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return ModClusterSubsystemDescriptions.getDisableDescription(locale);
+        return WebSubsystemDescriptions.getMimeMappingRemoveDescription(locale);
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
+        runtimeValidator.validate(operation.resolve());
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
-                    ModCluster modcluster = (ModCluster) controller.getValue();
-                    modcluster.disable();
+                    final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
+                    mimetypes.remove(operation.get("name").asString());
                     context.completeStep();
                 }
-            }, OperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.MODEL);
         }
 
         context.completeStep();
