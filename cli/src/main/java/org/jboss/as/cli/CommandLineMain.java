@@ -260,9 +260,9 @@ public class CommandLineMain {
                     }
                     final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
                     commands = new String[]{value};
-                } else if (arg.startsWith("--user=") || arg.startsWith("user=")) {
+                } else if (arg.startsWith("--user=")) {
                     username = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
-                } else if (arg.startsWith("--password=") || arg.startsWith("password=")) {
+                } else if (arg.startsWith("--password=")) {
                     password = (arg.startsWith("--") ? arg.substring(11) : arg.substring(9)).toCharArray();
                 } else if (arg.equals("--help") || arg.equals("-h")) {
                     commands = new String[]{"help"};
