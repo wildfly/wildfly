@@ -30,11 +30,9 @@ import javax.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,29 +51,7 @@ public class SimpleWebserviceEndpointTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-endpoint-example.war");
         war.addPackage(SimpleWebserviceEndpointImpl.class.getPackage());
         war.addClass(SimpleWebserviceEndpointImpl.class);
-        war.addAsWebInfResource(WebXml.get("<servlet>" +
-                "    <servlet-name>TestService</servlet-name>" +
-                "    <servlet-class>org.jboss.as.test.integration.ws.SimpleWebserviceEndpointImpl</servlet-class>" +
-                "  </servlet>" +
-                "  <servlet-mapping>" +
-                "    <servlet-name>TestService</servlet-name>" +
-                "    <url-pattern>/SimpleService</url-pattern>" +
-                "  </servlet-mapping>" +
-                "  <env-entry>" +
-                "    <env-entry-name>org.jboss.as.testsuite.integration.ws.SimpleWebserviceEndpointImpl/string1</env-entry-name>" +
-                "    <env-entry-type>java.lang.String</env-entry-type>" +
-                "    <env-entry-value>Ahoj 1</env-entry-value>" +
-                "  </env-entry>" +
-                "  <env-entry>" +
-                "    <env-entry-name>string2</env-entry-name>" +
-                "    <env-entry-type>java.lang.String</env-entry-type>" +
-                "    <env-entry-value>Ahoj 2</env-entry-value>" +
-                "    <injection-target>" +
-                "      <injection-target-name>string3</injection-target-name>" +
-                "      <injection-target-class>org.jboss.as.testsuite.integration.ws.SimpleWebserviceEndpointImpl</injection-target-class>" +
-                "    </injection-target>" +
-                "  </env-entry>" +
-                ""),"web.xml");
+        war.addAsWebInfResource(SimpleWebserviceEndpointTestCase.class.getPackage(),"web.xml","web.xml");
         log.info(war.toString(true));
         return war;
     }

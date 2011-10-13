@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         metadata-complete="false">
+    <servlet>
+        <servlet-name>TestService</servlet-name>
+        <servlet-class>org.jboss.as.test.integration.ws.SimpleWebserviceEndpointImpl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestService</servlet-name>
+        <url-pattern>/SimpleService</url-pattern>
+    </servlet-mapping>
+    <env-entry>
+        <env-entry-name>org.jboss.as.test.integration.ws.SimpleWebserviceEndpointImpl/string1</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>Ahoj 1</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <env-entry-name>string2</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>Ahoj 2</env-entry-value>
+        <injection-target>
+            <injection-target-name>string3</injection-target-name>
+            <injection-target-class>org.jboss.as.test.integration.ws.SimpleWebserviceEndpointImpl</injection-target-class>
+        </injection-target>
+    </env-entry>
+</web-app>
