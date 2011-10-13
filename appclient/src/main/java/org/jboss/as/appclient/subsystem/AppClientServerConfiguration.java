@@ -56,6 +56,7 @@ class AppClientServerConfiguration {
         ee(ret);
         ejb3(ret);
         security(ret);
+        jacorb(ret);
 
         return ret;
     }
@@ -113,6 +114,13 @@ class AppClientServerConfiguration {
         loadExtension(nodes, "org.jboss.as.security");
         ModelNode add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, "security");
+        add.get(OP).set(ADD);
+        nodes.add(add);
+    }
+    private static void jacorb(List<ModelNode> nodes) {
+        loadExtension(nodes, "org.jboss.as.jacorb");
+        ModelNode add = new ModelNode();
+        add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, "jacorb");
         add.get(OP).set(ADD);
         nodes.add(add);
     }
