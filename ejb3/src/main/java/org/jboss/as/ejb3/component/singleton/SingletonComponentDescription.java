@@ -165,7 +165,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
-    protected void setupViewInterceptors(ViewDescription view) {
+    protected void setupViewInterceptors(EJBViewDescription view) {
         // let super do its job first
         super.setupViewInterceptors(view);
 

@@ -41,11 +41,9 @@ import javax.ejb.TransactionManagementType;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -53,7 +51,6 @@ import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptorFactory;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -348,7 +345,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public abstract SessionBeanType getSessionBeanType();
 
     @Override
-    protected void setupViewInterceptors(ViewDescription view) {
+    protected void setupViewInterceptors(EJBViewDescription view) {
         // let super do it's job first
         super.setupViewInterceptors(view);
 

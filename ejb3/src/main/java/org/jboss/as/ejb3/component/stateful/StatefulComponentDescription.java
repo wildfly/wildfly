@@ -224,7 +224,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     }
 
     @Override
-    protected void setupViewInterceptors(ViewDescription view) {
+    protected void setupViewInterceptors(EJBViewDescription view) {
         // let super do its job
         super.setupViewInterceptors(view);
         // add the @Remove method interceptor

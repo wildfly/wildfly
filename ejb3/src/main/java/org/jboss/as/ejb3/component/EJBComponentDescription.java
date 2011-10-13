@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component;
 
 import java.lang.reflect.Method;
+import java.rmi.Remote;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
+import org.jboss.as.ejb3.component.stateful.NoSuchObjectExceptionTransformingInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -287,6 +289,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         setupViewInterceptors(view);
         // setup client side view interceptors
         setupClientViewInterceptors(view);
+
         // return created view
         this.ejbHomeView = view;
     }
@@ -364,9 +367,23 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return this.getComponentClassName();
     }
 
-    protected void setupViewInterceptors(ViewDescription view) {
+    protected void setupViewInterceptors(EJBViewDescription view) {
         this.addCurrentInvocationContextFactory(view);
         this.setupSecurityInterceptors(view);
+        this.setupRemoteViewInterceptors(view);
+    }
+
+    private void setupRemoteViewInterceptors(final EJBViewDescription view) {
+        if(view.getMethodIntf() == MethodIntf.REMOTE || view.getMethodIntf() == MethodIntf.HOME) {
+            view.getConfigurators().add(new ViewConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    if(Remote.class.isAssignableFrom(configuration.getViewClass())) {
+                        configuration.addViewInterceptor(NoSuchObjectExceptionTransformingInterceptorFactory.INSTANCE, InterceptorOrder.View.NO_SUCH_OBJECT_TRANSFORMER);
+                    }
+                }
+            });
+        }
     }
 
     protected void setupClientViewInterceptors(ViewDescription view) {

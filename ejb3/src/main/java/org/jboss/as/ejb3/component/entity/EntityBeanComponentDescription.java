@@ -31,6 +31,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
@@ -93,7 +94,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
     }
 
     @Override
-    protected void setupViewInterceptors(ViewDescription view) {
+    protected void setupViewInterceptors(EJBViewDescription view) {
         // let super do its job first
         super.setupViewInterceptors(view);
 

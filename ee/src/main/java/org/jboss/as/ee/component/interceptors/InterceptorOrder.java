@@ -109,6 +109,7 @@ public class
     public static final class View {
 
         public static final int NOT_BUSINESS_METHOD                                     = 0x000;
+        public static final int NO_SUCH_OBJECT_TRANSFORMER                              = 0x100;
         public static final int SECURITY_CONTEXT                                        = 0x150;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR                  = 0x200;
         public static final int EJB_CLIENT_CONTEXT                                      = 0x250;
