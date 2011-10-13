@@ -44,6 +44,34 @@ public class OperationParsingTestCase extends TestCase {
     private CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
 
     @Test
+    public void testOperationNameEndsWithDash() throws Exception {
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
+
+        parse("/subsystem=threads/thread-factory=*:validate-", handler);
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.isRequestComplete());
+
+        assertEquals("validate-", handler.getOperationName());
+
+        OperationRequestAddress address = handler.getAddress();
+        Iterator<Node> i = address.iterator();
+        assertTrue(i.hasNext());
+/*        Node node = i.next();
+        assertEquals("subsystem", node.getType());
+        assertEquals("logging", node.getName());
+        assertFalse(i.hasNext());
+*/    }
+
+    @Test
     public void testOperationNameOnly() throws Exception {
         DefaultCallbackHandler handler = new DefaultCallbackHandler();
 
