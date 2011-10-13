@@ -52,6 +52,8 @@ abstract class AbstractMessageHandler implements MessageHandler {
     protected static final byte HEADER_NO_SUCH_EJB_FAILURE = 0x0A;
     protected static final byte HEADER_NO_SUCH_EJB_METHOD_FAILURE = 0x0B;
     protected static final byte HEADER_SESSION_NOT_ACTIVE_FAILURE = 0x0C;
+    private static final byte HEADER_INVOCATION_EXCEPTION = 0x06;
+
 
     AbstractMessageHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
         this.deploymentRepository = deploymentRepository;
@@ -94,6 +96,25 @@ abstract class AbstractMessageHandler implements MessageHandler {
             // write the data
             output.write(data);
 
+        }
+    }
+
+    protected void writeException(final Channel channel, final short invocationId, final Throwable t, final RemotingAttachments attachments) throws IOException {
+        final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
+        try {
+            // write the header
+            outputStream.write(HEADER_INVOCATION_EXCEPTION);
+            // write the invocation id
+            outputStream.writeShort(invocationId);
+            // write the attachments
+            this.writeAttachments(outputStream, attachments);
+            // write out the exception
+            final Marshaller marshaller = MarshallerFactory.createMarshaller(this.marshallingStrategy);
+            marshaller.start(outputStream);
+            marshaller.writeObject(t);
+            marshaller.finish();
+        } finally {
+            outputStream.close();
         }
     }
 

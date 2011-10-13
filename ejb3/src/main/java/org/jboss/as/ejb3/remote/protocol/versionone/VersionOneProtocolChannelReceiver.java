@@ -124,19 +124,19 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
                 default:
                     logger.warn("Received unsupported message header 0x" + Integer.toHexString(header) + " on channel " + channel);
             }
+            // enroll for next message (whenever it's available)
+            channel.receiveMessage(this);
+
         } catch (IOException e) {
             // log it
             logger.errorf(e, "Exception on channel %s from message %s", channel, messageInputStream);
             try {
-                // press the panic button
-                // TODO: Why panic? Better way to handle? Review this entire block of code
-                channel.writeShutdown();
+                // no more messages can be sent or received on this channel
+                channel.close();
             } catch (IOException e1) {
                 // ignore
             }
         } finally {
-            // enroll for next message (whenever it's available)
-            channel.receiveMessage(this);
             IoUtils.safeClose(messageInputStream);
         }
     }

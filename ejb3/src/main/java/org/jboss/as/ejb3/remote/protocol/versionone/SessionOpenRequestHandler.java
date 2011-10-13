@@ -81,15 +81,14 @@ class SessionOpenRequestHandler extends AbstractMessageHandler {
         final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) component;
         // TODO: Session generation and writing the result, should happen on a separate thread to
         // let the channel to be freed for further incoming message receipt(s)
-        final SessionID sessionID = statefulSessionComponent.createSession();
-
+        final SessionID sessionID;
         try {
-            this.writeSessionId(channel, invocationId, sessionID, attachments);
-        } catch (IOException ioe) {
-            // write out invocation failure
-            // this.writeInvocationFailure(channel, invocationId, "Server failed to send back session id");
-            // TODO: Handle this
+            sessionID = statefulSessionComponent.createSession();
+        } catch (Throwable t) {
+            this.writeException(channel, invocationId, t, attachments);
+            return;
         }
+        this.writeSessionId(channel, invocationId, sessionID, attachments);
     }
 
     private void writeSessionId(final Channel channel, final short invocationId, final SessionID sessionID, final RemotingAttachments attachments) throws IOException {

@@ -55,7 +55,6 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
     private static final char METHOD_PARAM_TYPE_SEPARATOR = ',';
 
     private static final byte HEADER_METHOD_INVOCATION_RESPONSE = 0x05;
-    private static final byte HEADER_METHOD_INVOCATION_APPLICATION_EXCEPTION = 0x06;
     private static final byte HEADER_ASYNC_METHOD_NOTIFICATION = 0x0E;
 
     private final ExecutorService executorService;
@@ -168,7 +167,7 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
                 } catch (Throwable throwable) {
                     try {
                         // write out the failure
-                        writeMethodInvocationFailure(channel, invocationId, throwable, attachments);
+                        MethodInvocationMessageHandler.this.writeException(channel, invocationId, throwable, attachments);
                     } catch (IOException ioe) {
                         // we couldn't write out a method invocation failure message. So let's atleast log the
                         // actual method invocation exception, for debugging/reference
@@ -276,26 +275,6 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
     }
 
 
-    private void writeMethodInvocationFailure(final Channel channel, final short invocationId, final Throwable error, final RemotingAttachments attachments) throws IOException {
-        final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
-        try {
-            // write the header
-            outputStream.write(HEADER_METHOD_INVOCATION_APPLICATION_EXCEPTION);
-            // write the invocation id
-            outputStream.writeShort(invocationId);
-            // write the attachments
-            this.writeAttachments(outputStream, attachments);
-            // write out the exception
-            final Marshaller marshaller = MarshallerFactory.createMarshaller(this.marshallingStrategy);
-            marshaller.start(outputStream);
-            marshaller.writeObject(error);
-            marshaller.finish();
-        } finally {
-            outputStream.close();
-        }
-
-    }
-
     private void writeAsyncMethodNotification(final Channel channel, final short invocationId) throws IOException {
         final DataOutputStream outputStream = new DataOutputStream(channel.writeMessage());
         try {
@@ -327,6 +306,7 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         /**
          * Sets the passed <code>newCL</code> as the classloader which will be returned on
          * subsequent calls to {@link #provideClassLoader()}
+         *
          * @param newCL
          */
         void switchClassLoader(final ClassLoader newCL) {
