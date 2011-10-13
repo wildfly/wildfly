@@ -71,6 +71,11 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final ServiceName ejbHome;
 
+
+    private final String applicationName;
+    private final String moduleName;
+    private final String distinctName;
+
     /**
      * Construct a new instance.
      *
@@ -143,6 +148,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.ejbLocalHome = localHome == null ? null : ejbComponentDescription.getEjbLocalHomeView().getServiceName();
         EjbHomeViewDescription home = ejbComponentDescription.getEjbHomeView();
         this.ejbHome = home == null ? null : home.getServiceName();
+        this.applicationName = componentConfiguration.getApplicationName();
+        this.moduleName = componentConfiguration.getModuleName();
+        this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
     }
 
     private static Method getComponentMethod(final ComponentConfiguration componentConfiguration, final String name, final Class<?>[] parameterTypes) {
@@ -220,5 +228,17 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public ServiceName getEjbLocalHome() {
         return ejbLocalHome;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public String getDistinctName() {
+        return distinctName;
+    }
+
+    public String getModuleName() {
+        return moduleName;
     }
 }

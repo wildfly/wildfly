@@ -36,7 +36,7 @@ public class EJBViewConfiguration extends ViewConfiguration {
 
     private final MethodIntf methodIntf;
 
-    public EJBViewConfiguration(final Class<?> viewClass, final ComponentConfiguration componentConfiguration, final ServiceName viewServiceName, final ProxyFactory<?> proxyFactory, final MethodIntf methodIntf) {
+    public EJBViewConfiguration(final Class<?> viewClass, final ComponentConfiguration componentConfiguration, final ServiceName viewServiceName, final ProxyFactory<?> proxyFactory, final MethodIntf methodIntf, final boolean remoteInterface) {
         super(viewClass, componentConfiguration, viewServiceName, proxyFactory);
         this.methodIntf = methodIntf;
     }

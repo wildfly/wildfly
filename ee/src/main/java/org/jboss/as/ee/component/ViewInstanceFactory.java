@@ -19,38 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.entity.interceptors;
+package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.component.ComponentView;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.msc.value.InjectedValue;
+import java.util.Map;
+
+import org.jboss.as.naming.ManagedReference;
 
 /**
- * Interceptor that can return a home interface for an eJB
+ * Factory that can be used to customize a views proxy creation
+ *
+ * TODO: this needs to be thought through a bit more
  *
  * @author Stuart Douglas
  */
-public class EntityBeanGetHomeInterceptorFactory implements InterceptorFactory {
+public interface ViewInstanceFactory {
 
+    ManagedReference createViewInstance(ComponentView componentView, final Map<Object, Object> contextData);
 
-    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
-
-    @Override
-    public Interceptor create(final InterceptorFactoryContext context) {
-
-        return new Interceptor() {
-            @Override
-            public Object processInvocation(final InterceptorContext context) throws Exception {
-                return viewToCreate.getValue().createInstance().getInstance();
-            }
-        };
-    }
-
-
-    public InjectedValue<ComponentView> getViewToCreate() {
-        return viewToCreate;
-    }
 }

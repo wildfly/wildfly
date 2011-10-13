@@ -41,7 +41,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
-import org.jboss.as.ee.component.ComponentViewInstance;
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.NamespaceConfigurator;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -786,11 +786,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         @Override
         public Object processInvocation(InterceptorContext context) throws Exception {
-            final ComponentViewInstance componentViewInstance = context.getPrivateData(ComponentViewInstance.class);
-            if (componentViewInstance == null) {
+            final ComponentView componentView = context.getPrivateData(ComponentView.class);
+            if (componentView == null) {
                 throw new IllegalStateException("ComponentViewInstance not available in interceptor context: " + context);
             }
-            return "Proxy for view class: " + componentViewInstance.getViewClass().getName() + " of EJB: " + name;
+            return "Proxy for view class: " + componentView.getViewClass().getName() + " of EJB: " + name;
         }
     }
 

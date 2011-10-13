@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ejb.AccessTimeout;
+import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
 import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
@@ -36,6 +37,7 @@ import javax.transaction.Transaction;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.ExpiringCache;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
@@ -45,12 +47,16 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StopContext;
 import org.jboss.tm.TxUtils;
 
@@ -113,6 +119,16 @@ public class StatefulSessionComponent extends SessionBeanComponent {
             throw new IllegalStateException("Business interface type cannot be null");
         }
         return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)));
+    }
+
+        @Override
+    public EJBObject getEJBObject(SessionContext ctx) throws IllegalStateException {
+        if (getEjbObjectView() == null) {
+            throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
+        }
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(getEjbObjectView());
+        final ComponentView view = (ComponentView) serviceController.getValue();
+        return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), getApplicationName(), getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx)));
     }
 
     @Override

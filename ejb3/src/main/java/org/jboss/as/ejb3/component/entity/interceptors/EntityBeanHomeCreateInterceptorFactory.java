@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ee.component.ComponentViewInstance;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -70,8 +70,8 @@ public class EntityBeanHomeCreateInterceptorFactory implements InterceptorFactor
                 ctx.put(EJB_CREATE_METHOD_KEY, ejbCreate);
                 ctx.put(EJB_POST_CREATE_METHOD_KEY, ejbPostCreate);
                 ctx.put(PARAMETERS_KEY, context.getParameters());
-                final ComponentViewInstance instance = view.createInstance(ctx);
-                return instance.createProxy();
+                final ManagedReference instance = view.createInstance(ctx);
+                return instance.getInstance();
             }
         };
     }

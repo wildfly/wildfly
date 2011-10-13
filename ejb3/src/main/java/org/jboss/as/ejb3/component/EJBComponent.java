@@ -42,15 +42,17 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
@@ -78,7 +80,9 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
     private final TimerService timerService;
     protected final Map<Method, InterceptorFactory> timeoutInterceptors;
     private final Method timeoutMethod;
-
+    private final String applicationName;
+    private final String moduleName;
+    private final String distinctName;
 
 
     /**
@@ -110,6 +114,9 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         this.timeoutMethod = ejbComponentCreateService.getTimeoutMethod();
         this.ejbLocalHome = ejbComponentCreateService.getEjbLocalHome();
         this.ejbHome = ejbComponentCreateService.getEjbHome();
+        this.applicationName = ejbComponentCreateService.getApplicationName();
+        this.distinctName = ejbComponentCreateService.getDistinctName();
+        this.moduleName = ejbComponentCreateService.getModuleName();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -126,8 +133,8 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData, final ServiceName serviceName) {
         final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(serviceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
-        final ComponentViewInstance instance = view.createInstance(contextData);
-        return viewInterface.cast(instance.createProxy());
+        final ManagedReference instance = view.createInstance(contextData);
+        return viewInterface.cast(instance.getInstance());
     }
 
     public ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass, Method invokedMethod) {
@@ -193,7 +200,9 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         if (ejbHome == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have a Home interface");
         }
-        return createViewInstanceProxy(EJBHome.class, Collections.emptyMap(), ejbHome);
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbHome);
+        final ComponentView view = (ComponentView) serviceController.getValue();
+        return EJBClient.createProxy(new StatelessEJBLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), applicationName, moduleName, getComponentName(), distinctName));
     }
 
     @Override
@@ -372,5 +381,17 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
 
     public Method getTimeoutMethod() {
         return timeoutMethod;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public String getDistinctName() {
+        return distinctName;
+    }
+
+    public String getModuleName() {
+        return moduleName;
     }
 }

@@ -26,7 +26,8 @@ package org.jboss.as.ee.component.interceptors;
  *
  * @author Stuart Douglas
  */
-public class InterceptorOrder {
+public class
+        InterceptorOrder {
 
     private InterceptorOrder() {
 
@@ -119,23 +120,6 @@ public class InterceptorOrder {
 
 
         private View() {
-        }
-    }
-
-
-    public static final class ViewPostConstruct {
-        public static final int TERMINAL_INTERCEPTOR                                    = 0x100;
-
-        private ViewPostConstruct() {
-
-        }
-    }
-
-    public static final class ViewPreDestroy {
-        public static final int TERMINAL_INTERCEPTOR = 0x200;
-
-        private ViewPreDestroy() {
-
         }
     }
 

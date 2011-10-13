@@ -31,7 +31,7 @@ import javax.xml.ws.WebServiceException;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ee.component.ComponentViewInstance;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
@@ -60,7 +60,8 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    private String ejbName;
 
    /** EJB3 container. */
-   private volatile ComponentViewInstance ejbComponentViewInstance;
+   private volatile ComponentView ejbComponentView;
+   private volatile ManagedReference reference;
 
    /**
     * Constructor.
@@ -89,20 +90,19 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     *
     * @return EJB3 container
     */
-   private ComponentViewInstance getComponentViewInstance() {
-      if (ejbComponentViewInstance == null) {
+   private ComponentView getComponentView() {
+      if (ejbComponentView == null) {
          synchronized(this) {
-            if (ejbComponentViewInstance == null) {
-               final ComponentView ejbView = iocContainer.getBean(ejbName, ComponentView.class);
-               if (ejbView == null) {
+            if (ejbComponentView == null) {
+               ejbComponentView= iocContainer.getBean(ejbName, ComponentView.class);
+               if (ejbComponentView == null) {
                   throw new WebServiceException("Cannot find ejb: " + ejbName);
                }
-               ejbComponentViewInstance = ejbView.createInstance();
+               reference = ejbComponentView.createInstance();
             }
          }
       }
-
-      return ejbComponentViewInstance;
+      return ejbComponentView;
    }
 
    /**
@@ -117,17 +117,16 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
          // prepare for invocation
          onBeforeInvocation(wsInvocation);
          // prepare invocation data
-         final ComponentViewInstance componentViewInstance = getComponentViewInstance();
-         final Method method = getEJBMethod(wsInvocation.getJavaMethod(), componentViewInstance.allowedMethods());
+         final ComponentView componentView = getComponentView();
+         final Method method = getEJBMethod(wsInvocation.getJavaMethod(), componentView.getViewMethods());
          final InterceptorContext context = new InterceptorContext();
          context.setMethod(method);
          context.setContextData(getWebServiceContext(wsInvocation).getMessageContext());
          context.setParameters(wsInvocation.getArgs());
-         context.setTarget(componentViewInstance.createProxy());
-         context.putPrivateData(Component.class, componentViewInstance.getComponent());
-         context.putPrivateData(ComponentViewInstance.class, componentViewInstance);
+         context.setTarget(reference.getInstance());
+         context.putPrivateData(Component.class, componentView.getComponent());
          // invoke method
-         final Object retObj = componentViewInstance.getEntryPoint(method).processInvocation(context);
+         final Object retObj = componentView.invoke(context);
          // set return value
          wsInvocation.setReturnValue(retObj);
       }

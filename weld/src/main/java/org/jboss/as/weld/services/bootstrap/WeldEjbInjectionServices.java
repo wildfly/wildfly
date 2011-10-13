@@ -21,6 +21,14 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Set;
+
+import javax.ejb.EJB;
+import javax.enterprise.inject.spi.InjectionPoint;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -28,17 +36,9 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
-
-import javax.ejb.EJB;
-import javax.enterprise.inject.spi.InjectionPoint;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Set;
 
 /**
  * Implementation of EjbInjectionServices.
@@ -114,7 +114,7 @@ public class WeldEjbInjectionServices implements EjbInjectionServices {
             final ViewDescription viewDescription = viewService.iterator().next();
             final ServiceController<?> controller = serviceRegistry.getRequiredService(viewDescription.getServiceName());
             final ComponentView view = (ComponentView) controller.getValue();
-            return view.createInstance().createProxy();
+            return view.createInstance().getInstance();
         }
     }
 

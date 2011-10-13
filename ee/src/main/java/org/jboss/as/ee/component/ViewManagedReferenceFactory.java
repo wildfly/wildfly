@@ -26,8 +26,6 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.inject.InjectionException;
 
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-
 /**
  * A managed reference factory for a component view.
  *
@@ -47,8 +45,7 @@ public final class ViewManagedReferenceFactory implements ManagedReferenceFactor
 
     /** {@inheritDoc} */
     public ManagedReference getReference() {
-        final ComponentViewInstance instance = view.createInstance();
-        return new Instance(instance, instance.createProxy());
+       return view.createInstance();
     }
 
     /**
@@ -78,29 +75,4 @@ public final class ViewManagedReferenceFactory implements ManagedReferenceFactor
         }
     }
 
-    private static class Instance implements ManagedReference {
-
-        private final ComponentViewInstance instance;
-        private volatile Object proxy;
-        private static final AtomicReferenceFieldUpdater<Instance, Object> proxyUpdater = AtomicReferenceFieldUpdater.newUpdater(Instance.class, Object.class, "proxy");
-
-        public Instance(final ComponentViewInstance instance, final Object proxy) {
-            this.instance = instance;
-            this.proxy = proxy;
-        }
-
-        public void release() {
-            if (proxyUpdater.getAndSet(this, null) != null) {
-                instance.destroy();
-            }
-        }
-
-        public Object getInstance() {
-            Object proxy = this.proxy;
-            if (proxy == null) {
-                throw new IllegalStateException("Instance was destroyed");
-            }
-            return proxy;
-        }
-    }
 }
