@@ -1,9 +1,11 @@
 /**
  *
  */
-package org.jboss.as.domain.controller;
+package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -20,6 +22,7 @@ public interface MasterDomainControllerClient extends ModelControllerClient {
      * Register with the remote domain controller
      *
      * @throws IllegalStateException if there was a problem talking to the remote host
+     * @throws HostAlreadyExistsException if the slave hc has the same name as an existing slave on the master
      */
     void register();
 

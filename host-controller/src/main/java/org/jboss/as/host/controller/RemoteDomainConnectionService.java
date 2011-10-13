@@ -51,11 +51,13 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.MasterDomainControllerClient;
+import org.jboss.as.domain.controller.operations.SlaveRegistrationError;
+import org.jboss.as.domain.controller.operations.SlaveRegistrationError.ErrorCode;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.security.SecretIdentityService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
+import org.jboss.as.process.protocol.Connection.ClosedCallback;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -63,7 +65,6 @@ import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
-import org.jboss.as.process.protocol.Connection.ClosedCallback;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
@@ -109,6 +110,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private volatile ManagementChannel channel;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final AtomicBoolean connected = new AtomicBoolean(false);
+    private final AtomicBoolean registered = new AtomicBoolean(false);
     private final FutureClient futureClient = new FutureClient();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
     private final InjectedValue<CallbackHandlerFactory> callbackFactoryInjector = new InjectedValue<CallbackHandlerFactory>();
@@ -176,6 +178,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
         this.connected.set(true);
+        registered.set(true);
     }
 
     private synchronized void connect() {
@@ -239,21 +242,32 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             throw new IllegalStateException(e);
         }
 
+        SlaveRegistrationError error = null;
         try {
-            final String error = new RegisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
-            if (error != null) {
-                throw new Exception(error);
-            }
+            error = new RegisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
         } catch (Exception e) {
             log.warnf("Error retrieving domain model from remote domain controller %s:%d: %s", host.getHostAddress(), port, e.getMessage());
             throw new IllegalStateException(e);
         }
+
+        if (error != null) {
+            if (error.getErrorCode() == ErrorCode.HOST_ALREADY_EXISTS) {
+                log.info(error.getErrorMessage() + " - exiting");
+                throw new HostAlreadyExistsException(error.getErrorMessage());
+            }
+            throw new IllegalStateException(error.getErrorMessage());
+        }
+
     }
 
     /** {@inheritDoc} */
     public synchronized void unregister() {
+        if (!registered.get()) {
+            return;
+        }
         try {
             new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
+            registered.set(false);
         } catch (Exception e) {
             log.debugf(e, "Error unregistering from master");
         }
@@ -364,7 +378,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     }
 
-    private class RegisterModelControllerRequest extends RegistryRequest<String> {
+    private class RegisterModelControllerRequest extends RegistryRequest<SlaveRegistrationError> {
 
         RegisterModelControllerRequest() {
         }
@@ -381,15 +395,16 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             output.writeUTF(name);
         }
 
-        protected ManagementResponseHandler<String> getResponseHandler() {
-            return new ManagementResponseHandler<String>() {
+        protected ManagementResponseHandler<SlaveRegistrationError> getResponseHandler() {
+            return new ManagementResponseHandler<SlaveRegistrationError>() {
                 @Override
-                protected String readResponse(DataInput input) throws IOException {
+                protected SlaveRegistrationError readResponse(DataInput input) throws IOException {
                     byte status = input.readByte();
                     if (status == DomainControllerProtocol.PARAM_OK) {
                         return null;
                     } else {
-                        return input.readUTF();
+                        //return input.readUTF();
+                        return SlaveRegistrationError.parse(input.readUTF());
                     }
                 }
             };
