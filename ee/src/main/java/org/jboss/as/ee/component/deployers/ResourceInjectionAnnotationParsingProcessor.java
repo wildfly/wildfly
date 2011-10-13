@@ -202,10 +202,13 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         if (isEmpty(name)) {
             throw new IllegalArgumentException("Class level @Resource annotations must provide a name.");
         }
-        if (isEmpty(type) || type.equals(Object.class.getName())) {
-            throw new IllegalArgumentException("Class level @Resource annotations must provide a type.");
+        final String realType;
+        if (isEmpty(type)) {
+            realType = Object.class.getName();
+        } else {
+            realType = type;
         }
-        process(phaseContext, classDescription, annotation, type, name, null, eeModuleDescription, module, applicationClasses);
+        process(phaseContext, classDescription, annotation, realType, name, null, eeModuleDescription, module, applicationClasses);
     }
 
     protected void process(final DeploymentPhaseContext phaseContext, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final String injectionType, final String localContextName, final InjectionTarget targetDescription, final EEModuleDescription eeModuleDescription, final Module module, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
