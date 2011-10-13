@@ -37,6 +37,8 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -59,6 +61,7 @@ public class MyManagedServiceTestCase {
     public void testPing() throws IOException, JMException {
         final MBeanServerConnection connection = connect("localhost", 1090);
         final ObjectName name = new ObjectName("MyManagedService:app=ejb3-migration-service,module=ejb3-migration-service");
-        connection.invoke(name, "ping", new Object[0], new String[0]);
+        final String result = (String) connection.invoke(name, "ping", new Object[0], new String[0]);
+        assertEquals("pong", result);
     }
 }
