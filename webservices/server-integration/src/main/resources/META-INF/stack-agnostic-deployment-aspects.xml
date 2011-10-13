@@ -83,6 +83,11 @@
     <property name="provides" class="java.lang.String">EndpointRecordProcessors</property>
   </deploymentAspect>
 
+  <deploymentAspect class="org.jboss.as.webservices.injection.InjectionDeploymentAspect">
+    <property name="requires" class="java.lang.String">StackInstanceProvider</property>
+    <property name="provides" class="java.lang.String">InjectionAwareInstanceProvider</property>
+  </deploymentAspect>
+
   <!--
 
   <deploymentAspect class="org.jboss.ws.common.deployment.VirtualHostDeploymentAspect">

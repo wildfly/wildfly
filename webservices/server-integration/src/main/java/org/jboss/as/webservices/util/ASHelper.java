@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.util;
 
+import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
 import static org.jboss.as.webservices.util.DotNames.OBJECT_CLASS;
 import static org.jboss.as.webservices.util.DotNames.SERVLET_CLASS;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
@@ -46,12 +47,18 @@ import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionMetaData;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.ear.spec.ModuleMetaData;
+import org.jboss.metadata.ear.spec.WebModuleMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.ws.common.integration.WSHelper;
+import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.as.webservices.publish.WSEndpointDeploymentUnit;
@@ -88,6 +95,7 @@ public final class ASHelper {
      */
     public static boolean isWebServiceDeployment(final DeploymentUnit unit) {
         return getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY) != null;
+        // TODO: replace with WSDeploymentMarker
     }
 
     /**
@@ -123,12 +131,24 @@ public final class ASHelper {
     }
 
     /**
+     * Returns endpoint name.
+     *
+     * @param servletMD servlet meta data
+     * @return endpoint name
+     */
+    public static String getEndpointName(final ServletMetaData servletMD) {
+        final String endpointName = servletMD.getName();
+
+        return endpointName != null ? endpointName.trim() : null;
+    }
+
+    /**
      * Returns endpoint class name.
      *
      * @param servletMD servlet meta data
      * @return endpoint class name
      */
-    public static String getEndpointName(final ServletMetaData servletMD) {
+    public static String getEndpointClassName(final ServletMetaData servletMD) {
         final String endpointClass = servletMD.getServletClass();
 
         return endpointClass != null ? endpointClass.trim() : null;
@@ -212,7 +232,7 @@ public final class ASHelper {
      */
     private static List<ServletMetaData> getWebServiceServlets(final DeploymentUnit unit, final boolean jaxws) {
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
-        return selectWebServiceServlets(unit, jbossWebMD.getServlets(), jaxws);
+        return selectWebServiceServlets(unit, jbossWebMD != null ? jbossWebMD.getServlets() : null, jaxws);
     }
 
     /**
@@ -241,7 +261,7 @@ public final class ASHelper {
     }
 
     private static boolean isWebserviceEndpoint(final ServletMetaData servletMD, final CompositeIndex index, boolean jaxws) {
-        final String endpointClassName = getEndpointName(servletMD);
+        final String endpointClassName = getEndpointClassName(servletMD);
         if (isJSP(endpointClassName)) return false;
         final DotName endpointDotName = DotName.createSimple(endpointClassName);
         final ClassInfo endpointClassInfo = index.getClassByName(endpointDotName);
@@ -264,7 +284,7 @@ public final class ASHelper {
     }
 
     private static boolean isWebserviceEndpoint(final ServletMetaData servletMD, final ClassLoader loader, boolean jaxws) {
-        final String endpointClassName = getEndpointName(servletMD);
+        final String endpointClassName = getEndpointClassName(servletMD);
         if (isJSP(endpointClassName)) return false;
         final Class<?> endpointClass = getEndpointClass(endpointClassName, loader);
         if (endpointClass != null) {
@@ -295,7 +315,7 @@ public final class ASHelper {
         return endpointClassName == null || endpointClassName.length() == 0;
     }
 
-    protected static boolean isServlet(final ClassInfo info, CompositeIndex index) {
+    public static boolean isServlet(final ClassInfo info, CompositeIndex index) {
         Set<DotName> interfacesToProcess = new HashSet<DotName>();
         Set<DotName> processedInterfaces = new HashSet<DotName>();
         boolean b = isServlet(info, index, interfacesToProcess);
@@ -336,6 +356,30 @@ public final class ASHelper {
             } else if (!OBJECT_CLASS.equals(superName) && !processedInterfaces.contains(superName)) {
                 interfacesToProcess.add(superName);
             }
+        }
+        return false;
+    }
+
+    public static boolean isJaxwsService(final ClassInfo current, final CompositeIndex index) {
+        ClassInfo tmp = current;
+        while (tmp != null) {
+            final DotName superName = tmp.superName();
+            if (JAXWS_SERVICE_CLASS.equals(superName)) {
+                return true;
+            }
+            tmp = index.getClassByName(superName);
+        }
+        return false;
+    }
+
+    public static boolean isJaxwsService(final ClassInfo current, final Index index) {
+        ClassInfo tmp = current;
+        while (tmp != null) {
+            final DotName superName = tmp.superName();
+            if (JAXWS_SERVICE_CLASS.equals(superName)) {
+                return true;
+            }
+            tmp = index.getClassByName(superName);
         }
         return false;
     }
@@ -438,5 +482,37 @@ public final class ASHelper {
         return refRegistry;
     }
 
+    /**
+     * Returns context root associated with webservice deployment.
+     *
+     * If there's application.xml descriptor provided defining nested web module, then context root defined there will be
+     * returned. Otherwise context root defined in jboss-web.xml will be returned.
+     *
+     * @param dep webservice deployment
+     * @param jbossWebMD jboss web meta data
+     * @return context root
+     */
+    public static String getContextRoot(final Deployment dep, final JBossWebMetaData jbossWebMD) {
+        final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
+        final JBossAppMetaData jbossAppMD = unit.getParent() == null ? null : ASHelper.getOptionalAttachment(unit.getParent(),
+                WSAttachmentKeys.JBOSS_APP_METADATA_KEY);
+
+        String contextRoot = null;
+
+        if (jbossAppMD != null) {
+            final ModuleMetaData moduleMD = jbossAppMD.getModule(dep.getSimpleName());
+            if (moduleMD != null) {
+                final WebModuleMetaData webModuleMD = (WebModuleMetaData) moduleMD.getValue();
+                contextRoot = webModuleMD.getContextRoot();
+            }
+        }
+
+        // prefer context root defined in application.xml over one defined in jboss-web.xml
+        if (contextRoot != null) {
+            return contextRoot;
+        } else {
+            return jbossWebMD != null ? jbossWebMD.getContextRoot() : null;
+        }
+    }
 
 }

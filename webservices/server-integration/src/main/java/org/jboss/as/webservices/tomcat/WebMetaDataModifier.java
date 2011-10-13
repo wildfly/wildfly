@@ -88,7 +88,7 @@ final class WebMetaDataModifier {
 
         // fix servlet class names for endpoints
         for (final ServletMetaData servletMD : jbossWebMD.getServlets()) {
-            final String endpointClassName = ASHelper.getEndpointName(servletMD);
+            final String endpointClassName = ASHelper.getEndpointClassName(servletMD);
             if (endpointClassName != null && endpointClassName.length() > 0) { // exclude JSP
                 if (epNames.contains(endpointClassName)) {
                     // set transport servlet

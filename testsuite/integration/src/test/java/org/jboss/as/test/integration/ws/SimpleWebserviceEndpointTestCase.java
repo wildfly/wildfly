@@ -60,12 +60,26 @@ public class SimpleWebserviceEndpointTestCase {
                 "  <servlet-mapping>" +
                 "    <servlet-name>TestService</servlet-name>" +
                 "    <url-pattern>/SimpleService</url-pattern>" +
-                "  </servlet-mapping>"),"web.xml");
+                "  </servlet-mapping>" +
+                "  <env-entry>" +
+                "    <env-entry-name>org.jboss.as.testsuite.integration.ws.SimpleWebserviceEndpointImpl/string1</env-entry-name>" +
+                "    <env-entry-type>java.lang.String</env-entry-type>" +
+                "    <env-entry-value>Ahoj 1</env-entry-value>" +
+                "  </env-entry>" +
+                "  <env-entry>" +
+                "    <env-entry-name>string2</env-entry-name>" +
+                "    <env-entry-type>java.lang.String</env-entry-type>" +
+                "    <env-entry-value>Ahoj 2</env-entry-value>" +
+                "    <injection-target>" +
+                "      <injection-target-name>string3</injection-target-name>" +
+                "      <injection-target-class>org.jboss.as.testsuite.integration.ws.SimpleWebserviceEndpointImpl</injection-target-class>" +
+                "    </injection-target>" +
+                "  </env-entry>" +
+                ""),"web.xml");
         log.info(war.toString(true));
         return war;
     }
 
-    @Ignore(value="[CXF-3675] - enable this test once CXF 2.4.2 is available in AS distro")
     @Test
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.test.integration.ws", "SimpleService");
