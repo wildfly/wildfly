@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.ejb.remote.client.api;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJBException;
@@ -62,8 +63,6 @@ import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
-
-import java.util.concurrent.Future;
 
 /**
  * Tests the various common use cases of the EJB remote client API
@@ -366,6 +365,23 @@ public class EJBClientAPIUsageTestCase {
         Assert.assertFalse("Future result is unexpectedly completed", futureEcho.isDone());
         // wait for the result
         final String echo = futureEcho.get();
+        Assert.assertEquals("Unexpected echo message", message, echo);
+    }
+
+
+    /**
+     * Test a simple invocation on a remote view of a Stateless session bean method
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testGetBusinessObjectRemote() throws Exception {
+        final StatelessEJBLocator<EchoRemote> locator = new StatelessEJBLocator(EchoRemote.class, APP_NAME, MODULE_NAME, EchoBean.class.getSimpleName(), "");
+        final EchoRemote proxy = EJBClient.createProxy(locator);
+        final EchoRemote getBusinessObjectProxy = proxy.getBusinessObject();
+        Assert.assertNotNull("Received a null proxy", getBusinessObjectProxy);
+        final String message = "Hello world from a really remote client";
+        final String echo = getBusinessObjectProxy.echo(message);
         Assert.assertEquals("Unexpected echo message", message, echo);
     }
 }

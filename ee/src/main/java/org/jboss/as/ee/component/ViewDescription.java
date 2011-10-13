@@ -246,7 +246,4 @@ public class ViewDescription {
         this.useWriteReplace = useWriteReplace;
     }
 
-    public boolean isRemote() {
-        return false;
-    }
 }

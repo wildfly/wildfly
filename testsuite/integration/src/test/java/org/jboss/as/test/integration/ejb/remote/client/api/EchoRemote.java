@@ -32,4 +32,6 @@ public interface EchoRemote {
     String echo(String message);
 
     Future<String> asyncEcho(String message, long delayInMilliSec);
+
+    EchoRemote getBusinessObject();
 }

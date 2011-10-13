@@ -22,7 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api;
 
+import javax.annotation.Resource;
 import javax.ejb.Remote;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 
 /**
@@ -32,7 +34,6 @@ import javax.ejb.Stateless;
 @Remote(EmployeeManager.class)
 public class EmployeeBean implements EmployeeManager {
 
-
     @Override
     public AliasedEmployee addNickNames(final Employee employee, final String... nickNames) {
         final AliasedEmployee aliasedEmployee = new AliasedEmployee(employee.getId(), employee.getName());
@@ -41,4 +42,5 @@ public class EmployeeBean implements EmployeeManager {
         }
         return aliasedEmployee;
     }
+
 }

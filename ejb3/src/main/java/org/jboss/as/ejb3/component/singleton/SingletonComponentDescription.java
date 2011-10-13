@@ -41,7 +41,10 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
+import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.SingletonLifecycleCMTTxInterceptorFactory;
@@ -184,6 +187,20 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 configuration.addViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
         });
+
+
+        if (view instanceof EJBViewDescription) {
+            EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
+            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
+                view.getConfigurators().add(new ViewConfigurator() {
+                    @Override
+                    public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                        configuration.setViewInstanceFactory(new StatelessRemoteViewInstanceFactory(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
+                    }
+                });
+            }
+        }
+
     }
 
     private void addConcurrencyManagementInterceptor() {

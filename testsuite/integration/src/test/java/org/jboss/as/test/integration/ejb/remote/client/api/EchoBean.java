@@ -24,9 +24,11 @@ package org.jboss.as.test.integration.ejb.remote.client.api;
 
 import org.jboss.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import java.util.concurrent.Future;
 
@@ -36,6 +38,9 @@ import java.util.concurrent.Future;
 @Stateless
 @Remote(EchoRemote.class)
 public class EchoBean implements EchoRemote {
+
+    @Resource
+    private SessionContext sessionContext;
 
     private static final Logger logger = Logger.getLogger(EchoBean.class);
 
@@ -56,5 +61,10 @@ public class EchoBean implements EchoRemote {
         }
         logger.info(this.getClass().getSimpleName() + " echoing message: " + message);
         return new AsyncResult<String>(message);
+    }
+
+    @Override
+    public EchoRemote getBusinessObject() {
+        return sessionContext.getBusinessObject(EchoRemote.class);
     }
 }
