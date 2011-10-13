@@ -39,7 +39,6 @@ public class
 
         public static final int INITIAL_INTERCEPTOR                                         = 0x100;
         public static final int TCCL_INTERCEPTOR                                            = 0x200;
-        public static final int EJB_CLIENT_CONTEXT                                          = 0x250;
         public static final int JNDI_NAMESPACE_INTERCEPTOR                                  = 0x300;
         public static final int TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR                      = 0x310;
         public static final int CDI_REQUEST_SCOPE                                           = 0x320;
@@ -68,6 +67,7 @@ public class
 
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
+        public static final int EJB_CLIENT_CONTEXT_INTERCEPTOR = 0x250;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JPA_SFSB_PRE_CREATE = 0x400;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x500;
@@ -91,6 +91,7 @@ public class
 
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
+        public static final int EJB_CLIENT_CONTEXT_INTERCEPTOR = 0x250;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x400;
         public static final int JPA_SFSB_DESTROY = 0x500;
@@ -110,6 +111,7 @@ public class
         public static final int NOT_BUSINESS_METHOD                                     = 0x000;
         public static final int SECURITY_CONTEXT                                        = 0x150;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR                  = 0x200;
+        public static final int EJB_CLIENT_CONTEXT                                      = 0x250;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR                          = 0x300;
         public static final int CMT_TRANSACTION_INTERCEPTOR                             = 0x400;
         public static final int ASSOCIATING_INTERCEPTOR                                 = 0x500;

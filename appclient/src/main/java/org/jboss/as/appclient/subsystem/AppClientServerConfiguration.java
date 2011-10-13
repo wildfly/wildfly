@@ -158,12 +158,12 @@ class AppClientServerConfiguration {
         add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SOCKET_BINDING_GROUP, "standard-sockets").add(SOCKET_BINDING, "jacorb");
         add.get(OP).set(ADD);
-        add.get("port").set(3528);
+        add.get("port").set(3628);
         nodes.add(add);
         add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SOCKET_BINDING_GROUP, "standard-sockets").add(SOCKET_BINDING, "jacorb-ssl");
         add.get(OP).set(ADD);
-        add.get("port").set(3529);
+        add.get("port").set(3629);
         nodes.add(add);
     }
 

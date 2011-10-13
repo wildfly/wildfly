@@ -23,6 +23,11 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
@@ -34,11 +39,6 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
 /**
  * User: jpai
