@@ -21,15 +21,16 @@
  */
 package org.jboss.as.ejb3.context.base;
 
-import org.jboss.as.ejb3.context.spi.SessionBeanComponent;
-import org.jboss.as.ejb3.context.spi.SessionContext;
-import org.jboss.as.ejb3.context.spi.SessionInvocationContext;
+import java.lang.reflect.Method;
+import java.util.concurrent.Future;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.xml.rpc.handler.MessageContext;
-import java.lang.reflect.Method;
-import java.util.concurrent.Future;
+
+import org.jboss.as.ejb3.context.spi.SessionBeanComponent;
+import org.jboss.as.ejb3.context.spi.SessionContext;
+import org.jboss.as.ejb3.context.spi.SessionInvocationContext;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -78,6 +79,12 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
     public Class<?> getInvokedBusinessInterface() throws IllegalStateException {
         if (invokedBusinessInterface == null)
             throw new IllegalStateException("No invoked business interface on " + this);
+        if(EJBObject.class.isAssignableFrom(invokedBusinessInterface)) {
+            throw new IllegalStateException("Cannot call getInvokedBusinessInterface when invoking through EJBObject");
+        }
+        if(EJBLocalObject.class.isAssignableFrom(invokedBusinessInterface)) {
+            throw new IllegalStateException("Cannot call getInvokedBusinessInterface when invoking through EJBLocalObject");
+        }
         return invokedBusinessInterface;
     }
 

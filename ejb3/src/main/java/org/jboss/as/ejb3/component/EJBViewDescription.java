@@ -60,7 +60,7 @@ public class EJBViewDescription extends ViewDescription {
 
     @Override
     public ViewConfiguration createViewConfiguration(final Class<?> viewClass, final ComponentConfiguration componentConfiguration, final ProxyFactory<?> proxyFactory) {
-        return new EJBViewConfiguration(viewClass, componentConfiguration, getServiceName(), proxyFactory, getMethodIntf(), isRemote());
+        return new EJBViewConfiguration(viewClass, componentConfiguration, getServiceName(), proxyFactory, getMethodIntf());
     }
 
     @Override
@@ -131,10 +131,5 @@ public class EJBViewDescription extends ViewDescription {
 
     public void setEjb2xView(final boolean ejb2xView) {
         this.ejb2xView = ejb2xView;
-    }
-
-    @Override
-    public boolean isRemote() {
-        return methodIntf == MethodIntf.REMOTE || methodIntf == MethodIntf.HOME;
     }
 }
