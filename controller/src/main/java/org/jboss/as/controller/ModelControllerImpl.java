@@ -134,7 +134,7 @@ class ModelControllerImpl implements ModelController {
         // This gets extensions registered before proceeding to other ops that count on these registrations
         final OperationContextImpl context = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
                 handler, null, model, control, processState, bootingFlag.get());
-        final ModelNode result = context.getResult();
+        final ModelNode result = new ModelNode().setEmptyList();
         result.setEmptyList();
         boolean sawExtensionAdd = false;
         List<ParsedOp> postExtensionOps = null;
@@ -155,7 +155,7 @@ class ModelControllerImpl implements ModelController {
                     // only happen during AS development
                     String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
                     log.error(msg);
-                    context.getFailureDescription().set(msg);
+                    context.setRollbackOnly();
                     // stop
                     break;
                 } else if (stepHandler instanceof ExtensionAddHandler) {
@@ -178,7 +178,7 @@ class ModelControllerImpl implements ModelController {
             // Success. Now any extension handlers are registered. Continue with remaining ops
             final OperationContextImpl postExtContext = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
                     handler, null, model, control, processState, bootingFlag.get());
-            final ModelNode postExtResult = context.getResult();
+            final ModelNode postExtResult = new ModelNode().setEmptyList();
             postExtResult.setEmptyList();
 
             for (ParsedOp parsedOp : postExtensionOps) {
@@ -186,7 +186,7 @@ class ModelControllerImpl implements ModelController {
                 if (stepHandler == null) {
                     String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
                     log.error(msg);
-                    postExtContext.getFailureDescription().set(msg);
+                    postExtContext.setRollbackOnly();
                     // stop
                     break;
                 } else {
