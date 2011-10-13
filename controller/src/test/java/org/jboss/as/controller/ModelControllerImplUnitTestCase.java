@@ -85,6 +85,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -529,7 +530,7 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-//    @Ignore("Fails intermittently for unknown reasons")
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -544,14 +545,14 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-//    @Ignore("Fails intermittently for unknown reasons")
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testReloadRequired();
     }
 
     @Test
-//    @Ignore("Fails intermittently for unknown reasons")
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -566,7 +567,7 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-//    @Ignore("Fails intermittently for unknown reasons")
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testRestartRequired();

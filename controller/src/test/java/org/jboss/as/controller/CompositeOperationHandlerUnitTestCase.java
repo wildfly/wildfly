@@ -117,7 +117,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
         System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this request is bad") > -1);
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this request is bad"));
 
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
@@ -161,7 +161,7 @@ public class CompositeOperationHandlerUnitTestCase {
         System.out.println(result);
         // Model stage failure should result in rollback regardless of the header
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this request is bad") > - 1);
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this request is bad"));
 
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
@@ -583,7 +583,7 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-//    @Ignore("Fails intermittently for unknown reasons")
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequired() throws Exception {
         ModelNode step1 = getOperation("reload-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -601,14 +601,14 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-//    @Ignore("Fails intermittently for unknown reasons")
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testReloadRequired();
     }
 
     @Test
-//    @Ignore("Fails intermittently for unknown reasons")
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequired() throws Exception {
         ModelNode step1 = getOperation("restart-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -626,7 +626,7 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-//    @Ignore("Fails intermittently for unknown reasons")
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testRestartRequired();
