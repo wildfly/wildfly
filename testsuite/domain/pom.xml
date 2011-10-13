@@ -35,10 +35,20 @@
     <artifactId>jboss-as-testsuite-integration-domain</artifactId>
     <name>JBoss Application Server Test Suite: Domain Mode Integration Tests</name>
 
-   <!--
-   Compile-time dependencies upon anything  in the AS7 runtime
-   are allowed in this section
-   -->
+    <properties>
+
+        <!-- used to provide an absolute location for the distribution under test -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <jboss.dist>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.home>${jboss.dist}</jboss.home>
+
+    </properties>
+
+
+    <!--
+    Compile-time dependencies upon anything  in the AS7 runtime
+    are allowed in this section
+    -->
 
     <dependencies>
         <dependency>
@@ -59,20 +69,20 @@
                     <redirectTestOutputToFile>false</redirectTestOutputToFile>
                     <systemProperties>
                         <property>
-                          <name>jboss.options</name>
-                          <value>${surefire.system.args}</value>
+                            <name>jboss.options</name>
+                            <value>${surefire.system.args}</value>
                         </property>
                         <property>
-                          <name>java.util.logging.manager</name>
-                          <value>org.jboss.logmanager.LogManager</value>
+                            <name>java.util.logging.manager</name>
+                            <value>org.jboss.logmanager.LogManager</value>
                         </property>
                         <property>
-                          <name>jboss.home</name>
-                          <value>${jboss.home}</value>
+                            <name>jboss.home</name>
+                            <value>${jboss.home}</value>
                         </property>
                         <property>
-                          <name>module.path</name>
-                          <value>${jboss.home}/modules</value>
+                            <name>module.path</name>
+                            <value>${jboss.home}/modules</value>
                         </property>
                     </systemProperties>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>

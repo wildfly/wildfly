@@ -40,11 +40,52 @@
 
     <packaging>pom</packaging>
 
+<!-- global testsuite system property defaults -->
+
     <properties>
+        <!-- used to provide an absolute location for the distribution under test -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <jboss.dist>${project.basedir}/../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.home>${jboss.dist}</jboss.home>
+
+        <!-- used to provide an absolute location for the XSLT scripts -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <xslt.scripts.dir>${basedir}/integration/src/test/xslt</xslt.scripts.dir>
+
+        <!-- IP address defaults -->
+        <node0>127.0.0.1</node0>
+        <node1>127.0.0.1</node1>
+        <udpGroup>230.0.0.4</udpGroup>
+
+        <!-- IP stack configs -->
+        <ip.client.stack>-Djava.net.preferIPv4Stack=true</ip.client.stack>
+        <ip.server.stack>-Djava.net.preferIPv4Stack=true</ip.server.stack>
+
+        <!-- security properties -->
+        <security.manager>-Djava.security.manager</security.manager>
+        <security.policy></security.policy>
+
+        <!-- database properties -->
+        <ds.db></ds.db>
+        <ds.jdbc.driver></ds.jdbc.driver>
+        <ds.jdbc.driver.version></ds.jdbc.driver.version>
+        <ds.jdbc.url></ds.jdbc.url>
+        <ds.jdbc.user>test</ds.jdbc.user>
+        <ds.jdbc.pass>test</ds.jdbc.pass>
+        <ds.jdbc.driver.jar>${ds.db}-jdbc-driver.jar</ds.jdbc.driver.jar>
+
+        <!-- common surefire properties -->
         <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
-        <jboss.home>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.home>
+        <surefire.forked.process.timeout>300</surefire.forked.process.timeout>
+        <surefire.test.failure.ignore>false</surefire.test.failure.ignore>
+
+        <!-- Arquillian dependency versions -->
+        <version.arquillian_core>1.0.0.CR5</version.arquillian_core>
+        <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
+        <version.xml.maven.plugin>1.0.1-SNAPSHOT</version.xml.maven.plugin>
+        <version.saxon>8.7</version.saxon>
     </properties>
 
     <dependencies>
@@ -205,7 +246,6 @@
                 <module>integration</module>
                 <module>compat</module>
                 <module>domain</module>
-                <module>clustering</module>
             </modules>
         </profile>
 

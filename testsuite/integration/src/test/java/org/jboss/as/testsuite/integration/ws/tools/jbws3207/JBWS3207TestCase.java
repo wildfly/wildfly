@@ -31,7 +31,6 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.h2.server.web.WebApp;
 import org.jboss.as.testsuite.integration.ws.tools.jbws3207.service.EndpointImpl;
 import org.jboss.as.webservices.deployer.RemoteDeployer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -61,6 +60,8 @@ public class JBWS3207TestCase {
         archive.addAsWebInfResource(new StringAsset(WEB_XML), "web.xml");
         archive.addPackage(EndpointImpl.class.getPackage());
         File archiveFile = new File( testdir, "jbws3207.war");
+        //remove it if it already exists
+        archiveFile.delete();
         archive.as(ZipExporter.class).exportTo(archiveFile);
         URL archiveURL = archiveFile.toURI().toURL();
         try {

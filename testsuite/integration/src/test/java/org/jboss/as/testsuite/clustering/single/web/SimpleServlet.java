@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.testsuite.clustering.web;
+package org.jboss.as.testsuite.clustering.single.web;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -53,33 +53,33 @@ public class SimpleServlet extends HttpServlet {
         resp.setHeader("serialized", Boolean.toString(custom.wasSerialized()));
         resp.getWriter().write("Success");
     }
-    
+
     public static class Custom implements Serializable {
         private static final long serialVersionUID = -5129400250276547619L;
         private transient boolean serialized = false;
         private int value;
-        
+
         public Custom(int value) {
             this.value = value;
         }
-        
+
         public int getValue() {
             return this.value;
         }
-        
+
         public void increment() {
             this.value += 1;
         }
-        
+
         public boolean wasSerialized() {
             return this.serialized;
         }
-        
+
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             out.defaultWriteObject();
             this.serialized = true;
         }
-        
+
         private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
             this.serialized = true;
