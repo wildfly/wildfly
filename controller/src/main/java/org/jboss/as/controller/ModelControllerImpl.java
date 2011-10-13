@@ -23,7 +23,6 @@
 package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -67,14 +66,6 @@ import org.jboss.threads.AsyncFutureTask;
 class ModelControllerImpl implements ModelController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
-
-    private static final ModelNode EMPTY;
-
-    static {
-        ModelNode empty = new ModelNode();
-        empty.protect();
-        EMPTY = empty;
-    }
 
     private final ServiceRegistry serviceRegistry;
     private final ServiceTarget serviceTarget;
@@ -209,32 +200,6 @@ class ModelControllerImpl implements ModelController {
 
     ManagementResourceRegistration getRootRegistration() {
         return rootRegistration;
-    }
-
-    class BootStepHandler implements OperationStepHandler {
-        private final ModelNode operation;
-        private final ModelNode response;
-
-        BootStepHandler(final ModelNode operation, final ModelNode response) {
-            this.operation = operation;
-            this.response = response;
-        }
-
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
-            final String operationName = operation.require(OP).asString();
-            final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
-            if (stepHandler == null) {
-                context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
-            } else {
-                OperationContext.Stage stage = OperationContext.Stage.MODEL;
-                if(stepHandler instanceof ExtensionAddHandler) {
-                    stage = OperationContext.Stage.IMMEDIATE;
-                }
-                context.addStep(response, this.operation, stepHandler, stage);
-            }
-            context.completeStep();
-        }
     }
 
     public ModelControllerClient createClient(final Executor executor) {
@@ -419,6 +384,8 @@ class ModelControllerImpl implements ModelController {
             modelReference.set(resource);
         }
 
+        @SuppressWarnings({"CloneDoesntCallSuperClone"})
+        @Override
         public Resource clone() {
             return getDelegate().clone();
         }
