@@ -23,13 +23,13 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:pojo:7.0 jboss-mc_7_0.xsd">
 
-    <bean name="Injectee1" class="org.jboss.as.testsuite.integration.pojo.support.TInjectee" />
+    <bean name="Injectee1" class="org.jboss.as.test.integration.pojo.support.TInjectee" />
 
-    <bean name="Owner" class="org.jboss.as.testsuite.integration.pojo.support.TOwner">
+    <bean name="Owner" class="org.jboss.as.test.integration.pojo.support.TOwner">
         <incallback method="addInjectee"/>
         <uncallback method="removeInjectee"/>
     </bean>
 
-    <bean name="Injectee2" class="org.jboss.as.testsuite.integration.pojo.support.TInjectee" />
+    <bean name="Injectee2" class="org.jboss.as.test.integration.pojo.support.TInjectee" />
 
 </deployment>

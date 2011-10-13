@@ -40,7 +40,7 @@
 
     <packaging>pom</packaging>
 
-<!-- global testsuite system property defaults -->
+<!-- global test system property defaults -->
 
     <properties>
         <!-- used to provide an absolute location for the distribution under test -->

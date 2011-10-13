@@ -28,7 +28,7 @@
         <session>
             <ejb-name>PartialDDBean</ejb-name>
             <local-bean/>
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.security.dd.override.PartialDDBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.security.dd.override.PartialDDBean</ejb-class>
         </session>
     </enterprise-beans>
     <assembly-descriptor>

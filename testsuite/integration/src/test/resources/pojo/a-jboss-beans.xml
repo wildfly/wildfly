@@ -23,7 +23,7 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:pojo:7.0 jboss-mc_7_0.xsd">
 
-    <bean name="A" class="org.jboss.as.testsuite.integration.pojo.support.A">
+    <bean name="A" class="org.jboss.as.test.integration.pojo.support.A">
         <constructor>
             <parameter><inject bean="B" state="INSTANTIATED"/></parameter>
         </constructor>

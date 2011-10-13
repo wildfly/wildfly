@@ -200,7 +200,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
             if (cacheRegionNames != null) {
                 for (String region : cacheRegionNames) {
 
-                    // example regionName = "jpa_SecondLevelCacheTestCase.jar#mypc.org.jboss.as.testsuite.integration.jpa.hibernate.Employee"
+                    // example regionName = "jpa_SecondLevelCacheTestCase.jar#mypc.org.jboss.as.test.integration.jpa.hibernate.Employee"
                     // remove the scoped PU name plus one for '.' the separator character added to it.
                     // and replace period with underscore.  Filtered region name will be "org_jboss_as_testsuite_integration_jpa_hibernate_Employee"
                     int stripUpTo = puName.length() + 1;
