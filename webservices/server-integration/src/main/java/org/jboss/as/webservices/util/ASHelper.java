@@ -51,9 +51,14 @@ import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionMetaData;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
+import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.metadata.ear.spec.ModuleMetaData;
+import org.jboss.metadata.ear.spec.WebModuleMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.ws.common.integration.WSHelper;
+import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
 import org.jboss.as.webservices.publish.WSEndpointDeploymentUnit;
@@ -477,5 +482,37 @@ public final class ASHelper {
         return refRegistry;
     }
 
+    /**
+     * Returns context root associated with webservice deployment.
+     *
+     * If there's application.xml descriptor provided defining nested web module, then context root defined there will be
+     * returned. Otherwise context root defined in jboss-web.xml will be returned.
+     *
+     * @param dep webservice deployment
+     * @param jbossWebMD jboss web meta data
+     * @return context root
+     */
+    public static String getContextRoot(final Deployment dep, final JBossWebMetaData jbossWebMD) {
+        final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
+        final JBossAppMetaData jbossAppMD = unit.getParent() == null ? null : ASHelper.getOptionalAttachment(unit.getParent(),
+                WSAttachmentKeys.JBOSS_APP_METADATA_KEY);
+
+        String contextRoot = null;
+
+        if (jbossAppMD != null) {
+            final ModuleMetaData moduleMD = jbossAppMD.getModule(dep.getSimpleName());
+            if (moduleMD != null) {
+                final WebModuleMetaData webModuleMD = (WebModuleMetaData) moduleMD.getValue();
+                contextRoot = webModuleMD.getContextRoot();
+            }
+        }
+
+        // prefer context root defined in application.xml over one defined in jboss-web.xml
+        if (contextRoot != null) {
+            return contextRoot;
+        } else {
+            return jbossWebMD != null ? jbossWebMD.getContextRoot() : null;
+        }
+    }
 
 }

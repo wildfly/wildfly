@@ -21,13 +21,18 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import static org.jboss.as.webservices.util.ASHelper.getContextRoot;
+
+
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.SLSBMetaData;
 
 /**
@@ -52,6 +57,16 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
      */
     @Override
     protected void buildEnterpriseBeansMetaData(final Deployment dep, final EJBArchiveMetaData ejbArchiveMD) {
+        if (!WSHelper.isJaxwsJseDeployment(dep)) { // [AS7-1605] support
+            final JBossWebMetaData jbossWebMD = WSHelper.getOptionalAttachment(dep, JBossWebMetaData.class);
+            final String contextRoot = getContextRoot(dep, jbossWebMD);
+            if (contextRoot != null) {
+                final JSEArchiveMetaData jseArchiveMD = new JSEArchiveMetaData();
+                jseArchiveMD.setContextRoot(contextRoot);
+                dep.addAttachment(JSEArchiveMetaData.class, jseArchiveMD);
+            }
+        }
+
         final WebServiceDeployment ejb3Deployment = WSHelper.getRequiredAttachment(dep, WebServiceDeployment.class);
         final List<EJBMetaData> wsEjbsMD = new LinkedList<EJBMetaData>();
 
