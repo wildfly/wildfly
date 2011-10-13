@@ -51,14 +51,13 @@ class LoggerAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         LEVEL.validateAndSet(operation, model);
         CATEGORY.validateAndSet(operation, model);
-        model.get(HANDLERS).set(operation.get(HANDLERS));
+        HANDLERS.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ModelNode level = LEVEL.validateResolvedOperation(model);
-        final ModelNode handlers = model.get(HANDLERS);
 
         final ServiceTarget target = context.getServiceTarget();
         try {
@@ -74,6 +73,7 @@ class LoggerAdd extends AbstractAddStepHandler {
         }
         try {
             // install logger handler services
+            final ModelNode handlers = HANDLERS.validateResolvedOperation(model);
             if (handlers.isDefined()) {
                 newControllers.addAll(LogServices.installLoggerHandlers(target, name, handlers, verificationHandler));
             }

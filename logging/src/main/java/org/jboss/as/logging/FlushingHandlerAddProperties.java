@@ -22,11 +22,19 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Handler;
 
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
@@ -38,17 +46,28 @@ import static org.jboss.as.logging.CommonAttributes.TARGET;
  */
 abstract class FlushingHandlerAddProperties<T extends FlushingHandlerService> extends HandlerAddProperties<T> {
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        super.populateModel(operation, model);
-        AUTOFLUSH.validateAndSet(operation, model);
+    protected FlushingHandlerAddProperties(final List<String> attributes, final AttributeDefinition... attributeDefinitions) {
+        super(attributes, join(attributeDefinitions, AUTOFLUSH));
+    }
+
+    protected FlushingHandlerAddProperties(final AttributeDefinition... attributeDefinitions) {
+        super(join(attributeDefinitions, AUTOFLUSH));
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final T service, final ModelNode model) throws OperationFailedException {
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final T service, final ModelNode model) throws OperationFailedException {
         final ModelNode autoflush = AUTOFLUSH.validateResolvedOperation(model);
         if (autoflush.isDefined()) {
             service.setAutoflush(autoflush.asBoolean());
         }
+    }
+
+    private static List<AttributeDefinition> join(final AttributeDefinition[] supplied, final AttributeDefinition... added) {
+        final List<AttributeDefinition> result = new ArrayList<AttributeDefinition>();
+        for (AttributeDefinition attr : added) {
+            result.add(attr);
+        }
+        result.addAll(Arrays.asList(supplied));
+        return result;
     }
 }

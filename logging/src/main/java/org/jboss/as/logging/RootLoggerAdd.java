@@ -51,11 +51,11 @@ class RootLoggerAdd implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) {
         final String level = operation.require(LEVEL.getName()).asString();
-        final ModelNode handlers = operation.get(HANDLERS);
+        final ModelNode handlers = operation.get(HANDLERS.getName());
 
         final ModelNode subModel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         subModel.get(ROOT_LOGGER, LEVEL.getName()).set(level);
-        subModel.get(ROOT_LOGGER, HANDLERS).set(handlers);
+        subModel.get(ROOT_LOGGER, HANDLERS.getName()).set(handlers);
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
@@ -66,7 +66,7 @@ class RootLoggerAdd implements OperationStepHandler {
                     try {
 
                         final RootLoggerService service = new RootLoggerService();
-                        if (operation.hasDefined(LEVEL.getName())) service.setLevel(Level.parse(level));
+                        service.setLevel(Level.parse(LEVEL.validateResolvedOperation(operation).asString()));
                         target.addService(LogServices.ROOT_LOGGER, service)
                                 .addListener(verificationHandler)
                                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -79,7 +79,7 @@ class RootLoggerAdd implements OperationStepHandler {
                     Collection<ServiceController<?>> loggerControllers = null;
                     try {
                         // install logger handler services
-                        if (handlers.getType() != ModelType.UNDEFINED) {
+                        if (handlers.isDefined()) {
                             loggerControllers = LogServices.installLoggerHandlers(target, "", handlers, verificationHandler);
                         }
                     } catch (Throwable t) {

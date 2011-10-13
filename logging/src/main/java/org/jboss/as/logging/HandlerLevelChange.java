@@ -58,7 +58,7 @@ public class HandlerLevelChange extends AbstractModelUpdateHandler {
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
         final ModelNode level = LEVEL.validateResolvedOperation(model);
         if (controller != null && level.isDefined()) {

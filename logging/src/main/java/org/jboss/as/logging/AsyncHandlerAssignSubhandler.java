@@ -22,7 +22,6 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -35,7 +34,6 @@ import org.jboss.msc.value.InjectedValue;
 import java.util.List;
 import java.util.logging.Handler;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
@@ -47,24 +45,14 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
  *
  * @author Stan Silvert
  */
-public class AsyncHandlerAssignSubhandler extends AbstractModelUpdateHandler {
+public class AsyncHandlerAssignSubhandler extends AbstractLogHandlerAssignmentHandler {
     static final String OPERATION_NAME = "assign-subhandler";
     static final AsyncHandlerAssignSubhandler INSTANCE = new AsyncHandlerAssignSubhandler();
-
-    protected void opFailed(String description) throws OperationFailedException {
-        ModelNode failure = new ModelNode();
-        failure.get(FAILURE_DESCRIPTION, description);
-        throw new OperationFailedException(failure);
-    }
 
     @Override
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         NAME.validateAndSet(operation, model);
-        String handlerName = NAME.validateOperation(operation).asString();
-        ModelNode assignedHandlers = model.get(SUBHANDLERS);
-        if (assignedHandlers.isDefined() && assignedHandlers.asList().contains(operation.get(handlerName)))
-            opFailed(MESSAGES.handlerAlreadyDefined(handlerName));
-        assignedHandlers.add(handlerName);
+        updateHandlersForAssign(SUBHANDLERS, operation, model);
     }
 
     @Override
@@ -79,7 +67,7 @@ public class AsyncHandlerAssignSubhandler extends AbstractModelUpdateHandler {
         ServiceController<Handler> handlerToAssignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToAssign));
 
         if (handlerToAssignController == null) {
-            opFailed(MESSAGES.handlerNotFound(handlerNameToAssign));
+            throw createFailureMessage(MESSAGES.handlerNotFound(handlerNameToAssign));
         }
 
         AsyncHandlerService service = (AsyncHandlerService) asyncHandlerController.getService();
@@ -87,5 +75,15 @@ public class AsyncHandlerAssignSubhandler extends AbstractModelUpdateHandler {
         injectedHandler.inject(handlerToAssignController.getValue());
 
         service.addHandler(injectedHandler);
+    }
+
+    @Override
+    protected String getHandlerName(final ModelNode model) throws OperationFailedException {
+        return NAME.validateOperation(model).asString();
+    }
+
+    @Override
+    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
+        return SUBHANDLERS.validateOperation(model);
     }
 }
