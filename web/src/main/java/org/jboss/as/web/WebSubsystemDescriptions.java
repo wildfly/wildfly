@@ -697,5 +697,71 @@ class WebSubsystemDescriptions {
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 
+    public static ModelNode getConfigurationDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+    public static ModelNode getContainerDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.container"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getMimeMappingAddDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.add-mime"));
+        node.get(REQUIRED).set(false);
+
+        node.get(REQUEST_PROPERTIES, "name", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "name", DESCRIPTION).set(bundle.getString("web.configuration.mime-mapping.name"));
+        node.get(REQUEST_PROPERTIES, "name", REQUIRED).set(true);
+
+        node.get(REQUEST_PROPERTIES, "value", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "value", DESCRIPTION).set(bundle.getString("web.configuration.mime-mapping.value"));
+        node.get(REQUEST_PROPERTIES, "value", REQUIRED).set(true);
+
+        return node;
+    }
+
+    public static ModelNode getMimeMappingRemoveDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.remove-mime"));
+        node.get(REQUIRED).set(false);
+
+        node.get(REQUEST_PROPERTIES, "name", TYPE).set(ModelType.STRING);
+        node.get(REQUEST_PROPERTIES, "name", DESCRIPTION).set(bundle.getString("web.configuration.mime-mapping.name"));
+        node.get(REQUEST_PROPERTIES, "name", REQUIRED).set(true);
+
+        return node;
+    }
+
+    public static ModelNode getReWriteDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
+
+    public static ModelNode getAccessLogDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(TYPE).set(ModelType.OBJECT);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
+        node.get(REQUIRED).set(false);
+        return node;
+    }
 
 }
