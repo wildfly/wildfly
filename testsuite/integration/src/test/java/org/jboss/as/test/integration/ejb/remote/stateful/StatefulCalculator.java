@@ -22,35 +22,19 @@
 
 package org.jboss.as.test.integration.ejb.remote.stateful;
 
-import javax.ejb.EJB;
-import javax.ejb.Remove;
 import javax.ejb.Stateful;
 
 /**
- *
+ * User: jpai
  */
 @Stateful
-public class StatefulAddingBean implements RemoteInterface {
+public class StatefulCalculator implements StatefulCalculatorRemote {
 
-
-    @EJB
-    private StatefulCalculatorRemote statefulCalculator;
-
-    private int value = 0;
+    private int currentValue;
 
     @Override
-    public void add(final int i) {
-        this.value = this.statefulCalculator.add(i);
-    }
-
-    @Override
-    public int get() {
-        return value;
-    }
-
-    @Override
-    @Remove
-    public void remove() {
-
+    public int add(int number) {
+        currentValue += number;
+        return currentValue;
     }
 }
