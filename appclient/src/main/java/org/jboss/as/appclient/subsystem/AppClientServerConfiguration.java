@@ -123,9 +123,9 @@ class AppClientServerConfiguration {
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, "transactions");
         add.get(OP).set(ADD);
         add.get("coordinator-environment", "default-timeout").set(300);
-        add.get("core-environment", "process-id", "uuid").set("uuid");
-        add.get("recovery-environment", "socket-binding").set("txn-recovery-environment");
-        add.get("recovery-environment", "status-socket-binding").set("txn-status-manager");
+        add.get("process-id-uuid").set(true);
+        add.get("socket-binding").set("txn-recovery-environment");
+        add.get("status-socket-binding").set("txn-status-manager");
         nodes.add(add);
     }
 
