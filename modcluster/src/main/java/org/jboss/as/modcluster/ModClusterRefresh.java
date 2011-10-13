@@ -20,40 +20,51 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.modcluster;
+package org.jboss.as.web;
+
+import static org.jboss.as.web.Constants.MIME_MAPPING;
 
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
-public class ModClusterRefresh implements OperationStepHandler, DescriptionProvider{
+public class MimeMappingAdd implements OperationStepHandler, DescriptionProvider{
 
-    static final ModClusterRefresh INSTANCE = new ModClusterRefresh();
+    static final MimeMappingAdd INSTANCE = new MimeMappingAdd();
+
+    private final ParametersValidator runtimeValidator = new ParametersValidator();
+
+    private MimeMappingAdd() {
+        runtimeValidator.registerValidator("name", new StringLengthValidator(0, Integer.MAX_VALUE, false, false));
+        runtimeValidator.registerValidator("value", new StringLengthValidator(0, Integer.MAX_VALUE, false, false));
+    }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return ModClusterSubsystemDescriptions.getRefreshDescription(locale);
+        return WebSubsystemDescriptions.getMimeMappingAddDescription(locale);
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
+        runtimeValidator.validate(operation.resolve());
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
-                    ModCluster modcluster = (ModCluster) controller.getValue();
-                    modcluster.refresh();
+                    final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
+                    mimetypes.get(operation.get("name").asString()).set(operation.get("value").asString());
                     context.completeStep();
                 }
-            }, OperationContext.Stage.RUNTIME);
+            }, OperationContext.Stage.MODEL);
         }
 
         context.completeStep();
