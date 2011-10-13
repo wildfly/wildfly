@@ -32,8 +32,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public final class WSComponentDescription extends ComponentDescription {
 
-    public WSComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName, final EEApplicationClasses applicationClassesDescription) {
-        super(componentName, componentClassName, moduleDescription, applicationClassesDescription.getOrAddClassByName(componentClassName), deploymentUnitServiceName, applicationClassesDescription);
+    public WSComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName) {
+        super(componentName, componentClassName, moduleDescription,  deploymentUnitServiceName);
         setExcludeDefaultInterceptors(true);
     }
 

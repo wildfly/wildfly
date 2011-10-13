@@ -22,13 +22,11 @@
 
 package org.jboss.as.webservices.deployers;
 
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 
 import java.util.List;
 
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -71,7 +69,6 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
             }
         } else {
             final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
-            final EEApplicationClasses applicationClasses = getRequiredAttachment(unit, EE_APPLICATION_CLASSES_DESCRIPTION);
             for (final DotName dotName : dotNames) {
                 final List<AnnotationInstance> wsAnnotations = index.getAnnotations(dotName);
                 if (!wsAnnotations.isEmpty()) {
@@ -80,7 +77,7 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
                         if (target instanceof ClassInfo) {
                             final ClassInfo classInfo = (ClassInfo) target;
                             if (matches(classInfo, index)) {
-                                processWSAnnotation(unit, classInfo, wsAnnotation, index, moduleDescription, applicationClasses);
+                                processWSAnnotation(unit, classInfo, wsAnnotation, index, moduleDescription);
                             }
                         }
                     }
@@ -94,7 +91,7 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
         // does nothing
     }
 
-    protected abstract void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException;
+    protected abstract void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException;
 
     protected abstract boolean matches(final ClassInfo classInfo, final CompositeIndex index);
 

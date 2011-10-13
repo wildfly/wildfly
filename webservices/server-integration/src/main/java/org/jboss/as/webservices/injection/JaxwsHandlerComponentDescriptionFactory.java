@@ -36,7 +36,6 @@ import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -64,7 +63,7 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
     }
 
     @Override
-    protected void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    protected void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
         final ServiceName unitServiceName = unit.getServiceName();
         final WSEndpointHandlersMapping mapping = getRequiredAttachment(unit, WS_ENDPOINT_HANDLERS_MAPPING_KEY);
         final String endpointClassName = classInfo.name().toString();
@@ -79,7 +78,7 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
                         final DeploymentDescriptorEnvironment ejbEnv = container.getDeploymentDescriptorEnvironment();
                         if (moduleDescription.getComponentByName(handlerID) == null) {
                             // register JAXWS handler component for EJB3 endpoint
-                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerID, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
+                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerID, handlerClassName, moduleDescription, unitServiceName);
                             moduleDescription.addComponent(jaxwsHandlerDescription);
                             // registering dependency on WS endpoint service
                             final ServiceName serviceName = EndpointService.getServiceName(unit, ejbName);
@@ -104,7 +103,7 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
                         final String handlerID = pojoName + "-" + handlerClassName;
                         if (moduleDescription.getComponentByName(handlerID) == null) {
                             // register JAXWS handler component for POJO endpoint
-                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerID, handlerClassName, moduleDescription, unitServiceName, applicationClasses);
+                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerID, handlerClassName, moduleDescription, unitServiceName);
                             moduleDescription.addComponent(jaxwsHandlerDescription);
                             // registering dependency on WS endpoint service
                             final ServiceName serviceName = EndpointService.getServiceName(unit, pojoName);

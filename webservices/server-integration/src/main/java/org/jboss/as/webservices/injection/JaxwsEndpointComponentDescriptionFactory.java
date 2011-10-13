@@ -32,7 +32,6 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -59,7 +58,7 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
     }
 
     @Override
-    protected void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    protected void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
         if (isJaxwsEjb(classInfo)) {
             // Don't create component description for EJB3 endpoints.
             // There's already one created by EJB3 subsystem.
@@ -74,7 +73,7 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
                     // creating component description for POJO endpoint
                     found = true;
                     final String endpointName = ASHelper.getEndpointName(servletMD);
-                    final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(endpointName, beanClassName, moduleDescription, unitServiceName, applicationClasses);
+                    final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(endpointName, beanClassName, moduleDescription, unitServiceName);
                     moduleDescription.addComponent(jaxwsEndpointDescription);
                     // registering dependency on WS endpoint service
                     final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
