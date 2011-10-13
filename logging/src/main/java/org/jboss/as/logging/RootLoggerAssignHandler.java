@@ -39,8 +39,8 @@ public class RootLoggerAssignHandler extends LoggerAssignHandler {
     static final RootLoggerAssignHandler INSTANCE = new RootLoggerAssignHandler();
 
     @Override
-    protected ModelNode getAssignedHandlers(ModelNode model) throws OperationFailedException {
-        return model.get(ROOT_LOGGER, HANDLERS);
+    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
+        return HANDLERS.validateOperation(model.get(ROOT_LOGGER));
     }
 
     @Override

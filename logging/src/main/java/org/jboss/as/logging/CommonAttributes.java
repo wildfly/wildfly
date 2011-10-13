@@ -81,7 +81,9 @@ interface CommonAttributes {
 
     SimpleAttributeDefinition HANDLER = new SimpleAttributeDefinitionBuilder("handler", ModelType.STRING).build();
 
-    String HANDLERS = "handlers";
+    LogHandlerListAttributeDefinition HANDLERS = LogHandlerListAttributeDefinition.Builder.of("handlers", HANDLER).
+            setAllowNull(true).
+            build();
 
     SimpleAttributeDefinition LEVEL = new SimpleAttributeDefinitionBuilder("level", ModelType.STRING, true).
             setDefaultValue(new ModelNode().set(Level.INFO.getName())).
@@ -162,7 +164,9 @@ interface CommonAttributes {
 
     String SIZE_ROTATING_FILE_HANDLER = "size-rotating-file-handler";
 
-    String SUBHANDLERS = "subhandlers";
+    LogHandlerListAttributeDefinition SUBHANDLERS = LogHandlerListAttributeDefinition.Builder.of("subhandlers", HANDLER).
+            setAllowNull(true).
+            build();
 
     SimpleAttributeDefinition SUFFIX = new SimpleAttributeDefinitionBuilder("suffix", ModelType.STRING, true).build();
 

@@ -31,6 +31,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
+import java.util.logging.Handler;
+
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.PATH;
@@ -45,12 +47,8 @@ class PeriodicRotatingFileHandlerAdd extends FlushingHandlerAddProperties<Period
 
     static final PeriodicRotatingFileHandlerAdd INSTANCE = new PeriodicRotatingFileHandlerAdd();
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        super.populateModel(operation, model);
-        FILE.validateAndSet(operation, model);
-        APPEND.validateAndSet(operation, model);
-        SUFFIX.validateAndSet(operation, model);
+    private PeriodicRotatingFileHandlerAdd() {
+        super(FILE, APPEND, SUFFIX);
     }
 
     @Override
@@ -59,7 +57,7 @@ class PeriodicRotatingFileHandlerAdd extends FlushingHandlerAddProperties<Period
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final PeriodicRotatingFileHandlerService service, final ModelNode model) throws OperationFailedException {
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final PeriodicRotatingFileHandlerService service, final ModelNode model) throws OperationFailedException {
         super.updateRuntime(context, serviceBuilder, name, service, model);
         final ModelNode file = FILE.validateResolvedOperation(model);
         if (file.isDefined()) {

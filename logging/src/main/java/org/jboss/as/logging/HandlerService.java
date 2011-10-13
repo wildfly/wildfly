@@ -35,15 +35,9 @@ import java.util.logging.Level;
  */
 interface HandlerService extends Service<Handler> {
 
-    Level getLevel();
-
     void setLevel(Level level);
 
-    String getEncoding();
-
     void setEncoding(String encoding) throws UnsupportedEncodingException;
-
-    AbstractFormatterSpec getFormatterSpec();
 
     void setFormatterSpec(AbstractFormatterSpec formatterSpec);
 }

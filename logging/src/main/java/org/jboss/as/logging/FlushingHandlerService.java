@@ -29,7 +29,5 @@ package org.jboss.as.logging;
  */
 interface FlushingHandlerService extends HandlerService {
 
-    boolean isAutoflush();
-
     void setAutoflush(final boolean autoflush);
 }

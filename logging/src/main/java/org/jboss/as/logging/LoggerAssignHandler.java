@@ -22,7 +22,7 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -37,9 +37,9 @@ import org.jboss.msc.service.ServiceTarget;
 import java.util.List;
 import java.util.logging.Handler;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.HANDLER;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
@@ -49,25 +49,17 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
  *
  * @author Stan Silvert
  */
-public class LoggerAssignHandler extends AbstractModelUpdateHandler {
+public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
     static final String OPERATION_NAME = "assign-handler";
     static final LoggerAssignHandler INSTANCE = new LoggerAssignHandler();
 
     @Override
-    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String handlerName = getHandlerName(operation);
-        ModelNode assignedHandlers = getAssignedHandlers(model);
-        if (assignedHandlers.isDefined() && assignedHandlers.asList().contains(NAME.validateOperation(operation)))
-            opFailed(MESSAGES.handlerAlreadyDefined(handlerName));
-        assignedHandlers.add(handlerName);
+    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        NAME.validateAndSet(operation, model);
+        updateHandlersForAssign(HANDLERS, operation, model);
     }
 
-    protected void opFailed(String description) throws OperationFailedException {
-        ModelNode failure = new ModelNode();
-        failure.get(FAILURE_DESCRIPTION, description);
-        throw new OperationFailedException(failure);
-    }
-
+    @Override
     protected String getHandlerName(ModelNode operation) throws OperationFailedException {
         return NAME.validateResolvedOperation(operation).asString();
     }
@@ -77,6 +69,7 @@ public class LoggerAssignHandler extends AbstractModelUpdateHandler {
         return address.getLastElement().getValue();
     }
 
+    @Override
     protected ModelNode getAssignedHandlers(ModelNode model) throws OperationFailedException {
         return HANDLER.validateResolvedOperation(model);
     }
@@ -92,10 +85,10 @@ public class LoggerAssignHandler extends AbstractModelUpdateHandler {
         final ServiceController<Handler> handlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerName));
 
         if (loggerHandlerController != null) {
-            opFailed(MESSAGES.handlerAlreadyDefined(handlerName));
+            throw createFailureMessage(MESSAGES.handlerAlreadyDefined(handlerName));
         }
 
-        if (handlerController == null) opFailed(MESSAGES.handlerNotFound(handlerName));
+        if (handlerController == null) throw createFailureMessage(MESSAGES.handlerNotFound(handlerName));
 
         ServiceTarget target = context.getServiceTarget();
         LoggerHandlerService service = new LoggerHandlerService(loggerName);

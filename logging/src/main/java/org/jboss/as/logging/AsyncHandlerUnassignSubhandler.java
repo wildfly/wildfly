@@ -22,10 +22,6 @@
 
 package org.jboss.as.logging;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Handler;
-import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -33,8 +29,13 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
@@ -45,36 +46,14 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
  *
  * @author Stan Silvert
  */
-public class AsyncHandlerUnassignSubhandler extends AbstractModelUpdateHandler {
+public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignmentHandler {
     static final String OPERATION_NAME = "unassign-subhandler";
     static final AsyncHandlerUnassignSubhandler INSTANCE = new AsyncHandlerUnassignSubhandler();
-
-    protected void opFailed(String description) throws OperationFailedException {
-        ModelNode failure = new ModelNode();
-        failure.get(FAILURE_DESCRIPTION, description);
-        throw new OperationFailedException(failure);
-    }
 
     @Override
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         NAME.validateAndSet(operation, model);
-        ModelNode handlerNameNode = NAME.validateOperation(operation);
-        String handlerName = handlerNameNode.asString();
-        // Get a list of the current sub-handlers
-        ModelNode assignedHandlers = model.get(SUBHANDLERS);
-        if (assignedHandlers.isDefined()) {
-            if (!assignedHandlers.asList().contains(handlerNameNode)) {
-                opFailed(MESSAGES.cannotUnassignHandler(handlerName));
-            }
-            // Create a new list without the handler being unassigned
-            List<ModelNode> newList = new ArrayList<ModelNode>();
-            for (ModelNode node : assignedHandlers.asList()) {
-                if (node.asString().equals(handlerName)) continue;
-                newList.add(node);
-            }
-            // Replaces the list without the handler that was unassigned.
-            model.get(SUBHANDLERS).set(newList);
-        }
+        updateHandlersForUnassign(SUBHANDLERS, operation, model);
     }
 
     @Override
@@ -88,9 +67,18 @@ public class AsyncHandlerUnassignSubhandler extends AbstractModelUpdateHandler {
         ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
         ServiceController<Handler> handlerToUnassignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToUnassign));
 
-        AsyncHandlerService service = (AsyncHandlerService)asyncHandlerController.getService();
+        AsyncHandlerService service = (AsyncHandlerService) asyncHandlerController.getService();
         Handler injectedHandler = handlerToUnassignController.getService().getValue();
         service.removeHandler(injectedHandler);
     }
 
+    @Override
+    protected String getHandlerName(final ModelNode model) throws OperationFailedException {
+        return NAME.validateResolvedOperation(model).asString();
+    }
+
+    @Override
+    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
+        return SUBHANDLERS.validateOperation(model);
+    }
 }

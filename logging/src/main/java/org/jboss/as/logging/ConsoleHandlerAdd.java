@@ -26,7 +26,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
+
+import java.util.logging.Handler;
 
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 
@@ -38,10 +39,8 @@ class ConsoleHandlerAdd extends FlushingHandlerAddProperties<ConsoleHandlerServi
 
     static final ConsoleHandlerAdd INSTANCE = new ConsoleHandlerAdd();
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        super.populateModel(operation, model);
-        TARGET.validateAndSet(operation, model);
+    private ConsoleHandlerAdd() {
+        super(TARGET);
     }
 
     @Override
@@ -50,7 +49,7 @@ class ConsoleHandlerAdd extends FlushingHandlerAddProperties<ConsoleHandlerServi
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final ConsoleHandlerService service, final ModelNode model) throws OperationFailedException {
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final ConsoleHandlerService service, final ModelNode model) throws OperationFailedException {
         super.updateRuntime(context, serviceBuilder, name, service, model);
         final ModelNode target = TARGET.validateResolvedOperation(model);
         if (target.isDefined()) {

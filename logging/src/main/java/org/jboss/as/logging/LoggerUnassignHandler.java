@@ -22,20 +22,18 @@
 
 package org.jboss.as.logging;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+
+import java.util.List;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.NAME;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-import org.jboss.dmr.ModelNode;
 
 
 /**
@@ -43,69 +41,35 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Stan Silvert
  */
-public class LoggerUnassignHandler extends AbstractModelUpdateHandler {
+public class LoggerUnassignHandler extends AbstractLogHandlerAssignmentHandler {
     static final String OPERATION_NAME = "unassign-handler";
     static final LoggerUnassignHandler INSTANCE = new LoggerUnassignHandler();
 
-    protected String getHandlerName(ModelNode operation) throws OperationFailedException {
-        return getHandlerNameNode(operation).asString();
-    }
-
-    protected ModelNode getHandlerNameNode(ModelNode operation) throws OperationFailedException {
-        return NAME.validateResolvedOperation(operation);
-    }
-
-    protected String getLoggerName(ModelNode operation) {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        return address.getLastElement().getValue();
-    }
-
-    protected void opFailed(String description) throws OperationFailedException {
-        ModelNode failure = new ModelNode();
-        failure.get(FAILURE_DESCRIPTION, description);
-        throw new OperationFailedException(failure);
-    }
-
-    protected ModelNode getAssignedHandlers(ModelNode updateableModel) throws OperationFailedException {
-        return updateableModel.get(HANDLERS);
-    }
-
-    /**
-     * Get the ModelNode that has a "handlers" attribute.
-     * @param model The root model for the operation.
-     * @return The ModelNode that has a "handlers" attribute.
-     */
-    protected ModelNode getTargetModel(ModelNode model) throws OperationFailedException {
-        return model;
-    }
-
     @Override
     protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        String handlerName = getHandlerName(operation);
-        ModelNode handlerNameNode = getHandlerNameNode(operation);
-
-        ModelNode targetModel = getTargetModel(model);
-
-        ModelNode assignedHandlers = getAssignedHandlers(targetModel);
-        if (!assignedHandlers.isDefined() || !assignedHandlers.asList().contains(handlerNameNode))
-            opFailed(MESSAGES.cannotUnassignHandler(handlerName));
-
-        List<ModelNode> newList = new ArrayList<ModelNode>();
-        for (ModelNode node : assignedHandlers.asList()) {
-            if (node.asString().equals(handlerName)) continue;
-            newList.add(node);
-        }
-
-        model.get(HANDLERS).set(newList);
+        NAME.validateAndSet(operation, model);
+        updateHandlersForUnassign(HANDLERS, operation, model);
     }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        String loggerName = getLoggerName(operation);
-        String handlerName = getHandlerName(operation);
+        context.removeService(LogServices.loggerHandlerName(getLoggerName(operation), getHandlerName(operation)));
+    }
 
-        context.removeService(LogServices.loggerHandlerName(loggerName, handlerName));
+    @Override
+    protected String getHandlerName(ModelNode operation) throws OperationFailedException {
+        return NAME.validateResolvedOperation(operation).asString();
+    }
+
+    protected String getLoggerName(final ModelNode operation) {
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        return address.getLastElement().getValue();
+    }
+
+    @Override
+    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
+        return HANDLERS.validateResolvedOperation(model);
     }
 
 }

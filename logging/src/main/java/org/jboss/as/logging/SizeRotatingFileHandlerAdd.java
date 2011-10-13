@@ -24,25 +24,15 @@ package org.jboss.as.logging;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
-import java.util.List;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
-import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
@@ -56,13 +46,8 @@ class SizeRotatingFileHandlerAdd extends FlushingHandlerAddProperties<SizeRotati
 
     static final SizeRotatingFileHandlerAdd INSTANCE = new SizeRotatingFileHandlerAdd();
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        super.populateModel(operation, model);
-        APPEND.validateAndSet(operation, model);
-        FILE.validateAndSet(operation, model);
-        MAX_BACKUP_INDEX.validateAndSet(operation, model);
-        ROTATE_SIZE.validateAndSet(operation, model);
+    private SizeRotatingFileHandlerAdd() {
+        super(APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE);
     }
 
     @Override
@@ -71,7 +56,7 @@ class SizeRotatingFileHandlerAdd extends FlushingHandlerAddProperties<SizeRotati
     }
 
     @Override
-    protected void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final SizeRotatingFileHandlerService service, final ModelNode model) throws OperationFailedException {
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final SizeRotatingFileHandlerService service, final ModelNode model) throws OperationFailedException {
         super.updateRuntime(context, serviceBuilder, name, service, model);
         final ModelNode append = APPEND.validateResolvedOperation(model);
         if (append.isDefined()) {

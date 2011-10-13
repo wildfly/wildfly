@@ -22,31 +22,31 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
-
+import java.util.logging.Handler;
 
 /**
- * Operation responsible unassigning a handler from a logger.
+ * Date: 12.10.2011
  *
- * @author Stan Silvert
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class RootLoggerUnassignHandler extends LoggerUnassignHandler {
-    static final String OPERATION_NAME = "root-logger-unassign-handler";
-    static final RootLoggerUnassignHandler INSTANCE = new RootLoggerUnassignHandler();
+public class CustomHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<Handler> {
+    static final CustomHandlerWriteAttributeHandler INSTANCE = new CustomHandlerWriteAttributeHandler();
 
-    @Override
-    protected String getLoggerName(ModelNode operation) {
-        return "";
+    private CustomHandlerWriteAttributeHandler() {
+        super();
     }
 
     @Override
-    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
-        return HANDLERS.validateResolvedOperation(model.get(ROOT_LOGGER));
+    protected boolean applyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final Handler handler) throws OperationFailedException {
+        // TODO (jrp) see if we can implement a write-attribute(property)
+        return false;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Handler handler) throws OperationFailedException {
+        //TODO (jrp) - return proper value
     }
 }

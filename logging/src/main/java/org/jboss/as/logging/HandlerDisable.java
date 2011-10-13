@@ -46,7 +46,7 @@ public class HandlerDisable implements OperationStepHandler {
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) {
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
                     final ServiceController<?> controller = serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {
                         controller.addListener(new AbstractServiceListener<Object>() {

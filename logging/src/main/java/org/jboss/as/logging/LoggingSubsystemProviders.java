@@ -22,6 +22,14 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -48,7 +56,6 @@ import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.HANDLER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
@@ -65,14 +72,6 @@ import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.VALUE;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
@@ -123,7 +122,7 @@ class LoggingSubsystemProviders {
         }
     };
 
-        static final DescriptionProvider SET_ROOT_LOGGER = new DescriptionProvider() {
+    static final DescriptionProvider SET_ROOT_LOGGER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
@@ -305,16 +304,14 @@ class LoggingSubsystemProviders {
     private static void addCommonLoggerAttributes(final ModelNode modelNode, final ResourceBundle bundle) {
         LEVEL.addResourceAttributeDescription(bundle, "handler", modelNode);
         FILTER.addResourceAttributeDescription(bundle, "handler", modelNode);
-        final ModelNode handlers = addAttribute(modelNode, HANDLERS, ModelType.LIST, bundle.getString("logger.handlers"));
-        addAttributeValueType(handlers, HANDLER, bundle.getString("handler"));
+        HANDLERS.addResourceAttributeDescription(bundle, "logger", modelNode);
     }
 
 
     private static void addCommonLoggerRequestProperties(final ModelNode modelNode, final ResourceBundle bundle) {
         LEVEL.addOperationParameterDescription(bundle, "handler", modelNode);
         FILTER.addOperationParameterDescription(bundle, "handler", modelNode);
-        final ModelNode handlers = addRequestProperties(modelNode, HANDLERS, ModelType.LIST, bundle.getString("logger.handlers"), false);
-        addRequestPropertiesValueType(handlers, HANDLER, bundle.getString("handler"));
+        HANDLERS.addOperationParameterDescription(bundle, "logger", modelNode);
     }
 
     private static void addCommonHandlerAttributes(final ModelNode modelNode, final ResourceBundle bundle) {
@@ -356,7 +353,7 @@ class LoggingSubsystemProviders {
             FILTER.addResourceAttributeDescription(bundle, "handler", node);
             QUEUE_LENGTH.addResourceAttributeDescription(bundle, "async", node);
             OVERFLOW_ACTION.addResourceAttributeDescription(bundle, "async", node);
-            addAttribute(node, SUBHANDLERS, ModelType.LIST, ModelType.STRING, bundle.getString("logger.handlers"));
+            SUBHANDLERS.addResourceAttributeDescription(bundle, "async.handler", node);
 
             return node;
         }
@@ -376,8 +373,7 @@ class LoggingSubsystemProviders {
             FILTER.addOperationParameterDescription(bundle, "handler", operation);
             QUEUE_LENGTH.addOperationParameterDescription(bundle, "async", operation);
             OVERFLOW_ACTION.addOperationParameterDescription(bundle, "async", operation);
-            final ModelNode subhandlers = addRequestProperties(operation, SUBHANDLERS, ModelType.LIST, bundle.getString("logger.handlers"), false);
-            addRequestPropertiesValueType(subhandlers, HANDLER, bundle.getString("handler"));
+            SUBHANDLERS.addOperationParameterDescription(bundle, "async.handler", operation);
 
             return operation;
         }
@@ -397,8 +393,7 @@ class LoggingSubsystemProviders {
             FILTER.addOperationParameterDescription(bundle, "handler", operation);
             QUEUE_LENGTH.addOperationParameterDescription(bundle, "async", operation);
             OVERFLOW_ACTION.addOperationParameterDescription(bundle, "async", operation);
-            final ModelNode subhandlers = addRequestProperties(operation, SUBHANDLERS, ModelType.LIST, bundle.getString("logger.handlers"), false);
-            addRequestPropertiesValueType(subhandlers, HANDLER, bundle.getString("handler"));
+            SUBHANDLERS.addOperationParameterDescription(bundle, "async.handler", operation);
 
             return operation;
         }
@@ -736,33 +731,11 @@ class LoggingSubsystemProviders {
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 
-    private static ModelNode addAttribute(final ModelNode node, final String name, final ModelType type, final String description) {
-        return addAttribute(node, name, type, null, description);
-    }
-
-    private static ModelNode addAttribute(final ModelNode node, final String name, final ModelType type, final ModelType valueType, final String description) {
-        final ModelNode result = node.get(ATTRIBUTES, name);
-        result.get(TYPE).set(type);
-        result.get(DESCRIPTION).set(description);
-        if (valueType != null) {
-            result.get(VALUE_TYPE).set(valueType);
-        }
-        return result;
-    }
-
     private static ModelNode addAttributeValueType(final ModelNode node, final AttributeDefinition definition, final String description) {
         final ModelNode valueType = node.get(VALUE_TYPE, definition.getName());
         valueType.get(DESCRIPTION).set(description);
         valueType.get(TYPE).set(definition.getType());
         return valueType;
-    }
-
-    private static ModelNode addRequestProperties(final ModelNode node, final String name, final ModelType type, final String description, final boolean isRequired) {
-        final ModelNode result = node.get(REQUEST_PROPERTIES, name);
-        result.get(TYPE).set(type);
-        result.get(DESCRIPTION).set(description);
-        result.get(REQUIRED).set(isRequired);
-        return result;
     }
 
     private static ModelNode addRequestPropertiesValueType(final ModelNode node, final AttributeDefinition definition, final String description) {

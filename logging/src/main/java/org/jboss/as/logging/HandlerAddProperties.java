@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -32,7 +33,12 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
@@ -49,12 +55,33 @@ import static org.jboss.as.logging.CommonAttributes.NAME;
  */
 public abstract class HandlerAddProperties<T extends HandlerService> extends AbstractAddStepHandler {
 
+    private final Set<String> attributes;
+    private final List<AttributeDefinition> attributeDefinitions;
+
+    protected HandlerAddProperties(final List<String> attributes, final List<? extends AttributeDefinition> attributeDefinitions) {
+        this.attributes = new HashSet<String>(attributes);
+        this.attributes.addAll(attributes);
+        this.attributeDefinitions = new ArrayList<AttributeDefinition>();
+        this.attributeDefinitions.add(NAME);
+        this.attributeDefinitions.add(ENCODING);
+        this.attributeDefinitions.add(FORMATTER);
+        this.attributeDefinitions.add(LEVEL);
+        // TODO - support filter
+        this.attributeDefinitions.addAll(attributeDefinitions);
+    }
+
+    protected HandlerAddProperties(final List<? extends AttributeDefinition> attributeDefinitions) {
+        this(Collections.<String>emptyList(), attributeDefinitions);
+    }
+
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        NAME.validateAndSet(operation, model);
-        ENCODING.validateAndSet(operation, model);
-        FORMATTER.validateAndSet(operation, model);
-        LEVEL.validateAndSet(operation, model);
+    protected final void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition attr : attributeDefinitions) {
+            attr.validateAndSet(operation, model);
+        }
+        for (String attr : attributes) {
+            copy(attr, operation, model);
+        }
     }
 
     @Override
@@ -69,6 +96,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
         final ModelNode level = LEVEL.validateResolvedOperation(model);
         final ModelNode encoding = ENCODING.validateResolvedOperation(model);
         final ModelNode formatter = FORMATTER.validateResolvedOperation(model);
+        // TODO - support filter
 
         if (level.isDefined()) {
             service.setLevel(Level.parse(level.asString()));
@@ -94,16 +122,28 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
 
     protected abstract T createHandlerService(ModelNode model) throws OperationFailedException;
 
-    protected abstract void updateRuntime(final OperationContext context, final ServiceBuilder<?> serviceBuilder, final String name, final T service, final ModelNode model) throws OperationFailedException;
+    protected abstract void updateRuntime(OperationContext context, ServiceBuilder<Handler> serviceBuilder, String name, T service, ModelNode model) throws OperationFailedException;
 
     /**
-     * Copies the attribute, represented by the {@code name} parameter, from one {@link ModelNode} to another.
+     * Copies the attribute, represented by the {@code name} parameter, from one {@link ModelNode} to another if the
+     * {@link ModelNode from} parameter has the attributed defined. If the attribute was not defined, nothing happens.
      *
      * @param name the name of the attribute to copy.
      * @param from the model node to copy the value from.
      * @param to   the model node to copy the value to.
      */
     protected void copy(final String name, final ModelNode from, final ModelNode to) {
-        to.get(name).set(from.get(name));
+        if (from.hasDefined(name)) {
+            to.get(name).set(from.get(name));
+        }
+    }
+
+    /**
+     * Returns a collection of attributes used for the write attribute.
+     *
+     * @return a collection of attributes.
+     */
+    public final Collection<AttributeDefinition> getAttributes() {
+        return Collections.unmodifiableCollection(attributeDefinitions);
     }
 }

@@ -35,20 +35,17 @@ import static org.jboss.as.logging.LogHandlerPropertiesConfigurator.setPropertie
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class CustomHandlerUpdateProperties extends HandlerUpdateProperties {
+public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handler> {
     static final CustomHandlerUpdateProperties INSTANCE = new CustomHandlerUpdateProperties();
 
-    @Override
-    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        super.updateModel(operation, model);
-        copy(PROPERTIES, operation, model);
+    private CustomHandlerUpdateProperties() {
+        super(PROPERTIES);
     }
 
     @Override
     protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
-        final ModelNode properties = operation.get(PROPERTIES);
-        if (properties.isDefined()) {
-            setProperties(handler, properties.asPropertyList());
+        if (operation.hasDefined(PROPERTIES)) {
+            setProperties(handler, operation.get(PROPERTIES).asPropertyList());
         }
     }
 }

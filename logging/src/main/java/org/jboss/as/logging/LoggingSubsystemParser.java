@@ -229,7 +229,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                             break;
                         }
                         case HANDLERS: {
-                            parseHandlersElement(node.get(HANDLERS), reader);
+                            parseHandlersElement(node.get(HANDLERS.getName()), reader);
                             break;
                         }
                         default:
@@ -291,7 +291,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case SUBHANDLERS: {
-                    parseHandlersElement(node.get(SUBHANDLERS), reader);
+                    parseHandlersElement(node.get(SUBHANDLERS.getName()), reader);
                     break;
                 }
                 case QUEUE_LENGTH: {
@@ -336,7 +336,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                             break;
                         }
                         case HANDLERS: {
-                            parseHandlersElement(node.get(HANDLERS), reader);
+                            parseHandlersElement(node.get(HANDLERS.getName()), reader);
                             break;
                         }
                         default:
@@ -1124,8 +1124,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             writeAttribute(writer, Attribute.VALUE, node.get(OVERFLOW_ACTION.getName()));
             writer.writeEndElement();
         }
-        if (node.hasDefined(SUBHANDLERS)) {
-            final ModelNode handlers = node.get(SUBHANDLERS);
+        if (SUBHANDLERS.isMarshallable(node)) {
+            final ModelNode handlers = node.get(SUBHANDLERS.getName());
             writeHandlersContent(writer, Element.SUBHANDLERS, handlers);
         }
 
@@ -1205,8 +1205,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     }
 
     private void writeHandlers(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(HANDLERS)) {
-            final ModelNode handlers = node.get(HANDLERS);
+        if (HANDLERS.isMarshallable(node)) {
+            final ModelNode handlers = node.get(HANDLERS.getName());
             writeHandlersContent(writer, Element.HANDLERS, handlers);
         }
     }

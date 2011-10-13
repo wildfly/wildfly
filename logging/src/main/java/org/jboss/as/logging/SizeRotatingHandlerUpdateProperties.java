@@ -26,8 +26,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
 
-import java.util.logging.Handler;
-
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 
@@ -36,22 +34,19 @@ import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
  *
  * @author John Bailey
  */
-public class SizeRotatingHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
+public class SizeRotatingHandlerUpdateProperties extends FlushingHandlerUpdateProperties<SizeRotatingFileHandler> {
     static final SizeRotatingHandlerUpdateProperties INSTANCE = new SizeRotatingHandlerUpdateProperties();
 
-    @Override
-    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        super.updateModel(operation, model);
-        MAX_BACKUP_INDEX.validateAndSet(operation, model);
-        ROTATE_SIZE.validateAndSet(operation, model);
+    private SizeRotatingHandlerUpdateProperties() {
+        super(MAX_BACKUP_INDEX, ROTATE_SIZE);
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
+    protected void updateRuntime(final ModelNode operation, final SizeRotatingFileHandler handler) throws OperationFailedException {
         super.updateRuntime(operation, handler);
         final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.validateResolvedOperation(operation);
         if (maxBackupIndex.isDefined()) {
-            SizeRotatingFileHandler.class.cast(handler).setMaxBackupIndex(maxBackupIndex.asInt());
+            handler.setMaxBackupIndex(maxBackupIndex.asInt());
         }
 
         final ModelNode rotateSizeNode = ROTATE_SIZE.validateResolvedOperation(operation);
@@ -62,7 +57,7 @@ public class SizeRotatingHandlerUpdateProperties extends FlushingHandlerUpdatePr
             } catch (Throwable t) {
                 throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
             }
-            SizeRotatingFileHandler.class.cast(handler).setRotateSize(rotateSize);
+            handler.setRotateSize(rotateSize);
         }
     }
 }
