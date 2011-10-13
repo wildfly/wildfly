@@ -820,7 +820,7 @@ class WebSubsystemDescriptions {
     public static ModelNode getReWriteDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
         return getRewriteCommonDescription(node, ATTRIBUTES, bundle);
 
     }
@@ -828,7 +828,7 @@ class WebSubsystemDescriptions {
     public static ModelNode getAccessLogDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
         return getAccessLogCommonDescription(node, ATTRIBUTES, bundle);
     }
 
