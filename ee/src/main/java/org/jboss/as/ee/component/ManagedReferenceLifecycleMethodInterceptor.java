@@ -40,31 +40,47 @@ final class ManagedReferenceLifecycleMethodInterceptor implements Interceptor {
     private final Method method;
     private final boolean withContext;
     private final boolean changeMethod;
+    private final boolean lifecycleMethod;
 
-    ManagedReferenceLifecycleMethodInterceptor(final AtomicReference<ManagedReference> instanceRef, final Method method, final boolean changeMethod) {
+    /**
+     * @param instanceRef
+     * @param method          The method on which the interceptor applies
+     * @param changeMethod    True if during the interceptor processing, the {@link org.jboss.invocation.InterceptorContext#getMethod()}
+     *                        is expected to return the passed <code>method</code>
+     * @param lifecycleMethod If the passed <code>method</code> is a lifecycle callback method. False otherwise
+     */
+    ManagedReferenceLifecycleMethodInterceptor(final AtomicReference<ManagedReference> instanceRef, final Method method, final boolean changeMethod, final boolean lifecycleMethod) {
         this.changeMethod = changeMethod;
         this.method = method;
+        this.lifecycleMethod = lifecycleMethod;
         this.instanceRef = instanceRef;
         withContext = method.getParameterTypes().length == 1;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final ManagedReference reference = instanceRef.get();
         final Object instance = reference.getInstance();
         try {
-            Method method = this.method;
+            final Method method = this.method;
             if (withContext) {
-                if (changeMethod) {
-                    final Method oldMethod = context.getMethod();
-                    context.setMethod(method);
-                    try {
+                final Method oldMethod = context.getMethod();
+                try {
+                    if (this.lifecycleMethod) {
+                        // because InvocationContext#getMethod() is expected to return null for lifecycle methods
+                        context.setMethod(null);
                         return method.invoke(instance, context.getInvocationContext());
-                    } finally {
-                        context.setMethod(oldMethod);
+                    } else if (this.changeMethod) {
+                        context.setMethod(method);
+                        return method.invoke(instance, context.getInvocationContext());
+                    } else {
+                        return method.invoke(instance, context.getInvocationContext());
                     }
-                } else {
-                    return method.invoke(instance, context.getInvocationContext());
+                } finally {
+                    // reset any changed method on the interceptor context
+                    context.setMethod(oldMethod);
                 }
             } else {
                 method.invoke(instance, null);

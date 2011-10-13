@@ -37,16 +37,37 @@ final class ManagedReferenceLifecycleMethodInterceptorFactory implements Interce
     private final Object contextKey;
     private final Method method;
     private final boolean changeMethod;
+    private final boolean lifecycleMethod;
 
+    /**
+     * This is equivalent to calling <code>ManagedReferenceLifecycleMethodInterceptorFactory(Object, java.lang.reflect.Method, boolean, false)</code>
+     *
+     * @param contextKey
+     * @param method       The method for which the interceptor has to be created
+     * @param changeMethod True if during the interceptor processing, the {@link org.jboss.invocation.InterceptorContext#getMethod()}
+     *                     is expected to return the passed <code>method</code>
+     */
     ManagedReferenceLifecycleMethodInterceptorFactory(final Object contextKey, final Method method, final boolean changeMethod) {
+        this(contextKey, method, changeMethod, false);
+    }
+
+    /**
+     * @param contextKey
+     * @param method          The method for which the interceptor has to be created
+     * @param changeMethod    True if during the interceptor processing, the {@link org.jboss.invocation.InterceptorContext#getMethod()}
+     *                        is expected to return the passed <code>method</code>
+     * @param lifecycleMethod If the passed <code>method</code> is a lifecycle callback method. False otherwise
+     */
+    ManagedReferenceLifecycleMethodInterceptorFactory(final Object contextKey, final Method method, final boolean changeMethod, final boolean lifecycleMethod) {
         this.contextKey = contextKey;
         this.method = method;
         this.changeMethod = changeMethod;
+        this.lifecycleMethod = lifecycleMethod;
     }
 
     public Interceptor create(final InterceptorFactoryContext context) {
         @SuppressWarnings("unchecked")
         final AtomicReference<ManagedReference> ref = (AtomicReference<ManagedReference>) context.getContextData().get(contextKey);
-        return new ManagedReferenceLifecycleMethodInterceptor(ref, method, changeMethod);
+        return new ManagedReferenceLifecycleMethodInterceptor(ref, method, changeMethod, this.lifecycleMethod);
     }
 }
