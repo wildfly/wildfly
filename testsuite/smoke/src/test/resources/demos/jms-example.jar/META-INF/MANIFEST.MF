@@ -1,2 +1,0 @@
-Manifest-Version: 1.0
-Dependencies: javaee.api,org.hornetq,org.jboss.logging

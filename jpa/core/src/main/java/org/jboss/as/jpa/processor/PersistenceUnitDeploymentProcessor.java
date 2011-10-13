@@ -537,7 +537,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * example of full path:
      *
      *  /deployment=jpa_SecondLevelCacheTestCase.jar/subsystem=jpa/hibernate-persistence-unit=jpa_SecondLevelCacheTestCase.jar#mypc/
-     *                                                              cache=org.jboss.as.testsuite.integration.jpa.hibernate.Employee
+     *                                                              cache=org.jboss.as.test.integration.jpa.hibernate.Employee
      *
      * @param deploymentUnit
      * @param pu

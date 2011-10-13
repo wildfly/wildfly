@@ -23,7 +23,7 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:pojo:7.0 jboss-mc_7_0.xsd">
 
-    <bean name="TC" class="org.jboss.as.testsuite.integration.pojo.support.TCollections">
+    <bean name="TC" class="org.jboss.as.test.integration.pojo.support.TCollections">
         <property name="numbers">
             <list>
                 <value>1</value>
@@ -46,8 +46,8 @@
         </property>
     </bean>
 
-    <bean name="TB" class="org.jboss.as.testsuite.integration.pojo.support.TBean"/>
+    <bean name="TB" class="org.jboss.as.test.integration.pojo.support.TBean"/>
 
-    <bean name="TI" class="org.jboss.as.testsuite.integration.pojo.support.TInjectee"/>
+    <bean name="TI" class="org.jboss.as.test.integration.pojo.support.TInjectee"/>
 
 </deployment>

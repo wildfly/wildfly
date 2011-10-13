@@ -81,7 +81,7 @@
         <version.jaxbintros>1.0.2.GA</version.jaxbintros>
         <version.jline>0.9.94</version.jline>
         <version.joda-time>1.6.2</version.joda-time>
-        <version.junit>4.8.2</version.junit>
+        <version.junit>4.10</version.junit>
         <version.log4j.log4j>1.2.16</version.log4j.log4j>
         <version.net.sourceforge.cssparser.cssparser>0.9.5</version.net.sourceforge.cssparser.cssparser>
         <version.net.sourceforge.htmlunit.htmlunit>2.8</version.net.sourceforge.htmlunit.htmlunit>
@@ -115,7 +115,7 @@
         <version.org.hornetq.hornetq-jms>2.2.7.Final</version.org.hornetq.hornetq-jms>
         <version.org.infinispan>5.0.1.FINAL</version.org.infinispan>
         <version.org.javassist>3.12.1.GA</version.org.javassist>
-        <version.org.jboss.arquillian.core>1.0.0.CR4</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.0.0.CR5</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.0.CR4</version.org.jboss.arquillian.osgi>
         <version.org.jboss.classfilewriter>1.0.0.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.com.sun.httpserver>1.0.0.Beta2</version.org.jboss.com.sun.httpserver>

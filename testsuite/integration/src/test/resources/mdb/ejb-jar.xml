@@ -28,7 +28,7 @@
     <enterprise-beans>
         <message-driven>
             <ejb-name>DDBasedMDB</ejb-name>
-            <ejb-class>org.jboss.as.testsuite.integration.mdb.DDBasedMDB</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.mdb.DDBasedMDB</ejb-class>
             <activation-config>
                 <activation-config-property>
                     <activation-config-property-name>destination</activation-config-property-name>
