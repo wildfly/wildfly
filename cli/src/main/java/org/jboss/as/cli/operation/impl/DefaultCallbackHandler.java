@@ -242,11 +242,14 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     }
 
     @Override
-    public void validatedOperationName(int index, String operationName) throws OperationFormatException {
-
+    public void operationName(int index, String operationName) throws OperationFormatException {
         this.operationName = operationName;
         separator = SEPARATOR_NONE;
         lastChunkIndex = index;
+    }
+
+    public void validatedOperationName(int index, String operationName) throws OperationFormatException {
+        // TODO
     }
 
     @Override
@@ -256,7 +259,6 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     }
 
     @Override
-    //public void validatedPropertyName(String argName) throws OperationFormatException {
     public void propertyName(int index, String propertyName)
             throws OperationFormatException {
         props.put(propertyName, null);
@@ -267,13 +269,17 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     }
 
     @Override
+    protected void validatedPropertyName(int index, String propertyName) throws OperationFormatException {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
     public void propertyNameValueSeparator(int index) {
         separator = SEPARATOR_ARG_NAME_VALUE;
         this.lastSeparatorIndex = index;
     }
 
     @Override
-    //public void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException {
     public void property(String name, String value, int nameValueSeparatorIndex)
             throws OperationFormatException {
 
@@ -295,6 +301,11 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
             this.lastSeparatorIndex = nameValueSeparatorIndex;
         }
         lastChunkIndex = nameValueSeparatorIndex;
+    }
+
+    @Override
+    protected void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException {
+        // TODO Auto-generated method stub
     }
 
     @Override
@@ -388,20 +399,6 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
     public String getOutputTarget() {
         return outputTarget;
-    }
-
-    @Override
-    protected void validatedProperty(String name, String value,
-            int nameValueSeparatorIndex) throws OperationFormatException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    protected void validatedPropertyName(int index, String propertyName)
-            throws OperationFormatException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
