@@ -68,7 +68,6 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
@@ -79,6 +78,7 @@ import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryServ
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
@@ -177,15 +177,20 @@ public class DomainModelControllerService extends AbstractControllerService impl
         PathAddress pa = hostControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(0);
         ProxyController existingController = modelNodeRegistration.getProxyController(pa);
+
         if (existingController != null || hostControllerInfo.getLocalHostName().equals(pe.getValue())){
+            boolean unregistered = false;
             //This horrible hack is there to make sure that the slave has not crashed since we don't get notifications due to REM3-121
             if ((existingController instanceof RemoteProxyController)) {
                 if (((RemoteProxyController)existingController).ping(3000)) {
                     throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
                 }
                 unregisterRemoteHost(pe.getValue());
+                unregistered = true;
             }
-            //throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
+            if (!unregistered) {
+                throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
+            }
         }
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(pe.getValue(), hostControllerClient);
@@ -292,7 +297,13 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 masterDomainControllerClient = getFuture(clientFuture);
                 //Registers us with the master and gets down the master copy of the domain model to our DC
                 //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
-                masterDomainControllerClient.register();
+                try {
+                    masterDomainControllerClient.register();
+                } catch (HostAlreadyExistsException e) {
+                    //A host with our name already exists in the master, exit the process with the exit code
+                    //recoginzed by the process controller so it will not attempt to respawn us
+                    System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                }
 
             } else {
                 // parse the domain.xml and load the steps

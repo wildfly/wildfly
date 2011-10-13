@@ -44,6 +44,7 @@ import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry.ProxyCreatedCallback;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
+import org.jboss.as.domain.controller.operations.SlaveRegistrationError;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -145,7 +146,7 @@ public class MasterDomainControllerOperationHandlerImpl extends AbstractModelCon
         protected void writeResponse(final FlushableDataOutput output) throws IOException {
             if (error != null) {
                 output.write(DomainControllerProtocol.PARAM_ERROR);
-                output.writeUTF(error);
+                output.writeUTF(SlaveRegistrationError.parse(error).toString());
             } else {
                 output.write(DomainControllerProtocol.PARAM_OK);
             }

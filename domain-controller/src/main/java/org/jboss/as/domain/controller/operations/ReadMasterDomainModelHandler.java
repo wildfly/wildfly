@@ -125,8 +125,13 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
             ModelController.OperationTransaction tx = txRef.get();
             if (tx != null) {
                 if (resultAction == OperationContext.ResultAction.KEEP) {
-                    tx.commit();
-                    domainController.registerRemoteHost(proxy);
+                    try {
+                        domainController.registerRemoteHost(proxy);
+                        tx.commit();
+                    } catch (Exception e) {
+                        context.getFailureDescription().set(SlaveRegistrationError.formatHostAlreadyExists(e.getMessage()));
+                        tx.rollback();
+                    }
                 } else {
                     tx.rollback();
                 }

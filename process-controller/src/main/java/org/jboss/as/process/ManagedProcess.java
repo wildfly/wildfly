@@ -284,7 +284,7 @@ final class ManagedProcess {
 
                 if (shutdown) {
                     processController.removeProcess(processName);
-                } else if (isPrivileged() && exitCode == 99) {
+                } else if (isPrivileged() && exitCode == ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE) {
                     // Host Controller abort
                     processController.removeProcess(processName);
                     new Thread(new Runnable() {
