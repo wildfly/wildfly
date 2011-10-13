@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.deployment.EjbDeploymentMarker.isEjbDeployment;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -32,8 +34,6 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-
-import static org.jboss.as.ejb3.deployment.EjbDeploymentMarker.isEjbDeployment;
 
 /**
  * Responsible for adding appropriate Java EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
@@ -71,14 +71,18 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         // get hold of the deployment unit
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+
+        //we always give them the EJB client
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, false));
+
         // fetch the EjbJarMetaData
         if (!isEjbDeployment(deploymentUnit)) {
             // nothing to do
             return;
         }
 
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         // FIXME: still not the best way to do it
         //this must be the first dep listed in the module
@@ -87,7 +91,6 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAEE_MODULE_IDENTIFIER, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB3_TIMERS, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, false));
     }
 
     @Override

@@ -50,7 +50,7 @@ class AppClientServerConfiguration {
         List<ModelNode> ret = new ArrayList<ModelNode>();
         appclient(ret, filePath, deploymentName, additionalClassPath, hostUrl, parameters);
         interfaces(ret);
-        transactionSocketBindings(ret);
+        socketBindings(ret);
         transactions(ret);
         naming(ret);
         ee(ret);
@@ -77,7 +77,7 @@ class AppClientServerConfiguration {
                 add.get(Constants.PARAMETERS).add(param);
             }
         }
-        if(additionalClassPath != null) {
+        if (additionalClassPath != null) {
             add.get(Constants.ADDITIONAL_CLASS_PATH).set(additionalClassPath);
         }
         add.get(Constants.HOST_URL).set(hostUrl);
@@ -117,6 +117,7 @@ class AppClientServerConfiguration {
         add.get(OP).set(ADD);
         nodes.add(add);
     }
+
     private static void jacorb(List<ModelNode> nodes) {
         loadExtension(nodes, "org.jboss.as.jacorb");
         ModelNode add = new ModelNode();
@@ -137,7 +138,7 @@ class AppClientServerConfiguration {
         nodes.add(add);
     }
 
-    private static void transactionSocketBindings(List<ModelNode> nodes) {
+    private static void socketBindings(List<ModelNode> nodes) {
         ModelNode add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SOCKET_BINDING_GROUP, "standard-sockets");
         add.get(OP).set(ADD);
@@ -153,6 +154,16 @@ class AppClientServerConfiguration {
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SOCKET_BINDING_GROUP, "standard-sockets").add(SOCKET_BINDING, "txn-status-manager");
         add.get(OP).set(ADD);
         add.get("port").set(4713);
+        nodes.add(add);
+        add = new ModelNode();
+        add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SOCKET_BINDING_GROUP, "standard-sockets").add(SOCKET_BINDING, "jacorb");
+        add.get(OP).set(ADD);
+        add.get("port").set(3528);
+        nodes.add(add);
+        add = new ModelNode();
+        add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SOCKET_BINDING_GROUP, "standard-sockets").add(SOCKET_BINDING, "jacorb-ssl");
+        add.get(OP).set(ADD);
+        add.get("port").set(3529);
         nodes.add(add);
     }
 
