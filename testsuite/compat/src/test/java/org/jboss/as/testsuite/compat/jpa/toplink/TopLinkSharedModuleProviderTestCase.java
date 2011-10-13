@@ -22,6 +22,11 @@
 
 package org.jboss.as.testsuite.compat.jpa.toplink;
 
+import javax.naming.InitialContext;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -35,11 +40,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 
 /**
  * @author Scott Marlow
@@ -58,6 +58,7 @@ public class TopLinkSharedModuleProviderTestCase {
             "    <description>TopLink Persistence Unit." +
             "    </description>" +
             "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+// uncomment after AS7-886 is fixed
 //            "<class>org.jboss.as.testsuite.compat.jpa.toplink.Employee</class>" +
             "  </persistence-unit>" +
             "</persistence>";
@@ -119,6 +120,12 @@ public class TopLinkSharedModuleProviderTestCase {
                 dumpJndi(s + "/" + ncp.getName());
             }
         }
+    }
+
+    @Test
+    public void testLoadTSJavaLogClassInTopLinkProviderJar() throws Exception {
+        Class toplinkClass = Employee.class.getClassLoader().loadClass("com.sun.jpalog.TSJavaLog");
+        // success is when loadClass() didn't throw an exception
     }
 
     @Test
