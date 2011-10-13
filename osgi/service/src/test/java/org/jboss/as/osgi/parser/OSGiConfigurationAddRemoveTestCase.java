@@ -53,26 +53,26 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
         ModelNode op = getAddOperation(pid, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
-        OSGiConfigurationAdd.INSTANCE.execute(context, op);
+        execute(OSGiConfigurationAdd.INSTANCE, context, op);
         Assert.assertEquals(1, addedSteps.size());
 
         Assert.assertEquals("Precondition", 0, stateService.getConfigurations().size());
-        addedSteps.get(0).execute(context, op);
+        execute(addedSteps.get(0), context, op);
         Assert.assertEquals(1, stateService.getConfigurations().size());
         Dictionary<String, String> config = stateService.getConfiguration(pid);
         Assert.assertEquals(1, config.size());
         Assert.assertEquals("myval", config.get("mykey"));
 
-        OSGiConfigurationRemove.INSTANCE.execute(context, op);
+        execute(OSGiConfigurationRemove.INSTANCE, context, op);
         Assert.assertEquals("Actual remove added as async step", 2, addedSteps.size());
 
-        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.ROLLBACK);
-        addedSteps.get(1).execute(context, op);
+        configureForRollback(context, op);
+        execute(addedSteps.get(1), context, op);
         Assert.assertEquals("Configuration rolled back", 1, stateService.getConfiguration(pid).size());
         Assert.assertEquals("Configuration rolled back", "myval", stateService.getConfiguration(pid).get("mykey"));
 
-        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.KEEP);
-        addedSteps.get(1).execute(context, op);
+        configureForSuccess(context);
+        execute(addedSteps.get(1), context, op);
         Assert.assertNull("Configuration should have been removed", stateService.getConfiguration(pid));
     }
 
@@ -87,11 +87,11 @@ public class OSGiConfigurationAddRemoveTestCase extends ResourceAddRemoveTestBas
         ModelNode op = getAddOperation(pid, data);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
-        OSGiConfigurationAdd.INSTANCE.execute(context, op);
+        execute(OSGiConfigurationAdd.INSTANCE, context, op);
         Assert.assertEquals(1, addedSteps.size());
 
         Assert.assertEquals("Precondition", 0, stateService.getConfigurations().size());
-        addedSteps.get(0).execute(context, op);
+        execute(addedSteps.get(0), context, op);
         Assert.assertEquals("Operation should have been rolled back", 0, stateService.getConfigurations().size());
     }
 
