@@ -555,6 +555,13 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
         node.get(REQUIRED).set(false);
 
+        addAccessLogCommonDescription(node, type, bundle);
+
+        return node;
+    }
+
+    static void addAccessLogCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+
         node.get(type, Constants.PATTERN, TYPE).set(ModelType.STRING);
         node.get(type, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.pattern"));
         node.get(type, Constants.PATTERN, REQUIRED).set(false);
@@ -591,8 +598,8 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.DIRECTORY, Constants.RELATIVE_TO, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.directory.relative-to"));
         node.get(type, Constants.DIRECTORY, Constants.RELATIVE_TO, REQUIRED).set(false);
 
-        return node;
     }
+
 
     static ModelNode getRewriteCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
         node.get(TYPE).set(ModelType.LIST);
@@ -799,6 +806,8 @@ class WebSubsystemDescriptions {
         node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log-add"));
         node.get(REQUIRED).set(false);
+
+        addAccessLogCommonDescription(node, REQUEST_PROPERTIES, bundle);
         return node;
     }
 
