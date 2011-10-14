@@ -63,7 +63,7 @@ public class OSGiExtension implements Extension {
         configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiConfigurationRemove.INSTANCE, OSGiConfigurationRemove.DESCRIPTION, false);
 
         // Framework Properties
-        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.FRAMEWORK_PROPERTY), OSGiSubsystemProviders.FRAMEWORK_PROPERTY_DESCRIPTION);
+        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.PROPERTY), OSGiSubsystemProviders.FRAMEWORK_PROPERTY_DESCRIPTION);
         properties.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiFrameworkPropertyAdd.INSTANCE, OSGiFrameworkPropertyAdd.DESCRIPTION, false);
         properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiFrameworkPropertyRemove.INSTANCE, OSGiFrameworkPropertyRemove.DESCRIPTION, false);
 

@@ -37,10 +37,10 @@ public interface ModelConstants {
     String CAPABILITY = "capability";
     String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
-    String FRAMEWORK_PROPERTY = "framework-property";
     String ID = "id";
     String NAME = "name";
     String PID = "pid";
+    String PROPERTY = "property";
     String STARTLEVEL = "startlevel";
     String STATE = "state";
     String SYMBOLIC_NAME = "symbolic-name";

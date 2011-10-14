@@ -62,10 +62,10 @@ class OSGiSubsystemDescribeHandler extends GenericSubsystemDescribeHandler {
             }
         }
 
-        if (model.has(FRAMEWORK_PROPERTY)) {
-            for (Property prop : model.get(FRAMEWORK_PROPERTY).asPropertyList()) {
+        if (model.has(PROPERTY)) {
+            for (Property prop : model.get(PROPERTY).asPropertyList()) {
                 ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.FRAMEWORK_PROPERTY, prop.getName());
+                address.add(CommonAttributes.PROPERTY, prop.getName());
                 //result.add(OSGiFrameworkPropertyAdd.getAddOperation(address, prop.getValue()));
             }
         }
