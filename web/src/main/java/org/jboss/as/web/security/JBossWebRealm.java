@@ -27,6 +27,7 @@ import java.security.acl.Group;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,9 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SimplePrincipal;
+import org.jboss.security.audit.AuditEvent;
+import org.jboss.security.audit.AuditLevel;
+import org.jboss.security.audit.AuditManager;
 import org.jboss.security.auth.certs.SubjectDNMapping;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
@@ -64,6 +68,11 @@ public class JBossWebRealm extends RealmBase {
     protected static final String name = "JBossWebRealm";
 
     /**
+     * The {@code AuditManager} instance that can audit security events
+     */
+    protected AuditManager auditManager = null;
+
+    /**
      * The {@code AuthenticationManager} instance that can perform authentication
      */
     protected AuthenticationManager authenticationManager = null;
@@ -77,6 +86,15 @@ public class JBossWebRealm extends RealmBase {
      * The {@code MappingManager} instance to perform principal, role, attribute and credential mapping
      */
     protected MappingManager mappingManager = null;
+
+
+    /**
+     * Set the {@code AuditManager}
+     * @param auditManager
+     */
+    public void setAuditManager(AuditManager auditManager) {
+        this.auditManager = auditManager;
+    }
 
     /**
      * Set the {@code AuthenticationManager}
@@ -161,14 +179,23 @@ public class JBossWebRealm extends RealmBase {
             if (authenticationManager instanceof CacheableManager) {
                 @SuppressWarnings("unchecked")
                 CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                return new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
+                userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
                         credentials, cm, subject);
-            } else
-                return new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
+                successAudit(userPrincipal);
+                return userPrincipal;
+            } else {
+                userPrincipal =  new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
                         credentials, null, subject);
+                successAudit(userPrincipal);
+                return userPrincipal;
+            }
         }
 
-        return super.authenticate(username, credentials);
+        userPrincipal = super.authenticate(username, credentials);
+        if(userPrincipal != null){
+            successAudit(userPrincipal);
+        }
+        return userPrincipal;
     }
 
     @Override
@@ -234,6 +261,10 @@ public class JBossWebRealm extends RealmBase {
             }
         } catch (Exception e) {
             log.error("Error during authenticate(X509Certificate[])");
+        }
+
+        if(userPrincipal != null){
+            successAudit(userPrincipal);
         }
 
         return userPrincipal;
@@ -312,5 +343,17 @@ public class JBossWebRealm extends RealmBase {
             }
         }
         return callerPrincipal == null ? principal : callerPrincipal;
+    }
+
+    private void successAudit(Principal userPrincipal){
+        if(userPrincipal != null){
+            if(auditManager != null){
+                AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
+                Map<String,Object> ctxMap = new HashMap<String,Object>();
+                ctxMap.put("principal", userPrincipal);
+                auditEvent.setContextMap(ctxMap);
+                auditManager.audit(auditEvent);
+            }
+        }
     }
 }
