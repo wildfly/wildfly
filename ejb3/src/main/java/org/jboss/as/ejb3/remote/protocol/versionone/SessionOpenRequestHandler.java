@@ -32,6 +32,8 @@ import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
+import org.xnio.IoUtils;
+import sun.management.ThreadInfoCompositeData;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -41,7 +43,7 @@ import java.util.concurrent.ExecutorService;
 /**
  * User: jpai
  */
-class SessionOpenRequestHandler extends AbstractMessageHandler {
+class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
 
     private static final Logger logger = Logger.getLogger(SessionOpenRequestHandler.class);
 
@@ -141,6 +143,9 @@ class SessionOpenRequestHandler extends AbstractMessageHandler {
                 SessionOpenRequestHandler.this.writeSessionId(channel, invocationId, sessionID, attachments);
             } catch (IOException ioe) {
                 logger.error("IOException while generating session id for invocation id: " + invocationId + " on channel " + channel, ioe);
+                // close the channel
+                IoUtils.safeClose(this.channel);
+                return;
             }
         }
     }

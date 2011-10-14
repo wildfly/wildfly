@@ -114,6 +114,8 @@ public class
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR                  = 0x200;
         public static final int EJB_CLIENT_CONTEXT                                      = 0x250;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR                          = 0x300;
+        // should happen before the CMT/BMT interceptors
+        public static final int REMOTE_TRANSACTION_PROPOGATION_INTERCEPTOR              = 0x350;
         public static final int CMT_TRANSACTION_INTERCEPTOR                             = 0x400;
         public static final int ASSOCIATING_INTERCEPTOR                                 = 0x500;
         public static final int JPA_SFSB_INTERCEPTOR                                    = 0x600;

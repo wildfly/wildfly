@@ -21,28 +21,12 @@
  */
 package org.jboss.as.ejb3.component;
 
-import java.lang.reflect.Method;
-import java.rmi.Remote;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.NamespaceConfigurator;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -53,6 +37,8 @@ import org.jboss.as.ejb3.component.stateful.NoSuchObjectExceptionTransformingInt
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
@@ -65,6 +51,22 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+import java.lang.reflect.Method;
+import java.rmi.Remote;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -235,6 +237,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
         // setup a current invocation interceptor
         this.addCurrentInvocationContextFactory();
+        // setup a dependency on EJB remote tx repository service, if this EJB exposes atleast one remote view
+        this.addRemoteTransactionsRepositoryDependency();
 
     }
 
@@ -374,15 +378,18 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     private void setupRemoteViewInterceptors(final EJBViewDescription view) {
-        if(view.getMethodIntf() == MethodIntf.REMOTE || view.getMethodIntf() == MethodIntf.HOME) {
+        if (view.getMethodIntf() == MethodIntf.REMOTE || view.getMethodIntf() == MethodIntf.HOME) {
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                    if(Remote.class.isAssignableFrom(configuration.getViewClass())) {
+                    if (Remote.class.isAssignableFrom(configuration.getViewClass())) {
                         configuration.addViewInterceptor(NoSuchObjectExceptionTransformingInterceptorFactory.INSTANCE, InterceptorOrder.View.NO_SUCH_OBJECT_TRANSFORMER);
                     }
                 }
             });
+
+            // add the remote tx propogating interceptor
+            view.getConfigurators().add(new EJBRemoteTransactionsViewConfigurator());
         }
     }
 
@@ -403,6 +410,46 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * @param view The view for which the interceptor has to be setup
      */
     protected abstract void addCurrentInvocationContextFactory(ViewDescription view);
+
+    /**
+     * Adds a dependency for the ComponentConfiguration, on the {@link EJBRemoteTransactionsRepository} service,
+     * if the EJB exposes atleast one remote view
+     */
+    protected void addRemoteTransactionsRepositoryDependency() {
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+                if (this.hasRemoteView((EJBComponentDescription) description)) {
+                    // add a dependency on EJBRemoteTransactionsRepository service
+                    componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                        @Override
+                        public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
+                            serviceBuilder.addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, ejbComponentCreateService.getEJBRemoteTransactionsRepositoryInjector());
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Returns true if the passed EJB component description has atleast one remote view
+             * @param ejbComponentDescription
+             * @return
+             */
+            private boolean hasRemoteView(final EJBComponentDescription ejbComponentDescription) {
+                final Set<ViewDescription> views = ejbComponentDescription.getViews();
+                for (final ViewDescription view : views) {
+                    if (!(view instanceof EJBViewDescription)) {
+                        continue;
+                    }
+                    final MethodIntf viewType = ((EJBViewDescription) view).getMethodIntf();
+                    if (viewType == MethodIntf.REMOTE || viewType == MethodIntf.HOME) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+    }
 
     protected void setupSecurityInterceptors(final ViewDescription view) {
         // setup security interceptor for the component
@@ -842,7 +889,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void addScheduleMethod(final Method method, final AutoTimer timer) {
         List<AutoTimer> schedules = scheduleMethods.get(method);
-        if(schedules == null) {
+        if (schedules == null) {
             scheduleMethods.put(method, schedules = new ArrayList<AutoTimer>(1));
         }
         schedules.add(timer);

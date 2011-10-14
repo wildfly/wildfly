@@ -44,6 +44,7 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.context.spi.InvocationContext;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
@@ -83,6 +84,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
     private final String applicationName;
     private final String moduleName;
     private final String distinctName;
+    private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
 
 
     /**
@@ -117,6 +119,8 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         this.applicationName = ejbComponentCreateService.getApplicationName();
         this.distinctName = ejbComponentCreateService.getDistinctName();
         this.moduleName = ejbComponentCreateService.getModuleName();
+
+        this.ejbRemoteTransactionsRepository = ejbComponentCreateService.getEJBRemoteTransactionsRepository();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -393,5 +397,15 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
 
     public String getModuleName() {
         return moduleName;
+    }
+
+    /**
+     * Returns the {@link EJBRemoteTransactionsRepository} if there is atleast one remote view (either
+     * ejb3.x business remote, ejb2.x remote component or home view) is exposed. Else returns null.
+     *
+     * @return
+     */
+    public EJBRemoteTransactionsRepository getEjbRemoteTransactionsRepository() {
+        return this.ejbRemoteTransactionsRepository;
     }
 }

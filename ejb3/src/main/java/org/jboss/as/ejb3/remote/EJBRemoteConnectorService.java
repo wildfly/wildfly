@@ -21,9 +21,11 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
@@ -41,6 +43,7 @@ import org.jboss.remoting3.ServiceRegistrationException;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
+import javax.transaction.TransactionManager;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -60,6 +63,10 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
 
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
+
+    private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
+
+    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
 
     private volatile Registration registration;
 
@@ -189,7 +196,9 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                 switch (version) {
                     case 0x01:
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
-                        final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, this.serviceContainer, clientMarshallingStrategy, executorService.getValue());
+                        final DeploymentRepository deploymentRepository = EJBRemoteConnectorService.this.deploymentRepositoryInjectedValue.getValue();
+                        final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, deploymentRepository,
+                                EJBRemoteConnectorService.this.ejbRemoteTransactionsRepositoryInjectedValue.getValue(), clientMarshallingStrategy, executorService.getValue());
                         receiver.startReceiving();
                         break;
 
@@ -211,5 +220,13 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public InjectedValue<ExecutorService> getExecutorService() {
         return executorService;
+    }
+
+    public Injector<DeploymentRepository> getDeploymentRepositoryInjector() {
+        return this.deploymentRepositoryInjectedValue;
+    }
+
+    public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
+        return this.ejbRemoteTransactionsRepositoryInjectedValue;
     }
 }

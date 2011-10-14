@@ -37,13 +37,20 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.txn.TransactionManagerService;
+import org.jboss.as.txn.UserTransactionService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 /**
  * A {@link AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
@@ -76,6 +83,15 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         newControllers.add(installRuntimeService(context, model, verificationHandler));
+        // add ejb remote transactions repository service
+        final EJBRemoteTransactionsRepository transactionsRepository = new EJBRemoteTransactionsRepository();
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceController transactionRepositoryServiceController = serviceTarget.addService(EJBRemoteTransactionsRepository.SERVICE_NAME, transactionsRepository)
+                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, transactionsRepository.getTransactionManagerInjector())
+                .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, transactionsRepository.getUserTransactionInjector())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+        newControllers.add(transactionRepositoryServiceController);
     }
 
     ServiceController<EJBRemoteConnectorService> installRuntimeService(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler) {
@@ -89,6 +105,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 //TODO: we should not be piggy backing on management
                 .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.getEndpointInjector())
                 .addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
+                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.getDeploymentRepositoryInjector())
+                .addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, service.getEJBRemoteTransactionsRepositoryInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         if (verificationHandler != null) {
             target.addListener(verificationHandler);

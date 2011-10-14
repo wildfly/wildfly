@@ -38,13 +38,16 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Jaikiran Pai
@@ -75,6 +78,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String applicationName;
     private final String moduleName;
     private final String distinctName;
+
+    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepository = new InjectedValue<EJBRemoteTransactionsRepository>();
 
     /**
      * Construct a new instance.
@@ -240,5 +245,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public String getModuleName() {
         return moduleName;
+    }
+
+    public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
+        return this.ejbRemoteTransactionsRepository;
+    }
+
+    EJBRemoteTransactionsRepository getEJBRemoteTransactionsRepository() {
+        // remote tx repo is applicable only for remote views, hence the optionalValue
+        return this.ejbRemoteTransactionsRepository.getOptionalValue();
     }
 }

@@ -37,6 +37,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
+import org.xnio.IoUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -50,7 +51,7 @@ import java.util.concurrent.ExecutorService;
 /**
  * User: jpai
  */
-class MethodInvocationMessageHandler extends AbstractMessageHandler {
+class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
     private static final Logger logger = Logger.getLogger(MethodInvocationMessageHandler.class);
 
@@ -178,6 +179,8 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
                         // now log why we couldn't send back the method invocation failure message
                         logger.error("Could not write method invocation failure for method " + invokedMethod + " on bean named " + beanName
                                 + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
+                        // close the channel
+                        IoUtils.safeClose(channel);
                         return;
                     }
                 }
@@ -187,6 +190,8 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
                 } catch (IOException ioe) {
                     logger.error("Could not write method invocation result for method " + invokedMethod + " on bean named " + beanName
                             + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
+                    // close the channel
+                    IoUtils.safeClose(channel);
                     return;
                 }
             }

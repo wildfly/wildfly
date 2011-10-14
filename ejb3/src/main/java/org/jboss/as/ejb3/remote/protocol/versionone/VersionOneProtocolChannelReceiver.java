@@ -23,22 +23,21 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
  * User: jpai
@@ -52,24 +51,26 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     private static final byte HEADER_SESSION_OPEN_REQUEST = 0x01;
     private static final byte HEADER_INVOCATION_REQUEST = 0x03;
-
-    private final ServiceContainer serviceContainer;
+    private static final byte HEADER_TX_COMMIT_REQUEST = 0x0F;
+    private static final byte HEADER_TX_ROLLBACK_REQUEST = 0x10;
 
     private final Channel channel;
 
     private final DeploymentRepository deploymentRepository;
 
+    private final EJBRemoteTransactionsRepository transactionsRepository;
+
     private final String marshallingStrategy;
 
     private final ExecutorService executorService;
 
-    public VersionOneProtocolChannelReceiver(final Channel channel, final ServiceContainer serviceContainer, final String marshallingStrategy, final ExecutorService executorService) {
-        this.serviceContainer = serviceContainer;
+    public VersionOneProtocolChannelReceiver(final Channel channel, final DeploymentRepository deploymentRepository,
+                                             final EJBRemoteTransactionsRepository transactionsRepository, final String marshallingStrategy, final ExecutorService executorService) {
         this.marshallingStrategy = marshallingStrategy;
         this.channel = channel;
         this.executorService = executorService;
-
-        this.deploymentRepository = this.getDeploymentRepository();
+        this.deploymentRepository = deploymentRepository;
+        this.transactionsRepository = transactionsRepository;
     }
 
     public void startReceiving() {
@@ -115,27 +116,30 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             switch (header) {
                 case HEADER_INVOCATION_REQUEST:
                     messageHandler = new MethodInvocationMessageHandler(this.deploymentRepository, this.marshallingStrategy, this.executorService);
-                    messageHandler.processMessage(channel, messageInputStream);
                     break;
                 case HEADER_SESSION_OPEN_REQUEST:
                     messageHandler = new SessionOpenRequestHandler(this.deploymentRepository, this.marshallingStrategy, this.executorService);
-                    messageHandler.processMessage(channel, messageInputStream);
+                    break;
+                case HEADER_TX_COMMIT_REQUEST:
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.COMMIT, this.marshallingStrategy);
+                    break;
+                case HEADER_TX_ROLLBACK_REQUEST:
+                    messageHandler = new TransactionRequestHandler(this.transactionsRepository, this.executorService, TransactionRequestHandler.TransactionRequestType.ROLLBACK, this.marshallingStrategy);
                     break;
                 default:
                     logger.warn("Received unsupported message header 0x" + Integer.toHexString(header) + " on channel " + channel);
+                    return;
             }
+            // process the message
+            messageHandler.processMessage(channel, messageInputStream);
             // enroll for next message (whenever it's available)
             channel.receiveMessage(this);
 
         } catch (IOException e) {
             // log it
             logger.errorf(e, "Exception on channel %s from message %s", channel, messageInputStream);
-            try {
-                // no more messages can be sent or received on this channel
-                channel.close();
-            } catch (IOException e1) {
-                // ignore
-            }
+            // no more messages can be sent or received on this channel
+            IoUtils.safeClose(channel);
         } finally {
             IoUtils.safeClose(messageInputStream);
         }
@@ -172,12 +176,6 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             logger.warn("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
         }
     }
-
-    private DeploymentRepository getDeploymentRepository() {
-        final ServiceController<DeploymentRepository> serviceServiceController = (ServiceController<DeploymentRepository>) this.serviceContainer.getRequiredService(DeploymentRepository.SERVICE_NAME);
-        return serviceServiceController.getValue();
-    }
-
 
     private void sendModuleAvailability(DeploymentModuleIdentifier[] availableModules) throws IOException {
         final DataOutputStream outputStream = new DataOutputStream(this.channel.writeMessage());
