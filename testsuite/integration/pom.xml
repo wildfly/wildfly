@@ -221,6 +221,7 @@
                                 </goals>
                                 <configuration>
                                     <skipTests>false</skipTests>
+                                    <forkedProcessTimeoutInSeconds>900</forkedProcessTimeoutInSeconds>
                                     <includes>
                                         <include>org/jboss/as/test/smoke/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/**/*TestCase.java</include>
