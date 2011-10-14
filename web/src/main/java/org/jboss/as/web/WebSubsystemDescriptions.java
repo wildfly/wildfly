@@ -531,6 +531,11 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso"));
         node.get(REQUIRED).set(false);
 
+        addSsoCommonDescription(node, type, bundle);
+
+        return node;
+    }
+    static void addSsoCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
         node.get(type, Constants.CACHE_CONTAINER, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CACHE_CONTAINER, DESCRIPTION).set(bundle.getString("web.virtual-server.sso.cache-container"));
         node.get(type, Constants.CACHE_CONTAINER, REQUIRED).set(false);
@@ -543,8 +548,6 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.REAUTHENTICATE, DESCRIPTION).set(bundle.getString("web.virtual-server.sso.reauthenticate"));
         node.get(type, Constants.REAUTHENTICATE, REQUIRED).set(false);
         node.get(type, Constants.REAUTHENTICATE, DEFAULT).set(false);
-
-        return node;
     }
 
     static ModelNode getAccessLogCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
@@ -596,6 +599,18 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
         node.get(REQUIRED).set(false);
 
+        addRewriteCommonDescription(node, type, bundle);
+
+        node.get(type, Constants.CONDITION, TYPE).set(ModelType.LIST);
+        node.get(type, Constants.CONDITION, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition"));
+        node.get(type, Constants.CONDITION, REQUIRED).set(false);
+
+        addRewriteConditionnCommonDescription(node, type, bundle);
+
+        return node;
+    }
+
+    static void addRewriteCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
         node.get(type, Constants.PATTERN, TYPE).set(ModelType.STRING);
         node.get(type, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.pattern"));
         node.get(type, Constants.PATTERN, REQUIRED).set(false);
@@ -607,10 +622,8 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.FLAGS, TYPE).set(ModelType.STRING);
         node.get(type, Constants.FLAGS, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.flags"));
         node.get(type, Constants.FLAGS, REQUIRED).set(false);
-
-        node.get(type, Constants.CONDITION, TYPE).set(ModelType.LIST);
-        node.get(type, Constants.CONDITION, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition"));
-        node.get(type, Constants.CONDITION, REQUIRED).set(false);
+    }
+    static void addRewriteConditionnCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
         node.get(type, Constants.CONDITION, Constants.TEST, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CONDITION, Constants.TEST, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition.test"));
@@ -623,8 +636,6 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.CONDITION, Constants.FLAGS, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CONDITION, Constants.FLAGS, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition.flags"));
         node.get(type, Constants.CONDITION, Constants.FLAGS, REQUIRED).set(false);
-
-        return node;
     }
 
     static ModelNode getVirtualServerAdd(final Locale locale) {
@@ -816,17 +827,7 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite-add"));
         node.get(REQUIRED).set(false);
 
-        node.get(REQUEST_PROPERTIES, Constants.PATTERN, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.pattern"));
-        node.get(REQUEST_PROPERTIES, Constants.PATTERN, REQUIRED).set(false);
-
-        node.get(REQUEST_PROPERTIES, Constants.SUBSTITUTION, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, Constants.SUBSTITUTION, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.substitution"));
-        node.get(REQUEST_PROPERTIES, Constants.SUBSTITUTION, REQUIRED).set(false);
-
-        node.get(REQUEST_PROPERTIES, Constants.FLAGS, TYPE).set(ModelType.STRING);
-        node.get(REQUEST_PROPERTIES, Constants.FLAGS, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.flags"));
-        node.get(REQUEST_PROPERTIES, Constants.FLAGS, REQUIRED).set(false);
+        addRewriteCommonDescription(node, REQUEST_PROPERTIES, bundle);
 
         // TODO once the conditions can be added add the description here.
 
@@ -839,6 +840,9 @@ class WebSubsystemDescriptions {
         node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition-add"));
         node.get(REQUIRED).set(false);
+
+        addRewriteConditionnCommonDescription(node, REQUEST_PROPERTIES, bundle);
+
         return node;
     }
 
@@ -872,6 +876,8 @@ class WebSubsystemDescriptions {
         node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso-add"));
         node.get(REQUIRED).set(false);
+
+        addSsoCommonDescription(node, REQUEST_PROPERTIES, bundle);
         return node;
     }
 
