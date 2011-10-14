@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class RaRemove extends AbstractRaOperation implements OperationStepHandler {
+public class RaRemove extends RaOperationUtil implements OperationStepHandler {
     static final RaRemove INSTANCE = new RaRemove();
 
     public void execute(OperationContext context, ModelNode operation) {

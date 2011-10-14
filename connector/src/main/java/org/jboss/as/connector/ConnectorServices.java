@@ -76,6 +76,8 @@ public final class ConnectorServices {
 
     public static final ServiceName RESOURCEADAPTERS_SERVICE = ServiceName.JBOSS.append("resourceadapters");
 
+    public static final ServiceName RA_SERVICE = ServiceName.JBOSS.append("resourceadapters", "ra");
+
     public static final ServiceName DATASOURCES_SERVICE = ServiceName.JBOSS.append("datasources");
 
     public static final ServiceName JDBC_DRIVER_REGISTRY_SERVICE = ServiceName.JBOSS.append("jdbc-driver", "registry");
