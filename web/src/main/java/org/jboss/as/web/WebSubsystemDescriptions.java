@@ -881,6 +881,8 @@ class WebSubsystemDescriptions {
 
         addRewriteCommonDescription(node, REQUEST_PROPERTIES, bundle);
 
+        // TODO once the conditions can be added add the description here.
+
         return node;
     }
 
@@ -889,6 +891,7 @@ class WebSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition-add"));
+        node.get(REQUIRED).set(false);
 
         addRewriteConditionnCommonDescription(node, REQUEST_PROPERTIES, bundle);
 
