@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing.test;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -45,7 +46,7 @@ public class OperationParsingTestCase extends TestCase {
 
     @Test
     public void testOperationNameEndsWithDash() throws Exception {
-        DefaultCallbackHandler handler = new DefaultCallbackHandler();
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(false);
 
         parse("/subsystem=threads/thread-factory=*:validate-", handler);
 
@@ -257,9 +258,7 @@ public class OperationParsingTestCase extends TestCase {
         assertEquals("\"   \"", handler.getPropertyValue("another"));
     }
 
-    protected void parse(String opReq, DefaultCallbackHandler handler)
-            throws OperationFormatException {
+    protected void parse(String opReq, DefaultCallbackHandler handler) throws CommandFormatException {
         parser.parse(opReq, handler);
-        //ParsingUtil.parseOpRequest(opReq, handler);
     }
 }
