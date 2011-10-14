@@ -228,26 +228,26 @@ public class ThreadsSubsystemTestCase {
         assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(TYPE)
                 .asType());
         assertEquals(
-                ModelType.BIG_DECIMAL,
+                ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT)
                         .require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL,
+        assertEquals(ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU)
                         .require(TYPE).asType());
         assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(TYPE)
                 .asType());
-        assertEquals(ModelType.BIG_DECIMAL,
+        assertEquals(ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(VALUE_TYPE).require(COUNT)
                         .require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL,
+        assertEquals(ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(CORE_THREADS).require(VALUE_TYPE).require(PER_CPU)
                         .require(TYPE).asType());
         assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(TYPE)
                 .asType());
-        assertEquals(ModelType.BIG_DECIMAL,
+        assertEquals(ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(VALUE_TYPE).require(COUNT)
                         .require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL,
+        assertEquals(ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(QUEUE_LENGTH).require(VALUE_TYPE).require(PER_CPU)
                         .require(TYPE).asType());
         assertEquals(ModelType.OBJECT, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(TYPE)
@@ -269,10 +269,10 @@ public class ThreadsSubsystemTestCase {
                 .asType());
         assertEquals(ModelType.OBJECT, queueLessThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
         assertEquals(
-                ModelType.BIG_DECIMAL,
+                ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT)
                         .require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL,
+        assertEquals(ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU)
                         .require(TYPE).asType());
         assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
@@ -290,10 +290,10 @@ public class ThreadsSubsystemTestCase {
                 .asType());
         assertEquals(ModelType.OBJECT, scheduledThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
         assertEquals(
-                ModelType.BIG_DECIMAL,
+                ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT)
                         .require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL,
+        assertEquals(ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU)
                         .require(TYPE).asType());
         assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
@@ -309,10 +309,10 @@ public class ThreadsSubsystemTestCase {
                 .asType());
         assertEquals(ModelType.OBJECT, unboundedThreadPoolDesc.require(ATTRIBUTES).require(PROPERTIES).require(TYPE).asType());
         assertEquals(
-                ModelType.BIG_DECIMAL,
+                ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(COUNT)
                         .require(TYPE).asType());
-        assertEquals(ModelType.BIG_DECIMAL,
+        assertEquals(ModelType.INT,
                 boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(MAX_THREADS).require(VALUE_TYPE).require(PER_CPU)
                         .require(TYPE).asType());
         assertEquals(ModelType.LONG, boundedQueueThreadPoolDesc.require(ATTRIBUTES).require(KEEPALIVE_TIME).require(VALUE_TYPE)
