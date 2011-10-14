@@ -81,14 +81,9 @@
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
             </testResource>
             <testResource>
                 <directory>src/test/java</directory>
-                <filtering>false</filtering>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
