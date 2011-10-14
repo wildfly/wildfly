@@ -22,10 +22,13 @@
 
 package org.jboss.as.logging;
 
+import com.sun.tools.internal.xjc.model.Model;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Collection;
 
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
@@ -41,12 +44,12 @@ public class RootLoggerUnassignHandler extends LoggerUnassignHandler {
     static final RootLoggerUnassignHandler INSTANCE = new RootLoggerUnassignHandler();
 
     @Override
-    protected String getLoggerName(ModelNode operation) {
-        return "";
+    protected ModelNode getParent(final ModelNode model) {
+        return model.get(ROOT_LOGGER);
     }
 
     @Override
-    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
-        return HANDLERS.validateResolvedOperation(model.get(ROOT_LOGGER));
+    protected String getLoggerName(ModelNode operation) {
+        return "";
     }
 }

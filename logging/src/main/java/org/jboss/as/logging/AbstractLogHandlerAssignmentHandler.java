@@ -50,13 +50,15 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
      *
      * @throws OperationFailedException if an error occurs.
      */
-    protected void updateHandlersForAssign(final AttributeDefinition handlerAttribute, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void updateHandlersForAssign(final AttributeDefinition handlerAttribute, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final String handlerName = getHandlerName(operation);
-        if (handlerExists(handlerName, handlerAttribute, operation)) {
+        final ModelNode parent = getParent(model);
+        if (handlerExists(handlerName, handlerAttribute, parent)) {
             throw createFailureMessage(MESSAGES.handlerAlreadyDefined(handlerName));
         }
-        getAssignedHandlers(operation).add(handlerName);
-        handlerAttribute.validateAndSet(operation, model);
+        parent.get(handlerAttribute.getName()).add(handlerName);
+        // getParent(model).get(handlerAttribute.getName()).set(getAssignedHandlers(model).add(handlerName));
+        // applyNewHandlers(handlerAttribute.getName(), model, getAssignedHandlers(model).add(handlerName));
     }
 
     /**
@@ -70,11 +72,12 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
      *
      * @throws OperationFailedException if an error occurs.
      */
-    protected void updateHandlersForUnassign(final AttributeDefinition handlerAttribute, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void updateHandlersForUnassign(final AttributeDefinition handlerAttribute, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final String handlerName = getHandlerName(operation);
-        if (handlerExists(handlerName, handlerAttribute, operation)) {
+        final ModelNode parent = getParent(model);
+        if (handlerExists(handlerName, handlerAttribute, parent)) {
             // Get the current subhandlers
-            final ModelNode currentSubhandlers = getAssignedHandlers(model);
+            final ModelNode currentSubhandlers = handlerAttribute.validateResolvedOperation(parent);
             // Create new list of subhandlers without the handler being removed
             final List<ModelNode> newSubhandlers = new ArrayList<ModelNode>();
             for (ModelNode node : currentSubhandlers.asList()) {
@@ -83,8 +86,8 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
                 }
                 newSubhandlers.add(node);
             }
-            // Replace the current handlers with the new handlers
-            model.get(handlerAttribute.getName()).set(newSubhandlers);
+            parent.get(handlerAttribute.getName()).set(newSubhandlers);
+            //applyNewHandlers(handlerAttribute.getName(), model, newSubhandlers);
         } else {
             // Subhandler not found
             throw createFailureMessage(MESSAGES.cannotUnassignHandler(handlerName));
@@ -117,7 +120,26 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
      */
     protected boolean handlerExists(final String handlerName, final AttributeDefinition handlerAttribute, final ModelNode model) throws OperationFailedException {
         final ModelNode assignedHandlers = model.get(handlerAttribute.getName());
-        return (assignedHandlers.isDefined() && assignedHandlers.asList().contains(model.get(handlerName)));
+        if (assignedHandlers.isDefined()) {
+            final List<ModelNode> handlers = assignedHandlers.asList();
+            for (ModelNode handler : handlers) {
+                if (handler.asString().equals(handlerName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the parent node, which by default is the model passed in.
+     *
+     * @param model the model to lookup the parent in.
+     *
+     * @return the parent node.
+     */
+    protected ModelNode getParent(final ModelNode model) {
+        return model;
     }
 
     /**
@@ -130,15 +152,4 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
      * @throws OperationFailedException if a failure occurs.
      */
     protected abstract String getHandlerName(ModelNode model) throws OperationFailedException;
-
-    /**
-     * Returns the model node of the handlers that are already assigned.
-     *
-     * @param model the model that contains the handlers.
-     *
-     * @return the currently installed handlers.
-     *
-     * @throws OperationFailedException if a failure occurs.
-     */
-    protected abstract ModelNode getAssignedHandlers(ModelNode model) throws OperationFailedException;
 }

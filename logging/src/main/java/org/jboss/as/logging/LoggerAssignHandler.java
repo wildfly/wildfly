@@ -22,7 +22,6 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -38,7 +37,6 @@ import java.util.List;
 import java.util.logging.Handler;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.HANDLER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
@@ -55,7 +53,6 @@ public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
 
     @Override
     protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        NAME.validateAndSet(operation, model);
         updateHandlersForAssign(HANDLERS, operation, model);
     }
 
@@ -70,25 +67,22 @@ public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
     }
 
     @Override
-    protected ModelNode getAssignedHandlers(ModelNode model) throws OperationFailedException {
-        return HANDLER.validateResolvedOperation(model);
-    }
-
-    @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         String loggerName = getLoggerName(operation);
         String handlerName = getHandlerName(operation);
 
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-        ServiceController<?> loggerHandlerController = serviceRegistry.getService(LogServices.loggerHandlerName(loggerName,handlerName));
+        ServiceController<?> loggerHandlerController = serviceRegistry.getService(LogServices.loggerHandlerName(loggerName, handlerName));
         final ServiceController<Handler> handlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerName));
 
         if (loggerHandlerController != null) {
             throw createFailureMessage(MESSAGES.handlerAlreadyDefined(handlerName));
         }
 
-        if (handlerController == null) throw createFailureMessage(MESSAGES.handlerNotFound(handlerName));
+        if (handlerController == null) {
+            throw createFailureMessage(MESSAGES.handlerNotFound(handlerName));
+        }
 
         ServiceTarget target = context.getServiceTarget();
         LoggerHandlerService service = new LoggerHandlerService(loggerName);

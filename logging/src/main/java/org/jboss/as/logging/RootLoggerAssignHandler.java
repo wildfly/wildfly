@@ -25,6 +25,8 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
+import java.util.Collection;
+
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 
@@ -39,8 +41,8 @@ public class RootLoggerAssignHandler extends LoggerAssignHandler {
     static final RootLoggerAssignHandler INSTANCE = new RootLoggerAssignHandler();
 
     @Override
-    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
-        return HANDLERS.validateOperation(model.get(ROOT_LOGGER));
+    protected ModelNode getParent(final ModelNode model) {
+        return model.get(ROOT_LOGGER);
     }
 
     @Override

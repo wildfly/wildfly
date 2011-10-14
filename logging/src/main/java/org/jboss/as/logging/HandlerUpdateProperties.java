@@ -64,7 +64,6 @@ public abstract class HandlerUpdateProperties<T extends Handler> extends Abstrac
         this.attributes = new HashSet<String>(attributes);
         this.attributes.addAll(attributes);
         this.attributeDefinitions = new ArrayList<AttributeDefinition>();
-        this.attributeDefinitions.add(NAME);
         this.attributeDefinitions.add(ENCODING);
         this.attributeDefinitions.add(FORMATTER);
         this.attributeDefinitions.add(LEVEL);
