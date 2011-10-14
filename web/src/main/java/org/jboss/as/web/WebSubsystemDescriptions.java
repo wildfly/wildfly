@@ -843,6 +843,7 @@ class WebSubsystemDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition"));
+        // TODO common part missing.
         return node;
     }
 
@@ -932,4 +933,5 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso-remove"));
         return node;
     }
+
 }
