@@ -141,6 +141,8 @@ class WebSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
+
+
         return getConnectorCommonDescription(node, ATTRIBUTES, bundle);
     }
 
@@ -419,7 +421,9 @@ class WebSubsystemDescriptions {
         return node;
     }
 
-    static ModelNode addSSLCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+    static ModelNode getSSLCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+
+        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl"));
 
         node.get(type, Constants.NAME, TYPE).set(ModelType.STRING);
         node.get(type, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.ssl.name"));
@@ -474,12 +478,6 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.SESSION_TIMEOUT, REQUIRED).set(false);
 
         return node;
-    }
-
-    static ModelNode getSSLCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
-
-        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl"));
-        return addSSLCommonDescription(node, type, bundle);
     }
 
     static ModelNode getConnectorAdd(final Locale locale) {
@@ -549,6 +547,7 @@ class WebSubsystemDescriptions {
             node.get(CHILDREN, Constants.REWRITE, MODEL_DESCRIPTION).setEmptyObject();
             node.get(CHILDREN, Constants.SSO, DESCRIPTION).set(bundle.getString("web.virtual-server.sso"));
             node.get(CHILDREN, Constants.SSO, MODEL_DESCRIPTION).setEmptyObject();
+
         }
 
         return node;
@@ -757,8 +756,8 @@ class WebSubsystemDescriptions {
     public static ModelNode getStaticResourceDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
 
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
         return getStaticResourcesCommonDescription(node, ATTRIBUTES, bundle);
     }
     public static ModelNode getStaticResourceDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
@@ -779,14 +778,6 @@ class WebSubsystemDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
-
-        node.get(CHILDREN, Constants.STATIC_RESOURCES, DESCRIPTION).set(bundle.getString("web.configuration.static"));
-        node.get(CHILDREN, Constants.STATIC_RESOURCES, MODEL_DESCRIPTION).setEmptyObject();
-        node.get(CHILDREN, Constants.JSP_CONFIGURATION, DESCRIPTION).set(bundle.getString("web.configuration.jsp"));
-        node.get(CHILDREN, Constants.JSP_CONFIGURATION, MODEL_DESCRIPTION).setEmptyObject();
-        node.get(CHILDREN, Constants.CONTAINER, DESCRIPTION).set(bundle.getString("web.configuration.container"));
-        node.get(CHILDREN, Constants.CONTAINER, MODEL_DESCRIPTION).setEmptyObject();
-
         return node;
     }
     public static ModelNode getContainerDescription(Locale locale) {
@@ -831,6 +822,7 @@ class WebSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
         return getRewriteCommonDescription(node, ATTRIBUTES, bundle);
+
     }
 
     public static ModelNode getAccessLogDescription(Locale locale) {
@@ -851,6 +843,7 @@ class WebSubsystemDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition"));
+        // TODO common part missing.
         return node;
     }
 
@@ -938,23 +931,6 @@ class WebSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(REMOVE);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso-remove"));
-        return node;
-    }
-    public static ModelNode getSSLAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl-add"));
-
-        addSSLCommonDescription(node, REQUEST_PROPERTIES, bundle);
-        return node;
-    }
-
-    public static ModelNode getSSLRemove(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(REMOVE);
-        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl-remove"));
         return node;
     }
 
