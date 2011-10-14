@@ -59,6 +59,7 @@ public class JBossWebRealmService implements Service<Realm> {
         jbossWebRealm.setAuthenticationManager(sdc.getAuthenticationManager());
         jbossWebRealm.setAuthorizationManager(sdc.getAuthorizationManager());
         jbossWebRealm.setMappingManager(sdc.getMappingManager());
+        jbossWebRealm.setAuditManager(sdc.getAuditManager());
         jbossWebRealm.setPrincipalVersusRolesMap(principalVersusRolesMap);
         this.realm = jbossWebRealm;
     }
