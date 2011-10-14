@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-<<<<<<< HEAD:testsuite/integration/src/test/java/org/jboss/as/test/integration/web/security/servlet3/SecuredServlet.java
 /**
  * A simple servlet that just writes back a string
  *
@@ -50,23 +49,5 @@ public class SecuredServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Writer writer = resp.getWriter();
         writer.write("GOOD");
-=======
-@SuppressWarnings("serial")
-public class EndpointServlet extends HttpServlet {
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        PrintWriter out = res.getWriter();
-        String testParam = req.getParameter("test");
-        if ("plain".equals(testParam)) {
-            out.println("Hello from Servlet");
-        } else if ("initProp".equals(testParam)) {
-            String value = getInitParameter(testParam);
-            out.println(testParam + "=" + value);
-        } else {
-            throw new IllegalArgumentException("Invalid 'test' parameter: " + testParam);
-        }
-        out.close();
->>>>>>> [AS7-1601] Cannot deploy OSGi webap bundle with *.war suffix:testsuite/integration/src/test/java/org/jboss/as/testsuite/integration/osgi/webapp/bundle/EndpointServlet.java
     }
 }
