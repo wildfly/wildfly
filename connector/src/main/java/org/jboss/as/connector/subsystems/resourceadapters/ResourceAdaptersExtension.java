@@ -64,11 +64,19 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_C
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_ADMIN_OBJECT_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_CONFIG_PROPERTIES_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_CONNECTION_DEFINITION_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADD_RESOURCEADAPTER_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADMIN_OBJECT_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.CONFIG_PROPERTIES_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.CONNECTION_DEFINITION_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.FLUSH_IDLE_CONNECTION_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.REMOVE_ADMIN_OBJECT_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.REMOVE_CONFIG_PROPERTIES_DESC;
+import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.REMOVE_CONNECTION_DEFINITION_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.REMOVE_RESOURCEADAPTER_DESC;
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.TEST_CONNECTION_DESC;
@@ -77,6 +85,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.List;
 import java.util.Locale;
@@ -97,10 +106,15 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -132,21 +146,56 @@ public class ResourceAdaptersExtension implements Extension {
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
 
+        ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler();
+
+
         registration.registerXMLElementWriter(ResourceAdapterSubsystemParser.INSTANCE);
 
         // Remoting subsystem description and operation handlers
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
         subsystem.registerOperationHandler(ADD, ResourceAdaptersSubSystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, ResourceAdaptersSubsystemDescribeHandler.INSTANCE,
-                ResourceAdaptersSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         final ManagementResourceRegistration resourceadapter = subsystem.registerSubModel(PathElement.pathElement(RESOURCEADAPTER_NAME),
-                RESOURCEADAPTER_DESC);
+                GenericSubsystemDescribeHandler.INSTANCE);
         resourceadapter.registerOperationHandler(ADD, RaAdd.INSTANCE, ADD_RESOURCEADAPTER_DESC, false);
         resourceadapter.registerOperationHandler(REMOVE, RaRemove.INSTANCE, REMOVE_RESOURCEADAPTER_DESC, false);
+        for (final String attribute : ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
+            resourceadapter.registerReadWriteAttribute(attribute, null,
+                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+        }
+
+        final ManagementResourceRegistration configAdapter = resourceadapter.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
+        configAdapter.registerOperationHandler(ADD, ConfigPropertyAdd.INSTANCE, ADD_CONFIG_PROPERTIES_DESC, false);
+        configAdapter.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
+
+        final ManagementResourceRegistration connectionDefinition = resourceadapter.registerSubModel(PathElement.pathElement(CONNECTIONDEFINITIONS_NAME), CONNECTION_DEFINITION_DESC);
+        connectionDefinition.registerOperationHandler(ADD, ConnectionDefinitionAdd.INSTANCE, ADD_CONNECTION_DEFINITION_DESC, false);
+        connectionDefinition.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONNECTION_DEFINITION_DESC, false);
+        connectionDefinition.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+
+        final ManagementResourceRegistration configCF = connectionDefinition.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
+        configCF.registerOperationHandler(ADD, CDConfigPropertyAdd.INSTANCE, ADD_CONFIG_PROPERTIES_DESC, false);
+        configCF.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
+        for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
+            connectionDefinition.registerReadWriteAttribute(attribute.getName(), null,
+                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+        }
+
+        final ManagementResourceRegistration adminObject = resourceadapter.registerSubModel(PathElement.pathElement(ADMIN_OBJECTS_NAME), ADMIN_OBJECT_DESC);
+        adminObject.registerOperationHandler(ADD, AdminObjectAdd.INSTANCE, ADD_ADMIN_OBJECT_DESC, false);
+        adminObject.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_ADMIN_OBJECT_DESC, false);
+
+        final ManagementResourceRegistration configAO = adminObject.registerSubModel(PathElement.pathElement(CONFIG_PROPERTIES.getName()), CONFIG_PROPERTIES_DESC);
+        configAO.registerOperationHandler(ADD, AOConfigPropertyAdd.INSTANCE, ADD_CONFIG_PROPERTIES_DESC, false);
+        configAO.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONFIG_PROPERTIES_DESC, false);
+        for (final SimpleAttributeDefinition attribute : ResourceAdaptersSubsystemProviders.ADMIN_OBJECTS_NODEATTRIBUTE) {
+            adminObject.registerReadWriteAttribute(attribute.getName(), null,
+                    reloadRequiredWriteAttributeHandler, Storage.CONFIGURATION);
+        }
 
         resourceadapter.registerOperationHandler("flush-idle-connection-in-pool",
-                PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
+                PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false);
         resourceadapter.registerOperationHandler("flush-all-connection-in-pool",
                 PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false);
         resourceadapter.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
@@ -155,11 +204,6 @@ public class ResourceAdaptersExtension implements Extension {
         for (final String attributeName : PoolMetrics.ATTRIBUTES) {
             resourceadapter.registerMetric(attributeName, PoolMetrics.RaPoolMetricsHandler.INSTANCE);
 
-        }
-
-        for (final String attributeName : PoolConfigurationRWHandler.ATTRIBUTES) {
-            resourceadapter.registerReadWriteAttribute(attributeName, PoolConfigurationReadHandler.INSTANCE,
-                    RaPoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
         }
 
     }
@@ -208,20 +252,20 @@ public class ResourceAdaptersExtension implements Extension {
 
             BOOTSTRAPCONTEXT.marshallAsElement(ra, false, streamWriter);
             TRANSACTIONSUPPORT.marshallAsElement(ra, false, streamWriter);
-            writeConfigProperties(streamWriter, ra);
+            writeNewConfigProperties(streamWriter, ra);
 
             if (ra.hasDefined(CONNECTIONDEFINITIONS_NAME)) {
                 streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITIONS.getLocalName());
-                for (ModelNode conDef : ra.get(CONNECTIONDEFINITIONS_NAME).asList()) {
-                    writeConDef(streamWriter, conDef);
+                for (Property conDef : ra.get(CONNECTIONDEFINITIONS_NAME).asPropertyList()) {
+                    writeConDef(streamWriter, conDef.getValue());
                 }
                 streamWriter.writeEndElement();
             }
 
             if (ra.hasDefined(ADMIN_OBJECTS_NAME)) {
                 streamWriter.writeStartElement(ResourceAdapter.Tag.ADMIN_OBJECTS.getLocalName());
-                for (ModelNode adminObject : ra.get(ADMIN_OBJECTS_NAME).asList()) {
-                    writeAdminObject(streamWriter, adminObject);
+                for (Property adminObject : ra.get(ADMIN_OBJECTS_NAME).asPropertyList()) {
+                    writeAdminObject(streamWriter, adminObject.getValue());
                 }
                 streamWriter.writeEndElement();
             }
@@ -238,6 +282,17 @@ public class ResourceAdaptersExtension implements Extension {
 
             }
         }
+
+        private void writeNewConfigProperties(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
+            if (ra.hasDefined(CONFIG_PROPERTIES.getName())) {
+                for (Property connectionProperty : ra.get(CONFIG_PROPERTIES.getName()).asPropertyList()) {
+                    writeProperty(streamWriter, ra, connectionProperty.getName(), connectionProperty
+                            .getValue().get("value").asString(), ResourceAdapter.Tag.CONFIG_PROPERTY.getLocalName());
+                }
+
+            }
+        }
+
 
         private void writeProperty(XMLExtendedStreamWriter writer, ModelNode node, String name, String value, String localName)
                 throws XMLStreamException {
@@ -258,7 +313,7 @@ public class ResourceAdaptersExtension implements Extension {
             USE_JAVA_CONTEXT.marshallAsAttribute(adminObject, false, streamWriter);
             POOL_NAME.marshallAsAttribute(adminObject, false, streamWriter);
 
-            writeConfigProperties(streamWriter, adminObject);
+            writeNewConfigProperties(streamWriter, adminObject);
             streamWriter.writeEndElement();
 
         }
@@ -273,7 +328,7 @@ public class ResourceAdaptersExtension implements Extension {
             USE_CCM.marshallAsAttribute(conDef, false, streamWriter);
 
 
-            writeConfigProperties(streamWriter, conDef);
+            writeNewConfigProperties(streamWriter, conDef);
 
             if (conDef.hasDefined(MAX_POOL_SIZE.getName()) || conDef.hasDefined(MIN_POOL_SIZE.getName()) || conDef.hasDefined(POOL_USE_STRICT_MIN.getName())
                     || conDef.hasDefined(POOL_PREFILL.getName())) {
@@ -445,45 +500,6 @@ public class ResourceAdaptersExtension implements Extension {
     private static void setLongIfNotNull(final ModelNode node, final String identifier, final Long value) {
         if (value != null) {
             node.get(identifier).set(value);
-        }
-    }
-
-
-
-    private static class ResourceAdaptersSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final ResourceAdaptersSubsystemDescribeHandler INSTANCE = new ResourceAdaptersSubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final ModelNode address = new ModelNode();
-            address.add(ModelDescriptionConstants.SUBSYSTEM, RESOURCEADAPTERS_NAME);
-            address.protect();
-
-            final ModelNode add = new ModelNode();
-            add.get(OP).set(ADD);
-            add.get(OP_ADDR).set(address);
-
-            ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-            // FIXME remove when equivalent workaround in
-            // ResourceAdaptersSubsystemAdd is gone
-            boolean workaround = true;
-
-            if (workaround) {
-                if (model.hasDefined(RESOURCEADAPTERS_NAME)) {
-                    ModelNode ras = model.get(RESOURCEADAPTERS_NAME);
-                    add.get(RESOURCEADAPTERS_NAME).set(ras);
-                }
-            } else {
-                // TODO Fill in the details
-            }
-
-            context.getResult().add(add);
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
         }
     }
 

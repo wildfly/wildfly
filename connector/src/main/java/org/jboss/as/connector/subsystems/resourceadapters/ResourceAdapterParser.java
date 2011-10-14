@@ -23,10 +23,12 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -136,6 +138,13 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         operation.get(OP).set(ADD);
 
         String archiveName = null;
+        HashMap<String, ModelNode> configPropertiesOperations = new HashMap<String, ModelNode>();
+        HashMap<String, ModelNode> connectionDefinitionsOperations = new HashMap<String, ModelNode>();
+        HashMap<String, HashMap<String, ModelNode>> cfConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
+
+        HashMap<String, ModelNode> adminObjectsOperations = new HashMap<String, ModelNode>();
+        HashMap<String, HashMap<String, ModelNode>> aoConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
+
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
@@ -147,6 +156,52 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
                             operation.get(OP_ADDR).set(raAddress);
                             list.add(operation);
+
+                            for (Map.Entry<String, ModelNode> entry : configPropertiesOperations.entrySet()) {
+                                final ModelNode env = raAddress.clone();
+                                env.add(CONFIG_PROPERTIES.getName(), entry.getKey());
+                                env.protect();
+
+                                entry.getValue().get(OP_ADDR).set(env);
+                                list.add(entry.getValue());
+                            }
+
+                            for (Map.Entry<String, ModelNode> entry : connectionDefinitionsOperations.entrySet()) {
+                                final ModelNode env = raAddress.clone();
+                                env.add(CONNECTIONDEFINITIONS_NAME, entry.getKey());
+                                env.protect();
+
+                                entry.getValue().get(OP_ADDR).set(env);
+                                list.add(entry.getValue());
+
+                                for (Map.Entry<String, ModelNode> configEntry : cfConfigPropertiesOperations.get(entry.getKey()).entrySet()) {
+                                    final ModelNode configEnv = env.clone();
+                                    configEnv.add(CONFIG_PROPERTIES.getName(), configEntry.getKey());
+                                    configEnv.protect();
+
+                                    configEntry.getValue().get(OP_ADDR).set(configEnv);
+                                    list.add(configEntry.getValue());
+                                }
+                            }
+
+                            for (Map.Entry<String, ModelNode> entry : adminObjectsOperations.entrySet()) {
+                                final ModelNode env = raAddress.clone();
+                                env.add(ADMIN_OBJECTS_NAME, entry.getKey());
+                                env.protect();
+
+                                entry.getValue().get(OP_ADDR).set(env);
+                                list.add(entry.getValue());
+
+                                for (Map.Entry<String, ModelNode> configEntry : aoConfigPropertiesOperations.get(entry.getKey()).entrySet()) {
+                                    final ModelNode configEnv = env.clone();
+                                    configEnv.add(CONFIG_PROPERTIES.getName(), configEntry.getKey());
+                                    configEnv.protect();
+
+                                    configEntry.getValue().get(OP_ADDR).set(configEnv);
+                                    list.add(configEntry.getValue());
+                                }
+                            }
+
                             return;
                         } else {
                             throw new ParserException(bundle.requiredElementMissing(ARCHIVE.getName(), RESOURCEADAPTER_NAME));
@@ -168,12 +223,12 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             break;
                         }
                         case ADMIN_OBJECT: {
-                            parseAdminObjects(reader, operation);
+                            parseAdminObjects(reader, adminObjectsOperations, aoConfigPropertiesOperations);
                             break;
                         }
 
                         case CONNECTION_DEFINITION: {
-                            parseConnectionDefinitions(reader, operation);
+                            parseConnectionDefinitions(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations);
                             break;
                         }
                         case BEAN_VALIDATION_GROUP: {
@@ -189,11 +244,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             break;
                         }
                         case CONFIG_PROPERTY: {
-                            final Location location = reader.getLocation();
-                            String name = rawAttributeText(reader, "name");
-                            String value = rawElementText(reader);
-                            ModelNode node = CONFIG_PROPERTIES.parse(value, location);
-                            operation.get(CONFIG_PROPERTIES.getName(), name).set(node);
+                            parseConfigProperties(reader, configPropertiesOperations);
                             break;
 
                         }
