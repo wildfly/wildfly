@@ -590,6 +590,13 @@ class WebSubsystemDescriptions {
 
     static void addAccessLogCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
+        addAccessLogCommonDescription(node, type, bundle);
+
+        return node;
+    }
+
+    static void addAccessLogCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+
         node.get(type, Constants.PATTERN, TYPE).set(ModelType.STRING);
         node.get(type, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.pattern"));
         node.get(type, Constants.PATTERN, REQUIRED).set(false);
