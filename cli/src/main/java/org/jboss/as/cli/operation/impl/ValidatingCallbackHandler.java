@@ -90,7 +90,15 @@ public abstract class ValidatingCallbackHandler implements CallbackHandler {
     public void propertyName(int index, String propertyName)
             throws OperationFormatException {
 
-        assertValidParameterName(propertyName);
+        // TODO this is not nice
+        if(propertyName.length() > 1 && propertyName.charAt(0) == '-' && propertyName.charAt(1) == '-') {
+            assertValidParameterName(propertyName.substring(2));
+        } else if(propertyName.length() > 0 && propertyName.charAt(0) == '-') {
+            assertValidParameterName(propertyName.substring(1));
+        } else {
+            assertValidParameterName(propertyName);
+        }
+
         validatedPropertyName(index, propertyName);
     }
 
@@ -103,7 +111,16 @@ public abstract class ValidatingCallbackHandler implements CallbackHandler {
     public void property(String name, String value, int nameValueSeparatorIndex)
             throws OperationFormatException {
 
-        assertValidParameterName(name);
+        if(name != null) {
+            // TODO this is not nice
+            if(name.length() > 1 && name.charAt(0) == '-' && name.charAt(1) == '-') {
+                assertValidParameterName(name.substring(2));
+            } else if(name.length() > 0 && name.charAt(0) == '-') {
+                assertValidParameterName(name.substring(1));
+            } else {
+                assertValidParameterName(name);
+            }
+        }
 
         if (value.isEmpty()) {
             throw new OperationFormatException("Parameter '" + value + "' is missing value.");

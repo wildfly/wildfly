@@ -61,12 +61,12 @@ public class ValidationTestCase {
     public void testOperationNames() {
 
         assertValidOperation("_");
-        //assertInvalidOperation("-");
-        //assertInvalidOperation("_-");
+        assertInvalidOperation("-");
+        assertInvalidOperation("_-");
         assertValidOperation("_-_");
     }
 
-/* TODO  @Test
+  @Test
     public void testParameterNames() {
 
         assertValidParamName("_");
@@ -74,7 +74,7 @@ public class ValidationTestCase {
         assertInvalidParamName("_-");
         assertValidParamName("_-_");
     }
-*/
+
     protected void assertValidType(String type) {
         assertValidInput(type);
     }
