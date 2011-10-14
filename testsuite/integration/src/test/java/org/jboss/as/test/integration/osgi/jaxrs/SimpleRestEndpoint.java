@@ -49,7 +49,7 @@ public class SimpleRestEndpoint {
 
             if (context == null) {
                 log.warnf("BundleContext not injected");
-                context = getBundleContextFromClass();
+                context = getBundleContextFromClass(ConfigurationAdmin.class);
             }
 
             ServiceTracker tracker = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null) {
@@ -73,8 +73,8 @@ public class SimpleRestEndpoint {
         return service;
     }
 
-    private BundleContext getBundleContextFromClass() {
-        BundleReference bref = (BundleReference) ConfigurationAdmin.class.getClassLoader();
+    private BundleContext getBundleContextFromClass(Class<?> clazz) {
+        BundleReference bref = (BundleReference) clazz.getClassLoader();
         Bundle bundle = bref.getBundle();
         if (bundle.getState() != Bundle.ACTIVE) {
             try {
