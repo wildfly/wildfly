@@ -32,7 +32,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert
@@ -88,7 +87,7 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
     private ModelNode getAddOperation(String name, String value) {
         ModelNode address = new ModelNode();
         address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(ModelConstants.FRAMEWORK_PROPERTY, name));
+        address.add(new ModelNode().set(ModelConstants.PROPERTY, name));
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         op.get(ModelConstants.VALUE).set(value);
         return op;
