@@ -44,7 +44,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +54,7 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient()
 @RunWith(Arquillian.class)
-@Ignore("Ignore failing tests")
+//@Ignore("Ignore failing tests")
 public class JMSTopicManagementTestCase {
 
     private static JMSAdminOperations adminSupport;
@@ -142,10 +141,11 @@ public class JMSTopicManagementTestCase {
 
         ModelNode result = execute(getTopicOperation("list-all-subscriptions"), true);
         final ModelNode subscriber = result.asList().get(0);
+        System.out.println(result);
 
 
         ModelNode operation = getTopicOperation("list-messages-for-subscription");
-        operation.get("queue-name").set(subscriber.get("queue-name"));
+        operation.get("queue-name").set(subscriber.get("queueName"));
 
         result = execute(operation, true);
         Assert.assertTrue(result.isDefined());
@@ -168,7 +168,7 @@ public class JMSTopicManagementTestCase {
 
 
         ModelNode operation = getTopicOperation("count-messages-for-subscription");
-        operation.get("client-id").set(subscriber.get("client-id"));
+        operation.get("client-id").set(subscriber.get("clientID"));
         operation.get("subscription-name").set("testCountMessagesForSubscription");
 
         result = execute(operation, true);

@@ -529,8 +529,6 @@ public class GlobalOperationHandlers {
         }
     }
 
-    ;
-
     /**
      * {@link org.jboss.as.controller.OperationStepHandler} querying the children resources of a given "child-type".
      */

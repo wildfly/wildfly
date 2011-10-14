@@ -248,7 +248,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            context.getFailureDescription().set(e.getLocalizedMessage());
+            context.getFailureDescription().set(e.toString());
         }
 
         context.completeStep();

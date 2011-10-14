@@ -39,7 +39,6 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,7 +49,7 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient()
 @RunWith(Arquillian.class)
-@Ignore("Ignore failing tests")
+//@Ignore("Ignore failing tests")
 public class AddressControlManagementTestCase {
 
     private static JMSAdminOperations adminSupport;
@@ -153,7 +152,10 @@ public class AddressControlManagementTestCase {
         ModelNode result = execute(op, true);
         Assert.assertEquals(ModelType.OBJECT, result.getType());
 
-        Assert.assertEquals(ModelType.OBJECT, result.get("roles").getType());
+        Assert.assertEquals(ModelType.LIST, result.get("roles").getType());
+        if (result.get("roles").asInt() > 0) {
+            Assert.assertEquals(ModelType.OBJECT, result.get("roles").get(0).getType());
+        }
 
         Assert.assertEquals(ModelType.INT, result.get("number-of-pages").getType());
 
@@ -181,7 +183,10 @@ public class AddressControlManagementTestCase {
         ModelNode result = execute(getAddressOperation("get-roles-as-json"), true);
         Assert.assertEquals(ModelType.STRING, result.getType());
         ModelNode converted = ModelNode.fromJSONString(result.asString());
-        Assert.assertEquals(ModelType.OBJECT, converted.getType());
+        Assert.assertEquals(ModelType.LIST, converted.getType());
+        if (converted.asInt() > 0) {
+            Assert.assertEquals(ModelType.OBJECT, converted.get(0).getType());
+        }
     }
 
     private ModelNode getSubsystemOperation(String operationName) {
