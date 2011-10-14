@@ -174,28 +174,17 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testStandaloneXml() throws Exception {
-        standaloneXmlTest(false, false);
-    }
-
-    @Test
-    public void testStandalonePreviewXml() throws Exception {
-        standaloneXmlTest(true, false);
+        standaloneXmlTest( false);
     }
 
     @Test
     public void testStandaloneHAXml() throws Exception {
-        standaloneXmlTest(false, true);
+        standaloneXmlTest(true);
     }
 
-    @Test
-    public void testStandalonePreviewHAXml() throws Exception {
-        standaloneXmlTest(true, true);
-    }
+    private void standaloneXmlTest(boolean ha) throws Exception {
 
-    private void standaloneXmlTest(boolean preview, boolean ha) throws Exception {
-
-        String profile = preview ? (ha ? "standalone-preview-ha.xml" : "standalone-preview.xml")
-                                 : (ha ? "standalone-ha.xml" : "standalone.xml");
+        String profile = ha ? "standalone-ha.xml" : "standalone.xml";
         standaloneXmlTest(profile);
     }
 
@@ -230,20 +219,16 @@ public class ParseAndMarshalModelsTestCase {
 
     @Test
     public void testDomainXml() throws Exception {
-        domainXmlTest(false);
+        domainXmlTest();
     }
 
-    @Test
-    public void testDomainPreviewXml() throws Exception {
-        domainXmlTest(true);
-    }
 
-    private void domainXmlTest(boolean preview) throws Exception {
+    private void domainXmlTest() throws Exception {
         File file = new File("target/domain-copy.xml");
         if (file.exists()) {
             file.delete();
         }
-        copyFile(getOriginalDomainXml(preview), file);
+        copyFile(getOriginalDomainXml(), file);
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
@@ -599,11 +584,11 @@ public class ParseAndMarshalModelsTestCase {
         return f;
     }
 
-    private File getOriginalDomainXml(boolean preview) {
+    private File getOriginalDomainXml() {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         File f = getDomainConfigDir();
-        f = new File(f, preview ? "domain-preview.xml" : "domain.xml");
+        f = new File(f, "domain.xml");
         Assert.assertTrue(f.exists());
         return f;
     }

@@ -21,10 +21,11 @@
  */
 package org.jboss.as.test.smoke.flat.xml;
 
-import junit.framework.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.SAXException;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,11 +34,11 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.LinkedList;
-import java.util.List;
+
+import junit.framework.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  * A XSDValidationUnitTestCase.
@@ -75,16 +76,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     @Test
     public void testStandaloneHA() throws Exception {
         parseXml("standalone/configuration/standalone-ha.xml");
-    }
-
-    @Test
-    public void testStandalonePreview() throws Exception {
-        parseXml("standalone/configuration/standalone-preview.xml");
-    }
-
-    @Test
-    public void testStandalonePreviewHA() throws Exception {
-        parseXml("standalone/configuration/standalone-preview-ha.xml");
     }
 
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
