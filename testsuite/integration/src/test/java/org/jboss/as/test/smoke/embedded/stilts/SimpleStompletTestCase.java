@@ -20,7 +20,9 @@ import static org.jboss.as.test.smoke.embedded.stilts.bundle.SimpleStomplet.DEST
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -86,7 +88,7 @@ public class SimpleStompletTestCase {
         StompClient client = new StompClient("stomp://localhost");
         client.connect();
 
-        final List<String> outbound = new ArrayList<String>();
+        final Set<String> outbound = new HashSet<String>();
         final CountDownLatch outboundLatch = new CountDownLatch(2);
         SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
         builder.withMessageHandler(new MessageHandler() {
@@ -102,8 +104,8 @@ public class SimpleStompletTestCase {
         client.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg2"));
 
         Assert.assertTrue("No latch timeout", outboundLatch.await(3, TimeUnit.SECONDS));
-        Assert.assertEquals("msg1", outbound.get(0));
-        Assert.assertEquals("msg2", outbound.get(1));
+        Assert.assertTrue("Contains msg1", outbound.contains("msg1"));
+        Assert.assertTrue("Contains msg2", outbound.contains("msg2"));
 
         subscription.unsubscribe();
         client.disconnect();
@@ -115,7 +117,7 @@ public class SimpleStompletTestCase {
         StompClient client = new StompClient("stomp://localhost");
         client.connect();
 
-        final List<String> outbound = new ArrayList<String>();
+        final Set<String> outbound = new HashSet<String>();
         final CountDownLatch outboundLatch = new CountDownLatch(2);
         SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
         builder.withMessageHandler(new MessageHandler() {
@@ -133,8 +135,8 @@ public class SimpleStompletTestCase {
         tx.commit();
 
         Assert.assertTrue("No latch timeout", outboundLatch.await(3, TimeUnit.SECONDS));
-        Assert.assertEquals("msg1", outbound.get(0));
-        Assert.assertEquals("msg2", outbound.get(1));
+        Assert.assertTrue("Contains msg1", outbound.contains("msg1"));
+        Assert.assertTrue("Contains msg2", outbound.contains("msg2"));
 
         subscription.unsubscribe();
         client.disconnect();
