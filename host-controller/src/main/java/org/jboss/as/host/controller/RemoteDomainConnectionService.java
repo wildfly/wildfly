@@ -51,8 +51,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.TransactionalModelControllerOperationHandler;
 import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.domain.controller.operations.SlaveRegistrationError;
-import org.jboss.as.domain.controller.operations.SlaveRegistrationError.ErrorCode;
+import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.security.SecretIdentityService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
@@ -252,7 +251,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
         if (error != null) {
             if (error.getErrorCode() == ErrorCode.HOST_ALREADY_EXISTS) {
-                log.info(error.getErrorMessage() + " - exiting");
+                log.error(error.getErrorMessage() + " - exiting");
                 throw new HostAlreadyExistsException(error.getErrorMessage());
             }
             throw new IllegalStateException(error.getErrorMessage());
