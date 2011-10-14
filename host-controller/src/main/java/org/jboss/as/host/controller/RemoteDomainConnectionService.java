@@ -153,28 +153,31 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     /** {@inheritDoc} */
     public void register() {
-        // TODO egregious hack. Fix properly as part of AS7-794
         IllegalStateException ise = null;
         boolean connected = false;
-        long timeout = System.currentTimeMillis() + 5000;
-        while (!connected && System.currentTimeMillis() < timeout) {
+        //This takes about 30 seconds should be enough to start up master if booted at the same time
+        final long timeout = 30000;
+        final long endTime = System.currentTimeMillis() + timeout;
+        int retries = 0;
+        while (!connected) {
             try {
                connect();
                connected = true;
+               break;
             }
             catch (IllegalStateException e) {
+                if (System.currentTimeMillis() > endTime) {
+                    throw new IllegalStateException("Could not connect to master in " + retries + "attempts within  " + timeout + " ms", e);
+                }
                 ise = e;
                 try {
-                    Thread.sleep(100);
-                } catch (InterruptedException inter) {
-                    Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Interrupted while trying to connect to master", inter);
+                    ReconnectPolicy.CONNECT.wait(retries);
+                } catch (InterruptedException ie) {
+                    throw new IllegalStateException("Interrupted while trying to connect to master");
                 }
+            } catch (HostAlreadyExistsException e) {
+                throw new IllegalStateException(e.getMessage());
             }
-        }
-
-        if (!connected) {
-            throw (ise != null) ? ise : new IllegalStateException("Could not connect to master within 5000 ms");
         }
 
         this.connected.set(true);
@@ -252,7 +255,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
         if (error != null) {
             if (error.getErrorCode() == ErrorCode.HOST_ALREADY_EXISTS) {
-                log.error(error.getErrorMessage() + " - exiting");
                 throw new HostAlreadyExistsException(error.getErrorMessage());
             }
             throw new IllegalStateException(error.getErrorMessage());
@@ -350,6 +352,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                     } catch (InterruptedException e) {
                     }
 
+                    int count = 0;
                     while (!shutdown.get()) {
                         log.debug("Attempting reconnection to master...");
                         try {
@@ -359,8 +362,10 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                         } catch (Exception e) {
                         }
                         try {
-                            Thread.sleep(3000);
+                            ReconnectPolicy.RECONNECT.wait(++count);
                         } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            return;
                         }
                     }
                 }
@@ -597,4 +602,11 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
     }
 
+    private static class HostAlreadyExistsException extends RuntimeException {
+
+        public HostAlreadyExistsException(String msg) {
+            super(msg);
+        }
+
+    }
 }

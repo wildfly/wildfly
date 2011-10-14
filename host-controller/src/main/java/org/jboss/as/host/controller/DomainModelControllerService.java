@@ -106,6 +106,8 @@ import org.jboss.threads.JBossThreadFactory;
  */
 public class DomainModelControllerService extends AbstractControllerService implements DomainController, UnregisteredHostChannelRegistry {
 
+    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
+
     public static final ServiceName SERVICE_NAME = HostControllerBootstrap.SERVICE_NAME_BASE.append("model", "controller");
 
     private final HostControllerConfigurationPersister configurationPersister;
@@ -307,9 +309,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
                 try {
                     masterDomainControllerClient.register();
-                } catch (HostAlreadyExistsException e) {
-                    //A host with our name already exists in the master, exit the process with the exit code
-                    //recoginzed by the process controller so it will not attempt to respawn us
+                } catch (IllegalStateException e) {
+                    //We could not connect to the host
+                    log.error("Could not connect to master. Aborting. Error was: " + e.getMessage());
                     System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
                 }
 
