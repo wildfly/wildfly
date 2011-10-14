@@ -30,6 +30,8 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.ejb.client.Locator;
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
@@ -200,8 +202,14 @@ class MethodInvocationMessageHandler extends AbstractMessageHandler {
         interceptorContext.setContextData(new HashMap<String, Object>());
         interceptorContext.putPrivateData(Component.class, componentView.getComponent());
         interceptorContext.putPrivateData(ComponentView.class, componentView);
-        // attach the remoting attachments
-        this.attachRemotingAttachments(interceptorContext, ejbLocator, attachments);
+        if (attachments != null) {
+            // attach the RemotingAttachments
+            interceptorContext.putPrivateData(RemotingAttachments.class, attachments);
+        }
+        // add the session id to the interceptor context, if it's a stateful ejb locator
+        if (ejbLocator instanceof StatefulEJBLocator) {
+            interceptorContext.putPrivateData(SessionID.SESSION_ID_KEY, ((StatefulEJBLocator) ejbLocator).getSessionId());
+        }
         if (componentView.isAsynchronous(method)) {
             final Component component = componentView.getComponent();
             if (!(component instanceof SessionBeanComponent)) {

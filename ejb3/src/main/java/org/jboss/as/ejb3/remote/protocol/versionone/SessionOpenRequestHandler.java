@@ -29,23 +29,30 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
+import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 /**
  * User: jpai
  */
 class SessionOpenRequestHandler extends AbstractMessageHandler {
 
+    private static final Logger logger = Logger.getLogger(SessionOpenRequestHandler.class);
+
     private static final byte HEADER_SESSION_OPEN_RESPONSE = 0x02;
     private static final byte HEADER_EJB_NOT_STATEFUL = 0x0D;
 
-    SessionOpenRequestHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy) {
+    private final ExecutorService executorService;
+
+    SessionOpenRequestHandler(final DeploymentRepository deploymentRepository, final String marshallingStrategy, final ExecutorService executorService) {
         super(deploymentRepository, marshallingStrategy);
+        this.executorService = executorService;
     }
 
     @Override
@@ -79,16 +86,9 @@ class SessionOpenRequestHandler extends AbstractMessageHandler {
         final RemotingAttachments attachments = this.readAttachments(dataInputStream);
 
         final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) component;
-        // TODO: Session generation and writing the result, should happen on a separate thread to
-        // let the channel to be freed for further incoming message receipt(s)
-        final SessionID sessionID;
-        try {
-            sessionID = statefulSessionComponent.createSession();
-        } catch (Throwable t) {
-            this.writeException(channel, invocationId, t, attachments);
-            return;
-        }
-        this.writeSessionId(channel, invocationId, sessionID, attachments);
+        // generate the session id and write out the response on a separate thread
+        executorService.submit(new SessionIDGeneratorTask(statefulSessionComponent, channel, invocationId, attachments));
+
     }
 
     private void writeSessionId(final Channel channel, final short invocationId, final SessionID sessionID, final RemotingAttachments attachments) throws IOException {
@@ -107,6 +107,41 @@ class SessionOpenRequestHandler extends AbstractMessageHandler {
             this.writeAttachments(dataOutputStream, attachments);
         } finally {
             dataOutputStream.close();
+        }
+    }
+
+    /**
+     * Task for generation a session id when a session open request is received
+     */
+    private class SessionIDGeneratorTask implements Runnable {
+
+        private final StatefulSessionComponent statefulSessionComponent;
+        private final Channel channel;
+        private final short invocationId;
+        private final RemotingAttachments attachments;
+
+
+        SessionIDGeneratorTask(final StatefulSessionComponent statefulSessionComponent, final Channel channel, final short invocationId, final RemotingAttachments attachments) {
+            this.statefulSessionComponent = statefulSessionComponent;
+            this.invocationId = invocationId;
+            this.attachments = attachments;
+            this.channel = channel;
+        }
+
+        @Override
+        public void run() {
+            final SessionID sessionID;
+            try {
+                try {
+                    sessionID = statefulSessionComponent.createSession();
+                } catch (Throwable t) {
+                    SessionOpenRequestHandler.this.writeException(channel, invocationId, t, attachments);
+                    return;
+                }
+                SessionOpenRequestHandler.this.writeSessionId(channel, invocationId, sessionID, attachments);
+            } catch (IOException ioe) {
+                logger.error("IOException while generating session id for invocation id: " + invocationId + " on channel " + channel, ioe);
+            }
         }
     }
 }

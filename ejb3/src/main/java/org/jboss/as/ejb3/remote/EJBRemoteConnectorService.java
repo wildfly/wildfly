@@ -21,11 +21,6 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-
 import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelReceiver;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
@@ -45,6 +40,11 @@ import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.ServiceRegistrationException;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -160,12 +160,22 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
         @Override
         public void handleError(Channel channel, IOException error) {
-            //To change body of implemented methods use File | Settings | File Templates.
+            log.error("Closing channel " + channel + " due to error: ", error);
+            try {
+                channel.close();
+            } catch (IOException ioe) {
+                // ignore
+            }
         }
 
         @Override
         public void handleEnd(Channel channel) {
-            //To change body of implemented methods use File | Settings | File Templates.
+            log.error("Channel end notification received, closing channel " + channel);
+            try {
+                channel.close();
+            } catch (IOException ioe) {
+                // ignore
+            }
         }
 
         @Override
@@ -177,7 +187,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
                 log.debug("Client with protocol version " + version + " and marshalling strategy " + clientMarshallingStrategy +
                         " will communicate on " + channel);
                 switch (version) {
-                    // TODO: Change this to 0x01
                     case 0x01:
                         // enroll VersionOneProtocolChannelReceiver for handling subsequent messages on this channel
                         final VersionOneProtocolChannelReceiver receiver = new VersionOneProtocolChannelReceiver(channel, this.serviceContainer, clientMarshallingStrategy, executorService.getValue());

@@ -118,7 +118,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
                     messageHandler.processMessage(channel, messageInputStream);
                     break;
                 case HEADER_SESSION_OPEN_REQUEST:
-                    messageHandler = new SessionOpenRequestHandler(this.deploymentRepository, this.marshallingStrategy);
+                    messageHandler = new SessionOpenRequestHandler(this.deploymentRepository, this.marshallingStrategy, this.executorService);
                     messageHandler.processMessage(channel, messageInputStream);
                     break;
                 default:
