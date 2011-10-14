@@ -56,7 +56,7 @@
     <xsl:template match="//d:interfaces/d:interface[@name='public']/d:inet-address">
       <xsl:copy>
         <xsl:attribute name="value">
-      <xsl:value-of select="$publicIPAddress"/>
+          <xsl:value-of select="$publicIPAddress"/>
         </xsl:attribute>
       </xsl:copy>
     </xsl:template>
@@ -64,40 +64,40 @@
   <!-- change udp multicast addresses -->
   <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-udp']">
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
       <xsl:attribute name="multicast-address">
-	<xsl:value-of select="$udpMcastAddress"/>
+	    <xsl:value-of select="$udpMcastAddress"/>
       </xsl:attribute>
+      <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
 
   <!-- change diagnostics multicast addresses -->
   <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-diagnostics']">
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
       <xsl:attribute name="multicast-address">
-	<xsl:value-of select="$diagnosticsMcastAddress"/>
+        <xsl:value-of select="$diagnosticsMcastAddress"/>
       </xsl:attribute>
+      <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
 
   <!-- change MPING multicast addresses -->
   <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-mping']">
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
       <xsl:attribute name="multicast-address">
-	<xsl:value-of select="$mpingMcastAddress"/>
+        <xsl:value-of select="$mpingMcastAddress"/>
       </xsl:attribute>
+      <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
 
   <!-- change modcluster multicast addresses -->
   <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='modcluster']">
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
       <xsl:attribute name="multicast-address">
-	<xsl:value-of select="$modclusterMcastAddress"/>
+         <xsl:value-of select="$modclusterMcastAddress"/>
       </xsl:attribute>
+      <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
 
