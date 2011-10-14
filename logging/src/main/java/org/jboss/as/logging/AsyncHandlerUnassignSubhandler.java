@@ -52,7 +52,6 @@ public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignment
 
     @Override
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        NAME.validateAndSet(operation, model);
         updateHandlersForUnassign(SUBHANDLERS, operation, model);
     }
 
@@ -75,10 +74,5 @@ public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignment
     @Override
     protected String getHandlerName(final ModelNode model) throws OperationFailedException {
         return NAME.validateResolvedOperation(model).asString();
-    }
-
-    @Override
-    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
-        return SUBHANDLERS.validateOperation(model);
     }
 }

@@ -47,7 +47,6 @@ public class LoggerUnassignHandler extends AbstractLogHandlerAssignmentHandler {
 
     @Override
     protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        NAME.validateAndSet(operation, model);
         updateHandlersForUnassign(HANDLERS, operation, model);
     }
 
@@ -65,11 +64,6 @@ public class LoggerUnassignHandler extends AbstractLogHandlerAssignmentHandler {
     protected String getLoggerName(final ModelNode operation) {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         return address.getLastElement().getValue();
-    }
-
-    @Override
-    protected ModelNode getAssignedHandlers(final ModelNode model) throws OperationFailedException {
-        return HANDLERS.validateResolvedOperation(model);
     }
 
 }
