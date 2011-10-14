@@ -182,7 +182,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             ModuleSpecification specification = controller.getValue();
             final List<ModuleDependency> allDeps = specification.getAllDependencies();
             for (ModuleDependency dependency : allDeps) {
-                if (deps.contains(dependency)) {
+                if (deps.contains(dependency.getIdentifier())) {
                     continue;
                 }
                 deps.add(dependency.getIdentifier());
