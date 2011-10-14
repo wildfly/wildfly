@@ -176,6 +176,7 @@
             </xs:element>
             <xs:element name="access-log" minOccurs="0" type="http-access-logType" />
             <xs:element name="rewrite" minOccurs="0" type="http-rewriteType" />
+            <xs:element name="sso" minOccurs="0" maxOccurs="1" type="ssoType" />
          </xs:sequence>
          <xs:attributeGroup ref="virtual-server-attlist" />
       </xs:complexType>
@@ -204,6 +205,46 @@
       <xs:attribute name="prefix" default="access_log." />
       <xs:attribute name="rotate" default="true" type="xs:boolean" />
    </xs:complexType>
+
+   <xs:complexType name="ssoType">
+      <xs:attribute name="cache-container" type="xs:string">
+         <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                  Name of the cache container to use for clusterised sso
+                  ]]>
+            </xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="cache-name" type="xs:string">
+         <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                  Name of the cache to use for clusterised sso
+                  ]]>
+            </xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="domain" type="xs:string">
+         <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                  Cookie domain to use.
+                  ]]>
+            </xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="reauthenticate" type="xs:boolean">
+         <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                  Each request should cause a reauthentication.
+                  ]]>
+            </xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
+   </xs:complexType>
+
 
    <xs:complexType name="http-rewriteType">
       <xs:sequence>
