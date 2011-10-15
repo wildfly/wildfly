@@ -50,7 +50,7 @@ public interface OperationMessageHandler {
                 case ERROR: level = Logger.Level.ERROR; break;
                 case WARN: level = Logger.Level.WARN; break;
                 case INFO:
-                default: level = Logger.Level.DEBUG; break;
+                default: level = Logger.Level.TRACE; break;
             }
             log.log(level, message);
         }
