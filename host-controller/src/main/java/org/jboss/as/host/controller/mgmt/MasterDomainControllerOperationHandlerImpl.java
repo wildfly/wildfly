@@ -175,7 +175,7 @@ public class MasterDomainControllerOperationHandlerImpl extends AbstractModelCon
 
         @Override
         protected void processRequest() throws RequestProcessingException {
-            final FileRepository localFileRepository = domainController.getFileRepository();
+            final FileRepository localFileRepository = domainController.getLocalFileRepository();
 
             switch (rootId) {
                 case DomainControllerProtocol.PARAM_ROOT_ID_FILE: {

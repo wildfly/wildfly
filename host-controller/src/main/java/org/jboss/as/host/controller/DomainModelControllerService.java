@@ -246,8 +246,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public FileRepository getFileRepository() {
+    public FileRepository getLocalFileRepository() {
         return localFileRepository;
+    }
+
+    @Override
+    public FileRepository getRemoteFileRepository() {
+        if (hostControllerInfo.isMasterDomainController()) {
+            throw new IllegalStateException("Cannot access a remote file repository from the master domain controller");
+        }
+        return remoteFileRepository;
     }
 
     @Override
@@ -306,9 +314,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 }
 
             } else {
+                // TODO look at having LocalDomainControllerAdd do this, using Stage.IMMEDIATE for the steps
                 // parse the domain.xml and load the steps
                 ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
                 super.boot(domainPersister.load());
+
                 ManagementRemotingServices.installManagementChannelServices(serviceTarget, endpointName, new MasterDomainControllerOperationHandlerService(this, this),
                         DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
                 serverInventory = getFuture(inventoryFuture);

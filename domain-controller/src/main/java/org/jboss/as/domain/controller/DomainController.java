@@ -93,7 +93,18 @@ public interface DomainController {
      *
      * @return the file repository
      */
-    FileRepository getFileRepository();
+    FileRepository getLocalFileRepository();
+
+    /**
+     * Gets the file repository backing the master domain controller
+     *
+     * @return the file repository
+     *
+     * @throws IllegalStateException if the {@link #getLocalHostInfo() local host info}'s
+     *          {@link LocalHostControllerInfo#isMasterDomainController()} method would return {@code true}
+     *
+     */
+    FileRepository getRemoteFileRepository();
 
     /**
      * Stops this host controller
