@@ -45,6 +45,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -56,7 +57,6 @@ import org.jboss.as.test.smoke.modular.utils.PollingUtils;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,7 +67,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("Ignore demos that need the preview config")
 public class JmsClientTestCase {
 
     private static final String QUEUE_NAME = "createdTestQueue";
@@ -91,7 +90,7 @@ public class JmsClientTestCase {
             ModelNode op = new ModelNode();
             op.get("operation").set("add");
             op.get("address").add("subsystem", "messaging");
-            op.get("address").add("server", "default");
+            op.get("address").add("hornetq-server", "default");
             op.get("address").add("jms-queue", QUEUE_NAME);
             op.get("entries").add(QUEUE_NAME);
             applyUpdate(op, client);
@@ -155,7 +154,7 @@ public class JmsClientTestCase {
                 ModelNode op = new ModelNode();
                 op.get("operation").set("remove");
                 op.get("address").add("subsystem", "messaging");
-                op.get("address").add("server", "default");
+                op.get("address").add("hornetq-server", "default");
                 op.get("address").add("jms-queue", QUEUE_NAME);
                 applyUpdate(op, client);
             }

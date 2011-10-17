@@ -45,7 +45,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +54,6 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-@Ignore("Ignore demos that need the preview config")
 public class MessagingTestCase {
     private static final String QUEUE_EXAMPLE_QUEUE = "queue.exampleQueue";
 

@@ -49,7 +49,6 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,7 +60,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("Ignore demos that need the preview config")
 public class MessagingClientTestCase {
 
     @Deployment(testable = false)
@@ -87,7 +85,7 @@ public class MessagingClientTestCase {
             ModelNode op = new ModelNode();
             op.get("operation").set("add");
             op.get("address").add("subsystem", "messaging");
-            op.get("address").add("server", "default");
+            op.get("address").add("hornetq-server", "default");
             op.get("address").add("queue", queueName);
             op.get("queue-address").set(queueName);
             applyUpdate(op, client);
@@ -120,7 +118,7 @@ public class MessagingClientTestCase {
             op = new ModelNode();
             op.get("operation").set("remove");
             op.get("address").add("subsystem", "messaging");
-            op.get("address").add("server", "default");
+            op.get("address").add("hornetq-server", "default");
             op.get("address").add("queue", queueName);
             applyUpdate(op, client);
 
