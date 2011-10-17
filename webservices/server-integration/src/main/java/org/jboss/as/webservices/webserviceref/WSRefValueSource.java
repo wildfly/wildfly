@@ -42,6 +42,7 @@ import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandler;
+import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandlerFactory;
 
 /**
@@ -64,9 +65,8 @@ final class WSRefValueSource extends InjectionSource implements Value<Object> {
     public Object getValue() throws IllegalStateException, IllegalArgumentException {
         final ClassLoader oldCL = getContextClassLoader();
         try {
-            final ClassLoader integrationCL = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-            final ClassLoader newCL = new DelegateClassLoader(integrationCL, oldCL);
-            setContextClassLoader(newCL);
+            final ClassLoader integrationCL = new DelegateClassLoader(getClassLoader(),oldCL);
+            setContextClassLoader(integrationCL);
             final Referenceable referenceable = getReferenceable(integrationCL);
             final Class<?> clazz = Class.forName(referenceable.getReference().getFactoryClassName(), true, integrationCL);
             final ObjectFactory factory = (ObjectFactory)clazz.newInstance();
@@ -75,6 +75,15 @@ final class WSRefValueSource extends InjectionSource implements Value<Object> {
             throw new RuntimeException(e);
         } finally {
             setContextClassLoader(oldCL);
+        }
+    }
+
+    private ClassLoader getClassLoader() {
+        ClassLoaderProvider provider = ClassLoaderProvider.getDefaultProvider();
+        if (!Type.JAXRPC.equals(serviceRef.getType())) {
+            return provider.getServerIntegrationClassLoader();
+        } else {
+            return provider.getServerJAXRPCIntegrationClassLoader();
         }
     }
 
