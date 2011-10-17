@@ -22,7 +22,6 @@ public interface MasterDomainControllerClient extends ModelControllerClient {
      * Register with the remote domain controller
      *
      * @throws IllegalStateException if there was a problem talking to the remote host
-     * @throws HostAlreadyExistsException if the slave hc has the same name as an existing slave on the master
      */
     void register();
 
