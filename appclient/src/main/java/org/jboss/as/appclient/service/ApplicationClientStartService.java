@@ -121,27 +121,32 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                 public void run() {
                     ClassLoader oldTccl = SecurityActions.getContextClassLoader();
                     try {
-                        SecurityActions.setContextClassLoader(classLoader);
+                        try {
+                            SecurityActions.setContextClassLoader(classLoader);
 
-                        EJBClientContext ejbClientContext = EJBClientContext.create();
-                        ejbClientContext.registerConnection(connection);
-                        applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
+                            EJBClientContext ejbClientContext = EJBClientContext.create();
+                            ejbClientContext.registerConnection(connection);
+                            applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
 
-                        //do static injection etc
-                        //TODO: this should be better
-                        applicationClientComponent.getValue().createInstance();
-
-                        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
-                        mainMethod.invoke(null, new Object[]{parameters});
-                    } catch (InvocationTargetException e) {
-                        logger.error(e.getTargetException(), e.getTargetException());
-                    } catch (IllegalAccessException e) {
-                        logger.error("IllegalAccessException running app client main", e);
-                    } catch (InterruptedException e) {
-                        logger.error("InterruptedException running app client main", e);
+                            try {
+                                NamespaceContextSelector.pushCurrentSelector(namespaceContextSelectorInjectedValue);
+                                //do static injection etc
+                                //TODO: this should be better
+                                applicationClientComponent.getValue().createInstance();
+                                mainMethod.invoke(null, new Object[]{parameters});
+                            } finally {
+                                NamespaceContextSelector.popCurrentSelector();
+                            }
+                        } catch (InvocationTargetException e) {
+                            logger.error(e.getTargetException(), e.getTargetException());
+                        } catch (IllegalAccessException e) {
+                            logger.error("IllegalAccessException running app client main", e);
+                        } catch (InterruptedException e) {
+                            logger.error("InterruptedException running app client main", e);
+                        } finally {
+                            SecurityActions.setContextClassLoader(oldTccl);
+                        }
                     } finally {
-                        SecurityActions.setContextClassLoader(oldTccl);
-                        NamespaceContextSelector.popCurrentSelector();
                         CurrentServiceContainer.getServiceContainer().shutdown();
                     }
                 }
