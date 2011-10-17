@@ -22,11 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
-
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +29,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 /**
  * An abstract base component instance.
@@ -110,6 +110,7 @@ public class BasicComponentInstance implements ComponentInstance {
     public void destroy() {
         if (doneUpdater.compareAndSet(this, 0, 1)) try {
             final InterceptorContext interceptorContext = prepareInterceptorContext();
+            interceptorContext.setTarget(instanceReference.get());
             preDestroy.processInvocation(interceptorContext);
         } catch (Exception e) {
             log.warn("Failed to destroy component instance " + this, e);
