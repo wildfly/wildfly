@@ -34,6 +34,7 @@ import javax.ejb.EJBException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -96,6 +97,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         interceptorContext.putPrivateData(Component.class, getComponent());
         interceptorContext.putPrivateData(ComponentInstance.class, this);
         interceptorContext.putPrivateData(InvokeMethodOnTargetInterceptor.PARAMETERS_KEY, parameters);
+        interceptorContext.setContextData(new HashMap<String, Object>());
         try {
             return interceptor.processInvocation(interceptorContext);
         } catch (Error e) {

@@ -85,7 +85,7 @@ public final class ViewService implements Service<ComponentView> {
         this.viewInterceptorFactories = viewInterceptorFactories;
         this.clientInterceptorFactories = clientInterceptorFactories;
         this.asyncMethods = viewConfiguration.getAsyncMethods();
-        if(viewConfiguration.getViewInstanceFactory() == null) {
+        if (viewConfiguration.getViewInstanceFactory() == null) {
             viewInstanceFactory = new DefaultViewInstanceFactory();
         } else {
             viewInstanceFactory = viewConfiguration.getViewInstanceFactory();
@@ -263,6 +263,7 @@ public final class ViewService implements Service<ComponentView> {
                 InterceptorContext context = new InterceptorContext();
                 context.putPrivateData(ComponentView.class, componentView);
                 context.putPrivateData(Component.class, component);
+                context.setContextData(new HashMap<String, Object>());
                 clientPostConstructInterceptor.processInvocation(context);
             } catch (Exception e) {
                 // TODO: What is the best exception type to throw here?
