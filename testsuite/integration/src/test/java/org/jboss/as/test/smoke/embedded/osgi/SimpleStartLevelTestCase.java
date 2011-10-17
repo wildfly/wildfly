@@ -53,7 +53,6 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 07-Jun-2011
  */
 @RunWith(Arquillian.class)
-@Ignore("Ignored after moving to integration tests, other osgi tests interfere with it")
 public class SimpleStartLevelTestCase {
 
     @Inject
