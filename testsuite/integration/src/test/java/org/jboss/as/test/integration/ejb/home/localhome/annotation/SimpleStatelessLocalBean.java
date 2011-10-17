@@ -40,8 +40,15 @@ public class SimpleStatelessLocalBean  {
     @Resource
     private SessionContext sessionContext;
 
+    private String message;
+
+    //this should be treated as a post construct method
+    public void ejbCreate() {
+        message = "Hello World";
+    }
+
     public String sayHello() {
-        return "Hello World";
+        return message;
     }
 
     public String otherMethod() {

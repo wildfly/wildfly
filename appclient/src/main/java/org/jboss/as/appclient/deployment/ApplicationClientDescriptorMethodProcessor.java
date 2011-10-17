@@ -19,18 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.deployment.processors.dd;
+package org.jboss.as.appclient.deployment;
 
-import java.lang.reflect.Method;
-
-import javax.interceptor.InvocationContext;
-
+import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
-import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -40,10 +34,8 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.metadata.ejb.spec.AroundInvokeMetaData;
-import org.jboss.metadata.ejb.spec.AroundInvokesMetaData;
-import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
-import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
+import org.jboss.metadata.appclient.spec.AppClientEnvironmentRefsGroupMetaData;
+import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
 
@@ -53,7 +45,7 @@ import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
  *
  * @author Stuart Douglas
  */
-public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProcessor {
+public class ApplicationClientDescriptorMethodProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
@@ -64,12 +56,10 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
 
         if (eeModuleDescription != null) {
             for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
-                if (component instanceof EJBComponentDescription) {
+                if (component instanceof ApplicationClientComponentDescription) {
                     try {
-                        handleSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
-                        if (component instanceof StatelessComponentDescription || component instanceof MessageDrivenComponentDescription) {
-                            handleStatelessSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
-                        }
+                        handleApplicationClient((ApplicationClientComponentDescription) component, classIndex, reflectionIndex, deploymentUnit);
+
                     } catch (ClassNotFoundException e) {
                         throw new DeploymentUnitProcessingException("Could not load component class", e);
                     }
@@ -80,62 +70,21 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
 
     }
 
-    /**
-     * Handles setting up the ejbCreate and ejbRemove methods  for stateless session beans and MDB's
-     *
-     * @param component       The component
-     * @param classIndex      The class index
-     * @param reflectionIndex The reflection index
-     */
-    private void handleStatelessSessionBean(final EJBComponentDescription component, final DeploymentClassIndex classIndex, final DeploymentReflectionIndex reflectionIndex) throws ClassNotFoundException, DeploymentUnitProcessingException {
 
-        final ClassIndex componentClass = classIndex.classIndex(component.getComponentClassName());
-        final MethodIdentifier ejbCreateId = MethodIdentifier.getIdentifier(void.class, "ejbCreate");
-        final Method ejbCreate = ClassReflectionIndexUtil.findMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), ejbCreateId);
-        if (ejbCreate != null) {
-            final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
-            builder.setPostConstruct(ejbCreateId);
-            component.addInterceptorMethodOverride(ejbCreate.getDeclaringClass().getName(), builder.build());
+    private void handleApplicationClient(final ApplicationClientComponentDescription component, final DeploymentClassIndex classIndex, final DeploymentReflectionIndex reflectionIndex, final DeploymentUnit deploymentUnit) throws ClassNotFoundException, DeploymentUnitProcessingException {
+
+        final ApplicationClientMetaData metaData = deploymentUnit.getAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA);
+        if(metaData == null) {
+            return;
         }
-        final MethodIdentifier ejbRemoveId = MethodIdentifier.getIdentifier(void.class, "ejbRemove");
-        final Method ejbRemove = ClassReflectionIndexUtil.findMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), ejbRemoveId);
-        if (ejbRemove != null) {
-            final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
-            builder.setPreDestroy(ejbRemoveId);
-            component.addInterceptorMethodOverride(ejbRemove.getDeclaringClass().getName(), builder.build());
-        }
-    }
-
-    private void handleSessionBean(final EJBComponentDescription component, final DeploymentClassIndex classIndex, final DeploymentReflectionIndex reflectionIndex) throws ClassNotFoundException, DeploymentUnitProcessingException {
-
-        if (component.getDescriptorData() == null) {
+        AppClientEnvironmentRefsGroupMetaData environment = metaData.getEnvironmentRefsGroupMetaData();
+        if(environment == null) {
             return;
         }
         final ClassIndex componentClass = classIndex.classIndex(component.getComponentClassName());
 
-        final EnterpriseBeanMetaData metaData = component.getDescriptorData();
-
-        if (metaData instanceof SessionBeanMetaData) {
-
-            AroundInvokesMetaData aroundInvokes = ((SessionBeanMetaData) metaData).getAroundInvokes();
-            if (aroundInvokes != null) {
-                for (AroundInvokeMetaData aroundInvoke : aroundInvokes) {
-                    final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
-                    String methodName = aroundInvoke.getMethodName();
-                    MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(Object.class, methodName, InvocationContext.class);
-                    builder.setAroundInvoke(methodIdentifier);
-                    if (aroundInvoke.getClassName() == null || aroundInvoke.getClassName().isEmpty()) {
-                        final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, reflectionIndex.getClassIndex(componentClass.getModuleClass()), methodIdentifier).getDeclaringClass().getName();
-                        component.addInterceptorMethodOverride(className, builder.build());
-                    } else {
-                        component.addInterceptorMethodOverride(aroundInvoke.getClassName(), builder.build());
-                    }
-                }
-            }
-        }
-
         // post-construct(s) of the interceptor configured (if any) in the deployment descriptor
-        LifecycleCallbacksMetaData postConstructs = metaData.getPostConstructs();
+        LifecycleCallbacksMetaData postConstructs = environment.getPostConstructs();
         if (postConstructs != null) {
             for (LifecycleCallbackMetaData postConstruct : postConstructs) {
                 final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
@@ -152,7 +101,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
         }
 
         // pre-destroy(s) of the interceptor configured (if any) in the deployment descriptor
-        LifecycleCallbacksMetaData preDestroys = metaData.getPreDestroys();
+        LifecycleCallbacksMetaData preDestroys = environment.getPreDestroys();
         if (preDestroys != null) {
             for (LifecycleCallbackMetaData preDestroy : preDestroys) {
                 final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();

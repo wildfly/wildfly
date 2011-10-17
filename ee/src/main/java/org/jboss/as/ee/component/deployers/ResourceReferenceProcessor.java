@@ -140,7 +140,11 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             if (!isEmpty(resourceRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
             } else {
-                if (!resourceRef.getResourceRefName().startsWith("java:")) {
+                //check if it is a well known type
+                final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
+                if (lookup != null) {
+                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
+                } else if (!resourceRef.getResourceRefName().startsWith("java:")) {
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceRef.getResourceRefName()));
                 } else {
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getResourceRefName()));
