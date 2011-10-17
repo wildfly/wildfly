@@ -173,7 +173,8 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleUnAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            logger.warn("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
+            // TODO: Change this to WARN once https://issues.jboss.org/browse/REM3-123 is fixed
+            logger.debug("Could not send module un-availability notification of module " + deploymentModuleIdentifier + " to channel " + this.channel, e);
         }
     }
 
