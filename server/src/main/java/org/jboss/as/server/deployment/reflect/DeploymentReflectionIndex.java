@@ -67,7 +67,7 @@ public final class DeploymentReflectionIndex {
             }
             return index;
         } catch (Throwable e) {
-            throw new RuntimeException("Error getting reflective information for " + clazz, e);
+            throw new RuntimeException("Error getting reflective information for " + clazz + " with ClassLoader " + clazz.getClassLoader(), e);
         }
     }
 }
