@@ -19,12 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.management.util;
+package org.jboss.as.test.integration.management.util;
 
 import java.io.IOException;
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StreamTokenizer;
@@ -46,12 +47,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CLIWrapper implements Runnable {
 
-    private static final String cliCommand = "java -Djboss.home.dir=target/jbossas " + 
-            "-Djboss.modules.dir=../../build/target/jboss-as-7.1.0.Alpha2-SNAPSHOT/modules " + 
-            "-Djline.WindowsTerminal.directConsole=false " +            
-            "-jar ./target/jbossas/jboss-modules.jar " + 
-            "-mp ../../build/target/jboss-as-7.1.0.Alpha2-SNAPSHOT/modules " +
-            "-logmodule org.jboss.logmanager org.jboss.as.cli";
+    private static String cliCommand = null;
     
     private static final String outThreadHame = "CLI-out";
     private static final String errThreadHame = "CLI-err";
@@ -272,9 +268,9 @@ public class CLIWrapper implements Runnable {
     
     
     private void init() throws Exception {
-        System.out.println("CLI command:" + cliCommand);
+        System.out.println("CLI command:" + getCliCommand());
         
-        cliProcess = Runtime.getRuntime().exec(cliCommand);
+        cliProcess = Runtime.getRuntime().exec(getCliCommand());
         writer = new PrintWriter(cliProcess.getOutputStream());        
         outputReader = new BufferedReader(new InputStreamReader(cliProcess.getInputStream()));
         errorReader = new BufferedReader(new InputStreamReader(cliProcess.getErrorStream()));
@@ -284,6 +280,30 @@ public class CLIWrapper implements Runnable {
         Thread readErrorThread = new Thread(this, errThreadHame);
         readErrorThread.start();
                 
+    }
+    
+    private static String getCliCommand() throws Exception {
+        if (cliCommand != null) return cliCommand;
+        
+        File targetDir = new File("../../build/target");
+        if ( (!targetDir.exists()) || (!targetDir.isDirectory())) throw new Exception("Missing AS target directory.");
+        String[] children = targetDir.list();
+        String asDir = null;
+        for(String child : children) {
+            if (child.startsWith("jboss-as")) {
+                asDir = child;
+                break;
+            }
+        }
+        if (asDir == null) throw new Exception("Missing AS target directory.");
+        
+        cliCommand = "java -Djboss.home.dir=target/jbossas " + 
+            "-Djboss.modules.dir=../../build/target/" + asDir + "/modules " + 
+            "-Djline.WindowsTerminal.directConsole=false " +            
+            "-jar ./target/jbossas/jboss-modules.jar " + 
+            "-mp ../../build/target/" + asDir + "/modules " +
+            "-logmodule org.jboss.logmanager org.jboss.as.cli";        
+        return cliCommand;
     }
 
     /**

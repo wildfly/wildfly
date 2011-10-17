@@ -222,6 +222,16 @@
                                         <include>org/jboss/as/test/integration/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
+<<<<<<< HEAD
+=======
+                                        <!-- Messaging tests are excluded since the default/web profile doesn't support messaging -->
+                                        <exclude>org/jboss/as/test/integration/messaging/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/xerces/ws/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/deployments/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
+>>>>>>> 48fb62d... Fixed CLIWrapper AS targed dir hardcoded, cli/JMSTestCase not executed with default profile.
                                         <exclude>**/*SecondTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
@@ -272,6 +282,55 @@
         </profile>
 
         <profile>
+<<<<<<< HEAD
+=======
+            <id>preview</id>
+            <activation>
+                <property>
+                    <name>allTests</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>preview</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skipTests>false</skipTests>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <enableAssertions>true</enableAssertions>
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>standalone-preview.xml
+                                        </jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ws/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/xerces/ws/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/management/deployments/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/management/cli/JmsTestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>none</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+>>>>>>> 48fb62d... Fixed CLIWrapper AS targed dir hardcoded, cli/JMSTestCase not executed with default profile.
             <id>clustering.integration.tests.profile</id>
             <activation>
                 <property>
