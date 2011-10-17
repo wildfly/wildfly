@@ -22,25 +22,11 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_ACCESS_TIMEOUT;
-
-import java.util.List;
-import java.util.concurrent.Executors;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
@@ -110,6 +96,18 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+import java.util.List;
+import java.util.concurrent.Executors;
+
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+
 /**
  * Add operation handler for the EJB3 subsystem.
  *
@@ -129,8 +127,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         model.get(DEFAULT_MDB_INSTANCE_POOL).set(operation.get(DEFAULT_MDB_INSTANCE_POOL));
         model.get(DEFAULT_SLSB_INSTANCE_POOL).set(operation.get(DEFAULT_SLSB_INSTANCE_POOL));
         model.get(DEFAULT_RESOURCE_ADAPTER_NAME).set(operation.get(DEFAULT_RESOURCE_ADAPTER_NAME));
-        model.get(DEFAULT_STATEFUL_ACCESS_TIMEOUT).set(operation.get(DEFAULT_STATEFUL_ACCESS_TIMEOUT));
-        model.get(DEFAULT_SINGLETON_ACCESS_TIMEOUT).set(operation.get(DEFAULT_SINGLETON_ACCESS_TIMEOUT));
+        model.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT));
+        model.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).set(operation.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT));
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -139,11 +137,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         EjbNamingContextSetup.setupEjbNamespace();
         //TODO: this is a bit of a hack
         InitialContext.addUrlContextFactory("ejb", new ejbURLContextFactory());
-
-        final DefaultAccessTimeoutService statefulTimeout = new DefaultAccessTimeoutService(EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_ACCESS_TIMEOUT.validateResolvedOperation(model).asLong());
-        newControllers.add(context.getServiceTarget().addService(DefaultAccessTimeoutService.STATEFUL_SERVICE_NAME, statefulTimeout).install());
-        final DefaultAccessTimeoutService singletonTimeout = new DefaultAccessTimeoutService(EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_ACCESS_TIMEOUT.validateResolvedOperation(model).asLong());
-        newControllers.add(context.getServiceTarget().addService(DefaultAccessTimeoutService.SINGLETON_SERVICE_NAME, singletonTimeout).install());
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -178,7 +171,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_REF, new EjbRefProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TRANSACTION_MANAGEMENT, new TransactionManagementMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CONCURRENCY_MANAGEMENT_MERGE, new ConcurrencyManagementMergingProcessor());
-                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CONCURRENCY_MERGE, new EjbConcurrencyMergingProcessor(singletonTimeout, statefulTimeout));
+                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_CONCURRENCY_MERGE, new EjbConcurrencyMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TX_ATTR_MERGE, new TransactionAttributeMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_RUN_AS_MERGE, new RunAsMergingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_RESOURCE_ADAPTER_MERGE, new ResourceAdaptorMergingProcessor());
@@ -213,6 +206,14 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (model.hasDefined(DEFAULT_RESOURCE_ADAPTER_NAME)) {
             DefaultResourceAdapterWriteHandler.INSTANCE.updateDefaultAdapterService(context, model, newControllers);
+        }
+
+        if (model.hasDefined(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
+            DefaultSingletonBeanAccessTimeoutWriteHandler.INSTANCE.updateOrCreateDefaultSingletonBeanAccessTimeoutService(context, model, newControllers);
+        }
+
+        if (model.hasDefined(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)) {
+            DefaultStatefulBeanAccessTimeoutWriteHandler.INSTANCE.updateOrCreateDefaultStatefulBeanAccessTimeoutService(context, model, newControllers);
         }
 
         final ServiceTarget serviceTarget = context.getServiceTarget();

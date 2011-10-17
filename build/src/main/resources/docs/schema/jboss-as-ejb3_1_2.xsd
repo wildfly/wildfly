@@ -41,20 +41,6 @@
             <xs:element name="session-bean" type="session-beanType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="pools" type="poolsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="default-stateful-access-timeout" type="xs:positiveInteger" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>
-                        The default access timeout for stateful session beans in milliseconds
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="default-singleton-access-timeout" type="xs:positiveInteger" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>
-                        The default access timeout for singleton session beans in milliseconds
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
         </xs:all>
         <xs:attribute name="lite" type="xs:boolean" use="optional"/>
     </xs:complexType>
@@ -69,6 +55,8 @@
     <xs:complexType name="session-beanType">
         <xs:all>
             <xs:element name="stateless" type="stateless-beanType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="stateful" type="stateful-beanType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="singleton" type="singleton-beanType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
@@ -76,6 +64,26 @@
         <xs:all>
             <xs:element name="bean-instance-pool-ref" type="bean-instance-pool-refType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="stateful-beanType">
+        <xs:attribute name="default-access-timeout" type="xs:positiveInteger" default="5000" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The default access timeout, for stateful session beans, in milliseconds
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="singleton-beanType">
+        <xs:attribute name="default-access-timeout" type="xs:positiveInteger" default="5000" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The default access timeout, for singleton beans, in milliseconds
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="resource-adapter-refType">

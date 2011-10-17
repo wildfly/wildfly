@@ -7,6 +7,8 @@
         <stateless>
             <bean-instance-pool-ref pool-name="SLSBPool"/>
         </stateless>
+        <stateful default-access-timeout="5000"/>
+        <singleton default-access-timeout="5000"/>
     </session-bean>
     <pools>
         <bean-instance-pools>
@@ -22,6 +24,4 @@
         <data-store path="timers" relative-to="jboss.server.data.dir"/>
     </timer-service>
 
-    <default-stateful-access-timeout>5000</default-stateful-access-timeout>
-    <default-singleton-access-timeout>5000</default-singleton-access-timeout>
 </subsystem>

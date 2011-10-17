@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -44,8 +43,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
@@ -54,10 +51,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
@@ -97,15 +95,41 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
         // write the session-bean element
-        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL)) {
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
+                || model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
             // <session-bean>
             writer.writeStartElement(EJB3SubsystemXMLElement.SESSION_BEAN.getLocalName());
+        }
+        // <stateless> element
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL)) {
             // <stateless>
             writer.writeStartElement(EJB3SubsystemXMLElement.STATELESS.getLocalName());
             // write out the <bean-instance-pool-ref>
             this.writeDefaultSLSBPool(writer, model);
             // </stateless>
             writer.writeEndElement();
+        }
+        // <singleton> element
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
+            // <singleton>
+            writer.writeStartElement(EJB3SubsystemXMLElement.SINGLETON.getLocalName());
+            // write out the <singleton> element contents
+            this.writeSingletonBean(writer, model);
+            // </singleton>
+            writer.writeEndElement();
+        }
+        // <stateful> element
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)) {
+            // <stateful>
+            writer.writeStartElement(EJB3SubsystemXMLElement.STATEFUL.getLocalName());
+            // write out the <stateful> element contents
+            this.writeStatefulBean(writer, model);
+            // </stateful>
+            writer.writeEndElement();
+        }
+        // write out the </session-bean> end element
+        if (model.hasDefined(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL) || model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
+                || model.hasDefined(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT)) {
             // </session-bean>
             writer.writeEndElement();
         }
@@ -132,8 +156,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
 
-        EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_ACCESS_TIMEOUT.marshallAsElement(model, writer);
-        EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_ACCESS_TIMEOUT.marshallAsElement(model, writer);
         // write the subsystem end element
         writer.writeEndElement();
     }
@@ -178,16 +200,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                         }
                         case TIMER_SERVICE: {
                             parseTimerService(reader, operations);
-                            break;
-                        }
-                        case DEFAULT_STATEFUL_ACCESS_TIMEOUT: {
-                            final String timeout = parseDefaultTimeout(reader, EJB3SubsystemModel.DEFAULT_STATEFUL_ACCESS_TIMEOUT);
-                            EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_ACCESS_TIMEOUT.parseAndSetParameter(timeout, ejb3SubsystemAddOperation, reader.getLocation());
-                            break;
-                        }
-                        case DEFAULT_SINGLETON_ACCESS_TIMEOUT: {
-                            final String timeout = parseDefaultTimeout(reader, EJB3SubsystemModel.DEFAULT_SINGLETON_ACCESS_TIMEOUT);
-                            EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_ACCESS_TIMEOUT.parseAndSetParameter(timeout, ejb3SubsystemAddOperation, reader.getLocation());
                             break;
                         }
                         default: {
@@ -263,6 +275,17 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
             writer.writeEndElement();
         }
     }
+
+    private void writeSingletonBean(final XMLExtendedStreamWriter writer, final ModelNode singletonBeanModel) throws XMLStreamException {
+        final String defaultAccessTimeout = singletonBeanModel.get(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT).asString();
+        writer.writeAttribute(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName(), defaultAccessTimeout);
+    }
+
+    private void writeStatefulBean(final XMLExtendedStreamWriter writer, final ModelNode statefulBeanModel) throws XMLStreamException {
+        final String defaultAccessTimeout = statefulBeanModel.get(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT).asString();
+        writer.writeAttribute(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName(), defaultAccessTimeout);
+    }
+
 
     private void writeDefaultSLSBPool(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
 
@@ -374,6 +397,14 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                     this.parseStatelessBean(reader, operations, ejb3SubsystemAddOperation);
                     break;
                 }
+                case STATEFUL: {
+                    this.parseStatefulBean(reader, operations, ejb3SubsystemAddOperation);
+                    break;
+                }
+                case SINGLETON: {
+                    this.parseSingletonBean(reader, operations, ejb3SubsystemAddOperation);
+                    break;
+                }
                 default: {
                     throw unexpectedElement(reader);
                 }
@@ -397,6 +428,56 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
                 }
             }
         }
+    }
+
+    private void parseStatefulBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
+        String defaultAccessTimeout = null;
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DEFAULT_ACCESS_TIMEOUT:
+                    defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parse(value, reader.getLocation()).asString();
+                    // found the mandatory attribute
+                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (!missingRequiredAttributes.isEmpty()) {
+            throw missingRequired(reader, missingRequiredAttributes);
+        }
+        EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader.getLocation());
+    }
+
+    private void parseSingletonBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
+        String defaultAccessTimeout = null;
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DEFAULT_ACCESS_TIMEOUT:
+                    defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parse(value, reader.getLocation()).asString();
+                    // found the mandatory attribute
+                    missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        if (!missingRequiredAttributes.isEmpty()) {
+            throw missingRequired(reader, missingRequiredAttributes);
+        }
+        EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader.getLocation());
     }
 
     private void parsePools(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {

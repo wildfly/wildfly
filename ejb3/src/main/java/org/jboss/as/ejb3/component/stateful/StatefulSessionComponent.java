@@ -86,7 +86,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         this.afterCompletion = ejbComponentCreateService.getAfterCompletion();
         this.beforeCompletion = ejbComponentCreateService.getBeforeCompletion();
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
-        this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutProvider();
+        this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutService();
 
         final StatefulTimeoutInfo statefulTimeout = ejbComponentCreateService.getStatefulTimeout();
         if (statefulTimeout != null) {
