@@ -49,31 +49,32 @@ import org.omg.CORBA.ORB;
  *
  * @author Stuart Douglas
  */
-public class ORBJndiBindingProcessor implements DeploymentUnitProcessor{
+public class ORBJndiBindingProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
 
-        if(moduleDescription == null) {
+        if (moduleDescription == null) {
             return;
         }
 
         //do not bind if jacORB not present
-        if(!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (!JacORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
             return;
         }
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         //if this is a war we need to bind to the modules comp namespace
-        if(DeploymentTypeMarker.isType(DeploymentType.WAR,deploymentUnit)) {
-            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
+
+        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) || DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
+            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
             bindService(serviceTarget, moduleContextServiceName);
         }
 
-        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
-            if(component.getNamingMode() == ComponentNamingMode.CREATE) {
-                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(),moduleDescription.getModuleName(),component.getComponentName());
+        for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+            if (component.getNamingMode() == ComponentNamingMode.CREATE) {
+                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
                 bindService(serviceTarget, compContextServiceName);
             }
         }
@@ -82,7 +83,8 @@ public class ORBJndiBindingProcessor implements DeploymentUnitProcessor{
 
     /**
      * Binds java:comp/ORB
-     * @param serviceTarget The service target
+     *
+     * @param serviceTarget      The service target
      * @param contextServiceName The service name of the context to bind to
      */
     private void bindService(ServiceTarget serviceTarget, ServiceName contextServiceName) {
@@ -90,10 +92,10 @@ public class ORBJndiBindingProcessor implements DeploymentUnitProcessor{
         final ServiceName userTransactionServiceName = contextServiceName.append("ORB");
         BinderService userTransactionBindingService = new BinderService("ORB");
         serviceTarget.addService(userTransactionServiceName, userTransactionBindingService)
-            .addDependency(CorbaORBService.SERVICE_NAME, ORB.class,
-                    new ManagedReferenceInjector<ORB>(userTransactionBindingService.getManagedObjectInjector()))
-            .addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
-            .install();
+                .addDependency(CorbaORBService.SERVICE_NAME, ORB.class,
+                        new ManagedReferenceInjector<ORB>(userTransactionBindingService.getManagedObjectInjector()))
+                .addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
+                .install();
 
     }
 
