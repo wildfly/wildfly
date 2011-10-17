@@ -224,7 +224,7 @@
 
     <!--
       Test profiles
-      
+
       - Here we define logical groupings of test cases to be executed.
       - These should be used to define:
         - maven-antrun-plugin executions for creating server configurations to be started and stopped.
@@ -234,7 +234,7 @@
           Test profiles are named group.module.tests.profile and are activated by -Dgroup.module.tests
           where 'group' is the logical grouping of tests (e.g. activate the clustering integration tests
           via -Dclustering.integration.tests)
-          
+
       Note that the profiles are executed in reversed order than they are defined here.
     -->
 
@@ -354,6 +354,9 @@
                                     </additionalClasspathElements>
 
                                     <reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>
+                                    <excludes>
+                                        <exclude>**/*SecondTestCase.java</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
 
@@ -381,7 +384,7 @@
 
             <dependencies>
             </dependencies>
-            
+
             <!--
                 Server configuration executions.
             -->
