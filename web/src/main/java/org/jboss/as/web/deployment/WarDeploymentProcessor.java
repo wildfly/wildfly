@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.security.jacc.PolicyConfiguration;
 import javax.servlet.ServletContext;
@@ -197,7 +196,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
                 .unprefixSecurityDomain(metaDataSecurityDomain);
-        Map<String, Set<String>> principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
 
         // Setup an deployer configured ServletContext attributes
         final List<ServletContextAttribute> attributes = deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY);
@@ -212,7 +210,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             final ServiceName deploymentServiceName = WebSubsystemServices.deploymentServiceName(hostName, pathName);
             final ServiceName realmServiceName = deploymentServiceName.append("realm");
 
-            final JBossWebRealmService realmService = new JBossWebRealmService(principalVersusRolesMap);
+            final JBossWebRealmService realmService = new JBossWebRealmService(deploymentUnit);
             ServiceBuilder<?> builder = serviceTarget.addService(realmServiceName, realmService);
             builder.addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain),
                     SecurityDomainContext.class, realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE)

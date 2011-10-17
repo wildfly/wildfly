@@ -108,7 +108,7 @@ public class SecurityBootstrapService implements Service<Void> {
 
             // Register the JAAS CallbackHandler JACC PolicyContextHandlers
             CallbackHandlerPolicyContextHandler chandler = new CallbackHandlerPolicyContextHandler();
-            PolicyContext.registerHandler(CallbackHandlerPolicyContextHandler.CALLBACK_HANDLER_KEY, chandler, true);
+            PolicyContext.registerHandler(SecurityConstants.CALLBACK_HANDLER_KEY, chandler, true);
 
             // Handle the Security Properties
             if (securityProperty != null) {
@@ -130,7 +130,7 @@ public class SecurityBootstrapService implements Service<Void> {
     public void stop(StopContext context) {
         // remove handlers
         Set handlerKeys = PolicyContext.getHandlerKeys();
-        handlerKeys.remove(CallbackHandlerPolicyContextHandler.CALLBACK_HANDLER_KEY);
+        handlerKeys.remove(SecurityConstants.CALLBACK_HANDLER_KEY);
         handlerKeys.remove(SecurityConstants.SUBJECT_CONTEXT_KEY);
 
         // Install the policy provider that existed on startup
