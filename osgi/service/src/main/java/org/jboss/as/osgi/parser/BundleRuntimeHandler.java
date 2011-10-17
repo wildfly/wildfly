@@ -43,6 +43,7 @@ import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.startlevel.StartLevel;
 
@@ -54,7 +55,7 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
     static final BundleRuntimeHandler INSTANCE = new BundleRuntimeHandler();
 
     static final String [] ATTRIBUTES = { ModelConstants.ID, ModelConstants.STARTLEVEL,
-        ModelConstants.STATE, ModelConstants.SYMBOLIC_NAME, ModelConstants.VERSION };
+        ModelConstants.STATE, ModelConstants.SYMBOLIC_NAME, ModelConstants.TYPE, ModelConstants.VERSION };
 
     static final String START_OPERATION = "start";
     static final String STOP_OPERATION = "stop";
@@ -108,6 +109,12 @@ public class BundleRuntimeHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(getBundleState(bundle));
         } else if (ModelConstants.SYMBOLIC_NAME.equals(name)) {
             context.getResult().set(bundle.getSymbolicName());
+        } else if (ModelConstants.TYPE.equals(name)) {
+            if (bundle.getHeaders().get(Constants.FRAGMENT_HOST) != null) {
+                context.getResult().set(ModelConstants.FRAGMENT);
+            } else {
+                context.getResult().set(ModelConstants.BUNDLE);
+            }
         } else if (ModelConstants.VERSION.equals(name)) {
             context.getResult().set(bundle.getVersion().toString());
         }
