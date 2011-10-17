@@ -66,40 +66,18 @@
 
     <build>
         <plugins>
-            <!-- 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <includes>
-                        <include>org/jboss/deployment/spi/**</include>
-                    </includes>
                     <archive>
                         <manifestEntries>
                             <J2EE-DeploymentFactory-Implementation-Class>
-                                org.jboss.deployment.spi.factories.DeploymentFactoryImpl
+                                org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl
                             </J2EE-DeploymentFactory-Implementation-Class>
                         </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>assembly</id>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <descriptorSourceDirectory>src/assembly</descriptorSourceDirectory>
-                </configuration>
-            </plugin>
-            -->
         </plugins>
     </build>
 
