@@ -25,6 +25,7 @@ package org.jboss.as.ee.component.deployers;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 import static org.jboss.as.server.deployment.Attachments.MODULE;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -179,7 +180,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             // The bindings for the component
-            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies);
+            final Set<ServiceName> bound = new HashSet<ServiceName>();
+            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies, bound);
 
 
             // The bindings for the component class
@@ -187,7 +189,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 @Override
                 protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                     if (classDescription != null) {
-                        processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies);
+                        processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
                     }
                 }
             }.run();
@@ -205,7 +207,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                         @Override
                         protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                             if (classDescription != null) {
-                                processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies);
+                                processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
                             }
                         }
                     }.run();
@@ -217,14 +219,17 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         startBuilder.install();
     }
 
-    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
+    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final Set<ServiceName> dependencies, final Set<ServiceName> bound) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         for (BindingConfiguration bindingConfiguration : bindings) {
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
                 final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
                 final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
-
+                if(bound.contains(bindInfo.getBinderServiceName())) {
+                    continue;
+                }
+                bound.add(bindInfo.getBinderServiceName());
                 try {
                     final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
                     dependencies.add(bindInfo.getBinderServiceName());
