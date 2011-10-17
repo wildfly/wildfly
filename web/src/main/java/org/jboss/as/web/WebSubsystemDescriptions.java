@@ -141,7 +141,7 @@ class WebSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-
+        node.get(DESCRIPTION).set(bundle.getString("web.connector"));
 
         return getConnectorCommonDescription(node, ATTRIBUTES, bundle);
     }
@@ -590,13 +590,6 @@ class WebSubsystemDescriptions {
 
     static void addAccessLogCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
-        addAccessLogCommonDescription(node, type, bundle);
-
-        return node;
-    }
-
-    static void addAccessLogCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
-
         node.get(type, Constants.PATTERN, TYPE).set(ModelType.STRING);
         node.get(type, Constants.PATTERN, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.pattern"));
         node.get(type, Constants.PATTERN, REQUIRED).set(false);
@@ -797,7 +790,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getMimeMappingAddDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set("add-mime");
         node.get(DESCRIPTION).set(bundle.getString("web.configuration.add-mime"));
 
         node.get(REQUEST_PROPERTIES, "name", TYPE).set(ModelType.STRING);
@@ -814,7 +806,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getMimeMappingRemoveDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set("remove-mime");
         node.get(DESCRIPTION).set(bundle.getString("web.configuration.remove-mime"));
 
         node.get(REQUEST_PROPERTIES, "name", TYPE).set(ModelType.STRING);
@@ -829,7 +820,6 @@ class WebSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
         return getRewriteCommonDescription(node, ATTRIBUTES, bundle);
-
     }
 
     public static ModelNode getAccessLogDescription(Locale locale) {
@@ -898,7 +888,6 @@ class WebSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition-add"));
-        node.get(REQUIRED).set(false);
 
         addRewriteConditionnCommonDescription(node, REQUEST_PROPERTIES, bundle);
 
