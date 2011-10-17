@@ -23,18 +23,18 @@
 package org.jboss.as.ejb3.subsystem.deployment;
 
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.ejb3.component.singleton.SingletonComponent;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 
 /**
- * {@link ResourceDefinition} for a {@link SingletonComponent}.
+ * {@link ResourceDefinition} for a {@link EntityBeanComponent}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SingletonBeanResourceDefinition extends AbstractEJBComponentResourceDefinition {
+public class StatelessSessionBeanDeploymentResourceDefinition extends AbstractEJBComponentResourceDefinition {
 
-    public static final SingletonBeanResourceDefinition INSTANCE = new SingletonBeanResourceDefinition();
+    public static final StatelessSessionBeanDeploymentResourceDefinition INSTANCE = new StatelessSessionBeanDeploymentResourceDefinition();
 
-    private SingletonBeanResourceDefinition() {
-        super(EJBComponentType.SINGLETON);
+    private StatelessSessionBeanDeploymentResourceDefinition() {
+        super(EJBComponentType.STATELESS);
     }
 }

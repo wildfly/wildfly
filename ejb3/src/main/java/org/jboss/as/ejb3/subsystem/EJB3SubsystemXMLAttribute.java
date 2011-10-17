@@ -32,6 +32,8 @@ public enum EJB3SubsystemXMLAttribute {
 
     CORE_THREADS("core-threads"),
 
+    DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
+
     INSTANCE_AQUISITION_TIMEOUT("instance-acquisition-timeout"),
     INSTANCE_AQUISITION_TIMEOUT_UNIT("instance-acquisition-timeout-unit"),
 
@@ -45,8 +47,7 @@ public enum EJB3SubsystemXMLAttribute {
     POOL_NAME("pool-name"),
 
     RELATIVE_TO("relative-to"),
-    RESOURCE_ADAPTER_NAME("resource-adapter-name"),
-    ;
+    RESOURCE_ADAPTER_NAME("resource-adapter-name"),;
 
     private final String name;
 
