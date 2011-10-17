@@ -21,6 +21,9 @@
  */
 package org.jboss.as.osgi.parser;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+
 import junit.framework.Assert;
 
 import org.jboss.as.controller.OperationContext;
@@ -36,6 +39,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.osgi.service.startlevel.StartLevel;
@@ -124,6 +128,36 @@ public class BundleRuntimeHandlerTestCase {
 
         BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
         Assert.assertEquals("ACTIVE", contextResult.asString());
+    }
+
+    @Test
+    public void testTypeAttributeFragmen() throws Exception {
+        mockEnvironment();
+        ModelNode readOp = getReadOperation("1", ModelConstants.TYPE);
+
+        Dictionary<String, String> headers = new Hashtable<String, String>();
+        headers.put(Constants.FRAGMENT_HOST, "somebundle");
+        Bundle testBundle = Mockito.mock(Bundle.class);
+        Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
+        Mockito.when(testBundle.getHeaders()).thenReturn(headers);
+
+        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        Assert.assertEquals(ModelConstants.FRAGMENT, contextResult.asString());
+    }
+
+    @Test
+    public void testTypeAttributeBundle() throws Exception {
+        mockEnvironment();
+        ModelNode readOp = getReadOperation("1", ModelConstants.TYPE);
+
+        Dictionary<String, String> headers = new Hashtable<String, String>();
+
+        Bundle testBundle = Mockito.mock(Bundle.class);
+        Mockito.when(bundleContext.getBundle(1)).thenReturn(testBundle);
+        Mockito.when(testBundle.getHeaders()).thenReturn(headers);
+
+        BundleRuntimeHandler.INSTANCE.executeRuntimeStep(operationContext, readOp);
+        Assert.assertEquals(ModelConstants.BUNDLE, contextResult.asString());
     }
 
     @Test

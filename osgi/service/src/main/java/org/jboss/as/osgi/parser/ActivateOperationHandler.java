@@ -21,28 +21,41 @@
  */
 package org.jboss.as.osgi.parser;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.parser.SubsystemState.Activation;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.osgi.framework.Services;
 
 /**
- * Handles changes to the activation attribute.
+ * Operation to activate the OSGi subsystem.
  *
  * @author David Bosschaert
  */
-public class ActivationAttributeHandler implements OperationStepHandler {
+public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler implements DescriptionProvider {
+    static ActivateOperationHandler INSTANCE = new ActivateOperationHandler();
+
+    private ActivateOperationHandler() {
+    }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        Activation val = Activation.valueOf(operation.require(ModelDescriptionConstants.VALUE).asString().toUpperCase());
-
-        ModelNode node = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        node.get(ModelConstants.ACTIVATION).set(val.toString().toLowerCase());
-
+    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+        ServiceController<?> svc = context.getServiceRegistry(false).getRequiredService(Services.FRAMEWORK_ACTIVE);
+        svc.setMode(Mode.ACTIVE);
         context.completeStep();
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        ResourceBundle resourceBundle = OSGiSubsystemProviders.getResourceBundle(locale);
+        return CommonDescriptions.getDescriptionOnlyOperation(resourceBundle, ModelConstants.ACTIVATE, ModelDescriptionConstants.SUBSYSTEM);
     }
 }

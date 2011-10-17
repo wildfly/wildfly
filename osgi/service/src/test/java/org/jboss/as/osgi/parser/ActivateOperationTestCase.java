@@ -22,27 +22,37 @@
 package org.jboss.as.osgi.parser;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.osgi.framework.Services;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
- * Handles changes to the activation attribute.
- *
  * @author David Bosschaert
  */
-public class ActivationAttributeHandler implements OperationStepHandler {
+public class ActivateOperationTestCase {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void testActivateOperation() throws Exception {
+        ModelNode activateOp = new ModelNode();
+        activateOp.get(ModelDescriptionConstants.OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, "osgi");
+        activateOp.get(ModelDescriptionConstants.OP).set(ModelConstants.ACTIVATE);
 
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        Activation val = Activation.valueOf(operation.require(ModelDescriptionConstants.VALUE).asString().toUpperCase());
+        ServiceController sc = Mockito.mock(ServiceController.class);
 
-        ModelNode node = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        node.get(ModelConstants.ACTIVATION).set(val.toString().toLowerCase());
+        ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
+        Mockito.when(sr.getRequiredService(Services.FRAMEWORK_ACTIVE)).thenReturn(sc);
 
-        context.completeStep();
+        OperationContext context = Mockito.mock(OperationContext.class);
+        Mockito.when(context.getServiceRegistry(false)).thenReturn(sr);
+
+        ActivateOperationHandler.INSTANCE.executeRuntimeStep(context, activateOp);
+
+        Mockito.verify(sc).setMode(Mode.ACTIVE);
+        Mockito.verify(context).completeStep();
     }
 }
