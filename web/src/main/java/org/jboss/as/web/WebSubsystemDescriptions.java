@@ -120,7 +120,6 @@ class WebSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.connector"));
 
         node.get(ATTRIBUTES, Constants.NAME, TYPE).set(ModelType.STRING);
@@ -133,7 +132,6 @@ class WebSubsystemDescriptions {
 
     static ModelNode getConfigurationCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
         node.get(REQUIRED).set(false);
 
@@ -213,7 +211,6 @@ class WebSubsystemDescriptions {
 
     static ModelNode getJSPCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.configuration.jsp"));
         node.get(REQUIRED).set(false);
 
@@ -407,7 +404,6 @@ class WebSubsystemDescriptions {
 
     static ModelNode getSSLCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl"));
         node.get(REQUIRED).set(false);
 
@@ -493,7 +489,6 @@ class WebSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server"));
 
         node.get(ATTRIBUTES, Constants.NAME, TYPE).set(ModelType.STRING);
@@ -527,7 +522,6 @@ class WebSubsystemDescriptions {
     }
 
     static ModelNode getSsoCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso"));
         node.get(REQUIRED).set(false);
 
@@ -551,7 +545,6 @@ class WebSubsystemDescriptions {
     }
 
     static ModelNode getAccessLogCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
         node.get(REQUIRED).set(false);
 
@@ -708,6 +701,38 @@ class WebSubsystemDescriptions {
         return node;
     }
 
+
+    public static ModelNode getJspConfigurationDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.jsp"));
+        node.get(REQUIRED).set(false);
+
+        return getJSPCommonDescription(node, ATTRIBUTES, bundle);
+    }
+    public static ModelNode getJspConfigurationDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.jsp"));
+        node.get(REQUIRED).set(false);
+
+        return getJSPCommonDescription(node, type, bundle);
+    }
+
+    public static ModelNode getStaticResourceDescription(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
+        node.get(REQUIRED).set(false);
+        return getStaticResourcesCommonDescription(node, ATTRIBUTES, bundle);
+    }
+    public static ModelNode getStaticResourceDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+
+        node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
+        node.get(REQUIRED).set(false);
+        return getStaticResourcesCommonDescription(node, type, bundle);
+    }
+
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
@@ -718,7 +743,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getConfigurationDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
         node.get(REQUIRED).set(false);
         return node;
@@ -726,8 +750,7 @@ class WebSubsystemDescriptions {
     public static ModelNode getContainerDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
-        node.get(DESCRIPTION).set(bundle.getString("web.configuration.container"));
+         node.get(DESCRIPTION).set(bundle.getString("web.configuration.container"));
         node.get(REQUIRED).set(false);
         return node;
     }
@@ -735,7 +758,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getMimeMappingAddDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.configuration.add-mime"));
         node.get(REQUIRED).set(false);
 
@@ -753,7 +775,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getMimeMappingRemoveDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.configuration.remove-mime"));
         node.get(REQUIRED).set(false);
 
@@ -767,7 +788,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getReWriteDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
         node.get(REQUIRED).set(false);
         return node;
@@ -776,7 +796,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getAccessLogDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
         node.get(REQUIRED).set(false);
         return node;
@@ -785,7 +804,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getDirectoryDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log.directory"));
         node.get(REQUIRED).set(false);
         return node;
@@ -794,7 +812,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getReWriteCondDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition"));
         node.get(REQUIRED).set(false);
         return node;
@@ -803,8 +820,7 @@ class WebSubsystemDescriptions {
     public static ModelNode getAccessLogAdd(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
-        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log-add"));
+         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log-add"));
         node.get(REQUIRED).set(false);
 
         addAccessLogCommonDescription(node, REQUEST_PROPERTIES, bundle);
@@ -814,7 +830,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getAccessLogRemove(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.access-log-remove"));
         node.get(REQUIRED).set(false);
         return node;
@@ -823,7 +838,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getReWriteRemove(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite-remove"));
         node.get(REQUIRED).set(false);
         return node;
@@ -832,7 +846,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getReWriteAdd(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite-add"));
         node.get(REQUIRED).set(false);
 
@@ -846,7 +859,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getReWriteConditionAdd(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition-add"));
         node.get(REQUIRED).set(false);
 
@@ -858,7 +870,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getReWriteConditionRemove(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition-remove"));
         node.get(REQUIRED).set(false);
         return node;
@@ -873,7 +884,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getSSODescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso"));
         node.get(REQUIRED).set(false);
         return node;
@@ -882,7 +892,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getSSOAdd(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso-add"));
         node.get(REQUIRED).set(false);
 
@@ -893,7 +902,6 @@ class WebSubsystemDescriptions {
     public static ModelNode getSSORemove(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso-remove"));
         node.get(REQUIRED).set(false);
         return node;
