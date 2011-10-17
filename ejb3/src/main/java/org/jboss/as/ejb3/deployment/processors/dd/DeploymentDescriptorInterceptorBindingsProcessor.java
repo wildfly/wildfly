@@ -143,7 +143,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             final List<InterceptorBindingMetaData> classLevelBindings = new ArrayList<InterceptorBindingMetaData>();
             //we only want to exclude default and class level interceptors if every binding
             //has the exclude element.
-            Boolean classLevelExcludeDefaultInterceptors = null;
+            boolean classLevelExcludeDefaultInterceptors = false;
             Map<Method, Boolean> methodLevelExcludeDefaultInterceptors = new HashMap<Method, Boolean>();
             Map<Method, Boolean> methodLevelExcludeClassInterceptors = new HashMap<Method, Boolean>();
 
@@ -158,10 +158,8 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                     if (binding.getMethod() == null) {
                         classLevelBindings.add(binding);
                         //if even one binding does not say exclude default then we do not exclude
-                        if (binding.isExcludeDefaultInterceptors() && classLevelExcludeDefaultInterceptors == null) {
+                        if (binding.isExcludeDefaultInterceptors()) {
                             classLevelExcludeDefaultInterceptors = true;
-                        } else if (!binding.isExcludeClassInterceptors()) {
-                            classLevelExcludeDefaultInterceptors = false;
                         }
                         if (binding.isTotalOrdering()) {
                             if (classLevelAbsoluteOrder) {
@@ -236,8 +234,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             //build the list of default interceptors
             componentDescription.setDefaultInterceptors(defaultInterceptors);
 
-            boolean classLevelExclude = classLevelExcludeDefaultInterceptors == null ? false : classLevelExcludeDefaultInterceptors;
-            if(classLevelExclude) {
+            if(classLevelExcludeDefaultInterceptors) {
                 componentDescription.setExcludeDefaultInterceptors(true);
             }
 
