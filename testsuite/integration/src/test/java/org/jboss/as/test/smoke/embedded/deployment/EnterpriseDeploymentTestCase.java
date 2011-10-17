@@ -113,7 +113,6 @@ public class EnterpriseDeploymentTestCase {
     }
 
     @Test
-    @Ignore("[AS7-1929] Invalid webapp deploys without error in management API")
     public void testDistributeBadWar() throws Exception {
         ProgressObject progress = jsr88Deploy(getBadWebArchive());
         TargetModuleID[] targetModules = progress.getResultTargetModuleIDs();
@@ -204,10 +203,12 @@ public class EnterpriseDeploymentTestCase {
         // Deploy the test archive
         InputStream inputStream = archive.as(ZipExporter.class).exportAsInputStream();
         ProgressObject progress = manager.distribute(targets, inputStream, deploymentPlan);
-        awaitCompletion(progress, 5000);
+        StateType state = awaitCompletion(progress, 5000);
 
-        progress = manager.start(progress.getResultTargetModuleIDs());
-        awaitCompletion(progress, 5000);
+        if (state == StateType.COMPLETED) {
+            progress = manager.start(progress.getResultTargetModuleIDs());
+            awaitCompletion(progress, 5000);
+        }
 
         return progress;
     }
@@ -226,23 +227,25 @@ public class EnterpriseDeploymentTestCase {
         return progress;
     }
 
-    private void awaitCompletion(ProgressObject progress, long timeout) throws InterruptedException {
+    private StateType awaitCompletion(ProgressObject progress, long timeout) throws InterruptedException {
         DeploymentStatus status = progress.getDeploymentStatus();
         if (status.isCompleted())
-            return;
+            return null;
 
         final CountDownLatch latch = new CountDownLatch(1);
         progress.addProgressListener(new ProgressListener() {
             public void handleProgressEvent(ProgressEvent event) {
                 DeploymentStatus status = event.getDeploymentStatus();
-                if (status.isCompleted()) {
+                if (status.isCompleted() || status.isFailed()) {
                     latch.countDown();
                 }
             }
         });
 
-        if (!status.isCompleted() && latch.await(timeout, TimeUnit.MILLISECONDS) == false)
-            throw new IllegalStateException("Deployment not completed: " + progress);
+        if (latch.await(timeout, TimeUnit.MILLISECONDS) == false)
+            throw new IllegalStateException("Deployment timeout: " + progress);
+
+        return status.getState();
     }
 
     private void assertServletAccess(String context) throws IOException {
