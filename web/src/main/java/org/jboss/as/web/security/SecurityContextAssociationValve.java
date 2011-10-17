@@ -25,12 +25,14 @@ package org.jboss.as.web.security;
 import java.io.IOException;
 import java.security.Principal;
 
+import javax.security.jacc.PolicyContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
+import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
@@ -42,6 +44,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SecurityUtil;
 
 /**
@@ -59,6 +62,8 @@ public class SecurityContextAssociationValve extends ValveBase {
 
     private final DeploymentUnit deploymentUnit;
 
+    private static final ThreadLocal<Request> activeRequest = new ThreadLocal<Request>();
+
     public SecurityContextAssociationValve(DeploymentUnit deploymentUnit) {
         this.deploymentUnit = deploymentUnit;
     }
@@ -68,6 +73,7 @@ public class SecurityContextAssociationValve extends ValveBase {
     public void invoke(Request request, Response response) throws IOException, ServletException {
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
+        activeRequest.set(request);
 
         boolean trace = log.isTraceEnabled();
         Session session = null;
@@ -122,6 +128,9 @@ public class SecurityContextAssociationValve extends ValveBase {
                     if (session != null) {
                         principal = (JBossGenericPrincipal) session.getPrincipal();
                     }
+                    if (principal == null) {
+                        principal = (JBossGenericPrincipal) request.getSessionInternal(false).getNote(Constants.FORM_PRINCIPAL_NOTE);
+                    }
                 } else {
                     // Use the request principal as the caller identity
                     principal = (JBossGenericPrincipal) caller;
@@ -139,6 +148,8 @@ public class SecurityContextAssociationValve extends ValveBase {
             } catch (Throwable e) {
                 log.debug("Failed to determine servlet", e);
             }
+            // set JACC contextID
+            PolicyContext.setContextID(deploymentUnit.getName());
 
             // Perform the request
             getNext().invoke(request, response);
@@ -149,7 +160,14 @@ public class SecurityContextAssociationValve extends ValveBase {
             if (trace)
                 log.trace("End invoke, caller=" + caller);
             SecurityActions.clearSecurityContext();
+            SecurityRolesAssociation.setSecurityRoles(null);
+            PolicyContext.setContextID(null);
+            activeRequest.set(null);
         }
+    }
+
+    public static Request getActiveRequest() {
+        return activeRequest.get();
     }
 
 }

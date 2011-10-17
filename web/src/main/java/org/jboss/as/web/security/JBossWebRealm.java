@@ -22,20 +22,37 @@
 
 package org.jboss.as.web.security;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.Context;
+import org.apache.catalina.Wrapper;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.realm.RealmBase;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.CacheableManager;
@@ -47,10 +64,15 @@ import org.jboss.security.SimplePrincipal;
 import org.jboss.security.audit.AuditEvent;
 import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;
+import org.jboss.security.auth.callback.CallbackHandlerPolicyContextHandler;
+import org.jboss.security.auth.callback.DigestCallbackHandler;
 import org.jboss.security.auth.certs.SubjectDNMapping;
+import org.jboss.security.authorization.ResourceKeys;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
+import org.jboss.security.javaee.AbstractWebAuthorizationHelper;
+import org.jboss.security.javaee.SecurityHelperFactory;
 import org.jboss.security.mapping.MappingContext;
 import org.jboss.security.mapping.MappingManager;
 import org.jboss.security.mapping.MappingType;
@@ -87,14 +109,39 @@ public class JBossWebRealm extends RealmBase {
      */
     protected MappingManager mappingManager = null;
 
-
     /**
      * Set the {@code AuditManager}
+     *
      * @param auditManager
      */
     public void setAuditManager(AuditManager auditManager) {
         this.auditManager = auditManager;
     }
+
+    /**
+     * The converter from X509 certificate chain to Principal
+     */
+    protected CertificatePrincipal certMapping = new SubjectDNMapping();
+
+    /**
+     * The {@code DeploymentUnit} associated with the Realm
+     */
+    protected DeploymentUnit deploymnetUnit;
+
+    /**
+     * MetaData associated with the DeploymentUnit
+     */
+    protected JBossWebMetaData metaData;
+
+    /**
+     * JBoss specific role mapping set in the MetaData
+     */
+    protected Map<String, Set<String>> principalVersusRolesMap;
+
+    /**
+     * Is JBoss authorization framework enabled?
+     */
+    protected boolean useJBossAuthorization = false;
 
     /**
      * Set the {@code AuthenticationManager}
@@ -124,11 +171,25 @@ public class JBossWebRealm extends RealmBase {
     }
 
     /**
-     * The converter from X509 certificate chain to Principal
+     * Set the {@code DeploymentUnit}
+     *
+     * @param deploymentUnit
      */
-    protected CertificatePrincipal certMapping = new SubjectDNMapping();
+    public void setDeploymentUnit(DeploymentUnit deploymentUnit) {
+        this.deploymnetUnit = deploymentUnit;
+        metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
+        principalVersusRolesMap = metaData.getSecurityRoles().getPrincipalVersusRolesMap();
+        useJBossAuthorization = metaData.isUseJBossAuthorization();
+    }
 
-    protected Map<String, Set<String>> principalVersusRolesMap;
+    /**
+     * Returns the principal versus roles map
+     *
+     * @return map
+     */
+    public Map<String, Set<String>> getPrincipalVersusRolesMap() {
+        return principalVersusRolesMap;
+    }
 
     @Override
     public Principal authenticate(String username, String credentials) {
@@ -152,7 +213,6 @@ public class JBossWebRealm extends RealmBase {
                 throw new IllegalStateException("No SecurityContext found!");
             userPrincipal = getPrincipal(subject);
             sc.getUtil().createSubjectInfo(userPrincipal, credentials, subject);
-            SecurityActions.setSecurityContextOnAssociation(sc);
             SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
             if (mappingManager != null) {
                 // if there are mapping modules let them handle the role mapping
@@ -179,20 +239,20 @@ public class JBossWebRealm extends RealmBase {
             if (authenticationManager instanceof CacheableManager) {
                 @SuppressWarnings("unchecked")
                 CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
-                        credentials, cm, subject);
+                userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                        userPrincipal, null, credentials, cm, subject);
                 successAudit(userPrincipal);
                 return userPrincipal;
             } else {
-                userPrincipal =  new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList, userPrincipal, null,
-                        credentials, null, subject);
+                userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                        userPrincipal, null, credentials, null, subject);
                 successAudit(userPrincipal);
                 return userPrincipal;
             }
         }
 
         userPrincipal = super.authenticate(username, credentials);
-        if(userPrincipal != null){
+        if (userPrincipal != null) {
             successAudit(userPrincipal);
         }
         return userPrincipal;
@@ -221,7 +281,6 @@ public class JBossWebRealm extends RealmBase {
                     throw new IllegalStateException("No SecurityContext found!");
                 userPrincipal = getPrincipal(subject);
                 sc.getUtil().createSubjectInfo(userPrincipal, certs, subject);
-                SecurityActions.setSecurityContextOnAssociation(sc);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
                 if (mappingManager != null) {
                     // if there are mapping modules let them handle the role mapping
@@ -263,7 +322,87 @@ public class JBossWebRealm extends RealmBase {
             log.error("Error during authenticate(X509Certificate[])");
         }
 
-        if(userPrincipal != null){
+        if (userPrincipal != null) {
+            successAudit(userPrincipal);
+        }
+
+        return userPrincipal;
+    }
+
+    @Override
+    public Principal authenticate(String username, byte[] credentials) {
+        return authenticate(username, new String(credentials));
+    }
+
+    @Override
+    public Principal authenticate(String username, String clientDigest, String nOnce, String nc, String cnonce, String qop,
+            String realm, String md5a2) {
+        if (authenticationManager == null)
+            throw new IllegalStateException("Authentication Manager has not been set");
+        if (authorizationManager == null)
+            throw new IllegalStateException("Authorization Manager has not been set");
+        Principal userPrincipal = null;
+        SecurityContext sc = SecurityActions.getSecurityContext();
+        if (sc == null)
+            throw new IllegalStateException("No SecurityContext found!");
+        Principal caller = sc.getUtil().getUserPrincipal();
+        if (caller == null && username == null && clientDigest == null) {
+            return null;
+        }
+        try {
+            DigestCallbackHandler handler = new DigestCallbackHandler(username, nOnce, nc, cnonce, qop, realm, md5a2);
+            CallbackHandlerPolicyContextHandler.setCallbackHandler(handler);
+            userPrincipal = getPrincipal(username);
+            Subject subject = new Subject();
+            boolean isValid = authenticationManager.isValid(userPrincipal, clientDigest, subject);
+            if (isValid) {
+                if (log.isTraceEnabled()) {
+                    log.trace("User: " + userPrincipal + " is authenticated");
+                }
+                userPrincipal = getPrincipal(subject);
+                sc.getUtil().createSubjectInfo(userPrincipal, clientDigest, subject);
+                SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
+                if (mappingManager != null) {
+                    // if there are mapping modules let them handle the role mapping
+                    MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                    if (mc != null && mc.hasModules()) {
+                        SecurityRolesAssociation.setSecurityRoles(principalVersusRolesMap);
+                    }
+                }
+                RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
+                List<Role> rolesAsList = roles.getRoles();
+                List<String> rolesAsStringList = new ArrayList<String>();
+                for (Role role : rolesAsList) {
+                    rolesAsStringList.add(role.getRoleName());
+                }
+                if (mappingManager != null) {
+                    // if there are no mapping modules handle role mapping here
+                    MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                    if (mc == null || !mc.hasModules()) {
+                        rolesAsStringList = mapUserRoles(rolesAsStringList);
+                    }
+                } else
+                    // if mapping manager is not set, handle role mapping here too
+                    rolesAsStringList = mapUserRoles(rolesAsStringList);
+                if (authenticationManager instanceof CacheableManager) {
+                    @SuppressWarnings("unchecked")
+                    CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
+                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                            userPrincipal, null, clientDigest, cm, subject);
+                } else
+                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                            userPrincipal, null, clientDigest, null, subject);
+            } else {
+                if (log.isTraceEnabled()) {
+                    log.trace("User: " + userPrincipal + " is NOT authenticated");
+                }
+                userPrincipal = null;
+            }
+        } catch (Exception e) {
+            log.error("Error during authenticate(String,String,String,String,String,String,String,String)");
+        }
+
+        if (userPrincipal != null) {
             successAudit(userPrincipal);
         }
 
@@ -283,14 +422,6 @@ public class JBossWebRealm extends RealmBase {
     @Override
     protected Principal getPrincipal(String username) {
         return new SimplePrincipal(username);
-    }
-
-    public Map<String, Set<String>> getPrincipalVersusRolesMap() {
-        return principalVersusRolesMap;
-    }
-
-    public void setPrincipalVersusRolesMap(Map<String, Set<String>> principalVersusRolesMap) {
-        this.principalVersusRolesMap = principalVersusRolesMap;
     }
 
     protected List<String> mapUserRoles(List<String> rolesList) {
@@ -321,7 +452,7 @@ public class JBossWebRealm extends RealmBase {
      * @param subject
      * @return the authenticated principal
      */
-    private Principal getPrincipal(Subject subject) {
+    protected Principal getPrincipal(Subject subject) {
         Principal principal = null;
         Principal callerPrincipal = null;
         if (subject != null) {
@@ -345,15 +476,223 @@ public class JBossWebRealm extends RealmBase {
         return callerPrincipal == null ? principal : callerPrincipal;
     }
 
-    private void successAudit(Principal userPrincipal){
-        if(userPrincipal != null){
-            if(auditManager != null){
+    private void successAudit(Principal userPrincipal) {
+        if (userPrincipal != null) {
+            if (auditManager != null) {
                 AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
-                Map<String,Object> ctxMap = new HashMap<String,Object>();
+                Map<String, Object> ctxMap = new HashMap<String, Object>();
                 ctxMap.put("principal", userPrincipal);
                 auditEvent.setContextMap(ctxMap);
                 auditManager.audit(auditEvent);
             }
         }
     }
+
+    @Override
+    public boolean hasResourcePermission(Request request, Response response, SecurityConstraint[] constraints, Context context)
+            throws IOException {
+        boolean authzDecision = true;
+        boolean baseDecision = super.hasResourcePermission(request, response, constraints, context);
+
+        // if the RealmBase check has passed, then we can go to authz framework
+        if (baseDecision && useJBossAuthorization) {
+            SecurityContext sc = SecurityActions.getSecurityContext();
+            Subject caller = sc.getUtil().getSubject();
+            if (caller == null)
+                caller = getSubjectFromRequestPrincipal(request.getPrincipal());
+            Map<String, Object> contextMap = new HashMap<String, Object>();
+            contextMap.put(ResourceKeys.RESOURCE_PERM_CHECK, Boolean.TRUE);
+            contextMap.put("securityConstraints", constraints);
+
+            AbstractWebAuthorizationHelper helper = null;
+            try {
+                helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
+            } catch (Exception e) {
+                log.error("Exception in obtaining helper", e);
+                return false;
+            }
+
+            authzDecision = helper.checkResourcePermission(contextMap, request, response, caller, PolicyContext.getContextID(),
+                    requestURI(request), getPrincipalRoles(request));
+        }
+        boolean finalDecision = baseDecision && authzDecision;
+        if (log.isTraceEnabled())
+            log.trace("hasResourcePermission:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision
+                    + ":final=" + finalDecision);
+        if (!finalDecision) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, sm.getString("realmBase.forbidden"));
+        }
+        return finalDecision;
+    }
+
+    @Override
+    public boolean hasRole(Principal principal, String role) {
+        boolean authzDecision = true;
+        boolean baseDecision = super.hasRole(principal, role);
+        // if the RealmBase check has passed, then we can go to authz framework
+        if (baseDecision && useJBossAuthorization) {
+            Request request = SecurityContextAssociationValve.getActiveRequest();
+            String servletName = null;
+            Wrapper servlet = request.getWrapper();
+            if (servlet != null) {
+                servletName = getServletName(servlet);
+            }
+            if (servletName == null)
+                throw new IllegalStateException("servletName is null");
+            String roleName = role;
+            ServletMetaData servletMD = metaData.getServlets().get(servletName);
+            SecurityRoleRefsMetaData roleRefs = null;
+            if (servletMD != null)
+                roleRefs = servletMD.getSecurityRoleRefs();
+            if (roleRefs != null) {
+                for (SecurityRoleRefMetaData ref : roleRefs) {
+                    if (ref.getRoleLink().equals(role)) {
+                        roleName = ref.getName();
+                        break;
+                    }
+                }
+            }
+
+            SecurityContext sc = SecurityActions.getSecurityContext();
+            AbstractWebAuthorizationHelper helper = null;
+            try {
+                helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
+            } catch (Exception e) {
+                log.error("Error obtaining helper", e);
+            }
+            Subject callerSubject = sc.getUtil().getSubject();
+            if (callerSubject == null) {
+                // During hasResourcePermission check, Catalina calls hasRole. But we have not established
+                // a subject yet in the security context. So we will get the subject from the cached principal
+                callerSubject = getSubjectFromRequestPrincipal(principal);
+            }
+
+            authzDecision = helper.hasRole(roleName, principal, servletName, getPrincipalRoles(principal),
+                    PolicyContext.getContextID(), callerSubject, getPrincipalRoles(request));
+        }
+        boolean finalDecision = baseDecision && authzDecision;
+        if (log.isTraceEnabled())
+            log.trace("hasRole:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision + ":final="
+                    + finalDecision);
+
+        return finalDecision;
+    }
+
+    @Override
+    public boolean hasUserDataPermission(Request request, Response response, SecurityConstraint[] constraints)
+            throws IOException {
+        boolean ok = super.hasUserDataPermission(request, response, constraints);
+        // if the RealmBase check has passed, then we can go to authz framework
+        if (ok && useJBossAuthorization) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("securityConstraints", constraints);
+            map.put(ResourceKeys.USERDATA_PERM_CHECK, Boolean.TRUE);
+
+            SecurityContext sc = SecurityActions.getSecurityContext();
+            AbstractWebAuthorizationHelper helper = null;
+            try {
+                helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
+            } catch (Exception e) {
+                log.error("Error obtaining helper", e);
+            }
+
+            Subject callerSubject = sc.getUtil().getSubject();
+            // JBAS-6419:CallerSubject has no bearing on the user data permission check
+            if (callerSubject == null)
+                callerSubject = new Subject();
+
+            ok = helper.hasUserDataPermission(map, request, response, PolicyContext.getContextID(), callerSubject,
+                    getPrincipalRoles(request));
+        }
+
+        return ok;
+    }
+
+    /**
+     * Retrieve the Subject stored in the Principal
+     *
+     * @param principal the Principal present in the Request
+     * @return the authenticated Subject
+     */
+    protected Subject getSubjectFromRequestPrincipal(Principal principal) {
+        Subject subject = null;
+        if (principal instanceof JBossGenericPrincipal) {
+            subject = JBossGenericPrincipal.class.cast(principal).getSubject();
+        }
+        return subject;
+    }
+
+    /**
+     * Access the set of role Principals associated with the given caller principal.
+     *
+     * @param principal - the Principal mapped from the authentication principal and visible from the
+     *        HttpServletRequest.getUserPrincipal
+     * @return a possible null Set<Principal> for the caller roles
+     */
+    protected Set<Principal> getPrincipalRoles(Principal principal) {
+        if (!(principal instanceof GenericPrincipal))
+            throw new IllegalStateException("Expected GenericPrincipal, but saw: " + principal.getClass());
+        GenericPrincipal gp = GenericPrincipal.class.cast(principal);
+        String[] roleNames = gp.getRoles();
+        Set<Principal> userRoles = new HashSet<Principal>();
+        if (roleNames != null) {
+            for (int n = 0; n < roleNames.length; n++) {
+                Principal sp = getPrincipal(roleNames[n]);
+                userRoles.add(sp);
+            }
+        }
+        return userRoles;
+    }
+
+    protected List<String> getPrincipalRoles(Request request) {
+        List<String> roles = null;
+        Principal principal = request.getPrincipal();
+        if (principal != null) {
+            if (principal instanceof GenericPrincipal) {
+                GenericPrincipal gc = GenericPrincipal.class.cast(principal);
+                roles = Arrays.asList(gc.getRoles());
+            }
+        }
+
+        return roles;
+    }
+
+    /**
+     * Get the canonical request URI from the request mapping data requestPath
+     *
+     * @param request
+     * @return the request URI path
+     */
+    protected String requestURI(Request request) {
+        String uri = request.getMappingData().requestPath.getString();
+        if (uri == null || uri.equals("/")) {
+            uri = "";
+        }
+        return uri;
+    }
+
+    /**
+     * Jacc Specification : Appendix B.19 Calling isUserInRole from JSP not mapped to a Servlet Checking a WebRoleRefPermission
+     * requires the name of a Servlet to identify the scope of the reference to role translation. The name of a scoping servlet
+     * has not been established for an unmapped JSP.
+     *
+     * Resolution- For every security role in the web application add a WebRoleRefPermission to the corresponding role. The name
+     * of all such permissions shall be the empty string, and the actions of each permission shall be the corresponding role
+     * name. When checking a WebRoleRefPermission from a JSP not mapped to a servlet, use a permission with the empty string as
+     * its name and with the argument to is UserInRole as its actions.
+     *
+     * @param servlet Wrapper
+     * @return empty string if it is for an unmapped jsp or name of the servlet for others
+     */
+    private String getServletName(Wrapper servlet) {
+        // For jsp, the mapping will be (*.jsp, *.jspx)
+        String[] mappings = servlet.findMappings();
+        if (log.isTraceEnabled())
+            log.trace("[getServletName:servletmappings=" + mappings + ":servlet.getName()=" + servlet.getName() + "]");
+        if ("jsp".equals(servlet.getName()) && (mappings != null && mappings[0].indexOf("*.jsp") > -1))
+            return "";
+        else
+            return servlet.getName();
+    }
+
 }
