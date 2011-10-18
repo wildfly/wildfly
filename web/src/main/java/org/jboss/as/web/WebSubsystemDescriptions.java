@@ -416,6 +416,7 @@ class WebSubsystemDescriptions {
             /* add the ssl descriptions */
             node.get(CHILDREN, Constants.SSL, DESCRIPTION).set(bundle.getString("web.connector.ssl"));
             node.get(CHILDREN, Constants.SSL, MODEL_DESCRIPTION).setEmptyObject();
+
         }
 
         return node;
@@ -547,7 +548,6 @@ class WebSubsystemDescriptions {
             node.get(CHILDREN, Constants.REWRITE, MODEL_DESCRIPTION).setEmptyObject();
             node.get(CHILDREN, Constants.SSO, DESCRIPTION).set(bundle.getString("web.virtual-server.sso"));
             node.get(CHILDREN, Constants.SSO, MODEL_DESCRIPTION).setEmptyObject();
-
         }
 
         return node;
@@ -790,6 +790,7 @@ class WebSubsystemDescriptions {
     public static ModelNode getMimeMappingAddDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("add-mime");
         node.get(DESCRIPTION).set(bundle.getString("web.configuration.add-mime"));
 
         node.get(REQUEST_PROPERTIES, "name", TYPE).set(ModelType.STRING);
@@ -806,6 +807,7 @@ class WebSubsystemDescriptions {
     public static ModelNode getMimeMappingRemoveDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set("remove-mime");
         node.get(DESCRIPTION).set(bundle.getString("web.configuration.remove-mime"));
 
         node.get(REQUEST_PROPERTIES, "name", TYPE).set(ModelType.STRING);
@@ -840,7 +842,6 @@ class WebSubsystemDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite.condition"));
-        // TODO common part missing.
         return node;
     }
 
@@ -877,8 +878,6 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite-add"));
 
         addRewriteCommonDescription(node, REQUEST_PROPERTIES, bundle);
-
-        // TODO once the conditions can be added add the description here.
 
         return node;
     }
