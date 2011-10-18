@@ -148,10 +148,10 @@
                 <stateless>
                     <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
                 </stateless>
-            </session-bean>
+                <stateful default-access-timeout="5000"/>
+                <singleton default-access-timeout="5000"/>
 
-            <default-stateful-access-timeout>5000</default-stateful-access-timeout>
-            <default-singleton-access-timeout>5000</default-singleton-access-timeout>
+            </session-bean>
 
             <thread-pools>
                 <thread-pool name="default" max-threads="10" keepalive-time="100" />

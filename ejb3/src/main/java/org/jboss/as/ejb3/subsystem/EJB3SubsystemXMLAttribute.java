@@ -33,6 +33,8 @@ public enum EJB3SubsystemXMLAttribute {
     CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),
 
+    DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
+
     INSTANCE_AQUISITION_TIMEOUT("instance-acquisition-timeout"),
     INSTANCE_AQUISITION_TIMEOUT_UNIT("instance-acquisition-timeout-unit"),
 

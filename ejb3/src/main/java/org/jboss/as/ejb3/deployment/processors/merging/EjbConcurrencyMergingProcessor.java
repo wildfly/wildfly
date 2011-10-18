@@ -24,10 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
-import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -55,13 +52,8 @@ import java.util.Map;
  */
 public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<SessionBeanComponentDescription> {
 
-    private final DefaultAccessTimeoutService singletonDefault;
-    private final DefaultAccessTimeoutService statefulDefault;
-
-    public EjbConcurrencyMergingProcessor(final DefaultAccessTimeoutService singletonDefault, final DefaultAccessTimeoutService statefulDefault) {
+    public EjbConcurrencyMergingProcessor() {
         super(SessionBeanComponentDescription.class);
-        this.singletonDefault = singletonDefault;
-        this.statefulDefault = statefulDefault;
     }
 
     protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) {
@@ -96,12 +88,6 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
 
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
 
-        if(componentConfiguration instanceof SingletonComponentDescription) {
-            ((SingletonComponentDescription) componentConfiguration).setDefaultAccessTimeoutProvider(singletonDefault);
-        } else if(componentConfiguration instanceof StatefulComponentDescription) {
-            ((StatefulComponentDescription) componentConfiguration).setDefaultAccessTimeoutProvider(singletonDefault);
-        }
-
         if (componentConfiguration.getDescriptorData() == null) {
             return;
         }
@@ -128,7 +114,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
                         componentConfiguration.setLockType(method.getLockType(), methodIdentifier);
                     }
                     if (method.getAccessTimeout() != null) {
-                        componentConfiguration.setAccessTimeout( new AccessTimeoutDetails(method.getAccessTimeout().getTimeout(), method.getAccessTimeout().getUnit()), methodIdentifier);
+                        componentConfiguration.setAccessTimeout(new AccessTimeoutDetails(method.getAccessTimeout().getTimeout(), method.getAccessTimeout().getUnit()), methodIdentifier);
                     }
 
                 }
@@ -137,7 +123,6 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
 
         }
     }
-
 
 
     private Method resolveMethod(final DeploymentReflectionIndex index, final Class<?> componentClass, final NamedMethodMetaData methodData) throws DeploymentUnitProcessingException {

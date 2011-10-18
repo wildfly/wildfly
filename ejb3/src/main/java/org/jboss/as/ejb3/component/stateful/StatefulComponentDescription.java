@@ -345,11 +345,4 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         return Collections.unmodifiableMap(initMethods);
     }
 
-    public DefaultAccessTimeoutService getDefaultAccessTimeoutProvider() {
-        return defaultAccessTimeoutProvider;
-    }
-
-    public void setDefaultAccessTimeoutProvider(final DefaultAccessTimeoutService defaultAccessTimeoutProvider) {
-        this.defaultAccessTimeoutProvider = defaultAccessTimeoutProvider;
-    }
 }
