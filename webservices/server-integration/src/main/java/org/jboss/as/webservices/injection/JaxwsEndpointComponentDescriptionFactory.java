@@ -73,8 +73,11 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
                     // creating component description for POJO endpoint
                     found = true;
                     final String endpointName = ASHelper.getEndpointName(servletMD);
-                    final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(endpointName, beanClassName, moduleDescription, unitServiceName);
-                    moduleDescription.addComponent(jaxwsEndpointDescription);
+                    ComponentDescription jaxwsEndpointDescription = moduleDescription.getComponentByName(endpointName);
+                    if (jaxwsEndpointDescription == null) {
+                        jaxwsEndpointDescription = new WSComponentDescription(endpointName, beanClassName, moduleDescription, unitServiceName);
+                        moduleDescription.addComponent(jaxwsEndpointDescription);
+                    }
                     // registering dependency on WS endpoint service
                     final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
                     jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
