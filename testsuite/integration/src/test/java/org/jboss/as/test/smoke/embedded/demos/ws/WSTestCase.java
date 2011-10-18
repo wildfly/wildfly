@@ -40,7 +40,6 @@ import org.jboss.as.test.smoke.modular.utils.ShrinkWrapUtils;
 import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,7 +50,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("Ignore demos that need the preview config")
 public class WSTestCase {
 
     @Deployment(testable = false)
@@ -110,7 +108,6 @@ public class WSTestCase {
     }
 
     @Test
-    @Ignore("[AS7-814] Fix or remove ignored smoke tests")
     public void testAccess() throws Exception {
         URL wsdlURL = new URL("http://localhost:8080/ws-example?wsdl");
         QName serviceName = new QName("http://archive.ws.demos.as.jboss.org/", "EndpointService");
