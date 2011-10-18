@@ -125,7 +125,8 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
          context.setParameters(wsInvocation.getArgs());
          context.setTarget(reference.getInstance());
          context.putPrivateData(Component.class, componentView.getComponent());
-         // invoke method
+         context.putPrivateData(ComponentView.class, componentView);
+          // invoke method
          final Object retObj = componentView.invoke(context);
          // set return value
          wsInvocation.setReturnValue(retObj);
