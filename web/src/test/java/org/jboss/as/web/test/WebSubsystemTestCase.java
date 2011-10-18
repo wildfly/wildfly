@@ -57,10 +57,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                 return OperationContext.Type.MANAGEMENT;
             }
             @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                return null;
-            }
-            @Override
             protected boolean isValidateOperations() {
                 return false;
             }
