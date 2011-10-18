@@ -87,7 +87,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         this.beanLevelLockType = singletonComponentCreateService.getBeanLockType();
         this.methodLockTypes = singletonComponentCreateService.getMethodApplicableLockTypes();
         this.methodAccessTimeouts = singletonComponentCreateService.getMethodApplicableAccessTimeouts();
-        this.defaultAccessTimeoutProvider = singletonComponentCreateService.getDefaultAccessTimeoutProvider();
+        this.defaultAccessTimeoutProvider = singletonComponentCreateService.getDefaultAccessTimeoutService();
     }
 
     @Override

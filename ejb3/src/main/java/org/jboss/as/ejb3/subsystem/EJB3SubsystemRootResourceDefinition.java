@@ -27,11 +27,11 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -53,18 +53,24 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final SimpleAttributeDefinition DEFAULT_RESOURCE_ADAPTER_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME, ModelType.STRING, true)
                     .setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition DEFAULT_STATEFUL_ACCESS_TIMEOUT =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_STATEFUL_ACCESS_TIMEOUT, ModelType.LONG)
-                    .setDefaultValue(new ModelNode().set(5000L))
-                    .setAllowExpression(true)
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+    public static final SimpleAttributeDefinition DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT, ModelType.LONG, true)
+                    .setXmlName(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName())
+                    .setDefaultValue(new ModelNode().set(5000)) // TODO: this should come from component description
+                    .setAllowExpression(true) // we allow expression for setting a timeout value
+                    .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, false, false))
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
-    public static final SimpleAttributeDefinition DEFAULT_SINGLETON_ACCESS_TIMEOUT =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SINGLETON_ACCESS_TIMEOUT, ModelType.LONG)
-                    .setDefaultValue(new ModelNode().set(5000L))
-                    .setAllowExpression(true)
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+
+    public static final SimpleAttributeDefinition DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, ModelType.LONG, true)
+                    .setXmlName(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName())
+                    .setDefaultValue(new ModelNode().set(5000)) // TODO: this should come from component description
+                    .setAllowExpression(true) // we allow expression for setting a timeout value
+                    .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, false, false))
+                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
+
 
     private EJB3SubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
@@ -78,7 +84,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.MDB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_RESOURCE_ADAPTER_NAME, null, DefaultResourceAdapterWriteHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_ACCESS_TIMEOUT, null, new DefaultSessionBeanAccessTimeoutWriteHandler(DEFAULT_STATEFUL_ACCESS_TIMEOUT, DefaultAccessTimeoutService.STATEFUL_SERVICE_NAME));
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_SINGLETON_ACCESS_TIMEOUT, null, new DefaultSessionBeanAccessTimeoutWriteHandler(DEFAULT_SINGLETON_ACCESS_TIMEOUT, DefaultAccessTimeoutService.SINGLETON_SERVICE_NAME));
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, null, DefaultSingletonBeanAccessTimeoutWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT, null, DefaultStatefulBeanAccessTimeoutWriteHandler.INSTANCE);
     }
 }

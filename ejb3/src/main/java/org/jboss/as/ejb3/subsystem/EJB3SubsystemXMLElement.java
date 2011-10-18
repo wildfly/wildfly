@@ -40,8 +40,6 @@ public enum EJB3SubsystemXMLElement {
     BEAN_INSTANCE_POOL_REF("bean-instance-pool-ref"),
 
     DATA_STORE("data-store"),
-    DEFAULT_STATEFUL_ACCESS_TIMEOUT("default-stateful-access-timeout"),
-    DEFAULT_SINGLETON_ACCESS_TIMEOUT("default-singleton-access-timeout"),
     MDB("mdb"),
 
     POOLS("pools"),
@@ -51,6 +49,8 @@ public enum EJB3SubsystemXMLElement {
     RESOURCE_ADAPTER_REF("resource-adapter-ref"),
 
     SESSION_BEAN("session-bean"),
+    SINGLETON("singleton"),
+    STATEFUL("stateful"),
     STATELESS("stateless"),
     STRICT_MAX_POOL("strict-max-pool"),
 
