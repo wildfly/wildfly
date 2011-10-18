@@ -192,13 +192,13 @@ public class FrameworkBootstrapService implements Service<Void> {
             props.put(PROP_JBOSS_OSGI_SYSTEM_MODULES, buffer.toString());
         }
 
-        // Setup the system packages if not defined explicitly
-        SubsystemState subsystemState = injectedSubsystemState.getValue();
-        String sysPackagesProp = (String) subsystemState.getProperties().get(Constants.FRAMEWORK_SYSTEMPACKAGES);
-        if (sysPackagesProp == null) {
+        // Setup default system packages
+        String syspackages = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_PACKAGES);
+        if (syspackages == null) {
             Set<String> sysPackages = new LinkedHashSet<String>();
             sysPackages.addAll(Arrays.asList(SystemPathsProvider.DEFAULT_SYSTEM_PACKAGES));
             sysPackages.addAll(Arrays.asList(SystemPathsProvider.DEFAULT_FRAMEWORK_PACKAGES));
+            sysPackages.add("javax.inject,");
             sysPackages.add("org.apache.commons.logging;version=1.1.1");
             sysPackages.add("org.apache.log4j;version=1.2");
             sysPackages.add("org.jboss.as.osgi.service;version=7.0");
@@ -209,10 +209,16 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("org.jboss.osgi.testing;version=1.0");
             sysPackages.add("org.jboss.osgi.vfs;version=1.0");
             sysPackages.add("org.slf4j;version=1.5.10");
-            sysPackagesProp = sysPackages.toString();
-            sysPackagesProp = sysPackagesProp.substring(1, sysPackagesProp.length() -1);
-            props.put(Constants.FRAMEWORK_SYSTEMPACKAGES, sysPackagesProp);
+            syspackages = sysPackages.toString();
+            syspackages = syspackages.substring(1, syspackages.length() -1);
+            props.put(PROP_JBOSS_OSGI_SYSTEM_PACKAGES, syspackages);
         }
+
+        String extrapackages = (String) props.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA);
+        if (extrapackages != null) {
+            syspackages += "," + extrapackages;
+        }
+        props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, syspackages);
     }
 
     private static final class SystemServicesIntegration implements Service<SystemServicesProvider>, SystemServicesProvider {
@@ -268,13 +274,11 @@ public class FrameworkBootstrapService implements Service<Void> {
 
         private final Map<String, Object> props;
         private final InjectedValue<SystemPathsProvider> injectedSystemPaths = new InjectedValue<SystemPathsProvider>();
-        private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
         private Module frameworkModule;
 
         private static ServiceController<?> addService(final ServiceTarget target, Map<String, Object> props) {
             FrameworkModuleIntegration service = new FrameworkModuleIntegration(props);
             ServiceBuilder<?> builder = target.addService(Services.FRAMEWORK_MODULE_PROVIDER, service);
-            builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
             builder.addDependency(Services.SYSTEM_PATHS_PROVIDER, SystemPathsProvider.class, service.injectedSystemPaths);
             builder.setInitialMode(Mode.ON_DEMAND);
             return builder.install();
@@ -319,24 +323,22 @@ public class FrameworkBootstrapService implements Service<Void> {
             PathFilter acceptAll = PathFilters.acceptAll();
             specBuilder.addDependency(DependencySpec.createSystemDependencySpec(sysImport, acceptAll, sysPaths));
 
+            // Add the framework module dependencies
+            String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
+            if (sysmodules == null)
+                sysmodules = "";
+
+            String extramodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA);
+            if (extramodules != null)
+                sysmodules += "," + extramodules;
+
             // Add a dependency on the default framework modules
             ModuleLoader bootLoader = Module.getBootModuleLoader();
-            String[] modids = new String[] {"org.jboss.osgi.framework", "org.jboss.as.osgi"};
-            for (String modid : modids) {
-                ModuleIdentifier identifier = ModuleIdentifier.create(modid);
-                specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, identifier, false));
-            }
-
-            // Add the user defined module dependencies
-            String modulesProps = (String) injectedSubsystemState.getValue().getProperties().get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
-            if (modulesProps != null) {
-                for (String moduleProp : modulesProps.split(",")) {
-                    moduleProp = moduleProp.trim();
-                    if (moduleProp.length() > 0) {
-                        ModuleIdentifier moduleId = ModuleIdentifier.create(moduleProp);
-                        DependencySpec moduleDep = DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, moduleId, false);
-                        specBuilder.addDependency(moduleDep);
-                    }
+            for (String modid : sysmodules.split(",")) {
+                modid = modid.trim();
+                if (modid.length() > 0) {
+                    ModuleIdentifier identifier = ModuleIdentifier.create(modid);
+                    specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, identifier, false));
                 }
             }
 
@@ -360,11 +362,6 @@ public class FrameworkBootstrapService implements Service<Void> {
             } catch (ModuleLoadException ex) {
                 throw new IllegalStateException(ex);
             }
-        }
-
-        private DependencySpec createSystemModuleDependency(ModuleLoader moduleLoader, ModuleIdentifier identifier) {
-            PathFilter acceptAll = PathFilters.acceptAll();
-            return DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, moduleLoader, identifier, false);
         }
     }
 }
