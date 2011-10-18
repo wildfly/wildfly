@@ -24,9 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
@@ -51,12 +48,8 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
 
     public static final HornetQServerControlWriteHandler INSTANCE = new HornetQServerControlWriteHandler();
 
-    private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
-
     private HornetQServerControlWriteHandler() {
-        for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            attributes.put(attr.getName(), attr);
-        }
+        super(CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
@@ -66,22 +59,10 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
     }
 
     @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateResolvedParameter(name, value);
-    }
-
-    @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName,
                                            final ModelNode newValue, final ModelNode currentValue,
                                            final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(attributeName);
+        AttributeDefinition attr = getAttributeDefinition(attributeName);
         if (attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
             // Restart required
             return true;
@@ -112,7 +93,7 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                                          final ModelNode valueToRevert,
                                          final Void handback) throws OperationFailedException {
 
-        AttributeDefinition attr = attributes.get(attributeName);
+        AttributeDefinition attr = getAttributeDefinition(attributeName);
         if (!attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
             ServiceRegistry registry = context.getServiceRegistry(true);
             final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));

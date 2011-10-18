@@ -48,17 +48,15 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
 
     static final SecurityRoleAttributeHandler INSTANCE = new SecurityRoleAttributeHandler();
 
+    private SecurityRoleAttributeHandler() {
+        super(SecurityRoleAdd.ROLE_ATTRIBUTES);
+    }
+
     public void registerAttributes(final ManagementResourceRegistration registry) {
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
         for (AttributeDefinition attr : SecurityRoleAdd.ROLE_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
         }
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        final AttributeDefinition def = getAttributeDefinition(name);
-        def.getValidator().validateParameter(name, value);
     }
 
     @Override
@@ -105,15 +103,6 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
         final ServiceController<?> controller = context.getServiceRegistry(true).getService(hqServiceName);
         if(controller != null) {
             return HornetQServer.class.cast(controller.getValue());
-        }
-        return null;
-    }
-
-    static final AttributeDefinition getAttributeDefinition(final String attributeName) {
-        for(final AttributeDefinition def : SecurityRoleAdd.ROLE_ATTRIBUTES) {
-            if(def.getName().equals(attributeName)) {
-                return def;
-            }
         }
         return null;
     }

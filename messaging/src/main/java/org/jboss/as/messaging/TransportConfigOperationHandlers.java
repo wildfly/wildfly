@@ -313,6 +313,7 @@ class TransportConfigOperationHandlers {
         final AttributeDefinition[] attributes;
 
         private AttributeWriteHandler(AttributeDefinition[] attributes) {
+            super(attributes);
             this.attributes = attributes;
         }
 
@@ -321,21 +322,6 @@ class TransportConfigOperationHandlers {
             for (AttributeDefinition attr : attributes) {
                 registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
             }
-        }
-
-        @Override
-        protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-            final AttributeDefinition def = getAttributeDefinition(name);
-            def.getValidator().validateParameter(name, value);
-        }
-
-        static final AttributeDefinition getAttributeDefinition(final String attributeName) {
-            for(final AttributeDefinition def : AddressSettingAdd.ATTRIBUTES) {
-                if(def.getName().equals(attributeName)) {
-                    return def;
-                }
-            }
-            return null;
         }
     }
 

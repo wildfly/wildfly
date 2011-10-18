@@ -25,6 +25,10 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
@@ -52,6 +56,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
 
     private final ParameterValidator unresolvedValueValidator;
     private final ParameterValidator resolvedValueValidator;
+    private final Map<String, AttributeDefinition> attributeDefinitions;
 
     protected AbstractWriteAttributeHandler() {
         this(null, null);
@@ -61,8 +66,14 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         this(validator, validator);
     }
 
-    protected AbstractWriteAttributeHandler(final AttributeDefinition definition) {
-        this(definition.getValidator());
+    protected AbstractWriteAttributeHandler(final AttributeDefinition... definitions) {
+        assert definitions != null : "definitions is null";
+        attributeDefinitions = new HashMap<String, AttributeDefinition>();
+        for (AttributeDefinition def : definitions) {
+            attributeDefinitions.put(def.getName(), def);
+        }
+        this.unresolvedValueValidator = null;
+        this.resolvedValueValidator = null;
     }
 
     protected AbstractWriteAttributeHandler(final ParameterValidator unresolvedValidator, final ParameterValidator resolvedValidator) {
@@ -70,6 +81,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         this.nameValidator.registerValidator(NAME, new StringLengthValidator(1));
         this.unresolvedValueValidator = unresolvedValidator;
         this.resolvedValueValidator = resolvedValidator;
+        this.attributeDefinitions = null;
     }
 
     @Override
@@ -83,13 +95,20 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode currentValue = submodel.get(attributeName).clone();
 
-        submodel.get(attributeName).set(newValue);
+        final AttributeDefinition attributeDefinition = getAttributeDefinition(attributeName);
+        if (attributeDefinition != null) {
+            final ModelNode syntheticOp = new ModelNode();
+            syntheticOp.get(attributeName).set(newValue);
+            attributeDefinition.validateAndSet(syntheticOp, submodel);
+        } else {
+            submodel.get(attributeName).set(newValue);
+        }
 
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ModelNode resolvedValue = newValue.resolve();
+                    ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.validateResolvedOperation(submodel) : newValue.resolve();
                     validateResolvedValue(attributeName, newValue);
                     HandbackHolder<T> handback = new HandbackHolder<T>();
                     boolean restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
@@ -192,6 +211,10 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
      */
     protected boolean requiresRuntime(OperationContext context) {
         return context.getType() == OperationContext.Type.SERVER && !context.isBooting();
+    }
+
+    protected AttributeDefinition getAttributeDefinition(final String attributeName) {
+        return attributeDefinitions == null ? null : attributeDefinitions.get(attributeName);
     }
 
     /**

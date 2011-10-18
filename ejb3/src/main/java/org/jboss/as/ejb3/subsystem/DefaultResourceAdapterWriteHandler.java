@@ -42,9 +42,8 @@ public class DefaultResourceAdapterWriteHandler extends AbstractWriteAttributeHa
 
     public static final DefaultResourceAdapterWriteHandler INSTANCE = new DefaultResourceAdapterWriteHandler();
 
-    @Override
-    protected void validateResolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
-        // we're going to validate using the AttributeDefinition in applyModelToRuntime, so don't bother here
+    private DefaultResourceAdapterWriteHandler() {
+        super(EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME);
     }
 
     @Override

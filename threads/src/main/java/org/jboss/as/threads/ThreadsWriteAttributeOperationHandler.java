@@ -22,9 +22,6 @@
 
 package org.jboss.as.threads;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,12 +30,10 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Abstract superclass for write-attribute operation handlers for the threads subsystem.
@@ -53,31 +48,18 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
     private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
     private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    protected final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
+    protected final AttributeDefinition[] attributes;
     protected final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
 
     /**
      * Creates a handler that doesn't validate values.
      */
     public ThreadsWriteAttributeOperationHandler(AttributeDefinition[] attrs, AttributeDefinition[] rwAttrs) {
-        for(AttributeDefinition attr : attrs) {
-            attributes.put(attr.getName(), attr);
-        }
+        super(attrs);
+        this.attributes = attrs;
         for(AttributeDefinition attr : rwAttrs) {
             runtimeAttributes.put(attr.getName(), attr);
         }
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(VALUE, value);
-    }
-
-   @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateResolvedParameter(VALUE, value);
     }
 
     @Override
@@ -126,7 +108,8 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        for(String attrName : attributes.keySet()) {
+        for(AttributeDefinition attribute : attributes) {
+            String attrName = attribute.getName();
             EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
             registry.registerReadWriteAttribute(attrName, null, this, flags);
         }

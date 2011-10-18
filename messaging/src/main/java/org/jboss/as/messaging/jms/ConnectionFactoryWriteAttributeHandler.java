@@ -58,12 +58,9 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
     private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
     private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
     private final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
     private ConnectionFactoryWriteAttributeHandler() {
-        for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
-            attributes.put(attr.getName(), attr);
-        }
+        super(JMSServices.CONNECTION_FACTORY_ATTRS);
         for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_WRITE_ATTRS) {
             runtimeAttributes.put(attr.getName(), attr);
         }
@@ -75,18 +72,6 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
             EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
             registry.registerReadWriteAttribute(attrName, null, this, flags);
         }
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateResolvedParameter(name, value);
     }
 
     @Override

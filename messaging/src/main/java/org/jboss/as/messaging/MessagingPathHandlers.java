@@ -66,17 +66,7 @@ class MessagingPathHandlers {
         }
     };
 
-    static final OperationStepHandler PATH_ATTR = new ReloadRequiredWriteAttributeHandler() {
-
-        @Override
-        protected void validateUnresolvedValue(final String name, final ModelNode value) throws OperationFailedException {
-            if(RELATIVE_TO.equals(name)) {
-                CommonAttributes.RELATIVE_TO.getValidator().validateParameter(name, value);
-            } else {
-                CommonAttributes.PATH.getValidator().validateParameter(name, value);
-            }
-        }
-    };
+    static final OperationStepHandler PATH_ATTR = new ReloadRequiredWriteAttributeHandler(CommonAttributes.RELATIVE_TO, CommonAttributes.PATH);
 
     static final OperationStepHandler PATH_REMOVE = new OperationStepHandler() {
 
