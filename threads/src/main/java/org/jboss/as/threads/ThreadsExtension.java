@@ -153,6 +153,7 @@ public class ThreadsExtension implements Extension {
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), ThreadsParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.THREADS_1_0.getUriString(), ThreadsParser.INSTANCE);
     }
 
     private static class ThreadsSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {

@@ -30,6 +30,7 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -84,7 +85,8 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
                 return true;
             } else {
                 // Actually apply the update
-                applyOperation(context, operation, attributeName, service);
+                final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                applyOperation(context, model, attributeName, service);
                 handbackHolder.setHandback(Boolean.TRUE);
                 return false;
             }
@@ -100,9 +102,9 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
             final ServiceController<?> service = getService(context, operation);
             if (service != null && service.getState() == ServiceController.State.UP) {
                 // Create and execute a write-attribute operation that uses the valueToRestore
-                ModelNode revertOp = operation.clone();
-                revertOp.get(attributeName).set(valueToRestore);
-                applyOperation(context, revertOp, attributeName, service);
+                ModelNode revertModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
+                revertModel.get(attributeName).set(valueToRestore);
+                applyOperation(context, revertModel, attributeName, service);
             }
         }
     }
@@ -115,7 +117,7 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
         }
     }
 
-    protected abstract ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException;
+    protected abstract ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException;
 
-    protected abstract void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service);
+    protected abstract void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) throws OperationFailedException;
 }

@@ -36,7 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseOperationParameters;
+import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BaseThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -81,18 +81,11 @@ public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler implemen
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModelNode resolved = new ModelNode();
-        resolved.get(OP).set(operation.get(OP));
-        resolved.get(OP_ADDR).set(operation.get(OP_ADDR));
-        for(final AttributeDefinition attribute : ATTRIBUTES) {
-            resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
-        }
-
-        final BaseOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseUnboundedQueueThreadPoolOperationParameters(resolved);
+        final BaseThreadPoolParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseUnboundedQueueThreadPoolParameters(context, operation, model);
 
         ServiceTarget target = context.getServiceTarget();
         final ServiceName serviceName = ThreadsServices.executorName(params.getName());
-        final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
+        final UnboundedQueueThreadPoolService service = new UnboundedQueueThreadPoolService(params.getMaxThreads(), params.getKeepAliveTime());
         final ServiceBuilder<ManagedJBossThreadPoolExecutorService> serviceBuilder = target.addService(serviceName, service);
         ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
         if (verificationHandler != null) {

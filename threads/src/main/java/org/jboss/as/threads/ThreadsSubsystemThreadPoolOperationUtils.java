@@ -22,23 +22,18 @@
 package org.jboss.as.threads;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.CommonAttributes.ALLOW_CORE_TIMEOUT;
-import static org.jboss.as.threads.CommonAttributes.BLOCKING;
-import static org.jboss.as.threads.CommonAttributes.CORE_THREADS;
 import static org.jboss.as.threads.CommonAttributes.COUNT;
-import static org.jboss.as.threads.CommonAttributes.HANDOFF_EXECUTOR;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
-import static org.jboss.as.threads.CommonAttributes.MAX_THREADS;
 import static org.jboss.as.threads.CommonAttributes.PER_CPU;
 import static org.jboss.as.threads.CommonAttributes.PROPERTIES;
-import static org.jboss.as.threads.CommonAttributes.QUEUE_LENGTH;
-import static org.jboss.as.threads.CommonAttributes.THREAD_FACTORY;
 import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -48,9 +43,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * Utilities related to converted detyped thread pool config ModelNodes to typed config objects.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 class ThreadsSubsystemThreadPoolOperationUtils {
 
@@ -69,48 +64,52 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, injector);
     }
 
-    static BaseOperationParameters parseUnboundedQueueThreadPoolOperationParameters(ModelNode operation) {
-        OperationParametersImpl params = new OperationParametersImpl();
-        return parseBaseThreadPoolOperationParameters(operation, params);
+    static BaseThreadPoolParameters parseUnboundedQueueThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        ThreadPoolParametersImpl params = new ThreadPoolParametersImpl();
+        return parseBaseThreadPoolOperationParameters(context, operation, model, params);
     }
 
-    static BaseOperationParameters parseScheduledThreadPoolOperationParameters(ModelNode operation) {
-        OperationParametersImpl params = new OperationParametersImpl();
-        return parseBaseThreadPoolOperationParameters(operation, params);
+    static BaseThreadPoolParameters parseScheduledThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        ThreadPoolParametersImpl params = new ThreadPoolParametersImpl();
+        return parseBaseThreadPoolOperationParameters(context, operation, model, params);
     }
 
-    static QueuelessOperationParameters parseQueuelessThreadPoolOperationParameters(ModelNode operation) {
-        OperationParametersImpl params = new OperationParametersImpl();
-        parseBaseThreadPoolOperationParameters(operation, params);
+    static QueuelessThreadPoolParameters parseQueuelessThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        ThreadPoolParametersImpl params = new ThreadPoolParametersImpl();
+        parseBaseThreadPoolOperationParameters(context, operation, model, params);
 
-        params.blocking = operation.hasDefined(BLOCKING) ? operation.get(BLOCKING).asBoolean() : false;
-        params.handoffExecutor = operation.hasDefined(HANDOFF_EXECUTOR) ? operation.get(HANDOFF_EXECUTOR).asString() : null;
+        params.blocking = PoolAttributeDefinitions.BLOCKING.resolveModelAttribute(context, model).asBoolean();
+        ModelNode handoffEx = PoolAttributeDefinitions.HANDOFF_EXECUTOR.resolveModelAttribute(context, model);
+        params.handoffExecutor = handoffEx.isDefined() ? handoffEx.asString() : null;
 
         return params;
     }
 
-    static BoundedOperationParameters parseBoundedThreadPoolOperationParameters(ModelNode operation) {
-        OperationParametersImpl params = new OperationParametersImpl();
-        parseBaseThreadPoolOperationParameters(operation, params);
+    static BoundedThreadPoolParameters parseBoundedThreadPoolParameters(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        ThreadPoolParametersImpl params = new ThreadPoolParametersImpl();
+        parseBaseThreadPoolOperationParameters(context, operation, model, params);
 
-        params.blocking = operation.hasDefined(BLOCKING) ? operation.get(BLOCKING).asBoolean() : false;
-        params.allowCoreTimeout = operation.hasDefined(ALLOW_CORE_TIMEOUT) ? operation.get(ALLOW_CORE_TIMEOUT).asBoolean() : false;
-        params.handoffExecutor = operation.hasDefined(HANDOFF_EXECUTOR) ? operation.get(HANDOFF_EXECUTOR).asString() : null;
-        params.coreThreads = getScaledCount(operation, CORE_THREADS);
-        params.queueLength = getScaledCount(operation, QUEUE_LENGTH);
-
+        params.blocking = PoolAttributeDefinitions.BLOCKING.resolveModelAttribute(context, model).asBoolean();
+        params.allowCoreTimeout = PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.resolveModelAttribute(context, model).asBoolean();
+        ModelNode handoffEx = PoolAttributeDefinitions.HANDOFF_EXECUTOR.resolveModelAttribute(context, model);
+        params.handoffExecutor = handoffEx.isDefined() ? handoffEx.asString() : null;
+        ModelNode coreTh = PoolAttributeDefinitions.CORE_THREADS.resolveModelAttribute(context, model);
+        params.coreThreads = coreTh.isDefined() ? coreTh.asInt() : params.maxThreads;
+        params.queueLength = PoolAttributeDefinitions.QUEUE_LENGTH.resolveModelAttribute(context, model).asInt();
         return params;
     }
 
 
-    private static OperationParametersImpl parseBaseThreadPoolOperationParameters(ModelNode operation, OperationParametersImpl params) {
+    private static ThreadPoolParametersImpl parseBaseThreadPoolOperationParameters(final OperationContext context, final ModelNode operation,
+                                                                                   final ModelNode model, final ThreadPoolParametersImpl params) throws OperationFailedException {
         params.address = operation.require(OP_ADDR);
         PathAddress pathAddress = PathAddress.pathAddress(params.address);
         params.name = pathAddress.getLastElement().getValue();
 
         //Get/validate the properties
-        params.threadFactory = operation.hasDefined(THREAD_FACTORY) ? operation.get(THREAD_FACTORY).asString() : null;
-        params.properties = operation.hasDefined(PROPERTIES) ? operation.get(PROPERTIES) : null;
+        ModelNode tfNode = PoolAttributeDefinitions.THREAD_FACTORY.resolveModelAttribute(context, model);
+        params.threadFactory = tfNode.isDefined() ? tfNode.asString() : null;
+        params.properties = model.hasDefined(PROPERTIES) ? model.get(PROPERTIES) : null;
         if (params.properties != null) {
             if (params.properties.getType() != ModelType.LIST) {
                 throw new IllegalArgumentException(PROPERTIES + " must be a list of properties"); //TODO i18n
@@ -121,13 +120,10 @@ class ThreadsSubsystemThreadPoolOperationUtils {
                 }
             }
         }
-        params.maxThreads = getScaledCount(operation, MAX_THREADS);
-        if (params.maxThreads == null) {
-            throw new IllegalArgumentException(MAX_THREADS + " was not defined");
-        }
+        params.maxThreads = PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt();
 
-        if (operation.hasDefined(KEEPALIVE_TIME)) {
-            ModelNode keepaliveTime = operation.get(KEEPALIVE_TIME);
+        if (model.hasDefined(KEEPALIVE_TIME)) {
+            ModelNode keepaliveTime = model.get(KEEPALIVE_TIME);
             if (!keepaliveTime.hasDefined(TIME)) {
                 throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
             }
@@ -140,21 +136,7 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         return params;
     }
 
-    private static ScaledCount getScaledCount(ModelNode operation, String paramName) {
-        if (operation.hasDefined(paramName)) {
-            ModelNode scaledCount = operation.get(paramName);
-            if (!scaledCount.hasDefined(COUNT)) {
-                throw new IllegalArgumentException("Missing '" + COUNT + "' for '" + paramName + "'");
-            }
-            if (!scaledCount.hasDefined(PER_CPU)) {
-                throw new IllegalArgumentException("Missing '" + PER_CPU + "' for '" + paramName + "'");
-            }
-            return new ScaledCount(scaledCount.get(COUNT).asBigDecimal(), scaledCount.get(PER_CPU).asBigDecimal());
-        }
-        return null;
-    }
-
-    interface BaseOperationParameters {
+    interface BaseThreadPoolParameters {
         ModelNode getAddress();
 
         String getName();
@@ -163,35 +145,35 @@ class ThreadsSubsystemThreadPoolOperationUtils {
 
         ModelNode getProperties();
 
-        ScaledCount getMaxThreads();
+        int getMaxThreads();
 
         TimeSpec getKeepAliveTime();
     }
 
-    interface QueuelessOperationParameters extends BaseOperationParameters {
+    interface QueuelessThreadPoolParameters extends BaseThreadPoolParameters {
         boolean isBlocking();
 
         String getHandoffExecutor();
     }
 
-    interface BoundedOperationParameters extends QueuelessOperationParameters {
+    interface BoundedThreadPoolParameters extends QueuelessThreadPoolParameters {
         boolean isAllowCoreTimeout();
-        ScaledCount getCoreThreads();
-        ScaledCount getQueueLength();
+        int getCoreThreads();
+        int getQueueLength();
     }
 
-    private static class OperationParametersImpl implements QueuelessOperationParameters, BoundedOperationParameters {
+    private static class ThreadPoolParametersImpl implements QueuelessThreadPoolParameters, BoundedThreadPoolParameters {
         ModelNode address;
         String name;
         String threadFactory;
         ModelNode properties;
-        ScaledCount maxThreads;
+        int maxThreads;
         TimeSpec keepAliveTime;
         boolean blocking;
         String handoffExecutor;
         boolean allowCoreTimeout;
-        ScaledCount coreThreads;
-        ScaledCount queueLength;
+        int coreThreads;
+        int queueLength;
 
         @Override
         public ModelNode getAddress() {
@@ -214,7 +196,7 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         }
 
         @Override
-        public ScaledCount getMaxThreads() {
+        public int getMaxThreads() {
             return maxThreads;
         }
 
@@ -239,12 +221,12 @@ class ThreadsSubsystemThreadPoolOperationUtils {
         }
 
         @Override
-        public ScaledCount getCoreThreads() {
+        public int getCoreThreads() {
             return coreThreads;
         }
 
         @Override
-        public ScaledCount getQueueLength() {
+        public int getQueueLength() {
             return queueLength;
         }
     }

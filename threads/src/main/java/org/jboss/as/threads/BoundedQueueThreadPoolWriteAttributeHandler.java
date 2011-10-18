@@ -23,13 +23,10 @@ package org.jboss.as.threads;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.CommonAttributes.COUNT;
 import static org.jboss.as.threads.CommonAttributes.KEEPALIVE_TIME;
-import static org.jboss.as.threads.CommonAttributes.PER_CPU;
 import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -54,74 +51,45 @@ public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAtt
     }
 
     @Override
-    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
+    protected void applyOperation(final OperationContext context, ModelNode model, String attributeName, ServiceController<?> service) throws OperationFailedException {
 
         final BoundedQueueThreadPoolService pool =  (BoundedQueueThreadPoolService) service.getService();
-        try {
-            final ModelNode value = operation.require(CommonAttributes.VALUE);
-            if (CommonAttributes.KEEPALIVE_TIME.equals(attributeName)) {
-                if (!value.hasDefined(TIME)) {
-                    throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
-                }
-                final TimeUnit unit;
-                if (!value.hasDefined(UNIT)) {
-                    unit = pool.getKeepAliveUnit();
-                } else {
-                    try {
-                    unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
-                    } catch(IllegalArgumentException e) {
-                        throw new OperationFailedException(new ModelNode().set("Failed to parse '" + UNIT + "', allowed values are: " + Arrays.asList(TimeUnit.values())));
-                    }
-                }
-                final TimeSpec spec = new TimeSpec(unit, value.get(TIME).asLong());
-                pool.setKeepAlive(spec);
-            } else if(CommonAttributes.MAX_THREADS.equals(attributeName)) {
-                pool.setMaxThreads(getScaledCount(CommonAttributes.MAX_THREADS, value));
-            } else if(CommonAttributes.CORE_THREADS.equals(attributeName)) {
-                pool.setCoreThreads(getScaledCount(CommonAttributes.CORE_THREADS, value));
-            } else if(CommonAttributes.QUEUE_LENGTH.equals(attributeName)) {
-                pool.setQueueLength(getScaledCount(CommonAttributes.QUEUE_LENGTH, value));
-            } else if(CommonAttributes.ALLOW_CORE_TIMEOUT.equals(attributeName)) {
-                pool.setAllowCoreTimeout(value.asBoolean());
-            } else if(CommonAttributes.BLOCKING.equals(attributeName)) {
-                pool.setBlocking(value.asBoolean());
-            } else {
-                throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
+
+        if (PoolAttributeDefinitions.KEEPALIVE_TIME.getName().equals(attributeName)) {
+            ModelNode value = PoolAttributeDefinitions.KEEPALIVE_TIME.resolveModelAttribute(context, model);
+            if (!value.hasDefined(TIME)) {
+                throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
             }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            final TimeUnit unit;
+            if (!value.hasDefined(UNIT)) {
+                unit = pool.getKeepAliveUnit();
+            } else {
+                try {
+                unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
+                } catch(IllegalArgumentException e) {
+                    throw new OperationFailedException(new ModelNode().set("Failed to parse '" + UNIT + "', allowed values are: " + Arrays.asList(TimeUnit.values())));
+                }
+            }
+            final TimeSpec spec = new TimeSpec(unit, value.get(TIME).asLong());
+            pool.setKeepAlive(spec);
+        } else if(PoolAttributeDefinitions.MAX_THREADS.getName().equals(attributeName)) {
+            pool.setMaxThreads(PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt());
+        } else if(PoolAttributeDefinitions.CORE_THREADS.getName().equals(attributeName)) {
+            pool.setCoreThreads(PoolAttributeDefinitions.CORE_THREADS.resolveModelAttribute(context, model).asInt());
+        } else if(PoolAttributeDefinitions.QUEUE_LENGTH.getName().equals(attributeName)) {
+            pool.setQueueLength(PoolAttributeDefinitions.QUEUE_LENGTH.resolveModelAttribute(context, model).asInt());
+        } else if(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.getName().equals(attributeName)) {
+            pool.setAllowCoreTimeout(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.resolveModelAttribute(context, model).asBoolean());
+        } else if(PoolAttributeDefinitions.BLOCKING.getName().equals(attributeName)) {
+            pool.setBlocking(PoolAttributeDefinitions.BLOCKING.resolveModelAttribute(context, model).asBoolean());
+        } else {
+            throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
         }
-    }
-
-    protected int getScaledCount(String attributeName, final ModelNode value) {
-        if (!value.hasDefined(COUNT)) {
-            throw new IllegalArgumentException("Missing '" + COUNT + "' for '" + attributeName + "'");
-        }
-        if (!value.hasDefined(PER_CPU)) {
-            throw new IllegalArgumentException("Missing '" + PER_CPU + "' for '" + attributeName + "'");
-        }
-
-        final BigDecimal count;
-        try {
-            count = value.get(COUNT).asBigDecimal();
-        } catch(NumberFormatException e) {
-            throw new IllegalArgumentException("Failed to parse '" + COUNT + "' as java.math.BigDecimal", e);
-        }
-        final BigDecimal perCpu;
-        try {
-            perCpu = value.get(PER_CPU).asBigDecimal();
-        } catch(NumberFormatException e) {
-            throw new IllegalArgumentException("Failed to parse '" + PER_CPU + "' as java.math.BigDecimal", e);
-        }
-
-        return new ScaledCount(count, perCpu).getScaledCount();
     }
 
     @Override
-    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
+    protected ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        final String name = Util.getNameFromAddress(model.require(OP_ADDR));
         final ServiceName serviceName = ThreadsServices.executorName(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {

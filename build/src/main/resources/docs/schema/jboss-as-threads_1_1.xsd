@@ -21,8 +21,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:threads:1.0"
-            xmlns="urn:jboss:domain:threads:1.0"
+            targetNamespace="urn:jboss:domain:threads:1.1"
+            xmlns="urn:jboss:domain:threads:1.1"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="1.0">
@@ -88,7 +88,7 @@
 
                 The "name" attribute is the bean name of the created executor.
 
-                The nested "max-threads" element must be used to specify the thread pool size.  The nested
+                The "max-threads" attribute must be used to specify the thread pool size.  The nested
                 "keepalive-time" element may used to specify the amount of time that pool threads should
                 be kept running when idle; if not specified, threads will run until the executor is shut down.
                 The "thread-factory" element specifies the bean name of a specific thread factory to use to create worker
@@ -97,7 +97,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="max-threads" type="scaled-count"/>
+            <xs:element name="max-threads" type="countType"/>
             <xs:element name="keepalive-time" type="time" minOccurs="0"/>
             <xs:element name="thread-factory" type="ref" minOccurs="0"/>
             <xs:element name="properties" type="properties" minOccurs="0"/>
@@ -124,7 +124,7 @@
 
                 The optional "core-threads" element may be used to specify the core thread pool size which is smaller
                 than the maximum pool size.  The required "max-threads" element specifies the maximum thread pool size.
-                The required "queue-length" element specifies the queue length.  The nested "keepalive-time" element may
+                The required "queue-length" element specifies the queue length.  The optional "keepalive-time" element may
                 used to specify the amount of time that threads beyond the core pool size should be kept running when idle.
                 The optional "thread-factory" element specifies the bean name of a specific thread factory to use to
                 create worker threads.  The optional "handoff-executor" element specifies an executor to delegate tasks
@@ -133,9 +133,9 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="core-threads" type="scaled-count" minOccurs="0"/>
-            <xs:element name="queue-length" type="scaled-count"/>
-            <xs:element name="max-threads" type="scaled-count"/>
+            <xs:element name="core-threads" type="countType" minOccurs="0"/>
+            <xs:element name="queue-length" type="countType"/>
+            <xs:element name="max-threads" type="countType"/>
             <xs:element name="keepalive-time" type="time" minOccurs="0"/>
             <xs:element name="thread-factory" type="ref" minOccurs="0"/>
             <xs:element name="handoff-executor" type="ref" minOccurs="0"/>
@@ -158,7 +158,7 @@
                 The "name" attribute is the bean name of the created executor.  The "blocking" attribute specifies
                 whether the submitter thread will block if no space is available in this executor.
 
-                The "max-threads" element specifies the number of threads to use for this executor before
+                The "max-threads" attribute specifies the number of threads to use for this executor before
                 tasks cannot be accepted anymore.  The optional "keepalive-time" is used to specify the amount of time
                 that threads should be kept running when idle; by default threads run indefinitely.  The optional
                 "thread-factory" element specifies the bean name of a specific thread factory to use to create worker
@@ -168,7 +168,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="max-threads" type="scaled-count"/>
+            <xs:element name="max-threads" type="countType"/>
             <xs:element name="keepalive-time" type="time" minOccurs="0"/>
             <xs:element name="thread-factory" type="ref" minOccurs="0"/>
             <xs:element name="handoff-executor" type="ref" minOccurs="0"/>
@@ -184,13 +184,13 @@
             <![CDATA[
                 A scheduled thread pool executor.  The "name" attribute is the bean name of the created executor.  The
                 "thread-factory" attribute specifies the bean name of the thread factory to use to create worker
-                threads.  The nested "max-threads" element may be used to specify the thread pool size.  The nested
+                threads.  The nested "max-threads" attribute may be used to specify the thread pool size.  The nested
                 "keepalive-time" element is used to specify the amount of time that threads should be kept running when idle.
             ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="max-threads" type="scaled-count"/>
+            <xs:element name="max-threads" type="countType"/>
             <xs:element name="keepalive-time" type="time" minOccurs="0"/>
             <xs:element name="thread-factory" type="ref" minOccurs="0"/>
             <xs:element name="properties" type="properties" minOccurs="0"/>
@@ -211,6 +211,17 @@
             <xs:maxInclusive value="10"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:complexType name="countType">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                A size designation.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="count" type="xs:int" use="required"/>
+    </xs:complexType>
 
     <xs:complexType name="properties">
         <xs:annotation>
@@ -246,21 +257,6 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="name" type="xs:string" use="required"/>
-    </xs:complexType>
-
-    <xs:complexType name="scaled-count">
-        <xs:annotation>
-            <xs:documentation>
-            <![CDATA[
-                A scaled size designation.  The "count" attribute specifies a flat quantity.  The
-                "per-cpu" attribute specifies a quantity per available CPU, as determined by
-                java.lang.Runtime#availableProcessors().  The numbers are added together and rounded off
-                to an integer value.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="count" type="xs:float" use="optional"/>
-        <xs:attribute name="per-cpu" type="xs:float" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="time">

@@ -30,17 +30,18 @@ import java.util.Map;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-enum Namespace {
+public enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    THREADS_1_0("urn:jboss:domain:threads:1.0")
+    THREADS_1_0("urn:jboss:domain:threads:1.0"),
+    THREADS_1_1("urn:jboss:domain:threads:1.1"),
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = THREADS_1_0;
+    public static final Namespace CURRENT = THREADS_1_1;
 
     private final String name;
 
