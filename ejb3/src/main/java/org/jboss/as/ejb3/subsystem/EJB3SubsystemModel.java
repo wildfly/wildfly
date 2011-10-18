@@ -53,8 +53,8 @@ public interface EJB3SubsystemModel {
     String RELATIVE_TO = "relative-to";
     String PATH = "path";
 
-    String DEFAULT_STATEFUL_ACCESS_TIMEOUT = "default-stateful-access-timeout";
-    String DEFAULT_SINGLETON_ACCESS_TIMEOUT = "default-singleton-access-timeout";
+    String DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT = "default-singleton-bean-access-timeout";
+    String DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT = "default-stateful-bean-access-timeout";
 
     String REMOTE = "remote";
     String SERVICE = "service";

@@ -48,9 +48,9 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.subsystem.deployment.EntityBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinition;
-import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanResourceDefinition;
-import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanResourceDefinition;
-import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanDeploymentResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanDeploymentResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -101,15 +101,17 @@ public class EJB3Extension implements Extension {
         // subsystem=ejb3/thread-pool=*
         subsystemRegistration.registerSubModel(EJB3ThreadPoolResourceDefinition.INSTANCE);
 
+        // subsystem=ejb3/thread-pool=*
+        subsystemRegistration.registerSubModel(EJB3ThreadPoolResourceDefinition.INSTANCE);
+
         ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
-                                                                         getResourceDescriptionResolver("deployed"));
+                getResourceDescriptionResolver("deployed"));
         final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
         deploymentsRegistration.registerSubModel(EntityBeanResourceDefinition.INSTANCE);
         deploymentsRegistration.registerSubModel(MessageDrivenBeanResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(SingletonBeanResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(StatelessSessionBeanResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(StatefulSessionBeanResourceDefinition.INSTANCE);
-
+        deploymentsRegistration.registerSubModel(SingletonBeanDeploymentResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(StatelessSessionBeanDeploymentResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(StatefulSessionBeanDeploymentResourceDefinition.INSTANCE);
     }
 
     /**

@@ -227,11 +227,4 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         return true;
     }
 
-    public DefaultAccessTimeoutService getDefaultAccessTimeoutProvider() {
-        return defaultAccessTimeoutProvider;
-    }
-
-    public void setDefaultAccessTimeoutProvider(final DefaultAccessTimeoutService defaultAccessTimeoutProvider) {
-        this.defaultAccessTimeoutProvider = defaultAccessTimeoutProvider;
-    }
 }

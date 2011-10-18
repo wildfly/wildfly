@@ -23,8 +23,6 @@
 package org.jboss.as.ejb3.subsystem.deployment;
 
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 
 /**
@@ -32,11 +30,11 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StatefulSessionBeanResourceDefinition extends AbstractEJBComponentResourceDefinition {
+public class StatefulSessionBeanDeploymentResourceDefinition extends AbstractEJBComponentResourceDefinition {
 
-    public static final StatefulSessionBeanResourceDefinition INSTANCE = new StatefulSessionBeanResourceDefinition();
+    public static final StatefulSessionBeanDeploymentResourceDefinition INSTANCE = new StatefulSessionBeanDeploymentResourceDefinition();
 
-    private StatefulSessionBeanResourceDefinition() {
+    private StatefulSessionBeanDeploymentResourceDefinition() {
         super(EJBComponentType.STATEFUL);
     }
 }
