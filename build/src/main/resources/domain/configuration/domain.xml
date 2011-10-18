@@ -332,7 +332,9 @@
                     <capability name="org.jboss.osgi.xerces" startlevel="3"/>
                 </capabilities>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.0">
+                <connector name="remoting-connector" socket-binding="remoting"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
@@ -734,7 +736,9 @@
                     <capability name="org.jboss.osgi.xerces" startlevel="3"/>
                 </capabilities>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.0">
+                <connector name="remoting-connector" socket-binding="remoting"/>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security:1.0">

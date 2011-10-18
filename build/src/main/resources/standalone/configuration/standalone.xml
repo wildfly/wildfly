@@ -348,7 +348,7 @@
             </capabilities>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:remoting:1.0">
-            <connector name="remoting-connector" socket-binding="remoting-socket"/>
+            <connector name="remoting-connector" socket-binding="remoting"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0" />
         <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
