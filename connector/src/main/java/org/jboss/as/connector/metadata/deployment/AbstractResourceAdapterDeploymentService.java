@@ -41,6 +41,7 @@ import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
@@ -139,6 +140,12 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     } catch (Throwable nfe) {
                         DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during JNDI unbinding", nfe);
                     }
+                }
+            }
+
+            if (value.getDeployment() != null && value.getDeployment().getConnectionManagers() != null) {
+                for (ConnectionManager cm : value.getDeployment().getConnectionManagers()) {
+                    cm.shutdown();
                 }
             }
 

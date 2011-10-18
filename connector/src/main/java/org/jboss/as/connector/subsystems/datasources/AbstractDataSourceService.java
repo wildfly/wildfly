@@ -58,6 +58,7 @@ import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
 import org.jboss.jca.common.metadata.ds.DriverImpl;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.DeployersLogger;
@@ -96,6 +97,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     private final String jndiName;
 
+    private CommonDeployment deploymentMD;
     private javax.sql.DataSource sqlDataSource;
 
     protected AbstractDataSourceService(final String jndiName) {
@@ -106,7 +108,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         try {
             final ServiceContainer container = startContext.getController().getServiceContainer();
 
-            CommonDeployment deploymentMD = getDeployer().deploy(container);
+            deploymentMD = getDeployer().deploy(container);
             if (deploymentMD.getCfs().length != 1) {
                 throw MESSAGES.cannotStartDs();
             }
@@ -120,6 +122,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     protected abstract AS7DataSourceDeployer getDeployer();
 
     public synchronized void stop(StopContext stopContext) {
+        if (deploymentMD != null && deploymentMD.getConnectionManagers() != null) {
+            for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+                cm.shutdown();
+            }
+        }
 
         sqlDataSource = null;
     }
