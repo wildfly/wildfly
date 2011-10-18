@@ -35,7 +35,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BoundedOperationParameters;
+import org.jboss.as.threads.ThreadsSubsystemThreadPoolOperationUtils.BoundedThreadPoolParameters;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -83,22 +83,14 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModelNode resolved = new ModelNode();
-        resolved.get(OP).set(operation.get(OP));
-        resolved.get(OP_ADDR).set(operation.get(OP_ADDR));
-        for(final AttributeDefinition attribute : ATTRIBUTES) {
-            resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
-        }
-
-        final BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(resolved);
+        final BoundedThreadPoolParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolParameters(context, operation, model);
 
         ServiceTarget target = context.getServiceTarget();
-        final int coreThreads =  params.getCoreThreads() == null ? params.getMaxThreads().getScaledCount() : params.getCoreThreads().getScaledCount();
         final ServiceName serviceName = ThreadsServices.executorName(params.getName());
         final BoundedQueueThreadPoolService service = new BoundedQueueThreadPoolService(
-                coreThreads,
-                params.getMaxThreads().getScaledCount(),
-                params.getQueueLength().getScaledCount(),
+                params.getCoreThreads(),
+                params.getMaxThreads(),
+                params.getQueueLength(),
                 params.isBlocking(),
                 params.getKeepAliveTime(),
                 params.isAllowCoreTimeout());

@@ -41,6 +41,7 @@ class Constants {
     static final String CACHED_CONNECTION_MANAGER_ERROR = "error";
 
     static final String DEFAULT_NAME = "default";
+    static final String THREAD_POOL = "thread-pool";
     static final String WORKMANAGER_SHORT_RUNNING = "short-running-threads";
     static final String WORKMANAGER_LONG_RUNNING = "long-running-threads";
 

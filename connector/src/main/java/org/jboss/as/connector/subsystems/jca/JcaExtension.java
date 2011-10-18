@@ -458,14 +458,35 @@ public class JcaExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 final Element element = Element.forName(reader.getLocalName());
-
+                Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
                 switch (element) {
                     case LONG_RUNNING_THREADS: {
-                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name + "-" + WORKMANAGER_LONG_RUNNING);
+                        switch (readerNS) {
+                            case JCA_1_0: {
+                                org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_0;
+                                ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, readerNS.getUriString(), ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name + "-" + WORKMANAGER_LONG_RUNNING);
+                                break;
+                            }
+                            default: {
+                                org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_1;
+                                ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, readerNS.getUriString(), ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name + "-" + WORKMANAGER_LONG_RUNNING);
+                            }
+                        }
                         break;
                     }
                     case SHORT_RUNNING_THREADS: {
-                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING,  name + "-" + WORKMANAGER_SHORT_RUNNING);
+                        switch (readerNS) {
+                            case JCA_1_0: {
+                                org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_0;
+                                ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, readerNS.getUriString(), ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name + "-" + WORKMANAGER_SHORT_RUNNING);
+                                break;
+                            }
+                            default: {
+                                org.jboss.as.threads.Namespace ns =  org.jboss.as.threads.Namespace.THREADS_1_1;
+                                ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, readerNS.getUriString(), ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name + "-" + WORKMANAGER_SHORT_RUNNING);
+                                break;
+                            }
+                        }
                         break;
                     }
                     default:

@@ -38,6 +38,7 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PropagatingCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -95,7 +96,8 @@ public interface PoolAttributeDefinitions {
             }
         }};
 
-    SimpleAttributeDefinition MAX_THREADS = new SimpleAttributeDefinition(CommonAttributes.MAX_THREADS, ModelType.OBJECT, false);
+    SimpleAttributeDefinition MAX_THREADS = new SimpleAttributeDefinitionBuilder(CommonAttributes.MAX_THREADS, ModelType.INT, false)
+            .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true)).setAllowExpression(true).build();
 
     SimpleAttributeDefinition KEEPALIVE_TIME = new SimpleAttributeDefinition(CommonAttributes.KEEPALIVE_TIME, ModelType.OBJECT, true,
             PropagatingCorrector.INSTANCE, new ParameterValidator(){
@@ -105,20 +107,20 @@ public interface PoolAttributeDefinitions {
                         return;
                     }
                     if(value.getType() != ModelType.OBJECT) {
-                        throw new IllegalArgumentException("Attribute " + parameterName +
+                        throw new OperationFailedException("Attribute " + parameterName +
                                 " expects values of type OBJECT but got " + value + " of type " + value.getType());
                     }
                     final Set<String> keys = value.keys();
                     if(keys.size() != 2) {
-                        throw new IllegalArgumentException("Attribute " + parameterName +
+                        throw new OperationFailedException("Attribute " + parameterName +
                                 " expects values consisting of '" + TIME +
                                 "' and '" + UNIT + "' but the new value consists of " + keys);
                     }
                     if (!keys.contains(TIME)) {
-                        throw new IllegalArgumentException("Missing '" + TIME + "' for '" + parameterName + "'");
+                        throw new OperationFailedException("Missing '" + TIME + "' for '" + parameterName + "'");
                     }
                     if (!keys.contains(UNIT)) {
-                        throw new IllegalArgumentException("Missing '" + UNIT + "' for '" + parameterName + "'");
+                        throw new OperationFailedException("Missing '" + UNIT + "' for '" + parameterName + "'");
                     }
                 }
                 @Override
@@ -126,15 +128,19 @@ public interface PoolAttributeDefinitions {
                     validateParameter(parameterName, value);
                 }});
 
-    SimpleAttributeDefinition CORE_THREADS = new SimpleAttributeDefinition(CommonAttributes.CORE_THREADS, ModelType.OBJECT, true);
+    SimpleAttributeDefinition CORE_THREADS = new SimpleAttributeDefinitionBuilder(CommonAttributes.CORE_THREADS, ModelType.INT, true)
+            .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true)).setAllowExpression(true).build();
 
     SimpleAttributeDefinition HANDOFF_EXECUTOR = new SimpleAttributeDefinition(CommonAttributes.HANDOFF_EXECUTOR, ModelType.STRING, true);
 
-    SimpleAttributeDefinition QUEUE_LENGTH = new SimpleAttributeDefinition(CommonAttributes.QUEUE_LENGTH, ModelType.OBJECT, false);
+    SimpleAttributeDefinition QUEUE_LENGTH = new SimpleAttributeDefinitionBuilder(CommonAttributes.QUEUE_LENGTH, ModelType.INT, false)
+            .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true)).setAllowExpression(true).build();
 
-    SimpleAttributeDefinition BLOCKING = new SimpleAttributeDefinition(CommonAttributes.BLOCKING, ModelType.BOOLEAN, true);
+    SimpleAttributeDefinition BLOCKING = new SimpleAttributeDefinitionBuilder(CommonAttributes.BLOCKING, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false)).build();
 
-    SimpleAttributeDefinition ALLOW_CORE_TIMEOUT = new SimpleAttributeDefinition(CommonAttributes.ALLOW_CORE_TIMEOUT, ModelType.BOOLEAN, true);
+    SimpleAttributeDefinition ALLOW_CORE_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.ALLOW_CORE_TIMEOUT, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false)).build();
 
     SimpleAttributeDefinition GROUP_NAME = new SimpleAttributeDefinition(CommonAttributes.GROUP_NAME, ModelType.STRING, true);
 

@@ -45,8 +45,8 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
     }
 
     @Override
-    protected ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
+    protected ServiceController<?> getService(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        final String name = Util.getNameFromAddress(model.require(OP_ADDR));
         final ServiceName serviceName = ThreadsServices.threadFactoryName(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {

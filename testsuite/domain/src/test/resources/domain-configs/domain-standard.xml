@@ -277,15 +277,15 @@
                 <bean-validation enabled="true"/>
                 <default-workmanager>
                     <short-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
+                        <core-threads count="50"/>
+                        <queue-length count="50"/>
+                        <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </short-running-threads>
                     <long-running-threads blocking="true">
-                        <core-threads count="10" per-cpu="20"/>
-                        <queue-length count="10" per-cpu="20"/>
-                        <max-threads count="10" per-cpu="20"/>
+                        <core-threads count="50"/>
+                        <queue-length count="50"/>
+                        <max-threads count="50"/>
                         <keepalive-time time="10" unit="seconds"/>
                     </long-running-threads>
                 </default-workmanager>

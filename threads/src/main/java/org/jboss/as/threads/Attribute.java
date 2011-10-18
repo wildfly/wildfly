@@ -33,13 +33,16 @@ public enum Attribute {
     /* Threads 1.0 attributes, in alpha order */
     ALLOW_CORE_TIMEOUT(CommonAttributes.ALLOW_CORE_TIMEOUT),
     BLOCKING(CommonAttributes.BLOCKING),
+    CORE_THREADS(CommonAttributes.CORE_THREADS),
     COUNT(CommonAttributes.COUNT),
     GROUP_NAME(CommonAttributes.GROUP_NAME),
+    MAX_THREADS(CommonAttributes.MAX_THREADS),
     NAME(CommonAttributes.NAME),
-    THREAD_NAME_PATTERN(CommonAttributes.THREAD_NAME_PATTERN),
-    TIME(CommonAttributes.TIME),
     PER_CPU(CommonAttributes.PER_CPU),
     PRIORITY(CommonAttributes.PRIORITY),
+    QUEUE_LENGTH(CommonAttributes.QUEUE_LENGTH),
+    THREAD_NAME_PATTERN(CommonAttributes.THREAD_NAME_PATTERN),
+    TIME(CommonAttributes.TIME),
     UNIT(CommonAttributes.UNIT),
     VALUE(CommonAttributes.VALUE),
     ;
