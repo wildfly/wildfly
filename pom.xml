@@ -89,7 +89,7 @@
         <version.net.sourceforge.nekohtml.nekohtml>1.9.14</version.net.sourceforge.nekohtml.nekohtml>
         <version.org.apache.aries.jmx>0.3</version.org.apache.aries.jmx>
         <version.org.apache.ant>1.7.1</version.org.apache.ant>
-        <version.org.apache.cxf>2.4.3</version.org.apache.cxf>
+        <version.org.apache.cxf>2.4.2</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.3.2</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
