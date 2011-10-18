@@ -33,7 +33,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +54,6 @@ public class SimpleStatelessWebserviceEndpointTestCase {
         return jar;
     }
 
-    @Ignore(value="[CXF-3675] - enable this test once CXF 2.4.2 is available in AS distro")
     @Test
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.test.integration.ws.ejb", "SimpleService");
