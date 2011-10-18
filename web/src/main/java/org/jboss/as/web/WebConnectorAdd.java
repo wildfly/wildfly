@@ -96,6 +96,15 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         //
     }
 
+    @Override
+    protected void populateModel(final ModelNode operation, final Resource resource) {
+        final ModelNode model = resource.getModel();
+
+        populateModel(operation, model);
+        WebConfigurationHandlerUtils.initializeConnector(resource, operation);
+    }
+
+    @Override
     protected void populateModel(ModelNode operation, ModelNode subModel) {
         subModel.get(PROTOCOL).set(operation.get(PROTOCOL));
         subModel.get(SOCKET_BINDING).set(operation.get(SOCKET_BINDING));
@@ -114,7 +123,6 @@ class WebConnectorAdd extends AbstractAddStepHandler implements DescriptionProvi
         if (operation.hasDefined(MAX_CONNECTIONS))
             subModel.get(Constants.MAX_CONNECTIONS).set(operation.get(Constants.MAX_CONNECTIONS).asInt());
         subModel.get(Constants.VIRTUAL_SERVER).set(operation.get(Constants.VIRTUAL_SERVER));
-        subModel.get(Constants.SSL).set(operation.get(Constants.SSL));
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
