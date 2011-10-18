@@ -24,8 +24,6 @@ package org.jboss.as.webservices.invocation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.WebServiceException;
 
@@ -50,8 +48,6 @@ import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
-   /** EJB3 JNDI context. */
-   private static final String EJB3_JNDI_PREFIX = "java:env/";
 
    /** MC kernel controller. */
    private final IoCContainerProxy iocContainer;
@@ -140,20 +136,38 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
       }
    }
 
-   private Method getEJBMethod(final Method seiMethod, final Collection<Method> methods) {
-       for (final Method method : methods) {
-           if (seiMethod.equals(method)) {
-               return method;
+   /**
+    * Translates SEI method to EJB view method.
+    *
+    * @param seiMethod SEI method
+    * @param viewMethods EJB view methods
+    * @return matching EJB view method
+    */
+   private Method getEJBMethod(final Method seiMethod, final Collection<Method> viewMethods) {
+       for (final Method viewMethod : viewMethods) {
+           if (matches(seiMethod, viewMethod)) {
+               return viewMethod;
            }
        }
-
        throw new IllegalStateException();
    }
 
-   public Context getJNDIContext(final Endpoint ep) throws NamingException {
-      return null; // TODO: implement
-//      final EJBContainer ejb3Container = (EJBContainer) getComponentViewInstance();
-//      return (Context) ejb3Container.getEnc().lookup(EJB3_JNDI_PREFIX);
+   /**
+    * Compares two methods if they are identical.
+    *
+    * @param seiMethod reference method
+    * @param viewMethod target method
+    * @return true if they match, false otherwise
+    */
+   private boolean matches(final Method seiMethod, final Method viewMethod) {
+       if (!seiMethod.getName().equals(viewMethod.getName())) return false;
+       final Class<?>[] sourceParams = seiMethod.getParameterTypes();
+       final Class<?>[] targetParams = viewMethod.getParameterTypes();
+       if (sourceParams.length != targetParams.length) return false;
+       for (int i = 0; i < sourceParams.length; i++) {
+           if (!sourceParams[i].equals(targetParams[i])) return false;
+       }
+       return true;
    }
 
    /**
@@ -185,7 +199,6 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     */
    private WebServiceContext getWebServiceContext(final Invocation invocation) {
       final InvocationContext invocationContext = invocation.getInvocationContext();
-
       return invocationContext.getAttachment(WebServiceContext.class);
    }
 
