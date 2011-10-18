@@ -57,21 +57,21 @@ public class ApplicationClientConfigurationPersister implements ExtensibleConfig
     private final List<String> parameters;
 
     /**
-     * Any additional jars that should be availble to the deployment
+     * Any additional modules that should be available to the deployment
      */
-    private final String additionalClassPath;
+    private final String globalModules;
 
     /**
      * The URL of the AS7 instance to connect to
      */
     private final String hostUrl;
 
-    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String additionalClassPath, final String hostUrl, final List<String> parameters) {
+    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String globalModules, final String hostUrl, final List<String> parameters) {
         this.filePath = filePath;
         this.deploymentName = deploymentName;
         this.hostUrl = hostUrl;
         this.parameters = parameters;
-        this.additionalClassPath = additionalClassPath;
+        this.globalModules = globalModules;
     }
 
 
@@ -97,7 +97,7 @@ public class ApplicationClientConfigurationPersister implements ExtensibleConfig
 
     @Override
     public List<ModelNode> load() throws ConfigurationPersistenceException {
-        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, additionalClassPath, hostUrl, parameters);
+        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, globalModules, hostUrl, parameters);
     }
 
     @Override

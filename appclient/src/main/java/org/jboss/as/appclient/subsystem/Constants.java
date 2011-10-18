@@ -33,6 +33,5 @@ class Constants {
     public static final String FILE = "file";
     public static final String DEPLOYMENT = "deployment";
     public static final String PARAMETERS = "parameters";
-    public static final String ADDITIONAL_CLASS_PATH = "additional-class-path";
 
 }

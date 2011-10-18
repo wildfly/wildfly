@@ -34,7 +34,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.ee.subsystem.GlobalModulesDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleIdentifier;
 
 /**
  * Class that contains the static application client server configuration
@@ -46,14 +48,14 @@ class AppClientServerConfiguration {
     private AppClientServerConfiguration() {
     }
 
-    public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String additionalClassPath, final String hostUrl, final List<String> parameters) {
+    public static List<ModelNode> serverConfiguration(final String filePath, final String deploymentName, final String globalModules, final String hostUrl, final List<String> parameters) {
         List<ModelNode> ret = new ArrayList<ModelNode>();
-        appclient(ret, filePath, deploymentName, additionalClassPath, hostUrl, parameters);
+        appclient(ret, filePath, deploymentName, hostUrl, parameters);
         interfaces(ret);
         socketBindings(ret);
         transactions(ret);
         naming(ret);
-        ee(ret);
+        ee(ret, globalModules);
         ejb3(ret);
         security(ret);
         jacorb(ret);
@@ -61,7 +63,7 @@ class AppClientServerConfiguration {
         return ret;
     }
 
-    private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String additionalClassPath, final String hostUrl, final List<String> parameters) {
+    private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters) {
         loadExtension(nodes, "org.jboss.as.appclient");
         ModelNode add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, "appclient");
@@ -77,9 +79,6 @@ class AppClientServerConfiguration {
                 add.get(Constants.PARAMETERS).add(param);
             }
         }
-        if (additionalClassPath != null) {
-            add.get(Constants.ADDITIONAL_CLASS_PATH).set(additionalClassPath);
-        }
         add.get(Constants.HOST_URL).set(hostUrl);
         nodes.add(add);
     }
@@ -92,9 +91,24 @@ class AppClientServerConfiguration {
         nodes.add(add);
     }
 
-    private static void ee(List<ModelNode> nodes) {
-        loadExtension(nodes, "org.jboss.as.ee");
+    private static void ee(List<ModelNode> nodes, final String globalModules) {
         ModelNode add = new ModelNode();
+        final List<ModuleIdentifier> identifiers = new ArrayList<ModuleIdentifier>();
+        if (globalModules != null && !globalModules.isEmpty()) {
+
+            ModelNode globalModulesNode = new ModelNode();
+            final String[] modules = globalModules.split(",");
+            for (final String module : modules) {
+                final ModuleIdentifier identifier = ModuleIdentifier.fromString(module);
+                final ModelNode node = new ModelNode();
+                node.get(GlobalModulesDefinition.NAME).set(identifier.getName());
+                node.get(GlobalModulesDefinition.SLOT).set(identifier.getSlot());
+                globalModulesNode.add(node);
+            }
+            add.get(GlobalModulesDefinition.GLOBAL_MODULES).set(globalModulesNode);
+        }
+
+        loadExtension(nodes, "org.jboss.as.ee");
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, "ee");
         add.get(OP).set(ADD);
         add.get("appclient").set(true);

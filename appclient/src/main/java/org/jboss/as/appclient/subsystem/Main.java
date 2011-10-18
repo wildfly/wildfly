@@ -59,7 +59,7 @@ public final class Main {
         System.out.println("    -H=<url>                           Set the url of the AS7 instance to connect to");
         System.out.println("    --host=<url>                       Set the url of the AS7 instance to connect to");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
-        System.out.println("    -classpath                         Specify additional jars to make available on the applications class path");
+        System.out.println("    -global-modules                    Specify additional modules in a comma separated list to be made available to the application");
         System.out.println("    -h                                 Display this message and exit");
         System.out.println("    --help                             Display this message and exit");
         System.out.println("    -P=<url>                           Load system properties from the given url");
@@ -124,7 +124,7 @@ public final class Main {
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
-                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName, options.additionalClassPath, options.hostUrl, params));
+                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName, options.globalModules, options.hostUrl, params));
                 bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
             }
         } catch (Throwable t) {
@@ -202,9 +202,8 @@ public final class Main {
                     }
                     systemProperties.setProperty(name, value);
                     SecurityActions.setSystemProperty(name, value);
-                } else if (arg.startsWith(CommandLineConstants.CLASSPATH)) {
-                    String classPath = parseValue(arg, CommandLineConstants.CLASSPATH);
-                    ret.additionalClassPath = classPath;
+                } else if (arg.startsWith(CommandLineConstants.GLOBAL_MODULES)) {
+                    ret.globalModules = parseValue(arg, CommandLineConstants.GLOBAL_MODULES);
                 } else {
                     clientArgs = true;
                     clientArguments.add(arg);
@@ -278,7 +277,7 @@ public final class Main {
     private static final class ParsedOptions {
         ServerEnvironment environment;
         List<String> clientArguments;
-        String additionalClassPath = "";
+        String globalModules = "";
         String hostUrl = "remote://localhost:9999";
     }
 }

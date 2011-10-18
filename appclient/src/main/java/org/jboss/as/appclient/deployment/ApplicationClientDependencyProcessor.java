@@ -21,24 +21,15 @@
  */
 package org.jboss.as.appclient.deployment;
 
-import java.io.File;
-import java.util.Collections;
-
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.ResourceLoader;
-import org.jboss.modules.ResourceLoaderSpec;
-import org.jboss.modules.ResourceLoaders;
-import org.jboss.modules.filter.PathFilters;
 
 /**
  * DUP that builds a module out of app client additional classes
@@ -47,13 +38,10 @@ import org.jboss.modules.filter.PathFilters;
  */
 public class ApplicationClientDependencyProcessor implements DeploymentUnitProcessor {
 
-    public static final ModuleIdentifier APP_CLIENT_MODULE_ID = ModuleIdentifier.create("deployment.appclient.additionalClassPath");
     public static ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
 
-    private final String additionalClassPath;
 
-    public ApplicationClientDependencyProcessor(final String additionalClassPath) {
-        this.additionalClassPath = additionalClassPath;
+    public ApplicationClientDependencyProcessor() {
     }
 
     @Override
@@ -71,19 +59,6 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
         if (activate == null || !activate) {
             return;
         }
-
-        final ModuleDependency dependency = new ModuleDependency(loader, APP_CLIENT_MODULE_ID, false, true, true);
-        dependency.addImportFilter(PathFilters.acceptAll(), true);
-        moduleSpecification.addSystemDependency(dependency);
-
-        final AdditionalModuleSpecification specification = new AdditionalModuleSpecification(APP_CLIENT_MODULE_ID, Collections.<ResourceRoot>emptySet());
-        final String[] parts = additionalClassPath.split(File.pathSeparator);
-        for(final String part : parts) {
-            final ResourceLoader resource = ResourceLoaders.createFileResourceLoader(part, new File(part));
-            specification.addResourceLoader(ResourceLoaderSpec.createResourceLoaderSpec(resource));
-
-        }
-        deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_MODULES, specification);
     }
 
     @Override

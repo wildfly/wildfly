@@ -95,7 +95,7 @@ public class CommandLineConstants {
     public static final String DEFAULT_INTERFACE = "public";
 
     /** Additional class path items, used only by app client*/
-    public static final String CLASSPATH = "-classpath";
+    public static final String GLOBAL_MODULES = "-global-modules";
     public static final String SHORT_HOST = "-H";
     public static final String HOST = "--host";
 
