@@ -141,8 +141,6 @@ class WebSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-        node.get(DESCRIPTION).set(bundle.getString("web.connector"));
-
         return getConnectorCommonDescription(node, ATTRIBUTES, bundle);
     }
 
