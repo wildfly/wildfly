@@ -21,8 +21,11 @@
  */
 package org.jboss.as.ejb3.timerservice.spi;
 
-import javax.ejb.TimerService;
 import java.util.List;
+
+import javax.ejb.TimerService;
+
+import org.jboss.as.ejb3.component.EJBComponent;
 
 /**
  * Creates an EJB TimerService for TimedObjectInvokers.
@@ -38,7 +41,7 @@ public interface TimerServiceFactory {
      * @return the EJB TimerService for the TimerObjectInvoker
      * @throws NullPointerException if invoker is null
      */
-    TimerService createTimerService(TimedObjectInvoker invoker);
+    TimerService createTimerService(TimedObjectInvoker invoker, final EJBComponent component);
 
     /**
      * Restores the timers held by the specified timer service, and creates any new auto timers

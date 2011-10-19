@@ -21,6 +21,13 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.ejb.TimerService;
+
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
@@ -31,12 +38,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.ejb.TimerService;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * MSC service with a silly name that provides a wrapper around the EJB timer service.
@@ -68,7 +69,7 @@ public class TimerServiceService extends ForwardingTimerService implements Servi
         if (invoker == null) {
             throw new StartException("No timed object invoke for " + component);
         }
-        final org.jboss.as.ejb3.timerservice.api.TimerService timerService = (org.jboss.as.ejb3.timerservice.api.TimerService) timerServiceFactory.createTimerService(invoker);
+        final org.jboss.as.ejb3.timerservice.api.TimerService timerService = (org.jboss.as.ejb3.timerservice.api.TimerService) timerServiceFactory.createTimerService(invoker, component);
         final List<ScheduleTimer> timers = new ArrayList<ScheduleTimer>();
 
         for (Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {

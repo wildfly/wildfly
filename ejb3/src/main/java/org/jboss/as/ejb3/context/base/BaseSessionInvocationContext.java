@@ -26,11 +26,15 @@ import java.util.concurrent.Future;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
+import javax.ejb.TimerService;
+import javax.transaction.UserTransaction;
 import javax.xml.rpc.handler.MessageContext;
 
+import org.jboss.as.ee.component.interceptors.DependencyInjectionCompleteMarker;
 import org.jboss.as.ejb3.context.spi.SessionBeanComponent;
 import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.as.ejb3.context.spi.SessionInvocationContext;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -112,4 +116,22 @@ public abstract class BaseSessionInvocationContext extends BaseInvocationContext
             throw new IllegalStateException("No asynchronous invocation in progress");
         return future.isCancelled();
     }
+
+    @Override
+    public TimerService getTimerService() {
+        if(lifecycleCallback && !DependencyInjectionCompleteMarker.isDependencyInjectionComplete(getContext())) {
+            throw new IllegalStateException("getTimerService() is not allowed while dependency injection is in progress");
+        }
+        return super.getTimerService();
+    }
+
+    @Override
+    public UserTransaction getUserTransaction() {
+        if(lifecycleCallback && !DependencyInjectionCompleteMarker.isDependencyInjectionComplete(getContext())) {
+            throw new IllegalStateException("getUserTransaction() is not allowed while dependency injection is in progress");
+        }
+        return super.getUserTransaction();
+    }
+
+    public abstract InterceptorContext getContext();
 }

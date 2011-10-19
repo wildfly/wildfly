@@ -154,5 +154,9 @@ public class SessionInvocationContextInterceptor implements Interceptor {
             }
             return super.wasCancelCalled();
         }
+
+        public InterceptorContext getContext() {
+            return context;
+        }
     }
 }

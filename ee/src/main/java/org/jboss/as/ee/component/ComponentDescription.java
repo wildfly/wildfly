@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.ee.component.interceptors.DependencyInjectionCompleteMarker;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
@@ -766,6 +767,8 @@ public class ComponentDescription {
             if (!userPostConstruct.isEmpty()) {
                 configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.USER_INTERCEPTORS);
             }
+            configuration.addPostConstructInterceptor(DependencyInjectionCompleteMarker.FACTORY, InterceptorOrder.ComponentPostConstruct.DEPENDENCY_INJECTION_COMPLETE);
+
             configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
             configuration.addPostConstructInterceptor(tcclInterceptor, InterceptorOrder.ComponentPostConstruct.TCCL_INTERCEPTOR);
 

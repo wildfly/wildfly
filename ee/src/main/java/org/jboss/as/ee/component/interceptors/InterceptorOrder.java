@@ -76,6 +76,7 @@ public class
         public static final int EJB_SET_SESSION_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0x800;
         public static final int WELD_INJECTION = 0x900;
         public static final int JPA_SFSB_CREATE = 0xA00;
+        public static final int DEPENDENCY_INJECTION_COMPLETE = 0xA50;
         public static final int USER_INTERCEPTORS = 0xB00;
         public static final int CDI_INTERCEPTORS = 0xC00;
         public static final int SFSB_INIT_METHOD = 0xD00;

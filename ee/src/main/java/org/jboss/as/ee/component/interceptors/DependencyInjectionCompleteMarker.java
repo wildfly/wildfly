@@ -19,37 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.session;
+package org.jboss.as.ee.component.interceptors;
 
-import javax.ejb.SessionBean;
-
-import org.jboss.as.ejb3.context.CurrentInvocationContext;
-import org.jboss.as.ejb3.context.base.BaseSessionInvocationContext;
-import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
 /**
- * Interceptor that invokes the {@link SessionBean#setSessionContext(javax.ejb.SessionContext)} on session beans
- * which implement the {@link SessionBean} interface.
- *
+ * Class can be used to determine at which point in the interceptor chain dependency injection has been completed
  * @author Stuart Douglas
  */
-public class SessionBeanSetSessionContextMethodInvocationInterceptor implements Interceptor {
+public class DependencyInjectionCompleteMarker {
 
-    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SessionBeanSetSessionContextMethodInvocationInterceptor());
-
-    private SessionBeanSetSessionContextMethodInvocationInterceptor() {
+    public static boolean isDependencyInjectionComplete(InterceptorContext context) {
+        return context.getPrivateData(KEY) != null;
     }
 
-    @Override
-    public Object processInvocation(final InterceptorContext context) throws Exception {
-        final InvocationContext invocationContext = CurrentInvocationContext.get();
-        if (invocationContext instanceof BaseSessionInvocationContext) {
-            ((SessionBean) context.getTarget()).setSessionContext((BaseSessionInvocationContext) invocationContext);
+    public static InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new Interceptor() {
+        @Override
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            context.putPrivateData(KEY, true);
+            return context.proceed();
         }
-        return context.proceed();
-    }
+    });
+
+    private static final Object KEY = new Object();
 }
