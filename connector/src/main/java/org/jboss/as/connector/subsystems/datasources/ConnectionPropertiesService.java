@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,37 +22,52 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.jca.common.api.metadata.ds.DataSource;
+import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
+
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
+ * A ResourceAdaptersService.
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
-public class DataSourceConfigService implements Service<ModifiableDataSource> {
+final class ConnectionPropertiesService implements Service<String> {
 
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source-config");
 
-    private final ModifiableDataSource dataSourceConfig;
+    private final String value;
+        private final String name;
+        private final InjectedValue<ModifiableDataSource> ds = new InjectedValue<ModifiableDataSource>();
 
-    public DataSourceConfigService(ModifiableDataSource dataSourceConfig) {
-        super();
-        this.dataSourceConfig = dataSourceConfig;
-    }
 
-    public synchronized void start(StartContext startContext) throws StartException {
-    }
+        /** create an instance **/
+        public ConnectionPropertiesService(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
 
-    public synchronized void stop(StopContext stopContext) {
-    }
+        @Override
+        public String getValue() throws IllegalStateException {
+            return value;
+        }
 
-    @Override
-    public ModifiableDataSource getValue() throws IllegalStateException, IllegalArgumentException {
-        return dataSourceConfig;
-    }
+        @Override
+        public void start(StartContext context) throws StartException {
+            ds.getValue().addConnectionProperty(name,value);
+        }
+
+        @Override
+        public void stop(StopContext context) {
+
+        }
+
+        public Injector<ModifiableDataSource> getAOInjector() {
+            return ds;
+        }
+
 
 }

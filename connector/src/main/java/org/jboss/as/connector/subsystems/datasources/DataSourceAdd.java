@@ -59,7 +59,7 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
     protected ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
             AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException {
-        final DataSource dataSourceConfig;
+        final ModifiableDataSource dataSourceConfig;
         try {
             dataSourceConfig = from(operation);
         } catch (ValidateException e) {
@@ -71,7 +71,7 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
 
         ServiceController<?> svcController = serviceTarget.addService(dataSourceCongServiceName, configService).setInitialMode(Mode.ACTIVE).install();
 
-        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, DataSource.class,
+        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableDataSource.class,
                 ((LocalDataSourceService) dataSourceService).getDataSourceConfigInjector());
 
         return svcController;

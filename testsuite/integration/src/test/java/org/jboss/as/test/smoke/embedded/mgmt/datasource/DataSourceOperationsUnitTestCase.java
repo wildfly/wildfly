@@ -58,6 +58,7 @@ import java.util.Map.Entry;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.smoke.embedded.mgmt.datasource.DataSourceOperationTestUtil.getChildren;
@@ -212,7 +213,6 @@ public class DataSourceOperationsUnitTestCase {
         operation.get("name").set("MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
         operation.get("enabled").set(true);
-        operation.get("connection-properties", "MyKey").set("MyValue");
 
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set("MyNewDs_Pool");
@@ -224,6 +224,23 @@ public class DataSourceOperationsUnitTestCase {
         final ModelNode result = getModelControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
+
+        final ModelNode connectionPropertyAddress = address.clone();
+        connectionPropertyAddress.add("connection-properties", "MyKey");
+        connectionPropertyAddress.protect();
+
+        final ModelNode connectionPropertyOperation = new ModelNode();
+        connectionPropertyOperation.get(OP).set("add");
+        connectionPropertyOperation.get(OP_ADDR).set(connectionPropertyAddress);
+
+
+        connectionPropertyOperation.get("value").set("MyValue");
+
+
+        final ModelNode connectionPropertyResult = getModelControllerClient().execute(connectionPropertyOperation);
+        Assert.assertEquals(SUCCESS, connectionPropertyResult.get(OUTCOME).asString());
+
+
         List<ModelNode> newList = marshalAndReparseDsResources("data-source");
 
         Assert.assertNotNull(newList);
@@ -232,9 +249,7 @@ public class DataSourceOperationsUnitTestCase {
         Assert.assertFalse(parseChildren.isEmpty());
         Assert.assertEquals("java:jboss/datasources/MyNewDs", parseChildren.get("jndi-name").asString());
 
-        Assert.assertEquals("MyKey", parseChildren.get("connection-properties").asProperty().getName());
-        Assert.assertEquals("MyValue", parseChildren.get("connection-properties").asProperty().getValue().asString());
-
+        //TODO: verify connection-properties
         final ModelNode compensatingOperation = new ModelNode();
         compensatingOperation.get(OP).set("remove");
         compensatingOperation.get(OP_ADDR).set(address);
@@ -542,6 +557,7 @@ public class DataSourceOperationsUnitTestCase {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("read-children-resources");
         operation.get("child-type").set(childType);
+        operation.get(RECURSIVE).set(true);
         operation.get(OP_ADDR).set(address);
 
         final ModelNode result = getModelControllerClient().execute(operation);
