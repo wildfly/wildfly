@@ -39,8 +39,6 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -70,7 +68,6 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
@@ -131,8 +128,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         }
         final ClassLoader classLoader = module.getClassLoader();
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
-        final EEModuleDescription moduleDescription = deploymentUnit
-                .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final List<SetupAction> setupActions = deploymentUnit
                 .getAttachmentList(org.jboss.as.ee.component.Attachments.EE_SETUP_ACTIONS);
 
@@ -224,10 +219,6 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .install();
 
             WebDeploymentService webDeploymentService = new WebDeploymentService(webContext, injectionContainer, setupActions);
-            if (moduleDescription != null) {
-                webDeploymentService.getNamespaceSelector().setValue(
-                        new ImmediateValue<NamespaceContextSelector>(moduleDescription.getNamespaceContextSelector()));
-            }
             builder = serviceTarget
                     .addService(deploymentServiceName, webDeploymentService)
                     .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class,
