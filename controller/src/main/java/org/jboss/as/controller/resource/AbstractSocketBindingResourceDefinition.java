@@ -23,15 +23,9 @@
 package org.jboss.as.controller.resource;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -39,11 +33,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeAddHandler;
-import org.jboss.as.controller.operations.common.SocketBindingGroupIncludeRemoveHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -53,61 +43,50 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for a resource representing a socket binding group.
+ * {@link ResourceDefinition} for a resource representing a socket binding.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingGroupResourceDefinition extends SimpleResourceDefinition {
+public abstract class AbstractSocketBindingResourceDefinition extends SimpleResourceDefinition {
 
     // Common attributes
 
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1)).build();
 
-    public static final SimpleAttributeDefinition DEFAULT_INTERFACE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DEFAULT_INTERFACE, ModelType.STRING, false)
-            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+    public static final SimpleAttributeDefinition INTERFACE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INTERFACE, ModelType.STRING, true)
+            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    // Server-only attributes.
+    public static final SimpleAttributeDefinition PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT, false)
+            .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, false, true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    public static final SimpleAttributeDefinition PORT_OFFSET = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT_OFFSET, ModelType.INT, true)
-            .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, true, true))
-            .setDefaultValue(new ModelNode().set(0)).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+    public static final SimpleAttributeDefinition FIXED_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.FIXED_PORT, ModelType.BOOLEAN, true)
+            .setAllowExpression(true).setDefaultValue(new ModelNode().set(false)).build();
 
-    // Domain-only attributes
+    public static final SimpleAttributeDefinition MULTICAST_ADDRESS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MULTICAST_ADDRESS, ModelType.STRING, true)
+            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    public static final ListAttributeDefinition INCLUDES = SocketBindingGroupIncludesAttribute.INSTANCE;
+    public static final SimpleAttributeDefinition MULTICAST_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MULTICAST_PORT, ModelType.INT, true)
+            .setAllowExpression(true).setValidator(new IntRangeValidator(1, 65535, true, true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    private final boolean forDomainModel;
-
-    public SocketBindingGroupResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean forDomainModel) {
-        super(PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
-                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
+    public AbstractSocketBindingResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
+        super(PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING),
+                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.SOCKET_BINDING),
                 addHandler, removeHandler, OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
-        this.forDomainModel = forDomainModel;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
         resourceRegistration.registerReadOnlyAttribute(NAME, null);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_INTERFACE, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_INTERFACE));
-
-        if (forDomainModel) {
-            resourceRegistration.registerReadWriteAttribute(INCLUDES, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(INCLUDES));
-        } else {
-            resourceRegistration.registerReadWriteAttribute(PORT_OFFSET, null, new ReloadRequiredWriteAttributeHandler(PORT_OFFSET));
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        if (forDomainModel) {
-            resourceRegistration.registerOperationHandler(SocketBindingGroupIncludeAddHandler.OPERATION_NAME, SocketBindingGroupIncludeAddHandler.INSTANCE, SocketBindingGroupIncludeAddHandler.INSTANCE);
-            resourceRegistration.registerOperationHandler(SocketBindingGroupIncludeRemoveHandler.OPERATION_NAME, SocketBindingGroupIncludeRemoveHandler.INSTANCE, SocketBindingGroupIncludeRemoveHandler.INSTANCE);
-        }
+        resourceRegistration.registerReadWriteAttribute(INTERFACE, null, getInterfaceWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(PORT, null, getPortWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(FIXED_PORT, null, getFixedPortWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(MULTICAST_ADDRESS, null, getMulticastAddressWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(MULTICAST_PORT, null, getMulticastPortWriteAttributeHandler());
     }
 
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler,
@@ -126,4 +105,9 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, handler, provider, getFlagsSet(flags));
     }
 
+    protected abstract OperationStepHandler getInterfaceWriteAttributeHandler();
+    protected abstract OperationStepHandler getPortWriteAttributeHandler();
+    protected abstract OperationStepHandler getFixedPortWriteAttributeHandler();
+    protected abstract OperationStepHandler getMulticastAddressWriteAttributeHandler();
+    protected abstract OperationStepHandler getMulticastPortWriteAttributeHandler();
 }

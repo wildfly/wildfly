@@ -153,9 +153,8 @@ abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteA
 
     private void handleBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {
         context.removeService(SOCKET_BINDING.append(bindingName));
-        ModelNode resolvedConfig = bindingModel.resolve();
         try {
-            BindingAddHandler.installBindingService(context, resolvedConfig, bindingName);
+            BindingAddHandler.installBindingService(context, bindingModel, bindingName);
         } catch (UnknownHostException e) {
             throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
@@ -166,12 +165,11 @@ abstract class AbstractBindingWriteHandler extends WriteAttributeHandlers.WriteA
         context.removeService(SOCKET_BINDING.append(bindingName));
         ModelNode unresolvedConfig = bindingModel.clone();
         unresolvedConfig.get(attributeName).set(previousValue);
-        ModelNode resolvedConfig = unresolvedConfig.resolve();
         try {
-            BindingAddHandler.installBindingService(context, resolvedConfig, bindingName);
-        } catch (UnknownHostException uhe) {
+            BindingAddHandler.installBindingService(context, unresolvedConfig, bindingName);
+        } catch (Exception e) {
             // Bizarro, as we installed the service before
-            throw new RuntimeException(uhe);
+            throw new RuntimeException(e);
         }
     }
 

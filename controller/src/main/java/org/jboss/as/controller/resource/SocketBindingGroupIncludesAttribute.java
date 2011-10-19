@@ -48,7 +48,7 @@ public class SocketBindingGroupIncludesAttribute extends ListAttributeDefinition
     public static final SocketBindingGroupIncludesAttribute INSTANCE = new SocketBindingGroupIncludesAttribute();
 
     private SocketBindingGroupIncludesAttribute() {
-        super(ModelDescriptionConstants.INCLUDES, Element.INCLUDE.getLocalName(), true, 1, Integer.MAX_VALUE,
+        super(ModelDescriptionConstants.INCLUDES, Element.INCLUDE.getLocalName(), true, 0, Integer.MAX_VALUE,
                 new StringLengthValidator(1, true), null, null, AttributeAccess.Flag.RESTART_JVM);
     }
 

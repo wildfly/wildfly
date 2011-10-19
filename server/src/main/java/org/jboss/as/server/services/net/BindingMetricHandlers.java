@@ -26,14 +26,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.net.InetAddress;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -45,7 +50,6 @@ import org.jboss.msc.service.ServiceName;
 public final class BindingMetricHandlers {
 
     private static final ServiceName SOCKET_BINDING = SocketBinding.JBOSS_BINDING_NAME;
-    private static final ModelNode NO_METRICS = new ModelNode().set("no metrics available");
 
     abstract static class AbstractBindingMetricsHandler implements OperationStepHandler {
 
@@ -60,11 +64,11 @@ public final class BindingMetricHandlers {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ModelNode result = context.getResult();
                     final ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(SOCKET_BINDING.append(element.getValue()));
-                    if(controller != null) {
+                    if(controller != null && controller.getState() == ServiceController.State.UP) {
                         final SocketBinding binding = SocketBinding.class.cast(controller.getValue());
                         AbstractBindingMetricsHandler.this.execute(operation, binding, result);
                     } else {
-                        result.set(NO_METRICS);
+                        result.set(getNoMetrics());
                     }
                     context.completeStep();
                 }
@@ -73,11 +77,14 @@ public final class BindingMetricHandlers {
         }
 
         abstract void execute(ModelNode operation, SocketBinding binding, ModelNode result);
+
+        abstract ModelNode getNoMetrics();
     }
 
     public static class BoundHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound";
+        public static final AttributeDefinition ATTRIBUTE_DEFINITION = new SimpleAttributeDefinition(ATTRIBUTE_NAME, ModelType.BOOLEAN, true);
         public static final OperationStepHandler INSTANCE = new BoundHandler();
 
         private BoundHandler() {
@@ -89,11 +96,17 @@ public final class BindingMetricHandlers {
             // The socket should be bound when it's registered at the SocketBindingManager
             result.set(binding.isBound());
         }
+
+        ModelNode getNoMetrics() {
+            return new ModelNode().set(false);
+        }
+
     }
 
     public static class BoundAddressHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound-address";
+        public static final AttributeDefinition ATTRIBUTE_DEFINITION = new SimpleAttributeDefinition(ATTRIBUTE_NAME, ModelType.STRING, true);
         public static final OperationStepHandler INSTANCE = new BoundAddressHandler();
 
         private BoundAddressHandler() {
@@ -108,11 +121,19 @@ public final class BindingMetricHandlers {
                 result.set(addr.getHostAddress());
             }
         }
+
+        ModelNode getNoMetrics() {
+            return new ModelNode();
+        }
     }
 
     public static class BoundPortHandler extends AbstractBindingMetricsHandler {
 
         public static final String ATTRIBUTE_NAME = "bound-port";
+        public static final AttributeDefinition ATTRIBUTE_DEFINITION =
+                new SimpleAttributeDefinitionBuilder(ATTRIBUTE_NAME, ModelType.INT, true)
+                        .setValidator(new IntRangeValidator(1, Integer.MAX_VALUE, true, false)).build();
+
         public static final OperationStepHandler INSTANCE = new BoundPortHandler();
 
         private BoundPortHandler() {
@@ -126,6 +147,10 @@ public final class BindingMetricHandlers {
                 int port = managedBinding.getBindAddress().getPort();
                 result.set(port);
             }
+        }
+
+        ModelNode getNoMetrics() {
+            return new ModelNode();
         }
     }
 

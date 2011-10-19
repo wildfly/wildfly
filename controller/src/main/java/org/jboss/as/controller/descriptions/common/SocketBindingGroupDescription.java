@@ -21,30 +21,13 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MULTICAST_PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Locale;
@@ -88,96 +71,6 @@ public class SocketBindingGroupDescription {
         root.get(REQUEST_PROPERTIES, INCLUDE, DESCRIPTION).set(bundle.getString("socket-binding-group.include.remove.include"));
         root.get(REQUEST_PROPERTIES, INCLUDE, REQUIRED).set(true);
         root.get(REQUEST_PROPERTIES, INCLUDE, MIN_LENGTH).set(1);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getSocketBindingDescription(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("socket-binding"));
-        root.get(HEAD_COMMENT_ALLOWED).set(true);
-        root.get(TAIL_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("socket-binding.name"));
-        root.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-        root.get(ATTRIBUTES, NAME, HEAD_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, NAME, TAIL_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, INTERFACE, DESCRIPTION).set(bundle.getString("socket-binding.interface"));
-        root.get(ATTRIBUTES, INTERFACE, REQUIRED).set(false);
-        root.get(ATTRIBUTES, INTERFACE, EXPRESSIONS_ALLOWED).set(true);
-        root.get(ATTRIBUTES, INTERFACE, HEAD_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, INTERFACE, TAIL_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, PORT, TYPE).set(ModelType.INT);
-        root.get(ATTRIBUTES, PORT, DESCRIPTION).set(bundle.getString("socket-binding.port"));
-        root.get(ATTRIBUTES, PORT, REQUIRED).set(true);
-        root.get(ATTRIBUTES, PORT, EXPRESSIONS_ALLOWED).set(true);
-        root.get(ATTRIBUTES, PORT, HEAD_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, PORT, TAIL_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, FIXED_PORT, TYPE).set(ModelType.BOOLEAN);
-        root.get(ATTRIBUTES, FIXED_PORT, DESCRIPTION).set(bundle.getString("socket-binding.fixed-port"));
-        root.get(ATTRIBUTES, FIXED_PORT, REQUIRED).set(true);
-        root.get(ATTRIBUTES, FIXED_PORT, HEAD_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, FIXED_PORT, TAIL_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, MULTICAST_ADDRESS, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, MULTICAST_ADDRESS, DESCRIPTION).set(bundle.getString("socket-binding.multicast-address"));
-        root.get(ATTRIBUTES, MULTICAST_ADDRESS, REQUIRED).set(false);
-        root.get(ATTRIBUTES, MULTICAST_ADDRESS, EXPRESSIONS_ALLOWED).set(true);
-        root.get(ATTRIBUTES, MULTICAST_ADDRESS, HEAD_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, MULTICAST_ADDRESS, TAIL_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, MULTICAST_PORT, TYPE).set(ModelType.INT);
-        root.get(ATTRIBUTES, MULTICAST_PORT, DESCRIPTION).set(bundle.getString("socket-binding.multicast-port"));
-        root.get(ATTRIBUTES, MULTICAST_PORT, REQUIRED).set(false);
-        root.get(ATTRIBUTES, MULTICAST_PORT, EXPRESSIONS_ALLOWED).set(true);
-        root.get(ATTRIBUTES, MULTICAST_PORT, HEAD_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, MULTICAST_PORT, TAIL_COMMENT_ALLOWED).set(false);
-        root.get(OPERATIONS).setEmptyObject();
-        root.get(CHILDREN).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getSocketBindingAddOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ADD);
-        root.get(DESCRIPTION).set(bundle.getString("socket-binding.add"));
-        root.get(REQUEST_PROPERTIES, INTERFACE, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, INTERFACE, DESCRIPTION).set(bundle.getString("socket-binding.interface"));
-        root.get(REQUEST_PROPERTIES, INTERFACE, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, INTERFACE, EXPRESSIONS_ALLOWED).set(true);
-        root.get(REQUEST_PROPERTIES, INTERFACE, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, INTERFACE, NILLABLE).set(true);
-        root.get(REQUEST_PROPERTIES, PORT, TYPE).set(ModelType.INT);
-        root.get(REQUEST_PROPERTIES, PORT, DESCRIPTION).set(bundle.getString("socket-binding.port"));
-        root.get(REQUEST_PROPERTIES, PORT, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, PORT, EXPRESSIONS_ALLOWED).set(true);
-        root.get(REQUEST_PROPERTIES, PORT, MIN).set(0);
-        root.get(REQUEST_PROPERTIES, PORT, MAX).set(65535);
-        root.get(REQUEST_PROPERTIES, FIXED_PORT, TYPE).set(ModelType.INT);
-        root.get(REQUEST_PROPERTIES, FIXED_PORT, DESCRIPTION).set(bundle.getString("socket-binding.fixed-port"));
-        root.get(REQUEST_PROPERTIES, FIXED_PORT, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, TYPE).set(ModelType.INT);
-        root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, DESCRIPTION).set(bundle.getString("socket-binding.multicast-address"));
-        root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, EXPRESSIONS_ALLOWED).set(true);
-        root.get(REQUEST_PROPERTIES, MULTICAST_ADDRESS, NILLABLE).set(true);
-        root.get(REQUEST_PROPERTIES, MULTICAST_PORT, TYPE).set(ModelType.INT);
-        root.get(REQUEST_PROPERTIES, MULTICAST_PORT, DESCRIPTION).set(bundle.getString("socket-binding.multicast-port"));
-        root.get(REQUEST_PROPERTIES, MULTICAST_PORT, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, MULTICAST_PORT, EXPRESSIONS_ALLOWED).set(true);
-        root.get(REQUEST_PROPERTIES, MULTICAST_PORT, MIN).set(1);
-        root.get(REQUEST_PROPERTIES, MULTICAST_PORT, MAX).set(65535);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getSocketBindingRemoveOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(REMOVE);
-        root.get(DESCRIPTION).set(bundle.getString("socket-binding.remove"));
-        root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }

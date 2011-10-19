@@ -157,16 +157,6 @@ public final class CommonProviders {
     };
 
     /**
-     * Provider for a sub-model that names a socket and specifies its configuration.
-     */
-    public static final DescriptionProvider SOCKET_BINDING_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return SocketBindingGroupDescription.getSocketBindingDescription(locale);
-        }
-    };
-
-    /**
      * Provider for a sub-model that defines the JVM configuration.
      */
     public static final DescriptionProvider JVM_PROVIDER = new DescriptionProvider() {

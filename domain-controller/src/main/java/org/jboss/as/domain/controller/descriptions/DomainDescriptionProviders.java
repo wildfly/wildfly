@@ -68,13 +68,6 @@ public final class DomainDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider SOCKET_BINDING = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return SocketBindingGroupDescription.getSocketBindingDescription(locale);
-        }
-    };
-
     public static final DescriptionProvider PATH_DESCRIPTION = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
