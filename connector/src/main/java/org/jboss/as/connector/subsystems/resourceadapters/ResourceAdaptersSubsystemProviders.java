@@ -206,6 +206,32 @@ class ResourceAdaptersSubsystemProviders {
     };
 
 
+     static final DescriptionProvider RESOURCEADAPTER_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(ADD);
+            operation.get(DESCRIPTION).set(bundle.getString("resource-adapter.add"));
+
+
+            final ModelNode adminObjectNode = new ModelNode();
+            adminObjectNode.get(DESCRIPTION).set(ADMIN_OBJECTS_NAME);
+
+
+            operation.get(ATTRIBUTES, ARCHIVE.getName(), DESCRIPTION).set(bundle.getString(ARCHIVE.getName()));
+            operation.get(ATTRIBUTES, ARCHIVE.getName(), TYPE).set(ModelType.STRING);
+            operation.get(ATTRIBUTES, ARCHIVE.getName(), REQUIRED).set(true);
+            operation.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), DESCRIPTION).set(bundle.getString(TRANSACTIONSUPPORT.getName()));
+            operation.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), TYPE).set(ModelType.STRING);
+            operation.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), REQUIRED).set(true);
+
+            return operation;
+        }
+
+    };
+
     static final DescriptionProvider ADD_RESOURCEADAPTER_DESC = new DescriptionProvider() {
 
         @Override
