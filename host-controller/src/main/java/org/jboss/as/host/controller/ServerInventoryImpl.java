@@ -32,8 +32,10 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
+import javax.security.sasl.SaslException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -59,7 +61,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 /**
  * Inventory of the managed servers.
@@ -352,7 +356,8 @@ public class ServerInventoryImpl implements ServerInventory {
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                 List<Callback> toRespondTo = new LinkedList<Callback>();
 
-                String userName;
+                String userName = null;
+                String realm = null;
                 ManagedServer server = null;
 
                 // A single pass may be sufficient but by using a two pass approach the Callbackhandler will not
@@ -373,8 +378,10 @@ public class ServerInventoryImpl implements ServerInventory {
                         toRespondTo.add(current);
                     } else if (current instanceof VerifyPasswordCallback) {
                         toRespondTo.add(current);
+                    } else if (current instanceof DigestHashCallback) {
+                        toRespondTo.add(current);
                     } else if (current instanceof RealmCallback) {
-                        // TODO - for now this is silently ignored.
+                        realm = ((RealmCallback)current).getDefaultText();
                     } else {
                         throw new UnsupportedCallbackException(current);
                     }
@@ -388,7 +395,7 @@ public class ServerInventoryImpl implements ServerInventory {
                     return;
                 }
 
-                String password = new String(server.getAuthKey());
+                final String password = new String(server.getAuthKey());
 
                 // Second Pass - Now iterate the Callback(s) requiring a response.
                 for (Callback current : toRespondTo) {
@@ -401,6 +408,17 @@ public class ServerInventoryImpl implements ServerInventory {
                     } else if (current instanceof VerifyPasswordCallback) {
                         VerifyPasswordCallback vpc = (VerifyPasswordCallback) current;
                         vpc.setVerified(password.equals(vpc.getPassword()));
+                    } else if (current instanceof DigestHashCallback) {
+                        DigestHashCallback dhc = (DigestHashCallback) current;
+                        try {
+                            UsernamePasswordHashUtil uph = new UsernamePasswordHashUtil();
+                            if (userName == null || realm == null) {
+                                throw new SaslException("Insufficient information to generate hash.");
+                            }
+                            dhc.setHash(uph.generateHashedURP(userName, realm, password.toCharArray()));
+                        } catch (NoSuchAlgorithmException e) {
+                            throw new SaslException("Unable to generate hash", e);
+                        }
                     }
                 }
 

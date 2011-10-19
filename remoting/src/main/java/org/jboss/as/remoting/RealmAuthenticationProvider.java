@@ -161,6 +161,8 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
                         return (password != null && password.length > 0);
                     } else if (current instanceof VerifyPasswordCallback) {
                         return ((VerifyPasswordCallback) current).isVerified();
+                    } else if (current instanceof DigestHashCallback) {
+                        return ((DigestHashCallback) current).getHash() != null;
                     }
                 }
                 return false;

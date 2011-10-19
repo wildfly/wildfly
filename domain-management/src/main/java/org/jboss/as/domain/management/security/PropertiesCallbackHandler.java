@@ -199,7 +199,6 @@ public class PropertiesCallbackHandler implements Service<DomainCallbackHandler>
             } else if (current instanceof RealmCallback) {
                 String realm = ((RealmCallback) current).getDefaultText();
                 if (this.realm.equals(realm) == false) {
-                    // TODO - Check if this needs a real error or of just an unexpected internal error.
                     throw new IllegalStateException("Invalid Realm '" + realm + "' expected '" + this.realm + "'");
                 }
             } else {
