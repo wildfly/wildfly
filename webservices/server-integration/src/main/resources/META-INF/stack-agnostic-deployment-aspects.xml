@@ -92,11 +92,4 @@
     <property name="provides" class="java.lang.String">VirtualHosts</property>
   </deploymentAspect>
 
-  <!--
-  <deploymentAspect class="org.jboss.as.webservices.security.JACCPermissionsDeploymentAspect">
-    <property name="requires" class="java.lang.String">WebMetaData</property>
-    <property name="provides" class="java.lang.String">JACCPermisions</property>
-  </deploymentAspect>
-  -->
-
 </deploymentAspects>
