@@ -31,6 +31,8 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.CancellationFlag;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.context.base.BaseSessionInvocationContext;
 import org.jboss.as.ejb3.context.spi.InvocationContext;
@@ -61,11 +63,12 @@ public class SessionInvocationContextInterceptor implements Interceptor {
     public Object processInvocation(InterceptorContext context) throws Exception {
         final Method invokedMethod = context.getMethod();
         final ComponentView componentView = context.getPrivateData(ComponentView.class);
+        final Component component = context.getPrivateData(Component.class);
         // For a lifecycle interception, the ComponentViewInstance (and the invoked business interface) will be null.
         // On a normal method invocation, the invoked business interface will be obtained from the ComponentViewInstance
         final Class<?> invokedBusinessInterface = componentView == null ? null : componentView.getViewClass();
         Object[] parameters = context.getParameters();
-        SessionInvocationContext sessionInvocationContext = new CustomSessionInvocationContext(lifecycleCallback, context, invokedBusinessInterface, invokedMethod, parameters);
+        SessionInvocationContext sessionInvocationContext = new CustomSessionInvocationContext(lifecycleCallback, context, invokedBusinessInterface, invokedMethod, parameters, (EJBComponent) component);
         context.putPrivateData(InvocationContext.class, sessionInvocationContext);
         CurrentInvocationContext.push(sessionInvocationContext);
         try {
@@ -78,11 +81,13 @@ public class SessionInvocationContextInterceptor implements Interceptor {
 
     protected static class CustomSessionInvocationContext extends BaseSessionInvocationContext implements TransactionalInvocationContext {
         private final InterceptorContext context;
+        private final EJBComponent component;
 
-        protected CustomSessionInvocationContext(boolean lifecycleCallback, InterceptorContext context, Class<?> invokedBusinessInterface, Method method, Object[] parameters) {
+        protected CustomSessionInvocationContext(boolean lifecycleCallback, InterceptorContext context, Class<?> invokedBusinessInterface, Method method, Object[] parameters, final EJBComponent component) {
             super(lifecycleCallback, invokedBusinessInterface, method, parameters);
 
             this.context = context;
+            this.component = component;
         }
 
         @Override
@@ -92,7 +97,17 @@ public class SessionInvocationContextInterceptor implements Interceptor {
 
         @Override
         public Principal getCallerPrincipal() {
+            if (lifecycleCallback && !(component instanceof StatefulSessionComponent)) {
+                throw new IllegalStateException("Cannot invoke getCallerPrincipal() in a session bean lifecycle method");
+            }
             return getComponent().getCallerPrincipal();
+        }
+
+        public boolean isCallerInRole(String roleName) {
+            if (lifecycleCallback && !(component instanceof StatefulSessionComponent)) {
+                throw new IllegalStateException("Cannot invoke isCallerInRole() in a session bean lifecycle method");
+            }
+            return super.isCallerInRole(roleName);
         }
 
         @Override
