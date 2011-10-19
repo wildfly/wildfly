@@ -22,7 +22,13 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Collection;
+
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 
 
 /**
@@ -31,26 +37,12 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert
  */
 public class RootLoggerAssignHandler extends LoggerAssignHandler {
-    private static final String OPERATION_NAME = "root-logger-assign-handler";
-    private static final RootLoggerAssignHandler INSTANCE = new RootLoggerAssignHandler();
-
-    /**
-     * @return the OPERATION_NAME
-     */
-    public static String getOperationName() {
-        return OPERATION_NAME;
-    }
-
-    /**
-     * @return the INSTANCE
-     */
-    public static RootLoggerAssignHandler getInstance() {
-        return INSTANCE;
-    }
+    static final String OPERATION_NAME = "root-logger-assign-handler";
+    static final RootLoggerAssignHandler INSTANCE = new RootLoggerAssignHandler();
 
     @Override
-    protected ModelNode getAssignedHandlers(ModelNode model) {
-        return model.get(CommonAttributes.ROOT_LOGGER).get(CommonAttributes.HANDLERS);
+    protected ModelNode getParent(final ModelNode model) {
+        return model.get(ROOT_LOGGER);
     }
 
     @Override

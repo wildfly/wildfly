@@ -22,36 +22,12 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.dmr.ModelNode;
-
-import java.util.Set;
-
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-
 /**
- * Date: 13.07.2011
+ * Date: 23.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class LoggingValidators {
-    private static final LoggingValidators INSTANCE = new LoggingValidators();
-    private final ParametersValidator validator;
+interface FlushingHandlerService extends HandlerService {
 
-    private LoggingValidators() {
-        validator = new ParametersValidator();
-        validator.registerValidator(LEVEL, new LogLevelValidator());
-    }
-
-    /**
-     * Validates default parameters.
-     *
-     * @param operation the operation to validate.
-     *
-     * @throws OperationFailedException if an invalid value is found.
-     */
-    static void validate(final ModelNode operation) throws OperationFailedException {
-        INSTANCE.validator.validate(operation);
-    }
+    void setAutoflush(final boolean autoflush);
 }

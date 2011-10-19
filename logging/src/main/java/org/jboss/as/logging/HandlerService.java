@@ -22,30 +22,22 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Handler;
-
-import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
-import static org.jboss.as.logging.LogHandlerPropertiesConfigurator.setProperties;
+import java.util.logging.Level;
 
 /**
- * Date: 15.08.2011
+ * Date: 23.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handler> {
-    static final CustomHandlerUpdateProperties INSTANCE = new CustomHandlerUpdateProperties();
+interface HandlerService extends Service<Handler> {
 
-    private CustomHandlerUpdateProperties() {
-        super(PROPERTIES);
-    }
+    void setLevel(Level level);
 
-    @Override
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
-        if (operation.hasDefined(PROPERTIES)) {
-            setProperties(handler, operation.get(PROPERTIES).asPropertyList());
-        }
-    }
+    void setEncoding(String encoding) throws UnsupportedEncodingException;
+
+    void setFormatterSpec(AbstractFormatterSpec formatterSpec);
 }

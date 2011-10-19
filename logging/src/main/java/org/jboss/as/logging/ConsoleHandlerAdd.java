@@ -22,66 +22,38 @@
 
 package org.jboss.as.logging;
 
-import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.ACCEPT;
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
-import static org.jboss.as.logging.CommonAttributes.ENCODING;
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
-
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
+
+import java.util.logging.Handler;
+
+import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class ConsoleHandlerAdd extends AbstractAddStepHandler {
+class ConsoleHandlerAdd extends FlushingHandlerAddProperties<ConsoleHandlerService> {
 
     static final ConsoleHandlerAdd INSTANCE = new ConsoleHandlerAdd();
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        LoggingValidators.validate(operation);
-        model.get(AUTOFLUSH).set(operation.get(AUTOFLUSH));
-        model.get(ENCODING).set(operation.get(ENCODING));
-        model.get(FORMATTER).set(operation.get(FORMATTER));
-        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
-        model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
+    private ConsoleHandlerAdd() {
+        super(TARGET);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
+    @Override
+    protected ConsoleHandlerService createHandlerService(final ModelNode model) throws OperationFailedException {
+        return new ConsoleHandlerService();
+    }
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-
-        final ConsoleHandlerService service = new ConsoleHandlerService();
-        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-        if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-        final Boolean autoFlush = operation.get(AUTOFLUSH).asBoolean();
-        if (autoFlush != null) service.setAutoflush(autoFlush.booleanValue());
-        try {
-            if (operation.hasDefined(ENCODING)) service.setEncoding(operation.get(ENCODING).asString());
-        } catch (Throwable t) {
-            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+    @Override
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final ConsoleHandlerService service, final ModelNode model) throws OperationFailedException {
+        super.updateRuntime(context, serviceBuilder, name, service, model);
+        final ModelNode target = TARGET.validateResolvedOperation(model);
+        if (target.isDefined()) {
+            service.setTarget(Target.fromString(target.asString()));
         }
-        service.setFormatterSpec(AbstractFormatterSpec.Factory.create(operation));
-        serviceBuilder.addListener(verificationHandler);
-        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-        newControllers.add(serviceBuilder.install());
-
     }
 }

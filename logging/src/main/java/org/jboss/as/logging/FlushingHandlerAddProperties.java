@@ -23,9 +23,13 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.ExtHandler;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,28 +37,28 @@ import java.util.List;
 import java.util.logging.Handler;
 
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 /**
- * Parent operation responsible for updating the 'autoflush' property of logging handlers.
+ * Date: 23.09.2011
  *
- * @author John Bailey
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class FlushingHandlerUpdateProperties<T extends ExtHandler> extends HandlerUpdateProperties<T> {
+abstract class FlushingHandlerAddProperties<T extends FlushingHandlerService> extends HandlerAddProperties<T> {
 
-    protected FlushingHandlerUpdateProperties(final List<String> attributes, final AttributeDefinition... attributeDefinitions) {
+    protected FlushingHandlerAddProperties(final List<String> attributes, final AttributeDefinition... attributeDefinitions) {
         super(attributes, join(attributeDefinitions, AUTOFLUSH));
     }
 
-    protected FlushingHandlerUpdateProperties(final AttributeDefinition... attributeDefinitions) {
+    protected FlushingHandlerAddProperties(final AttributeDefinition... attributeDefinitions) {
         super(join(attributeDefinitions, AUTOFLUSH));
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final ExtHandler handler) throws OperationFailedException {
-        final ModelNode autoflush = AUTOFLUSH.validateResolvedOperation(operation);
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final T service, final ModelNode model) throws OperationFailedException {
+        final ModelNode autoflush = AUTOFLUSH.validateResolvedOperation(model);
         if (autoflush.isDefined()) {
-            handler.setAutoFlush(autoflush.asBoolean());
+            service.setAutoflush(autoflush.asBoolean());
         }
     }
 

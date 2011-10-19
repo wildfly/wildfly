@@ -22,10 +22,6 @@
 
 package org.jboss.as.logging;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Handler;
-import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -33,8 +29,15 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 
@@ -43,47 +46,13 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
  *
  * @author Stan Silvert
  */
-public class AsyncHandlerUnassignSubhandler extends AbstractModelUpdateHandler {
-    private static final String OPERATION_NAME = "unassign-subhandler";
-    private static final AsyncHandlerUnassignSubhandler INSTANCE = new AsyncHandlerUnassignSubhandler();
-
-    /**
-     * @return the OPERATION_NAME
-     */
-    public static String getOperationName() {
-        return OPERATION_NAME;
-    }
-
-    /**
-     * @return the INSTANCE
-     */
-    public static AsyncHandlerUnassignSubhandler getInstance() {
-        return INSTANCE;
-    }
-
-    protected void opFailed(String description) throws OperationFailedException {
-        ModelNode failure = new ModelNode();
-        failure.get(FAILURE_DESCRIPTION, description);
-        throw new OperationFailedException(failure);
-    }
+public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignmentHandler {
+    static final String OPERATION_NAME = "unassign-subhandler";
+    static final AsyncHandlerUnassignSubhandler INSTANCE = new AsyncHandlerUnassignSubhandler();
 
     @Override
     protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ModelNode handlerNameNode = operation.get(CommonAttributes.NAME);
-        String handlerName = handlerNameNode.asString();
-
-        ModelNode assignedHandlers = model.get(CommonAttributes.SUBHANDLERS);
-        if (!assignedHandlers.isDefined() || !assignedHandlers.asList().contains(handlerNameNode)) {
-            opFailed(MESSAGES.cannotUnassignHandler(handlerName));
-        }
-
-        List<ModelNode> newList = new ArrayList<ModelNode>();
-        for (ModelNode node : assignedHandlers.asList()) {
-            if (node.asString().equals(handlerName)) continue;
-            newList.add(node);
-        }
-
-        model.get(CommonAttributes.SUBHANDLERS).set(newList);
+        updateHandlersForUnassign(SUBHANDLERS, operation, model);
     }
 
     @Override
@@ -91,15 +60,19 @@ public class AsyncHandlerUnassignSubhandler extends AbstractModelUpdateHandler {
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String asyncHandlerName = address.getLastElement().getValue();
-        String handlerNameToUnassign = operation.get(CommonAttributes.NAME).asString();
+        String handlerNameToUnassign = NAME.validateResolvedOperation(model).asString();
 
-        ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
         ServiceController<Handler> handlerToUnassignController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerNameToUnassign));
 
-        AsyncHandlerService service = (AsyncHandlerService)asyncHandlerController.getService();
+        AsyncHandlerService service = (AsyncHandlerService) asyncHandlerController.getService();
         Handler injectedHandler = handlerToUnassignController.getService().getValue();
         service.removeHandler(injectedHandler);
     }
 
+    @Override
+    protected String getHandlerName(final ModelNode model) throws OperationFailedException {
+        return NAME.validateResolvedOperation(model).asString();
+    }
 }

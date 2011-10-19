@@ -22,50 +22,47 @@
 
 package org.jboss.as.logging;
 
-import java.util.logging.Handler;
-import java.util.logging.Level;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 /**
  * Operation responsible for changing a log handler logging level.
  *
  * @author John Bailey
  */
-public class HandlerLevelChange implements OperationStepHandler {
+public class HandlerLevelChange extends AbstractModelUpdateHandler {
     static final String OPERATION_NAME = "change-log-level";
     static final HandlerLevelChange INSTANCE = new HandlerLevelChange();
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        LoggingValidators.validate(operation);
+    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        LEVEL.validateAndSet(operation, model);
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String level = operation.get(LEVEL).asString();
-
-        if (operation.hasDefined(LEVEL))
-            context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(LEVEL).set(level);
-
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) {
-                    final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                    final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
-                    if (controller != null && operation.hasDefined(LEVEL)) {
-                        controller.getValue().setLevel(Level.parse(level));
-                    }
-                    context.completeStep();
-                }
-            }, OperationContext.Stage.RUNTIME);
+        final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
+        final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
+        final ModelNode level = LEVEL.validateResolvedOperation(model);
+        if (controller != null && level.isDefined()) {
+            controller.getValue().setLevel(Level.parse(level.asString()));
         }
-        context.completeStep();
     }
 }

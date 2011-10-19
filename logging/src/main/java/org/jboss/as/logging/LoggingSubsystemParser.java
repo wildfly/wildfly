@@ -31,6 +31,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collections;
@@ -45,7 +46,6 @@ import java.util.regex.Pattern;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -57,6 +57,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.CATEGORY;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.CONSOLE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.CUSTOM_HANDLER;
@@ -69,11 +70,13 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGER;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
@@ -88,11 +91,7 @@ import static org.jboss.as.logging.LoggingMessages.MESSAGES;
  */
 public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    private static final LoggingSubsystemParser INSTANCE = new LoggingSubsystemParser();
-
-    public static LoggingSubsystemParser getInstance() {
-        return INSTANCE;
-    }
+    static final LoggingSubsystemParser INSTANCE = new LoggingSubsystemParser();
 
     private LoggingSubsystemParser() {
         //
@@ -208,10 +207,15 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             throw duplicateNamedElement(reader, name);
         }
         // Element
-        String level = null;
-        ModelNode handlers = null;
+
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(LOGGER, name);
+        node.get(CATEGORY.getName()).set(name);
+        node.get(USE_PARENT_HANDLERS.getName()).set(useParentHandlers);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Location location = reader.getLocation();
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case LOGGING_1_0:
                 case LOGGING_1_1: {
@@ -221,11 +225,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     }
                     switch (element) {
                         case LEVEL: {
-                            level = readStringAttributeElement(reader, "name");
+                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
                             break;
                         }
                         case HANDLERS: {
-                            handlers = parseHandlersElement(reader);
+                            parseHandlersElement(node.get(HANDLERS.getName()), reader);
                             break;
                         }
                         default:
@@ -238,20 +242,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
-
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(LOGGER, name);
-        node.get(USE_PARENT_HANDLERS).set(useParentHandlers);
-        node.get(LEVEL).set(level);
-        if (handlers != null) node.get(HANDLERS).set(handlers);
         list.add(node);
     }
 
     static void parseAsyncHandlerElement(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
         // Attributes
         String name = null;
-        boolean autoflush = true;
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -274,32 +270,36 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (!names.add(name)) {
             throw duplicateNamedElement(reader, name);
         }
+
+        // Set-up default operation
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(ASYNC_HANDLER, name);
+        node.get(NAME.getName()).set(name);
+
         // Elements
-        String levelName = null;
-        ModelNode subhandlers = null;
-        int queueLength = 0;
-        OverflowAction overflowAction = OverflowAction.BLOCK;
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            final Location location = reader.getLocation();
             switch (element) {
                 case LEVEL: {
-                    levelName = readStringAttributeElement(reader, "name");
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
                     break;
                 }
                 case SUBHANDLERS: {
-                    subhandlers = parseHandlersElement(reader);
+                    parseHandlersElement(node.get(SUBHANDLERS.getName()), reader);
                     break;
                 }
                 case QUEUE_LENGTH: {
-                    queueLength = Integer.parseInt(readStringAttributeElement(reader, "value"));
+                    QUEUE_LENGTH.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case OVERFLOW_ACTION: {
-                    overflowAction = OverflowAction.valueOf(readStringAttributeElement(reader, "value").toUpperCase(Locale.US));
+                    OVERFLOW_ACTION.parseAndSetParameter(readStringAttributeElement(reader, "value").toUpperCase(Locale.US), node, location);
                     break;
                 }
                 default: {
@@ -307,18 +307,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
-
-        // TODO - Only values set in the XML should be set on the model otherwise defaults end up being written when
-        // marshalling.
-
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(ASYNC_HANDLER, name);
-        if (levelName != null) node.get(LEVEL).set(levelName);
-        if (subhandlers != null) node.get(SUBHANDLERS).set(subhandlers);
-        node.get(AUTOFLUSH).set(Boolean.valueOf(autoflush));
-        node.get(QUEUE_LENGTH).set(queueLength);
-        node.get(OVERFLOW_ACTION).set(overflowAction.toString());
         list.add(node);
     }
 
@@ -328,11 +316,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             throw unexpectedAttribute(reader, 0);
         }
 
-        String level = null;
-        // Elements
-        ModelNode handlers = null;
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(RootLoggerAdd.OPERATION_NAME);
+        node.get(OP_ADDR).set(address);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Location location = reader.getLocation();
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case LOGGING_1_0:
                 case LOGGING_1_1: {
@@ -343,11 +332,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     encountered.add(element);
                     switch (element) {
                         case LEVEL: {
-                            level = readStringAttributeElement(reader, "name");
+                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
                             break;
                         }
                         case HANDLERS: {
-                            handlers = parseHandlersElement(reader);
+                            parseHandlersElement(node.get(HANDLERS.getName()), reader);
                             break;
                         }
                         default:
@@ -360,12 +349,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
-
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(RootLoggerAdd.OPERATION_NAME);
-        node.get(OP_ADDR).set(address);
-        node.get(LEVEL).set(level);
-        if (handlers != null) node.get(HANDLERS).set(handlers);
         list.add(node);
     }
 
@@ -400,34 +383,37 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             throw duplicateNamedElement(reader, name);
         }
         // Elements
-        String levelName = null;
-        String encoding = null;
-        String formatterSpec = null;
-        String target = null;
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(CONSOLE_HANDLER, name);
+        node.get(NAME.getName()).set(name);
+        node.get(AUTOFLUSH.getName()).set(autoflush);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            final Location location = reader.getLocation();
             switch (element) {
                 case LEVEL: {
-                    levelName = readStringAttributeElement(reader, "name");
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
                     break;
                 }
                 case ENCODING: {
-                    encoding = readStringAttributeElement(reader, "value");
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case FORMATTER: {
-                    formatterSpec = parseFormatterElement(reader);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
                     break;
                 }
                 case TARGET: {
-                    target = readStringAttributeElement(reader, "name");
+                    final String target = readStringAttributeElement(reader, "name");
                     if (!(target.equals("System.out") || target.equals("System.err"))) {
                         throw new XMLStreamException(MESSAGES.invalidTargetName(), reader.getLocation());
                     }
+                    TARGET.parseAndSetParameter(target, node, location);
                     break;
                 }
                 default: {
@@ -435,13 +421,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(CONSOLE_HANDLER, name);
-        node.get(AUTOFLUSH).set(autoflush);
-        if (levelName != null) node.get(LEVEL).set(levelName);
-        if (formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
-        if (encoding != null) node.get(ENCODING).set(encoding);
         list.add(node);
     }
 
@@ -476,11 +455,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             throw duplicateNamedElement(reader, name);
         }
         // Elements
-        String levelName = null;
-        String encoding = null;
-        ModelNode fileSpec = null;
-        boolean append = true;
-        String formatterSpec = null;
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(FILE_HANDLER, name);
+        node.get(NAME.getName()).set(name);
+        node.get(AUTOFLUSH.getName()).set(autoflush);
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -489,26 +468,27 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            final Location location = reader.getLocation();
             requiredElem.remove(element);
             switch (element) {
                 case LEVEL: {
-                    levelName = readStringAttributeElement(reader, "name");
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
                     break;
                 }
                 case ENCODING: {
-                    encoding = readStringAttributeElement(reader, "value");
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case FORMATTER: {
-                    formatterSpec = parseFormatterElement(reader);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
                     break;
                 }
                 case FILE: {
-                    fileSpec = parseFileElement(reader);
+                    parseFileElement(node.get(FILE.getName()), reader);
                     break;
                 }
                 case APPEND: {
-                    append = Boolean.parseBoolean(readStringAttributeElement(reader, "value"));
+                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 default: {
@@ -519,15 +499,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (!requiredElem.isEmpty()) {
             throw missingRequired(reader, requiredElem);
         }
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(FILE_HANDLER, name);
-        node.get(AUTOFLUSH).set(autoflush);
-        if (levelName != null) node.get(LEVEL).set(levelName);
-        if (encoding != null) node.get(ENCODING).set(encoding);
-        if (formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
-        node.get(FILE).set(fileSpec);
-        node.get(APPEND).set(append);
         list.add(node);
     }
 
@@ -566,11 +537,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (!names.add(name)) {
             throw duplicateNamedElement(reader, name);
         }
-        // Elements
-        String levelName = null;
-        String encoding = null;
-        String formatterSpec = null;
-        ModelNode properties = null;
+        // Create operation
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(CUSTOM_HANDLER, name);
+        node.get(NAME.getName()).set(name);
+        node.get(CLASS.getName()).set(className);
+        node.get(MODULE.getName()).set(moduleName);
 
 
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -579,21 +552,22 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            final Location location = reader.getLocation();
             switch (element) {
                 case LEVEL: {
-                    levelName = readStringAttributeElement(reader, "name");
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
                     break;
                 }
                 case ENCODING: {
-                    encoding = readStringAttributeElement(reader, "value");
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case FORMATTER: {
-                    formatterSpec = parseFormatterElement(reader);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
                     break;
                 }
                 case PROPERTIES: {
-                    properties = parsePropertyElement(reader);
+                    parsePropertyElement(node, reader);
                     break;
                 }
                 default: {
@@ -601,16 +575,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
-
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(CUSTOM_HANDLER, name);
-        if (levelName != null) node.get(LEVEL).set(levelName);
-        if (encoding != null) node.get(ENCODING).set(encoding);
-        if (formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
-        if (properties != null) node.get(PROPERTIES).set(properties);
-        node.get(CLASS).set(className);
-        node.get(MODULE).set(moduleName);
         list.add(node);
     }
 
@@ -644,13 +608,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (!names.add(name)) {
             throw duplicateNamedElement(reader, name);
         }
-        // Elements
-        String levelName = null;
-        String encoding = null;
-        String suffix = null;
-        ModelNode fileSpec = null;
-        boolean append = true;
-        String formatterSpec = null;
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(PERIODIC_ROTATING_FILE_HANDLER, name);
+        node.get(NAME.getName()).set(name);
+        node.get(AUTOFLUSH.getName()).set(autoflush);
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE, Element.SUFFIX);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -659,30 +621,31 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
+            final Location location = reader.getLocation();
             requiredElem.remove(element);
             switch (element) {
                 case LEVEL: {
-                    levelName = readStringAttributeElement(reader, "name");
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
                     break;
                 }
                 case ENCODING: {
-                    encoding = readStringAttributeElement(reader, "value");
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case FORMATTER: {
-                    formatterSpec = parseFormatterElement(reader);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
                     break;
                 }
                 case FILE: {
-                    fileSpec = parseFileElement(reader);
+                    parseFileElement(node.get(FILE.getName()), reader);
                     break;
                 }
                 case APPEND: {
-                    append = Boolean.parseBoolean(readStringAttributeElement(reader, "value"));
+                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case SUFFIX: {
-                    suffix = readStringAttributeElement(reader, "value");
+                    SUFFIX.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 default: {
@@ -693,16 +656,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (!requiredElem.isEmpty()) {
             throw missingRequired(reader, requiredElem);
         }
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(PERIODIC_ROTATING_FILE_HANDLER, name);
-        node.get(AUTOFLUSH).set(autoflush);
-        if (levelName != null) node.get(LEVEL).set(levelName);
-        if (encoding != null) node.get(ENCODING).set(encoding);
-        if (formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
-        node.get(FILE).set(fileSpec);
-        node.get(APPEND).set(append);
-        if (suffix != null) node.get(SUFFIX).set(suffix);
         list.add(node);
     }
 
@@ -736,14 +689,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (!names.add(name)) {
             throw duplicateNamedElement(reader, name);
         }
-        // Elements
-        String levelName = null;
-        String encoding = null;
-        ModelNode fileSpec = null;
-        boolean append = true;
-        String rotateSize = null;
-        int maxBackupIndex = 1;
-        String formatterSpec = null;
+        final ModelNode node = new ModelNode();
+        node.get(OP).set(ADD);
+        node.get(OP_ADDR).set(address).add(SIZE_ROTATING_FILE_HANDLER, name);
+        node.get(NAME.getName()).set(name);
+        node.get(AUTOFLUSH.getName()).set(autoflush);
 
         final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
@@ -753,61 +703,40 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 throw unexpectedElement(reader);
             }
             requiredElem.remove(element);
+            final Location location = reader.getLocation();
             switch (element) {
                 case LEVEL: {
-                    levelName = readStringAttributeElement(reader, "name");
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, location);
                     break;
                 }
                 case ENCODING: {
-                    encoding = readStringAttributeElement(reader, "value");
+                    ENCODING.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case FORMATTER: {
-                    formatterSpec = parseFormatterElement(reader);
+                    FORMATTER.parseAndSetParameter(parseFormatterElement(reader), node, location);
                     break;
                 }
                 case FILE: {
-                    fileSpec = parseFileElement(reader);
+                    parseFileElement(node.get(FILE.getName()), reader);
                     break;
                 }
                 case APPEND: {
-                    append = Boolean.parseBoolean(readStringAttributeElement(reader, "value"));
+                    APPEND.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case ROTATE_SIZE: {
-                    rotateSize = readStringAttributeElement(reader, "value");
+                    ROTATE_SIZE.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 case MAX_BACKUP_INDEX: {
-                    try {
-                        maxBackupIndex = Integer.parseInt(readStringAttributeElement(reader, "value"));
-                    } catch (NumberFormatException e) {
-                        throw new XMLStreamException(e.getMessage(), reader.getLocation(), e);
-                    }
+                    MAX_BACKUP_INDEX.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, location);
                     break;
                 }
                 default: {
                     throw unexpectedElement(reader);
                 }
             }
-        }
-        if (!requiredElem.isEmpty()) {
-            throw missingRequired(reader, requiredElem);
-        }
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(SIZE_ROTATING_FILE_HANDLER, name);
-        node.get(AUTOFLUSH).set(autoflush);
-        if (levelName != null) node.get(LEVEL).set(levelName);
-        if (encoding != null) node.get(ENCODING).set(encoding);
-        if (formatterSpec != null) node.get(FORMATTER).set(formatterSpec);
-        node.get(FILE).set(fileSpec);
-        node.get(APPEND).set(append);
-        if (rotateSize != null) {
-            node.get(ROTATE_SIZE).set(rotateSize);
-        }
-        if (maxBackupIndex > 0) {
-            node.get(MAX_BACKUP_INDEX).set(maxBackupIndex);
         }
         list.add(node);
     }
@@ -849,10 +778,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         return qty;
     }
 
-    private static ModelNode parseFileElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        // Attributes
-        String path = null;
-        String relativeTo = null;
+    private static void parseFileElement(final ModelNode node, final XMLExtendedStreamReader reader) throws XMLStreamException {
         final EnumSet<Attribute> required = EnumSet.of(Attribute.PATH);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -862,11 +788,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case PATH: {
-                    path = value;
+                    PATH.parseAndSetParameter(value, node, reader.getLocation());
                     break;
                 }
                 case RELATIVE_TO: {
-                    relativeTo = value;
+                    RELATIVE_TO.parseAndSetParameter(value, node, reader.getLocation());
                     break;
                 }
                 default: {
@@ -875,17 +801,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         requireNoContent(reader);
-        final ModelNode node = new ModelNode();
-        if (path != null) node.get(PATH).set(path);
-        if (relativeTo != null) node.get(RELATIVE_TO).set(relativeTo);
-        return node;
     }
 
     private static String parseFormatterElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
-        String formatterSpec = null;
+        final String formatterSpec;
         if (reader.nextTag() != START_ELEMENT) {
             throw new XMLStreamException(MESSAGES.missingRequiredNestedFilterElement(), reader.getLocation());
         }
@@ -939,8 +861,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         return pattern;
     }
 
-    private static ModelNode parsePropertyElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final ModelNode node = new ModelNode();
+    private static void parsePropertyElement(final ModelNode node, final XMLExtendedStreamReader reader) throws XMLStreamException {
         while (reader.nextTag() != END_ELEMENT) {
             final int cnt = reader.getAttributeCount();
             String name = null;
@@ -965,20 +886,18 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (name == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
             }
-            node.add(name, new ModelNode().set(value == null ? "" : value));
+            node.get(PROPERTIES).set(new Property(name, new ModelNode().set(value)));
             if (reader.nextTag() != END_ELEMENT) {
                 throw unexpectedElement(reader);
             }
         }
-        return node;
     }
 
-    private static ModelNode parseHandlersElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    private static void parseHandlersElement(final ModelNode node, final XMLExtendedStreamReader reader) throws XMLStreamException {
         // No attributes
         if (reader.getAttributeCount() > 0) {
             throw unexpectedAttribute(reader, 0);
         }
-        final ModelNode handlers = new ModelNode();
 
         // Elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -988,7 +907,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case HANDLER: {
-                            handlers.add(readStringAttributeElement(reader, "name"));
+                            node.add(readStringAttributeElement(reader, "name"));
+                            // HANDLER.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader.getLocation());
                             break;
                         }
                         default:
@@ -1001,7 +921,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
-        return handlers;
     }
 
     /**
@@ -1098,18 +1017,16 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name)
             throws XMLStreamException {
         writer.writeStartElement(Element.CONSOLE_HANDLER.getLocalName());
-        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        if (node.hasDefined(AUTOFLUSH)) {
-            writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
-        }
+        writer.writeAttribute(NAME.getXmlName(), name);
+        AUTOFLUSH.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeEncoding(writer, node);
         writeFilter(writer, node);
         writeFormatter(writer, node);
         writeProperties(writer, node);
-        if (node.hasDefined(TARGET)) {
+        if (TARGET.isMarshallable(node)) {
             writer.writeStartElement(Element.TARGET.getLocalName());
-            writeAttribute(writer, Attribute.NAME, node.get(TARGET));
+            writeAttribute(writer, Attribute.NAME, node.get(TARGET.getName()));
             writer.writeEndElement();
         }
 
@@ -1119,9 +1036,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     private void writeFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.FILE_HANDLER.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        if (node.hasDefined(AUTOFLUSH)) {
-            writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
-        }
+        AUTOFLUSH.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeEncoding(writer, node);
         writeFilter(writer, node);
@@ -1136,9 +1051,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     private void writeCustomHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name)
             throws XMLStreamException {
         writer.writeStartElement(Element.CUSTOM_HANDLER.getLocalName());
-        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        writeAttribute(writer, Attribute.CLASS, node.get(CLASS));
-        writeAttribute(writer, Attribute.MODULE, node.get(MODULE));
+        writer.writeAttribute(NAME.getXmlName(), name);
+        CLASS.marshallAsAttribute(node, writer);
+        MODULE.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeEncoding(writer, node);
         writeFilter(writer, node);
@@ -1150,19 +1065,17 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private void writePeriodicRotatingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
-        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        if (node.hasDefined(AUTOFLUSH)) {
-            writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
-        }
+        writer.writeAttribute(NAME.getXmlName(), name);
+        AUTOFLUSH.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeEncoding(writer, node);
         writeFilter(writer, node);
         writeFormatter(writer, node);
         writeProperties(writer, node);
         writeFile(writer, node);
-        if (node.hasDefined(SUFFIX)) {
+        if (SUFFIX.isMarshallable(node)) {
             writer.writeStartElement(Element.SUFFIX.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(SUFFIX));
+            writeAttribute(writer, Attribute.VALUE, node.get(SUFFIX.getName()));
             writer.writeEndElement();
         }
         writeAppend(writer, node);
@@ -1172,24 +1085,22 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private void writeSizeRotatingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.SIZE_ROTATING_FILE_HANDLER.getLocalName());
-        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-        if (node.hasDefined(AUTOFLUSH)) {
-            writeAttribute(writer, Attribute.AUTOFLUSH, node.get(AUTOFLUSH));
-        }
+        writer.writeAttribute(NAME.getXmlName(), name);
+        AUTOFLUSH.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeEncoding(writer, node);
         writeFilter(writer, node);
         writeFormatter(writer, node);
         writeProperties(writer, node);
         writeFile(writer, node);
-        if (node.hasDefined(ROTATE_SIZE)) {
+        if (ROTATE_SIZE.isMarshallable(node)) {
             writer.writeStartElement(Element.ROTATE_SIZE.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(ROTATE_SIZE));
+            writeAttribute(writer, Attribute.VALUE, node.get(ROTATE_SIZE.getName()));
             writer.writeEndElement();
         }
-        if (node.hasDefined(MAX_BACKUP_INDEX)) {
+        if (MAX_BACKUP_INDEX.isMarshallable(node)) {
             writer.writeStartElement(Element.MAX_BACKUP_INDEX.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(MAX_BACKUP_INDEX));
+            writeAttribute(writer, Attribute.VALUE, node.get(MAX_BACKUP_INDEX.getName()));
             writer.writeEndElement();
         }
         writeAppend(writer, node);
@@ -1199,22 +1110,22 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private void writeAsynchHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.ASYNC_HANDLER.getLocalName());
-        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+        writer.writeAttribute(NAME.getXmlName(), name);
         writeLevel(writer, node);
         writeFilter(writer, node);
         writeProperties(writer, node);
-        if (node.hasDefined(QUEUE_LENGTH)) {
+        if (QUEUE_LENGTH.isMarshallable(node)) {
             writer.writeStartElement(Element.QUEUE_LENGTH.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(QUEUE_LENGTH));
+            writeAttribute(writer, Attribute.VALUE, node.get(QUEUE_LENGTH.getName()));
             writer.writeEndElement();
         }
-        if (node.hasDefined(OVERFLOW_ACTION)) {
+        if (OVERFLOW_ACTION.isMarshallable(node)) {
             writer.writeStartElement(Element.OVERFLOW_ACTION.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(OVERFLOW_ACTION));
+            writeAttribute(writer, Attribute.VALUE, node.get(OVERFLOW_ACTION.getName()));
             writer.writeEndElement();
         }
-        if (node.hasDefined(SUBHANDLERS)) {
-            final ModelNode handlers = node.get(SUBHANDLERS);
+        if (SUBHANDLERS.isMarshallable(node)) {
+            final ModelNode handlers = node.get(SUBHANDLERS.getName());
             writeHandlersContent(writer, Element.SUBHANDLERS, handlers);
         }
 
@@ -1223,10 +1134,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private void writeLogger(final XMLExtendedStreamWriter writer, String name, final ModelNode node) throws XMLStreamException {
         writer.writeStartElement(Element.LOGGER.getLocalName());
-        writer.writeAttribute(Attribute.CATEGORY.getLocalName(), name);
-        if (node.hasDefined(USE_PARENT_HANDLERS)) {
-            writeAttribute(writer, Attribute.USE_PARENT_HANDLERS, node.get(USE_PARENT_HANDLERS));
-        }
+        writer.writeAttribute(CATEGORY.getXmlName(), name);
+        USE_PARENT_HANDLERS.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeFilter(writer, node);
         writeHandlers(writer, node);
@@ -1242,9 +1151,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     }
 
     private void writeLevel(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(LEVEL)) {
+        if (LEVEL.isMarshallable(node)) {
             writer.writeStartElement(Element.LEVEL.getLocalName());
-            writeAttribute(writer, Attribute.NAME, node.get(LEVEL));
+            writeAttribute(writer, Attribute.NAME, node.get(LEVEL.getName()));
             writer.writeEndElement();
         }
     }
@@ -1268,40 +1177,36 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     }
 
     private void writeFormatter(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(FORMATTER)) {
+        if (FORMATTER.isMarshallable(node)) {
             writer.writeStartElement(Element.FORMATTER.getLocalName());
             writer.writeStartElement(Element.PATTERN_FORMATTER.getLocalName());
-            writeAttribute(writer, Attribute.PATTERN, node.get(FORMATTER));
+            writeAttribute(writer, Attribute.PATTERN, node.get(FORMATTER.getName()));
             writer.writeEndElement();
             writer.writeEndElement();
         }
     }
 
     private void writeFile(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(FILE)) {
+        if (FILE.isMarshallable(node)) {
             writer.writeStartElement(Element.FILE.getLocalName());
-            final ModelNode file = node.get(FILE);
-            if (file.hasDefined(RELATIVE_TO)) {
-                writeAttribute(writer, Attribute.RELATIVE_TO, file.get(RELATIVE_TO));
-            }
-            if (file.hasDefined(PATH)) {
-                writeAttribute(writer, Attribute.PATH, file.get(PATH));
-            }
+            final ModelNode file = node.get(FILE.getName());
+            RELATIVE_TO.marshallAsAttribute(file, writer);
+            PATH.marshallAsAttribute(file, writer);
             writer.writeEndElement();
         }
     }
 
     private void writeEncoding(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(ENCODING)) {
+        if (ENCODING.isMarshallable(node)) {
             writer.writeStartElement(Element.ENCODING.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(ENCODING));
+            writeAttribute(writer, Attribute.VALUE, node.get(ENCODING.getName()));
             writer.writeEndElement();
         }
     }
 
     private void writeHandlers(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(HANDLERS)) {
-            final ModelNode handlers = node.get(HANDLERS);
+        if (HANDLERS.isMarshallable(node)) {
+            final ModelNode handlers = node.get(HANDLERS.getName());
             writeHandlersContent(writer, Element.HANDLERS, handlers);
         }
     }
@@ -1321,9 +1226,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     }
 
     private void writeAppend(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(APPEND)) {
+        if (APPEND.isMarshallable(node)) {
             writer.writeStartElement(Element.APPEND.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(APPEND));
+            writeAttribute(writer, Attribute.VALUE, node.get(APPEND.getName()));
             writer.writeEndElement();
         }
     }

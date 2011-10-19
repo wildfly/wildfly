@@ -27,25 +27,26 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.logging.Handler;
 
-import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
-import static org.jboss.as.logging.LogHandlerPropertiesConfigurator.setProperties;
-
 /**
- * Date: 15.08.2011
+ * Date: 12.10.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handler> {
-    static final CustomHandlerUpdateProperties INSTANCE = new CustomHandlerUpdateProperties();
+public class CustomHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHandler<Handler> {
+    static final CustomHandlerWriteAttributeHandler INSTANCE = new CustomHandlerWriteAttributeHandler();
 
-    private CustomHandlerUpdateProperties() {
-        super(PROPERTIES);
+    private CustomHandlerWriteAttributeHandler() {
+        super();
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
-        if (operation.hasDefined(PROPERTIES)) {
-            setProperties(handler, operation.get(PROPERTIES).asPropertyList());
-        }
+    protected boolean applyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final Handler handler) throws OperationFailedException {
+        // TODO (jrp) see if we can implement a write-attribute(property)
+        return false;
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Handler handler) throws OperationFailedException {
+        //TODO (jrp) - return proper value
     }
 }
