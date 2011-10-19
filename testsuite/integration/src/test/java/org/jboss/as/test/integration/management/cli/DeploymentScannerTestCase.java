@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.management.cli;
+package org.jboss.as.test.integration.management.cli;
 
 import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -32,9 +32,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.testsuite.integration.management.util.CLIOpResult;
-import org.jboss.as.testsuite.integration.management.util.SimpleServlet;
-import org.jboss.as.testsuite.integration.common.HttpRequest;
+import org.jboss.as.test.integration.management.util.CLIOpResult;
+import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
@@ -61,7 +61,7 @@ public class DeploymentScannerTestCase extends AbstractCliTestBase {
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(GlobalOpsTestCase.class);
+        ja.addClass(DeploymentScannerTestCase.class);
         return ja;
     }    
     

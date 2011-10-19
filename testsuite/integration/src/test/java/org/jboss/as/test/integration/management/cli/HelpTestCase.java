@@ -19,9 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.management.cli;
+package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -91,11 +92,13 @@ public class HelpTestCase extends AbstractCliTestBase {
         testCmdHelp("remove-jms-cf");
     }
 
+    @Ignore
     @Test
     public void testDataSourceHelp() throws Exception {
         testCmdHelp("data-source");
     }
 
+    @Ignore
     @Test
     public void testXaDataSourceHelp() throws Exception {
         testCmdHelp("xa-data-source");

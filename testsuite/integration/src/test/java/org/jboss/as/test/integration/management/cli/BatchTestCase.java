@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.management.cli;
+package org.jboss.as.test.integration.management.cli;
 
 import java.io.IOException;
 import java.io.File;
@@ -29,8 +29,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.testsuite.integration.common.HttpRequest;
-import org.jboss.as.testsuite.integration.management.util.SimpleServlet;
+import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -60,7 +60,7 @@ public class BatchTestCase extends AbstractCliTestBase {
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(GlobalOpsTestCase.class);
+        ja.addClass(BatchTestCase.class);
         return ja;
     }    
     
