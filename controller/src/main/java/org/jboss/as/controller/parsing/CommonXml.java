@@ -129,6 +129,7 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -2391,23 +2392,15 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throws XMLStreamException {
 
         writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-        ModelNode attr = bindingGroup.get(NAME);
-        writeAttribute(writer, Attribute.NAME, attr.asString());
 
-        attr = bindingGroup.get(DEFAULT_INTERFACE);
-        writeAttribute(writer, Attribute.DEFAULT_INTERFACE, attr.asString());
+        SocketBindingGroupResourceDefinition.NAME.marshallAsAttribute(bindingGroup, writer);
+        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.marshallAsAttribute(bindingGroup, writer);
 
-        if (fromServer && bindingGroup.hasDefined(PORT_OFFSET)
-                && (bindingGroup.getType() == ModelType.EXPRESSION || bindingGroup.get(PORT_OFFSET).asInt() > 0)) {
-            attr = bindingGroup.get(PORT_OFFSET);
-            writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
+        if (fromServer) {
+            SocketBindingGroupResourceDefinition.PORT_OFFSET.marshallAsAttribute(bindingGroup, writer);
         }
-        if (!fromServer && bindingGroup.hasDefined(INCLUDES)) {
-            for (ModelNode include : bindingGroup.get(INCLUDES).asList()) {
-                writer.writeStartElement(Element.INCLUDE.getLocalName());
-                writeAttribute(writer, Attribute.SOCKET_BINDING_GROUP, include.asString());
-                writer.writeEndElement();
-            }
+        if (!fromServer) {
+            SocketBindingGroupResourceDefinition.INCLUDES.marshallAsElement(bindingGroup, writer);
         }
 
         if (bindingGroup.hasDefined(SOCKET_BINDING)) {
@@ -2416,7 +2409,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 ModelNode binding = bindings.get(bindingName);
                 writer.writeStartElement(Element.SOCKET_BINDING.getLocalName());
                 writeAttribute(writer, Attribute.NAME, bindingName);
-                attr = binding.get(PORT);
+                ModelNode attr = binding.get(PORT);
                 writeAttribute(writer, Attribute.PORT, attr.asString());
 
                 attr = binding.get(FIXED_PORT);

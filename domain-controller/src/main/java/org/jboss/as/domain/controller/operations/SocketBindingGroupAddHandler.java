@@ -18,19 +18,9 @@
  */
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
-
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.common.SocketBindingGroupDescription;
 import org.jboss.as.controller.operations.common.AbstractSocketBindingGroupAddHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,30 +31,9 @@ import org.jboss.dmr.ModelNode;
  */
 public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler {
 
-    private static final ParametersValidator VALIDATOR = new ParametersValidator();
-    static {
-        VALIDATOR.registerValidator(INCLUDES, new ListValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true), true, 0, Integer.MAX_VALUE));
-    }
-
-    public static final ModelNode getOperation(ModelNode address, ModelNode model) {
-        ModelNode op = Util.getEmptyOperation(ADD, address);
-        op.get(DEFAULT_INTERFACE).set(model.get(DEFAULT_INTERFACE));
-        op.get(INCLUDES).set(model.get(INCLUDES));
-        return op;
-    }
-
     public static final SocketBindingGroupAddHandler INSTANCE = new SocketBindingGroupAddHandler();
 
     private SocketBindingGroupAddHandler() {
-        super(VALIDATOR);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return SocketBindingGroupDescription.getDomainSocketBindingGroupAddOperation(locale);
     }
 
     /**
@@ -73,7 +42,7 @@ public class SocketBindingGroupAddHandler extends AbstractSocketBindingGroupAddH
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         super.populateModel(operation, model);
-        model.get(INCLUDES).set(operation.get(INCLUDES));
+        SocketBindingGroupResourceDefinition.INCLUDES.validateAndSet(operation, model);
     }
 
 }

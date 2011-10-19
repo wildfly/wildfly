@@ -51,14 +51,6 @@ public final class ServerDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider SOCKET_BINDING_GROUP_PROVIDER = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return SocketBindingGroupDescription.getServerSocketBindingGroupDescription(locale);
-        }
-    };
-
     public static final DescriptionProvider DEPLOYMENT_PROVIDER = new DescriptionProvider() {
 
         @Override

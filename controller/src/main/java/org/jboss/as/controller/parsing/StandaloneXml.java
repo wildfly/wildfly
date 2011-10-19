@@ -64,6 +64,7 @@ import java.util.Set;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -340,10 +341,9 @@ public class StandaloneXml extends CommonXml {
             final ModelNode address, final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> socketBindings = new HashSet<String>();
 
+        ModelNode op = Util.getEmptyOperation(ADD, null);
         // Handle attributes
         String name = null;
-        ModelNode defaultInterface = null;
-        ModelNode portOffset = null;
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.DEFAULT_INTERFACE);
         final int count = reader.getAttributeCount();
@@ -360,26 +360,12 @@ public class StandaloneXml extends CommonXml {
                     break;
                 }
                 case DEFAULT_INTERFACE: {
-                    defaultInterface = parsePossibleExpression(value);
+                    SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(value, op, reader.getLocation());
                     required.remove(attribute);
                     break;
                 }
                 case PORT_OFFSET: {
-                    portOffset = parsePossibleExpression(value);
-                    if (portOffset.getType() != ModelType.EXPRESSION) {
-                        try {
-                            int offset = Integer.parseInt(value);
-                            if (offset < 0) {
-                                throw new XMLStreamException(portOffset + " is not a valid " + attribute.getLocalName()
-                                        + " -- must be greater than zero", reader.getLocation());
-                            }
-                        } catch (final NumberFormatException e) {
-                            if (!Util.isExpression(value)) {
-                                throw new XMLStreamException(portOffset + " is not a valid " + attribute.getLocalName(),
-                                        reader.getLocation(), e);
-                            }
-                        }
-                    }
+                    SocketBindingGroupResourceDefinition.PORT_OFFSET.parseAndSetParameter(value, op, reader.getLocation());
                     break;
                 }
                 default:
@@ -391,10 +377,9 @@ public class StandaloneXml extends CommonXml {
             throw missingRequired(reader, required);
         }
 
+
         ModelNode groupAddress = address.clone().add(SOCKET_BINDING_GROUP, name);
-        ModelNode op = Util.getEmptyOperation(ADD, groupAddress);
-        op.get(DEFAULT_INTERFACE).set(defaultInterface);
-        op.get(PORT_OFFSET).set(portOffset == null ? new ModelNode().set(0) : portOffset);
+        op.get(OP_ADDR).set(groupAddress);
 
         updates.add(op);
 

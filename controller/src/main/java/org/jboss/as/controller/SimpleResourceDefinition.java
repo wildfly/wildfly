@@ -203,7 +203,7 @@ public class SimpleResourceDefinition implements ResourceDefinition {
         return flag;
     }
 
-    private EnumSet<OperationEntry.Flag> getFlagsSet(OperationEntry.Flag... vararg) {
+    protected static EnumSet<OperationEntry.Flag> getFlagsSet(OperationEntry.Flag... vararg) {
         if (vararg == null || vararg.length == 0) {
             return EnumSet.noneOf(OperationEntry.Flag.class);
         } else {

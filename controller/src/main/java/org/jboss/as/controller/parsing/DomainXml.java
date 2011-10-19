@@ -68,6 +68,7 @@ import java.util.Set;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
@@ -274,7 +275,7 @@ public class DomainXml extends CommonXml {
         // Handle attributes
         final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
         final String name = attrValues[0];
-        final ModelNode defaultInterface = parsePossibleExpression(attrValues[1]);
+        final String defaultInterface = attrValues[1];
 
         final ModelNode groupAddress = new ModelNode().set(address);
         groupAddress.add(SOCKET_BINDING_GROUP, name);
@@ -282,7 +283,9 @@ public class DomainXml extends CommonXml {
         final ModelNode bindingGroupUpdate = new ModelNode();
         bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
         bindingGroupUpdate.get(OP).set(ADD);
-        bindingGroupUpdate.get(DEFAULT_INTERFACE).set(defaultInterface);
+
+        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader.getLocation());
+
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();
         updates.add(bindingGroupUpdate);
@@ -297,7 +300,7 @@ public class DomainXml extends CommonXml {
                     if (!includedGroups.add(includedGroup)) {
                         throw new XMLStreamException("Included socket-binding-group " + includedGroup + " already declared", reader.getLocation());
                     }
-                    includes.add(includedGroup);
+                    SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
                     break;
                 }
                 case SOCKET_BINDING: {
