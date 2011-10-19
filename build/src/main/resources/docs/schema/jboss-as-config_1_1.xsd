@@ -1090,7 +1090,7 @@
     <xs:complexType name="loopback-addressType">
         <xs:annotation>
             <xs:documentation>
-                A loopback address that may not actually configured on the machine's loopback interface.
+                A loopback address that may not actually be configured on the machine's loopback interface.
                 Differs from inet-addressType in that the given value will be used even if no NIC can
                 be found that has the IP address associated with it.
             </xs:documentation>

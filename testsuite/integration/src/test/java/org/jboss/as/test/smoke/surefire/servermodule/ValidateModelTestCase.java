@@ -21,10 +21,8 @@
 */
 package org.jboss.as.test.smoke.surefire.servermodule;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
@@ -107,14 +105,6 @@ public class ValidateModelTestCase {
         final ModelNode MEMORY_POOL_CHILDREN_ADDR = createPlatformMBeanAddress(PlatformMBeanConstants.MEMORY_POOL);
         MEMORY_POOL_CHILDREN_ADDR.add(NAME, "*");
         config.allowNullValueTypeForOperationReplyProperties(MEMORY_POOL_CHILDREN_ADDR, READ_RESOURCE_OPERATION);
-
-        //These three should be fixed for AS7-1830
-        final ModelNode INTERFACES =  new ModelNode();
-        INTERFACES.add(INTERFACE, "*");
-        config.allowNullValueTypeForAttribute(INTERFACES, CRITERIA);
-        config.allowNullValueTypeForOperationParameter(INTERFACES, ADD, "*");
-
-
 
         ModelDescriptionValidator validator = new ModelDescriptionValidator(new ModelNode().setEmptyList(), description, config);
         List<ValidationFailure> failures = validator.validateResource();

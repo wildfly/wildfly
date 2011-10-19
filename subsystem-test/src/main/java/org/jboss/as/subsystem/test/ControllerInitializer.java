@@ -22,7 +22,6 @@
 package org.jboss.as.subsystem.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INET_ADDRESS;
@@ -217,7 +216,7 @@ public class ControllerInitializer {
         ManagementResourceRegistration interfaces = rootRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
         interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
-        interfaces.registerReadWriteAttribute(CRITERIA, null, InterfaceCriteriaWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+        InterfaceCriteriaWriteHandler.register(interfaces);
 
         // Sockets
         ManagementResourceRegistration socketGroup = rootRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false));
@@ -267,7 +266,7 @@ public class ControllerInitializer {
 
         //Add the interface
         ModelNode criteria = new ModelNode();
-        criteria.add(INET_ADDRESS, bindAddress);
+        criteria.get(INET_ADDRESS).set(bindAddress);
         ModelNode op = InterfaceAddHandler.getAddInterfaceOperation(
                 PathAddress.pathAddress(PathElement.pathElement(INTERFACE, INTERFACE_NAME)).toModelNode(),
                 criteria);
