@@ -30,6 +30,7 @@ import javax.ejb.Stateless;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.ServiceReference;
 
@@ -46,14 +47,28 @@ public class SimpleStatelessSessionBean implements Echo {
     BundleContext context;
 
     public String echo(String message) {
+        if (context == null) {
+            throw new IllegalStateException("BundleContext not injected");
+        }
         if (BUNDLE_SYMBOLICNAME.equals(message)) {
-            ClassLoader classLoader = Echo.class.getClassLoader();
-            Bundle bundle = ((BundleReference) classLoader).getBundle();
+            Bundle bundle = getTargetBundle();
             return bundle.getSymbolicName();
         } else {
-            ServiceReference sref = context.getServiceReference(Echo.class.getName());
-            Echo service = (Echo) context.getService(sref);
-            return service.echo(message);
+            try {
+                Bundle bundle = getTargetBundle();
+                bundle.start();
+                BundleContext context = bundle.getBundleContext();
+                ServiceReference sref = context.getServiceReference(Echo.class.getName());
+                Echo service = (Echo) context.getService(sref);
+                return service.echo(message);
+            } catch (BundleException ex) {
+                throw new IllegalStateException("Cannot invoke target service", ex);
+            }
         }
+    }
+
+    private Bundle getTargetBundle() {
+        ClassLoader classLoader = Echo.class.getClassLoader();
+        return ((BundleReference) classLoader).getBundle();
     }
 }
