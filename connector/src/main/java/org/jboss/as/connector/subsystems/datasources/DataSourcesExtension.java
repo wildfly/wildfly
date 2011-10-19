@@ -95,9 +95,11 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOUR
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_CONNECTION_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XA_DATA_SOURCE_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.CONNECTION_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_DATA_SOURCE_DESC;
@@ -109,6 +111,7 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystem
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.GET_INSTALLED_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.INSTALLED_DRIVERS_LIST_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_CONNECTION_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
@@ -145,6 +148,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -187,6 +192,8 @@ public class DataSourcesExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_DATASOURCES_LOGGER.debugf("Initializing Datasources Extension");
 
+        final ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler();
+
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
 
@@ -221,6 +228,10 @@ public class DataSourcesExtension implements Extension {
         dataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE,
                 TEST_CONNECTION_DESC, false);
 
+        final ManagementResourceRegistration configAdapter = dataSources.registerSubModel(PathElement.pathElement(CONNECTION_PROPERTIES.getName()), CONNECTION_PROPERTIES_DESC);
+        configAdapter.registerOperationHandler(ADD, ConnectionPropertyAdd.INSTANCE, ADD_CONNECTION_PROPERTIES_DESC, false);
+        configAdapter.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_CONNECTION_PROPERTIES_DESC, false);
+
         for (final String attributeName : PoolMetrics.ATTRIBUTES) {
             dataSources.registerMetric(attributeName, PoolMetrics.LocalAndXaDataSourcePoolMetricsHandler.INSTANCE);
 
@@ -231,9 +242,13 @@ public class DataSourcesExtension implements Extension {
 
         }
 
-        for (final String attributeName : PoolConfigurationRWHandler.ATTRIBUTES) {
-            dataSources.registerReadWriteAttribute(attributeName, PoolConfigurationReadHandler.INSTANCE,
+        for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE) {
+            if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
+               dataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
                     LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+            } else {
+               dataSources.registerReadWriteAttribute(attribute.getName(), null, reloadRequiredWriteAttributeHandler , Storage.CONFIGURATION);
+            }
         }
 
         final ManagementResourceRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATASOURCE),
@@ -258,9 +273,13 @@ public class DataSourcesExtension implements Extension {
 
         }
 
-        for (final String attributeName : PoolConfigurationRWHandler.ATTRIBUTES) {
-            xaDataSources.registerReadWriteAttribute(attributeName, PoolConfigurationReadHandler.INSTANCE,
+        for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE) {
+            if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
+               xaDataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
                     LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
+            } else {
+               xaDataSources.registerReadWriteAttribute(attribute.getName(), null, reloadRequiredWriteAttributeHandler , Storage.CONFIGURATION);
+            }
         }
 
     }
@@ -312,7 +331,7 @@ public class DataSourcesExtension implements Extension {
                         if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES.getName())) {
                             for (Property connectionProperty : dataSourceNode.get(CONNECTION_PROPERTIES.getName()).asPropertyList()) {
                                 writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                        .getValue().asString(), DataSource.Tag.CONNECTION_PROPERTY.getLocalName());
+                                        .getValue().get("value").asString(), DataSource.Tag.CONNECTION_PROPERTY.getLocalName());
                             }
                         }
                     }
