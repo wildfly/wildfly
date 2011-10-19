@@ -26,7 +26,6 @@ import java.io.IOException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.web.WebExtension;
 
 /**
@@ -58,7 +57,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
             }
             @Override
             protected boolean isValidateOperations() {
-                return false;
+                return true;
             }
 
         };

@@ -52,6 +52,7 @@ import org.jboss.dmr.ModelType;
  * The web subsystem description providers.
  *
  * @author Emanuel Muckenhuber
+ * @author Jean-Frederic Clere
  */
 class WebSubsystemDescriptions {
 
@@ -113,22 +114,33 @@ class WebSubsystemDescriptions {
         node.get(REQUEST_PROPERTIES, Constants.INSTANCE_ID, DESCRIPTION).set(bundle.getString("web.instance-id"));
         node.get(REQUEST_PROPERTIES, Constants.INSTANCE_ID, REQUIRED).set(false);
 
+        // Add configuration, connectors etc
+        ModelNode configuration = node.get(REQUEST_PROPERTIES, Constants.CONTAINER_CONFIG);
+        getConfigurationCommonDescription(configuration, "value-type", bundle);
+        configuration.get(TYPE).set(ModelType.OBJECT);
+        configuration.get(REQUIRED).set(false);
+
+        ModelNode connector = node.get(REQUEST_PROPERTIES, Constants.CONNECTOR);
+        getConnectorCommonDescription(connector, "value-type", bundle);
+        connector.get(TYPE).set(ModelType.OBJECT);
+        connector.get(REQUIRED).set(false);
+
+        ModelNode virtual = node.get(REQUEST_PROPERTIES,  Constants.VIRTUAL_SERVER);
+        getVirtualServerCommonDescription(virtual, "value-type", bundle);
+        virtual.get(TYPE).set(ModelType.OBJECT);
+        virtual.get(REQUIRED).set(false);
+
         return node;
     }
 
     static ModelNode getConnectorDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode node = new ModelNode();
+        ModelNode node = new ModelNode();
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-        node.get(DESCRIPTION).set(bundle.getString("web.connector"));
 
-        node.get(ATTRIBUTES, Constants.NAME, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.name"));
-        node.get(ATTRIBUTES, Constants.NAME, REQUIRED).set(true);
-        node.get(ATTRIBUTES, Constants.NAME, NILLABLE).set(false);
 
         return getConnectorCommonDescription(node, ATTRIBUTES, bundle);
     }
@@ -138,7 +150,6 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
         node.get(REQUIRED).set(false);
 
-        // node.get(type, Constants.MIME_MAPPING, TYPE).set(ModelType.LIST);
         if (ATTRIBUTES.equals(type)) {
             getStaticResourceDescription(node.get(CHILDREN, Constants.STATIC_RESOURCES), type, bundle);
             getJspConfigurationDescription(node.get(CHILDREN, Constants.JSP_CONFIGURATION), type, bundle);
@@ -164,7 +175,7 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.WELCOME_FILE, DESCRIPTION).set(bundle.getString("web.configuration.welcome-file"));
         node.get(type, Constants.WELCOME_FILE, REQUIRED).set(false);
         node.get(type, Constants.WELCOME_FILE, NILLABLE).set(true);
-        node.get(type, Constants.WELCOME_FILE, MAX_OCCURS).set(Integer.MAX_VALUE);
+        // TODO node.get(type, Constants.WELCOME_FILE, MAX_OCCURS).set(Integer.MAX_VALUE);
 
         return node;
     }
@@ -319,6 +330,13 @@ class WebSubsystemDescriptions {
 
     static ModelNode getConnectorCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
+        node.get(DESCRIPTION).set(bundle.getString("web.connector"));
+
+        node.get(type, Constants.NAME, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.name"));
+        node.get(type, Constants.NAME, REQUIRED).set(false); // TODO should be true.
+        node.get(type, Constants.NAME, NILLABLE).set(false);
+
         node.get(type, Constants.PROTOCOL, TYPE).set(ModelType.STRING);
         node.get(type, Constants.PROTOCOL, DESCRIPTION).set(bundle.getString("web.connector.protocol"));
         node.get(type, Constants.PROTOCOL, REQUIRED).set(true);
@@ -384,21 +402,23 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.connector.virtual-server"));
         node.get(type, Constants.VIRTUAL_SERVER, REQUIRED).set(false);
 
-        /* add the stats descriptions */
-        node.get(type, Constants.BYTES_SENT, TYPE).set(ModelType.INT);
-        node.get(type, Constants.BYTES_SENT, DESCRIPTION).set(bundle.getString("web.connector.stats.bytes-sent"));
-        node.get(type, Constants.BYTES_RECEIVED, TYPE).set(ModelType.INT);
-        node.get(type, Constants.BYTES_RECEIVED, DESCRIPTION).set(bundle.getString("web.connector.stats.bytes-received"));
-        node.get(type, Constants.PROCESSING_TIME, TYPE).set(ModelType.INT);
-        node.get(type, Constants.PROCESSING_TIME, DESCRIPTION).set(bundle.getString("web.connector.stats.processing-time"));
-        node.get(type, Constants.ERROR_COUNT, TYPE).set(ModelType.INT);
-        node.get(type, Constants.ERROR_COUNT, DESCRIPTION).set(bundle.getString("web.connector.stats.error-count"));
-        node.get(type, Constants.MAX_TIME, TYPE).set(ModelType.INT);
-        node.get(type, Constants.MAX_TIME, DESCRIPTION).set(bundle.getString("web.connector.stats.max-time"));
-        node.get(type, Constants.REQUEST_COUNT, TYPE).set(ModelType.INT);
-        node.get(type, Constants.REQUEST_COUNT, DESCRIPTION).set(bundle.getString("web.connector.request-count"));
-
         if (ATTRIBUTES.equals(type)) {
+            /* add the stats descriptions */
+
+            node.get(type, Constants.BYTES_SENT, TYPE).set(ModelType.INT);
+            node.get(type, Constants.BYTES_SENT, DESCRIPTION).set(bundle.getString("web.connector.stats.bytes-sent"));
+            node.get(type, Constants.BYTES_RECEIVED, TYPE).set(ModelType.INT);
+            node.get(type, Constants.BYTES_RECEIVED, DESCRIPTION).set(bundle.getString("web.connector.stats.bytes-received"));
+            node.get(type, Constants.PROCESSING_TIME, TYPE).set(ModelType.INT);
+            node.get(type, Constants.PROCESSING_TIME, DESCRIPTION).set(bundle.getString("web.connector.stats.processing-time"));
+            node.get(type, Constants.ERROR_COUNT, TYPE).set(ModelType.INT);
+            node.get(type, Constants.ERROR_COUNT, DESCRIPTION).set(bundle.getString("web.connector.stats.error-count"));
+            node.get(type, Constants.MAX_TIME, TYPE).set(ModelType.INT);
+            node.get(type, Constants.MAX_TIME, DESCRIPTION).set(bundle.getString("web.connector.stats.max-time"));
+            node.get(type, Constants.REQUEST_COUNT, TYPE).set(ModelType.INT);
+            node.get(type, Constants.REQUEST_COUNT, DESCRIPTION).set(bundle.getString("web.connector.request-count"));
+
+            /* add the ssl descriptions */
             node.get(CHILDREN, Constants.SSL, DESCRIPTION).set(bundle.getString("web.connector.ssl"));
             node.get(CHILDREN, Constants.SSL, MODEL_DESCRIPTION);
         }
@@ -474,6 +494,12 @@ class WebSubsystemDescriptions {
 
         getConnectorCommonDescription(node, REQUEST_PROPERTIES, bundle);
 
+        /* add the ssl descriptions */
+        ModelNode ssl = node.get(REQUEST_PROPERTIES, Constants.SSL);
+        getSSLCommonDescription(ssl, "value-type", bundle);
+        ssl.get(TYPE).set(ModelType.OBJECT);
+        ssl.get(REQUIRED).set(false);
+
         return node;
     }
 
@@ -492,17 +518,18 @@ class WebSubsystemDescriptions {
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
 
-        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server"));
-
-        node.get(ATTRIBUTES, Constants.NAME, TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Constants.NAME, DESCRIPTION).set(bundle.getString("web.virtual-server.name"));
-        node.get(ATTRIBUTES, Constants.NAME, REQUIRED).set(true);
-        node.get(ATTRIBUTES, Constants.NAME, NILLABLE).set(false);
-
         return getVirtualServerCommonDescription(node, ATTRIBUTES, bundle);
     }
 
     static ModelNode getVirtualServerCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server"));
+
+        node.get(type, Constants.NAME, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.NAME, DESCRIPTION).set(bundle.getString("web.virtual-server.name"));
+        node.get(type, Constants.NAME, REQUIRED).set(false); // TODO true
+        node.get(type, Constants.NAME, NILLABLE).set(false);
+
         node.get(type, Constants.ALIAS, TYPE).set(ModelType.LIST);
         node.get(type, Constants.ALIAS, VALUE_TYPE).set(ModelType.STRING);
         node.get(type, Constants.ALIAS, DESCRIPTION).set(bundle.getString("web.virtual-server.alias"));
@@ -644,6 +671,19 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.add"));
 
         getVirtualServerCommonDescription(node, REQUEST_PROPERTIES, bundle);
+
+        ModelNode accesslog = node.get(REQUEST_PROPERTIES, Constants.ACCESS_LOG);
+        getAccessLogCommonDescription(accesslog, "value-type", bundle);
+        accesslog.get(REQUIRED).set(false);
+        accesslog.get(TYPE).set(ModelType.OBJECT);
+        ModelNode rewrite = node.get(REQUEST_PROPERTIES, Constants.REWRITE);
+        getRewriteCommonDescription(rewrite, "value-type", bundle);
+        rewrite.get(REQUIRED).set(false);
+        rewrite.get(TYPE).set(ModelType.OBJECT);
+        ModelNode sso = node.get(REQUEST_PROPERTIES, Constants.SSO);
+        getSsoCommonDescription(sso, "value-type", bundle);
+        sso.get(REQUIRED).set(false);
+        sso.get(TYPE).set(ModelType.OBJECT);
 
         return node;
     }
