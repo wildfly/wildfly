@@ -102,8 +102,7 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
      * @return the exception.
      */
     protected OperationFailedException createFailureMessage(final String description) {
-        ModelNode failure = new ModelNode();
-        failure.get(FAILURE_DESCRIPTION, description);
+        ModelNode failure = new ModelNode().set(description);
         return new OperationFailedException(failure);
     }
 
