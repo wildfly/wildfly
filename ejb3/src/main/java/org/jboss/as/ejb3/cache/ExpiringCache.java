@@ -28,16 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.logging.Logger;
 import org.jboss.tm.TxUtils;
-
 /**
  * Cache that handles EJB expiration. This cache can be wrapped around an existing cache to
  * provide expiration functionality.
@@ -79,10 +73,10 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
                 }
                 for (Entry value : queue) {
                     try {
-                        logger.debugf("Removing stateful bean %s - %s as it has been inactive for %d milliseconds", beanName, value.getKey(), millisecondTimeout);
+                        ROOT_LOGGER.debugf("Removing stateful bean %s - %s as it has been inactive for %d milliseconds", beanName, value.getKey(), millisecondTimeout);
                         factory.destroyInstance(value.getValue());
                     } catch (Exception e) {
-                        logger.error("Exception removing stateful bean " + value.getKey(), e);
+                        ROOT_LOGGER.errorRemovingStatefulBean(value.getKey(), e);
                     }
                 }
 
@@ -177,7 +171,7 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
             Entry entry = cache.get(obj.getId());
 
             if (entry == null) {
-                logger.warn("Could not find stateful bean to release " + obj.getId());
+                ROOT_LOGGER.couldNotFindStatefulBean(obj.getId());
                 return;
             }
             //this must stay within the synchronized block so the changes are visible to other threads
