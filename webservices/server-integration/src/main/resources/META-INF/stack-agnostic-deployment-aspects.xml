@@ -68,8 +68,7 @@
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.as.webservices.tomcat.WebMetaDataCreatingDeploymentAspect">
-    <!--property name="requires" class="java.lang.String">VirtualHosts,URLPattern,EndpointAddress</property--><!-- TODO will AS7 provide virtual hosts feature? -->
-    <property name="requires" class="java.lang.String">URLPattern,EndpointAddressm,VirtualHosts</property>
+    <property name="requires" class="java.lang.String">VirtualHost,URLPattern,EndpointAddress</property>
     <property name="provides" class="java.lang.String">WebMetaData</property>
   </deploymentAspect>
 
@@ -88,31 +87,16 @@
     <property name="provides" class="java.lang.String">InjectionAwareInstanceProvider</property>
   </deploymentAspect>
 
-
-
   <deploymentAspect class="org.jboss.ws.common.deployment.VirtualHostDeploymentAspect">
     <property name="requires" class="java.lang.String">ContainerMetaData</property>
     <property name="provides" class="java.lang.String">VirtualHosts</property>
   </deploymentAspect>
 
   <!--
-
-  <deploymentAspect class="org.jboss.as.webservices.weld.WeldDeploymentAspect">
-    <property name="requires" class="java.lang.String">StackEndpointHandler</property>
-    <property name="provides" class="java.lang.String">CDIInjection</property>
-  </deploymentAspect>
-
-  <deploymentAspect class="org.jboss.as.webservices.injection.InjectionMetaDataDeploymentAspect">
-    <property name="requires" class="java.lang.String">WebMetaData</property>
-    <property name="provides" class="java.lang.String">InjectionMetaData</property>
-    <property name="ejbReferenceResolver"><inject bean="org.jboss.ejb3.ejbref.resolver.EjbReferenceResolver"/></property>
-  </deploymentAspect>
-
   <deploymentAspect class="org.jboss.as.webservices.security.JACCPermissionsDeploymentAspect">
     <property name="requires" class="java.lang.String">WebMetaData</property>
     <property name="provides" class="java.lang.String">JACCPermisions</property>
   </deploymentAspect>
-
   -->
 
 </deploymentAspects>
