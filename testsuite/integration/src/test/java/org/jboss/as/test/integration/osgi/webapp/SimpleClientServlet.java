@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.ServiceReference;
 
@@ -44,7 +45,7 @@ import org.osgi.framework.ServiceReference;
  *
  * @author thomas.diesler@jboss.com
  */
-@WebServlet(name = "SimpleRestEndpoint", urlPatterns = { "/servlet" })
+@WebServlet(name = "SimpleClientServlet", urlPatterns = { "/servlet" })
 public class SimpleClientServlet extends HttpServlet {
 
     @Resource
@@ -59,15 +60,29 @@ public class SimpleClientServlet extends HttpServlet {
     }
 
     private String echo(String message) {
+        if (context == null) {
+            throw new IllegalStateException("BundleContext not injected");
+        }
         if (BUNDLE_SYMBOLICNAME.equals(message)) {
-            ClassLoader classLoader = Echo.class.getClassLoader();
-            Bundle bundle = ((BundleReference) classLoader).getBundle();
+            Bundle bundle = getTargetBundle();
             return bundle.getSymbolicName();
         } else {
-            ServiceReference sref = context.getServiceReference(Echo.class.getName());
-            Echo service = (Echo) context.getService(sref);
-            return service.echo(message);
+            try {
+                Bundle bundle = getTargetBundle();
+                bundle.start();
+                BundleContext context = bundle.getBundleContext();
+                ServiceReference sref = context.getServiceReference(Echo.class.getName());
+                Echo service = (Echo) context.getService(sref);
+                return service.echo(message);
+            } catch (BundleException ex) {
+                throw new IllegalStateException("Cannot invoke target service", ex);
+            }
         }
+    }
+
+    private Bundle getTargetBundle() {
+        ClassLoader classLoader = Echo.class.getClassLoader();
+        return ((BundleReference) classLoader).getBundle();
     }
 
     private static final long serialVersionUID = 1L;

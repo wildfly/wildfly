@@ -17,6 +17,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @Path("/cm")
 @Consumes({ "application/json" })
@@ -52,12 +54,14 @@ public class SimpleRestEndpoint {
                 context = getBundleContextFromClass(ConfigurationAdmin.class);
             }
 
+            final CountDownLatch latch = new CountDownLatch(1);
             ServiceTracker tracker = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null) {
 
                 @Override
                 public Object addingService(ServiceReference sref) {
                     service = (ConfigurationAdmin) super.addingService(sref);
                     log.infof("Adding service: %s", service);
+                    latch.countDown();
                     return service;
                 }
 
@@ -69,6 +73,14 @@ public class SimpleRestEndpoint {
                 }
             };
             tracker.open();
+
+            try {
+                if (!latch.await(10, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("Timeout getting ConfigurationAdmin service");
+                }
+            } catch (InterruptedException ex) {
+                // ignore
+            }
         }
         return service;
     }

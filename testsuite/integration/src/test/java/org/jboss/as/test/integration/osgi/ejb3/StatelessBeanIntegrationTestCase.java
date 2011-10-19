@@ -57,7 +57,6 @@ import org.osgi.framework.ServiceReference;
  * @since 13-May-2011
  */
 @RunWith(Arquillian.class)
-@Ignore
 public class StatelessBeanIntegrationTestCase {
 
     static final String EJB3_DEPLOYMENT_NAME = "ejb3-osgi.jar";
