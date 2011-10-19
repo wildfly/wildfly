@@ -19,9 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.management.http;
+package org.jboss.as.test.integration.management.http;
 
-import org.jboss.as.testsuite.integration.management.util.HttpMgmtProxy;
+import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import java.util.TreeSet;
 import java.util.Set;
 import java.util.List;

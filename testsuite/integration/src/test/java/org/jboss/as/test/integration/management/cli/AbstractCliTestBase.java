@@ -19,11 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.management.cli;
+package org.jboss.as.test.integration.management.cli;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.jboss.as.testsuite.integration.management.util.CLIWrapper;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 

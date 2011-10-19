@@ -19,19 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.management.cli;
+package org.jboss.as.test.integration.management.cli;
 
 import java.net.URL;
 import org.jboss.shrinkwrap.api.Archive;
 import java.util.concurrent.TimeUnit;
-import org.jboss.as.testsuite.integration.common.HttpRequest;
+import org.jboss.as.test.integration.common.HttpRequest;
 import java.util.List;
 import java.util.Map;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.testsuite.integration.management.util.CLIOpResult;
+import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;

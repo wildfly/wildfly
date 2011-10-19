@@ -19,12 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.management.cli;
+package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.arquillian.junit.Arquillian;
 import static org.junit.Assert.*;
 
-import org.jboss.as.testsuite.integration.management.util.CLIWrapper;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,6 +47,8 @@ public class BasicOpsTestCase {
         
         line = cli.readLine(1000);
         assertTrue("Connect failed:" + line, line.indexOf("Connected to standalone") >= 0);          
+        
+        cli.quit();
        
     }
     
