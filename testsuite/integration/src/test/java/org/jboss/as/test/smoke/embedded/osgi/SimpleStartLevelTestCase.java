@@ -53,6 +53,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 07-Jun-2011
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-2160")
 public class SimpleStartLevelTestCase {
 
     @Inject
