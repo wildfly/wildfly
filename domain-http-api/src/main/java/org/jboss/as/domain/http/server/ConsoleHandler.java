@@ -55,11 +55,10 @@ import static org.jboss.as.domain.http.server.Constants.*;
 public class ConsoleHandler implements ManagementHttpHandler {
 
     public  static final String CONTEXT = "/console";
-    private static final String HOST_HEADER = "Host";
     private static final String EXPIRES_HEADER = "Expires";
+    private static final String LAST_MODIFIED_HEADER = "Last-Modified";
     private static final String NOCACHE_JS = ".nocache.js";
     private static final String WILDCARD = "*";
-    private static final String DATEFORMAT_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
     private static final String GMT = "GMT";
 
     private ClassLoader loader = null;
@@ -69,7 +68,14 @@ public class ConsoleHandler implements ManagementHttpHandler {
     private long lastExpiryDate = 0;
     private String lastExpiryHeader = null;
 
+    private static String LAST_MODIFIED;
+    private static DateFormat DATE_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+
     static {
+
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone(GMT));
+        LAST_MODIFIED = DATE_FORMAT.format(new Date());
+
         contentTypeMapping.put(".js",   APPLICATION_JAVASCRIPT);
         contentTypeMapping.put(".html", TEXT_HTML);
         contentTypeMapping.put(".htm",  TEXT_HTML);
@@ -130,9 +136,10 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
                 if(System.currentTimeMillis()>lastExpiryDate) {
                     lastExpiryDate = calculateExpiryDate();
-                    lastExpiryHeader = htmlExpiresDateFormat().format(new Date(lastExpiryDate));
+                    lastExpiryHeader = DATE_FORMAT.format(new Date(lastExpiryDate));
                 }
 
+                responseHeaders.add(LAST_MODIFIED_HEADER, LAST_MODIFIED);
                 responseHeaders.add(EXPIRES_HEADER, lastExpiryHeader);
             }
 
@@ -156,11 +163,6 @@ public class ConsoleHandler implements ManagementHttpHandler {
         Calendar cal = Calendar.getInstance();
         cal.roll(Calendar.MONTH, 1);
         return cal.getTime().getTime();
-    }
-    public static DateFormat htmlExpiresDateFormat() {
-        DateFormat httpDateFormat = new SimpleDateFormat(DATEFORMAT_FORMAT, Locale.US);
-        httpDateFormat.setTimeZone(TimeZone.getTimeZone(GMT));
-        return httpDateFormat;
     }
 
     public static void fastChannelCopy(final InputStream in, final OutputStream out) throws IOException {
