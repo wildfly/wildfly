@@ -35,6 +35,7 @@ import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsP
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.EJBLocalReferenceMetaData;
 import org.jboss.metadata.javaee.spec.EJBLocalReferencesMetaData;
@@ -62,6 +63,7 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
      */
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         final RemoteEnvironment remoteEnvironment = environment.getEnvironment();
+        final DeploymentClassIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         List<BindingConfiguration> bindingDescriptions = new ArrayList<BindingConfiguration>();
 
         EJBReferencesMetaData ejbRefs = remoteEnvironment.getEjbReferences();
@@ -71,13 +73,21 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 String ejbName = ejbRef.getLink();
                 String lookup = ejbRef.getLookupName();
                 String remoteInterface = ejbRef.getRemote();
+                String home = ejbRef.getHome();
                 Class<?> remoteInterfaceType = null;
 
-                if (!isEmpty(remoteInterface)) {
+                //if a home is specified this is the type that is bound
+                if (!isEmpty(home)) {
                     try {
-                        remoteInterfaceType = classLoader.loadClass(remoteInterface);
+                        remoteInterfaceType = index.classIndex(home).getModuleClass();
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load local interface type " + remoteInterface, e);
+                        throw new DeploymentUnitProcessingException("Could not load home interface type " + home, e);
+                    }
+                } else if (!isEmpty(remoteInterface)) {
+                    try {
+                        remoteInterfaceType = index.classIndex(remoteInterface).getModuleClass();
+                    } catch (ClassNotFoundException e) {
+                        throw new DeploymentUnitProcessingException("Could not load remote interface type " + remoteInterface, e);
                     }
                 }
 
@@ -123,9 +133,17 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                     String ejbName = ejbRef.getLink();
                     String lookup = ejbRef.getLookupName();
                     String localInterface = ejbRef.getLocal();
+                    String localHome = ejbRef.getLocalHome();
                     Class<?> localInterfaceType = null;
 
-                    if (!isEmpty(localInterface)) {
+                    //if a home is specified this is the type that is bound
+                    if (!isEmpty(localHome)) {
+                        try {
+                            localInterfaceType = index.classIndex(localHome).getModuleClass();
+                        } catch (ClassNotFoundException e) {
+                            throw new DeploymentUnitProcessingException("Could not load local home interface type " + localHome, e);
+                        }
+                    } else if (!isEmpty(localInterface)) {
                         try {
                             localInterfaceType = classLoader.loadClass(localInterface);
                         } catch (ClassNotFoundException e) {
