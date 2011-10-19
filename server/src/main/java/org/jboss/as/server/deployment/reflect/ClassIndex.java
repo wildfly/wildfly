@@ -68,7 +68,7 @@ public class ClassIndex {
     @Override
     public String toString() {
         return "ClassIndex{" +
-                "moduleClass=" + moduleClass +
+                "moduleClass=" + moduleClass + " ClassLoader " + moduleClass.getClassLoader() +
                 '}';
     }
 }

@@ -22,35 +22,35 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
-
 import java.rmi.RemoteException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
+
 /**
  * User: jpai
  */
-public class EjbJarConfiguration {
+public class ApplicationExceptions {
 
-    private final Map<Class<?>, ApplicationExceptionDetails> applicationExceptions = new HashMap<Class<?>, ApplicationExceptionDetails>();
+    private final Map<Class<?>, org.jboss.as.ejb3.tx.ApplicationExceptionDetails> applicationExceptions = new HashMap<Class<?>, org.jboss.as.ejb3.tx.ApplicationExceptionDetails>();
 
 
-    public EjbJarConfiguration(EjbJarDescription deploymentDescription) {
+    public ApplicationExceptions() {
 
 
     }
 
-    public ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass) {
+    public org.jboss.as.ejb3.tx.ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass) {
         return this.applicationExceptions.get(exceptionClass);
     }
 
-    public Map<Class<?>, ApplicationExceptionDetails> getApplicationExceptions() {
+    public Map<Class<?>, org.jboss.as.ejb3.tx.ApplicationExceptionDetails> getApplicationExceptions() {
         return Collections.unmodifiableMap(this.applicationExceptions);
     }
 
-    public void addApplicationException(Class<?> exceptionClass, ApplicationExceptionDetails applicationException) {
+    public void addApplicationException(Class<?> exceptionClass, org.jboss.as.ejb3.tx.ApplicationExceptionDetails applicationException) {
         if (exceptionClass == null) {
             throw new IllegalArgumentException("Exception class cannot be null");
         }

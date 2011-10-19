@@ -26,7 +26,7 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public class SingletonComponentCreateService extends SessionBeanComponentCreateS
     private final List<ServiceName> dependsOn;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
-    public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration, final boolean initOnStartup, final List<ServiceName> dependsOn) {
+    public SingletonComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration, final boolean initOnStartup, final List<ServiceName> dependsOn) {
         super(componentConfiguration, ejbJarConfiguration);
         this.initOnStartup = initOnStartup;
         this.dependsOn = dependsOn;

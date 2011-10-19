@@ -96,7 +96,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         super(ejbComponentCreateService);
 
 
-        this.applicationExceptions = Collections.unmodifiableMap(ejbComponentCreateService.getEjbJarConfiguration().getApplicationExceptions());
+        this.applicationExceptions = Collections.unmodifiableMap(ejbComponentCreateService.getApplicationExceptions().getApplicationExceptions());
 
         this.utilities = ejbComponentCreateService.getEJBUtilities();
 

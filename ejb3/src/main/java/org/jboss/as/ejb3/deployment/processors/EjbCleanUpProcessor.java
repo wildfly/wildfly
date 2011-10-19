@@ -35,7 +35,7 @@ public class EjbCleanUpProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         deploymentUnit.removeAttachment(EjbDeploymentAttachmentKeys.EJB_INJECTIONS);
-        deploymentUnit.removeAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_CONFIGURATION);
+        deploymentUnit.removeAttachment(EjbDeploymentAttachmentKeys.APPLICATION_EXCEPTION_DETAILS);
         deploymentUnit.removeAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         deploymentUnit.removeAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
     }

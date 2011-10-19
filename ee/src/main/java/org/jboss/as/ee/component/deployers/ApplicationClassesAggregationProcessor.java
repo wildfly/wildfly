@@ -22,9 +22,7 @@
 package org.jboss.as.ee.component.deployers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -33,9 +31,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.modules.ModuleIdentifier;
 
 /**
  * Processor that aggregates all module descriptions visible to the deployment in an EEApplicationClasses structure.
@@ -47,57 +42,17 @@ public class ApplicationClassesAggregationProcessor implements DeploymentUnitPro
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE_SPECIFICATION);
-        final Map<ModuleIdentifier, EEModuleDescription> modules = new HashMap<ModuleIdentifier, EEModuleDescription>();
         final List<EEModuleDescription> descriptions = new ArrayList<EEModuleDescription>();
-        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        //local classes are always first
-        descriptions.add(eeModuleDescription);
-        buildModuleMap(deploymentUnit, modules);
-
-        for (final ModuleDependency dependency : moduleSpec.getAllDependencies()) {
-            final EEModuleDescription desc = modules.get(dependency.getIdentifier());
-            if (desc != null) {
-                descriptions.add(desc);
+        for (final DeploymentUnit visibleDeployment : deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.ACCESSIBLE_SUB_DEPLOYMENTS)) {
+            final EEModuleDescription description = visibleDeployment.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+            if (description != null) {
+                descriptions.add(description);
             }
         }
-
-
         final EEApplicationClasses classes = new EEApplicationClasses(descriptions);
         deploymentUnit.putAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION, classes);
     }
 
-    private void buildModuleMap(final DeploymentUnit deploymentUnit, final Map<ModuleIdentifier, EEModuleDescription> modules) {
-        if (deploymentUnit.getParent() == null) {
-            final List<DeploymentUnit> subDeployments = deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS);
-            for (final DeploymentUnit sub : subDeployments) {
-                final EEModuleDescription subDescription = sub.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-                final ModuleIdentifier identifier = sub.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE_IDENTIFIER);
-                if (subDescription != null && identifier != null) {
-                    modules.put(identifier, subDescription);
-                }
-            }
-        } else {
-            final DeploymentUnit parent = deploymentUnit.getParent();
-            final List<DeploymentUnit> subDeployments = parent.getAttachmentList(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS);
-            //add the parent description
-            final EEModuleDescription parentDesc = parent.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-            final ModuleIdentifier parentIdentifier = parent.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE_IDENTIFIER);
-            if (parentDesc != null && parentIdentifier != null) {
-                modules.put(parentIdentifier, parentDesc);
-            }
-
-            for (final DeploymentUnit sub : subDeployments) {
-                if (sub != deploymentUnit) {
-                    final EEModuleDescription subDescription = sub.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-                    final ModuleIdentifier identifier = sub.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE_IDENTIFIER);
-                    if (subDescription != null && identifier != null) {
-                        modules.put(identifier, subDescription);
-                    }
-                }
-            }
-        }
-    }
 
     @Override
     public void undeploy(final DeploymentUnit context) {

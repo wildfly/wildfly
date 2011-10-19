@@ -242,6 +242,13 @@ public final class Attachments {
      */
     public static final AttachmentKey<ServicesAttachment> SERVICES = AttachmentKey.create(ServicesAttachment.class);
 
+    /**
+     * Sub deployments that are visible from this deployments module loader, in the order they are accessible.
+     *
+     * This list includes the current deployment, which under normal circumstances will be the first item in the list
+     */
+    public static final AttachmentKey<AttachmentList<DeploymentUnit>> ACCESSIBLE_SUB_DEPLOYMENTS = AttachmentKey.createList(DeploymentUnit.class);
+
     //
     // POST_MODULE
     //

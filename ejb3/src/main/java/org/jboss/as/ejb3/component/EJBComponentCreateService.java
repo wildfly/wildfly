@@ -37,7 +37,7 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -58,7 +58,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final TransactionManagementType transactionManagementType;
 
-    private final EjbJarConfiguration ejbJarConfiguration;
+    private final ApplicationExceptions applicationExceptions;
 
     private final Map<String, ServiceName> viewServices;
 
@@ -86,10 +86,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
      *
      * @param componentConfiguration the component configuration
      */
-    public EJBComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
+    public EJBComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions applicationExceptions) {
         super(componentConfiguration);
 
-        this.ejbJarConfiguration = ejbJarConfiguration;
+        this.applicationExceptions = applicationExceptions;
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
 
@@ -181,8 +181,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return transactionManagementType;
     }
 
-    EjbJarConfiguration getEjbJarConfiguration() {
-        return this.ejbJarConfiguration;
+    ApplicationExceptions getApplicationExceptions() {
+        return this.applicationExceptions;
     }
 
     protected void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {

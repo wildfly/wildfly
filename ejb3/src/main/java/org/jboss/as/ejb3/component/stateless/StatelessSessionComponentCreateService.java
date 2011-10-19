@@ -24,10 +24,9 @@ package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -42,7 +41,7 @@ public class StatelessSessionComponentCreateService extends SessionBeanComponent
      *
      * @param componentConfiguration the component configuration
      */
-    public StatelessSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
+    public StatelessSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
     }
 
