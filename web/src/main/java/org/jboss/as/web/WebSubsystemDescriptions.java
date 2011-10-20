@@ -414,7 +414,6 @@ class WebSubsystemDescriptions {
             /* add the ssl descriptions */
             node.get(CHILDREN, Constants.SSL, DESCRIPTION).set(bundle.getString("web.connector.ssl"));
             node.get(CHILDREN, Constants.SSL, MODEL_DESCRIPTION).setEmptyObject();
-
         }
 
         return node;
