@@ -37,6 +37,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPL
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -81,7 +82,7 @@ class DataSourcesSubsystemProviders {
             Constants.DATASOURCE_DRIVER,
             Constants.NEW_CONNECTION_SQL, Constants.POOLNAME, Constants.URL_DELIMITER,
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, Constants.USE_JAVA_CONTEXT,
-            Constants.ENABLED, Constants.JTA, org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE,
+            Constants.JTA, org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE,
             org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.pool.Constants.POOL_PREFILL, org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN,
             Constants.USERNAME, Constants.PASSWORD, Constants.SECURITY_DOMAIN,
             Constants.REAUTHPLUGIN_CLASSNAME, Constants.REAUTHPLUGIN_PROPERTIES,
@@ -104,7 +105,7 @@ class DataSourcesSubsystemProviders {
             Constants.XADATASOURCECLASS, Constants.JNDINAME, Constants.DATASOURCE_DRIVER,
             Constants.NEW_CONNECTION_SQL, Constants.POOLNAME, Constants.URL_DELIMITER,
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, Constants.USE_JAVA_CONTEXT,
-            Constants.ENABLED, org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE,
+            org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE,
             org.jboss.as.connector.pool.Constants.POOL_PREFILL, org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN, Constants.INTERLEAVING,
             Constants.NOTXSEPARATEPOOL, Constants.PAD_XID, Constants.SAME_RM_OVERRIDE,
             Constants.WRAP_XA_RESOURCE, Constants.USERNAME, Constants.PASSWORD,
@@ -234,6 +235,24 @@ class DataSourcesSubsystemProviders {
         }
     };
 
+    static DescriptionProvider XADATASOURCE_PROPERTIES_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode xaDatasourcePropertiesNode = new ModelNode();
+            xaDatasourcePropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            xaDatasourcePropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            xaDatasourcePropertiesNode.get(DESCRIPTION).set(XADATASOURCE_PROPERTY_VALUE.getName());
+
+
+            XADATASOURCE_PROPERTY_VALUE.addResourceAttributeDescription(bundle, "xa-datasource-properties", xaDatasourcePropertiesNode);
+
+            return xaDatasourcePropertiesNode;
+        }
+    };
+
     static final DescriptionProvider SUBSYSTEM_ADD_DESC = new DescriptionProvider() {
 
         @Override
@@ -268,6 +287,24 @@ class DataSourcesSubsystemProviders {
         }
     };
 
+     static DescriptionProvider ADD_XADATASOURCE_PROPERTIES_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+
+            op.get(DESCRIPTION).set(bundle.getString("xa-datasource-properties.add"));
+            op.get(OPERATION_NAME).set(ADD);
+
+
+            XADATASOURCE_PROPERTY_VALUE.addOperationParameterDescription(bundle, "xa-datasource-properties", op);
+
+            return op;
+        }
+    };
+
     static DescriptionProvider REMOVE_CONNECTION_PROPERTIES_DESC = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
@@ -278,6 +315,18 @@ class DataSourcesSubsystemProviders {
             return operation;
         }
     };
+
+    static DescriptionProvider REMOVE_XADATASOURCE_PROPERTIES_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("xa-datasource-properties.remove"));
+            return operation;
+        }
+    };
+
 
 
     static final DescriptionProvider INSTALLED_DRIVERS_LIST_DESC = new DescriptionProvider() {

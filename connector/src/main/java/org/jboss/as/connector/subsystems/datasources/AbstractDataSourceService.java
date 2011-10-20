@@ -119,7 +119,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         }
     }
 
-    protected abstract AS7DataSourceDeployer getDeployer();
+    protected abstract AS7DataSourceDeployer getDeployer() throws ValidateException ;
 
     public synchronized void stop(StopContext stopContext) {
         if (deploymentMD != null && deploymentMD.getConnectionManagers() != null) {

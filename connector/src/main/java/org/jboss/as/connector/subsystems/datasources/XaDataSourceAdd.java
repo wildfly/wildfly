@@ -59,7 +59,7 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
     protected ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
             AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException {
-        final XaDataSource dataSourceConfig;
+        final ModifiableXaDataSource dataSourceConfig;
         try {
             dataSourceConfig = xaFrom(operation);
         } catch (ValidateException e) {
@@ -70,7 +70,7 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
 
         ServiceController<?> svcController = serviceTarget.addService(dataSourceCongServiceName, configService).setInitialMode(Mode.ACTIVE).install();
 
-        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, XaDataSource.class,
+        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableXaDataSource.class,
                 ((XaDataSourceService) dataSourceService).getDataSourceConfigInjector());
         return svcController;
     }

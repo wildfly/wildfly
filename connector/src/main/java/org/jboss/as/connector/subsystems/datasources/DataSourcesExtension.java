@@ -98,6 +98,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURC
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_CONNECTION_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XADATASOURCE_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.CONNECTION_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
@@ -114,10 +115,12 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystem
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_CONNECTION_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XADATASOURCE_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XADATASOURCE_PROPERTIES_DESC;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -192,7 +195,7 @@ public class DataSourcesExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         SUBSYSTEM_DATASOURCES_LOGGER.debugf("Initializing Datasources Extension");
 
-        final ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler();
+        final DisableRequiredWriteAttributeHandler disableRequiredWriteAttributeHandler = new DisableRequiredWriteAttributeHandler();
 
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
@@ -247,7 +250,7 @@ public class DataSourcesExtension implements Extension {
                dataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
                     LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
             } else {
-               dataSources.registerReadWriteAttribute(attribute.getName(), null, reloadRequiredWriteAttributeHandler , Storage.CONFIGURATION);
+               dataSources.registerReadWriteAttribute(attribute.getName(), null, disableRequiredWriteAttributeHandler , Storage.CONFIGURATION);
             }
         }
 
@@ -264,6 +267,11 @@ public class DataSourcesExtension implements Extension {
         xaDataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE,
                 TEST_CONNECTION_DESC, false);
 
+        final ManagementResourceRegistration xadatasourcePropertyAdapter = xaDataSources.registerSubModel(PathElement.pathElement(XADATASOURCE_PROPERTIES.getName()), XADATASOURCE_PROPERTIES_DESC);
+        xadatasourcePropertyAdapter.registerOperationHandler(ADD, XaDataSourcePropertyAdd.INSTANCE, ADD_XADATASOURCE_PROPERTIES_DESC, false);
+        xadatasourcePropertyAdapter.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, REMOVE_XADATASOURCE_PROPERTIES_DESC, false);
+
+
         for (final String attributeName : PoolMetrics.ATTRIBUTES) {
             xaDataSources.registerMetric(attributeName, PoolMetrics.LocalAndXaDataSourcePoolMetricsHandler.INSTANCE);
         }
@@ -278,7 +286,7 @@ public class DataSourcesExtension implements Extension {
                xaDataSources.registerReadWriteAttribute(attribute.getName(), PoolConfigurationReadHandler.INSTANCE,
                     LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE, Storage.CONFIGURATION);
             } else {
-               xaDataSources.registerReadWriteAttribute(attribute.getName(), null, reloadRequiredWriteAttributeHandler , Storage.CONFIGURATION);
+               xaDataSources.registerReadWriteAttribute(attribute.getName(), null, disableRequiredWriteAttributeHandler , Storage.CONFIGURATION);
             }
         }
 
@@ -338,10 +346,8 @@ public class DataSourcesExtension implements Extension {
                     if (isXADataSource) {
                         if (dataSourceNode.hasDefined(XADATASOURCE_PROPERTIES.getName())) {
                             for (Property prop : dataSourceNode.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList()) {
-                                writer.writeStartElement(XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName());
-                                writer.writeAttribute("name", prop.getName());
-                                writer.writeCharacters(prop.getValue().asString());
-                                writer.writeEndElement();
+                                writeProperty(writer, dataSourceNode, prop.getName(), prop
+                                        .getValue().get("value").asString(), XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName());
                             }
 
                         }
