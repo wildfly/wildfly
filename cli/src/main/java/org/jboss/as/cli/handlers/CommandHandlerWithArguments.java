@@ -22,6 +22,7 @@
 package org.jboss.as.cli.handlers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -76,7 +77,7 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
     }
 
     @Override
-    public List<CommandArgument> getArguments(CommandContext ctx) {
+    public Collection<CommandArgument> getArguments(CommandContext ctx) {
         return this.args;
     }
 }

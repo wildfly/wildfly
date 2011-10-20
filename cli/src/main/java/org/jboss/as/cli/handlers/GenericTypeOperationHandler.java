@@ -25,14 +25,18 @@ package org.jboss.as.cli.handlers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
@@ -74,8 +78,8 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     // these are caching vars
     private final List<CommandArgument> staticArgs = new ArrayList<CommandArgument>();
-    private List<CommandArgument> nodeProps;
-    private Map<String, List<CommandArgument>> propsByOp;
+    private Map<String, CommandArgument> nodeProps;
+    private Map<String, Map<String, CommandArgument>> propsByOp;
 
     public GenericTypeOperationHandler(String nodeType, String idProperty) {
         this(nodeType, idProperty, Arrays.asList("read-attribute", "read-children-names", "read-children-resources",
@@ -133,7 +137,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         operation = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
                 @Override
-                public List<String> getAllCandidates(CommandContext ctx) {
+                public Collection<String> getAllCandidates(CommandContext ctx) {
                     DefaultOperationRequestAddress address = new DefaultOperationRequestAddress();
                     if(ctx.isDomainMode()) {
                         final String profileName = profile.getValue(ctx.getParsedCommandLine());
@@ -147,7 +151,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                         address.toNode(node.getType(), node.getName());
                     }
                     address.toNode(type, "?");
-                    List<String> ops = ctx.getOperationCandidatesProvider().getOperationNames(ctx, address);
+                    Collection<String> ops = ctx.getOperationCandidatesProvider().getOperationNames(ctx, address);
                     ops.removeAll(excludeOps);
                     return ops;
                 }}), 0, "--operation") {
@@ -184,7 +188,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
                 return Util.getNodeNames(ctx.getModelControllerClient(), address, type);
                 }
-            }), "--" + idProperty) {
+            }), (idProperty == null ? "--name" : "--" + idProperty)) {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(ctx.isDomainMode() && !profile.isValueComplete(ctx.getParsedCommandLine())) {
@@ -218,7 +222,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    public List<CommandArgument> getArguments(CommandContext ctx) {
+    public Collection<CommandArgument> getArguments(CommandContext ctx) {
 
         ParsedCommandLine args = ctx.getParsedCommandLine();
 
@@ -234,25 +238,39 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         if(op == null) {
             // list node properties
             if(nodeProps == null) {
-                nodeProps = new ArrayList<CommandArgument>();
-                for(Property prop : getNodeProperties(ctx)) {
+                final List<Property> propList = getNodeProperties(ctx);
+                final Map<String, CommandArgument> argMap = new HashMap<String, CommandArgument>(propList.size());
+                for(int i = 0; i < propList.size(); ++i) {
+                    final Property prop = propList.get(i);
                     final ModelNode propDescr = prop.getValue();
                     if(propDescr.has("access-type") && "read-write".equals(propDescr.get("access-type").asString())) {
-                        if(propDescr.has("type") && ModelType.BOOLEAN == propDescr.get("type").asType()) {
-                            nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, SimpleTabCompleter.BOOLEAN,"--" + prop.getName()));
-                        } else {
-                            nodeProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                        ModelType type = null;
+                        CommandLineCompleter valueCompleter = null;
+                        ArgumentValueConverter valueConverter = ArgumentValueConverter.DEFAULT;
+                        if(propDescr.has("type")) {
+                            type = propDescr.get("type").asType();
+                            if(ModelType.BOOLEAN == type) {
+                                valueCompleter = SimpleTabCompleter.BOOLEAN;
+                            //TODO } else if(ModelType.PROPERTY == type) {
+                            } else if(prop.getName().endsWith("properties")) {
+                                valueConverter = ArgumentValueConverter.PROPERTIES;
+                            } else if(ModelType.LIST == type) {
+                                valueConverter = ArgumentValueConverter.LIST;
+                            }
                         }
+                        final CommandArgument arg = new ArgumentWithValue(GenericTypeOperationHandler.this, valueCompleter, valueConverter, "--" + prop.getName());
+                        argMap.put(arg.getFullName(), arg);
                     }
                 }
+                nodeProps = argMap;
             }
-            return nodeProps;
+            return nodeProps.values();
         } else {
             // list operation properties
             if(propsByOp == null) {
-                propsByOp = new HashMap<String, List<CommandArgument>>();
+                propsByOp = new HashMap<String, Map<String, CommandArgument>>();
             }
-            List<CommandArgument> opProps = propsByOp.get(op);
+            Map<String, CommandArgument> opProps = propsByOp.get(op);
             if(opProps == null) {
                 final ModelNode descr;
                 try {
@@ -262,21 +280,33 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 }
 
                 if(descr == null || !descr.has("request-properties")) {
-                    opProps = Collections.emptyList();
+                    opProps = Collections.emptyMap();
                 } else {
-                    opProps = new ArrayList<CommandArgument>();
-                    for (Property prop : descr.get("request-properties").asPropertyList()) {
+                    final List<Property> propList = descr.get("request-properties").asPropertyList();
+                    opProps = new HashMap<String,CommandArgument>(propList.size());
+                    for (Property prop : propList) {
                         final ModelNode propDescr = prop.getValue();
-                        if(propDescr.has("type") && ModelType.BOOLEAN == propDescr.get("type").asType()) {
-                            opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, SimpleTabCompleter.BOOLEAN, "--" + prop.getName()));
-                        } else {
-                            opProps.add(new ArgumentWithValue(GenericTypeOperationHandler.this, "--" + prop.getName()));
+                        ModelType type = null;
+                        CommandLineCompleter valueCompleter = null;
+                        ArgumentValueConverter valueConverter = ArgumentValueConverter.DEFAULT;
+                        if(propDescr.has("type")) {
+                            type = propDescr.get("type").asType();
+                            if(ModelType.BOOLEAN == type) {
+                                valueCompleter = SimpleTabCompleter.BOOLEAN;
+                            //TODO } else if(ModelType.PROPERTY == type) {
+                            } else if(prop.getName().endsWith("properties")) {
+                                valueConverter = ArgumentValueConverter.PROPERTIES;
+                            } else if(ModelType.LIST == type) {
+                                valueConverter = ArgumentValueConverter.LIST;
+                            }
                         }
+                        final CommandArgument arg = new ArgumentWithValue(GenericTypeOperationHandler.this, valueCompleter, valueConverter, "--" + prop.getName());
+                        opProps.put(arg.getFullName(), arg);
                     }
                 }
                 propsByOp.put(op, opProps);
             }
-            return opProps;
+            return opProps.values();
         }
     }
 
@@ -323,14 +353,17 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             profile = null;
         }
 
+        if(nodeProps == null) {
+            getArguments(ctx);
+        }
         for(String argName : args.getPropertyNames()) {
             if(argName.equals("--profile") || this.name.getFullName().equals(argName)) {
                 continue;
             }
 
-            final String valueString = args.getPropertyValue(argName);
-            if(valueString == null) {
-                continue;
+            final ArgumentWithValue arg = (ArgumentWithValue) nodeProps.get(argName);
+            if(arg == null) {
+                throw new CommandFormatException("Unrecognized argument name '" + argName + "'");
             }
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
@@ -343,33 +376,17 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             }
             builder.addNode(type, name);
             builder.setOperationName("write-attribute");
+            final String propName;
             if(argName.charAt(1) == '-') {
-                argName = argName.substring(2);
+                propName = argName.substring(2);
             } else {
-                argName = argName.substring(1);
+                propName = argName.substring(1);
             }
-            builder.addProperty("name", argName);
+            builder.addProperty("name", propName);
 
-            // TODO this is just a guess and might not always work
-            if(argName.endsWith("properties")) {
-
-                ModelNode nodeValue = new ModelNode();
-                String[] props = valueString.split(",");
-                for(String prop : props) {
-                    int equals = prop.indexOf('=');
-                    if(equals == -1) {
-                        throw new CommandFormatException("Property '" + prop + "' in '" + valueString + "' is missing the equals sign.");
-                    }
-                    String propName = prop.substring(0, equals);
-                    if(propName.isEmpty()) {
-                        throw new CommandFormatException("Property name is missing for '" + prop + "' in '" + valueString + "'");
-                    }
-                    nodeValue.add(propName, prop.substring(equals + 1));
-                }
-                builder.getModelNode().get("value").set(nodeValue);
-            } else {
-                builder.addProperty("value", valueString);
-            }
+            final String valueString = args.getPropertyValue(argName);
+            ModelNode nodeValue = arg.getValueConverter().fromString(valueString);
+            builder.getModelNode().get("value").set(nodeValue);
 
             steps.add(builder.buildRequest());
         }
@@ -399,42 +416,39 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
         builder.setOperationName(operation);
 
+        getArguments(ctx);// TODO there should be a better way to ensure the data is there
+        final Map<String, CommandArgument> argsMap = propsByOp.get(operation);
+
         for(String argName : args.getPropertyNames()) {
             if(argName.equals("--profile")) {
                 continue;
             }
 
-            final String valueString = args.getPropertyValue(argName);
-            if(valueString == null) {
-                continue;
-            }
-
-            if(argName.charAt(1) == '-') {
-                argName = argName.substring(2);
-            } else {
-                argName = argName.substring(1);
-            }
-
-            // TODO this is just a guess and might not always work
-            if(argName.endsWith("properties")) {
-
-                ModelNode nodeValue = new ModelNode();
-                String[] props = valueString.split(",");
-                for(String prop : props) {
-                    int equals = prop.indexOf('=');
-                    if(equals == -1) {
-                        throw new CommandFormatException("Property '" + prop + "' in '" + valueString + "' is missing the equals sign.");
-                    }
-                    String propName = prop.substring(0, equals);
-                    if(propName.isEmpty()) {
-                        throw new CommandFormatException("Property name is missing for '" + prop + "' in '" + valueString + "'");
-                    }
-                    nodeValue.add(propName, prop.substring(equals + 1));
+            if(argsMap == null) {
+                if(argName.equals(this.name.getFullName())) {
+                    continue;
                 }
-                builder.getModelNode().get(argName).set(nodeValue);
-            } else {
-                builder.addProperty(argName, valueString);
+                throw new CommandFormatException("Command '" + operation + "' is not expected to have arguments other than " + this.name.getFullName() + ".");
             }
+
+            final ArgumentWithValue arg = (ArgumentWithValue) argsMap.get(argName);
+            if(arg == null) {
+                if(argName.equals(this.name.getFullName())) {
+                    continue;
+                }
+                throw new CommandFormatException("Unrecognized argument " + argName + " for command '" + operation + "'.");
+            }
+
+            final String propName;
+            if(argName.charAt(1) == '-') {
+                propName = argName.substring(2);
+            } else {
+                propName = argName.substring(1);
+            }
+
+            final String valueString = args.getPropertyValue(argName);
+            ModelNode nodeValue = arg.getValueConverter().fromString(valueString);
+            builder.getModelNode().get(propName).set(nodeValue);
         }
 
         return builder.buildRequest();
@@ -445,7 +459,12 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         ParsedCommandLine args = ctx.getParsedCommandLine();
         try {
             if(helpProperties.isPresent(args)) {
-                printAttributes(ctx);
+                try {
+                    printProperties(ctx, getNodeProperties(ctx));
+                } catch(Exception e) {
+                    ctx.printLine("Failed to obtain the list or properties: " + e.getLocalizedMessage());
+                    return;
+                }
                 return;
             }
         } catch (CommandFormatException e) {
@@ -477,70 +496,97 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             }
 
             final StringBuilder buf = new StringBuilder();
-            buf.append("Operation description:\n\n\t");
+            buf.append("\nDESCRIPTION:\n\n");
             buf.append(result.get("description").asString());
-            buf.append("\n\nProperties:");
             ctx.printLine(buf.toString());
 
-            boolean idPropListed = false;
-            if(result.has("request-properties")) {
-                result = result.get("request-properties");
-                for (Property attr : result.asPropertyList()) {
-                    if(!idPropListed) {
-                        idPropListed = idProperty.equals(attr.getName());
-                    }
-                    final ModelNode value = attr.getValue();
-
-                    final boolean required = value.has("required") ? value.get("required").asBoolean() : false;
-
-                    final String type = value.has("type") ? value.get("type").asString() : "no type info";
-
-                    final StringBuilder descr = new StringBuilder();
-                    descr.append("\n --");
-                    descr.append(attr.getName());
-
-                    final int length = descr.length();
-                    int newLength = Math.max(24, ((length + 4) / 4) * 4);
-                    descr.setLength(newLength);
-                    for (int i = length; i < newLength; ++i) {
-                        descr.setCharAt(i, ' ');
-                    }
-
-                    descr.append("- ");
-
-                    if (value.has("description")) {
-                        descr.append('(');
-                        descr.append(type).append(',');
-                        if (required) {
-                            descr.append("required");
-                        } else {
-                            descr.append("optional");
-                        }
-                        descr.append(") ");
-                        descr.append(value.get("description").asString());
-                    } else {
-                        descr.append("no description");
-                    }
-                    ctx.printLine(descr.toString());
-                }
-            }
-
-            if(!idPropListed) {
-                final StringBuilder descr = new StringBuilder();
-                descr.append("\n --");
-                descr.append(idProperty);
-
-                final int length = descr.length();
-                int newLength = Math.max(24, ((length + 4) / 4) * 4);
-                descr.setLength(newLength);
-                for (int i = length; i < newLength; ++i) {
-                    descr.setCharAt(i, ' ');
-                }
-
-                descr.append("- identifies the instance to perform the operation on.");
-                ctx.printLine(descr.toString());
+            if(result.hasDefined("request-properties")) {
+                printProperties(ctx, result.get("request-properties").asPropertyList());
+            } else {
+                printProperties(ctx, Collections.<Property>emptyList());
             }
         } catch (Exception e) {
+        }
+    }
+
+    protected void printProperties(CommandContext ctx, List<Property> props) {
+        final Map<String, StringBuilder> requiredProps = new LinkedHashMap<String,StringBuilder>();
+        requiredProps.put(this.name.getFullName(), new StringBuilder().append("Required argument in commands which identifies the instance to execute the command against."));
+        final Map<String, StringBuilder> optionalProps = new LinkedHashMap<String, StringBuilder>();
+
+        String accessType = null;
+        for (Property attr : props) {
+            final ModelNode value = attr.getValue();
+
+            // filter metrics
+            if (value.has("access-type")) {
+                accessType = value.get("access-type").asString();
+//                if("metric".equals(accessType)) {
+//                    continue;
+//                }
+            }
+
+            final boolean required = value.hasDefined("required") ? value.get("required").asBoolean() : false;
+            final StringBuilder descr = new StringBuilder();
+
+            final String type = value.has("type") ? value.get("type").asString() : "no type info";
+            if (value.hasDefined("description")) {
+                descr.append('(');
+                descr.append(type);
+                if(accessType != null) {
+                    descr.append(',').append(accessType);
+                }
+                descr.append(") ");
+                descr.append(value.get("description").asString());
+            } else if(descr.length() == 0) {
+                descr.append("no description.");
+            }
+
+            if(required) {
+                if(idProperty != null && idProperty.equals(attr.getName())) {
+                    if(descr.charAt(descr.length() - 1) != '.') {
+                        descr.append('.');
+                    }
+                    requiredProps.get(this.name.getFullName()).insert(0, ' ').insert(0, descr.toString());
+                } else {
+                    requiredProps.put("--" + attr.getName(), descr);
+                }
+            } else {
+                optionalProps.put("--" + attr.getName(), descr);
+            }
+        }
+
+        ctx.printLine("\n");
+        if(accessType == null) {
+            ctx.printLine("REQUIRED ARGUMENTS:\n");
+        }
+        for(String argName : requiredProps.keySet()) {
+            final StringBuilder prop = new StringBuilder();
+            prop.append(' ').append(argName);
+            int spaces = 28 - prop.length();
+            do {
+                prop.append(' ');
+                --spaces;
+            } while(spaces >= 0);
+            prop.append("- ").append(requiredProps.get(argName));
+            ctx.printLine(prop.toString());
+        }
+
+        if(!optionalProps.isEmpty()) {
+            if(accessType == null ) {
+                ctx.printLine("\n\nOPTIONAL ARGUMENTS:\n");
+            }
+            for(String argName : optionalProps.keySet()) {
+                final StringBuilder prop = new StringBuilder();
+                prop.append(' ').append(argName);
+                int spaces = 28 - prop.length();
+                do {
+                    prop.append(' ');
+                    --spaces;
+                } while(spaces >= 0);
+                prop.append("- ").append(optionalProps.get(argName));
+                ctx.printLine(prop.toString());
+            }
         }
     }
 
@@ -564,54 +610,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             }
             ctx.printLine(result.get("description").asString());
         } catch (Exception e) {
-        }
-    }
-
-    protected void printAttributes(CommandContext ctx) {
-
-        final List<Property> props;
-        try {
-            props = getNodeProperties(ctx);
-        } catch(Exception e) {
-            ctx.printLine("Failed to obtain the list or properties: " + e.getLocalizedMessage());
-            return;
-        }
-
-        for (Property attr : props) {
-            final ModelNode value = attr.getValue();
-            // filter metrics
-            if (value.has("access-type") && "metric".equals(value.get("access-type").asString())) {
-                continue;
-            }
-
-            final boolean required = value.has("required") ? value.get("required").asBoolean() : false;
-
-            final StringBuilder descr = new StringBuilder();
-            descr.append("\n ");
-            descr.append(attr.getName());
-
-            final int length = descr.length();
-            int newLength = Math.max(24, ((length + 4) / 4) * 4);
-            descr.setLength(newLength);
-            for (int i = length; i < newLength; ++i) {
-                descr.setCharAt(i, ' ');
-            }
-
-            descr.append("- ");
-
-            if (value.has("description")) {
-                descr.append('(');
-                if (required) {
-                    descr.append("required");
-                } else {
-                    descr.append("optional");
-                }
-                descr.append(") ");
-                descr.append(value.get("description").asString());
-            } else {
-                descr.append("no description");
-            }
-            ctx.printLine(descr.toString());
         }
     }
 

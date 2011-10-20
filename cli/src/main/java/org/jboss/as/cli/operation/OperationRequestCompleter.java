@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.operation;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -78,7 +79,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
 
         if (parsedCmd.hasProperties() || parsedCmd.endsOnPropertyListStart()) {
 
-            final List<CommandArgument> allArgs = candidatesProvider.getProperties(ctx, parsedCmd.getOperationName(), parsedCmd.getAddress());
+            final Collection<CommandArgument> allArgs = candidatesProvider.getProperties(ctx, parsedCmd.getOperationName(), parsedCmd.getAddress());
             if (allArgs.isEmpty()) {
                 final CommandLineFormat format = parsedCmd.getFormat();
                 if(format != null && format.getPropertyListEnd() != null) {
@@ -214,7 +215,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
             if(parsedCmd.getAddress().endsOnType()) {
                 return -1;
             }
-            final List<String> names = candidatesProvider.getOperationNames(ctx, parsedCmd.getAddress());
+            final Collection<String> names = candidatesProvider.getOperationNames(ctx, parsedCmd.getAddress());
             if(names.isEmpty()) {
                 return -1;
             }
@@ -257,7 +258,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
             chunk = address.toNodeType();
         }
 
-        final List<String> names;
+        final Collection<String> names;
         if(address.endsOnType()) {
             names = candidatesProvider.getNodeNames(ctx, address);
         } else {

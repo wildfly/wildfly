@@ -21,7 +21,7 @@
  */
 package org.jboss.as.cli;
 
-import java.util.List;
+import java.util.Collection;
 
 
 /**
@@ -64,5 +64,5 @@ public interface CommandHandler {
      */
     boolean hasArgument(int index);
 
-    List<CommandArgument> getArguments(CommandContext ctx);
+    Collection<CommandArgument> getArguments(CommandContext ctx);
 }
