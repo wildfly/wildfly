@@ -54,7 +54,7 @@ public class TimerServicePersistenceSecondTestCase {
      * The timer should be restored and the method should timeout, even without setting up the timer in this deployment
      */
     @Test
-    @Ignore("Failing")
+    @Ignore("AS7-2168 -- Disabled because failing")
     public void testTimerServiceCalled() throws NamingException {
         InitialContext ctx = new InitialContext();
         Assert.assertTrue(SimpleTimerServiceBean.awaitTimerCall());
