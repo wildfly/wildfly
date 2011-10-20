@@ -101,9 +101,6 @@ public class EJB3Extension implements Extension {
         // subsystem=ejb3/thread-pool=*
         subsystemRegistration.registerSubModel(EJB3ThreadPoolResourceDefinition.INSTANCE);
 
-        // subsystem=ejb3/thread-pool=*
-        subsystemRegistration.registerSubModel(EJB3ThreadPoolResourceDefinition.INSTANCE);
-
         ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
                 getResourceDescriptionResolver("deployed"));
         final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
