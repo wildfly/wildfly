@@ -59,8 +59,18 @@ class AppClientServerConfiguration {
         ejb3(ret);
         security(ret);
         jacorb(ret);
+        webservices(ret);
 
         return ret;
+    }
+
+    private static void webservices(final List<ModelNode> nodes) {
+        loadExtension(nodes, "org.jboss.as.webservices");
+        ModelNode add = new ModelNode();
+        add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(SUBSYSTEM, "webservices");
+        add.get(OP).set(ADD);
+        add.get("appclient").set(true);
+        nodes.add(add);
     }
 
     private static void appclient(List<ModelNode> nodes, final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters) {
