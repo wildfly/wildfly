@@ -382,4 +382,12 @@ public interface ConnectorMessages {
      */
     @Message(value = "Service '%s' isn't registered")
     IllegalStateException serviceIsntRegistered(String name);
+
+    /**
+     * Failed to load native libraries
+     * @param e the exception.
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(value = "Failed to load native libraries")
+    DeploymentUnitProcessingException failedToLoadNativeLibraries(@Cause Throwable cause);
 }

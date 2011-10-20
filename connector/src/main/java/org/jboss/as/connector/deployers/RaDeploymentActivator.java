@@ -31,6 +31,7 @@ import org.jboss.as.connector.deployers.processors.DriverProcessor;
 import org.jboss.as.connector.deployers.processors.IronJacamarDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.processors.ParsedRaDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RaDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.processors.RaNativeProcessor;
 import org.jboss.as.connector.deployers.processors.RaStructureProcessor;
 import org.jboss.as.connector.deployers.processors.RaXmlDeploymentProcessor;
 import org.jboss.as.connector.deployers.processors.RarDependencyProcessor;
@@ -89,6 +90,7 @@ public class RaDeploymentActivator {
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_RA_DEPLOYMENT, new RaDeploymentParsingProcessor());
         updateContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_IRON_JACAMAR_DEPLOYMENT,
                 new IronJacamarDeploymentParsingProcessor());
+        updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_NATIVE, new RaNativeProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_DEPLOYMENT, new ParsedRaDeploymentProcessor());
         updateContext.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RA_XML_DEPLOYMENT, new RaXmlDeploymentProcessor(
                 mdrService.getValue()));
