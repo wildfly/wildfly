@@ -47,7 +47,6 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
     private final EntityManagerFactory emf;
 
     public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf) {
-        super(puScopedName, false);
         this.puScopedName = puScopedName;
         this.properties = properties;
         this.emf = emf;
@@ -58,10 +57,10 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
         EntityManager result;
         boolean isInTx;
 
-        isInTx = TransactionUtil.getInstance().isInTx();
+        isInTx = TransactionUtil.isInTx();
 
         if (isInTx) {
-            result = TransactionUtil.getInstance().getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties);
+            result = TransactionUtil.getOrCreateTransactionScopedEntityManager(emf, puScopedName, properties);
         } else {
             result = NonTxEmCloser.get(puScopedName);
             if (result == null) {
@@ -79,7 +78,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager {
 
     @Override
     protected boolean isInTx() {
-        return TransactionUtil.getInstance().isInTx();
+        return TransactionUtil.isInTx();
     }
 
     /**

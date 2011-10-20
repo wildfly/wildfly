@@ -63,6 +63,12 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
         putPropertyIfAbsent(pu, properties, AvailableSettings.JTA_PLATFORM, appServerJtaPlatform);
         properties.remove(AvailableSettings.TRANSACTION_MANAGER_STRATEGY);  // remove legacy way of specifying TX manager (conflicts with JTA_PLATFORM)
+        // TODO:  use org.hibernate.ejb.AvailableSettings.ENTITY_MANAGER_FACTORY_NAME for the following after its added to Hibernate 4.0.1.Final
+        putPropertyIfAbsent(pu,properties, org.hibernate.ejb.AvailableSettings.ENTITY_MANAGER_FACTORY_NAME, pu.getScopedPersistenceUnitName());
+        putPropertyIfAbsent(pu, properties, AvailableSettings.SESSION_FACTORY_NAME, pu.getScopedPersistenceUnitName());
+        if (!pu.getProperties().containsKey(AvailableSettings.SESSION_FACTORY_NAME)) {
+            putPropertyIfAbsent(pu, properties, AvailableSettings.SESSION_FACTORY_NAME_IS_JNDI, Boolean.FALSE);
+        }
     }
 
     @Override

@@ -59,7 +59,7 @@ public class SFSBDestroyInterceptor implements Interceptor {
             return interceptorContext.proceed();
         } finally {
             StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) interceptorContext.getPrivateData(ComponentInstance.class);
-            SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
+            SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb.getId());
             List<EntityManager> readyToClose = sfsbxpcMap.remove(sfsbContextHandle);
             if (readyToClose != null && readyToClose.size() > 0) {
                 for (EntityManager entityManager : readyToClose) {

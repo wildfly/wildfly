@@ -20,18 +20,53 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.spi;
-
+package org.jboss.as.test.clustering.unmanaged.ejb3.xpc.bean;
 
 import java.io.Serializable;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 /**
- * Represents a SFSB EJB bean context
+ * Employee entity class
  *
  * @author Scott Marlow
  */
-public interface SFSBContextHandle {
+@Entity
+public class Employee implements Serializable {
+    @Id
+    private int id;
 
-    Serializable getSerializable();
+    private String name;
 
+    private String address;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public int getId() {
+
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String toString() {
+        return name;
+    }
 }

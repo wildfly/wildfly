@@ -22,9 +22,9 @@
 
 package org.jboss.as.jpa.spi;
 
-import org.jboss.msc.service.ServiceName;
-
 import java.util.Map;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
  * PersistenceProvider adaptor
@@ -35,6 +35,7 @@ public interface PersistenceProviderAdaptor {
 
     /**
      * pass the JtaManager in for internal use by PersistenceProviderAdaptor implementer
+     *
      * @param jtaManager
      */
     void injectJtaManager(JtaManager jtaManager);
