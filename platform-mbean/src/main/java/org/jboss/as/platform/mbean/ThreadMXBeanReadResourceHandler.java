@@ -77,6 +77,11 @@ public class ThreadMXBeanReadResourceHandler implements OperationStepHandler {
             }
         }
 
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
+            ThreadMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
+        }
+
         context.completeStep();
     }
 }

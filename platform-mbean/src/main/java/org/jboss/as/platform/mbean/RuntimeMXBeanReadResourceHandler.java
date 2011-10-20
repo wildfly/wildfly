@@ -65,6 +65,10 @@ public class RuntimeMXBeanReadResourceHandler implements OperationStepHandler {
                 // just leave it undefined
             }
         }
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
+            RuntimeMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
+        }
 
         context.completeStep();
     }

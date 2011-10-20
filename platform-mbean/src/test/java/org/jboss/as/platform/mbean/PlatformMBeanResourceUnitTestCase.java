@@ -169,7 +169,11 @@ public class PlatformMBeanResourceUnitTestCase {
             return;
         }
 
-        DescribedResource describedResource = basicResourceTest("buffer-pool", null);
+        // TODO (jrp) - This test is broken.
+        // Notes from IRC.
+        // it's reading the parent BufferPoolMXBean resource (which is empty except for children for each of the named BufferPoolMXBean)
+        // it should be reading one of the children
+        // DescribedResource describedResource = basicResourceTest("buffer-pool", null);
         // TODO validate values
     }
 
@@ -320,7 +324,7 @@ public class PlatformMBeanResourceUnitTestCase {
         op.get("level-name").set(Level.SEVERE.getName());
         Assert.assertFalse(executeOp(op, false).isDefined());
 
-        op = getOperation("set-logger-level", "logging", null);
+        op = getOperation("get-logger-level", "logging", null);
         op.get("logger-name").set("test.platform.logging.mbean");
         ModelNode result = executeOp(op, false);
         Assert.assertTrue(result.isDefined());

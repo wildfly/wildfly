@@ -98,6 +98,7 @@
         <version.net.sourceforge.nekohtml.nekohtml>1.9.14</version.net.sourceforge.nekohtml.nekohtml>
         <version.org.apache.aries.jmx>0.3</version.org.apache.aries.jmx>
         <version.org.apache.ant>1.7.1</version.org.apache.ant>
+        <version.org.apache.ant.bsf>1.8.2</version.org.apache.ant.bsf>
         <version.org.apache.cxf>2.4.2</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.3.2</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
@@ -234,6 +235,7 @@
         <version.osgi>4.2.0</version.osgi>
         <version.sun.jaxb>2.2</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
+        <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.2</version.wsdl4j>
 
         <!-- Non-default plugin versions and configuration -->

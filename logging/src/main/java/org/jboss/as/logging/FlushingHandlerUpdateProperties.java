@@ -51,7 +51,7 @@ public class FlushingHandlerUpdateProperties<T extends ExtHandler> extends Handl
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final ExtHandler handler) throws OperationFailedException {
+    protected void updateRuntime(final ModelNode operation, final T handler) throws OperationFailedException {
         final ModelNode autoflush = AUTOFLUSH.validateResolvedOperation(operation);
         if (autoflush.isDefined()) {
             handler.setAutoFlush(autoflush.asBoolean());
