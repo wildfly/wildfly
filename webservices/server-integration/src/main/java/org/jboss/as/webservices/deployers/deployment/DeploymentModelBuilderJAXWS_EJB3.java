@@ -25,13 +25,13 @@ import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
-//import org.jboss.metadata.ejb.jboss.JBossMetaData;
-import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.as.webservices.metadata.WebServiceDeclaration;
 import org.jboss.as.webservices.metadata.WebServiceDeployment;
+import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Endpoint;
 
 /**
  * Creates new JAXWS EJB3 deployment.
@@ -56,6 +56,10 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
     protected void build(final Deployment dep, final DeploymentUnit unit) {
         this.getAndPropagateAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY, WebServiceDeployment.class, unit, dep);
         //this.getAndPropagateAttachment(JBossMetaData.class, unit, dep); // TODO: propagate?
+        final JBossWebMetaData webMetaData = ASHelper.getJBossWebMetaData(unit);
+        if (webMetaData != null) {
+            dep.addAttachment(JBossWebMetaData.class, webMetaData);
+        }
 
         this.log.debug("Creating JAXWS EJB3 endpoints meta data model");
         for (final WebServiceDeclaration container : ASHelper.getJaxwsEjbs(unit)) {

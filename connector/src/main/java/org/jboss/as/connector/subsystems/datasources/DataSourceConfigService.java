@@ -33,13 +33,13 @@ import org.jboss.msc.service.StopContext;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class DataSourceConfigService implements Service<DataSource> {
+public class DataSourceConfigService implements Service<ModifiableDataSource> {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source-config");
 
-    private final DataSource dataSourceConfig;
+    private final ModifiableDataSource dataSourceConfig;
 
-    public DataSourceConfigService(DataSource dataSourceConfig) {
+    public DataSourceConfigService(ModifiableDataSource dataSourceConfig) {
         super();
         this.dataSourceConfig = dataSourceConfig;
     }
@@ -51,7 +51,7 @@ public class DataSourceConfigService implements Service<DataSource> {
     }
 
     @Override
-    public DataSource getValue() throws IllegalStateException, IllegalArgumentException {
+    public ModifiableDataSource getValue() throws IllegalStateException, IllegalArgumentException {
         return dataSourceConfig;
     }
 

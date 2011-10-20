@@ -19,41 +19,46 @@
 package org.jboss.as.host.controller.operations;
 
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
- * @version $Revision: 1.1 $
  */
 public class RemoteDomainControllerAddHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = "write-remote-domain-controller";
 
-    private final ParametersValidator parametersValidator = new ParametersValidator();
+    public static final SimpleAttributeDefinition PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT, false)
+            .setAllowExpression(true).setValidator(new IntRangeValidator(1, 65535, false, true)).setFlags(AttributeAccess.Flag.RESTART_JVM).build();
+
+    public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING, false)
+            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setFlags(AttributeAccess.Flag.RESTART_JVM).build();
 
     private final ManagementResourceRegistration rootRegistration;
     private final HostControllerConfigurationPersister overallConfigPersister;
@@ -78,22 +83,17 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
         this.overallConfigPersister = overallConfigPersister;
         this.fileRepository = fileRepository;
         this.hostControllerInfo = hostControllerInfo;
-
-        this.parametersValidator.registerValidator(PORT, new IntRangeValidator(1, 65535, false, true));
-        this.parametersValidator.registerValidator(HOST, new StringLengthValidator(1, Integer.MAX_VALUE, false, true));
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
-        parametersValidator.validate(operation);
         ModelNode dc = model.get(DOMAIN_CONTROLLER);
+        ModelNode remoteDC = dc.get(REMOTE);
 
-        final ModelNode port = operation.require(PORT);
-        final ModelNode host = operation.require(HOST);
-        dc.get(REMOTE, PORT).set(port);
-        dc.get(REMOTE, HOST).set(host);
+        PORT.validateAndSet(operation, remoteDC);
+        HOST.validateAndSet(operation, remoteDC);
         if (operation.has(SECURITY_REALM)) {
             ModelNode securityRealm = operation.require(SECURITY_REALM);
             dc.get(REMOTE, SECURITY_REALM).set(securityRealm);
@@ -105,8 +105,8 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
         }
 
         hostControllerInfo.setMasterDomainController(false);
-        hostControllerInfo.setRemoteDomainControllerHost(host.resolve().asString());
-        hostControllerInfo.setRemoteDomainControllerPort(port.resolve().asInt());
+        hostControllerInfo.setRemoteDomainControllerHost(HOST.validateResolvedOperation(remoteDC).asString());
+        hostControllerInfo.setRemoteDomainControllerPort(PORT.validateResolvedOperation(remoteDC).asInt());
 
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
@@ -124,7 +124,6 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        // TODO - Add the ModelDescription
-        return new ModelNode();
+        return HostRootDescription.getRemoteDomainControllerAdd(locale);
     }
 }

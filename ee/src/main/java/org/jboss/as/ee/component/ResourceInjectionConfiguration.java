@@ -30,6 +30,20 @@ package org.jboss.as.ee.component;
 public final class ResourceInjectionConfiguration {
     private final InjectionTarget target;
     private final InjectionSource source;
+    private final boolean optional;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param target the resource injection target
+     * @param source the resource injection source
+     * @param optional if the injection is optional or not
+     */
+    public ResourceInjectionConfiguration(final InjectionTarget target, final InjectionSource source, boolean optional) {
+        this.target = target;
+        this.source = source;
+        this.optional = optional;
+    }
 
     /**
      * Construct a new instance.
@@ -38,8 +52,7 @@ public final class ResourceInjectionConfiguration {
      * @param source the resource injection source
      */
     public ResourceInjectionConfiguration(final InjectionTarget target, final InjectionSource source) {
-        this.target = target;
-        this.source = source;
+        this(target, source, false);
     }
 
     /**
@@ -58,5 +71,13 @@ public final class ResourceInjectionConfiguration {
      */
     public InjectionSource getSource() {
         return source;
+    }
+
+    /**
+     *
+     * @return True if the injection is optional
+     */
+    public boolean isOptional() {
+        return optional;
     }
 }

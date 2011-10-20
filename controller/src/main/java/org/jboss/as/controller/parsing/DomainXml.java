@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -51,6 +52,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElem
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
@@ -66,6 +68,7 @@ import java.util.Set;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
@@ -272,7 +275,7 @@ public class DomainXml extends CommonXml {
         // Handle attributes
         final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
         final String name = attrValues[0];
-        final ModelNode defaultInterface = parsePossibleExpression(attrValues[1]);
+        final String defaultInterface = attrValues[1];
 
         final ModelNode groupAddress = new ModelNode().set(address);
         groupAddress.add(SOCKET_BINDING_GROUP, name);
@@ -280,7 +283,9 @@ public class DomainXml extends CommonXml {
         final ModelNode bindingGroupUpdate = new ModelNode();
         bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
         bindingGroupUpdate.get(OP).set(ADD);
-        bindingGroupUpdate.get(DEFAULT_INTERFACE).set(defaultInterface);
+
+        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader.getLocation());
+
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();
         updates.add(bindingGroupUpdate);
@@ -295,7 +300,7 @@ public class DomainXml extends CommonXml {
                     if (!includedGroups.add(includedGroup)) {
                         throw new XMLStreamException("Included socket-binding-group " + includedGroup + " already declared", reader.getLocation());
                     }
-                    includes.add(includedGroup);
+                    SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
                     break;
                 }
                 case SOCKET_BINDING: {
@@ -325,6 +330,7 @@ public class DomainXml extends CommonXml {
 
             String name = null;
             String profile = null;
+            Boolean managementSubsystemEndpoint = null;
 
             // Handle attributes
             final int count = reader.getAttributeCount();
@@ -352,6 +358,12 @@ public class DomainXml extends CommonXml {
                             }
                             profile = value;
                             break;
+                        } case MANAGEMENT_SUBSYSTEM_ENDPOINT: {
+                            if (managementSubsystemEndpoint != null) {
+                                throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
+                            }
+                            managementSubsystemEndpoint = Boolean.valueOf(value);
+                            break;
                         }
                         default:
                             throw ParseUtils.unexpectedAttribute(reader, i);
@@ -372,6 +384,9 @@ public class DomainXml extends CommonXml {
             group.get(OP).set(ADD);
             group.get(OP_ADDR).set(groupAddress);
             group.get(PROFILE).set(profile);
+            if (managementSubsystemEndpoint != null) {
+                group.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).set(managementSubsystemEndpoint);
+            }
             list.add(group);
 
             // Handle elements
@@ -497,6 +512,11 @@ public class DomainXml extends CommonXml {
         }
     }
 
+    void parseSubsystemManagementEndpoint(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+        requireNoContent(reader);
+
+    }
     private void writeProfile(final XMLExtendedStreamWriter writer, final String profileName, final ModelNode profileNode, final ModelMarshallingContext context) throws XMLStreamException {
 
         writer.writeStartElement(Element.PROFILE.getLocalName());
@@ -587,6 +607,7 @@ public class DomainXml extends CommonXml {
         // Socket binding ref
         String bindingGroupRef = group.hasDefined(SOCKET_BINDING_GROUP) ? group.get(SOCKET_BINDING_GROUP).asString() : null;
         String portOffset = group.hasDefined(SOCKET_BINDING_PORT_OFFSET) ? group.get(SOCKET_BINDING_PORT_OFFSET).asString() : null;
+        Boolean managementSubsystemEndpoint = group.hasDefined(MANAGEMENT_SUBSYSTEM_ENDPOINT) ? group.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).asBoolean() : null;
         if (bindingGroupRef != null || portOffset != null) {
             writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
             if (bindingGroupRef != null) {
@@ -594,6 +615,9 @@ public class DomainXml extends CommonXml {
             }
             if (portOffset != null) {
                 writeAttribute(writer, Attribute.PORT_OFFSET, portOffset);
+            }
+            if (managementSubsystemEndpoint != null) {
+                writeAttribute(writer, Attribute.MANAGEMENT_SUBSYSTEM_ENDPOINT, managementSubsystemEndpoint.toString());
             }
             writer.writeEndElement();
         }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
@@ -107,7 +108,7 @@ class DataSourcesSubsystemProviders {
             org.jboss.as.connector.pool.Constants.POOL_PREFILL, org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN, Constants.INTERLEAVING,
             Constants.NOTXSEPARATEPOOL, Constants.PAD_XID, Constants.SAME_RM_OVERRIDE,
             Constants.WRAP_XA_RESOURCE, Constants.USERNAME, Constants.PASSWORD,
-            Constants.SECURITY_DOMAIN, Constants.RECOVERLUGIN_CLASSNAME,
+            Constants.SECURITY_DOMAIN,
             Constants.REAUTHPLUGIN_CLASSNAME, Constants.REAUTHPLUGIN_PROPERTIES,
             org.jboss.as.connector.pool.Constants.POOL_FLUSH_STRATEGY, Constants.PREPAREDSTATEMENTSCACHESIZE,
             Constants.SHAREPREPAREDSTATEMENTS, Constants.TRACKSTATEMENTS,
@@ -122,7 +123,7 @@ class DataSourcesSubsystemProviders {
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.pool.Constants.USE_FAST_FAIL,
             Constants.VALIDATEONMATCH, Constants.XA_RESOURCE_TIMEOUT,
-            Constants.SPY, Constants.USE_CCM, Constants.REAUTHPLUGIN_PROPERTIES,
+            Constants.SPY, Constants.USE_CCM,
             Constants.RECOVERY_USERNAME, Constants.RECOVERY_PASSWORD,
             Constants.RECOVERY_SECURITY_DOMAIN, Constants.RECOVERLUGIN_CLASSNAME,
             Constants.RECOVERLUGIN_PROPERTIES, Constants.NO_RECOVERY,
@@ -215,6 +216,24 @@ class DataSourcesSubsystemProviders {
         }
     };
 
+    static DescriptionProvider CONNECTION_PROPERTIES_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode configPropertiesNode = new ModelNode();
+            configPropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(DESCRIPTION).set(CONNECTION_PROPERTY_VALUE.getName());
+
+
+            CONNECTION_PROPERTY_VALUE.addResourceAttributeDescription(bundle, "connection-properties", configPropertiesNode);
+
+            return configPropertiesNode;
+        }
+    };
+
     static final DescriptionProvider SUBSYSTEM_ADD_DESC = new DescriptionProvider() {
 
         @Override
@@ -230,6 +249,36 @@ class DataSourcesSubsystemProviders {
             return operation;
         }
     };
+
+    static DescriptionProvider ADD_CONNECTION_PROPERTIES_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+
+            op.get(DESCRIPTION).set(bundle.getString("connection-properties.add"));
+            op.get(OPERATION_NAME).set(ADD);
+
+
+            CONNECTION_PROPERTY_VALUE.addOperationParameterDescription(bundle, "connection-properties", op);
+
+            return op;
+        }
+    };
+
+    static DescriptionProvider REMOVE_CONNECTION_PROPERTIES_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("connection-properties.remove"));
+            return operation;
+        }
+    };
+
 
     static final DescriptionProvider INSTALLED_DRIVERS_LIST_DESC = new DescriptionProvider() {
 

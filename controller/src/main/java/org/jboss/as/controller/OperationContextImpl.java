@@ -102,16 +102,7 @@ final class OperationContextImpl implements OperationContext {
     private boolean affectsResourceRegistration;
 
     private boolean respectInterruption = true;
-    private PathAddress modelAddress;
     private Stage currentStage = Stage.MODEL;
-    /**
-     * The result of the current operation.
-     */
-    private ModelNode response;
-    /**
-     * The current operation body being executed.
-     */
-    private ModelNode operation;
 
     private Resource model;
     private ResultAction resultAction;
@@ -119,14 +110,12 @@ final class OperationContextImpl implements OperationContext {
     private boolean affectsRuntime;
     /** Tracks whether we've detected cancellation */
     private boolean cancelled;
-    /** Current number of nested levels of completeStep() calls */
-    private int depth;
-    /** Write lock acquisition depth */
-    private int lockDepth;
-    /** Container monitor acquisition depth */
-    private int containerMonitorDepth;
-    /** Stamp to hand back to revert a reload/restartRequired call */
-    private StampHolder restartStampHolder;
+    /** Currently executing step */
+    private Step activeStep;
+    /** The step that acquired the write lock */
+    private Step lockStep;
+    /** The step that acquired the container monitor  */
+    private Step containerMonitorStep;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL,
@@ -145,7 +134,6 @@ final class OperationContextImpl implements OperationContext {
         this.messageHandler = messageHandler;
         this.attachments = attachments;
         this.processState = processState;
-        response = new ModelNode().setEmptyObject();
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
             steps.put(stage, new ArrayDeque<Step>());
@@ -168,14 +156,21 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public void addStep(final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
-        addStep(response, operation, step, stage);
+        final ModelNode response = activeStep == null ? new ModelNode().setEmptyObject() : activeStep.response;
+        addStep(response, activeStep.operation, activeStep.address, step, stage);
     }
 
     public void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
-        addStep(response, operation, step, stage);
+        final ModelNode response = activeStep == null ? new ModelNode().setEmptyObject() : activeStep.response;
+        addStep(response, operation, null, step, stage);
     }
 
     public void addStep(final ModelNode response, final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
+        addStep(response, operation, null, step, stage);
+    }
+
+    private void addStep(final ModelNode response, final ModelNode operation, final PathAddress address,
+                         final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
         assert Thread.currentThread() == initiatingThread;
         if (response == null) {
             throw new IllegalArgumentException("response is null");
@@ -205,32 +200,40 @@ final class OperationContextImpl implements OperationContext {
             throw new IllegalArgumentException("Invalid step stage specified");
         }
         if (stage == Stage.IMMEDIATE) {
-            steps.get(currentStage).addFirst(new Step(step, response, operation));
+            steps.get(currentStage).addFirst(new Step(step, response, operation, address));
         } else {
-            steps.get(stage).addLast(new Step(step, response, operation));
+            steps.get(stage).addLast(new Step(step, response, operation, address));
         }
     }
 
     public ModelNode getFailureDescription() {
-        return response.get(FAILURE_DESCRIPTION);
+        return activeStep.response.get(FAILURE_DESCRIPTION);
     }
 
     public boolean hasFailureDescription() {
-        return response.has(FAILURE_DESCRIPTION);
+        return activeStep.response.has(FAILURE_DESCRIPTION);
     }
 
     public ResultAction completeStep() {
         try {
-            ResultAction action = doCompleteStep();
-            if (action == ResultAction.KEEP) {
+            doCompleteStep();
+            if (resultAction == ResultAction.KEEP) {
                 report(MessageSeverity.INFO, "Operation succeeded, committing");
             } else {
                 report(MessageSeverity.INFO, "Operation rolling back");
             }
-            return action;
+            return resultAction;
         } finally {
             respectInterruption = false;
         }
+    }
+
+    public void completeStep(RollbackHandler rollbackHandler) {
+        if (rollbackHandler == null) {
+            throw new IllegalArgumentException("rollbackHandler is null");
+        }
+        this.activeStep.rollbackHandler = rollbackHandler;
+        // we return and executeStep picks it up
     }
 
     /**
@@ -238,39 +241,22 @@ final class OperationContextImpl implements OperationContext {
      *
      * @return the result action for the step which has just completed
      */
-    private ResultAction doCompleteStep() {
+    private void doCompleteStep() {
+
         assert Thread.currentThread() == initiatingThread;
-        // If the operation is done, fail.
+        // If someone called this when the operation is done, fail.
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        // Cancellation is detected via interruption.
-        if (Thread.currentThread().isInterrupted()) {
-            cancelled = true;
+
+        // If previous steps have put us in a state where we shouldn't do any more, just stop
+        if (!canContinueProcessing()) {
+            respectInterruption = false;
+            return;
         }
-        // Rollback when any of:
-        // 1. operation is cancelled
-        // 2. operation failed in model phase
-        // 3. operation failed in runtime/verify and rollback_on_fail is set
-        // 4. isRollbackOnly
-        ModelNode response = this.response;
-        if (cancelled) {
-            response.get(OUTCOME).set(CANCELLED);
-            response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
-            response.get(ROLLED_BACK).set(true);
-            resultAction = ResultAction.ROLLBACK;
-            return resultAction;
-        }
-        if (response.hasDefined(FAILURE_DESCRIPTION) && (contextFlags.contains(ContextFlag.ROLLBACK_ON_FAIL) || currentStage == Stage.MODEL)) {
-            response.get(OUTCOME).set(FAILED);
-            response.get(ROLLED_BACK).set(true);
-            resultAction = ResultAction.ROLLBACK;
-            return resultAction;
-        }
-        if (resultAction == ResultAction.ROLLBACK) {
-            return ResultAction.ROLLBACK;
-        }
+
         // Locate the next step to execute.
+        ModelNode response = activeStep == null ? null : activeStep.response;
         Step step = null;
         do {
             step = steps.get(currentStage).pollFirst();
@@ -278,38 +264,63 @@ final class OperationContextImpl implements OperationContext {
                 // No steps remain in this stage; proceed to the next stage.
                 if (currentStage.hasNext()) {
                     currentStage = currentStage.next();
-                    if (contextType == Type.MANAGEMENT && currentStage == Stage.MODEL.next()) {
-                        // Management mode; we do not proceed past the MODEL stage.
-                        currentStage = Stage.DONE;
-                    } else if (affectsRuntime && currentStage == Stage.VERIFY) {
+                    if (affectsRuntime && currentStage == Stage.VERIFY) {
                         // a change was made to the runtime.  Thus, we must wait for stability before resuming in to verify.
                         try {
                             modelController.awaitContainerMonitor(true, 1);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             cancelled = true;
-                            response.get(OUTCOME).set(CANCELLED);
-                            response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
-                            response.get(ROLLED_BACK).set(true);
-                            return ResultAction.ROLLBACK;
+                            if (response != null) {
+                                response.get(OUTCOME).set(CANCELLED);
+                                response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
+                                response.get(ROLLED_BACK).set(true);
+                            }
+                            resultAction = ResultAction.ROLLBACK;
+                            return;
                         }
                     }
                 }
             } else {
-                return executeStep(step);
+                executeStep(step);
+                if (step.rollbackHandler == null) {
+                    // A recursive step executed
+                    return;
+                } else {
+                    // A non-recursive step executed
+                    // See if it put us in a state where we shouldn't do any more
+                    if (!canContinueProcessing()) {
+                        // We're done. Do the cleanup that would happen in executeStep's finally block
+                        // if this was a recursive step
+                        respectInterruption = false;
+                        step.finalizeStep();
+                        return;
+                    } else {
+                        // else move on to next step
+                        response = activeStep.response;
+                    }
+                }
             }
         } while (currentStage != Stage.DONE);
-        final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
-        // No more steps, verified operation is a success!
+
+        // All steps are completed withuout triggering rollback; time for final processing
+
+        // Prepare persistence of any configuration changes
         ConfigurationPersister.PersistenceResource persistenceResource = null;
-        if (isModelAffected() && resultAction != ResultAction.ROLLBACK) try {
-            persistenceResource = modelController.writeModel(model, affectsModel);
-        } catch (ConfigurationPersistenceException e) {
-            response.get(OUTCOME).set(FAILED);
-            log.errorf(e, "Failed to persist configuration change");
-            response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
-            return resultAction = ResultAction.ROLLBACK;
+        if (isModelAffected() && resultAction != ResultAction.ROLLBACK) {
+            try {
+                persistenceResource = modelController.writeModel(model, affectsModel);
+            } catch (ConfigurationPersistenceException e) {
+                response.get(OUTCOME).set(FAILED);
+                log.errorf(e, "Failed to persist configuration change");
+                response.get(FAILURE_DESCRIPTION).set("Failed to persist configuration change: " + e);
+                resultAction = ResultAction.ROLLBACK;
+                return;
+            }
         }
+
+        // Allow any containing TransactionControl to vote
+        final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
         if (transactionControl != null) {
             if (log.isTraceEnabled()) {
                 log.trace("Prepared response is " + response);
@@ -325,6 +336,8 @@ final class OperationContextImpl implements OperationContext {
             }, response);
         }
         resultAction = ref.get();
+
+        // Commit the persistence of any configuration changes
         if (persistenceResource != null) {
             if (resultAction == ResultAction.ROLLBACK) {
                 persistenceResource.rollback();
@@ -332,36 +345,56 @@ final class OperationContextImpl implements OperationContext {
                 persistenceResource.commit();
             }
         }
-        return resultAction;
     }
 
-    private ResultAction executeStep(final Step step) {
-        PathAddress oldModelAddress = modelAddress;
-        ModelNode oldOperation = operation;
-        ModelNode oldResponse = this.response;
-        StampHolder oldRestartStamp = restartStampHolder;
-        Stage stepStage = null;
-        ModelNode response = null;
+    private boolean canContinueProcessing() {
+
+        // Cancellation is detected via interruption.
+        if (Thread.currentThread().isInterrupted()) {
+            cancelled = true;
+        }
+        // Rollback when any of:
+        // 1. operation is cancelled
+        // 2. operation failed in model phase
+        // 3. operation failed in runtime/verify and rollback_on_fail is set
+        // 4. isRollbackOnly
+        if (cancelled) {
+            if (activeStep != null) {
+                activeStep.response.get(OUTCOME).set(CANCELLED);
+                activeStep.response.get(FAILURE_DESCRIPTION).set("Operation cancelled");
+                activeStep.response.get(ROLLED_BACK).set(true);
+            }
+            resultAction = ResultAction.ROLLBACK;
+        }
+        else if (activeStep != null && activeStep.response.hasDefined(FAILURE_DESCRIPTION) && (contextFlags.contains(ContextFlag.ROLLBACK_ON_FAIL) || currentStage == Stage.MODEL)) {
+            activeStep.response.get(OUTCOME).set(FAILED);
+            activeStep.response.get(ROLLED_BACK).set(true);
+            resultAction = ResultAction.ROLLBACK;
+        }
+        return resultAction != ResultAction.ROLLBACK;
+    }
+
+    private void executeStep(final Step step) {
+
+        step.predecessor = this.activeStep;
+        this.activeStep = step;
+
         try {
-            // next step runs at the next depth level
-            depth++;
-            response = this.response = step.response;
-            this.restartStampHolder = step.restartStamp;
-            ModelNode newOperation = operation = step.operation;
-            modelAddress = PathAddress.pathAddress(newOperation.get(OP_ADDR));
             try {
-                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(step.getClass());
+                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(step.handler.getClass());
                 try {
-                    step.handler.execute(this, newOperation);
+                    step.handler.execute(this, step.operation);
                 } finally {
                     SecurityActions.setThreadContextClassLoader(oldTccl);
                 }
+
             } catch (OperationFailedException ofe) {
                 if (currentStage != Stage.DONE) {
                     // Handler threw OFE before calling completeStep(); that's equivalent to
                     // a request that we set the failure description and call completeStep()
-                    response.get(FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
-                    log.errorf("Operation (%s) failed - address: (%s) - failure description: %s", operation.get(OP), operation.get(OP_ADDR), response.get(FAILURE_DESCRIPTION));
+                    step.response.get(FAILURE_DESCRIPTION).set(ofe.getFailureDescription());
+                    log.errorf("Operation (%s) failed - address: (%s) - failure description: %s",
+                            step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
                     completeStep();
                 }
                 else {
@@ -370,75 +403,56 @@ final class OperationContextImpl implements OperationContext {
                     throw ofe;
                 }
             }
-            assert resultAction != null;
         } catch (Throwable t) {
-            log.errorf(t, "Operation (%s) failed - address: (%s)", operation.get(OP), operation.get(OP_ADDR));
-            // If this block is entered, then the next step failed
+            if (t instanceof StackOverflowError) {
+                log.errorf(t, "Operation (%s) failed - address: (%s) -- due to insufficient stack space for the thread used to " +
+                        "execute operations. If this error is occurring during server boot, setting " +
+                        "system property %s to a value higher than [%d] may resolve this problem.",
+                        step.operation.get(OP), step.operation.get(OP_ADDR), AbstractControllerService.BOOT_STACK_SIZE_PROPERTY,
+                        AbstractControllerService.DEFAULT_BOOT_STACK_SIZE);
+            } else {
+                log.errorf(t, "Operation (%s) failed - address: (%s)", step.operation.get(OP), step.operation.get(OP_ADDR));
+            }
+            // If this block is entered, then the step failed
             // The question is, did it fail before or after calling completeStep()?
             if (currentStage != Stage.DONE) {
                 // It failed before, so consider the operation a failure.
-                if (! response.hasDefined(FAILURE_DESCRIPTION)) {
-                    response.get(FAILURE_DESCRIPTION).set("Operation handler failed: " + t);
+                if (! step.response.hasDefined(FAILURE_DESCRIPTION)) {
+                    step.response.get(FAILURE_DESCRIPTION).set("Operation handler failed: " + t);
                 }
-                response.get(OUTCOME).set(FAILED);
+                step.response.get(OUTCOME).set(FAILED);
                 resultAction = getFailedResultAction(t);
                 if (resultAction == ResultAction.ROLLBACK) {
-                    response.get(ROLLED_BACK).set(true);
+                    step.response.get(ROLLED_BACK).set(true);
                 }
-                return resultAction;
             } else {
-                if (resultAction != ResultAction.KEEP) {
-                    response.get(ROLLED_BACK).set(true);
-                }
-                response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
                 // It failed after!  Just return, ignore the failure
                 report(MessageSeverity.WARN, "Step handler " + step.handler + " failed after completion");
-                return resultAction;
             }
         } finally {
-            modelAddress = oldModelAddress;
-            operation = oldOperation;
-            this.response = oldResponse;
-            this.restartStampHolder = oldRestartStamp;
-            if (lockDepth == depth) {
-                modelController.releaseLock();
-                lockDepth = 0;
-            }
-            if (containerMonitorDepth == depth) {
-                awaitContainerMonitor();
-                modelController.releaseContainerMonitor();
-                containerMonitorDepth = 0;
-            }
-            stepStage = currentStage;
-            if (--depth == 0) {
-                // We're returning from the outermost completeStep()
-                // Null out the current stage to disallow further access to the context
-                currentStage = null;
-            }
-        }
 
-        if (stepStage != Stage.DONE) {
-            // This is a failure because the next step failed to call completeStep().
-            // Either an exception occurred beforehand, or the implementer screwed up.
-            // If an exception occurred, then this will have no effect.
-            // If the implementer screwed up, then we're essentially fixing the context state and treating
-            // the overall operation as a failure.
-            currentStage = currentStage != null ? Stage.DONE : null;
-            if (! response.hasDefined(FAILURE_DESCRIPTION)) {
-                response.get(FAILURE_DESCRIPTION).set("Operation handler failed to complete");
+            boolean finalize = true;
+            if (step.rollbackHandler != null) {
+                // A non-recursive step executed
+                if (!hasMoreSteps()) {
+                    // this step was the last registered step;
+                    // go ahead and shift back into recursive mode to wrap things up
+                    completeStep();
+                } else {
+                    // Let doCompleteStep carry on with subsequent steps.
+                    // If this step has failed in a way that will prevent subsequent steps running,
+                    // doCompleteStep will finalize this step.
+                    // Otherwise, some subsequent step will finalize this step
+                    finalize = false;
+                }
             }
-            response.get(OUTCOME).set(FAILED);
-            response.get(ROLLED_BACK).set(true);
-            resultAction = getFailedResultAction(null);
-            return resultAction;
-        } else {
-            response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
+
+            if (finalize) {
+                // We're on the way out on the recursive call path. Finish off this step
+                step.finalizeStep();
+            }
+            // else non-recursive steps get finished off by the succeeding recursive step
         }
-        if (resultAction == ResultAction.ROLLBACK) {
-            response.get(OUTCOME).set(FAILED);
-            response.get(ROLLED_BACK).set(true);
-        }
-        return resultAction;
     }
 
     /**
@@ -489,8 +503,8 @@ final class OperationContextImpl implements OperationContext {
     @Override
     public void reloadRequired() {
         if (processState.isReloadSupported()) {
-            this.restartStampHolder.restartStamp = processState.setReloadRequired();
-            this.response.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RELOAD).set(true);
+            activeStep.restartStamp = processState.setReloadRequired();
+            activeStep.response.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RELOAD).set(true);
         } else {
             restartRequired();
         }
@@ -498,18 +512,18 @@ final class OperationContextImpl implements OperationContext {
 
     @Override
     public void restartRequired() {
-        this.restartStampHolder.restartStamp = processState.setRestartRequired();
-        this.response.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RESTART).set(true);
+        activeStep.restartStamp = processState.setRestartRequired();
+        activeStep.response.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RESTART).set(true);
     }
 
     @Override
     public void revertReloadRequired() {
         if (processState.isReloadSupported()) {
-            processState.revertReloadRequired(this.restartStampHolder.restartStamp);
-            if (this.response.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RELOAD)) {
-                this.response.get(RESPONSE_HEADERS).remove(OPERATION_REQUIRES_RELOAD);
-                if (this.response.get(RESPONSE_HEADERS).asInt() == 0) {
-                    this.response.remove(RESPONSE_HEADERS);
+            processState.revertReloadRequired(this.activeStep.restartStamp);
+            if (activeStep.response.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RELOAD)) {
+                activeStep.response.get(RESPONSE_HEADERS).remove(OPERATION_REQUIRES_RELOAD);
+                if (activeStep.response.get(RESPONSE_HEADERS).asInt() == 0) {
+                    activeStep.response.remove(RESPONSE_HEADERS);
                 }
             }
         }
@@ -520,23 +534,23 @@ final class OperationContextImpl implements OperationContext {
 
     @Override
     public void revertRestartRequired() {
-        processState.revertRestartRequired(this.restartStampHolder.restartStamp);
-        if (this.response.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RESTART)) {
-            this.response.get(RESPONSE_HEADERS).remove(OPERATION_REQUIRES_RESTART);
-            if (this.response.get(RESPONSE_HEADERS).asInt() == 0) {
-                this.response.remove(RESPONSE_HEADERS);
+        processState.revertRestartRequired(this.activeStep.restartStamp);
+        if (activeStep.response.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RESTART)) {
+            activeStep.response.get(RESPONSE_HEADERS).remove(OPERATION_REQUIRES_RESTART);
+            if (activeStep.response.get(RESPONSE_HEADERS).asInt() == 0) {
+                activeStep.response.remove(RESPONSE_HEADERS);
             }
         }
     }
 
     @Override
     public void runtimeUpdateSkipped() {
-        this.response.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).set(true);
+        activeStep.response.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).set(true);
     }
 
 
     public ManagementResourceRegistration getResourceRegistrationForUpdate() {
-        final PathAddress address = modelAddress;
+        final PathAddress address = activeStep.address;
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -554,7 +568,7 @@ final class OperationContextImpl implements OperationContext {
 
 
     public ImmutableManagementResourceRegistration getResourceRegistration() {
-        final PathAddress address = modelAddress;
+        final PathAddress address = activeStep.address;
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null || currentStage == Stage.DONE) {
@@ -570,7 +584,7 @@ final class OperationContextImpl implements OperationContext {
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
         }
-        if (! (currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack() && ! modify)) {
+        if (! (!modify || currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack())) {
             throw new IllegalStateException("Get service registry only supported in runtime operations");
         }
         if (modify && !affectsRuntime) {
@@ -632,7 +646,7 @@ final class OperationContextImpl implements OperationContext {
                 }
             }
 
-            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+            public void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
                 switch (transition) {
                     case REMOVING_to_REMOVED:
                     case REMOVING_to_DOWN: {
@@ -669,13 +683,13 @@ final class OperationContextImpl implements OperationContext {
     }
 
     private void takeWriteLock() {
-        if (lockDepth == 0) {
+        if (lockStep == null) {
             if (currentStage == Stage.DONE) {
                 throw new IllegalStateException("Invalid modification after completed step");
             }
             try {
                 modelController.acquireLock(respectInterruption);
-                lockDepth = depth;
+                lockStep = activeStep;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new CancellationException("Operation cancelled asynchronously");
@@ -684,12 +698,12 @@ final class OperationContextImpl implements OperationContext {
     }
 
     private void acquireContainerMonitor() {
-        if (containerMonitorDepth == 0) {
+        if (containerMonitorStep == null) {
             if (currentStage == Stage.DONE) {
                 throw new IllegalStateException("Invalid modification after completed step");
             }
             modelController.acquireContainerMonitor();
-            containerMonitorDepth = depth;
+            containerMonitorStep = activeStep;
         }
     }
 
@@ -703,7 +717,7 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public ModelNode readModel(final PathAddress requestAddress) {
-        final PathAddress address = modelAddress.append(requestAddress);
+        final PathAddress address = activeStep.address.append(requestAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -718,7 +732,7 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public ModelNode readModelForUpdate(final PathAddress requestAddress) {
-        final PathAddress address = modelAddress.append(requestAddress);
+        final PathAddress address = activeStep.address.append(requestAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -747,7 +761,6 @@ final class OperationContextImpl implements OperationContext {
                     if(!childrenNames.contains(key)) {
                         throw new IllegalStateException("no child-type " + key);
                     }
-                    // TODO check cardinality
                     final Resource newModel = Resource.Factory.create();
                     model.registerChild(element, newModel);
                     model = newModel;
@@ -765,7 +778,7 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public Resource readResource(PathAddress requestAddress) {
-        final PathAddress address = modelAddress.append(requestAddress);
+        final PathAddress address = activeStep.address.append(requestAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -779,7 +792,7 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public Resource readResourceForUpdate(PathAddress requestAddress) {
-        final PathAddress address = modelAddress.append(requestAddress);
+        final PathAddress address = activeStep.address.append(requestAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -812,7 +825,7 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public void addResource(PathAddress relativeAddress, Resource toAdd) {
-        final PathAddress absoluteAddress = modelAddress.append(relativeAddress);
+        final PathAddress absoluteAddress = activeStep.address.append(relativeAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -846,7 +859,6 @@ final class OperationContextImpl implements OperationContext {
                     if(!childrenNames.contains(key)) {
                         throw new IllegalStateException("no child-type " + key);
                     }
-                    // TODO check cardinality
                     model.registerChild(element, toAdd);
                     model = toAdd;
                 }
@@ -868,7 +880,7 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public Resource removeResource(final PathAddress requestAddress) {
-        final PathAddress address = modelAddress.append(requestAddress);
+        final PathAddress address = activeStep.address.append(requestAddress);
         assert Thread.currentThread() == initiatingThread;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
@@ -934,35 +946,122 @@ final class OperationContextImpl implements OperationContext {
     }
 
     public ModelNode getResult() {
-        return response.get(RESULT);
+        return activeStep.response.get(RESULT);
     }
 
     public boolean hasResult() {
-        return response.has(RESULT);
+        return activeStep.response.has(RESULT);
     }
 
-    static class Step {
+    private boolean hasMoreSteps() {
+        Stage stage = currentStage;
+        boolean more = !steps.get(stage).isEmpty();
+        while (!more && stage.hasNext()) {
+            stage = stage.next();
+            more = !steps.get(stage).isEmpty();
+        }
+        return more;
+    }
+
+    private class Step {
         private final OperationStepHandler handler;
         private final ModelNode response;
         private final ModelNode operation;
-        private final StampHolder restartStamp  = new StampHolder();
+        private final PathAddress address;
+        private Object restartStamp;
+        private RollbackHandler rollbackHandler;
+        private Step predecessor;
 
-        private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation) {
+        private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation, final PathAddress address) {
             this.handler = handler;
             this.response = response;
             this.operation = operation;
+            this.address = address == null ? PathAddress.pathAddress(operation.get(OP_ADDR)) : address;
             // Create the outcome node early so it appears at the top of the response
             response.get(OUTCOME);
         }
-    }
 
-    /**
-     *  Simple wrapper object to allow the context and the current Step to share a reference to the object returned by
-     *  {@link ModelControllerImpl#setReloadRequired()} or
-     *  {@link ModelControllerImpl#setRestartRequired()}
-     */
-    static class StampHolder {
-        private Object restartStamp;
+        private void finalizeStep() {
+            finalizeInternal();
+            Step step = this.predecessor;
+            while (step != null) {
+                if (step.rollbackHandler != null) {
+                    step.finalizeInternal();
+                    step = step.predecessor;
+                } else {
+                    OperationContextImpl.this.activeStep = step;
+                    break;
+                }
+            }
+        }
+
+        private void finalizeInternal() {
+
+            OperationContextImpl.this.activeStep = this;
+
+            try {
+                handleRollback();
+
+                if (currentStage != null && currentStage != Stage.DONE) {
+                    // This is a failure because the next step failed to call completeStep().
+                    // Either an exception occurred beforehand, or the implementer screwed up.
+                    // If an exception occurred, then this will have no effect.
+                    // If the implementer screwed up, then we're essentially fixing the context state and treating
+                    // the overall operation as a failure.
+                    currentStage = currentStage != null ? Stage.DONE : null;
+                    if (! response.hasDefined(FAILURE_DESCRIPTION)) {
+                        response.get(FAILURE_DESCRIPTION).set("Operation handler failed to complete");
+                    }
+                    response.get(OUTCOME).set(FAILED);
+                    response.get(ROLLED_BACK).set(true);
+                    resultAction = getFailedResultAction(null);
+                } else if (resultAction == ResultAction.ROLLBACK) {
+                    response.get(OUTCOME).set(FAILED);
+                    response.get(ROLLED_BACK).set(true);
+                } else {
+                    response.get(OUTCOME).set(response.hasDefined(FAILURE_DESCRIPTION) ? FAILED : SUCCESS);
+                }
+
+            } finally {
+                if (OperationContextImpl.this.lockStep == this) {
+                    modelController.releaseLock();
+                    lockStep = null;
+                }
+                if (OperationContextImpl.this.containerMonitorStep == this) {
+                    awaitContainerMonitor();
+                    modelController.releaseContainerMonitor();
+                    containerMonitorStep = null;
+                }
+
+                if (predecessor == null) {
+                    // We're returning from the outermost completeStep()
+                    // Null out the current stage to disallow further access to the context
+                    currentStage = null;
+                }
+            }
+        }
+
+        private void handleRollback() {
+            if (rollbackHandler != null) {
+                try {
+                    if (resultAction == ResultAction.ROLLBACK) {
+                        ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
+                        try {
+                            rollbackHandler.handleRollback(OperationContextImpl.this, operation);
+                        } finally {
+                            SecurityActions.setThreadContextClassLoader(oldTccl);
+                        }
+                    }
+                } catch (Exception e) {
+                    report(MessageSeverity.ERROR, String.format("Step handler %s for operation %s at address %s " +
+                            "failed handling operation rollback -- %s", handler, operation.get(OP).asString(), address, e));
+                } finally {
+                    // Clear the rollback handler so we never try and finalize this step again
+                    rollbackHandler = null;
+                }
+            }
+        }
+
     }
 
     class ContextServiceTarget implements ServiceTarget {

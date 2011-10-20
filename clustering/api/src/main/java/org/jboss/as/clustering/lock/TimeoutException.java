@@ -24,6 +24,8 @@ package org.jboss.as.clustering.lock;
 
 import org.jboss.as.clustering.ClusterNode;
 
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 /**
  * Thrown to indicate failure to acquire a lock within a specified timeout.
  *
@@ -36,7 +38,7 @@ public class TimeoutException extends java.util.concurrent.TimeoutException {
     private ClusterNode owner;
 
     public TimeoutException(ClusterNode owner) {
-        super("Unable to acquire lock as it is held by " + (owner == null ? "unknown" : owner));
+        super((owner == null ? MESSAGES.cannotAcquireHeldLock() : MESSAGES.cannotAcquireHeldLock(owner)));
         this.owner = owner;
     }
 

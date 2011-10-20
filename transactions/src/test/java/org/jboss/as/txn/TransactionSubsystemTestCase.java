@@ -27,11 +27,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
+import org.junit.Ignore;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
+@Ignore
 public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public TransactionSubsystemTestCase() {
@@ -42,7 +44,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         //This is just copied from standalone.xml testing more combinations would be good
         return
-            "<subsystem xmlns=\"urn:jboss:domain:transactions:1.0\">" +
+            "<subsystem xmlns=\"urn:jboss:domain:transactions:1.0\" >" +
             "    <recovery-environment socket-binding=\"txn-recovery-environment\" status-socket-binding=\"txn-status-manager\"/>" +
             "    <core-environment>" +
             "        <process-id>" +
@@ -60,12 +62,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 return OperationContext.Type.MANAGEMENT;
             }
 
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1797
-                return null;
-            }
         };
     }
 }

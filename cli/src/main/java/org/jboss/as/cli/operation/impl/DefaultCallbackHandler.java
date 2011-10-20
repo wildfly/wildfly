@@ -69,9 +69,16 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
     private CommandLineFormat format;
 
+    private boolean validation;
+
     private String originalLine;
 
     public DefaultCallbackHandler() {
+        this(true);
+    }
+
+    public DefaultCallbackHandler(boolean validate) {
+        this.validation = validate;
     }
 
     public DefaultCallbackHandler(OperationRequestAddress prefix) {
@@ -85,6 +92,16 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         }
         this.originalLine = argsStr;
         ParserUtil.parse(argsStr, this);
+    }
+
+    public void parse(OperationRequestAddress initialAddress, String argsStr, boolean validation) throws CommandFormatException {
+        final boolean defaultValidation = this.validation;
+        this.validation = validation;
+        try {
+            parse(initialAddress, argsStr);
+        } finally {
+            this.validation = defaultValidation;
+        }
     }
 
     public void parseOperation(OperationRequestAddress prefix, String argsStr) throws CommandFormatException {
@@ -242,8 +259,15 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     }
 
     @Override
-    public void validatedOperationName(int index, String operationName) throws OperationFormatException {
+    public void operationName(int index, String operationName) throws OperationFormatException {
+        if(validation) {
+            super.operationName(index, operationName);
+        } else {
+            validatedOperationName(index, operationName);
+        }
+    }
 
+    public void validatedOperationName(int index, String operationName) throws OperationFormatException {
         this.operationName = operationName;
         separator = SEPARATOR_NONE;
         lastChunkIndex = index;
@@ -256,9 +280,16 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     }
 
     @Override
-    //public void validatedPropertyName(String argName) throws OperationFormatException {
-    public void propertyName(int index, String propertyName)
-            throws OperationFormatException {
+    public void propertyName(int index, String propertyName) throws OperationFormatException {
+        if(validation) {
+            super.propertyName(index, propertyName);
+        } else {
+            validatedPropertyName(index, propertyName);
+        }
+    }
+
+    @Override
+    protected void validatedPropertyName(int index, String propertyName) throws OperationFormatException {
         props.put(propertyName, null);
         lastPropName = propertyName;
         lastPropValue = null;
@@ -273,7 +304,6 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     }
 
     @Override
-    //public void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException {
     public void property(String name, String value, int nameValueSeparatorIndex)
             throws OperationFormatException {
 
@@ -283,6 +313,15 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
                             + value + "'");
         }
 */
+        if(validation) {
+            super.property(name, value, nameValueSeparatorIndex);
+        } else {
+            validatedProperty(name, value, nameValueSeparatorIndex);
+        }
+    }
+
+    @Override
+    protected void validatedProperty(String name, String value, int nameValueSeparatorIndex) throws OperationFormatException {
         if(name == null) {
             otherArgs.add(value);
         } else {
@@ -388,20 +427,6 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
     public String getOutputTarget() {
         return outputTarget;
-    }
-
-    @Override
-    protected void validatedProperty(String name, String value,
-            int nameValueSeparatorIndex) throws OperationFormatException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    protected void validatedPropertyName(int index, String propertyName)
-            throws OperationFormatException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override

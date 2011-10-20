@@ -46,6 +46,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Base class for handlers that interact with either a HornetQ {@link org.hornetq.api.core.management.QueueControl}
@@ -279,7 +280,8 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        ServiceController<?> hqService = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         DelegatingQueueControl<T> control = getQueueControl(hqServer, queueName);
 

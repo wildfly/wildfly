@@ -37,8 +37,12 @@ interface CommonAttributes {
     String ENABLE_TSM_STATUS = "enable-tsm-status";
     String NODE_IDENTIFIER = "node-identifier";
     String OBJECT_STORE = "object-store";
+    String OBJECT_STORE_PATH = "object-store-path";
+    String OBJECT_STORE_RELATIVE_TO = "object-store-relative-to";
+
     /** The com.arjuna.ats.arjuna.utils.Process implementation type */
     String PROCESS_ID = "process-id";
+    String CONFIGURATION = "configuration";
     String RECOVERY_ENVIRONMENT = "recovery-environment";
     String RECOVERY_LISTENER = "recovery-listener";
     /** The process-id/socket element */

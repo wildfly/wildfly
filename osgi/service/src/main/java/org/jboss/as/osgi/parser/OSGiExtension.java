@@ -21,6 +21,8 @@
  */
 package org.jboss.as.osgi.parser;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -55,6 +57,7 @@ public class OSGiExtension implements Extension {
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiSubsystemAdd.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false);
         registration.registerReadWriteAttribute(ModelConstants.ACTIVATION, null, new ActivationAttributeHandler(), Storage.CONFIGURATION);
         registration.registerReadWriteAttribute(ModelConstants.STARTLEVEL, StartLevelHandler.READ_HANDLER, StartLevelHandler.WRITE_HANDLER, Storage.RUNTIME);
+        registration.registerOperationHandler(ModelConstants.ACTIVATE, ActivateOperationHandler.INSTANCE, ActivateOperationHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.RESTART_NONE));
         registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, OSGiSubsystemDescribeHandler.INSTANCE, OSGiSubsystemAdd.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
 
         // Configuration Admin Setings
@@ -63,7 +66,7 @@ public class OSGiExtension implements Extension {
         configuration.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiConfigurationRemove.INSTANCE, OSGiConfigurationRemove.DESCRIPTION, false);
 
         // Framework Properties
-        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.FRAMEWORK_PROPERTY), OSGiSubsystemProviders.FRAMEWORK_PROPERTY_DESCRIPTION);
+        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.PROPERTY), OSGiSubsystemProviders.FRAMEWORK_PROPERTY_DESCRIPTION);
         properties.registerOperationHandler(ModelDescriptionConstants.ADD, OSGiFrameworkPropertyAdd.INSTANCE, OSGiFrameworkPropertyAdd.DESCRIPTION, false);
         properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, OSGiFrameworkPropertyRemove.INSTANCE, OSGiFrameworkPropertyRemove.DESCRIPTION, false);
 

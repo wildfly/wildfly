@@ -105,7 +105,6 @@
                 <xs:element name="system-properties" type="properties" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="profile" type="standalone-profileType" minOccurs="0"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>

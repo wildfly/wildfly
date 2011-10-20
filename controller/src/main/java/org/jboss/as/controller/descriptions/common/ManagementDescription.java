@@ -143,6 +143,15 @@ public class ManagementDescription {
         return root;
     }
 
+    public static ModelNode getNativeRemotingManagementDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(DESCRIPTION).set(bundle.getString("core.management.native-remoting-interface"));
+        root.get(HEAD_COMMENT_ALLOWED).set(true);
+        root.get(TAIL_COMMENT_ALLOWED).set(false);
+        return root;
+    }
+
     public static ModelNode getHttpManagementDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
@@ -169,6 +178,15 @@ public class ManagementDescription {
         op.get(REQUEST_PROPERTIES, PORT, TYPE).set(ModelType.STRING);
         op.get(REQUEST_PROPERTIES, PORT, DESCRIPTION).set(bundle.getString("core.management.native-interface.port"));
         op.get(REQUEST_PROPERTIES, PORT, REQUIRED).set(false);
+
+        return op;
+    }
+
+    public static ModelNode getAddNativeRemotingManagementDescription(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode op = new ModelNode();
+        op.get(DESCRIPTION).set(bundle.getString("core.management.native-remoting-interface.add"));
+        op.get(OPERATION_NAME).set(ADD);
 
         return op;
     }

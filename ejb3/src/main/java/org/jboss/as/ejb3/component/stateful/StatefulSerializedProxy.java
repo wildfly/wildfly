@@ -50,6 +50,6 @@ public class StatefulSerializedProxy implements Serializable {
 
     private Object readResolve() throws ObjectStreamException {
         ServiceController<ComponentView> view = (ServiceController<ComponentView>) CurrentServiceContainer.getServiceContainer().getRequiredService(ServiceName.parse(viewName));
-        return view.getValue().createInstance(Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, sessionID)).createProxy();
+        return view.getValue().createInstance(Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, sessionID)).getInstance();
     }
 }

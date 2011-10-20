@@ -22,17 +22,20 @@
 
 package org.jboss.as.web.security;
 
+import java.util.Set;
+
+import javax.security.jacc.PolicyContext;
+
 import org.apache.catalina.Realm;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.Map;
-import java.util.Set;
+import org.jboss.security.SecurityConstants;
 
 /**
  * Service to install the default {@code Realm} implementation.
@@ -45,10 +48,10 @@ public class JBossWebRealmService implements Service<Realm> {
 
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
 
-    private final Map<String, Set<String>> principalVersusRolesMap;
+    private final DeploymentUnit deploymentUnit;
 
-    public JBossWebRealmService(Map<String, Set<String>> map) {
-        this.principalVersusRolesMap = map;
+    public JBossWebRealmService(DeploymentUnit deploymentUnit) {
+        this.deploymentUnit = deploymentUnit;
     }
 
     /** {@inheritDoc} */
@@ -59,14 +62,26 @@ public class JBossWebRealmService implements Service<Realm> {
         jbossWebRealm.setAuthenticationManager(sdc.getAuthenticationManager());
         jbossWebRealm.setAuthorizationManager(sdc.getAuthorizationManager());
         jbossWebRealm.setMappingManager(sdc.getMappingManager());
-        jbossWebRealm.setPrincipalVersusRolesMap(principalVersusRolesMap);
+        jbossWebRealm.setAuditManager(sdc.getAuditManager());
+        jbossWebRealm.setDeploymentUnit(deploymentUnit);
         this.realm = jbossWebRealm;
+        try {
+            // Register the active request PolicyContextHandler
+            HttpServletRequestPolicyContextHandler handler = new HttpServletRequestPolicyContextHandler();
+            PolicyContext.registerHandler(SecurityConstants.WEB_REQUEST_KEY, handler, true);
+        } catch (Exception e) {
+            throw new StartException(e);
+        }
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("rawtypes")
     @Override
     public void stop(StopContext context) {
         realm = null;
+        // remove handler
+        Set handlerKeys = PolicyContext.getHandlerKeys();
+        handlerKeys.remove(SecurityConstants.WEB_REQUEST_KEY);
     }
 
     /** {@inheritDoc} */

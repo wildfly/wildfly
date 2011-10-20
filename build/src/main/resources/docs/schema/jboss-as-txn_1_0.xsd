@@ -73,7 +73,13 @@
 
                 The process-id element specifies the process id implemention.
                 The "node-identifier" attribute is used to set the node identifier on the core environment.
-                The "relative-to" and "path" attributes allow for specification of the environment var directory
+
+                The "path" attribute denotes a relative or absolute filesystem path denoting where the transaction
+                manager core should store data.
+
+                The "relative-to" attribute references a global path configuration in the domain model, defaulting
+                to the JBoss Application Server data directory (jboss.server.data.dir). If the value of the "path" attribute
+                does not specify an absolute pathname, it will treated as relative to this path.
             ]]>
             </xs:documentation>
         </xs:annotation>
@@ -81,8 +87,8 @@
             <xs:element name="process-id" type="process-id" />
         </xs:all>
         <xs:attribute name="node-identifier" type="xs:string" default="1"/>
-        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>
         <xs:attribute name="path" type="xs:string" default="var"/>
+        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>
     </xs:complexType>
     <xs:complexType name="process-id">
         <xs:annotation>
@@ -146,14 +152,17 @@
             <![CDATA[
                 The object store configuration.
 
-                The "relative-to" references a global path configuration in the domain model, with the default
-                to the JBoss Application data directory (jboss.server.data.dir).
-                The "path" the directory based on the referenced path.
+                The "path" attribute denotes a relative or absolute filesystem path denoting where the transaction
+                manager object store should store data.
+
+                The "relative-to" attribute references a global path configuration in the domain model, defaulting
+                to the JBoss Application Server data directory (jboss.server.data.dir). If the value of the "path" attribute
+                does not specify an absolute pathname, it will treated as relative to this path.
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir" />
         <xs:attribute name="path" type="xs:string" default="tx-object-store"/>
+        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir" />
     </xs:complexType>
 
 </xs:schema>

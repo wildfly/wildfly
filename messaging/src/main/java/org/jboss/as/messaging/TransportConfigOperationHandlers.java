@@ -61,6 +61,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Basic {@link TransportConfiguration} (Acceptor/Connector) related operations.
@@ -156,7 +157,8 @@ class TransportConfigOperationHandlers {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
+                    final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(hqServiceName);
                     if(controller != null) {
                         context.reloadRequired();
                     }
@@ -311,6 +313,7 @@ class TransportConfigOperationHandlers {
         final AttributeDefinition[] attributes;
 
         private AttributeWriteHandler(AttributeDefinition[] attributes) {
+            super(attributes);
             this.attributes = attributes;
         }
 
@@ -319,21 +322,6 @@ class TransportConfigOperationHandlers {
             for (AttributeDefinition attr : attributes) {
                 registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
             }
-        }
-
-        @Override
-        protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-            final AttributeDefinition def = getAttributeDefinition(name);
-            def.getValidator().validateParameter(name, value);
-        }
-
-        static final AttributeDefinition getAttributeDefinition(final String attributeName) {
-            for(final AttributeDefinition def : AddressSettingAdd.ATTRIBUTES) {
-                if(def.getName().equals(attributeName)) {
-                    return def;
-                }
-            }
-            return null;
         }
     }
 

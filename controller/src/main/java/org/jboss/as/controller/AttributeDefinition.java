@@ -36,6 +36,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -172,6 +173,9 @@ public abstract class AttributeDefinition {
         ModelNode node = new ModelNode();
         if (operationObject.has(name)) {
             node.set(operationObject.get(name));
+        }
+        if (isAllowExpression() && node.getType() == ModelType.STRING) {
+            node = ParseUtils.parsePossibleExpression(node.asString());
         }
         if (!node.isDefined() && defaultValue.isDefined()) {
             validator.validateParameter(name, defaultValue);

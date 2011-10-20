@@ -66,7 +66,7 @@ public class ValidationTestCase {
         assertValidOperation("_-_");
     }
 
-/* TODO  @Test
+  @Test
     public void testParameterNames() {
 
         assertValidParamName("_");
@@ -74,7 +74,7 @@ public class ValidationTestCase {
         assertInvalidParamName("_-");
         assertValidParamName("_-_");
     }
-*/
+
     protected void assertValidType(String type) {
         assertValidInput(type);
     }

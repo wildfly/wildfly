@@ -40,8 +40,8 @@ public class ReloadRequiredWriteAttributeHandler extends AbstractWriteAttributeH
         super(validator);
     }
 
-    public ReloadRequiredWriteAttributeHandler(final AttributeDefinition definition) {
-        super(definition);
+    public ReloadRequiredWriteAttributeHandler(final AttributeDefinition... definitions) {
+        super(definitions);
     }
 
     public ReloadRequiredWriteAttributeHandler(final ParameterValidator unresolvedValidator, final ParameterValidator resolvedValidator) {

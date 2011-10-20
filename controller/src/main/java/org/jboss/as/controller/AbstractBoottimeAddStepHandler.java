@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * Base class for {@link OperationStepHandler} implementations that add managed resource and also perform runtime
- * processing that should only occur during server boot. An example of such processing would be installing a
+ * processing that <strong>should only occur during server boot</strong>. An example of such processing would be installing a
  * deployment processor.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.

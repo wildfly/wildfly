@@ -22,27 +22,48 @@
 
 package org.jboss.as.logging;
 
-import java.util.logging.Handler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.ExtHandler;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Handler;
+
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 
 /**
  * Parent operation responsible for updating the 'autoflush' property of logging handlers.
  *
  * @author John Bailey
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class FlushingHandlerUpdateProperties extends HandlerUpdateProperties {
-    protected void updateModel(final ModelNode operation, ModelNode model) {
-        if (operation.hasDefined(AUTOFLUSH)) {
-            apply(operation, model, AUTOFLUSH);
+public class FlushingHandlerUpdateProperties<T extends ExtHandler> extends HandlerUpdateProperties<T> {
+
+    protected FlushingHandlerUpdateProperties(final List<String> attributes, final AttributeDefinition... attributeDefinitions) {
+        super(attributes, join(attributeDefinitions, AUTOFLUSH));
+    }
+
+    protected FlushingHandlerUpdateProperties(final AttributeDefinition... attributeDefinitions) {
+        super(join(attributeDefinitions, AUTOFLUSH));
+    }
+
+    @Override
+    protected void updateRuntime(final ModelNode operation, final ExtHandler handler) throws OperationFailedException {
+        final ModelNode autoflush = AUTOFLUSH.validateResolvedOperation(operation);
+        if (autoflush.isDefined()) {
+            handler.setAutoFlush(autoflush.asBoolean());
         }
     }
 
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
-        if (operation.hasDefined(AUTOFLUSH)) {
-            ExtHandler.class.cast(handler).setAutoFlush(operation.get(AUTOFLUSH).asBoolean());
+    private static List<AttributeDefinition> join(final AttributeDefinition[] supplied, final AttributeDefinition... added) {
+        final List<AttributeDefinition> result = new ArrayList<AttributeDefinition>();
+        for (AttributeDefinition attr : added) {
+            result.add(attr);
         }
+        result.addAll(Arrays.asList(supplied));
+        return result;
     }
 }

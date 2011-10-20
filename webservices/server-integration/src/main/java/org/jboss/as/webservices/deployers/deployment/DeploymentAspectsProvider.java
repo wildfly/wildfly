@@ -24,11 +24,13 @@ package org.jboss.as.webservices.deployers.deployment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.webservices.parser.WSDeploymentAspectParser;
+import org.jboss.logging.Logger;
 import org.jboss.ws.common.sort.DeploymentAspectSorter;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
@@ -45,9 +47,12 @@ public class DeploymentAspectsProvider {
     public static synchronized List<DeploymentAspect> getSortedDeploymentAspects() {
         if (aspects == null) {
             final List<DeploymentAspect> deploymentAspects = new LinkedList<DeploymentAspect>();
-            ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
+            final ClassLoaderProvider provider = ClassLoaderProvider.getDefaultProvider();
+            final ClassLoader cl = provider.getServerIntegrationClassLoader();
             deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-agnostic-deployment-aspects.xml"));
             deploymentAspects.addAll(getDeploymentAspects(cl, "/META-INF/stack-specific-deployment-aspects.xml"));
+            final ClassLoader jaxrpcCl = provider.getServerJAXRPCIntegrationClassLoader();
+            deploymentAspects.addAll(getDeploymentAspects(jaxrpcCl, "/META-INF/jaxrpc-deployment-aspects.xml"));
             aspects = DeploymentAspectSorter.getInstance().sort(deploymentAspects);
         }
         return aspects;
@@ -57,7 +62,7 @@ public class DeploymentAspectsProvider {
     {
         try {
             Enumeration<URL> urls = DeploymentAspectsProvider.class.getClassLoader().getResources(resourcePath);
-            if (urls != null) {
+            if (urls != null && urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 InputStream is = null;
                 try {
@@ -74,7 +79,8 @@ public class DeploymentAspectsProvider {
                 }
             }
             else {
-                throw new RuntimeException("Could not load WS deployment aspects from " + resourcePath);
+                Logger.getLogger(DeploymentAspectsProvider.class).warn("Could not load WS deployment aspects from " + resourcePath);
+                return Collections.emptyList();
             }
         } catch (IOException e) {
             throw new RuntimeException("Could not load WS deployment aspects from " + resourcePath, e);

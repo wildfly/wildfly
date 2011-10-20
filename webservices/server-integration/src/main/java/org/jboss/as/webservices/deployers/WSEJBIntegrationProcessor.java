@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -44,6 +45,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * WebServiceDeployment deployer processes EJB containers and its metadata and creates WS adapters wrapping it.
@@ -139,6 +141,14 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
        */
       public String getComponentName() {
           return ejbMD.getComponentName();
+      }
+
+      public ServiceName getContextServiceName() {
+          return ejbMD.getContextServiceName();
+      }
+
+      public DeploymentDescriptorEnvironment getDeploymentDescriptorEnvironment() {
+          return ejbMD.getDeploymentDescriptorEnvironment();
       }
 
       /**

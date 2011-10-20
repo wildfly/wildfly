@@ -22,16 +22,18 @@
 
 package org.jboss.as.ee.component;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.Value;
-
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -42,20 +44,79 @@ final class ManagedReferenceFieldInjectionInterceptorFactory implements Intercep
     private final Object valueContextKey;
     private final Value<ManagedReferenceFactory> factoryValue;
     private final Field field;
+    private final boolean optional;
 
-    ManagedReferenceFieldInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final Field field) {
+    ManagedReferenceFieldInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final Field field, final boolean optional) {
         this.targetContextKey = targetContextKey;
         this.valueContextKey = valueContextKey;
         this.factoryValue = factoryValue;
         this.field = field;
+        this.optional = optional;
     }
 
     public Interceptor create(final InterceptorFactoryContext context) {
-        final Map<Object,Object> contextData = context.getContextData();
+        final Map<Object, Object> contextData = context.getContextData();
         @SuppressWarnings("unchecked")
         final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) contextData.get(targetContextKey);
         final AtomicReference<ManagedReference> valueReference = new AtomicReference<ManagedReference>();
         contextData.put(valueContextKey, valueReference);
-        return new ManagedReferenceFieldInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), field);
+        return new ManagedReferenceFieldInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), field, optional);
     }
+
+    /**
+     * An interceptor which constructs and injects a managed reference into a field.  The context key given
+     * for storing the reference should be passed to a {@link org.jboss.as.ee.component.ManagedReferenceReleaseInterceptorFactory} which is run during
+     * object destruction.
+     *
+     * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+     */
+    static final class ManagedReferenceFieldInjectionInterceptor implements Interceptor {
+
+        private final AtomicReference<ManagedReference> targetReference;
+        private final AtomicReference<ManagedReference> valueReference;
+        private final ManagedReferenceFactory factory;
+        private final Field field;
+        private final boolean optional;
+
+        ManagedReferenceFieldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final AtomicReference<ManagedReference> valueReference, final ManagedReferenceFactory factory, final Field field, final boolean optional) {
+            this.targetReference = targetReference;
+            this.valueReference = valueReference;
+            this.factory = factory;
+            this.field = field;
+            this.optional = optional;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            Object target;
+            if (Modifier.isStatic(field.getModifiers())) {
+                target = null;
+            } else {
+                target = targetReference.get().getInstance();
+                if (target == null) {
+                    throw new IllegalStateException("No injection target found");
+                }
+            }
+            final ManagedReference reference = factory.getReference();
+            if (reference == null && optional) {
+                return context.proceed();
+            }
+            boolean ok = false;
+            try {
+                valueReference.set(reference);
+                field.set(target, reference.getInstance());
+                Object result = context.proceed();
+                ok = true;
+                return result;
+            } finally {
+                if (!ok) {
+                    valueReference.set(null);
+                    reference.release();
+                }
+            }
+        }
+    }
+
 }

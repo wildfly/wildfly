@@ -46,4 +46,9 @@ public class Attachments {
      * A list of actions that should be performed for every EE thread.
      */
     public static final AttachmentKey<AttachmentList<SetupAction>> EE_SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
+
+    /**
+     * Additional (remote) components that can be resolved but are not installed.
+     */
+    public static final AttachmentKey<AttachmentList<ComponentDescription>> ADDITIONAL_RESOLVABLE_COMPONENTS = AttachmentKey.createList(ComponentDescription.class);
 }

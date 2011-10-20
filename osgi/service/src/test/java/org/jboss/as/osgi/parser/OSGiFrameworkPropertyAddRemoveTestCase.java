@@ -32,7 +32,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 /**
  * @author David Bosschaert
@@ -49,22 +48,22 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
         ModelNode op = getAddOperation("PropertyX", "hi");
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
-        OSGiFrameworkPropertyAdd.INSTANCE.execute(context, op);
+        execute(OSGiFrameworkPropertyAdd.INSTANCE, context, op);
         Assert.assertEquals(1, addedSteps.size());
 
         Assert.assertNull("Precondition", stateService.getProperties().get("PropertyX"));
-        addedSteps.get(0).execute(context, op);
+        execute(addedSteps.get(0), context, op);
         Assert.assertEquals("hi", stateService.getProperties().get("PropertyX"));
 
-        OSGiFrameworkPropertyRemove.INSTANCE.execute(context, op);
+        execute(OSGiFrameworkPropertyRemove.INSTANCE, context, op);
         Assert.assertEquals("Actual remove added as async step", 2, addedSteps.size());
 
-        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.ROLLBACK);
-        addedSteps.get(1).execute(context, op);
+        configureForRollback(context, op);
+        execute(addedSteps.get(1), context, op);
         Assert.assertEquals("Property should have been kept as the operation was rolled back", "hi", stateService.getProperties().get("PropertyX"));
 
-        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.KEEP);
-        addedSteps.get(1).execute(context, op);
+        configureForSuccess(context);
+        execute(addedSteps.get(1), context, op);
         Assert.assertNull("Property should have been removed", stateService.getProperties().get("PropertyX"));
     }
 
@@ -77,18 +76,18 @@ public class OSGiFrameworkPropertyAddRemoveTestCase extends ResourceAddRemoveTes
         ModelNode op = getAddOperation("PropertyX", "hi");
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
-        OSGiFrameworkPropertyAdd.INSTANCE.execute(context, op);
+        execute(OSGiFrameworkPropertyAdd.INSTANCE, context, op);
         Assert.assertEquals(1, addedSteps.size());
 
         Assert.assertNull("Precondition", stateService.getProperties().get("PropertyX"));
-        addedSteps.get(0).execute(context, op);
+        execute(addedSteps.get(0), context, op);
         Assert.assertNull("Operation should have been rolled back", stateService.getProperties().get("PropertyX"));
     }
 
     private ModelNode getAddOperation(String name, String value) {
         ModelNode address = new ModelNode();
         address.add(new ModelNode().set(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME));
-        address.add(new ModelNode().set(ModelConstants.FRAMEWORK_PROPERTY, name));
+        address.add(new ModelNode().set(ModelConstants.PROPERTY, name));
         ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         op.get(ModelConstants.VALUE).set(value);
         return op;

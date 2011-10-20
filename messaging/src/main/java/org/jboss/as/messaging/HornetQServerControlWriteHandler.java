@@ -24,19 +24,19 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -48,12 +48,8 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
 
     public static final HornetQServerControlWriteHandler INSTANCE = new HornetQServerControlWriteHandler();
 
-    private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
-
     private HornetQServerControlWriteHandler() {
-        for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            attributes.put(attr.getName(), attr);
-        }
+        super(CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
@@ -63,29 +59,18 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
     }
 
     @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateResolvedParameter(name, value);
-    }
-
-    @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName,
                                            final ModelNode newValue, final ModelNode currentValue,
                                            final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(attributeName);
+        AttributeDefinition attr = getAttributeDefinition(attributeName);
         if (attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
             // Restart required
             return true;
         } else {
 
             ServiceRegistry registry = context.getServiceRegistry(true);
-            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService == null) {
                 // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
                 return false;
@@ -108,10 +93,11 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                                          final ModelNode valueToRevert,
                                          final Void handback) throws OperationFailedException {
 
-        AttributeDefinition attr = attributes.get(attributeName);
+        AttributeDefinition attr = getAttributeDefinition(attributeName);
         if (!attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
             ServiceRegistry registry = context.getServiceRegistry(true);
-            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService != null && hqService.getState() == ServiceController.State.UP) {
                 // Create and execute a write-attribute operation that uses the valueToRestore
                 ModelNode revertOp = operation.clone();

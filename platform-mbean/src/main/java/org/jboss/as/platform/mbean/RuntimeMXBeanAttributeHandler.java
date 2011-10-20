@@ -24,6 +24,7 @@ package org.jboss.as.platform.mbean;
 
 import java.lang.management.ManagementFactory;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -130,7 +131,8 @@ public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttribut
             store.set(ManagementFactory.getRuntimeMXBean().getStartTime());
         } else if (PlatformMBeanConstants.SYSTEM_PROPERTIES.equals(name)) {
             store.setEmptyObject();
-            for (Map.Entry<String, String> prop : ManagementFactory.getRuntimeMXBean().getSystemProperties().entrySet()) {
+            final TreeMap<String, String> sorted = new TreeMap<String, String>(ManagementFactory.getRuntimeMXBean().getSystemProperties());
+            for (Map.Entry<String, String> prop : sorted.entrySet()) {
                 final ModelNode propNode = store.get(prop.getKey());
                 if (prop.getValue() != null) {
                     propNode.set(prop.getValue());

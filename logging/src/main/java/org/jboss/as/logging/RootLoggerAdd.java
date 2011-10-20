@@ -22,17 +22,18 @@
 
 package org.jboss.as.logging;
 
-import java.util.Collection;
-import java.util.logging.Level;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.Collection;
+import java.util.logging.Level;
 
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
@@ -49,24 +50,23 @@ class RootLoggerAdd implements OperationStepHandler {
     static final String OPERATION_NAME = "set-root-logger";
 
     public void execute(OperationContext context, ModelNode operation) {
-        final String level = operation.require(LEVEL).asString();
-        final ModelNode handlers = operation.get(HANDLERS);
+        final String level = operation.require(LEVEL.getName()).asString();
+        final ModelNode handlers = operation.get(HANDLERS.getName());
 
-        final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        subModel.get(ROOT_LOGGER, LEVEL).set(level);
-        subModel.get(ROOT_LOGGER, HANDLERS).set(handlers);
+        final ModelNode subModel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+        subModel.get(ROOT_LOGGER, LEVEL.getName()).set(level);
+        subModel.get(ROOT_LOGGER, HANDLERS.getName()).set(handlers);
 
         if (context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    LoggingValidators.validate(operation);
                     final ServiceTarget target = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     try {
 
                         final RootLoggerService service = new RootLoggerService();
-                        if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(level));
+                        service.setLevel(Level.parse(LEVEL.validateResolvedOperation(operation).asString()));
                         target.addService(LogServices.ROOT_LOGGER, service)
                                 .addListener(verificationHandler)
                                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -79,7 +79,7 @@ class RootLoggerAdd implements OperationStepHandler {
                     Collection<ServiceController<?>> loggerControllers = null;
                     try {
                         // install logger handler services
-                        if (handlers.getType() != ModelType.UNDEFINED) {
+                        if (handlers.isDefined()) {
                             loggerControllers = LogServices.installLoggerHandlers(target, "", handlers, verificationHandler);
                         }
                     } catch (Throwable t) {

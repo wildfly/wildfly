@@ -238,9 +238,8 @@ public class MessagingExtension implements Extension {
                 MessagingSubsystemProviders.CONNECTOR_SERVICE_RESOURCE);
         connectorService.registerOperationHandler(ADD, ConnectorServiceAdd.INSTANCE, ConnectorServiceAdd.INSTANCE, false);
         connectorService.registerOperationHandler(REMOVE, ConnectorServiceRemove.INSTANCE, ConnectorServiceRemove.INSTANCE, false);
-        for (AttributeDefinition attributeDefinition : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
-            connectorService.registerReadWriteAttribute(attributeDefinition.getName(), null, ConnectorServiceWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        }
+        ConnectorServiceWriteAttributeHandler.INSTANCE.registerAttributes(connectorService);
+
         final ManagementResourceRegistration connectorServiceParam = connectorService.registerSubModel(PathElement.pathElement(CommonAttributes.PARAM),
                 MessagingSubsystemProviders.CONNECTOR_SERVICE_PARAM_RESOURCE);
         connectorServiceParam.registerOperationHandler(ADD, ConnectorServiceParamAdd.INSTANCE, ConnectorServiceParamAdd.INSTANCE, false);

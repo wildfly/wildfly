@@ -44,7 +44,7 @@ public class EntityBeanGetHomeInterceptorFactory implements InterceptorFactory {
         return new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                return viewToCreate.getValue().createInstance().createProxy();
+                return viewToCreate.getValue().createInstance().getInstance();
             }
         };
     }

@@ -21,18 +21,21 @@
  */
 package org.jboss.as.jpa.hibernate4.management;
 
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Model and operation descriptions for the Hibernate Persistence Provider Adaptor
@@ -44,6 +47,10 @@ public class HibernateDescriptions {
     static final String RESOURCE_NAME = HibernateDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     private HibernateDescriptions() {
+    }
+
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, HibernateDescriptions.class.getClassLoader(), true, true);
     }
 
     static ModelNode describeTopLevelAttributes(Locale locale) {
@@ -141,8 +148,20 @@ public class HibernateDescriptions {
         subsystem.get(ATTRIBUTES, "enabled", DESCRIPTION).set(bundle.getString(HibernateDescriptionConstants.CHECK_STATISTICS));
         subsystem.get(ATTRIBUTES, "enabled", TYPE).set(ModelType.BOOLEAN);
 
-        subsystem.get(OPERATIONS);
-        subsystem.get(CHILDREN).setEmptyObject();
+        subsystem.get(OPERATIONS);  // placeholder
+
+        subsystem.get(CHILDREN, "entity-cache", DESCRIPTION).set(bundle.getString(HibernateDescriptionConstants.SECOND_LEVEL_CACHE));
+        subsystem.get(CHILDREN, "entity-cache", MODEL_DESCRIPTION); // placeholder
+
+        subsystem.get(CHILDREN, "query-cache", DESCRIPTION).set(bundle.getString(HibernateDescriptionConstants.QUERY_STATISTICS));
+        subsystem.get(CHILDREN, "query-cache", MODEL_DESCRIPTION); // placeholder
+
+        subsystem.get(CHILDREN, "entity", DESCRIPTION).set(bundle.getString(HibernateDescriptionConstants.ENTITY_STATISTICS));
+        subsystem.get(CHILDREN, "entity", MODEL_DESCRIPTION); // placeholder
+
+        subsystem.get(CHILDREN, "collection", DESCRIPTION).set(bundle.getString(HibernateDescriptionConstants.COLLECTION_STATISTICS));
+        subsystem.get(CHILDREN, "collection", MODEL_DESCRIPTION); // placeholder
+
         return subsystem;
     }
 

@@ -106,6 +106,11 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         return entityManagerFactory;
     }
 
+    @Override
+    public String getScopedPersistenceUnitName() {
+        return pu.getScopedPersistenceUnitName();
+    }
+
     public Injector<Map> getPropertiesInjector() {
         return properties;
     }

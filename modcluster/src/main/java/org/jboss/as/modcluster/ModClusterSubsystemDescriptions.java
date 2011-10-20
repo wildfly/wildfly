@@ -501,11 +501,11 @@ class ModClusterSubsystemDescriptions {
         node.get(type, CommonAttributes.KEY_ALIAS, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.KEY_ALIAS, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.key-alias"));
         node.get(type, CommonAttributes.KEY_ALIAS, REQUIRED).set(false);
-        node.get(type, CommonAttributes.KEY_ALIAS, DEFAULT).set("changeit");
 
         node.get(type, CommonAttributes.PASSWORD, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.PASSWORD, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.password"));
         node.get(type, CommonAttributes.PASSWORD, REQUIRED).set(false);
+        node.get(type, CommonAttributes.PASSWORD, DEFAULT).set("changeit");
 
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, TYPE).set(ModelType.STRING);
         node.get(type, CommonAttributes.CERTIFICATE_KEY_FILE, DESCRIPTION).set(bundle.getString("modcluster.configuration.ssl.certificate-key-file"));

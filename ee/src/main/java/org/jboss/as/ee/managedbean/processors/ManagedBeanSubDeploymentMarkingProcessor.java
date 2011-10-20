@@ -55,7 +55,6 @@ public class ManagedBeanSubDeploymentMarkingProcessor implements DeploymentUnitP
         if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        // TODO: deal with application clients, we need the manifest information
         List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
         if(potentialSubDeployments == null) {
             return;

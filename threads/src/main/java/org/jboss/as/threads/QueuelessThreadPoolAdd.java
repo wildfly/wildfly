@@ -23,7 +23,6 @@ package org.jboss.as.threads;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -57,6 +56,9 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements De
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY,
         PoolAttributeDefinitions.HANDOFF_EXECUTOR, PoolAttributeDefinitions.BLOCKING};
 
+    static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
+        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.BLOCKING};
+
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ThreadsSubsystemProviders.ADD_QUEUELESS_THREAD_POOL_DESC.getModelDescription(locale);
@@ -89,7 +91,7 @@ public class QueuelessThreadPoolAdd extends AbstractAddStepHandler implements De
 
         //TODO add the handoffExceutor injection
 
-        final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+        final ServiceBuilder<ManagedQueuelessExecutorService> serviceBuilder = target.addService(serviceName, service);
         ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.install();

@@ -293,11 +293,5 @@ public class HostModelUtil {
         // Server jvm
         final ManagementResourceRegistration serverVMs = servers.registerSubModel(PathElement.pathElement(JVM), JVMHandlers.SERVER_MODEL_PROVIDER);
         JVMHandlers.register(serverVMs, true);
-
-        //TODO register the rest of the server values
-    }
-
-    public static void registerServerInventory(final ServerInventory serverInventory) {
-
     }
 }

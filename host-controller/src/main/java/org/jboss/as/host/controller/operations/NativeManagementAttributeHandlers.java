@@ -36,11 +36,12 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.remoting.RealmAuthenticationProviderService;
+import org.jboss.as.remoting.RealmOptionMapService;
 import org.jboss.as.remoting.RemotingServices;
-import org.jboss.as.server.services.net.NetworkInterfaceService;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -73,9 +74,9 @@ public class NativeManagementAttributeHandlers {
                         final String interfaceName = subModel.require(INTERFACE).asString();
                         final int port = subModel.require(ModelDescriptionConstants.PORT).asInt();
 
-                        context.removeService(RemotingServices.AUTHENTICATION_PROVIDER);
-                        context.removeService(RemotingServices.OPTION_MAP);
-                        context.removeService(RemotingServices.serverServiceName(RemotingServices.MANAGEMENT_CHANNEL, port));
+                        context.removeService(RealmAuthenticationProviderService.createName(ManagementRemotingServices.MANAGEMENT_CONNECTOR));
+                        context.removeService(RealmOptionMapService.createName(ManagementRemotingServices.MANAGEMENT_CONNECTOR));
+                        context.removeService(RemotingServices.serverServiceName(ManagementRemotingServices.MANAGEMENT_CONNECTOR, port));
 
                         final ServiceTarget serviceTarget = context.getServiceTarget();
                         ServiceName realmSvcName = null;
@@ -89,7 +90,7 @@ public class NativeManagementAttributeHandlers {
 
                         List<ServiceController<?>> list =new ArrayList<ServiceController<?>>();
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        RemotingServices.installDomainConnectorServices(serviceTarget, getNativeManagementNetworkInterfaceBinding(), port, realmSvcName, verificationHandler, list);
+                        ManagementRemotingServices.installDomainConnectorServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, getNativeManagementNetworkInterfaceBinding(), port, realmSvcName, verificationHandler, list);
 
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
                         context.completeStep();

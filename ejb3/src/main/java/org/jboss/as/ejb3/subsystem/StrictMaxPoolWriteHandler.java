@@ -46,6 +46,8 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
     public static final StrictMaxPoolWriteHandler INSTANCE = new StrictMaxPoolWriteHandler();
 
     private StrictMaxPoolWriteHandler() {
+        super(StrictMaxPoolResourceDefinition.MAX_POOL_SIZE, StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT,
+                StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT);
     }
 
     @Override
@@ -87,15 +89,5 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
         applyModelToRuntime(context, operation, attributeName, restored);
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
-        StrictMaxPoolResourceDefinition.ATTRIBUTES.get(attributeName).getValidator().validateParameter(ModelDescriptionConstants.VALUE, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String attributeName, ModelNode value) throws OperationFailedException {
-        // we're going to validate using the AttributeDefinition in applyModelToRuntime, so don't bother here
     }
 }

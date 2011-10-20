@@ -32,18 +32,21 @@ package org.jboss.as.osgi.parser;
  */
 public interface ModelConstants {
 
+    String ACTIVATE = "activate";
     String ACTIVATION = "activation";
     String BUNDLE = "bundle";
     String CAPABILITY = "capability";
     String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
-    String FRAMEWORK_PROPERTY = "framework-property";
+    String FRAGMENT = "fragment";
     String ID = "id";
     String NAME = "name";
     String PID = "pid";
+    String PROPERTY = "property";
     String STARTLEVEL = "startlevel";
     String STATE = "state";
     String SYMBOLIC_NAME = "symbolic-name";
+    String TYPE = "type";
     String VALUE = "value";
     String VERSION = "version";
 

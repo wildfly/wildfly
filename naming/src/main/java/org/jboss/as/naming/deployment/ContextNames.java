@@ -275,7 +275,7 @@ public class ContextNames {
             bindName = bindName.substring(6);
         } else if (bindName.startsWith("global/")) {
             parentContextName = GLOBAL_CONTEXT_SERVICE_NAME;
-            bindName = bindName.substring(6);
+            bindName = bindName.substring(7);
         } else if (bindName.startsWith("/")) {
             parentContextName = JAVA_CONTEXT_SERVICE_NAME;
             bindName = bindName.substring(1);

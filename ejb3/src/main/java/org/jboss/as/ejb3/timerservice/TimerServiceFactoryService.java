@@ -21,6 +21,12 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import java.io.File;
+import java.util.concurrent.ExecutorService;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ejb3.timerservice.mk2.TimerServiceFactoryImpl;
 import org.jboss.as.ejb3.timerservice.mk2.persistence.filestore.FileTimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
@@ -31,14 +37,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service that manages the lifecycle of a TimerServiceFactory
@@ -52,23 +50,19 @@ public class TimerServiceFactoryService implements Service<TimerServiceFactory> 
 
     public static final ServiceName PATH_SERVICE_NAME = ServiceName.JBOSS.append("as", "ejb", "timerServiceFactory", "dataStorePath");
 
+    private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
 
     private volatile TimerServiceFactory timerServiceFactory;
-    private volatile ExecutorService executorService;
     private volatile FileTimerPersistence timerPersistence;
 
     private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryInjectedValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<String> path = new InjectedValue<String>();
-    private final int maxThreads;
-    private final int coreThreads;
     private final String name;
     private final Module module;
 
-    public TimerServiceFactoryService(final int coreThreads, final int maxThreads, final String name, final Module module) {
+    public TimerServiceFactoryService(final String name, final Module module) {
         this.name = name;
-        this.coreThreads = coreThreads;
-        this.maxThreads = maxThreads;
         this.module = module;
     }
 
@@ -76,25 +70,22 @@ public class TimerServiceFactoryService implements Service<TimerServiceFactory> 
     @Override
     public  void start(final StartContext context) throws StartException {
 
-        executorService = new ThreadPoolExecutor(coreThreads, maxThreads, 1, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>());
         //only start the persistence service if it has been configured
         final String path = this.path.getOptionalValue();
         if (path != null) {
             timerPersistence = new FileTimerPersistence(transactionManagerInjectedValue.getValue(), transactionSynchronizationRegistryInjectedValue.getValue(), new File(path + File.separatorChar + name), true, module.getModuleLoader());
             timerPersistence.start();
         }
-        timerServiceFactory = new TimerServiceFactoryImpl(timerPersistence, transactionManagerInjectedValue.getValue(), executorService);
+        timerServiceFactory = new TimerServiceFactoryImpl(timerPersistence, transactionManagerInjectedValue.getValue(), executorService.getValue());
     }
 
     @Override
     public void stop(final StopContext context) {
-        executorService.shutdownNow();
         if (path == null) {
             timerPersistence.stop();
             timerPersistence = null;
         }
         timerServiceFactory = null;
-        executorService = null;
     }
 
     @Override
@@ -116,5 +107,9 @@ public class TimerServiceFactoryService implements Service<TimerServiceFactory> 
 
     public InjectedValue<String> getPath() {
         return path;
+    }
+
+    public InjectedValue<ExecutorService> getExecutorService() {
+        return executorService;
     }
 }

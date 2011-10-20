@@ -24,6 +24,7 @@ package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
@@ -53,6 +54,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MUL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -91,6 +93,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAU
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.parseBoundedIntegerAttribute;
@@ -106,6 +109,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
+import javax.xml.stream.XMLStreamException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -116,8 +120,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -127,6 +129,7 @@ import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -423,7 +426,22 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (++managementInterfacesCount > 1) {
                             throw unexpectedElement(reader);
                         }
-                        parseManagementInterfaces(reader, managementAddress, expectedNs, list);
+
+                        switch (expectedNs) {
+                            case DOMAIN_1_0: {
+                                parseManagementInterfaces_1_0(reader, managementAddress, expectedNs, list);
+                                break;
+                            }
+                            // We use default here so we do not need to update the switch for every subsequent schema update
+                            // that does not affect this element - if subsequently updated a 'case' should be added for each
+                            // schema version that uses this format of the element and the update should then be selected using
+                            // default:
+                            default: {
+                                parseManagementInterfaces_1_1(reader, managementAddress, expectedNs, list);
+                                break;
+                            }
+                        }
+
                     } else {
                         String msg = String.format("Element %s is not supported in a domain.xml file",
                                 element.getLocalName());
@@ -744,7 +762,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             switch (element) {
                 case LDAP: {
-                    parseLdapAuthentication(reader, authentication);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                            parseLdapAuthentication_1_0(reader, authentication);
+                            break;
+                        default:
+                            parseLdapAuthentication_1_1(reader, expectedNs, authentication);
+                    }
                     break;
                 }
                 case PROPERTIES: {
@@ -763,7 +787,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseLdapAuthentication(final XMLExtendedStreamReader reader, final ModelNode authentication)
+    protected void parseLdapAuthentication_1_0(final XMLExtendedStreamReader reader, final ModelNode authentication)
             throws XMLStreamException {
         ModelNode ldapAuthentication = authentication.get(LDAP);
 
@@ -831,6 +855,102 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
         if (userDN != null) {
             ldapAuthentication.get(USER_DN).set(userDN);
+        }
+    }
+
+    protected void parseLdapAuthentication_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode authentication)
+            throws XMLStreamException {
+        ModelNode ldapAuthentication = authentication.get(LDAP);
+
+        String connection = null;
+        String baseDN = null;
+        String recursive = null;
+        String userDN = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case CONNECTION: {
+                        connection = value;
+                        break;
+                    }
+                    case BASE_DN: {
+                        baseDN = value;
+                        break;
+                    }
+                    case RECURSIVE: {
+                        recursive = value;
+                        break;
+                    }
+                    case USER_DN: {
+                        userDN = value;
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        Set<Attribute> missingAttributes = new HashSet<Attribute>();
+        if (connection == null)
+            missingAttributes.add(Attribute.CONNECTION);
+        if (baseDN == null)
+            missingAttributes.add(Attribute.BASE_DN);
+        // recursive is optional with a default of false
+        // userDN is optional with a default of "dn"
+
+        if (missingAttributes.size() > 0)
+            throw missingRequired(reader, missingAttributes);
+
+        ldapAuthentication.get(CONNECTION).set(connection);
+        ldapAuthentication.get(BASE_DN).set(baseDN);
+
+        if (recursive != null) {
+            ldapAuthentication.get(RECURSIVE).set(Boolean.valueOf(recursive));
+        }
+        if (userDN != null) {
+            ldapAuthentication.get(USER_DN).set(userDN);
+        }
+
+        boolean choiceFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            if (choiceFound) {
+                throw unexpectedElement(reader);
+            }
+            choiceFound = true;
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ADVANCED_FILTER:
+                    requireSingleAttribute(reader, Attribute.FILTER.getLocalName());
+                    // After double checking the name of the only attribute we can retrieve it.
+                    String filter = reader.getAttributeValue(0);
+                    ldapAuthentication.get(ADVANCED_FILTER).set(filter);
+                    requireNoContent(reader);
+                    break;
+                case USERNAME_FILTER: {
+                    requireSingleAttribute(reader, Attribute.ATTRIBUTE.getLocalName());
+                    // After double checking the name of the only attribute we can retrieve it.
+                    String usernameAttr = reader.getAttributeValue(0);
+                    ldapAuthentication.get(USERNAME_ATTRIBUTE).set(usernameAttr);
+                    requireNoContent(reader);
+                    break;
+                }
+
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (choiceFound == false) {
+            throw missingOneOf(reader, EnumSet.of(Element.ADVANCED_FILTER, Element.USERNAME_FILTER));
         }
     }
 
@@ -917,7 +1037,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+    protected void parseManagementInterfaces_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -929,6 +1049,31 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
                 case HTTP_INTERFACE: {
                     parseHttpManagementInterface(reader, address, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parseManagementInterfaces_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+                                                 final List<ModelNode> list) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case NATIVE_INTERFACE: {
+                    parseNativeManagementInterface(reader, address, list);
+                    break;
+                }
+                case HTTP_INTERFACE: {
+                    parseHttpManagementInterface(reader, address, list);
+                    break;
+                }
+                case NATIVE_REMOTING_INTERFACE: {
+                    parseNativeRemotingManagementInterface_1_1(reader, address, list);
                     break;
                 }
                 default: {
@@ -1146,6 +1291,22 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         mgmtSocket.get(OP_ADDR).set(operationAddress);
 
         list.add(mgmtSocket);
+
+        reader.discardRemainder();
+    }
+
+    protected void parseNativeRemotingManagementInterface_1_1(final XMLExtendedStreamReader reader, final ModelNode address,
+            final List<ModelNode> list) throws XMLStreamException {
+
+        requireNoAttributes(reader);
+        //requireNoContent(reader);
+
+        final ModelNode connector = new ModelNode();
+        connector.get(OP).set(ADD);
+        ModelNode operationAddress = address.clone();
+        operationAddress.add(MANAGEMENT_INTERFACE, NATIVE_REMOTING_INTERFACE);
+        connector.get(OP_ADDR).set(operationAddress);
+        list.add(connector);
 
         reader.discardRemainder();
     }
@@ -2231,23 +2392,15 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throws XMLStreamException {
 
         writer.writeStartElement(Element.SOCKET_BINDING_GROUP.getLocalName());
-        ModelNode attr = bindingGroup.get(NAME);
-        writeAttribute(writer, Attribute.NAME, attr.asString());
 
-        attr = bindingGroup.get(DEFAULT_INTERFACE);
-        writeAttribute(writer, Attribute.DEFAULT_INTERFACE, attr.asString());
+        SocketBindingGroupResourceDefinition.NAME.marshallAsAttribute(bindingGroup, writer);
+        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.marshallAsAttribute(bindingGroup, writer);
 
-        if (fromServer && bindingGroup.hasDefined(PORT_OFFSET)
-                && (bindingGroup.getType() == ModelType.EXPRESSION || bindingGroup.get(PORT_OFFSET).asInt() > 0)) {
-            attr = bindingGroup.get(PORT_OFFSET);
-            writeAttribute(writer, Attribute.PORT_OFFSET, attr.asString());
+        if (fromServer) {
+            SocketBindingGroupResourceDefinition.PORT_OFFSET.marshallAsAttribute(bindingGroup, writer);
         }
-        if (!fromServer && bindingGroup.hasDefined(INCLUDES)) {
-            for (ModelNode include : bindingGroup.get(INCLUDES).asList()) {
-                writer.writeStartElement(Element.INCLUDE.getLocalName());
-                writeAttribute(writer, Attribute.SOCKET_BINDING_GROUP, include.asString());
-                writer.writeEndElement();
-            }
+        if (!fromServer) {
+            SocketBindingGroupResourceDefinition.INCLUDES.marshallAsElement(bindingGroup, writer);
         }
 
         if (bindingGroup.hasDefined(SOCKET_BINDING)) {
@@ -2256,7 +2409,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 ModelNode binding = bindings.get(bindingName);
                 writer.writeStartElement(Element.SOCKET_BINDING.getLocalName());
                 writeAttribute(writer, Attribute.NAME, bindingName);
-                attr = binding.get(PORT);
+                ModelNode attr = binding.get(PORT);
                 writeAttribute(writer, Attribute.PORT, attr.asString());
 
                 attr = binding.get(FIXED_PORT);
@@ -2468,13 +2621,21 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         writer.writeStartElement(Element.LDAP.getLocalName());
                         writer.writeAttribute(Attribute.CONNECTION.getLocalName(), userLdap.require(CONNECTION).asString());
                         writer.writeAttribute(Attribute.BASE_DN.getLocalName(), userLdap.require(BASE_DN).asString());
-                        writer.writeAttribute(Attribute.USERNAME_ATTRIBUTE.getLocalName(), userLdap.require(USERNAME_ATTRIBUTE)
-                                .asString());
                         if (userLdap.has(RECURSIVE)) {
                             writer.writeAttribute(Attribute.RECURSIVE.getLocalName(), userLdap.require(RECURSIVE).asString());
                         }
                         if (userLdap.hasDefined(USER_DN)) {
                             writer.writeAttribute(Attribute.USER_DN.getLocalName(), userLdap.require(USER_DN).asString());
+                        }
+
+                        if (userLdap.hasDefined(USERNAME_ATTRIBUTE)) {
+                            writer.writeStartElement(Element.USERNAME_FILTER.getLocalName());
+                            writer.writeAttribute(Attribute.ATTRIBUTE.getLocalName(), userLdap.require(USERNAME_ATTRIBUTE).asString());
+                            writer.writeEndElement();
+                        } else if (userLdap.hasDefined(ADVANCED_FILTER)) {
+                            writer.writeStartElement(Element.ADVANCED_FILTER.getLocalName());
+                            writer.writeAttribute(Attribute.FILTER.getLocalName(), userLdap.require(ADVANCED_FILTER).asString());
+                            writer.writeEndElement();
                         }
                         writer.writeEndElement();
                     } else if (authentication.hasDefined(PROPERTIES)) {
@@ -2524,6 +2685,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         if (allowInterfaces && hasInterface) {
             writer.writeStartElement(Element.MANAGEMENT_INTERFACES.getLocalName());
             ModelNode managementInterfaces = management.get(MANAGEMENT_INTERFACE);
+
+            if (managementInterfaces.hasDefined(NATIVE_REMOTING_INTERFACE)) {
+                writer.writeEmptyElement(Element.NATIVE_REMOTING_INTERFACE.getLocalName());
+            }
 
             if (managementInterfaces.hasDefined(NATIVE_INTERFACE)) {
                 writeManagementProtocol(Element.NATIVE_INTERFACE, writer, managementInterfaces.get(NATIVE_INTERFACE));

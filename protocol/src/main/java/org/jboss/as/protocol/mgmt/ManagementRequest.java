@@ -61,7 +61,7 @@ public abstract class ManagementRequest<T> {
     /**
      * Create a new ManagementRequest that is part of a batch
      *
-     *  @param executionId the id of the 'execution' this request is a part of
+     *  @param batchId the id of the 'execution' this request is a part of
      */
     protected ManagementRequest(int batchId) {
         this.batchId = batchId;
@@ -88,7 +88,7 @@ public abstract class ManagementRequest<T> {
      * and return a future used to get the response when complete.
      *
      * @param executor The executor to use to handle the request and response
-     * @param channel The channel strategy
+     * @param channelStrategy The channel strategy
      * @return A future to retrieve the result when the request is complete
      */
     public AsyncFuture<T> execute(final ExecutorService executor, final ManagementClientChannelStrategy channelStrategy) {

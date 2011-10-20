@@ -45,6 +45,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -97,12 +98,13 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ServiceRegistry registry = context.getServiceRegistry(true);
-        ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = registry.getService(hqServiceName);
         if (hqService != null) {
 
             // The original subsystem initialization is complete; use the control object to create the divert
             if (hqService.getState() != ServiceController.State.UP) {
-                throw MESSAGES.invalidServiceState(MessagingServices.JBOSS_MESSAGING, ServiceController.State.UP, hqService.getState());
+                throw MESSAGES.invalidServiceState(hqServiceName, ServiceController.State.UP, hqService.getState());
             }
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();

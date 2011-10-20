@@ -28,9 +28,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.TimerServiceAnnotationProcessor;
@@ -44,6 +42,7 @@ import org.jboss.as.server.services.path.RelativePathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Adds the timer service
@@ -76,43 +75,36 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        // Only take runtime action if EJB3 Lite isn't configured
-        final ModelNode rootResource = context.getRootResource().getChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)).getModel();
-        final boolean lite = rootResource.hasDefined(EJB3SubsystemModel.LITE) && rootResource.get(EJB3SubsystemModel.LITE).asBoolean();
-        if (!lite) {
+        final ModelNode pathNode = TimerServiceResourceDefinition.PATH.validateResolvedOperation(model);
+        final String path = pathNode.isDefined() ? pathNode.asString() : null;
+        final ModelNode relativeToNode = TimerServiceResourceDefinition.RELATIVE_TO.validateResolvedOperation(model);
+        final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
 
-            final ModelNode pathNode = TimerServiceResourceDefinition.PATH.validateResolvedOperation(model);
-            final String path = pathNode.isDefined() ? pathNode.asString() : null;
-            final ModelNode relativeToNode = TimerServiceResourceDefinition.RELATIVE_TO.validateResolvedOperation(model);
-            final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
+        final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.validateResolvedOperation(model).asString();
+        final ServiceName threadPoolServiceName = EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName);
 
-            final int coreThreadCount = TimerServiceResourceDefinition.CORE_THREADS.validateResolvedOperation(model).asInt();
-            final int maxThreadCount = TimerServiceResourceDefinition.CORE_THREADS.validateResolvedOperation(model).asInt(Runtime.getRuntime().availableProcessors());
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                logger.debug("Configuring timers");
 
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    logger.debug("Configuring timers");
-
-                    ModelNode timerServiceModel = model;
-
-                    //install the ejb timer service data store path service
-                    if (path != null) {
-                        if (relativeTo != null) {
-                            RelativePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path, relativeTo,
-                                    context.getServiceTarget(), newControllers, verificationHandler);
-                        } else {
-                            AbsolutePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path,
-                                    context.getServiceTarget(), newControllers, verificationHandler);
-                        }
+                //install the ejb timer service data store path service
+                if (path != null) {
+                    if (relativeTo != null) {
+                        RelativePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path,false , relativeTo,
+                                context.getServiceTarget(), newControllers, verificationHandler);
+                    } else {
+                        AbsolutePathService.addService(TimerServiceFactoryService.PATH_SERVICE_NAME, path,
+                                context.getServiceTarget(), newControllers, verificationHandler);
                     }
 
                     //we only add the timer service DUP's when the timer service in enabled in XML
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_TIMEOUT_ANNOTATION, new TimerServiceAnnotationProcessor());
                     processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
                     processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_METADATA_MERGE, new TimerMethodMergingProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(coreThreadCount, maxThreadCount, true));
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(threadPoolServiceName));
                 }
-            }, OperationContext.Stage.RUNTIME);
-        }
+            }
+        }, OperationContext.Stage.RUNTIME);
+
     }
 }

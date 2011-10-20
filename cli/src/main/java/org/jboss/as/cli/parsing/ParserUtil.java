@@ -81,7 +81,7 @@ public class ParserUtil {
             public void enteredState(ParsingContext ctx)
                     throws OperationFormatException {
                 final String id = ctx.getState().getId();
-                //System.out.println("entered " + id);
+                //System.out.println("entered " + id + " '" + ctx.getCharacter() + "'");
 
                 if(!inValue) {
                     bufferStartIndex = ctx.getLocation();
@@ -113,7 +113,7 @@ public class ParserUtil {
                     throws CommandFormatException {
 
                 final String id = ctx.getState().getId();
-                //System.out.println("leaving " + id);
+                //System.out.println("leaving " + id + " " + ctx.getCharacter());
 
                 if (id.equals(PropertyListState.ID)) {
                     if (!ctx.isEndOfContent()) {

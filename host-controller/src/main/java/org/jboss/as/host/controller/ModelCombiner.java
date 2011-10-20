@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -69,6 +70,7 @@ import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
@@ -100,6 +102,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
     private final JvmElement jvmElement;
     private final HostControllerEnvironment environment;
     private final DomainController domainController;
+    private final boolean managementSubsystemEndpoint;
 
     ModelCombiner(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final DomainController domainController,
                   final HostControllerEnvironment environment) {
@@ -132,6 +135,12 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 break;
             }
         }
+
+        boolean managementSubsystemEndpoint = false;
+        if (serverGroup.hasDefined(MANAGEMENT_SUBSYSTEM_ENDPOINT)) {
+            managementSubsystemEndpoint = serverGroup.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).asBoolean();
+        }
+        this.managementSubsystemEndpoint = managementSubsystemEndpoint;
 
         final String jvmName = serverVMName != null ? serverVMName : groupVMName;
         final ModelNode hostVM = jvmName != null ? hostModel.get(JVM, jvmName) : null;
@@ -220,6 +229,11 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         command.add("org.jboss.as.server");
 
         return command;
+    }
+
+    @Override
+    public boolean isManagementSubsystemEndpoint() {
+        return managementSubsystemEndpoint;
     }
 
     private String getJavaCommand() {
@@ -436,19 +450,29 @@ class ModelCombiner implements ManagedServerBootConfiguration {
 
     private void addDeployments(List<ModelNode> updates) {
         if (serverGroup.hasDefined(DEPLOYMENT)) {
+
+            FileRepository remoteRepository = null;
+            if (domainController.getLocalHostInfo().isMasterDomainController()) {
+                remoteRepository = domainController.getRemoteFileRepository();
+            }
+
             for (Property deployment : serverGroup.get(DEPLOYMENT).asPropertyList()) {
                 String name = deployment.getName();
                 ModelNode details = deployment.getValue();
 
-                // Make sure we have a copy of the deployment in the local repo
-
                 ModelNode domainDeployment = domainModel.require(DEPLOYMENT).require(name);
                 ModelNode deploymentContent = domainDeployment.require(CONTENT).clone();
-                for (ModelNode content : deploymentContent.asList()) {
-                    if ((content.hasDefined(HASH))) {
-                        byte[] hash = content.require(HASH).asBytes();
-                        // Ensure the local repo has the files
-                        domainController.getFileRepository().getDeploymentFiles(hash);
+
+                if (remoteRepository != null) {
+                    // Make sure we have a copy of the deployment in the local repo
+                    for (ModelNode content : deploymentContent.asList()) {
+                        if ((content.hasDefined(HASH))) {
+                            byte[] hash = content.require(HASH).asBytes();
+                            File[] files = domainController.getLocalFileRepository().getDeploymentFiles(hash);
+                            if (files == null || files.length == 0) {
+                                remoteRepository.getDeploymentFiles(hash);
+                            }
+                        }
                     }
                 }
 

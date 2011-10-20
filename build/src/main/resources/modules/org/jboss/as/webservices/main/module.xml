@@ -31,6 +31,7 @@
     <dependencies>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>
+        <module name="javax.ejb.api"/>
         <module name="javax.jws.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.xml.ws.api"/>

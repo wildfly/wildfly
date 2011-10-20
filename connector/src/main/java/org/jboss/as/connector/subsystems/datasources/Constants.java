@@ -76,6 +76,8 @@ class Constants {
 
     private static final String CONNECTION_PROPERTIES_NAME = "connection-properties";
 
+    private static final String CONNECTION_PROPERTY_VALUE_NAME = "value";
+
     private static final String NEW_CONNECTION_SQL_NAME = "new-connection-sql";
 
     private static final String TRANSACTION_ISOLATION_NAME = "transaction-isolation";
@@ -203,6 +205,7 @@ class Constants {
 
     static SimpleAttributeDefinition CONNECTION_PROPERTIES = new SimpleAttributeDefinition(CONNECTION_PROPERTIES_NAME, DataSource.Tag.CONNECTION_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
+    static SimpleAttributeDefinition CONNECTION_PROPERTY_VALUE = new SimpleAttributeDefinition(CONNECTION_PROPERTY_VALUE_NAME, DataSource.Tag.CONNECTION_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinition(USERNAME_NAME, Credential.Tag.USER_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

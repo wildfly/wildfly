@@ -23,10 +23,7 @@
 package org.jboss.as.process;
 
 import static org.jboss.as.process.ProcessLogger.SERVER_LOGGER;
-import org.jboss.as.process.protocol.Connection;
-import org.jboss.as.process.protocol.ConnectionHandler;
-import org.jboss.as.process.protocol.MessageHandler;
-import org.jboss.as.process.protocol.StreamUtils;
+import static org.jboss.as.process.protocol.StreamUtils.readBoolean;
 import static org.jboss.as.process.protocol.StreamUtils.readFully;
 import static org.jboss.as.process.protocol.StreamUtils.readInt;
 import static org.jboss.as.process.protocol.StreamUtils.readUTFZBytes;
@@ -38,6 +35,11 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.as.process.protocol.Connection;
+import org.jboss.as.process.protocol.ConnectionHandler;
+import org.jboss.as.process.protocol.MessageHandler;
+import org.jboss.as.process.protocol.StreamUtils;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -206,7 +208,8 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                                 final String processName = readUTFZBytes(dataStream);
                                 final String hostName = readUTFZBytes(dataStream);
                                 final int port = readInt(dataStream);
-                                processController.sendReconnectProcess(processName, hostName, port);
+                                final boolean managementSubsystemEndpoint = readBoolean(dataStream);
+                                processController.sendReconnectProcess(processName, hostName, port, managementSubsystemEndpoint);
                             } else {
                                 SERVER_LOGGER.tracef("Ignoring reconnect_process message from untrusted source");
                             }

@@ -109,7 +109,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
         for (ServiceController<?> controller : set) {
             controller.removeListener(this);
         }
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     public synchronized void listenerAdded(final ServiceController<?> controller) {

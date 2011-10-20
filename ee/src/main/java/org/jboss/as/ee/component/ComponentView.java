@@ -22,11 +22,12 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.invocation.InterceptorContext;
-
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * A component view.
@@ -40,7 +41,7 @@ public interface ComponentView {
      *
      * @return the component view instance
      */
-    ComponentViewInstance createInstance();
+    ManagedReference createInstance();
 
     /**
      * Create the component view instance using the additional context data
@@ -48,7 +49,7 @@ public interface ComponentView {
      * @param contextData Additional context data used in the view creation
      * @return the component view instance
      */
-    ComponentViewInstance createInstance(Map<Object, Object> contextData);
+    ManagedReference createInstance(Map<Object, Object> contextData);
 
     /**
      * Invoke on the component view interceptor chain.
@@ -95,4 +96,5 @@ public interface ComponentView {
 
 
     boolean isAsynchronous(final Method method);
+
 }

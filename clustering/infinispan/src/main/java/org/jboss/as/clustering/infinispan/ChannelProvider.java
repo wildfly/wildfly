@@ -30,6 +30,8 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jgroups.Channel;
 
+import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
+
 /**
  * @author Paul Ferraro
  */
@@ -54,13 +56,13 @@ public class ChannelProvider implements JGroupsChannelLookup {
         ChannelFactory factory = (ChannelFactory) properties.get(CHANNEL_FACTORY);
 
         if (factory == null) {
-            throw new IllegalStateException(String.format("No %s property was specified within the transport properties: %s", CHANNEL_FACTORY, properties));
+            throw MESSAGES.invalidTransportProperty(CHANNEL_FACTORY, properties);
         }
 
         String id = properties.getProperty(ID);
 
         if (id == null) {
-            throw new IllegalStateException(String.format("No %s property was specified within the transport properties: %s", ID, properties));
+            throw MESSAGES.invalidTransportProperty(ID, properties);
         }
 
         try {

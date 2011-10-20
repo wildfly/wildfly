@@ -22,28 +22,35 @@
 
 package org.jboss.as.logging;
 
-import java.util.logging.Handler;
-import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.AsyncHandler;
+
+import java.util.Locale;
+
+import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 
 /**
  * Operation responsible for updating the properties of an async logging handler.
  *
  * @author John Bailey
  */
-public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties {
+public class AsyncHandlerUpdateProperties extends FlushingHandlerUpdateProperties<AsyncHandler> {
     static final AsyncHandlerUpdateProperties INSTANCE = new AsyncHandlerUpdateProperties();
 
-    protected void updateModel(ModelNode operation, ModelNode model) {
-        if (operation.hasDefined(OVERFLOW_ACTION)) {
-            apply(operation, model, OVERFLOW_ACTION);
-        }
+    static final String OPERATION_NAME = HandlerUpdateProperties.OPERATION_NAME;
+
+    private AsyncHandlerUpdateProperties() {
+        super(OVERFLOW_ACTION);
+        // TODO (jrp) implement QUEUE_LENGTH
     }
 
-    protected void updateRuntime(ModelNode operation, Handler handler) {
-        if (operation.hasDefined(OVERFLOW_ACTION)) {
-            AsyncHandler.class.cast(handler).setOverflowAction(AsyncHandler.OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
+    @Override
+    protected void updateRuntime(final ModelNode operation, final AsyncHandler handler) throws OperationFailedException {
+        final ModelNode overflowAction = OVERFLOW_ACTION.validateResolvedOperation(operation);
+        if (overflowAction.isDefined()) {
+            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.validateResolvedOperation(operation).asString().toUpperCase(Locale.US)));
         }
+        // TODO (jrp) implement QUEUE_LENGTH
     }
 }

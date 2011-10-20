@@ -36,17 +36,7 @@ public class ConnectorServiceParamWriteAttributeHandler extends ReloadRequiredWr
     public static final ConnectorServiceParamWriteAttributeHandler INSTANCE = new ConnectorServiceParamWriteAttributeHandler();
 
     private ConnectorServiceParamWriteAttributeHandler() {
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        CommonAttributes.VALUE.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        // no-op, as we are not going to apply this value until the server is reloaded, so allow the
-        // any system property to be set between now and then
+        super(CommonAttributes.VALUE);
     }
 
 }

@@ -22,7 +22,10 @@
 
 package org.jboss.as.jpa.hibernate4.management;
 
+import java.util.Locale;
+
 import org.hibernate.stat.Statistics;
+import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -34,9 +37,8 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
+import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
 
 /**
  * Contains management support for Hibernate
@@ -54,8 +56,12 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
     public static final String OPERATION_ENTITY_LOAD_COUNT = "entity-load-count";
     public static final String OPERATION_ENTITY_FETCH_COUNT = "entity-fetch-count";
     public static final String OPERATION_ENTITY_UPDATE_COUNT = "entity-update-count";
+    public static final String ATTRIBUTE_QUERY_NAME = "query-name";
     public static final String OPERATION_QUERY_EXECUTION_COUNT = "query-execution-count";
+    public static final String OPERATION_QUERY_EXECUTION_ROW_COUNT = "query-execution-row-count";
+    public static final String OPERATION_QUERY_EXECUTION_AVG_TIME = "query-execution-average-time";
     public static final String OPERATION_QUERY_EXECUTION_MAX_TIME = "query-execution-max-time";
+    public static final String OPERATION_QUERY_EXECUTION_MIN_TIME = "query-execution-min-time";
     public static final String OPERATION_QUERY_EXECUTION_MAX_TIME_QUERY_STRING = "query-execution-max-time-query-string";
     public static final String OPERATION_QUERY_CACHE_HIT_COUNT = "query-cache-hit-count";
     public static final String OPERATION_QUERY_CACHE_MISS_COUNT = "query-cache-miss-count";
@@ -78,8 +84,12 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
     public static final String OPERATION_CLOSE_STATEMENT_COUNT = "close-statement-count";
     public static final String OPERATION_OPTIMISTIC_FAILURE_COUNT = "optimistic-failure-count";
 
+    private PersistenceUnitServiceRegistry persistenceUnitRegistry;
+
     @Override
-    public void register(final ManagementResourceRegistration jpaSubsystemDeployments) {
+    public void register(final ManagementResourceRegistration jpaSubsystemDeployments, PersistenceUnitServiceRegistry persistenceUnitRegistry) {
+
+        this.persistenceUnitRegistry = persistenceUnitRegistry;
 
         // setup top level statistics
         DescriptionProvider topLevelDescriptions = new DescriptionProvider() {
@@ -98,24 +108,19 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
 
         registerStatisticOperations(jpaHibernateRegistration);
 
-        // setup 2lc statistics
-//        DescriptionProvider secondLevelCacheDescriptions = new DescriptionProvider() {
+        jpaHibernateRegistration.registerSubModel(new SecondLevelCacheResourceDefinition(persistenceUnitRegistry));
+        jpaHibernateRegistration.registerSubModel(new QueryResourceDefinition(persistenceUnitRegistry));
+        jpaHibernateRegistration.registerSubModel(new EntityResourceDefinition(persistenceUnitRegistry));
+        jpaHibernateRegistration.registerSubModel(new CollectionResourceDefinition(persistenceUnitRegistry));
+
 //
-//            @Override
-//            public ModelNode getModelDescription(Locale locale) {
-//                // get description/type
-//                return HibernateDescriptions.describeSecondLevelCacheAttributes(locale);
-//            }
-//        };
+// TODO:  handle other stats
 
+    }
 
-//        final ManagementResourceRegistration secondLevelCacheRegistration =
-//            jpaHibernateRegistration.registerSubModel(PathElement.pathElement("cache"), secondLevelCacheDescriptions);
-
-//        registerSecondLevelCacheAttributes(secondLevelCacheRegistration);
-//
-// TODO:  handle 2lc and other stats
-
+    @Override
+    public Resource createPersistenceUnitResource(final String persistenceUnitName, final String providerLabel) {
+        return new HibernateStatisticsResource(persistenceUnitName, persistenceUnitRegistry, providerLabel);
     }
 
     private void registerStatisticOperations(ManagementResourceRegistration jpaHibernateRegistration) {
@@ -467,13 +472,9 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
                     response.set(stats.isStatisticsEnabled());
                 }
             },
-            StatisticsEnabledWriteHandler.INSTANCE,
+            new StatisticsEnabledWriteHandler(persistenceUnitRegistry),
             AttributeAccess.Storage.RUNTIME
         );
-
-    }
-
-    private void registerSecondLevelCacheAttributes(ManagementResourceRegistration extendedEntityRegistration) {
 
     }
 
@@ -484,30 +485,18 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
         return PROVIDER_LABEL;
     }
 
-    abstract static class AbstractMetricsHandler implements OperationStepHandler {
+    abstract class AbstractMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         abstract void handle(ModelNode response, String name, Statistics stats, OperationContext context);
 
         @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-
-            final Resource jpa = context.getRootResource().navigate(address.subAddress(0, address.size() - 1));
-            final ModelNode subModel = jpa.getModel();
-
-            final ModelNode node = jpa.requireChild(address.getLastElement()).getModel();
-            final String puname = node.require("scoped-unit-name").asString();
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(final OperationContext context, final ModelNode operation) throws
-                    OperationFailedException {
-                    Statistics stats = ManagementUtility.getStatistics(context, puname);
-                    if (stats != null) {
-                        handle(context.getResult(), address.getLastElement().getValue(), stats, context);
-                    }
-                    context.completeStep();
-                }
-            }, OperationContext.Stage.RUNTIME);
+            final String puResourceName = address.getLastElement().getValue();
+            Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);
+            if (stats != null) {
+                handle(context.getResult(), address.getLastElement().getValue(), stats, context);
+            }
             context.completeStep();
         }
     }

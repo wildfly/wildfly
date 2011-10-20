@@ -22,34 +22,36 @@
 
 package org.jboss.as.logging;
 
-import java.util.logging.Handler;
 import org.jboss.as.controller.OperationFailedException;
-import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
+
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
 /**
  * Operation responsible for updating the properties of a periodic rotating log handler.
  *
  * @author John Bailey
  */
-public class PeriodicHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
+public class PeriodicHandlerUpdateProperties extends FlushingHandlerUpdateProperties<PeriodicRotatingFileHandler> {
     static final PeriodicHandlerUpdateProperties INSTANCE = new PeriodicHandlerUpdateProperties();
 
-    @Override
-    protected void updateModel(final ModelNode operation, final ModelNode model) {
-        super.updateModel(operation, model);
-
-        if (operation.hasDefined(SUFFIX)) {
-            apply(operation, model, SUFFIX);
-        }
+    private PeriodicHandlerUpdateProperties() {
+        super(APPEND, SUFFIX);
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
+    protected void updateRuntime(final ModelNode operation, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
         super.updateRuntime(operation, handler);
-        if (operation.hasDefined(SUFFIX)) {
-            PeriodicRotatingFileHandler.class.cast(handler).setSuffix(operation.get(SUFFIX).asString());
+        final ModelNode suffix = SUFFIX.validateResolvedOperation(operation);
+        if (suffix.isDefined()) {
+            handler.setSuffix(suffix.asString());
+        }
+
+        final ModelNode append = APPEND.validateResolvedOperation(operation);
+        if (append.isDefined()) {
+            handler.setAppend(append.asBoolean());
         }
     }
 }

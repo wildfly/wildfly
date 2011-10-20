@@ -22,31 +22,13 @@
 
 package org.jboss.as.remoting;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readArrayAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readBooleanAttributeElement;
@@ -55,10 +37,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElem
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import static org.jboss.as.remoting.CommonAttributes.ADD_CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.FORWARD_SECRECY;
@@ -77,6 +55,30 @@ import static org.jboss.as.remoting.CommonAttributes.SERVER_AUTH;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 import static org.jboss.as.remoting.CommonAttributes.THREAD_POOL;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -97,14 +99,18 @@ public class RemotingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "remoting";
 
+    //This is given by ServerEnvironment.NODE_NAME
+    private static final String NODE_NAME = "jboss.node.name";
+
     @Override
     public void initialize(ExtensionContext context) {
+
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         registration.registerXMLElementWriter(NewRemotingSubsystemParser.INSTANCE);
         // Remoting subsystem description and operation handlers
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(RemotingSubsystemProviders.SUBSYSTEM);
-        subsystem.registerOperationHandler(ADD, RemotingSubsystemAdd.INSTANCE, RemotingSubsystemProviders.SUBSYSTEM_ADD, false);
+        subsystem.registerOperationHandler(ADD, new RemotingSubsystemAdd(SecurityActions.getSystemProperty(NODE_NAME)), RemotingSubsystemProviders.SUBSYSTEM_ADD, false);
         subsystem.registerOperationHandler(DESCRIBE, RemotingSubsystemDescribeHandler.INSTANCE, RemotingSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         // Remoting connectors
@@ -115,7 +121,9 @@ public class RemotingExtension implements Extension {
         connectors.registerSubModel(PathElement.pathElement(SASL), RemotingSubsystemProviders.SASL_SPEC);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewRemotingSubsystemParser.INSTANCE);
@@ -136,7 +144,7 @@ public class RemotingExtension implements Extension {
             address.protect();
 
             final int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i ++) {
+            for (int i = 0; i < count; i++) {
                 requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -185,7 +193,7 @@ public class RemotingExtension implements Extension {
             String socketBinding = null;
             final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.SOCKET_BINDING);
             final int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i ++) {
+            for (int i = 0; i < count; i++) {
                 requireNoNamespaceAttribute(reader, i);
                 final String value = reader.getAttributeValue(i);
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
@@ -203,7 +211,7 @@ public class RemotingExtension implements Extension {
                         throw unexpectedAttribute(reader, i);
                 }
             }
-            if (! required.isEmpty()) {
+            if (!required.isEmpty()) {
                 throw missingRequired(reader, required);
             }
             assert name != null;
@@ -274,7 +282,7 @@ public class RemotingExtension implements Extension {
                         switch (element) {
                             case INCLUDE_MECHANISMS: {
                                 final ModelNode includes = saslElement.get(INCLUDE_MECHANISMS);
-                                for(final String s : readArrayAttributeElement(reader, "value", String.class)) {
+                                for (final String s : readArrayAttributeElement(reader, "value", String.class)) {
                                     includes.add().set(s);
                                 }
                                 break;
@@ -381,20 +389,21 @@ public class RemotingExtension implements Extension {
             }
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
             final ModelNode node = context.getModelNode();
 
-            if (has(node, CONNECTOR)) {
+            if (node.hasDefined(CONNECTOR)) {
                 final ModelNode connector = node.get(CONNECTOR);
                 for (String name : connector.keys()) {
-                    if (has(connector, name)) {
-                        writeConnector(writer, node.get(name), name);
-                    }
+                    writeConnector(writer, connector.require(name), name);
                 }
             }
+
             writer.writeEndElement();
 
         }
@@ -402,10 +411,9 @@ public class RemotingExtension implements Extension {
         private void writeConnector(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
             writer.writeStartElement(Element.CONNECTOR.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-            if (has(node, SOCKET_BINDING)) {
-                writeAttribute(writer, Attribute.SOCKET_BINDING, node.get(SOCKET_BINDING));
-            }
-            if (has(node, AUTHENTICATION_PROVIDER)) {
+            writeAttribute(writer, Attribute.SOCKET_BINDING, node.require(SOCKET_BINDING));
+
+            if (node.hasDefined(AUTHENTICATION_PROVIDER)) {
                 writeSimpleChild(writer, Element.AUTHENTICATION_PROVIDER, Attribute.NAME, node.get(AUTHENTICATION_PROVIDER));
             }
             if (has(node, PROPERTIES)) {
@@ -507,6 +515,7 @@ public class RemotingExtension implements Extension {
         static final RemotingSubsystemDescribeHandler INSTANCE = new RemotingSubsystemDescribeHandler();
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
             final ModelNode result = context.getResult();
             final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
 
@@ -521,7 +530,7 @@ public class RemotingExtension implements Extension {
             if (model.hasDefined(CONNECTOR)) {
                 for (org.jboss.dmr.Property prop : model.get(CONNECTOR).asPropertyList()) {
                     final ModelNode connector = prop.getValue();
-                    final ModelNode add = Util.getEmptyOperation(ADD_CONNECTOR, address.append(PathElement.pathElement(CONNECTOR, prop.getName())).toModelNode());
+                    final ModelNode add = Util.getEmptyOperation(ADD, address.append(PathElement.pathElement(CONNECTOR, prop.getName())).toModelNode());
                     if (connector.hasDefined(SOCKET_BINDING)) {
                         add.get(SOCKET_BINDING).set(connector.get(SOCKET_BINDING));
                     }
@@ -531,7 +540,7 @@ public class RemotingExtension implements Extension {
                     if (connector.hasDefined(SASL)) {
                         add.get(SASL);
                     }
-                    result.add(connector);
+                    result.add(add);
                 }
             }
             context.completeStep();

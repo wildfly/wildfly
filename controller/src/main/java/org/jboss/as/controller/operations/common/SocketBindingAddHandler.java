@@ -41,6 +41,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -49,7 +50,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class SocketBindingAddHandler extends AbstractAddStepHandler {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -75,34 +76,22 @@ public class SocketBindingAddHandler extends AbstractAddStepHandler implements D
 
     public static final SocketBindingAddHandler INSTANCE = new SocketBindingAddHandler();
 
-    private final ParametersValidator validator = new ParametersValidator();
-
     /**
      * Create the SocketBindingAddHandler
      */
     protected SocketBindingAddHandler() {
-        validator.registerValidator(INTERFACE, new StringLengthValidator(1, Integer.MAX_VALUE, true, true));
-        validator.registerValidator(PORT, new IntRangeValidator(0, 65535, false, true));
-        validator.registerValidator(FIXED_PORT, new ModelTypeValidator(ModelType.BOOLEAN, true, true));
-        validator.registerValidator(MULTICAST_ADDRESS, new InetAddressValidator(true, true));
-        validator.registerValidator(MULTICAST_PORT, new IntRangeValidator(0, 65535, true, true));
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        validator.validate(operation);
 
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
         model.get(NAME).set(name);
-        model.get(INTERFACE).set(operation.get(INTERFACE));
-        model.get(PORT).set(operation.get(PORT));
-        model.get(FIXED_PORT).set(operation.get(FIXED_PORT));
-        model.get(MULTICAST_ADDRESS).set(operation.get(MULTICAST_ADDRESS));
-        model.get(MULTICAST_PORT).set(operation.get(MULTICAST_PORT));
-    }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return SocketBindingGroupDescription.getSocketBindingAddOperation(locale);
+        AbstractSocketBindingResourceDefinition.INTERFACE.validateAndSet(operation, model);
+        AbstractSocketBindingResourceDefinition.PORT.validateAndSet(operation, model);
+        AbstractSocketBindingResourceDefinition.FIXED_PORT.validateAndSet(operation, model);
+        AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS.validateAndSet(operation, model);
+        AbstractSocketBindingResourceDefinition.MULTICAST_PORT.validateAndSet(operation, model);
     }
 }

@@ -52,7 +52,7 @@ public class EntityBeanAssociatingInterceptorFactory implements InterceptorFacto
     }
 
     @Override
-    public Interceptor create(InterceptorFactoryContext context) {
+    public Interceptor create(final  InterceptorFactoryContext factoryContext) {
 
         return new AbstractEJBInterceptor() {
             @Override

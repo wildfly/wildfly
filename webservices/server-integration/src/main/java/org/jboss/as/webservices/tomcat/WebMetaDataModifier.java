@@ -88,7 +88,7 @@ final class WebMetaDataModifier {
 
         // fix servlet class names for endpoints
         for (final ServletMetaData servletMD : jbossWebMD.getServlets()) {
-            final String endpointClassName = ASHelper.getEndpointName(servletMD);
+            final String endpointClassName = ASHelper.getEndpointClassName(servletMD);
             if (endpointClassName != null && endpointClassName.length() > 0) { // exclude JSP
                 if (epNames.contains(endpointClassName)) {
                     // set transport servlet
@@ -97,6 +97,8 @@ final class WebMetaDataModifier {
                     final List<ParamValueMetaData> initParams = WebMetaDataHelper.getServletInitParams(servletMD);
                     // configure transport class name
                     WebMetaDataHelper.newParamValue(WSFServlet.STACK_SERVLET_DELEGATE_CLASS, transportClassName, initParams);
+                    // configure the integration classloader to be used (JAXRPC or JAXWS)
+                    WebMetaDataHelper.newParamValue(WSFServlet.INTEGRATION_CLASSLOADER, dep.getType().toString(), initParams);
                     // configure webservice endpoint
                     WebMetaDataHelper.newParamValue(Endpoint.SEPID_DOMAIN_ENDPOINT, endpointClassName, initParams);
                 }

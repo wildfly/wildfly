@@ -30,11 +30,15 @@ import java.util.Map;
 public enum EJB3SubsystemXMLAttribute {
     UNKNOWN(null),
 
+    CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),
+
+    DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
 
     INSTANCE_AQUISITION_TIMEOUT("instance-acquisition-timeout"),
     INSTANCE_AQUISITION_TIMEOUT_UNIT("instance-acquisition-timeout-unit"),
 
+    KEEPALIVE_TIME("keepalive-time"),
 
     MAX_POOL_SIZE("max-pool-size"),
     MAX_THREADS("max-threads"),
@@ -46,6 +50,8 @@ public enum EJB3SubsystemXMLAttribute {
 
     RELATIVE_TO("relative-to"),
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
+
+    THREAD_POOL_NAME("thread-pool-name")
     ;
 
     private final String name;

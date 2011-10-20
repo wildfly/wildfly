@@ -33,7 +33,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class LocalDataSourceService extends AbstractDataSourceService {
 
-    private final InjectedValue<DataSource> dataSourceConfig = new InjectedValue<DataSource>();
+    private final InjectedValue<ModifiableDataSource> dataSourceConfig = new InjectedValue<ModifiableDataSource>();
 
     public LocalDataSourceService(final String jndiName) {
         super(jndiName);
@@ -41,11 +41,11 @@ public class LocalDataSourceService extends AbstractDataSourceService {
 
     public AS7DataSourceDeployer getDeployer() {
         // this.dataSourceConfig = dataSourceConfig;
-        return new AS7DataSourceDeployer(dataSourceConfig.getValue());
+        return new AS7DataSourceDeployer(dataSourceConfig.getValue().getUnModifiableInstance());
 
     }
 
-    public Injector<DataSource> getDataSourceConfigInjector() {
+    public Injector<ModifiableDataSource> getDataSourceConfigInjector() {
         return dataSourceConfig;
     }
 }

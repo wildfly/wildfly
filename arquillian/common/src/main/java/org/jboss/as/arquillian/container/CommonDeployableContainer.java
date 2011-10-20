@@ -16,6 +16,10 @@
  */
 package org.jboss.as.arquillian.container;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
@@ -38,6 +42,7 @@ import org.jboss.util.NotImplementedException;
  */
 public abstract class CommonDeployableContainer<T extends CommonContainerConfiguration> implements DeployableContainer<T> {
 
+    private final Logger log = Logger.getLogger(CommonDeployableContainer.class.getName());
     private T containerConfig;
     private ManagementClient managementClient;
 
@@ -53,27 +58,37 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Override
     public void setup(T config) {
         containerConfig = config;
-
-        ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(
-                config.getManagementAddress(),
-                config.getManagementPort());
-
-        managementClient = new ManagementClient(modelControllerClient, config.getManagementAddress().getHostAddress());
-
-        archiveDeployerInst.set(new ArchiveDeployer(
-                ServerDeploymentManager.Factory.create(modelControllerClient)));
     }
 
     @Override
     public final void start() throws LifecycleException {
-        startInternal();
+
+        ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(
+                containerConfig.getManagementAddress(),
+                containerConfig.getManagementPort());
+
+        managementClient = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress().getHostAddress());
+
+        archiveDeployerInst.set(new ArchiveDeployer(
+                ServerDeploymentManager.Factory.create(modelControllerClient)));
+
+        try {
+            startInternal();
+        } catch (LifecycleException e) {
+            safeCloseClient();
+            throw e;
+        }
     }
 
     protected abstract void startInternal() throws LifecycleException;
 
     @Override
     public final void stop() throws LifecycleException {
-        stopInternal();
+        try {
+            stopInternal();
+        } finally {
+            safeCloseClient();
+        }
     }
 
     protected abstract void stopInternal() throws LifecycleException;
@@ -112,5 +127,13 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
         throw new NotImplementedException();
+    }
+
+    private void safeCloseClient() {
+        try {
+            managementClient.getControllerClient().close();
+        } catch (Exception e) {
+            log.log(Level.WARNING, "Caught exception closing ModelControllerClient", e);
+        }
     }
 }

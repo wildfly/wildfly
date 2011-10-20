@@ -37,11 +37,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 
 /**
@@ -64,17 +66,7 @@ class MessagingPathHandlers {
         }
     };
 
-    static final OperationStepHandler PATH_ATTR = new ReloadRequiredWriteAttributeHandler() {
-
-        @Override
-        protected void validateUnresolvedValue(final String name, final ModelNode value) throws OperationFailedException {
-            if(RELATIVE_TO.equals(name)) {
-                CommonAttributes.RELATIVE_TO.getValidator().validateParameter(name, value);
-            } else {
-                CommonAttributes.PATH.getValidator().validateParameter(name, value);
-            }
-        }
-    };
+    static final OperationStepHandler PATH_ATTR = new ReloadRequiredWriteAttributeHandler(CommonAttributes.RELATIVE_TO, CommonAttributes.PATH);
 
     static final OperationStepHandler PATH_REMOVE = new OperationStepHandler() {
 
@@ -108,7 +100,8 @@ class MessagingPathHandlers {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
+                    final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(hqServiceName);
                     if(controller != null) {
                         context.reloadRequired();
                     }

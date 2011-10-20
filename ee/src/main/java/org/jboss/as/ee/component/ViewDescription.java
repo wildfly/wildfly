@@ -22,6 +22,16 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
+import java.lang.reflect.Method;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -35,16 +45,6 @@ import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
-
-import java.lang.reflect.Method;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A description of a view.
@@ -162,8 +162,8 @@ public class ViewDescription {
 
     public static final ImmediateInterceptorFactory CLIENT_DISPATCHER_INTERCEPTOR_FACTORY = new ImmediateInterceptorFactory(new Interceptor() {
         public Object processInvocation(final InterceptorContext context) throws Exception {
-            ComponentViewInstance viewInstance = context.getPrivateData(ComponentViewInstance.class);
-            return viewInstance.getEntryPoint(context.getMethod()).processInvocation(context);
+            ComponentView view = context.getPrivateData(ComponentView.class);
+            return view.invoke(context);
         }
     });
 
@@ -183,9 +183,6 @@ public class ViewDescription {
                     configuration.addClientInterceptor(method, CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 }
             }
-
-            configuration.addViewPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPostConstruct.TERMINAL_INTERCEPTOR);
-            configuration.addViewPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ViewPreDestroy.TERMINAL_INTERCEPTOR);
 
             configuration.addClientPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
             configuration.addClientPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
@@ -248,4 +245,5 @@ public class ViewDescription {
     public void setUseWriteReplace(final boolean useWriteReplace) {
         this.useWriteReplace = useWriteReplace;
     }
+
 }

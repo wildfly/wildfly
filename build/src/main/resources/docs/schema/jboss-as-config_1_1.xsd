@@ -107,7 +107,6 @@
                 <xs:element name="paths" type="specified-pathsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="vault" type="vaultType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management" type="managementType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="management-interfaces" type="management-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="profile" type="standalone-profileType" minOccurs="0"/>
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
@@ -331,6 +330,35 @@
                 Definition to use LDAP as the user repository.
             </xs:documentation>
         </xs:annotation>
+        <xs:choice>
+            <xs:element name="username-filter">
+                <xs:complexType>
+                    <xs:attribute name="attribute" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The name of the attribute to search for the user, this filter will then perform
+                                a simple search where the username entered by the user matches the attribute
+                                specified here.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="advanced-filter">
+                <xs:complexType>
+                    <xs:attribute name="filter" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The fully defined filter to be used to search for the user based on their entered
+                                user ID. The filter should contain a variable in the form {0} - this will be
+                                replaced with the username supplied by the user.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:choice>
+
         <xs:attribute name="connection" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -342,13 +370,6 @@
             <xs:annotation>
                 <xs:documentation>
                     The base distinguished name to commence the search for the user.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="username-attribute" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    The name of the attribute to search for the user.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -564,6 +585,15 @@
             <xs:annotation>
                 <xs:documentation>
                     The name of the profile this server is running.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="management-subsystem-endpoint" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Set to true to have servers belonging to the server group connect back to the host controller using the
+                    endpoint from their remoting subsystem. The subsystem must be preset for this to
+                    work.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

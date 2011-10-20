@@ -6,7 +6,7 @@
 
   <servlet>
     <servlet-name>servlet</servlet-name>
-    <servlet-class>org.jboss.as.testsuite.integration.osgi.webapp.bundle.EndpointServlet</servlet-class>
+    <servlet-class>org.jboss.as.test.integration.osgi.webapp.bundle.EndpointServlet</servlet-class>
     <init-param>
       <param-name>initProp</param-name>
       <param-value>SomeValue</param-value>

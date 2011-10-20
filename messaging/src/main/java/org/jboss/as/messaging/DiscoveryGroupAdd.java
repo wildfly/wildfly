@@ -42,11 +42,14 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
@@ -85,14 +88,15 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         ServiceRegistry registry = context.getServiceRegistry(false);
-        ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = registry.getService(hqServiceName);
         if (hqService != null) {
             context.reloadRequired();
         } else {
             final ServiceTarget target = context.getServiceTarget();
             if(model.hasDefined(CommonAttributes.SOCKET_BINDING.getName())) {
                 final GroupBindingService bindingService = new GroupBindingService();
-                target.addService(GroupBindingService.DISCOVERY.append(name), bindingService)
+                target.addService(GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name), bindingService)
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(model.get(SOCKET_BINDING).asString()), SocketBinding.class, bindingService.getBindingRef())
                         .install();
             } else {
@@ -112,7 +116,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
                     final SocketBinding socketBinding = new SocketBinding(name, -1, false, group, groupPort, b, null);
 
                     final GroupBindingService bindingService = new GroupBindingService();
-                    target.addService(GroupBindingService.DISCOVERY.append(name), bindingService)
+                    target.addService(GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name), bindingService)
                             .addInjectionValue(bindingService.getBindingRef(), new ImmediateValue<SocketBinding>(socketBinding))
                             .install();
 

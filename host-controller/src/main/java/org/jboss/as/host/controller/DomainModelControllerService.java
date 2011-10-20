@@ -68,7 +68,6 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.FileRepository;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.MasterDomainControllerClient;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
@@ -79,10 +78,11 @@ import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryServ
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
-import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -105,6 +105,8 @@ import org.jboss.threads.JBossThreadFactory;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DomainModelControllerService extends AbstractControllerService implements DomainController, UnregisteredHostChannelRegistry {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.host.controller");
 
     public static final ServiceName SERVICE_NAME = HostControllerBootstrap.SERVICE_NAME_BASE.append("model", "controller");
 
@@ -177,15 +179,20 @@ public class DomainModelControllerService extends AbstractControllerService impl
         PathAddress pa = hostControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(0);
         ProxyController existingController = modelNodeRegistration.getProxyController(pa);
+
         if (existingController != null || hostControllerInfo.getLocalHostName().equals(pe.getValue())){
+            boolean unregistered = false;
             //This horrible hack is there to make sure that the slave has not crashed since we don't get notifications due to REM3-121
             if ((existingController instanceof RemoteProxyController)) {
                 if (((RemoteProxyController)existingController).ping(3000)) {
                     throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
                 }
                 unregisterRemoteHost(pe.getValue());
+                unregistered = true;
             }
-            //throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
+            if (!unregistered) {
+                throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
+            }
         }
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(pe.getValue(), hostControllerClient);
@@ -241,8 +248,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public FileRepository getFileRepository() {
+    public FileRepository getLocalFileRepository() {
         return localFileRepository;
+    }
+
+    @Override
+    public FileRepository getRemoteFileRepository() {
+        if (hostControllerInfo.isMasterDomainController()) {
+            throw new IllegalStateException("Cannot access a remote file repository from the master domain controller");
+        }
+        return remoteFileRepository;
     }
 
     @Override
@@ -263,6 +278,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
     // bit of stuff
     @Override
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
+
+        //TODO make configurable so subsystem endpoint can be used
+        final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
+
         final ServiceTarget serviceTarget = context.getServiceTarget();
         try {
             super.boot(configurationPersister.load()); // This parses the host.xml and invokes all ops
@@ -273,7 +292,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort());
 
             //Install the core remoting endpoint and listener
-            RemotingServices.installRemotingEndpoint(serviceTarget);
+            ManagementRemotingServices.installManagementRemotingEndpoint(serviceTarget, hostControllerInfo.getLocalHostName());
 
             if (!hostControllerInfo.isMasterDomainController()) {
                 serverInventory = getFuture(inventoryFuture);
@@ -288,14 +307,22 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 masterDomainControllerClient = getFuture(clientFuture);
                 //Registers us with the master and gets down the master copy of the domain model to our DC
                 //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
-                masterDomainControllerClient.register();
+                try {
+                    masterDomainControllerClient.register();
+                } catch (IllegalStateException e) {
+                    //We could not connect to the host
+                    log.error("Could not connect to master. Aborting. Error was: " + e.getMessage());
+                    System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                }
 
             } else {
+                // TODO look at having LocalDomainControllerAdd do this, using Stage.IMMEDIATE for the steps
                 // parse the domain.xml and load the steps
                 ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
                 super.boot(domainPersister.load());
-                RemotingServices.installChannelServices(serviceTarget, new MasterDomainControllerOperationHandlerService(this, this),
-                        DomainModelControllerService.SERVICE_NAME, RemotingServices.DOMAIN_CHANNEL, null, null);
+
+                ManagementRemotingServices.installManagementChannelServices(serviceTarget, endpointName, new MasterDomainControllerOperationHandlerService(this, this),
+                        DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
                 serverInventory = getFuture(inventoryFuture);
             }
 
@@ -306,12 +333,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
             if (nativeSecurityRealm != null) {
                 realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(nativeSecurityRealm);
             }
-            RemotingServices.installDomainConnectorServices(serviceTarget, nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, null, null);
+            ManagementRemotingServices.installDomainConnectorServices(serviceTarget, endpointName, nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, null, null);
             ServerToHostOperationHandlerFactoryService.install(serviceTarget, NewServerInventoryService.SERVICE_NAME);
-            RemotingServices.installChannelOpenListenerService(serviceTarget, RemotingServices.SERVER_CHANNEL,
+            ManagementRemotingServices.installManagementChannelOpenListenerService(serviceTarget, endpointName, ManagementRemotingServices.SERVER_CHANNEL,
                     ServerToHostOperationHandlerFactoryService.SERVICE_NAME, null, null);
-            RemotingServices.installChannelServices(serviceTarget, new ModelControllerClientOperationHandlerFactoryService(),
-                    DomainModelControllerService.SERVICE_NAME, RemotingServices.MANAGEMENT_CHANNEL, null, null);
+            ManagementRemotingServices.installManagementChannelServices(serviceTarget, endpointName, new ModelControllerClientOperationHandlerFactoryService(),
+                    DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.MANAGEMENT_CHANNEL, null, null);
 
             if (hostControllerInfo.getHttpManagementInterface() != null) {
                 installHttpManagementServices(serviceTarget);

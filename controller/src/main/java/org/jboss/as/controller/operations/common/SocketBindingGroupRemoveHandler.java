@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class SocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -45,11 +45,6 @@ public class SocketBindingGroupRemoveHandler extends AbstractRemoveStepHandler i
      * Create the AbstractSocketBindingRemoveHandler
      */
     protected SocketBindingGroupRemoveHandler() {
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return SocketBindingGroupDescription.getSocketBindingRemoveOperation(locale);
     }
 
     protected boolean requiresRuntime(OperationContext context) {

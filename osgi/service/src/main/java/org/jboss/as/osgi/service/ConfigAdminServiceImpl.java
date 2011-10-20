@@ -28,9 +28,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.osgi.parser.OSGiExtension;
+import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
@@ -39,13 +39,11 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.spi.util.UnmodifiableDictionary;
 
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
@@ -62,6 +60,7 @@ import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
  */
 public class ConfigAdminServiceImpl implements ConfigAdminService {
 
+    private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
     private final Set<ConfigAdminListener> listeners = new CopyOnWriteArraySet<ConfigAdminListener>();
     private final Executor executor = Executors.newSingleThreadExecutor();
@@ -73,6 +72,7 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
     public static ServiceController<?> addService(final ServiceTarget target, final ServiceListener<Object>... listeners) {
         ConfigAdminServiceImpl service = new ConfigAdminServiceImpl();
         ServiceBuilder<?> builder = target.addService(ConfigAdminService.SERVICE_NAME, service);
+        builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedModelController);
         builder.addListener(listeners);
         return builder.install();
@@ -80,62 +80,17 @@ public class ConfigAdminServiceImpl implements ConfigAdminService {
 
     @Override
     public Set<String> getConfigurations() {
-        ModelNode address = getSubsystemAddress();
-        ModelNode params = new ModelNode().set(ModelDescriptionConstants.CHILD_TYPE, ModelConstants.CONFIGURATION);
-        ModelNode op = Util.getOperation(ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION, address, params);
-        Set<String> result = new HashSet<String>();
-        try {
-             for (ModelNode item : controllerClient.execute(op).get(ModelDescriptionConstants.RESULT).asList()) {
-                result.add(item.asString());
-             }
-        } catch (IOException ex) {
-            ROOT_LOGGER.errorf(ex, "Cannot read configurations");
-        }
-        return result;
+        return injectedSubsystemState.getValue().getConfigurations();
     }
 
     @Override
     public boolean hasConfiguration(String pid) {
-        ModelNode address = getSubsystemAddress();
-        ModelNode params = new ModelNode().set(ModelDescriptionConstants.CHILD_TYPE, ModelConstants.CONFIGURATION);
-        ModelNode op = Util.getOperation(ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION, address, params);
-        boolean hasconfig = false;
-        try {
-            ModelNode node = controllerClient.execute(op);
-            ModelNode result = node.get(ModelDescriptionConstants.RESULT);
-            for (ModelNode item : result.asList()) {
-                 if (item.asString().equals(pid)) {
-                     hasconfig = true;
-                     break;
-                 }
-             }
-        } catch (IOException ex) {
-            ROOT_LOGGER.errorf(ex, "Cannot read configuration for pid: %s", pid);
-        }
-        return hasconfig;
+        return injectedSubsystemState.getValue().hasConfiguration(pid);
     }
 
     @Override
     public Dictionary<String, String> getConfiguration(String pid) {
-        Dictionary<String, String> config = null;
-        if (hasConfiguration(pid) == true) {
-            config = new Hashtable<String, String>();
-            ModelNode address = getSubsystemAddress();
-            address.add(new ModelNode().set(ModelConstants.CONFIGURATION, pid));
-            ModelNode op = Util.getEmptyOperation(ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
-            try {
-                ModelNode node = controllerClient.execute(op);
-                ModelNode result = node.get(ModelDescriptionConstants.RESULT);
-                ModelNode entries = result.get(ModelConstants.ENTRIES);
-                for (Property prop : entries.asPropertyList()) {
-                     config.put(prop.getName(), prop.getValue().asString());
-                 }
-            } catch (IOException ex) {
-                ROOT_LOGGER.errorf(ex, "Cannot read configuration for pid: %s", pid);
-            }
-            config = new UnmodifiableDictionary<String, String>(config);
-        }
-        return config;
+        return injectedSubsystemState.getValue().getConfiguration(pid);
     }
 
     @Override

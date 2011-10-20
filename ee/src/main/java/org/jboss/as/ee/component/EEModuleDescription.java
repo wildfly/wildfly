@@ -22,16 +22,15 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
-
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
+import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -43,11 +42,16 @@ public final class EEModuleDescription {
     private volatile String distinctName = "";
     private final Map<String, ComponentDescription> componentsByName = new HashMap<String, ComponentDescription>();
     private final Map<String, List<ComponentDescription>> componentsByClassName = new HashMap<String, List<ComponentDescription>>();
-
+    private final Map<String, EEModuleClassDescription> classDescriptions = new HashMap<String, EEModuleClassDescription>();
+    private final Map<String, InterceptorClassDescription> interceptorClassOverrides = new HashMap<String, InterceptorClassDescription>();
 
     private InjectedEENamespaceContextSelector namespaceContextSelector;
 
-    private final Deque<EEModuleConfigurator> moduleConfigurators = new ArrayDeque<EEModuleConfigurator>();
+    // Module Bindings
+    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
+    //injections that have been set in the components deployment descriptor
+    private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<String, Map<InjectionTarget, ResourceInjectionConfiguration>>();
+
 
     /**
      * Construct a new instance.
@@ -58,6 +62,46 @@ public final class EEModuleDescription {
     public EEModuleDescription(final String applicationName, final String moduleName) {
         this.applicationName = applicationName;
         this.moduleName = moduleName;
+    }
+
+    /**
+     * Adds or retrieves an existing EEModuleClassDescription for the local module. This method should only be used
+     * for classes that reside within the current deployment unit, usually by annotation scanners that are attaching annotation
+     * information.
+     * <p/>
+     * This
+     *
+     * @param className The class name
+     * @return The new or existing {@link EEModuleClassDescription}
+     */
+    public EEModuleClassDescription addOrGetLocalClassDescription(final String className) {
+        if (className == null) {
+            throw new IllegalArgumentException("Name cannot be null");
+        }
+        EEModuleClassDescription ret = classDescriptions.get(className);
+        if (ret == null) {
+            classDescriptions.put(className, ret = new EEModuleClassDescription(className));
+        }
+        return ret;
+    }
+
+    /**
+     * Returns a class that is local to this module
+     *
+     * @param className The class
+     * @return The description, or null if not found
+     */
+    EEModuleClassDescription getClassDescription(final String className) {
+        return classDescriptions.get(className);
+    }
+
+    /**
+     * Returns all class descriptions in this module
+     *
+     * @return All class descriptions
+     */
+    public Collection<EEModuleClassDescription> getClassDescriptions() {
+        return classDescriptions.values();
     }
 
     /**
@@ -114,10 +158,6 @@ public final class EEModuleDescription {
         return componentsByName.values();
     }
 
-    public Deque<EEModuleConfigurator> getConfigurators() {
-        return this.moduleConfigurators;
-    }
-
     public InjectedEENamespaceContextSelector getNamespaceContextSelector() {
         return namespaceContextSelector;
     }
@@ -135,5 +175,48 @@ public final class EEModuleDescription {
             throw new IllegalArgumentException("Distinct name cannot be null");
         }
         this.distinctName = distinctName;
+    }
+
+    /**
+     * Get module level interceptor method overrides that are set up in ejb-jar.xml
+     *
+     * @param className The class name
+     * @return The overrides, or null if no overrides have been set up
+     */
+    public InterceptorClassDescription getInterceptorClassOverride(final String className) {
+        return interceptorClassOverrides.get(className);
+    }
+
+    /**
+     * Adds a module level interceptor class override, it is merged with any existing overrides if they exist
+     *
+     * @param className The class name
+     * @param override  The override
+     */
+    public void addInterceptorMethodOverride(final String className, final InterceptorClassDescription override) {
+        interceptorClassOverrides.put(className, InterceptorClassDescription.merge(interceptorClassOverrides.get(className), override));
+    }
+
+    public List<BindingConfiguration> getBindingConfigurations() {
+        return bindingConfigurations;
+    }
+
+
+    public void addResourceInjection(final ResourceInjectionConfiguration injection) {
+        String className = injection.getTarget().getClassName();
+        Map<InjectionTarget, ResourceInjectionConfiguration> map = resourceInjections.get(className);
+        if(map == null) {
+            resourceInjections.put(className, map = new HashMap<InjectionTarget, ResourceInjectionConfiguration>());
+        }
+        map.put(injection.getTarget(), injection);
+    }
+
+    public Map<InjectionTarget, ResourceInjectionConfiguration> getResourceInjections(final  String className) {
+        Map<InjectionTarget, ResourceInjectionConfiguration> injections = resourceInjections.get(className);
+        if(injections == null) {
+            return Collections.emptyMap();
+        } else {
+            return Collections.unmodifiableMap(injections);
+        }
     }
 }

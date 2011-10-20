@@ -33,12 +33,16 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TransactionAttributeType;
 
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.context.spi.SessionContext;
-import org.jboss.as.threads.ThreadsServices;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -47,8 +51,6 @@ import org.jboss.msc.service.ServiceName;
 public abstract class SessionBeanComponent extends EJBComponent implements org.jboss.as.ejb3.context.spi.SessionBeanComponent {
 
     private static final Logger logger = Logger.getLogger(SessionBeanComponent.class);
-
-    public static final ServiceName ASYNC_EXECUTOR_SERVICE_NAME = ThreadsServices.EXECUTOR.append("ejb3-async");
 
     protected final Map<String, AccessTimeoutDetails> beanLevelAccessTimeout;
     private final ExecutorService asyncExecutor;
@@ -99,7 +101,9 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         if (ejbObjectView == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
         }
-        return createViewInstanceProxy(EJBObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbObjectView);
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbObjectView);
+        final ComponentView view = (ComponentView) serviceController.getValue();
+        return EJBClient.createProxy(new StatelessEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), getApplicationName(), getModuleName(), getComponentName(), getDistinctName()));
     }
 
     /**
@@ -127,5 +131,13 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
             throw new IllegalStateException("EJB 3.1 FR 13.6.2.8 setRollbackOnly is not allowed with SUPPORTS attribute");
         }
         super.setRollbackOnly();
+    }
+
+    protected ServiceName getEjbObjectView() {
+        return ejbObjectView;
+    }
+
+    protected ServiceName getEjbLocalObjectView() {
+        return ejbLocalObjectView;
     }
 }

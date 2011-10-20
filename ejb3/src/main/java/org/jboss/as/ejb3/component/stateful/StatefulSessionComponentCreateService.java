@@ -29,10 +29,12 @@ import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.InjectedValue;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -45,14 +47,14 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InterceptorFactory afterCompletion;
     private final InterceptorFactory beforeCompletion;
     private final StatefulTimeoutInfo statefulTimeout;
-    private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
+    private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
 
     /**
      * Construct a new instance.
      *
      * @param componentConfiguration the component configuration
      */
-    public StatefulSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
+    public StatefulSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
 
         final StatefulComponentDescription componentDescription = (StatefulComponentDescription) componentConfiguration.getComponentDescription();
@@ -63,7 +65,6 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.afterCompletion = interceptorFactoryChain(tcclInterceptorFactory, namespaceContextInterceptorFactory, SessionInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(beanClass, componentDescription.getAfterCompletion()));
         this.beforeCompletion = interceptorFactoryChain(tcclInterceptorFactory, namespaceContextInterceptorFactory, SessionInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(beanClass, componentDescription.getBeforeCompletion()));
         this.statefulTimeout = componentDescription.getStatefulTimeout();
-        this.defaultAccessTimeoutProvider = componentDescription.getDefaultAccessTimeoutProvider();
     }
 
     private static InterceptorFactory invokeMethodOnTarget(Class<?> beanClass, MethodDescription methodDescription) {
@@ -134,7 +135,11 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return statefulTimeout;
     }
 
-    public DefaultAccessTimeoutService getDefaultAccessTimeoutProvider() {
-        return defaultAccessTimeoutProvider;
+    public DefaultAccessTimeoutService getDefaultAccessTimeoutService() {
+        return defaultAccessTimeoutService.getValue();
+    }
+
+    Injector<DefaultAccessTimeoutService> getDefaultAccessTimeoutInjector() {
+        return this.defaultAccessTimeoutService;
     }
 }

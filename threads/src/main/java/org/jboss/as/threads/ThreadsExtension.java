@@ -101,6 +101,7 @@ public class ThreadsExtension implements Extension {
         boundedQueueThreadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE,
                 BoundedQueueThreadPoolRemove.INSTANCE, false);
         BoundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
+        BoundedQueueThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(boundedQueueThreadPools);
 
         final ManagementResourceRegistration unboundedQueueThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(UNBOUNDED_QUEUE_THREAD_POOL), UNBOUNDED_QUEUE_THREAD_POOL_DESC);
@@ -109,6 +110,7 @@ public class ThreadsExtension implements Extension {
         unboundedQueueThreadPools.registerOperationHandler(REMOVE, UnboundedQueueThreadPoolRemove.INSTANCE,
                 UnboundedQueueThreadPoolRemove.INSTANCE, false);
         UnboundedQueueThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(unboundedQueueThreadPools);
+        UnboundedQueueThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(unboundedQueueThreadPools);
 
         final ManagementResourceRegistration queuelessThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(QUEUELESS_THREAD_POOL), QUEUELESS_THREAD_POOL_DESC);
@@ -117,6 +119,7 @@ public class ThreadsExtension implements Extension {
         queuelessThreadPools.registerOperationHandler(REMOVE, QueuelessThreadPoolRemove.INSTANCE,
                 QueuelessThreadPoolRemove.INSTANCE, false);
         QueuelessThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(queuelessThreadPools);
+        QueuelessThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(queuelessThreadPools);
 
         final ManagementResourceRegistration scheduledThreadPools = subsystem.registerSubModel(
                 PathElement.pathElement(SCHEDULED_THREAD_POOL), SCHEDULED_THREAD_POOL_DESC);
@@ -125,6 +128,7 @@ public class ThreadsExtension implements Extension {
         scheduledThreadPools.registerOperationHandler(REMOVE, ScheduledThreadPoolRemove.INSTANCE,
                 ScheduledThreadPoolRemove.INSTANCE, false);
         ScheduledThreadPoolReadAttributeHandler.INSTANCE.registerAttributes(scheduledThreadPools);
+        ScheduledThreadPoolWriteAttributeHandler.INSTANCE.registerAttributes(scheduledThreadPools);
     }
 
     @Override

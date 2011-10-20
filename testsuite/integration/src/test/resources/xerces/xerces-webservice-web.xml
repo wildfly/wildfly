@@ -27,7 +27,7 @@
 
     <servlet>
         <servlet-name>XercesUsageWebServiceServlet</servlet-name>
-        <servlet-class>org.jboss.as.testsuite.integration.xerces.ws.XercesUsageWebService</servlet-class>
+        <servlet-class>org.jboss.as.test.integration.xerces.ws.XercesUsageWebService</servlet-class>
     </servlet>
 
     <servlet-mapping>

@@ -120,7 +120,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 ServiceTarget serviceTarget = context.getServiceTarget();
                 newControllers.add(BundleStartTracker.addService(serviceTarget));
                 newControllers.add(BundleInstallProviderIntegration.addService(serviceTarget));
-                newControllers.addAll(FrameworkBootstrapService.addService(serviceTarget, verificationHandler));
+                newControllers.add(FrameworkBootstrapService.addService(serviceTarget, verificationHandler));
                 newControllers.add(ConfigAdminServiceImpl.addService(serviceTarget, verificationHandler));
                 context.completeStep();
             }

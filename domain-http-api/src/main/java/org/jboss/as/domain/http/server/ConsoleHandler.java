@@ -27,11 +27,12 @@ import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -55,12 +56,13 @@ import static org.jboss.as.domain.http.server.Constants.*;
 public class ConsoleHandler implements ManagementHttpHandler {
 
     public  static final String CONTEXT = "/console";
-    private static final String HOST_HEADER = "Host";
     private static final String EXPIRES_HEADER = "Expires";
+    private static final String LAST_MODIFIED_HEADER = "Last-Modified";
     private static final String NOCACHE_JS = ".nocache.js";
     private static final String WILDCARD = "*";
-    private static final String DATEFORMAT_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
     private static final String GMT = "GMT";
+    private static final String CACHE_CONTROL_HEADER = "Cache-Control";
+    private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
     private ClassLoader loader = null;
 
@@ -69,7 +71,16 @@ public class ConsoleHandler implements ManagementHttpHandler {
     private long lastExpiryDate = 0;
     private String lastExpiryHeader = null;
 
+    private static String LAST_MODIFIED;
+    private static final String FORMAT_STRING = "EEE, dd MMM yyyy HH:mm:ss z";
+
+    private static Map<String, ResourceHandle> buffer = new ConcurrentHashMap<String, ResourceHandle>();
+
     static {
+
+
+        LAST_MODIFIED = createDateFormat().format(new Date());
+
         contentTypeMapping.put(".js",   APPLICATION_JAVASCRIPT);
         contentTypeMapping.put(".html", TEXT_HTML);
         contentTypeMapping.put(".htm",  TEXT_HTML);
@@ -115,9 +126,11 @@ public class ConsoleHandler implements ManagementHttpHandler {
         }
 
         // load resource
-        InputStream inputStream = getLoader().getResourceAsStream(resource);
+        ResourceHandle handle = getResourceHandle(resource);
 
-        if(inputStream!=null) {
+        if(handle.getInputStream()!=null) {
+
+            InputStream inputStream = handle.getInputStream();
 
             final Headers responseHeaders = http.getResponseHeaders();
             responseHeaders.add(CONTENT_TYPE, resolveContentType(path));
@@ -125,16 +138,21 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
 
             boolean skipcache = resource.endsWith(NOCACHE_JS);
+
+            // provide the ability to cache GWT artifacts
             if(!skipcache){
-                // provide 'Expires' headers for GWT files
 
                 if(System.currentTimeMillis()>lastExpiryDate) {
                     lastExpiryDate = calculateExpiryDate();
-                    lastExpiryHeader = htmlExpiresDateFormat().format(new Date(lastExpiryDate));
+                    lastExpiryHeader = createDateFormat().format(new Date(lastExpiryDate));
                 }
 
+                responseHeaders.add(CACHE_CONTROL_HEADER, "private, max-age=2678400, must-revalidate");
                 responseHeaders.add(EXPIRES_HEADER, lastExpiryHeader);
             }
+
+            responseHeaders.add(LAST_MODIFIED_HEADER, LAST_MODIFIED);
+            responseHeaders.add(CONTENT_LENGTH_HEADER, String.valueOf(handle.getSize()));
 
             http.sendResponseHeaders(OK, 0);
 
@@ -152,15 +170,49 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
     }
 
+    private ResourceHandle getResourceHandle(String resource) {
+
+
+        ResourceHandle handle = buffer.get(resource);
+
+        if(handle==null){
+
+            InputStream resourceStream = getLoader().getResourceAsStream(resource);
+
+            if(resourceStream!=null) {
+
+                try {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    fastChannelCopy(resourceStream, bout);
+                    bout.flush();
+                    bout.close();
+                    resourceStream.close();
+                    handle = new ResourceHandle(bout.toByteArray());
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to read "+resource, e);
+                }
+
+                 buffer.put(resource, handle);
+            }
+            else {
+                // 404
+                handle = new ResourceHandle(null);
+            }
+        }
+
+        return handle;
+    }
+
+    private static DateFormat createDateFormat(){
+        DateFormat df = new SimpleDateFormat(FORMAT_STRING, Locale.US);
+        df.setTimeZone(TimeZone.getTimeZone(GMT));
+        return df;
+    }
+
     private static long calculateExpiryDate() {
         Calendar cal = Calendar.getInstance();
         cal.roll(Calendar.MONTH, 1);
         return cal.getTime().getTime();
-    }
-    public static DateFormat htmlExpiresDateFormat() {
-        DateFormat httpDateFormat = new SimpleDateFormat(DATEFORMAT_FORMAT, Locale.US);
-        httpDateFormat.setTimeZone(TimeZone.getTimeZone(GMT));
-        return httpDateFormat;
     }
 
     public static void fastChannelCopy(final InputStream in, final OutputStream out) throws IOException {
@@ -188,7 +240,8 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
     private static void safeClose(Closeable close) {
         try {
-            close.close();
+            if(close!=null)
+                close.close();
         } catch (Throwable eat) {
         }
     }
@@ -233,5 +286,22 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
     public void stop(HttpServer httpServer) {
         httpServer.removeContext(CONTEXT);
+    }
+
+    class ResourceHandle {
+
+        private final byte[] content;
+
+        ResourceHandle(byte[] content) {
+            this.content = content;
+        }
+
+        public int getSize() {
+            return content.length;
+        }
+
+        public InputStream getInputStream() {
+            return content!=null ? new ByteArrayInputStream(content) : null;
+        }
     }
 }

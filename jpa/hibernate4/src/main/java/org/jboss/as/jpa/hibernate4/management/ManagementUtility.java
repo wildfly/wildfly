@@ -22,15 +22,13 @@
 
 package org.jboss.as.jpa.hibernate4.management;
 
+import javax.persistence.EntityManagerFactory;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.stat.Statistics;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
-import org.jboss.as.jpa.util.JPAServiceNames;
-import org.jboss.msc.service.ServiceController;
-
-import javax.persistence.EntityManagerFactory;
+import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
 
 /**
  * Utility class for management stuff
@@ -39,13 +37,12 @@ import javax.persistence.EntityManagerFactory;
  */
 public class ManagementUtility {
 
-    public static Statistics getStatistics(final OperationContext context, final String puname) {
+    public static Statistics getStatistics(PersistenceUnitServiceRegistry registry, String persistenceUnitName) {
+
         Statistics stats = null;
-        final ServiceController<?> controller = context.getServiceRegistry(false).getService(JPAServiceNames.getPUServiceName(puname));
-        if (controller != null) {
-            // get the persistence unit service that represents the deployed persistence unit
-            PersistenceUnitService persistenceUnitService = (PersistenceUnitService) controller.getValue();
-            EntityManagerFactory entityManagerFactory = persistenceUnitService.getEntityManagerFactory();
+        PersistenceUnitService persistenceUnitService = registry.getPersistenceUnitService(persistenceUnitName);
+        if (persistenceUnitService != null) {
+            final EntityManagerFactory entityManagerFactory = persistenceUnitService.getEntityManagerFactory();
             // TODO:  with JPA 2.1, if unwrap is added to EMF, change cast to "entityManagerFactory.unwrap(HibernateEntityManagerFactory.class)"
             HibernateEntityManagerFactory entityManagerFactoryImpl = (HibernateEntityManagerFactory) entityManagerFactory;
             SessionFactory sessionFactory = entityManagerFactoryImpl.getSessionFactory();
@@ -55,5 +52,4 @@ public class ManagementUtility {
         }
         return stats;
     }
-
 }

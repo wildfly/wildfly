@@ -25,6 +25,10 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.Locator;
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.StatefulEJBLocator;
+import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
 
 /**
@@ -59,12 +63,20 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load view class for ejb " + beanName, e);
         }
-
-        final Object proxy = EJBClient.getProxy(appName, moduleName, distinctName, beanName, viewClass);
-
+        Locator ejbLocator = null;
         if (stateful) {
-            EJBClient.createSession(proxy);
+            final SessionID sessionID;
+            try {
+                sessionID = EJBClient.createSession(appName, moduleName, beanName, distinctName);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            ejbLocator = new StatefulEJBLocator(viewClass, appName, moduleName, beanName, distinctName, sessionID);
+        } else {
+            ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);
         }
+        final Object proxy = EJBClient.createProxy(ejbLocator);
+
         return new ValueManagedReference(new ImmediateValue<Object>(proxy));
     }
 }

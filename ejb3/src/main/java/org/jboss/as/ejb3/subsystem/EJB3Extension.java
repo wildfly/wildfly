@@ -22,6 +22,11 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
+import java.util.Locale;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -36,21 +41,17 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.subsystem.deployment.EntityBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinition;
-import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanResourceDefinition;
-import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanResourceDefinition;
-import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.StatefulSessionBeanDeploymentResourceDefinition;
+import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanDeploymentResourceDefinition;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 
 /**
  * Extension that provides the EJB3 subsystem.
@@ -83,22 +84,31 @@ public class EJB3Extension implements Extension {
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(EJB3SubsystemRootResourceDefinition.INSTANCE);
 
         // describe operation for the subsystem
-        subsystemRegistration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystemRegistration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
+        // subsystem=ejb3/service=remote
+        subsystemRegistration.registerSubModel(EJB3RemoteResourceDefinition.INSTANCE);
+
+        // subsystem=ejb3/service=async
+        subsystemRegistration.registerSubModel(EJB3AsyncResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/strict-max-bean-instance-pool=*
         subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
 
-        // subsystem=ejb3/timer-service=*
+        // subsystem=ejb3/service=timerservice
         subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);
 
+        // subsystem=ejb3/thread-pool=*
+        subsystemRegistration.registerSubModel(EJB3ThreadPoolResourceDefinition.INSTANCE);
+
         ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
-                                                                         getResourceDescriptionResolver("deployed"));
+                getResourceDescriptionResolver("deployed"));
         final ManagementResourceRegistration deploymentsRegistration = subsystem.registerDeploymentModel(deploymentsDef);
         deploymentsRegistration.registerSubModel(EntityBeanResourceDefinition.INSTANCE);
         deploymentsRegistration.registerSubModel(MessageDrivenBeanResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(SingletonBeanResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(StatelessSessionBeanResourceDefinition.INSTANCE);
-        deploymentsRegistration.registerSubModel(StatefulSessionBeanResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(SingletonBeanDeploymentResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(StatelessSessionBeanDeploymentResourceDefinition.INSTANCE);
+        deploymentsRegistration.registerSubModel(StatefulSessionBeanDeploymentResourceDefinition.INSTANCE);
     }
 
     /**
@@ -109,49 +119,5 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(NAMESPACE_1_0, EJB3Subsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(NAMESPACE_1_1, EJB3Subsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(NAMESPACE_1_2, EJB3Subsystem12Parser.INSTANCE);
-    }
-
-    private static ModelNode createAddSubSystemOperation(final ModelNode model) {
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
-        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
-    }
-
-    private static ModelNode createAddStrictMaxPoolOperation(final String name, final ModelNode model) {
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
-        address.add(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL, name);
-        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
-    }
-
-    private static ModelNode createTimerServiceOperation(final ModelNode model) {
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
-        address.add(EJB3SubsystemModel.SERVICE, EJB3SubsystemModel.TIMER_SERVICE);
-        return org.jboss.as.controller.operations.common.Util.getOperation(ADD, address, model);
-    }
-
-    private static class SubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final ModelNode result = context.getResult();
-            final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
-            result.add(createAddSubSystemOperation(root.getModel()));
-            for (Resource.ResourceEntry pool : root.getChildren(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL)) {
-                result.add(createAddStrictMaxPoolOperation(pool.getName(), pool.getModel()));
-            }
-            final Resource timerService = root.getChild(EJB3SubsystemModel.TIMER_SERVICE_PATH);
-            if (timerService != null) {
-                result.add(createTimerServiceOperation(timerService.getModel()));
-            }
-
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode(); // internal operation
-        }
     }
 }

@@ -22,13 +22,14 @@
 
 package org.jboss.as.ee.component;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An interceptor factory which gets an object instance from a managed resource.  A reference to the resource will be
@@ -46,7 +47,7 @@ class ManagedReferenceInterceptorFactory implements InterceptorFactory {
      * Construct a new instance.
      *
      * @param componentInstantiation the managed reference factory to create from
-     * @param contextKey the context key
+     * @param contextKey             the context key
      */
     public ManagedReferenceInterceptorFactory(final ManagedReferenceFactory componentInstantiation, final Object contextKey) {
         if (componentInstantiation == null) {
@@ -59,10 +60,46 @@ class ManagedReferenceInterceptorFactory implements InterceptorFactory {
         this.contextKey = contextKey;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Interceptor create(final InterceptorFactoryContext context) {
         final AtomicReference<ManagedReference> referenceReference = new AtomicReference<ManagedReference>();
         context.getContextData().put(contextKey, referenceReference);
         return new ManagedReferenceInterceptor(componentInstantiation, referenceReference);
+    }
+
+    static final class ManagedReferenceInterceptor implements Interceptor {
+
+        private final ManagedReferenceFactory componentInstantiator;
+        private final AtomicReference<ManagedReference> referenceReference;
+
+        public ManagedReferenceInterceptor(final ManagedReferenceFactory componentInstantiator, final AtomicReference<ManagedReference> referenceReference) {
+            this.componentInstantiator = componentInstantiator;
+            this.referenceReference = referenceReference;
+        }
+
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            final ManagedReference existing = referenceReference.get();
+            if (existing == null) {
+                final ManagedReference reference = componentInstantiator.getReference();
+                boolean ok = false;
+                try {
+                    referenceReference.set(reference);
+                    context.setTarget(reference.getInstance());
+                    Object result = context.proceed();
+                    ok = true;
+                    return result;
+                } finally {
+                    context.setTarget(null);
+                    if (!ok) {
+                        reference.release();
+                        referenceReference.set(null);
+                    }
+                }
+            } else {
+                return context.proceed();
+            }
+        }
     }
 }

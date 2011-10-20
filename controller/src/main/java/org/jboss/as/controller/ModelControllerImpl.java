@@ -22,16 +22,18 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -65,14 +67,6 @@ class ModelControllerImpl implements ModelController {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
-    private static final ModelNode EMPTY;
-
-    static {
-        ModelNode empty = new ModelNode();
-        empty.protect();
-        EMPTY = empty;
-    }
-
     private final ServiceRegistry serviceRegistry;
     private final ServiceTarget serviceTarget;
     private final ManagementResourceRegistration rootRegistration;
@@ -84,13 +78,6 @@ class ModelControllerImpl implements ModelController {
     private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
     private final OperationStepHandler prepareStep;
     private final ControlledProcessState processState;
-
-    @Deprecated
-    ModelControllerImpl(final ModelNode model, final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
-                        final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
-                        final OperationStepHandler prepareStep, final ControlledProcessState processState) {
-        this(serviceRegistry, serviceTarget, rootRegistration, stateMonitor, persister, controllerType, prepareStep, processState);
-    }
 
     ModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
@@ -133,14 +120,74 @@ class ModelControllerImpl implements ModelController {
     }
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
-        OperationContextImpl context = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class), handler, null, model, control, processState, bootingFlag.get());
-        ModelNode result = context.getResult();
+
+        // Execute all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
+        // This gets extensions registered before proceeding to other ops that count on these registrations
+        final OperationContextImpl context = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
+                handler, null, model, control, processState, bootingFlag.get());
+        final ModelNode result = new ModelNode().setEmptyList();
         result.setEmptyList();
+        boolean sawExtensionAdd = false;
+        List<ParsedOp> postExtensionOps = null;
         for (ModelNode bootOp : bootList) {
-            final ModelNode response = result.add();
-            context.addStep(response, bootOp, new BootStepHandler(bootOp, response), OperationContext.Stage.MODEL);
+            final ParsedOp parsedOp = new ParsedOp(bootOp);
+            if (postExtensionOps != null) {
+                // Handle cases like AppClient where extension adds are interleaved with subsystem ops
+                if (parsedOp.isExtensionAdd()) {
+                    final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName);
+                    context.addStep(result.add(), bootOp, stepHandler, OperationContext.Stage.MODEL);
+                } else {
+                    postExtensionOps.add(parsedOp);
+                }
+            } else {
+                final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName);
+                if (!sawExtensionAdd && stepHandler == null) {
+                    // Odd case. An op prior to the first extension add where there is no handler. This would really
+                    // only happen during AS development
+                    String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
+                    log.error(msg);
+                    context.setRollbackOnly();
+                    // stop
+                    break;
+                } else if (stepHandler instanceof ExtensionAddHandler) {
+                    context.addStep(result.add(), bootOp, stepHandler, OperationContext.Stage.MODEL);
+                    sawExtensionAdd = true;
+                } else if (!sawExtensionAdd) {
+                    // An operation prior to the first Extension Add
+                    context.addStep(result.add(), bootOp, stepHandler, OperationContext.Stage.MODEL);
+                } else {
+                    // Start the postExtension list
+                    postExtensionOps = new ArrayList<ParsedOp>();
+                    postExtensionOps.add(parsedOp);
+                }
+            }
         }
-        context.completeStep();
+
+        // Run the steps up to the last ExtensionAddHandler
+        if (context.completeStep() == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
+
+            // Success. Now any extension handlers are registered. Continue with remaining ops
+            final OperationContextImpl postExtContext = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
+                    handler, null, model, control, processState, bootingFlag.get());
+            final ModelNode postExtResult = new ModelNode().setEmptyList();
+            postExtResult.setEmptyList();
+
+            for (ParsedOp parsedOp : postExtensionOps) {
+                final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName);
+                if (stepHandler == null) {
+                    String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
+                    log.error(msg);
+                    postExtContext.setRollbackOnly();
+                    // stop
+                    break;
+                } else {
+                    final ModelNode response = postExtResult.add();
+                    postExtContext.addStep(response, parsedOp.operation, stepHandler, OperationContext.Stage.MODEL);
+                }
+            }
+
+            postExtContext.completeStep();
+        }
     }
 
     void finshBoot() {
@@ -153,32 +200,6 @@ class ModelControllerImpl implements ModelController {
 
     ManagementResourceRegistration getRootRegistration() {
         return rootRegistration;
-    }
-
-    class BootStepHandler implements OperationStepHandler {
-        private final ModelNode operation;
-        private final ModelNode response;
-
-        BootStepHandler(final ModelNode operation, final ModelNode response) {
-            this.operation = operation;
-            this.response = response;
-        }
-
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ADDRESS));
-            final String operationName = operation.require(OP).asString();
-            final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
-            if (stepHandler == null) {
-                context.getFailureDescription().set(String.format("No handler for operation %s at address %s", operationName, address));
-            } else {
-                OperationContext.Stage stage = OperationContext.Stage.MODEL;
-                if(stepHandler instanceof ExtensionAddHandler) {
-                    stage = OperationContext.Stage.IMMEDIATE;
-                }
-                context.addStep(response, this.operation, stepHandler, stage);
-            }
-            context.completeStep();
-        }
     }
 
     public ModelControllerClient createClient(final Executor executor) {
@@ -363,6 +384,8 @@ class ModelControllerImpl implements ModelController {
             modelReference.set(resource);
         }
 
+        @SuppressWarnings({"CloneDoesntCallSuperClone"})
+        @Override
         public Resource clone() {
             return getDelegate().clone();
         }
@@ -431,6 +454,23 @@ class ModelControllerImpl implements ModelController {
             return this.modelReference.get();
         }
 
+    }
+
+    private static class ParsedOp {
+        private final ModelNode operation;
+        private final String operationName;
+        private final PathAddress address;
+
+        private ParsedOp(final ModelNode operation) {
+            this.operation = operation;
+            this.address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            this.operationName = operation.require(OP).asString();
+        }
+
+        private boolean isExtensionAdd() {
+            return address.size() == 1 && address.getElement(0).getKey().equals(EXTENSION)
+                        && operationName.equals(ADD);
+        }
     }
 
 }

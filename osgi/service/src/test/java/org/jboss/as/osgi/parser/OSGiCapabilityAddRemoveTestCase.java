@@ -23,6 +23,7 @@ package org.jboss.as.osgi.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import junit.framework.Assert;
 
@@ -49,25 +50,25 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
         ModelNode op = getAddOperation("org.acme.module1", 4);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
-        OSGiCapabilityAdd.INSTANCE.execute(context, op);
+        execute(OSGiCapabilityAdd.INSTANCE, context, op);
         Assert.assertEquals(1, addedSteps.size());
 
         Assert.assertEquals("Precondition", 0, stateService.getCapabilities().size());
-        addedSteps.get(0).execute(context, op);
+        execute(addedSteps.get(0), context, op);
         Assert.assertEquals(1, stateService.getCapabilities().size());
         OSGiCapability module = stateService.getCapabilities().get(0);
         Assert.assertEquals("org.acme.module1:main", module.getIdentifier().toString());
         Assert.assertEquals(new Integer(4), module.getStartLevel());
 
-        OSGiCapabilityRemove.INSTANCE.execute(context, op);
+        execute(OSGiCapabilityRemove.INSTANCE, context, op);
         Assert.assertEquals("Actual remove added as async step", 2, addedSteps.size());
 
-        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.ROLLBACK);
-        addedSteps.get(1).execute(context, op);
+        configureForRollback(context, op);
+        execute(addedSteps.get(1), context, op);
         Assert.assertEquals("Module should have been kept as the operation was rolled back", module, stateService.getCapabilities().get(0));
 
-        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.KEEP);
-        addedSteps.get(1).execute(context, op);
+        configureForSuccess(context);
+        execute(addedSteps.get(1), context, op);
         Assert.assertEquals("Module should have been removed", 0, stateService.getCapabilities().size());
     }
 
@@ -80,11 +81,11 @@ public class OSGiCapabilityAddRemoveTestCase extends ResourceAddRemoveTestBase {
         ModelNode op = getAddOperation("org.acme.module1", 4);
 
         Assert.assertEquals("Precondition", 0, addedSteps.size());
-        OSGiCapabilityAdd.INSTANCE.execute(context, op);
+        execute(OSGiCapabilityAdd.INSTANCE, context, op);
         Assert.assertEquals(1, addedSteps.size());
 
         Assert.assertEquals("Precondition", 0, stateService.getCapabilities().size());
-        addedSteps.get(0).execute(context, op);
+        execute(addedSteps.get(0), context, op);
         Assert.assertEquals("Operation should have been rolled back", 0, stateService.getCapabilities().size());
     }
 

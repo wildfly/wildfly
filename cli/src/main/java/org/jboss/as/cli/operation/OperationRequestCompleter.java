@@ -231,7 +231,12 @@ public class OperationRequestCompleter implements CommandLineCompleter {
             }
 
             Collections.sort(candidates);
-            return parsedCmd.endsOnSeparator() ? parsedCmd.getLastSeparatorIndex() + 1 : parsedCmd.getLastChunkIndex();
+            if(parsedCmd.endsOnSeparator()) {
+                final int i = parsedCmd.getLastSeparatorIndex();
+                return i == 0 ? 0 : i + 1;
+            } else {
+                return parsedCmd.getLastChunkIndex();
+            }
         }
 
         final OperationRequestAddress address = parsedCmd.getAddress();

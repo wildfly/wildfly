@@ -21,6 +21,8 @@
 */
 package org.jboss.as.remoting;
 
+import java.net.InetSocketAddress;
+
 import org.jboss.as.network.NetworkInterfaceBinding;
 
 /**
@@ -31,14 +33,15 @@ import org.jboss.as.network.NetworkInterfaceBinding;
 public class NetworkBindingStreamServerService extends AbstractStreamServerService {
 
     private final NetworkInterfaceBinding interfaceBinding;
+    private final int port;
 
     public NetworkBindingStreamServerService(final NetworkInterfaceBinding interfaceBinding, int port) {
-        super(port);
+        this.port = port;
         this.interfaceBinding = interfaceBinding;
     }
 
     @Override
-    NetworkInterfaceBinding getNetworkInterfaceBinding() {
-        return interfaceBinding;
+    InetSocketAddress getSocketAddress() {
+        return new InetSocketAddress(interfaceBinding.getAddress(), port);
     }
 }

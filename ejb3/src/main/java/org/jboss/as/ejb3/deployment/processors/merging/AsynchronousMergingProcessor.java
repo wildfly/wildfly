@@ -34,18 +34,15 @@ import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.AsyncFutureInterceptorFactory;
 import org.jboss.as.ejb3.component.AsyncVoidInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.processors.dd.MethodResolutionUtils;
@@ -60,6 +57,7 @@ import org.jboss.metadata.ejb.spec.AsyncMethodsMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Merging processor that handles EJB asyn methods, and adds a configurator to configure any that are found.
@@ -68,8 +66,11 @@ import org.jboss.msc.service.ServiceBuilder;
  */
 public class AsynchronousMergingProcessor extends AbstractMergingProcessor<SessionBeanComponentDescription> {
 
-    public AsynchronousMergingProcessor() {
+    final ServiceName asynchronousThreadPoolService;
+
+    public AsynchronousMergingProcessor(final ServiceName asynchronousThreadPoolService) {
         super(SessionBeanComponentDescription.class);
+        this.asynchronousThreadPoolService = asynchronousThreadPoolService;
     }
 
     @Override
@@ -114,7 +115,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
                     configuration.getCreateDependencies().add(new DependencyConfigurator<SessionBeanComponentCreateService>() {
                         @Override
                         public void configureDependency(final ServiceBuilder<?> serviceBuilder, final SessionBeanComponentCreateService service) throws DeploymentUnitProcessingException {
-                            serviceBuilder.addDependency(SessionBeanComponent.ASYNC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getAsyncExecutorService());
+                            serviceBuilder.addDependency(asynchronousThreadPoolService, ExecutorService.class, service.getAsyncExecutorService());
                         }
                     });
                 }

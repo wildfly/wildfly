@@ -241,7 +241,7 @@ class OSGiNamespace11Parser implements Namespace11, XMLStreamConstants, XMLEleme
 
                         ModelNode propNode = new ModelNode();
                         propNode.get(OP).set(ADD);
-                        propNode.get(OP_ADDR).set(address).add(ModelConstants.FRAMEWORK_PROPERTY, name);
+                        propNode.get(OP_ADDR).set(address).add(ModelConstants.PROPERTY, name);
                         propNode.get(ModelConstants.VALUE).set(value);
 
                         result.add(propNode);

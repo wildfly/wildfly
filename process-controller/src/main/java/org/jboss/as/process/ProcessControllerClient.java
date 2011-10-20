@@ -24,16 +24,13 @@ package org.jboss.as.process;
 
 import static org.jboss.as.process.ProcessLogger.CLIENT_LOGGER;
 import static org.jboss.as.process.ProcessMessages.MESSAGES;
-import org.jboss.as.process.protocol.Connection;
-import org.jboss.as.process.protocol.MessageHandler;
-import org.jboss.as.process.protocol.ProtocolClient;
-import org.jboss.as.process.protocol.StreamUtils;
 import static org.jboss.as.process.protocol.StreamUtils.readFully;
 import static org.jboss.as.process.protocol.StreamUtils.readInt;
 import static org.jboss.as.process.protocol.StreamUtils.readLong;
 import static org.jboss.as.process.protocol.StreamUtils.readUTFZBytes;
 import static org.jboss.as.process.protocol.StreamUtils.readUnsignedByte;
 import static org.jboss.as.process.protocol.StreamUtils.safeClose;
+import static org.jboss.as.process.protocol.StreamUtils.writeBoolean;
 import static org.jboss.as.process.protocol.StreamUtils.writeInt;
 import static org.jboss.as.process.protocol.StreamUtils.writeUTFZBytes;
 
@@ -43,6 +40,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.as.process.protocol.Connection;
+import org.jboss.as.process.protocol.MessageHandler;
+import org.jboss.as.process.protocol.ProtocolClient;
+import org.jboss.as.process.protocol.StreamUtils;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -278,7 +280,7 @@ public final class ProcessControllerClient implements Closeable {
         }
     }
 
-    public void reconnectProcess(final String processName, final String hostName, final int port) throws IOException {
+    public void reconnectProcess(final String processName, final String hostName, final int port, final boolean managementSubsystemEndpoint) throws IOException {
         if (processName == null){
             throw MESSAGES.nullVar("processName");
         }
@@ -288,6 +290,7 @@ public final class ProcessControllerClient implements Closeable {
             writeUTFZBytes(os, processName);
             writeUTFZBytes(os, hostName);
             writeInt(os, port);
+            writeBoolean(os, managementSubsystemEndpoint);
             os.close();
         } finally {
             safeClose(os);

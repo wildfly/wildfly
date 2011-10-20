@@ -62,10 +62,10 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor {
                 }
                 // fall through...
             case Status.STATUS_PREPARED:
-                String msg = "Application error: BMT stateless bean " + getComponentName()
-                        + " should complete transactions before" + " returning (ejb1.1 spec, 11.6.1)";
+                String msg = "EJB 3.1 FR 13.3.3: BMT bean " + getComponentName()
+                        + " should complete transaction before returning.";
                 log.error(msg);
-                throw new EJBException(msg);
+                throw new EJBException(msg, ex);
         }
         // the instance interceptor will discard the instance
         if (ex != null)

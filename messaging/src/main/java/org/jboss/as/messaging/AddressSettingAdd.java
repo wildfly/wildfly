@@ -49,6 +49,7 @@ import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 import java.util.List;
 import java.util.Locale;
@@ -78,7 +79,7 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler,
                                   final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final HornetQServer server = getServer(context);
+        final HornetQServer server = getServer(context, operation);
         if(server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final AddressSettings settings = createSettings(model);
@@ -133,8 +134,9 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
         return SimpleString.toSimpleString(node.getType() != ModelType.UNDEFINED ? node.asString() : defVal);
     }
 
-    static HornetQServer getServer(final OperationContext context) {
-        final ServiceController<?> controller = context.getServiceRegistry(true).getService(MessagingServices.JBOSS_MESSAGING);
+    static HornetQServer getServer(final OperationContext context, ModelNode operation) {
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceController<?> controller = context.getServiceRegistry(true).getService(hqServiceName);
         if(controller != null) {
             return HornetQServer.class.cast(controller.getValue());
         }

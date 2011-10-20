@@ -22,11 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.proxy.ProxyFactory;
-import org.jboss.msc.service.ServiceName;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +30,11 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * A configuration of a component view.
@@ -47,14 +47,13 @@ public class ViewConfiguration {
     private final ServiceName viewServiceName;
     private final Map<Method, OrderedItemContainer<InterceptorFactory>> viewInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
     private final Map<Method, OrderedItemContainer<InterceptorFactory>> clientInterceptors = new IdentityHashMap<Method, OrderedItemContainer<InterceptorFactory>>();
-    private final OrderedItemContainer<InterceptorFactory> viewPostConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
     private final OrderedItemContainer<InterceptorFactory> clientPostConstructInterceptors = new OrderedItemContainer<InterceptorFactory>();
-    private final OrderedItemContainer<InterceptorFactory> viewPreDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
     private final OrderedItemContainer<InterceptorFactory> clientPreDestroyInterceptors = new OrderedItemContainer<InterceptorFactory>();
     private final ProxyFactory<?> proxyFactory;
     private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
     private final Class<?> viewClass;
     private final Set<Method> asyncMethods = new HashSet<Method>();
+    private ViewInstanceFactory viewInstanceFactory;
 
     /**
      * Construct a new instance.
@@ -178,27 +177,6 @@ public class ViewConfiguration {
     }
 
     /**
-     * Get the post-construct interceptors for view instances.
-     * <p/>
-     * This method should only be called after all interceptors have been added.
-     *
-     * @return the interceptors
-     */
-    public List<InterceptorFactory> getViewPostConstructInterceptors() {
-        return viewPostConstructInterceptors.getSortedItems();
-    }
-
-    /**
-     * Adds a view post construct interceptor
-     *
-     * @param interceptorFactory The interceptor
-     * @param priority           The interceptor order
-     */
-    public void addViewPostConstructInterceptor(final InterceptorFactory interceptorFactory, final int priority) {
-        viewPostConstructInterceptors.add(interceptorFactory, priority);
-    }
-
-    /**
      * Get the post-construct interceptors for client proxy instances.
      * <p/>
      * This method should only be called after all interceptors have been added.
@@ -217,27 +195,6 @@ public class ViewConfiguration {
      */
     public void addClientPostConstructInterceptor(final InterceptorFactory interceptorFactory, final int priority) {
         clientPostConstructInterceptors.add(interceptorFactory, priority);
-    }
-
-    /**
-     * Get the pre-destroy interceptors for view instances.
-     * <p/>
-     * This method should only be called after all interceptors have been added.
-     *
-     * @return the interceptors
-     */
-    public List<InterceptorFactory> getViewPreDestroyInterceptors() {
-        return viewPreDestroyInterceptors.getSortedItems();
-    }
-
-    /**
-     * Adds a view pre-destroy interceptor
-     *
-     * @param interceptorFactory The interceptor
-     * @param priority           The interceptor order
-     */
-    public void addViewPreDestroyInterceptor(final InterceptorFactory interceptorFactory, final int priority) {
-        viewPreDestroyInterceptors.add(interceptorFactory, priority);
     }
 
     /**
@@ -303,5 +260,17 @@ public class ViewConfiguration {
      */
     public void addAsyncMethod(Method method) {
         this.asyncMethods.add(method);
+    }
+
+    public ViewInstanceFactory getViewInstanceFactory() {
+        return viewInstanceFactory;
+    }
+
+    /**
+     *
+     * @param viewInstanceFactory The instance factory that is used to create the view instances
+     */
+    public void setViewInstanceFactory(final ViewInstanceFactory viewInstanceFactory) {
+        this.viewInstanceFactory = viewInstanceFactory;
     }
 }

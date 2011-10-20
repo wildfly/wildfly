@@ -21,6 +21,12 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -46,11 +52,6 @@ import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.weld.servlet.ConversationPropagationFilter;
 import org.jboss.weld.servlet.WeldListener;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Deployment processor that integrates weld into the web tier
  *
@@ -70,6 +71,8 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
     private static final String JSP_LISTENER = JspInitializationListener.class.getName();
 
     private static final String CONVERSATION_FILTER = ConversationPropagationFilter.class.getName();
+
+    private static final String WELD_SERVLET_LISTENER = "org.jboss.weld.environment.servlet.Listener";
 
     public WebIntegrationProcessor() {
 
@@ -97,7 +100,7 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             return; // Skip non web deployments
         }
 
-        if(!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return; // skip non weld deployments
         }
 
@@ -116,6 +119,18 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         if (listeners == null) {
             listeners = new ArrayList<ListenerMetaData>();
             webMetaData.setListeners(listeners);
+        } else {
+            //if the weld servlet listener is present remove it
+            //this should allow wars to be portable between AS7 and servlet containers
+            final ListIterator<ListenerMetaData> iterator = listeners.listIterator();
+            while (iterator.hasNext()) {
+                final ListenerMetaData listener = iterator.next();
+                if (listener.getListenerClass().trim().equals(WELD_SERVLET_LISTENER)) {
+                    log.debugf("Removing weld servlet listener %s from web config, as it is not needed in EE6 environments", WELD_SERVLET_LISTENER);
+                    iterator.remove();
+                    break;
+                }
+            }
         }
         listeners.add(0, WBL);
         listeners.add(1, JIL);

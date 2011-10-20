@@ -83,7 +83,7 @@ class SecurityActions {
         }
     }
 
-    public static Properties getSystemProperties() {
+    static Properties getSystemProperties() {
         if (System.getSecurityManager() == null) {
             return System.getProperties();
         } else {
@@ -95,7 +95,7 @@ class SecurityActions {
         }
     }
 
-    public static Map<String, String> getSystemEnvironment() {
+    static Map<String, String> getSystemEnvironment() {
         if (System.getSecurityManager() == null) {
             return System.getenv();
         } else {

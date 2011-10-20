@@ -30,7 +30,7 @@
     <enterprise-beans>
         <session>
             <ejb-name>DescriptorGreeter</ejb-name>
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.descriptor.DescriptorGreeterBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.descriptor.DescriptorGreeterBean</ejb-class>
             <session-type>Stateless</session-type>
         </session>
     </enterprise-beans>

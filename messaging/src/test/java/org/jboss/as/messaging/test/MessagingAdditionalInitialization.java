@@ -23,7 +23,6 @@ package org.jboss.as.messaging.test;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 
 /**
  *
@@ -40,14 +39,5 @@ public class MessagingAdditionalInitialization extends AdditionalInitialization 
     @Override
     protected OperationContext.Type getType() {
         return type;
-    }
-
-    @Override
-    protected ValidationConfiguration getModelValidationConfiguration() {
-        if (false) {
-            return super.getModelValidationConfiguration();
-        }
-        //TODO fix providers and register overrides above https://issues.jboss.org/browse/AS7-1790
-        return null;
     }
 }

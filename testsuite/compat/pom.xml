@@ -35,12 +35,19 @@
     <artifactId>jboss-as-testsuite-integration-compat</artifactId>
     <name>JBoss Application Server Test Suite: Compatibility Tests</name>
     <properties>
-            <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
+
+        <!-- used to provide an absolute location for the distribution under test -->
+        <!-- this value is overridden in modules with the correct relative pathname -->
+        <jboss.dist>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
+        <jboss.home>${jboss.dist}</jboss.home>
+
+
+        <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
     </properties>
-   <!--
-   Compile-time dependencies upon anything  in the AS7 runtime
-   are allowed in this section
-   -->
+    <!--
+    Compile-time dependencies upon anything  in the AS7 runtime
+    are allowed in this section
+    -->
 
     <dependencies>
         <dependency>
@@ -96,10 +103,10 @@
                         <phase>test-compile</phase>
                         <configuration>
                             <tasks>
-                                <property name="tests.resources.dir" value="${basedir}/src/test/resources" />
-                                <property name="tests.output.dir" value="${project.build.directory}" />
+                                <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
+                                <property name="tests.output.dir" value="${project.build.directory}"/>
                                 <ant antfile="src/test/scripts/build-jars.xml">
-                                    <target name="build-jars" />
+                                    <target name="build-jars"/>
                                 </ant>
                             </tasks>
                         </configuration>

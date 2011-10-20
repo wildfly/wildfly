@@ -22,12 +22,20 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
+import javax.persistence.PersistenceUnit;
+import javax.persistence.spi.PersistenceUnitTransactionType;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.InjectionConfigurator;
-import org.jboss.as.ee.component.BindingConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
@@ -55,16 +63,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.msc.service.ServiceName;
-
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
-import javax.persistence.PersistenceUnit;
-import javax.persistence.spi.PersistenceUnitTransactionType;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
@@ -117,16 +115,16 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             if (annotationTarget instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) annotationTarget;
                 declaringClass = fieldInfo.declaringClass();
-                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.addOrGetLocalClassDescription(declaringClass.name().toString());
                 this.processField(deploymentUnit, annotation, fieldInfo, eeModuleClassDescription);
             } else if (annotationTarget instanceof MethodInfo) {
                 MethodInfo methodInfo = (MethodInfo) annotationTarget;
                 declaringClass = methodInfo.declaringClass();
-                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.addOrGetLocalClassDescription(declaringClass.name().toString());
                 this.processMethod(deploymentUnit, annotation, methodInfo, eeModuleClassDescription);
             } else if (annotationTarget instanceof ClassInfo) {
                 declaringClass = (ClassInfo) annotationTarget;
-                EEModuleClassDescription eeModuleClassDescription = applicationClasses.getOrAddClassByName(declaringClass.name().toString());
+                EEModuleClassDescription eeModuleClassDescription = eeModuleDescription.addOrGetLocalClassDescription(declaringClass.name().toString());
                 this.processClass(deploymentUnit, annotation, eeModuleClassDescription);
             }
         }
@@ -154,14 +152,14 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType, eeModuleClassDescription);
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
-            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+            eeModuleClassDescription.getBindingConfigurations().add(bindingConfiguration);
 
             // setup the injection target
             final InjectionTarget injectionTarget = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldInfo.type().name().toString());
             // source is always local ENC jndi
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
-            eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+            eeModuleClassDescription.addResourceInjection(injectionConfiguration);
         }
     }
 
@@ -189,7 +187,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         final InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, injectionType, eeModuleClassDescription);
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, bindingSource);
-            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+            eeModuleClassDescription.getBindingConfigurations().add(bindingConfiguration);
 
             // setup the injection configuration
             final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, methodInfo.args()[0].name().toString());
@@ -197,7 +195,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(injectionTarget, injectionSource);
 
-            eeModuleClassDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+            eeModuleClassDescription.addResourceInjection(injectionConfiguration);
         }
     }
 
@@ -214,7 +212,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, type, eeModuleClassDescription);
         if (bindingSource != null) {
             final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, bindingSource);
-            eeModuleClassDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+            eeModuleClassDescription.getBindingConfigurations().add(bindingConfiguration);
         }
     }
 

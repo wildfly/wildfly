@@ -47,7 +47,6 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
         }
         if(deploymentUnit.getName().toLowerCase().endsWith(WAR_EXTENSION)) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
-            MountExplodedMarker.setMountExploded(deploymentUnit);
         }
     }
 

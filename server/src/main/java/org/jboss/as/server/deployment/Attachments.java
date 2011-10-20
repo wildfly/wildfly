@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.deployment;
 
+import java.util.Set;
+import java.util.jar.Manifest;
+
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -31,6 +34,7 @@ import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ProxyMetadataSource;
 import org.jboss.as.server.deployment.repository.api.ServerDeploymentRepository;
@@ -41,9 +45,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.Set;
-import java.util.jar.Manifest;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -241,6 +242,13 @@ public final class Attachments {
      */
     public static final AttachmentKey<ServicesAttachment> SERVICES = AttachmentKey.create(ServicesAttachment.class);
 
+    /**
+     * Sub deployments that are visible from this deployments module loader, in the order they are accessible.
+     *
+     * This list includes the current deployment, which under normal circumstances will be the first item in the list
+     */
+    public static final AttachmentKey<AttachmentList<DeploymentUnit>> ACCESSIBLE_SUB_DEPLOYMENTS = AttachmentKey.createList(DeploymentUnit.class);
+
     //
     // POST_MODULE
     //
@@ -264,6 +272,10 @@ public final class Attachments {
      */
     public static final AttachmentKey<DeploymentReflectionIndex> REFLECTION_INDEX = AttachmentKey.create(DeploymentReflectionIndex.class);
 
+    /**
+     * The class index for the deployment.
+     */
+    public static final AttachmentKey<DeploymentClassIndex> CLASS_INDEX = AttachmentKey.create(DeploymentClassIndex.class);
     /**
      * The reflection index used to generate jboss-invoation proxies
      */

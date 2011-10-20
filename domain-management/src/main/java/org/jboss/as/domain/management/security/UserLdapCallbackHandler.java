@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
@@ -67,13 +68,23 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
 
     private final String baseDn;
     private final String usernameAttribute;
+    private final String advancedFilter;
     private final boolean recursive;
     private final String userDn;
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
     public UserLdapCallbackHandler(ModelNode userLdap) {
         baseDn = userLdap.require(BASE_DN).asString();
-        usernameAttribute = userLdap.require(USERNAME_ATTRIBUTE).asString();
+        if (userLdap.hasDefined(USERNAME_ATTRIBUTE)) {
+            usernameAttribute = userLdap.require(USERNAME_ATTRIBUTE).asString();
+            advancedFilter = null;
+        } else if (userLdap.hasDefined(ADVANCED_FILTER)) {
+            advancedFilter = userLdap.require(ADVANCED_FILTER).asString();
+            usernameAttribute = null;
+        } else {
+            throw new IllegalArgumentException("One of '" + USERNAME_ATTRIBUTE + "' or '" + ADVANCED_FILTER + "' required.");
+        }
+
         if (userLdap.has(RECURSIVE)) {
             recursive = userLdap.require(RECURSIVE).asBoolean();
         } else {
@@ -171,7 +182,7 @@ public class UserLdapCallbackHandler implements Service<UserLdapCallbackHandler>
             searchControls.setTimeLimit(searchTimeLimit);
 
             Object[] filterArguments = new Object[]{username};
-            String filter = "(" + usernameAttribute + "={0})";
+            String filter = usernameAttribute != null ? "(" + usernameAttribute + "={0})" : advancedFilter;
 
             searchEnumeration = searchContext.search(baseDn, filter, filterArguments, searchControls);
             if (searchEnumeration.hasMore() == false) {

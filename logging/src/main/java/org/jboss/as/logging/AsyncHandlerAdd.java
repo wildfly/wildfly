@@ -22,67 +22,64 @@
 
 package org.jboss.as.logging;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
-import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
-import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
+import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
+import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class AsyncHandlerAdd extends AbstractAddStepHandler {
+class AsyncHandlerAdd extends FlushingHandlerAddProperties<AsyncHandlerService> {
 
     static final AsyncHandlerAdd INSTANCE = new AsyncHandlerAdd();
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        LoggingValidators.validate(operation);
-        model.get(QUEUE_LENGTH).set(operation.get(QUEUE_LENGTH));
-        model.get(SUBHANDLERS).set(operation.get(SUBHANDLERS));
-        if (operation.hasDefined(LEVEL)) model.get(LEVEL).set(operation.get(LEVEL));
-        model.get(OVERFLOW_ACTION).set(operation.get(OVERFLOW_ACTION));
+    private AsyncHandlerAdd() {
+        super(SUBHANDLERS, QUEUE_LENGTH, OVERFLOW_ACTION);
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        final AsyncHandlerService service = new AsyncHandlerService();
-        final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
+    protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final AsyncHandlerService service, final ModelNode model) throws OperationFailedException {
+        super.updateRuntime(context, serviceBuilder, name, service, model);
         final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
-        if (operation.hasDefined(SUBHANDLERS)) for (final ModelNode handlerName : operation.get(SUBHANDLERS).asList()) {
-            final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
-            serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
-            list.add(injectedValue);
+        final ModelNode subhandlers = SUBHANDLERS.validateResolvedOperation(model);
+        if (subhandlers.isDefined()) {
+            for (final ModelNode handlerName : subhandlers.asList()) {
+                final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
+                serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
+                list.add(injectedValue);
+            }
         }
         service.addHandlers(list);
-        if (operation.hasDefined(QUEUE_LENGTH))
-            service.setQueueLength(operation.get(QUEUE_LENGTH).asInt());
-        if (operation.hasDefined(LEVEL)) service.setLevel(Level.parse(operation.get(LEVEL).asString()));
-        if (operation.hasDefined(OVERFLOW_ACTION))
-            service.setOverflowAction(OverflowAction.valueOf(operation.get(OVERFLOW_ACTION).asString()));
+        service.setQueueLength(QUEUE_LENGTH.validateResolvedOperation(model).asInt());
+        final ModelNode overflowAction = OVERFLOW_ACTION.validateResolvedOperation(model);
+        if (overflowAction.isDefined()) {
+            service.setOverflowAction(OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
+        }
+    }
 
-        serviceBuilder.addListener(verificationHandler);
-        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-        newControllers.add(serviceBuilder.install());
+    @Override
+    protected AsyncHandlerService createHandlerService(final ModelNode model) throws OperationFailedException {
+        return new AsyncHandlerService();
     }
 
 }

@@ -22,22 +22,22 @@
 
 package org.jboss.as.logging;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.jboss.logmanager.handlers.AsyncHandler;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class AsyncHandlerService implements Service<Handler> {
+public final class AsyncHandlerService implements FlushingHandlerService {
 
     private final List<InjectedValue<Handler>> subhandlers = new ArrayList<InjectedValue<Handler>>();
 
@@ -48,12 +48,22 @@ public final class AsyncHandlerService implements Service<Handler> {
     private AsyncHandler value;
 
     private Level level;
+    private AbstractFormatterSpec formatterSpec;
+    private String encoding;
+    private boolean autoflush;
 
     public synchronized void start(final StartContext context) throws StartException {
         final AsyncHandler handler = new AsyncHandler(queueLength);
         value = handler;
+        formatterSpec.apply(handler);
         final OverflowAction action = overflowAction;
         setAction(handler, action);
+        handler.setAutoFlush(autoflush);
+        try {
+            handler.setEncoding(encoding);
+        } catch (UnsupportedEncodingException e) {
+            throw new StartException(e);
+        }
         Handler[] handlers = new Handler[subhandlers.size()];
         for (int i = 0, subhandlersSize = subhandlers.size(); i < subhandlersSize; i++) {
             handlers[i] = subhandlers.get(i).getValue();
@@ -107,8 +117,30 @@ public final class AsyncHandlerService implements Service<Handler> {
         }
     }
 
+    @Override
+    public synchronized void setEncoding(final String encoding) throws UnsupportedEncodingException {
+        this.encoding = encoding;
+        final AsyncHandler handler = value;
+        if (handler != null) {
+            handler.setEncoding(encoding);
+        }
+    }
+
+    @Override
+    public synchronized void setFormatterSpec(final AbstractFormatterSpec formatterSpec) {
+        this.formatterSpec = formatterSpec;
+        final AsyncHandler handler = value;
+        if (handler != null) {
+            formatterSpec.apply(handler);
+        }
+    }
+
     public synchronized void addHandlers(final List<InjectedValue<Handler>> list) {
         subhandlers.addAll(list);
+        final AsyncHandler handler = value;
+        for (InjectedValue<Handler> injectedHandler : list) {
+            handler.addHandler(injectedHandler.getValue());
+        }
     }
 
     public synchronized void addHandler(final InjectedValue<Handler> injectedHandler) {
@@ -127,5 +159,14 @@ public final class AsyncHandlerService implements Service<Handler> {
 
         final AsyncHandler handler = value;
         handler.removeHandler(valueToRemove.getValue());
+    }
+
+    @Override
+    public synchronized void setAutoflush(final boolean autoflush) {
+        this.autoflush = autoflush;
+        final AsyncHandler handler = value;
+        if (handler != null) {
+            handler.setAutoFlush(autoflush);
+        }
     }
 }

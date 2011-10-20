@@ -31,11 +31,12 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
+
+import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
 
 /**
  * Handler for JGroups subsystem add operations.
@@ -43,7 +44,6 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  */
 public class JGroupsSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
-    private static final Logger log = Logger.getLogger(JGroupsSubsystemAdd.class.getPackage().getName());
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
@@ -71,7 +71,7 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler implements Descr
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        log.info("Activating JGroups subsystem.");
+        ROOT_LOGGER.activatingSubsystem();
 
         ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())

@@ -36,6 +36,7 @@ public class ModelDescriptionConstants {
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
+    public static final String ADVANCED_FILTER = "advanced-filter";
     public static final String ALLOWED = "allowed";
     public static final String ALLOW_RESOURCE_SERVICE_RESTART = "allow-resource-service-restart";
     public static final String ALTERNATIVES = "alternatives";
@@ -54,9 +55,6 @@ public class ModelDescriptionConstants {
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
     public static final String CODE = "code";
-    /** @deprecated operation responses will no longer include the compensating operation */
-    @Deprecated
-    public static final String COMPENSATING_OPERATION = "compensating-operation";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONNECTION = "connection";
@@ -112,6 +110,7 @@ public class ModelDescriptionConstants {
     public static final String LDAP = "ldap";
     public static final String LOCAL = "local";
     public static final String LOCALE = "locale";
+    public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MANAGEMENT = "management";
     public static final String MANAGEMENT_INTERFACE = "management-interface";
     public static final String MASK = "mask";
@@ -133,6 +132,7 @@ public class ModelDescriptionConstants {
     public static final String NAMESPACE = "namespace";
     public static final String NAMESPACES = "namespaces";
     public static final String NATIVE_INTERFACE = "native-interface";
+    public static final String NATIVE_REMOTING_INTERFACE = "native-remoting-interface";
     public static final String NETWORK = "network";
     public static final String NILLABLE = "nillable";
     public static final String NOT = "not";

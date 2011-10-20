@@ -21,9 +21,15 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Map;
+
+import javax.ejb.TransactionAttributeType;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ee.component.ComponentViewInstance;
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -35,11 +41,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-
-import javax.ejb.TransactionAttributeType;
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -59,10 +60,10 @@ public class EntityInvocationContextInterceptor implements Interceptor {
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         final Method invokedMethod = context.getMethod();
-        final ComponentViewInstance componentViewInstance = context.getPrivateData(ComponentViewInstance.class);
+        final ComponentView componentView = context.getPrivateData(ComponentView.class);
         // For a lifecycle interception, the ComponentViewInstance (and the invoked business interface) will be null.
         // On a normal method invocation, the invoked business interface will be obtained from the ComponentViewInstance
-        final Class<?> invokedBusinessInterface = componentViewInstance == null ? null : componentViewInstance.getViewClass();
+        final Class<?> invokedBusinessInterface = componentView == null ? null : componentView.getViewClass();
         Object[] parameters = context.getParameters();
         CustomEntityInvocationContext sessionInvocationContext = new CustomEntityInvocationContext(context, invokedBusinessInterface, invokedMethod, parameters);
         context.putPrivateData(InvocationContext.class, sessionInvocationContext);

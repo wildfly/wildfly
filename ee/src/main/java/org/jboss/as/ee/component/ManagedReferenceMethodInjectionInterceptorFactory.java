@@ -22,16 +22,18 @@
 
 package org.jboss.as.ee.component;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.Value;
-
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -42,12 +44,14 @@ final class ManagedReferenceMethodInjectionInterceptorFactory implements Interce
     private final Object valueContextKey;
     private final Value<ManagedReferenceFactory> factoryValue;
     private final Method method;
+    private final boolean optional;
 
-    ManagedReferenceMethodInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final Method method) {
+    ManagedReferenceMethodInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final Method method, final boolean optional) {
         this.targetContextKey = targetContextKey;
         this.valueContextKey = valueContextKey;
         this.factoryValue = factoryValue;
         this.method = method;
+        this.optional = optional;
     }
 
     public Interceptor create(final InterceptorFactoryContext context) {
@@ -56,6 +60,62 @@ final class ManagedReferenceMethodInjectionInterceptorFactory implements Interce
         final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) contextData.get(targetContextKey);
         final AtomicReference<ManagedReference> valueReference = new AtomicReference<ManagedReference>();
         contextData.put(valueContextKey, valueReference);
-        return new ManagedReferenceMethodInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), method);
+        return new ManagedReferenceMethodInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), method, optional);
+    }
+
+    /**
+     * An interceptor which constructs and injects a managed reference into a setter method.  The context key given
+     * for storing the reference should be passed to a {@link org.jboss.as.ee.component.ManagedReferenceReleaseInterceptorFactory} which is run during
+     * object destruction.
+     *
+     * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+     */
+    static final class ManagedReferenceMethodInjectionInterceptor implements Interceptor {
+
+        private final AtomicReference<ManagedReference> targetReference;
+        private final AtomicReference<ManagedReference> valueReference;
+        private final ManagedReferenceFactory factory;
+        private final Method method;
+        private final boolean optional;
+
+        ManagedReferenceMethodInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final AtomicReference<ManagedReference> valueReference, final ManagedReferenceFactory factory, final Method method, final boolean optional) {
+            this.targetReference = targetReference;
+            this.valueReference = valueReference;
+            this.factory = factory;
+            this.method = method;
+            this.optional = optional;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            Object target;
+            if (Modifier.isStatic(method.getModifiers())) {
+                target = null;
+            } else {
+                target = targetReference.get().getInstance();
+                if (target == null) {
+                    throw new IllegalStateException("No injection target found");
+                }
+            }
+            ManagedReference reference = factory.getReference();
+            if (reference == null && optional) {
+                return context.proceed();
+            }
+            boolean ok = false;
+            try {
+                valueReference.set(reference);
+                method.invoke(target, reference.getInstance());
+                Object result = context.proceed();
+                ok = true;
+                return result;
+            } finally {
+                if (!ok) {
+                    valueReference.set(null);
+                    reference.release();
+                }
+            }
+        }
     }
 }

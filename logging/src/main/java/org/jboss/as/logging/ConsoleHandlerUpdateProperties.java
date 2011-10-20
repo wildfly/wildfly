@@ -22,41 +22,38 @@
 
 package org.jboss.as.logging;
 
-import java.util.logging.Handler;
 import org.jboss.as.controller.OperationFailedException;
-import static org.jboss.as.logging.CommonAttributes.TARGET;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.ConsoleHandler;
+
+import java.util.Locale;
+
+import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 /**
  * Operation responsible for updating the properties of a console logging handler.
  *
  * @author John Bailey
  */
-public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
+public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdateProperties<ConsoleHandler> {
     static final ConsoleHandlerUpdateProperties INSTANCE = new ConsoleHandlerUpdateProperties();
 
-    @Override
-    protected void updateModel(final ModelNode operation, ModelNode model) {
-        super.updateModel(operation, model);
-        if (operation.hasDefined(TARGET)) {
-            apply(operation, model, TARGET);
-        }
+    private ConsoleHandlerUpdateProperties() {
+        super(TARGET);
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
+    protected void updateRuntime(final ModelNode operation, final ConsoleHandler handler) throws OperationFailedException {
         super.updateRuntime(operation, handler);
-        if (operation.hasDefined(TARGET)) {
-            switch (Target.fromString(operation.get(TARGET).asString())) {
-                case SYSTEM_ERR: {
-                    ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                    break;
-                }
-                case SYSTEM_OUT: {
-                    ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_OUT);
-                    break;
-                }
+        switch (Target.fromString(TARGET.validateResolvedOperation(operation).asString().toUpperCase(Locale.US))) {
+            case SYSTEM_ERR: {
+                handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
+                ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
+                break;
+            }
+            case SYSTEM_OUT: {
+                handler.setTarget(ConsoleHandler.Target.SYSTEM_OUT);
+                break;
             }
         }
     }
