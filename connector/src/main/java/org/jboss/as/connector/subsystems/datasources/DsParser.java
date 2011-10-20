@@ -37,6 +37,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
@@ -97,6 +98,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -571,6 +574,7 @@ public class DsParser extends AbstractParser {
         operation.get(OP_ADDR).set(dsAddress);
 
 
+        List<ModelNode> configPropertiesOperations = new ArrayList<ModelNode>(0);
         //elements reading
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -578,6 +582,7 @@ public class DsParser extends AbstractParser {
                     if (DataSources.Tag.forName(reader.getLocalName()) == DataSources.Tag.DATASOURCE) {
 
                         list.add(operation);
+                        list.addAll(configPropertiesOperations);
                         return;
                     } else {
                         if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.UNKNOWN) {
@@ -592,8 +597,17 @@ public class DsParser extends AbstractParser {
                             final Location location = reader.getLocation();
                             String name = rawAttributeText(reader, "name");
                             String value = rawElementText(reader);
-                            ModelNode node = CONNECTION_PROPERTIES.parse(value, location);
-                            operation.get(CONNECTION_PROPERTIES.getName(), name).set(node);
+
+                            final ModelNode configOperation = new ModelNode();
+                            configOperation.get(OP).set(ADD);
+
+                            final ModelNode configAddress = dsAddress.clone();
+                            configAddress.add(CONNECTION_PROPERTIES.getName(), name);
+                            configAddress.protect();
+
+                            configOperation.get(OP_ADDR).set(configAddress);
+                            CONNECTION_PROPERTY_VALUE.parseAndSetParameter(value, configOperation, location);
+                            configPropertiesOperations.add(configOperation);
                             break;
                         }
                         case CONNECTION_URL: {

@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.util.Set;
+
+import javax.ejb.DependsOn;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -36,9 +40,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
-
-import javax.ejb.DependsOn;
-import java.util.Set;
 
 /**
  * @author Stuart Douglas
@@ -57,6 +58,9 @@ public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<Singl
     @Override
     protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SingletonComponentDescription description) throws DeploymentUnitProcessingException {
         final EEModuleClassDescription classDescription = applicationClasses.getClassByName(componentClass.getName());
+        if(classDescription == null) {
+            return;
+        }
 
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);

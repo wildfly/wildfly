@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -208,15 +209,17 @@ public final class ParsedInterfaceCriteria {
                 return parseCompoundCriteria(prop.getValue(), true);
             }
             case INET_ADDRESS: {
-                checkStringType(prop.getValue(), element.getLocalName(), true);
+                ModelNode value = prop.getValue();
+                value = parsePossibleExpression(value);
+                checkStringType(value, element.getLocalName(), true);
                 try {
-                    String rawAddress = prop.getValue().resolve().asString();
+                    String rawAddress = value.resolve().asString();
                     InetAddress address = InetAddress.getByName(rawAddress);
                     if (address.isAnyLocalAddress()) {
                         // they've entered a wildcard address
                         return new WildcardInetAddressInterfaceCriteria(address);
                     } else {
-                        return new InetAddressMatchInterfaceCriteria(prop.getValue());
+                        return new InetAddressMatchInterfaceCriteria(value);
                     }
                 } catch (UnknownHostException e) {
                     throw new ParsingException(String.format("Invalid address %s (%s)", prop.getValue().asString(),
@@ -225,8 +228,10 @@ public final class ParsedInterfaceCriteria {
 
             }
             case LOOPBACK_ADDRESS: {
-                checkStringType(prop.getValue(), element.getLocalName(), true);
-                return new LoopbackAddressInterfaceCriteria(prop.getValue());
+                ModelNode value = prop.getValue();
+                value = parsePossibleExpression(value);
+                checkStringType(value, element.getLocalName(), true);
+                return new LoopbackAddressInterfaceCriteria(value);
             }
             case NIC: {
                 checkStringType(prop.getValue(), element.getLocalName());
@@ -301,6 +306,9 @@ public final class ParsedInterfaceCriteria {
             throw new ParsingException(String.format("Illegal value %s for interface criteria %; must be %s", node.getType(),
                     id, ModelType.STRING));
         }
+    }
+    private static ModelNode parsePossibleExpression(final ModelNode node) {
+        return (node.getType() == ModelType.STRING) ? ParseUtils.parsePossibleExpression(node.asString()) : node;
     }
 
     private static class ParsingException extends RuntimeException {

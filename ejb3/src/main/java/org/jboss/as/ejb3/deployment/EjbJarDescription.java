@@ -22,24 +22,17 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.modules.Module;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: jpai
@@ -47,8 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EjbJarDescription {
 
     private final EEModuleDescription eeModuleDescription;
-
-    private final Map<String, ApplicationExceptionDetails> applicationExceptions = new ConcurrentHashMap<String, ApplicationExceptionDetails>();
 
     private final Set<String> applicationLevelSecurityRoles = new HashSet<String>();
 
@@ -88,16 +79,6 @@ public class EjbJarDescription {
         return Collections.unmodifiableSet(this.applicationLevelSecurityRoles);
     }
 
-    public void addApplicationException(final String exceptionClassName, final boolean rollback, final boolean inherited) {
-        if (exceptionClassName == null || exceptionClassName.isEmpty()) {
-            throw new IllegalArgumentException("Invalid exception class name: " + exceptionClassName);
-        }
-        //TODO: Is this a good idea? ApplicationException's equals/hashCode
-        //will not work the way that would be expected
-        ApplicationExceptionDetails appException = new ApplicationExceptionDetails(exceptionClassName, inherited, rollback);
-        // add it to the map
-        this.applicationExceptions.put(exceptionClassName, appException);
-    }
 
     public boolean hasComponent(String componentName) {
         return eeModuleDescription.hasComponent(componentName);
@@ -107,39 +88,7 @@ public class EjbJarDescription {
         return this.eeModuleDescription;
     }
 
-    Map<String, ApplicationExceptionDetails> getApplicationExceptions() {
-        return Collections.unmodifiableMap(this.applicationExceptions);
-    }
 
-    public EjbJarConfiguration createEjbJarConfiguration(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        EjbJarConfiguration ejbDeploymentConfiguration = new EjbJarConfiguration(this);
-        prepareEjbJarConfiguration(ejbDeploymentConfiguration, phaseContext);
-        return ejbDeploymentConfiguration;
-    }
-
-    protected void prepareEjbJarConfiguration(EjbJarConfiguration ejbDeploymentConfiguration, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        if (module == null) {
-            throw new IllegalStateException("Module not yet set in deployment unit " + deploymentUnit);
-        }
-        ClassLoader moduleClassLoader = module.getClassLoader();
-        // setup application exceptions
-        this.prepareApplicationExceptions(ejbDeploymentConfiguration, moduleClassLoader);
-
-    }
-
-    private void prepareApplicationExceptions(EjbJarConfiguration ejbDeploymentConfiguration, ClassLoader classLoader) throws DeploymentUnitProcessingException {
-        for (Map.Entry<String, ApplicationExceptionDetails> entry : this.applicationExceptions.entrySet()) {
-            String applicationExceptionClass = entry.getKey();
-            try {
-                Class<?> exceptionClass = classLoader.loadClass(applicationExceptionClass);
-                ejbDeploymentConfiguration.addApplicationException(exceptionClass, entry.getValue());
-            } catch (ClassNotFoundException cnfe) {
-                throw new DeploymentUnitProcessingException(cnfe);
-            }
-        }
-    }
 
     /**
      * Returns the {@link SessionBeanComponentDescription session beans} belonging to this {@link EjbJarDescription}.

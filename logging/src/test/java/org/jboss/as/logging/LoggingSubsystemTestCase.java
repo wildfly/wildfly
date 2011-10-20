@@ -21,20 +21,25 @@
 */
 package org.jboss.as.logging;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
+import org.jboss.logging.Logger;
 import org.junit.Ignore;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Ignore("The marshalling does not seem to be right - AS7-1792 ")
 public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
+    // Only here to initialize jboss-logmanager log levels
+    private static Logger LOGGER = Logger.getLogger("org.jboss.as.test");
 
     public LoggingSubsystemTestCase() {
         super(LoggingExtension.SUBSYSTEM_NAME, new LoggingExtension());
@@ -42,40 +47,12 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //TODO THis is copied from standalone.xml. Testing more combinations is a good idea
-        return
-            "<subsystem xmlns=\"urn:jboss:domain:logging:1.1\">" +
-            "    <console-handler name=\"CONSOLE\">" +
-            "        <level name=\"INFO\"/>" +
-            "        <formatter>" +
-            "            <pattern-formatter pattern=\"%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n\"/>" +
-            "        </formatter>" +
-            "    </console-handler>" +
-            "    <periodic-rotating-file-handler name=\"FILE\">" +
-            "        <level name=\"INFO\"/>" +
-            "        <formatter>" +
-            "            <pattern-formatter pattern=\"%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n\"/>" +
-            "        </formatter>" +
-            "        <file relative-to=\"jboss.server.log.dir\" path=\"server.log\"/>" +
-            "        <suffix value=\".yyyy-MM-dd\"/>" +
-            "    </periodic-rotating-file-handler>" +
-            "    <logger category=\"com.arjuna\">" +
-            "        <level name=\"WARN\"/>" +
-            "    </logger>" +
-            "    <logger category=\"org.apache.tomcat.util.modeler\">" +
-            "        <level name=\"WARN\"/>" +
-            "    </logger>" +
-            "    <logger category=\"sun.rmi\">" +
-            "        <level name=\"WARN\"/>" +
-            "    </logger>" +
-            "    <root-logger>" +
-            "        <level name=\"INFO\"/>" +
-            "        <handlers>" +
-            "            <handler name=\"CONSOLE\"/>" +
-            "            <handler name=\"FILE\"/>" +
-            "        </handlers>" +
-            "    </root-logger>" +
-            "</subsystem>";
+        return readResource("/logging.xml");
+    }
+
+    @Override
+    protected String getSubsystemXml(String configId) throws IOException {
+        return readResource(configId);
     }
 
 
@@ -84,18 +61,6 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
             @Override
             protected OperationContext.Type getType() {
                 return OperationContext.Type.MANAGEMENT;
-            }
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1792
-                return null;
-            }
-
-            @Override
-            protected boolean isValidateOperations() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1792
-                return false;
             }
         };
     }

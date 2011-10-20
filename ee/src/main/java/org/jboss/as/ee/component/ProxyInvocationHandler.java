@@ -22,13 +22,13 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * An invocation handler for a component proxy.
@@ -40,7 +40,6 @@ public final class ProxyInvocationHandler implements InvocationHandler {
     private final Map<Method, Interceptor> interceptors;
     private final Component component;
     private final ComponentView componentView;
-    private final ComponentViewInstance componentViewInstance;
 
     /**
      * Construct a new instance.
@@ -48,13 +47,11 @@ public final class ProxyInvocationHandler implements InvocationHandler {
      * @param interceptors the interceptors map to use
      * @param component The component
      * @param componentView The component view
-     * @param componentViewInstance The instance of the component view that this is a handler for
      */
-    public ProxyInvocationHandler(final Map<Method, Interceptor> interceptors, Component component, ComponentView componentView, ComponentViewInstance componentViewInstance) {
+    public ProxyInvocationHandler(final Map<Method, Interceptor> interceptors, Component component, ComponentView componentView) {
         this.interceptors = interceptors;
         this.component = component;
         this.componentView = componentView;
-        this.componentViewInstance = componentViewInstance;
     }
 
     /** {@inheritDoc} */
@@ -68,7 +65,6 @@ public final class ProxyInvocationHandler implements InvocationHandler {
         context.putPrivateData(Object.class, proxy);
         context.putPrivateData(Component.class, component);
         context.putPrivateData(ComponentView.class, componentView);
-        context.putPrivateData(ComponentViewInstance.class, componentViewInstance);
         context.setParameters(args);
         context.setMethod(method);
         // setup the public context data

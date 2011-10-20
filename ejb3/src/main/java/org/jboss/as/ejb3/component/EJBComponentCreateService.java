@@ -37,14 +37,17 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.deployment.ApplicationExceptions;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Jaikiran Pai
@@ -55,7 +58,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final TransactionManagementType transactionManagementType;
 
-    private final EjbJarConfiguration ejbJarConfiguration;
+    private final ApplicationExceptions applicationExceptions;
 
     private final Map<String, ServiceName> viewServices;
 
@@ -71,15 +74,22 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     private final ServiceName ejbHome;
 
+
+    private final String applicationName;
+    private final String moduleName;
+    private final String distinctName;
+
+    private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepository = new InjectedValue<EJBRemoteTransactionsRepository>();
+
     /**
      * Construct a new instance.
      *
      * @param componentConfiguration the component configuration
      */
-    public EJBComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
+    public EJBComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions applicationExceptions) {
         super(componentConfiguration);
 
-        this.ejbJarConfiguration = ejbJarConfiguration;
+        this.applicationExceptions = applicationExceptions;
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
 
@@ -143,6 +153,9 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.ejbLocalHome = localHome == null ? null : ejbComponentDescription.getEjbLocalHomeView().getServiceName();
         EjbHomeViewDescription home = ejbComponentDescription.getEjbHomeView();
         this.ejbHome = home == null ? null : home.getServiceName();
+        this.applicationName = componentConfiguration.getApplicationName();
+        this.moduleName = componentConfiguration.getModuleName();
+        this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
     }
 
     private static Method getComponentMethod(final ComponentConfiguration componentConfiguration, final String name, final Class<?>[] parameterTypes) {
@@ -168,8 +181,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return transactionManagementType;
     }
 
-    EjbJarConfiguration getEjbJarConfiguration() {
-        return this.ejbJarConfiguration;
+    ApplicationExceptions getApplicationExceptions() {
+        return this.applicationExceptions;
     }
 
     protected void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {
@@ -220,5 +233,26 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public ServiceName getEjbLocalHome() {
         return ejbLocalHome;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public String getDistinctName() {
+        return distinctName;
+    }
+
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
+        return this.ejbRemoteTransactionsRepository;
+    }
+
+    EJBRemoteTransactionsRepository getEJBRemoteTransactionsRepository() {
+        // remote tx repo is applicable only for remote views, hence the optionalValue
+        return this.ejbRemoteTransactionsRepository.getOptionalValue();
     }
 }

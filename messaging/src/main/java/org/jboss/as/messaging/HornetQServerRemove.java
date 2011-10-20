@@ -22,17 +22,15 @@
 
 package org.jboss.as.messaging;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Remove a HornetQServer.
@@ -69,35 +67,35 @@ class HornetQServerRemove implements OperationStepHandler {
 
     static void removeHornetQServer(String serverName, OperationContext context, Resource resource) {
 
-        // TODO use serverName to identify the correct services once we can have more than one HornetQServer
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(serverName);
 
         for(final Resource.ResourceEntry jmsQueue : resource.getChildren(CommonAttributes.JMS_QUEUE)) {
-            context.removeService(JMSServices.JMS_QUEUE_BASE.append(jmsQueue.getName()));
+            context.removeService(JMSServices.getJmsQueueBaseServiceName(hqServiceName).append(jmsQueue.getName()));
         }
         for(final Resource.ResourceEntry jmsTopic : resource.getChildren(CommonAttributes.JMS_TOPIC)) {
-            context.removeService(JMSServices.JMS_TOPIC_BASE.append(jmsTopic.getName()));
+            context.removeService(JMSServices.getJmsTopicBaseServiceName(hqServiceName).append(jmsTopic.getName()));
         }
         for(final Resource.ResourceEntry cf : resource.getChildren(CommonAttributes.CONNECTION_FACTORY)) {
-            context.removeService(JMSServices.JMS_CF_BASE.append(cf.getName()));
+            context.removeService(JMSServices.getConnectionFactoryBaseServiceName(hqServiceName).append(cf.getName()));
         }
         for(final Resource.ResourceEntry pcf : resource.getChildren(CommonAttributes.POOLED_CONNECTION_FACTORY)) {
-            context.removeService(MessagingServices.POOLED_CONNECTION_FACTORY_BASE.append(pcf.getName()));
+            context.removeService(hqServiceName.append(JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName)).append(pcf.getName()));
         }
         for(final Resource.ResourceEntry queue : resource.getChildren(CommonAttributes.QUEUE)) {
-            context.removeService(MessagingServices.CORE_QUEUE_BASE.append(queue.getName()));
+            context.removeService(hqServiceName.append(MessagingServices.getQueueBaseServiceName(hqServiceName)).append(queue.getName()));
         }
 
-        context.removeService(JMSServices.JMS_MANAGER);
-        context.removeService(MessagingServices.JBOSS_MESSAGING);
+        context.removeService(JMSServices.getJmsManagerBaseServiceName(hqServiceName));
+        context.removeService(MessagingServices.getHornetQServiceName(serverName));
         for(final Resource.ResourceEntry broadcastGroup : resource.getChildren(CommonAttributes.BROADCAST_GROUP)) {
-            context.removeService(GroupBindingService.BROADCAST.append(broadcastGroup.getName()));
+            context.removeService(GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(broadcastGroup.getName()));
         }
         for(final Resource.ResourceEntry divertGroup : resource.getChildren(CommonAttributes.DISCOVERY_GROUP)) {
-            context.removeService(GroupBindingService.DISCOVERY.append(divertGroup.getName()));
+            context.removeService(GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(divertGroup.getName()));
         }
-        context.removeService(HornetQServerAdd.PATH_BASE.append(HornetQServerAdd.DEFAULT_BINDINGS_DIR));
-        context.removeService(HornetQServerAdd.PATH_BASE.append(HornetQServerAdd.DEFAULT_JOURNAL_DIR));
-        context.removeService(HornetQServerAdd.PATH_BASE.append(HornetQServerAdd.DEFAULT_LARGE_MESSSAGE_DIR));
-        context.removeService(HornetQServerAdd.PATH_BASE.append(HornetQServerAdd.DEFAULT_PAGING_DIR));
+        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_BINDINGS_DIR));
+        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_JOURNAL_DIR));
+        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_LARGE_MESSSAGE_DIR));
+        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_PAGING_DIR));
     }
 }

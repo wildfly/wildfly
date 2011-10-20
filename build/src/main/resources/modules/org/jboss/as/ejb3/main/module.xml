@@ -40,7 +40,9 @@
         <!-- So we can access its integration API -->
         <module name="org.jboss.as.connector"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.jacorb"/>
         <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
@@ -63,9 +65,12 @@
         <module name="org.jboss.modules"/>
         <!-- Access to ServiceName -->
         <module name="org.jboss.msc"/>
+        <module name="org.jboss.remoting3"/>
         <module name="org.jboss.staxmapper"/>
 
         <!-- For parser DUP -->
         <module name="org.jboss.vfs"/>
+
+        <module name="org.omg.api"/>
     </dependencies>
 </module>

@@ -39,6 +39,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOC
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
@@ -59,10 +60,16 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_C
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-
 
 import org.jboss.as.connector.util.AbstractParser;
 import org.jboss.as.connector.util.ParserException;
@@ -95,6 +102,22 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
      */
     private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
+
+    protected void parseConfigProperties(final XMLExtendedStreamReader reader, final Map<String,ModelNode> map) throws XMLStreamException {
+
+            String name = rawAttributeText(reader, "name");
+
+
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(ADD);
+
+            String value = rawElementText(reader);
+
+            CONFIG_PROPERTY_VALUE.parseAndSetParameter(value,operation,reader.getLocation());
+
+            map.put(name, operation);
+        }
+
     /**
      * parse a single connection-definition tag
      *
@@ -107,10 +130,13 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
      * @throws org.jboss.jca.common.api.validator.ValidateException
      *          ValidateException
      */
-    protected void parseConnectionDefinitions(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException,
-            ParserException, ValidateException {
+    protected void parseConnectionDefinitions(final XMLExtendedStreamReader reader, final Map<String,ModelNode> map, final Map<String,HashMap<String, ModelNode>> configMap)
+            throws XMLStreamException, ParserException, ValidateException {
 
-        ModelNode connectionDefinitionNode = new ModelNode();
+
+        final ModelNode connectionDefinitionNode = new ModelNode();
+        connectionDefinitionNode.get(OP).set(ADD);
+
         String jndiName = null;
         int attributeSize = reader.getAttributeCount();
         boolean isXa = Boolean.FALSE;
@@ -170,7 +196,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case END_ELEMENT: {
                     if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.CONNECTION_DEFINITION) {
 
-                        operation.get(CONNECTIONDEFINITIONS_NAME).add(connectionDefinitionNode);
+                        map.put(jndiName, connectionDefinitionNode);
                         return;
                     } else {
                         if (CommonConnDef.Tag.forName(reader.getLocalName()) == CommonConnDef.Tag.UNKNOWN) {
@@ -182,11 +208,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (CommonConnDef.Tag.forName(reader.getLocalName())) {
                         case CONFIG_PROPERTY: {
-                            final Location location = reader.getLocation();
-                            String name = rawAttributeText(reader, "name");
-                            String value = rawElementText(reader);
-                            ModelNode node = CONFIG_PROPERTIES.parse(value, location);
-                            connectionDefinitionNode.get(CONFIG_PROPERTIES.getName(), name ).set(node);
+                            if (! configMap.containsKey(jndiName)) {
+                                configMap.put(jndiName, new HashMap<String, ModelNode>(0));
+                            }
+                            parseConfigProperties(reader, configMap.get(jndiName));
                             break;
                         }
                         case SECURITY: {
@@ -335,22 +360,15 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    /**
-     * parse a single admin-oject tag
-     *
-     * @param reader the reader
-     * @return the parsed {@link org.jboss.jca.common.api.metadata.common.CommonAdminObject}
-     * @throws javax.xml.stream.XMLStreamException
-     *          XMLStreamException
-     * @throws org.jboss.jca.common.metadata.ParserException
-     *          ParserException
-     */
-    protected void parseAdminObjects(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException,
-            ParserException {
 
+    protected void parseAdminObjects(final XMLExtendedStreamReader reader, final Map<String,ModelNode> map, final Map<String,HashMap<String, ModelNode>> configMap)
+            throws XMLStreamException, ParserException, ValidateException {
+
+
+        final ModelNode adminObjectNode = new ModelNode();
+        adminObjectNode.get(OP).set(ADD);
         int attributeSize = reader.getAttributeCount();
 
-        ModelNode adminObjectNode = new ModelNode();
 
         String jndiName = null;
         for (int i = 0; i < attributeSize; i++) {
@@ -399,7 +417,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case END_ELEMENT: {
                     if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.ADMIN_OBJECT) {
 
-                        operation.get(ADMIN_OBJECTS_NAME).add(adminObjectNode);
+                        map.put(jndiName, adminObjectNode);
                         return;
                     } else {
                         if (CommonAdminObject.Tag.forName(reader.getLocalName()) == CommonAdminObject.Tag.UNKNOWN) {
@@ -411,11 +429,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (CommonAdminObject.Tag.forName(reader.getLocalName())) {
                         case CONFIG_PROPERTY: {
-                            final Location location = reader.getLocation();
-                            String name = rawAttributeText(reader, "name");
-                            String value = rawElementText(reader);
-                            ModelNode node = CONFIG_PROPERTIES.parse(value, location);
-                            adminObjectNode.get(CONFIG_PROPERTIES.getName(), name).set(node);
+                            if (! configMap.containsKey(jndiName)) {
+                                configMap.put(jndiName, new HashMap<String, ModelNode>(0));
+                            }
+                            parseConfigProperties(reader, configMap.get(jndiName));
                             break;
                         }
                         default:

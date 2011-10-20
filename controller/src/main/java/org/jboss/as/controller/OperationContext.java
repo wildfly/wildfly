@@ -111,10 +111,26 @@ public interface OperationContext {
      * Complete a step, returning the overall operation result.  The step handler calling this operation should append
      * its result status to the operation result before calling this method.  The return value should be checked
      * to determine whether the operation step should be rolled back.
+     * <p>
+     * <strong>Note:</strong>This {@code completeStep} variant results in a recursive invocation of the next
+     * {@link OperationStepHandler} that has been added (if any). When operations involve a great number of steps that
+     * use this variant (e.g. during server or  Host Controller boot), deep call stacks can result and
+     * {@link StackOverflowError}s are a possibility. For this reason, handlers that are likely to be executed during
+     * boot are encouraged to use the non-recursive {@link #completeStep(RollbackHandler)} variant.
+     * </p>
      *
      * @return the operation result action to take
      */
     ResultAction completeStep();
+
+    /**
+     * Complete a step, while registering for
+     * {@link RollbackHandler#handleRollback(OperationContext, ModelNode)} a notification if the work done by the
+     * caller needs to be rolled back}.
+     *
+     * @param rollbackHandler the handler for any rollback notification. Cannot be {@code null}.
+     */
+    void completeStep(RollbackHandler rollbackHandler);
 
     /**
      * Get the failure description result node, creating it if necessary.
@@ -434,10 +450,7 @@ public interface OperationContext {
         }
 
         boolean hasNext() {
-            if (this == DONE) {
-                return false;
-            }
-            return true;
+            return this != DONE;
         }
 
         Stage next() {
@@ -482,5 +495,42 @@ public interface OperationContext {
          * The operation will be reverted.
          */
         ROLLBACK,
+    }
+
+    interface RollbackHandler {
+
+        /**
+         * A {@link RollbackHandler} that does nothing in the callback. Intended for use by operation step
+         * handlers that do not need to do any clean up work -- e.g. those that only perform reads or those
+         * that only perform persistent configuration changes. (Persistent configuration changes need not be
+         * explicitly rolled back as the {@link OperationContext} will handle that automatically.)
+         */
+        RollbackHandler NOOP_ROLLBACK_HANDLER = new RollbackHandler() {
+            /**
+             * Does nothing.
+             *
+             * @param context  ignored
+             * @param operation ignored
+             */
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                // no-op
+            }
+        };
+
+        /**
+         * Callback to an {@link OperationStepHandler} indicating that the overall operation is being
+         * rolled back and the handler should revert any change it has made. A handler executing in
+         * {@link Stage#MODEL} need not revert any changes it has made to the configuration model; this
+         * will be done automatically.
+         *
+         * @param context  the operation execution context; will be the same as what was passed to the
+         *                 {@link OperationStepHandler#execute(OperationContext, ModelNode)} method invocation
+         *                 that registered this rollback handler.
+         * @param operation the operation being rolled back; will be the same as what was passed to the
+         *                 {@link OperationStepHandler#execute(OperationContext, ModelNode)} method invocation
+         *                 that registered this rollback handler.
+         */
+        void handleRollback(OperationContext context, ModelNode operation);
     }
 }

@@ -34,6 +34,8 @@ import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 /**
  * Distributed lock manager that supports a single, exclusive cluster wide lock or concurrent locally-exclusive locks on the
  * various cluster nodes. A request to acquire a local lock will block while the cluster-wide lock is held or while another
@@ -175,7 +177,7 @@ public class LocalAndClusterLockManager {
      */
     public void lockGlobally(Serializable lockName, long timeout) throws TimeoutException, InterruptedException {
         if (!this.clusterSupport.lock(lockName, timeout)) {
-            throw new TimeoutException("Cannot acquire lock " + lockName + " from cluster");
+            throw new TimeoutException(MESSAGES.cannotAcquireLock(lockName));
         }
     }
 
@@ -197,7 +199,7 @@ public class LocalAndClusterLockManager {
         this.clusterSupport.start();
 
         if (this.localNode == null) {
-            throw new IllegalStateException("Null localNode");
+            throw MESSAGES.nullVar("localNode");
         }
     }
 

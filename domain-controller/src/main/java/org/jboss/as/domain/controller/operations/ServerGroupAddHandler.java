@@ -22,23 +22,23 @@
 
 package org.jboss.as.domain.controller.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -61,6 +61,7 @@ public class ServerGroupAddHandler implements OperationStepHandler, DescriptionP
         validator.registerValidator(SOCKET_BINDING_GROUP, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         validator.registerValidator(SOCKET_BINDING_PORT_OFFSET, new ModelTypeValidator(ModelType.INT, true, false));
         validator.registerValidator(JVM, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
+        validator.registerValidator(MANAGEMENT_SUBSYSTEM_ENDPOINT, new ModelTypeValidator(true, false, true, ModelType.BOOLEAN));
     }
 
     /** {@inheritDoc */
@@ -99,6 +100,9 @@ public class ServerGroupAddHandler implements OperationStepHandler, DescriptionP
             model.get(JVM).set(operation.get(JVM).asString(), new ModelNode());
         } else {
             model.get(JVM);
+        }
+        if (operation.hasDefined(MANAGEMENT_SUBSYSTEM_ENDPOINT)) {
+            model.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).set(operation.get(MANAGEMENT_SUBSYSTEM_ENDPOINT));
         }
 
         model.get(SYSTEM_PROPERTY);

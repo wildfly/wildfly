@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
@@ -128,7 +129,7 @@ public final class Main {
             } else {
                 // Inform the process controller that we are shutting down on purpose
                 // so it doesn't try to respawn us
-                exitCode = 99;
+                exitCode = ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE;
             }
 
         } finally {

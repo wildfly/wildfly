@@ -23,7 +23,6 @@ package org.jboss.as.threads;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -57,6 +56,10 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY,
         PoolAttributeDefinitions.CORE_THREADS, PoolAttributeDefinitions.QUEUE_LENGTH, PoolAttributeDefinitions.HANDOFF_EXECUTOR,
+        PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.BLOCKING};
+
+    static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
+        PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.CORE_THREADS, PoolAttributeDefinitions.QUEUE_LENGTH,
         PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.BLOCKING};
 
     @Override
@@ -98,7 +101,7 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
 
         //TODO add the handoffExceutor injection
 
-        final ServiceBuilder<ExecutorService> serviceBuilder = target.addService(serviceName, service);
+        final ServiceBuilder<ManagedQueueExecutorService> serviceBuilder = target.addService(serviceName, service);
         ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.install();

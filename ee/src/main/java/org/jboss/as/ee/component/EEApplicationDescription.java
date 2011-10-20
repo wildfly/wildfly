@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.vfs.VirtualFile;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,13 +31,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.jboss.vfs.VirtualFile;
+
 /**
  * @author John Bailey
  */
 public class EEApplicationDescription {
     private final Map<String, List<ViewInformation>> componentsByViewName = new HashMap<String, List<ViewInformation>>();
     private final Map<String, List<Description>> componentsByName = new HashMap<String, List<Description>>();
-    private final Map<String, LazyValue<EEModuleClassConfiguration>> classesByName = new HashMap<String, LazyValue<EEModuleClassConfiguration>>();
 
     /**
      * Add a component to this application.
@@ -139,7 +138,10 @@ public class EEApplicationDescription {
         }
         if (componentName.contains("#")) {
             final String[] parts = componentName.split("#");
-            final String path = parts[0];
+            String path = parts[0];
+            if(!path.startsWith("../")) {
+                path = "../" + path;
+            }
             final VirtualFile virtualPath = deploymentRoot.getChild(path);
             final String name = parts[1];
             final Set<ViewDescription> ret = new HashSet<ViewDescription>();
@@ -167,24 +169,6 @@ public class EEApplicationDescription {
                 return thisDeployment;
             }
             return all;
-        }
-    }
-
-    public void addClass(final String className, LazyValue<EEModuleClassConfiguration> eeModuleClassDescription) {
-        classesByName.put(className, eeModuleClassDescription);
-    }
-
-    public EEModuleClassConfiguration getClassConfiguration(String name) {
-        LazyValue<EEModuleClassConfiguration> result =  classesByName.get(name);
-        if(result == null) {
-            return null;
-        }
-        try {
-            return result.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
         }
     }
 

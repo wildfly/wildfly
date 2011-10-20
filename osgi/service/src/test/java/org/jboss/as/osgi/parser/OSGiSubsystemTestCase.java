@@ -161,8 +161,8 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertOSGiSubsystemAddress(addSubsystem.get(ModelDescriptionConstants.OP_ADDR));
         Assert.assertEquals("eager", addSubsystem.get(ModelConstants.ACTIVATION).asString());
 
-        checkData(operations, 1, ModelConstants.FRAMEWORK_PROPERTY, "org.acme.myProperty", ModelConstants.VALUE, "hi ho");
-        checkData(operations, 2, ModelConstants.FRAMEWORK_PROPERTY, "org.acme.myProperty2", ModelConstants.VALUE, "hi.ho");
+        checkData(operations, 1, ModelConstants.PROPERTY, "org.acme.myProperty", ModelConstants.VALUE, "hi ho");
+        checkData(operations, 2, ModelConstants.PROPERTY, "org.acme.myProperty2", ModelConstants.VALUE, "hi.ho");
     }
 
     @Test

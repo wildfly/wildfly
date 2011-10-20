@@ -109,11 +109,10 @@ public class JMXExtension implements Extension {
 
     private static class JMXSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-        private volatile Namespace schemaVer;
         /** {@inheritDoc} */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            schemaVer = Namespace.forUri(reader.getNamespaceURI());
+            Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
             Boolean showModel = null;
 
             if (schemaVer == Namespace.JMX_1_0) {
@@ -190,11 +189,11 @@ public class JMXExtension implements Extension {
         /** {@inheritDoc} */
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-            Namespace schemaVer = this.schemaVer == null ? Namespace.CURRENT : this.schemaVer;
+            Namespace schemaVer = Namespace.CURRENT;
             ModelNode node = context.getModelNode();
             if(node.has(CommonAttributes.SERVER_BINDING)) {
                 context.startSubsystemElement(schemaVer.getUriString(), false);
-                if (schemaVer != Namespace.JMX_1_0 && node.hasDefined(CommonAttributes.SHOW_MODEL)) {
+                if (node.hasDefined(CommonAttributes.SHOW_MODEL)) {
                     writer.writeAttribute(Attribute.SHOW_MODEL.getLocalName(), node.get(CommonAttributes.SHOW_MODEL).asString());
                 }
                 writer.writeStartElement(Element.JMX_CONNECTOR.getLocalName());

@@ -24,13 +24,6 @@ package org.jboss.as.server.mgmt.domain;
 
 import static org.jboss.as.protocol.StreamUtils.safeClose;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.RealmCallback;
-import javax.security.sasl.RealmChoiceCallback;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -39,10 +32,18 @@ import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Security;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.RealmChoiceCallback;
+
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
-import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -76,11 +77,11 @@ public class HostControllerConnectionService implements Service<ManagementChanne
         this.authKey = authKey;
     }
 
-    public static void install(ServiceTarget serviceTarget, final InetSocketAddress managementSocket, final String serverName, final byte[] authKey) {
+    public static void install(ServiceTarget serviceTarget, final ServiceName endpointName, final InetSocketAddress managementSocket, final String serverName, final byte[] authKey) {
         final HostControllerConnectionService hcConnection = new HostControllerConnectionService(serverName, authKey);
         serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, hcConnection)
                 .addInjection(hcConnection.hcAddressInjector, managementSocket)
-                .addDependency(RemotingServices.ENDPOINT, Endpoint.class, hcConnection.endpointInjector)
+                .addDependency(endpointName, Endpoint.class, hcConnection.endpointInjector)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
@@ -106,7 +107,7 @@ public class HostControllerConnectionService implements Service<ManagementChanne
 
         try {
             client.connect(new ClientCallbackHandler());
-            channel = client.openChannel(RemotingServices.SERVER_CHANNEL);
+            channel = client.openChannel(ManagementRemotingServices.SERVER_CHANNEL);
             channel.startReceiving();
         } catch (IOException e) {
             throw new StartException("Failed to start remote Host Controller connection", e);

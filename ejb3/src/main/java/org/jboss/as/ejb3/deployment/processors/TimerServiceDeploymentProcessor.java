@@ -21,6 +21,11 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.concurrent.ExecutorService;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -47,9 +52,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
@@ -60,22 +62,15 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
     private static final Logger logger = Logger.getLogger(TimerServiceDeploymentProcessor.class);
 
-    private final int coreThreads;
-    private final int maxThreads;
+   private final ServiceName timerServiceThreadPool;
 
-    private final boolean enabled;
-
-    public TimerServiceDeploymentProcessor(final int coreThreads, final int maxThreads, boolean enabled) {
-        this.coreThreads = coreThreads;
-        this.maxThreads = maxThreads;
-        this.enabled = enabled;
+    public TimerServiceDeploymentProcessor(final ServiceName timerServiceThreadPool) {
+        this.timerServiceThreadPool = timerServiceThreadPool;
     }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        if (!enabled) {
-            return;
-        }
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
@@ -138,11 +133,12 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
             name = deploymentUnit.getParent().getName() + "--" + deploymentUnit.getName();
         }
 
-        final TimerServiceFactoryService factoryService = new TimerServiceFactoryService(coreThreads, maxThreads, name, module);
+        final TimerServiceFactoryService factoryService = new TimerServiceFactoryService( name, module);
         final ServiceBuilder<TimerServiceFactory> factoryBuilder = serviceTarget.addService(deploymentUnit.getServiceName().append(TimerServiceFactoryService.SERVICE_NAME), factoryService);
         factoryBuilder.addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, factoryService.getTransactionManagerInjectedValue());
         factoryBuilder.addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, factoryService.getTransactionSynchronizationRegistryInjectedValue());
         factoryBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, TimerServiceFactoryService.PATH_SERVICE_NAME, String.class, factoryService.getPath());
+        factoryBuilder.addDependency(timerServiceThreadPool, ExecutorService.class, factoryService.getExecutorService());
         factoryBuilder.install();
     }
 

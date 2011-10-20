@@ -28,8 +28,6 @@ import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
 import org.apache.catalina.core.StandardContext;
-import org.jboss.as.ee.naming.JavaNamespaceSetup;
-import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.as.web.deployment.jsf.JsfInjectionProvider;
@@ -49,7 +47,6 @@ class WebDeploymentService implements Service<Context> {
 
     private static final Logger log = Logger.getLogger("org.jboss.web");
     private final StandardContext context;
-    private final InjectedValue<NamespaceContextSelector> namespaceSelector = new InjectedValue<NamespaceContextSelector>();
     private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
     private final WebInjectionContainer injectionContainer;
     private final List<SetupAction> setupActions;
@@ -68,7 +65,6 @@ class WebDeploymentService implements Service<Context> {
 
         JsfInjectionProvider.getInjectionContainer().set(injectionContainer);
         final List<SetupAction> actions = new ArrayList<SetupAction>();
-        actions.add(new JavaNamespaceSetup(namespaceSelector.getValue()));
         actions.addAll(setupActions);
         context.setThreadBindingListener(new ThreadSetupBindingListener(actions));
         try {
@@ -81,6 +77,9 @@ class WebDeploymentService implements Service<Context> {
                 context.start();
             } catch (LifecycleException e) {
                 throw new StartException("failed to start context", e);
+            }
+            if (context.getState() != 1) {
+                throw new StartException("failed to start context");
             }
             log.info("registering web context: " + context.getName());
 
@@ -114,10 +113,6 @@ class WebDeploymentService implements Service<Context> {
             throw new IllegalStateException();
         }
         return context;
-    }
-
-    public InjectedValue<NamespaceContextSelector> getNamespaceSelector() {
-        return namespaceSelector;
     }
 
     public InjectedValue<Realm> getRealm() {

@@ -22,14 +22,14 @@
 
 package org.jboss.as.web.security;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
 import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * Privileged Actions
@@ -38,52 +38,6 @@ import org.jboss.security.SecurityContextFactory;
  * @since Jan 12, 2011
  */
 class SecurityActions {
-    /**
-     * Get the Thread Context Class Loader
-     *
-     * @return
-     */
-    static ClassLoader getContextClassLoader() {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
-    }
-
-    /**
-     * Set the Thread Context {@code ClassLoader}
-     *
-     * @param cl An instance of {@code ClassLoader}
-     */
-    static void setContextClassLoader(final ClassLoader cl) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                Thread.currentThread().setContextClassLoader(cl);
-                return null;
-            }
-        });
-    }
-
-    /**
-     * Get the Class {@code ClassLoader}
-     *
-     * @param clazz A class whose classloader is needed
-     * @return The Classloader of the clazz
-     */
-    static ClassLoader getClassLoader(final Class<?> clazz) {
-        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-
-            @Override
-            public ClassLoader run() {
-                return clazz.getClassLoader();
-            }
-        });
-    }
 
     /**
      * Create a JBoss Security Context with the given security domain name

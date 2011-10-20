@@ -22,5 +22,5 @@
 package org.jboss.as.ee.structure;
 
 public enum DeploymentType {
-    EAR, WAR, EJB_JAR;
+    EAR, WAR, EJB_JAR, APPLICATION_CLIENT;
 }

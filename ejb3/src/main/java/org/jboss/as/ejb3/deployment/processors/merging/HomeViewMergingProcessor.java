@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 import javax.ejb.LocalHome;
@@ -38,6 +39,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.Module;
@@ -49,31 +51,54 @@ import org.jboss.modules.Module;
  */
 public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
 
+    private final boolean appclient;
+
+    public HomeViewMergingProcessor(final boolean appclient) {
+        this.appclient = appclient;
+    }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+
+        if(eeModuleDescription == null) {
+             return;
+        }
+
         final Collection<ComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
+
+
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
-
-        if (componentConfigurations == null || componentConfigurations.isEmpty()) {
-            return;
-        }
-
         for (ComponentDescription componentConfiguration : componentConfigurations) {
             if (componentConfiguration instanceof SessionBeanComponentDescription) {
-                processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
+                try {
+                    processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
+                } catch (Exception e) {
+                    throw new DeploymentUnitProcessingException("Could not merge data for " + componentConfiguration.getComponentName(), e);
+                }
+            }
+        }
+        if (appclient) {
+            for (ComponentDescription componentDescription : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
+                if (componentDescription instanceof SessionBeanComponentDescription) {
+                    try {
+                        processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentDescription);
+                    } catch (Exception e) {
+                        throw new DeploymentUnitProcessingException("Could not merge data for " + componentDescription.getComponentName(), e);
+                    }
+                }
             }
         }
     }
 
-    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
+    private void processComponentConfig(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final Module module, final DeploymentReflectionIndex deploymentReflectionIndex, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException, ClassNotFoundException {
         String home = null;
         String localHome = null;
+
         //first check for annotations
         if (!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
             final EEModuleClassDescription clazz = applicationClasses.getClassByName(description.getComponentClassName());
@@ -83,12 +108,51 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                 if (localAnnotations != null) {
                     if (!localAnnotations.getClassLevelAnnotations().isEmpty()) {
                         localHome = localAnnotations.getClassLevelAnnotations().get(0);
+
+                        if (description.getEjbLocalView() == null) {
+                            //If the local home is specified via annotation then the corresponding business interface is implied
+                            //by the signature of the create method
+                            //See EJB 3.1 21.4.5
+
+                            final Class localHomeClass = module.getClassLoader().loadClass(localHome);
+                            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(localHomeClass);
+                            Class<?> localClass = null;
+                            for (final Method method : index.getMethods()) {
+                                if (method.getName().startsWith("create")) {
+                                    if (localClass != null && localClass != method.getReturnType()) {
+                                        throw new DeploymentUnitProcessingException("Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)" +
+                                                " due to multiple create* methods with different return types on home " + localHomeClass);
+                                    }
+                                    localClass = method.getReturnType();
+                                }
+                            }
+                            description.addEjbLocalObjectView(localClass.getName());
+                        }
                     }
                 }
                 final ClassAnnotationInformation<RemoteHome, String> remoteAnnotations = clazz.getAnnotationInformation(RemoteHome.class);
                 if (remoteAnnotations != null) {
                     if (!remoteAnnotations.getClassLevelAnnotations().isEmpty()) {
                         home = remoteAnnotations.getClassLevelAnnotations().get(0);
+                        if (description.getEjbRemoteView() == null) {
+                            //If the remote home is specified via annotation then the corresponding business interface is implied
+                            //by the signature of the create method
+                            //See EJB 3.1 21.4.5
+
+                            final Class homeClass = module.getClassLoader().loadClass(home);
+                            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(homeClass);
+                            Class<?> remote = null;
+                            for (final Method method : index.getMethods()) {
+                                if (method.getName().startsWith("create")) {
+                                    if (remote != null && remote != method.getReturnType()) {
+                                        throw new DeploymentUnitProcessingException("Could not determine type of corresponding implied EJB 2.x remote interface (see EJB 3.1 21.4.5)" +
+                                                " due to multiple create* methods with different return types on home " + homeClass);
+                                    }
+                                    remote = method.getReturnType();
+                                }
+                            }
+                            description.addEjbObjectView(remote.getName());
+                        }
                     }
                 }
             }

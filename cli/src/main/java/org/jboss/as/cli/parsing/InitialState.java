@@ -22,6 +22,7 @@
 package org.jboss.as.cli.parsing;
 
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.command.CommandState;
 import org.jboss.as.cli.parsing.operation.OperationRequestState;
 
@@ -44,11 +45,31 @@ public class InitialState extends DefaultParsingState {
         this(OperationRequestState.INSTANCE, CommandState.INSTANCE);
     }
 
-    InitialState(OperationRequestState opState, CommandState cmdState) {
+    InitialState(OperationRequestState opState, final CommandState cmdState) {
         super(ID);
         enterState('.', opState);
         enterState(':', opState);
         enterState('/', opState);
         setDefaultHandler(new EnterStateCharacterHandler(cmdState));
+        setIgnoreWhitespaces(true);
+
+        final boolean[] returned = new boolean[1];
+        setEnterHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                returned[0] = false;
+            }});
+        setReturnHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                returned[0] = true;
+            }});
+        setLeaveHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(!returned[0]) {
+                    ctx.enterState(cmdState);
+                }
+            }});
     }
 }

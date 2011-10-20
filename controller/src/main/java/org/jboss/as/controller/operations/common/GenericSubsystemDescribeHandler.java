@@ -27,12 +27,16 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -41,9 +45,9 @@ import java.util.Set;
  *
  * @author Emanuel Muckenhuber
  */
-public class GenericSubsystemDescribeHandler implements OperationStepHandler {
+public class GenericSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
 
-    public static final OperationStepHandler INSTANCE = new GenericSubsystemDescribeHandler();
+    public static final GenericSubsystemDescribeHandler INSTANCE = new GenericSubsystemDescribeHandler();
 
     protected GenericSubsystemDescribeHandler() {
         //
@@ -55,6 +59,7 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler {
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode result = context.getResult();
         describe(resource, address, result, context.getResourceRegistration());
+        context.completeStep();
     }
 
     protected void describe(final Resource resource, final ModelNode address, ModelNode result, final ImmutableManagementResourceRegistration registration) {
@@ -84,6 +89,8 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler {
 
     protected ModelNode createAddOperation(final ModelNode address, final ModelNode subModel, final Set<PathElement> children) {
         final ModelNode operation = subModel.clone();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
         if(children != null && ! children.isEmpty()) {
             for(final PathElement path : children) {
                 if(subModel.hasDefined(path.getKey())) {
@@ -91,9 +98,12 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler {
                 }
             }
         }
-        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
         return operation;
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        // This is a private operation, so we should not be getting requests for descriptions
+        return CommonDescriptions.getSubsystemDescribeOperation(locale);
+    }
 }

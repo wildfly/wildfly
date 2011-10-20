@@ -1,0 +1,86 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<subsystem xmlns="urn:jboss:domain:logging:1.1">
+    <console-handler name="CONSOLE">
+        <level name="INFO"/>
+        <formatter>
+            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+        </formatter>
+    </console-handler>
+
+    <periodic-rotating-file-handler name="FILE">
+        <encoding value="UTF-8" />
+        <level name="INFO"/>
+        <formatter>
+            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+        </formatter>
+        <file relative-to="jboss.server.log.dir" path="server.log"/>
+        <suffix value=".yyyy-MM-dd"/>
+    </periodic-rotating-file-handler>
+
+    <size-rotating-file-handler name="sizeLogger">
+        <append value="false" />
+        <encoding value="UTF-8" />
+        <file relative-to="jboss.server.log.dir" path="sizeLogger.log"/>
+        <formatter>
+            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+        </formatter>
+        <level name="DEBUG" />
+        <max-backup-index value="1024" />
+        <rotate-size value="64" />
+    </size-rotating-file-handler>
+
+    <file-handler name="simpleFile">
+        <append value="true" />
+        <level name="INFO" />
+        <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
+    </file-handler>
+
+    <async-handler name="async">
+        <queue-length value="10"/>
+        <overflow-action value="block" />
+        <subhandlers>
+            <handler name="sizeLogger" />
+            <handler name="simpleFile" />
+        </subhandlers>
+    </async-handler>
+
+    <custom-handler name="customHandler" module="org.jboss.logmanager" class="org.jboss.logmanager.handler.ConsoleHandler">
+        <properties>
+            <property name="autoFlush" value="true" />
+        </properties>
+    </custom-handler>
+
+    <logger category="com.arjuna">
+        <level name="WARN"/>
+    </logger>
+
+    <root-logger>
+        <level name="INFO"/>
+        <handlers>
+            <handler name="CONSOLE"/>
+            <handler name="FILE"/>
+            <handler name="customHandler" />
+        </handlers>
+    </root-logger>
+</subsystem>

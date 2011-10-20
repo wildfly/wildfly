@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing.test;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -42,6 +43,34 @@ import junit.framework.TestCase;
 public class OperationParsingTestCase extends TestCase {
 
     private CommandLineParser parser = DefaultOperationRequestParser.INSTANCE;
+
+    @Test
+    public void testOperationNameEndsWithDash() throws Exception {
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(false);
+
+        parse("/subsystem=threads/thread-factory=*:validate-", handler);
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.isRequestComplete());
+
+        assertEquals("validate-", handler.getOperationName());
+
+        OperationRequestAddress address = handler.getAddress();
+        Iterator<Node> i = address.iterator();
+        assertTrue(i.hasNext());
+/*        Node node = i.next();
+        assertEquals("subsystem", node.getType());
+        assertEquals("logging", node.getName());
+        assertFalse(i.hasNext());
+*/    }
 
     @Test
     public void testOperationNameOnly() throws Exception {
@@ -229,9 +258,7 @@ public class OperationParsingTestCase extends TestCase {
         assertEquals("\"   \"", handler.getPropertyValue("another"));
     }
 
-    protected void parse(String opReq, DefaultCallbackHandler handler)
-            throws OperationFormatException {
+    protected void parse(String opReq, DefaultCallbackHandler handler) throws CommandFormatException {
         parser.parse(opReq, handler);
-        //ParsingUtil.parseOpRequest(opReq, handler);
     }
 }

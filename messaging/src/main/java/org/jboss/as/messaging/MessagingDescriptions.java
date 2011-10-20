@@ -162,7 +162,6 @@ public class MessagingDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
-        node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString("queue"));
 
 
@@ -1539,6 +1538,8 @@ public class MessagingDescriptions {
         final ResourceBundle bundle =  getResourceBundle(locale);
 
         final ModelNode result = new ModelNode();
+        result.get(DESCRIPTION).set(bundle.getString("core-address"));
+
         final ModelNode attrs = result.get(ATTRIBUTES);
         final ModelNode roles = addResourceAttributeDescription(bundle, CORE_ADDRESS, attrs, ROLES_ATTR_NAME, ModelType.LIST, false, null);
         final ModelNode rolesValue = roles.get(VALUE_TYPE);

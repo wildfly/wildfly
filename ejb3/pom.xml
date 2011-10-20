@@ -75,6 +75,11 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jboss-as-jacorb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jboss-as-security</artifactId>
         </dependency>
 

@@ -37,6 +37,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
@@ -56,28 +57,16 @@ public class BindingAddHandler extends SocketBindingAddHandler {
 
     public static final BindingAddHandler INSTANCE = new BindingAddHandler();
 
-
-    private final ParametersValidator runtimeValidator = new ParametersValidator();
-
     private BindingAddHandler() {
-        runtimeValidator.registerValidator(INTERFACE, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        runtimeValidator.registerValidator(PORT, new IntRangeValidator(0, 65535, false, false));
-        runtimeValidator.registerValidator(FIXED_PORT, new ModelTypeValidator(ModelType.BOOLEAN, true, false));
-        runtimeValidator.registerValidator(MULTICAST_ADDRESS, new InetAddressValidator(true, false));
-        runtimeValidator.registerValidator(MULTICAST_PORT, new IntRangeValidator(0, 65535, true, false));
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        // Resolve any expressions and re-validate
-        final ModelNode resolvedOp = operation.resolve();
-        runtimeValidator.validate(resolvedOp);
-
 
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
 
         try {
-            newControllers.add(installBindingService(context, resolvedOp, name));
+            newControllers.add(installBindingService(context, model, name));
         } catch (UnknownHostException e) {
             throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
         }
@@ -88,14 +77,17 @@ public class BindingAddHandler extends SocketBindingAddHandler {
         return false;
     }
 
-    public static ServiceController<SocketBinding> installBindingService(OperationContext context, ModelNode resolvedConfig, String name) throws UnknownHostException {
+    public static ServiceController<SocketBinding> installBindingService(OperationContext context, ModelNode config, String name)
+            throws UnknownHostException, OperationFailedException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final String intf = resolvedConfig.get(INTERFACE).isDefined() ? resolvedConfig.get(INTERFACE).asString() : null;
-        final int port = resolvedConfig.get(PORT).asInt();
-        final boolean fixedPort = resolvedConfig.get(FIXED_PORT).asBoolean(false);
-        final String mcastAddr = resolvedConfig.get(MULTICAST_ADDRESS).isDefined() ? resolvedConfig.get(MULTICAST_ADDRESS).asString() : null;
-        final int mcastPort = resolvedConfig.get(MULTICAST_PORT).isDefined() ? resolvedConfig.get(MULTICAST_PORT).asInt() : 0;
+        final ModelNode intfNode = AbstractSocketBindingResourceDefinition.INTERFACE.validateResolvedOperation(config);
+        final String intf = intfNode.isDefined() ? intfNode.asString() : null;
+        final int port = AbstractSocketBindingResourceDefinition.PORT.validateResolvedOperation(config).asInt();
+        final boolean fixedPort = AbstractSocketBindingResourceDefinition.FIXED_PORT.validateResolvedOperation(config).asBoolean();
+        final ModelNode mcastNode = AbstractSocketBindingResourceDefinition.MULTICAST_ADDRESS.validateResolvedOperation(config);
+        final String mcastAddr = mcastNode.isDefined() ? mcastNode.asString() : null;
+        final int mcastPort = AbstractSocketBindingResourceDefinition.MULTICAST_PORT.validateResolvedOperation(config).asInt(0);
         final InetAddress mcastInet = mcastAddr == null ? null : InetAddress.getByName(mcastAddr);
 
         final SocketBindingService service = new SocketBindingService(name, port, fixedPort, mcastInet, mcastPort);

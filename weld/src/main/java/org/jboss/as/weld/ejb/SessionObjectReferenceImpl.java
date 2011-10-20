@@ -21,20 +21,17 @@
  */
 package org.jboss.as.weld.ejb;
 
-import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ee.component.ComponentViewInstance;
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.weld.ejb.api.SessionObjectReference;
-import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.weld.ejb.api.SessionObjectReference;
 
 /**
  * Implementation for non-stateful beans, a new view instance is looked up each time
@@ -43,22 +40,10 @@ import java.util.Set;
  */
 public class SessionObjectReferenceImpl implements SessionObjectReference {
 
-    private volatile boolean removed = false;
     private final Map<String, ServiceName> viewServices;
 
-    public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor, ServiceRegistry serviceRegistry) {
-        final ServiceName createServiceName = descriptor.getCreateServiceName();
-
+    public SessionObjectReferenceImpl(EjbDescriptorImpl<?> descriptor) {
         final Map<String, ServiceName> viewServices = new HashMap<String, ServiceName>();
-        final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
-        for (BusinessInterfaceDescriptor<?> view : descriptor.getRemoteBusinessInterfaces()) {
-            views.put(view.getInterface().getName(), view.getInterface());
-        }
-        for (BusinessInterfaceDescriptor<?> view : descriptor.getLocalBusinessInterfaces()) {
-            views.put(view.getInterface().getName(), view.getInterface());
-        }
-
-
         for (Map.Entry<Class<?>, ServiceName> entry : descriptor.getViewServices().entrySet()) {
             final Class<?> viewClass = entry.getKey();
             if (viewClass != null) {
@@ -77,11 +62,11 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
                     seen.add(clazz);
                     viewServices.put(clazz.getName(), entry.getValue());
                     final Class<?> superclass = clazz.getSuperclass();
-                    if(superclass != Object.class && superclass != null && !seen.contains(superclass)) {
+                    if (superclass != Object.class && superclass != null && !seen.contains(superclass)) {
                         toProcess.add(superclass);
                     }
-                    for(Class<?> iface : clazz.getInterfaces()) {
-                        if(!seen.contains(iface)) {
+                    for (Class<?> iface : clazz.getInterfaces()) {
+                        if (!seen.contains(iface)) {
                             toProcess.add(iface);
                         }
                     }
@@ -97,15 +82,11 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
     @Override
     @SuppressWarnings({"unchecked"})
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
-        if (removed) {
-            return null;
-        }
         //TODO: this should be cached
         if (viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
             final ComponentView view = (ComponentView) serviceController.getValue();
-            final ComponentViewInstance instance = view.createInstance();
-            return (S) instance.createProxy();
+            return(S) view.createInstance().getInstance();
         } else {
             throw new IllegalArgumentException("View of type " + businessInterfaceType + " not found on bean ");
         }

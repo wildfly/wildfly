@@ -35,14 +35,11 @@ import static org.jboss.as.logging.LogHandlerPropertiesConfigurator.setPropertie
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class CustomHandlerUpdateProperties extends HandlerUpdateProperties {
+public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handler> {
     static final CustomHandlerUpdateProperties INSTANCE = new CustomHandlerUpdateProperties();
 
-    @Override
-    protected void updateModel(final ModelNode operation, final ModelNode model) {
-        if (operation.hasDefined(PROPERTIES)) {
-            apply(operation, model, PROPERTIES);
-        }
+    private CustomHandlerUpdateProperties() {
+        super(PROPERTIES);
     }
 
     @Override

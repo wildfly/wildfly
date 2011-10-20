@@ -45,6 +45,9 @@ public class AddressCommandSeparatorState extends DefaultParsingState {
         setEnterHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.isEndOfContent()) {
+                    ctx.leaveState();
+                }
                 final char ch = ctx.getCharacter();
                 if(!Character.isWhitespace(ch)) {
                     final CharacterHandler handler = getHandler(ch);

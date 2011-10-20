@@ -21,21 +21,22 @@
  */
 package org.jboss.as.ejb3.context.base;
 
-import org.jboss.as.ejb3.context.spi.EJBComponent;
-import org.jboss.as.ejb3.context.spi.EJBContext;
-import org.jboss.as.ejb3.context.spi.InvocationContext;
-
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
-import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.security.Identity;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
+import javax.transaction.UserTransaction;
+
+import org.jboss.as.ejb3.context.spi.EJBComponent;
+import org.jboss.as.ejb3.context.spi.EJBContext;
+import org.jboss.as.ejb3.context.spi.InvocationContext;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -125,6 +126,7 @@ public abstract class BaseInvocationContext implements InvocationContext {
     public Object getTimer() {
         return timer;
     }
+
 
     // redundant
     public TimerService getTimerService() {

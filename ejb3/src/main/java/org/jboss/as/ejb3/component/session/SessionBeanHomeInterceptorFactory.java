@@ -21,15 +21,15 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import java.lang.reflect.Method;
+
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ee.component.ComponentViewInstance;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.lang.reflect.Method;
 
 /**
  * Interceptor that handles home views for session beans
@@ -63,8 +63,8 @@ public class SessionBeanHomeInterceptorFactory implements InterceptorFactory {
                 try {
                     INIT_METHOD.set(method);
                     INIT_PARAMETERS.set(context.getParameters());
-                    final ComponentViewInstance instance = view.createInstance();
-                    return instance.createProxy();
+                    final ManagedReference instance = view.createInstance();
+                    return instance.getInstance();
                 } finally {
                     INIT_METHOD.remove();
                     INIT_PARAMETERS.remove();

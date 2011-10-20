@@ -37,7 +37,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
-import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -77,11 +78,15 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler implement
             realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(operation.require(SECURITY_REALM).asString());
         }
 
-        RemotingServices.installStandaloneConnectorServices(serviceTarget, interfaceSvcName, port, realmSvcName, verificationHandler, newControllers);
-        RemotingServices.installChannelServices(serviceTarget,
+        final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
+        ManagementRemotingServices.installManagementRemotingEndpoint(serviceTarget, SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME));
+
+        ManagementRemotingServices.installStandaloneConnectorServices(serviceTarget, endpointName, interfaceSvcName, port, realmSvcName, verificationHandler, newControllers);
+        ManagementRemotingServices.installManagementChannelServices(serviceTarget,
+                endpointName,
                 new ModelControllerClientOperationHandlerFactoryService(),
                 Services.JBOSS_SERVER_CONTROLLER,
-                RemotingServices.MANAGEMENT_CHANNEL,
+                ManagementRemotingServices.MANAGEMENT_CHANNEL,
                 verificationHandler,
                 newControllers);
     }

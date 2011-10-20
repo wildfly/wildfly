@@ -77,29 +77,24 @@ public class CommandCompleter implements Completor, CommandLineCompleter {
 
         final DefaultCallbackHandler parsedCmd = (DefaultCallbackHandler) ctx.getParsedCommandLine();
         try {
-            parsedCmd.parse(ctx.getPrefix(), buffer);
+            parsedCmd.parse(ctx.getPrefix(), buffer, false);
         } catch(CommandFormatException e) {
             if(!parsedCmd.endsOnAddressOperationNameSeparator() || !parsedCmd.endsOnSeparator()) {
                 return -1;
             }
         }
 
-        final OperationCandidatesProvider candidatesProvider;
-        if(buffer.isEmpty()) {
-            candidatesProvider = cmdProvider;
-        } else {
+        OperationCandidatesProvider candidatesProvider = cmdProvider;
+        if(!buffer.isEmpty()) {
             int cmdFirstIndex = 0;
             while(cmdFirstIndex < buffer.length()) {
-                if(!Character.isWhitespace(buffer.charAt(cmdFirstIndex))) {
+                final char ch = buffer.charAt(cmdFirstIndex++);
+                if(!Character.isWhitespace(ch)) {
+                    if(ch == '.' || ch == ':' || ch == '/') {
+                        candidatesProvider = ctx.getOperationCandidatesProvider();
+                    }
                     break;
                 }
-                ++cmdFirstIndex;
-            }
-            final char firstChar = buffer.charAt(cmdFirstIndex);
-            if(firstChar == '.' || firstChar == ':' || firstChar == '/') {
-                candidatesProvider = ctx.getOperationCandidatesProvider();
-            } else {
-                candidatesProvider = cmdProvider;
             }
         }
         return OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);

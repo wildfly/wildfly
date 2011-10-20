@@ -22,19 +22,19 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.connector.ConnectorServices;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService.ModifiableResourceAdaptors;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -42,7 +42,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author maeste
  */
-public class RaAdd extends AbstractRaOperation implements OperationStepHandler {
+public class RaAdd implements OperationStepHandler {
     static final RaAdd INSTANCE = new RaAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) {
@@ -68,22 +68,25 @@ public class RaAdd extends AbstractRaOperation implements OperationStepHandler {
                     final ServiceTarget serviceTarget = context.getServiceTarget();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
-                    ModifiableResourceAdaptors resourceAdapters = buildResourceAdaptersObject(operation);
+                    ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(operation);
 
-                    final ServiceController<?> raService = context.getServiceRegistry(false).getService(
+                    final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
                             ConnectorServices.RESOURCEADAPTERS_SERVICE);
                     ServiceController<?> controller = null;
-                    if (raService == null) {
-                         controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
-                                        new ResourceAdaptersService(resourceAdapters)).setInitialMode(Mode.ACTIVE).addListener(verificationHandler).install();
-                    } else {
-                        ((ModifiableResourceAdaptors) raService.getValue()).addAllResourceAdapters(resourceAdapters.getResourceAdapters());
+                    if (resourceAdaptersService == null) {
+                        controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
+                                new ResourceAdaptersService()).setInitialMode(Mode.ACTIVE).addListener(verificationHandler).install();
                     }
+                    ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archive);
+                    ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
+                    serviceTarget.addService(raServiceName, raService).setInitialMode(Mode.ACTIVE)
+                            .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
+                            .addListener(verificationHandler).install();
 
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        if(controller != null) {
+                        if (controller != null) {
                             context.removeService(ConnectorServices.RESOURCEADAPTERS_SERVICE);
                         }
                     }

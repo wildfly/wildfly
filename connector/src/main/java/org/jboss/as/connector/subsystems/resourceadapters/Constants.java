@@ -82,6 +82,8 @@ class Constants {
 
     private static final String CONFIG_PROPERTIES_NAME = "config-properties";
 
+    private static final String CONFIG_PROPERTY_VALUE_NAME = "value";
+
     private static final String ARCHIVE_NAME = "archive";
 
     private static final String BOOTSTRAPCONTEXT_NAME = "bootstrapcontext";
@@ -115,21 +117,23 @@ class Constants {
     private static final String NO_RECOVERY_NAME = "no-recovery";
 
 
-    static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinition(CLASS_NAME_NAME, CommonConnDef.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinition(CLASS_NAME_NAME, CommonConnDef.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition POOL_NAME = new SimpleAttributeDefinition(POOL_NAME_NAME, CommonConnDef.Attribute.POOL_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition POOL_NAME = new SimpleAttributeDefinition(POOL_NAME_NAME, CommonConnDef.Attribute.POOL_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, CommonConnDef.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, CommonConnDef.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition CONFIG_PROPERTIES = new SimpleAttributeDefinition(CONFIG_PROPERTIES_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition CONFIG_PROPERTIES = new SimpleAttributeDefinition(CONFIG_PROPERTIES_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition ARCHIVE = new SimpleAttributeDefinition(ARCHIVE_NAME, ResourceAdapter.Tag.ARCHIVE.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition CONFIG_PROPERTY_VALUE = new SimpleAttributeDefinition(CONFIG_PROPERTY_VALUE_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition BOOTSTRAPCONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition ARCHIVE = new SimpleAttributeDefinition(ARCHIVE_NAME, ResourceAdapter.Tag.ARCHIVE.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition TRANSACTIONSUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition BOOTSTRAPCONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition BEANVALIDATIONGROUPS = new SimpleAttributeDefinition(BEANVALIDATIONGROUPS_NAME, ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition TRANSACTIONSUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static final SimpleAttributeDefinition BEANVALIDATIONGROUPS = new SimpleAttributeDefinition(BEANVALIDATIONGROUPS_NAME, ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinition(USE_JAVA_CONTEXT_NAME, DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName(), new ModelNode().set(Defaults.USE_JAVA_CONTEXT), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 

@@ -23,10 +23,10 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:pojo:7.0 jboss-mc_7_0.xsd">
 
-    <bean name="B" class="org.jboss.as.testsuite.integration.pojo.support.B">
+    <bean name="B" class="org.jboss.as.test.integration.pojo.support.B">
         <property name="c"><inject/></property>
     </bean>
 
-    <bean name="C" class="org.jboss.as.testsuite.integration.pojo.support.C"/>
+    <bean name="C" class="org.jboss.as.test.integration.pojo.support.C"/>
 
 </deployment>

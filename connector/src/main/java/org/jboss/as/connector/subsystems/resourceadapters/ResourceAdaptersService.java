@@ -43,12 +43,7 @@ import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
  */
 final class ResourceAdaptersService implements Service<ResourceAdaptersService.ModifiableResourceAdaptors> {
 
-    private final ModifiableResourceAdaptors value;
-
-    /** create an instance **/
-    public ResourceAdaptersService(ModifiableResourceAdaptors value) {
-        this.value = value;
-    }
+    private final ModifiableResourceAdaptors value = new ModifiableResourceAdaptors();
 
     @Override
     public ModifiableResourceAdaptors getValue() throws IllegalStateException {
@@ -68,21 +63,7 @@ final class ResourceAdaptersService implements Service<ResourceAdaptersService.M
     public static final class ModifiableResourceAdaptors implements ResourceAdapters {
 
         private static final long serialVersionUID = 9096011997958619051L;
-        private final ArrayList<ResourceAdapter> resourceAdapters;
-
-        /**
-         * Create a new ResopurceAdaptersImpl.
-         * @param resourceAdapters resourceAdapters
-         */
-        public ModifiableResourceAdaptors(List<ResourceAdapter> resourceAdapters) {
-            super();
-            if (resourceAdapters != null) {
-                this.resourceAdapters = new ArrayList<ResourceAdapter>(resourceAdapters.size());
-                this.resourceAdapters.addAll(resourceAdapters);
-            } else {
-                this.resourceAdapters = new ArrayList<ResourceAdapter>(0);
-            }
-        }
+        private final ArrayList<ResourceAdapter> resourceAdapters = new ArrayList<ResourceAdapter>(0);
 
         /**
          * Get the resourceAdapters.

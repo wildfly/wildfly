@@ -22,11 +22,45 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logmanager.handlers.FileHandler;
+
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+
 /**
  * Operation responsible for updating the properties of a file logging handler.
  *
  * @author John Bailey
  */
-public class FileHandlerUpdateProperties extends FlushingHandlerUpdateProperties {
+public class FileHandlerUpdateProperties extends FlushingHandlerUpdateProperties<FileHandler> {
     static final FileHandlerUpdateProperties INSTANCE = new FileHandlerUpdateProperties();
+
+    private FileHandlerUpdateProperties() {
+        super(APPEND);
+        // TODO (jrp) consider implementing FILE as well
+    }
+
+    @Override
+    protected void updateRuntime(final ModelNode operation, final FileHandler handler) throws OperationFailedException {
+        super.updateRuntime(operation, handler);
+        final ModelNode append = APPEND.validateResolvedOperation(operation);
+        if (append.isDefined()) {
+            handler.setAppend(append.asBoolean());
+        }
+
+        // TODO (jrp) consider implementing FILE as well
+        /** final ServiceTarget serviceTarget = context.getServiceTarget();
+         final ModelNode file = FILE.validateResolvedOperation(model);
+         if (file.isDefined()) {
+         final HandlerFileService fileService = new HandlerFileService(PATH.validateOperation(file).asString());
+         final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
+         final ModelNode relativeTo = RELATIVE_TO.validateResolvedOperation(file);
+         if (relativeTo.isDefined()) {
+         fileBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, fileService.getRelativeToInjector());
+         }
+         fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+         serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
+         } **/
+    }
 }

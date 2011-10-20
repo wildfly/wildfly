@@ -36,11 +36,9 @@ import javax.xml.ws.Service;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.BindingConfigurator;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
-import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
@@ -140,17 +138,17 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         processWSFeatures(unit, serviceRefUMDM, injectionTarget, classInfo);
 
         // TODO: class hierarchies? shared bindings?
-        final EEApplicationClasses applicationClasses = unit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
+        final EEModuleDescription moduleDescription = unit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        final EEModuleClassDescription classDescription = moduleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
         // Create the binding from whence our injection comes.
         final InjectionSource serviceRefSource = new WSRefValueSource(serviceRefUMDM);
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(bindingName, serviceRefSource);
-        classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+        classDescription.getBindingConfigurations().add(bindingConfiguration);
         // our injection comes from the local lookup, no matter what.
         final ResourceInjectionConfiguration injectionConfiguration = injectionTarget != null ?
             new ResourceInjectionConfiguration(injectionTarget, new LookupInjectionSource(bindingName)) : null;
         if (injectionConfiguration != null) {
-            classDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+            classDescription.addResourceInjection(injectionConfiguration);
         }
     }
 

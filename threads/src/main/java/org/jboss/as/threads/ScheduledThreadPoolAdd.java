@@ -23,7 +23,6 @@ package org.jboss.as.threads;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -56,6 +55,8 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler implements De
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {PoolAttributeDefinitions.KEEPALIVE_TIME,
         PoolAttributeDefinitions.MAX_THREADS, PoolAttributeDefinitions.PROPERTIES, PoolAttributeDefinitions.THREAD_FACTORY};
 
+    static final AttributeDefinition[] RW_ATTRIBUTES = new AttributeDefinition[]{};
+
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ThreadsSubsystemProviders.ADD_SCHEDULED_THREAD_POOL_DESC.getModelDescription(locale);
@@ -85,7 +86,7 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler implements De
         ServiceTarget target = context.getServiceTarget();
         final ServiceName serviceName = ThreadsServices.executorName(params.getName());
         final ScheduledThreadPoolService service = new ScheduledThreadPoolService(params.getMaxThreads().getScaledCount(), params.getKeepAliveTime());
-        final ServiceBuilder<ScheduledExecutorService> serviceBuilder = target.addService(serviceName, service);
+        final ServiceBuilder<ManagedScheduledExecutorService> serviceBuilder = target.addService(serviceName, service);
         ThreadsSubsystemThreadPoolOperationUtils.addThreadFactoryDependency(params.getThreadFactory(), serviceName, serviceBuilder, service.getThreadFactoryInjector(), target, params.getName() + "-threads");
         serviceBuilder.addListener(verificationHandler);
         serviceBuilder.install();

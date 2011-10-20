@@ -27,7 +27,7 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -56,7 +56,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
      *
      * @param componentConfiguration the component configuration
      */
-    public MessageDrivenComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
+    public MessageDrivenComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();

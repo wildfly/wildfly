@@ -22,16 +22,12 @@
 package org.jboss.as.osgi.parser;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.osgi.framework.Services;
 
 /**
  * Handles changes to the activation attribute.
@@ -47,16 +43,6 @@ public class ActivationAttributeHandler implements OperationStepHandler {
         ModelNode node = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         node.get(ModelConstants.ACTIVATION).set(val.toString().toLowerCase());
 
-        if (val == Activation.EAGER) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceController<?> svc = context.getServiceRegistry(true).getRequiredService(Services.FRAMEWORK_ACTIVE);
-                    svc.setMode(Mode.ACTIVE);
-                    context.completeStep();
-                }
-            }, Stage.RUNTIME);
-        }
         context.completeStep();
     }
 }

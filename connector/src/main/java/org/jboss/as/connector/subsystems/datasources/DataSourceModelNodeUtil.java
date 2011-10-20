@@ -124,16 +124,9 @@ import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
  */
 class DataSourceModelNodeUtil {
 
-    static DataSource from(final ModelNode dataSourceNode) throws ValidateException {
-        final Map<String, String> connectionProperties;
-        if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES.getName())) {
-            connectionProperties = new HashMap<String, String>(dataSourceNode.get(CONNECTION_PROPERTIES.getName()).asList().size());
-            for (Property property : dataSourceNode.get(CONNECTION_PROPERTIES.getName()).asPropertyList()) {
-                connectionProperties.put(property.getName(), property.getValue().asString());
-            }
-        } else {
-            connectionProperties = Collections.emptyMap();
-        }
+    static ModifiableDataSource from(final ModelNode dataSourceNode) throws ValidateException {
+        final Map<String, String> connectionProperties= Collections.emptyMap();
+
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
         final String driverClass = getStringIfSetOrGetDefault(dataSourceNode, DRIVER_CLASS, null);
         final String dataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, DATASOURCE_CLASS, null);
@@ -201,7 +194,7 @@ class DataSourceModelNodeUtil {
         final Validation validation = new ValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail,
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
-        return new DataSourceImpl(connectionUrl, driverClass, dataSourceClass, driver, transactionIsolation, connectionProperties, timeOut,
+        return new ModifiableDataSource(connectionUrl, driverClass, dataSourceClass, driver, transactionIsolation, connectionProperties, timeOut,
                 security, statement, validation, urlDelimiter, urlSelectorStrategyClassName, newConnectionSql, useJavaContext,
                 poolName, enabled, jndiName, spy, useCcm, jta, pool);
     }

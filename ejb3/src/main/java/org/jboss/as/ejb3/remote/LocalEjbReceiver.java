@@ -45,7 +45,9 @@ import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverContext;
 import org.jboss.ejb.client.EJBReceiverInvocationContext;
+import org.jboss.ejb.client.Locator;
 import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
@@ -89,8 +91,8 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
 
     @Override
     protected void processInvocation(final EJBClientInvocationContext<Void> invocation, final EJBReceiverInvocationContext receiverContext) throws Exception {
-
-        final EjbDeploymentInformation ejb = findBean(invocation.getAppName(), invocation.getModuleName(), invocation.getDistinctName(), invocation.getBeanName());
+        final Locator locator = invocation.getLocator();
+        final EjbDeploymentInformation ejb = findBean(locator.getAppName(), locator.getModuleName(), locator.getDistinctName(), locator.getBeanName());
         final EJBComponent ejbComponent = ejb.getEjbComponent();
 
         final Class<?> viewClass = invocation.getViewClass();
@@ -122,8 +124,8 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         context.putPrivateData(Component.class, ejbComponent);
         context.putPrivateData(ComponentView.class, view);
 
-        final SessionID sessionID = invocation.getProxyAttachment(SessionID.SESSION_ID_KEY);
-        if(sessionID != null) {
+        if (locator instanceof StatefulEJBLocator) {
+            final SessionID sessionID = ((StatefulEJBLocator) locator).getSessionId();
             context.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
         }
 

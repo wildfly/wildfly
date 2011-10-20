@@ -22,27 +22,29 @@
 
 package org.jboss.as.server.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.remoting.RealmAuthenticationProviderService;
+import org.jboss.as.remoting.RealmOptionMapService;
 import org.jboss.as.remoting.RemotingServices;
-import org.jboss.as.server.Services;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * {@code OperationStepHandler} for changing attributes on the native management interface.
@@ -66,9 +68,9 @@ public class NativeManagementAttributeHandlers {
                         final String interfaceName = subModel.require(ModelDescriptionConstants.INTERFACE).asString();
                         final int port = subModel.require(ModelDescriptionConstants.PORT).asInt();
 
-                        context.removeService(RemotingServices.AUTHENTICATION_PROVIDER);
-                        context.removeService(RemotingServices.OPTION_MAP);
-                        context.removeService(RemotingServices.serverServiceName(RemotingServices.MANAGEMENT_CHANNEL, port));
+                        context.removeService(RealmAuthenticationProviderService.createName(ManagementRemotingServices.MANAGEMENT_CONNECTOR));
+                        context.removeService(RealmOptionMapService.createName(ManagementRemotingServices.MANAGEMENT_CONNECTOR));
+                        context.removeService(RemotingServices.serverServiceName(ManagementRemotingServices.MANAGEMENT_CONNECTOR, port));
 
                         final ServiceTarget serviceTarget = context.getServiceTarget();
                         final ServiceName interfaceSvcName = NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName);
@@ -78,7 +80,7 @@ public class NativeManagementAttributeHandlers {
                         }
                         List<ServiceController<?>> list =new ArrayList<ServiceController<?>>();
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        RemotingServices.installStandaloneConnectorServices(serviceTarget, interfaceSvcName, port, realmSvcName, verificationHandler, list);
+                        ManagementRemotingServices.installStandaloneConnectorServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, interfaceSvcName, port, realmSvcName, verificationHandler, list);
 
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
                         context.completeStep();

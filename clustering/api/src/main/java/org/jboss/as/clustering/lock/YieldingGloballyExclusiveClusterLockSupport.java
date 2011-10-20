@@ -28,6 +28,9 @@ import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 
+import static org.jboss.as.clustering.ClusteringApiLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.ClusteringApiMessages.MESSAGES;
+
 /**
  * Support class for cluster locking scenarios where threads cannot acquire a local lock unless the node owns a cluster-wide
  * lock, but where the node owning the cluster-wide lock will yield it to another node if no thread has a local lock. Use case
@@ -51,7 +54,7 @@ public class YieldingGloballyExclusiveClusterLockSupport extends AbstractCluster
     public void unlock(Serializable lockId) {
         ClusterNode myself = getLocalClusterNode();
         if (myself == null) {
-            throw new IllegalStateException("Must call start() before first call to unlock()");
+            throw MESSAGES.invalidMethodCall("start()", "unlock()");
         }
 
         ClusterLockState category = getClusterLockState(lockId, false);
@@ -101,7 +104,7 @@ public class YieldingGloballyExclusiveClusterLockSupport extends AbstractCluster
             return new RemoteLockResponse(getLocalClusterNode(), RemoteLockResponse.Flag.OK);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("Caught InterruptedException; Failing request by " + caller + " to lock " + lockName);
+            ROOT_LOGGER.caughtInterruptedException(caller, lockName);
             response = new RemoteLockResponse(getLocalClusterNode(), RemoteLockResponse.Flag.FAIL, getLocalHandler()
                     .getLockHolder(lockName));
         } catch (TimeoutException t) {

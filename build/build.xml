@@ -45,6 +45,9 @@
                 <include name="standalone/**"/>
             </fileset>
             <fileset dir="src/main/resources">
+                <include name="appclient/**"/>
+            </fileset>
+            <fileset dir="src/main/resources">
                 <include name="welcome-content/**"/>
             </fileset>
         </copy>
@@ -430,6 +433,10 @@
 
         <module-def name="org.jboss.as.aggregate" />
 
+        <module-def name="org.jboss.as.appclient">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-appclient"/>
+        </module-def>
+
         <module-def name="org.jboss.as.cli">
             <maven-resource group="org.jboss.as" artifact="jboss-as-cli"/>
         </module-def>
@@ -621,7 +628,11 @@
         </module-def>
 
         <module-def name="org.jboss.as.webservices.server.integration">
-            <!-- this is just dependencies wrapper module - to support multiple JBossWS SOAP stacks -->
+            <!-- this is a dependencies only wrapper module - to support multiple JBossWS SOAP stacks -->
+        </module-def>
+
+        <module-def name="org.jboss.as.webservices.server.jaxrpc-integration">
+            <!-- this is a dependencies only module for JAXRPC functionalities provided by JBossWS Native stack -->
         </module-def>
 
         <module-def name="org.jboss.as.weld">
@@ -741,6 +752,7 @@
 
         <module-def name="org.jboss.metadata">
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-common"/>
+            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-appclient"/>
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-ejb"/>
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-web"/>
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-ear"/>
@@ -889,6 +901,18 @@
             <maven-resource group="org.jboss.ws.projects" artifact="jaxws-jboss-httpserver-httpspi"/>
         </module-def>
 
+        <module-def name="org.jboss.ws.native.jbossws-native-core">
+            <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-core"/>
+        </module-def>
+
+        <module-def name="org.jboss.ws.native.jbossws-native-factories">
+            <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-factories"/>
+        </module-def>
+
+        <module-def name="org.jboss.ws.native.jbossws-native-services">
+            <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-services"/>
+        </module-def>
+
         <module-def name="org.jboss.ws.api">
             <maven-resource group="org.jboss.ws" artifact="jbossws-api"/>
         </module-def>
@@ -908,6 +932,10 @@
         </module-def>
 
         <module-def name="org.jboss.ws.tools.wsconsume">
+        </module-def>
+
+        <module-def name="org.jboss.xb">
+            <maven-resource group="org.jboss" artifact="jbossxb"/>
         </module-def>
 
         <module-def name="org.jboss.xnio">
@@ -1018,7 +1046,7 @@
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.http">
-            <maven-bundle group="org.jboss.osgi.http" artifact="jboss-osgi-http"/>
+            <maven-bundle group="org.jboss.osgi.http" artifact="jbosgi-http"/>
         </bundle-def>
 
         <bundle-def name="org.jboss.osgi.jmx">

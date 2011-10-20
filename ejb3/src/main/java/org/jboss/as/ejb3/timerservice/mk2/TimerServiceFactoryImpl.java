@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice.mk2;
 
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
@@ -81,9 +82,9 @@ public class TimerServiceFactoryImpl implements TimerServiceFactory {
      * This method also registers the created timer service, with the {@link TimerServiceRegistry}
      * </p>
      */
-    public TimerService createTimerService(TimedObjectInvoker invoker) {
+    public TimerService createTimerService(TimedObjectInvoker invoker, final EJBComponent component) {
         // create the timer service
-        TimerServiceImpl timerService = new TimerServiceImpl(timer, invoker, timerPersistence, transactionManager, executor);
+        TimerServiceImpl timerService = new TimerServiceImpl(timer, invoker, timerPersistence, transactionManager, executor, component);
 
         String timedObjectId = invoker.getTimedObjectId();
         // EJBTHREE-2209 I'm not too happy with this "fix". Ideally,

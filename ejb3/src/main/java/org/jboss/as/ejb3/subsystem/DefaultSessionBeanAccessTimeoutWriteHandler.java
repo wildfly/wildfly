@@ -44,6 +44,7 @@ public class DefaultSessionBeanAccessTimeoutWriteHandler extends AbstractWriteAt
     private final ServiceName serviceName;
 
     public DefaultSessionBeanAccessTimeoutWriteHandler(final AttributeDefinition attribute, final ServiceName serviceName) {
+        super(attribute);
         this.attribute = attribute;
         this.serviceName = serviceName;
     }

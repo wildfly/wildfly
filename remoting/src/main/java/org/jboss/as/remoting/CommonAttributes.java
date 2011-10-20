@@ -27,7 +27,6 @@ package org.jboss.as.remoting;
  */
 interface CommonAttributes {
 
-    String ADD_CONNECTOR = "add-connector";
     String AUTHENTICATION_PROVIDER = "authentication-provider";
     String CONNECTOR = "connector";
     String FORWARD_SECRECY = "forward-secrecy";

@@ -22,9 +22,11 @@
 package org.jboss.as.osgi.parser;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultAction;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
@@ -39,14 +41,18 @@ import org.mockito.stubbing.Answer;
  * @author David Bosschaert
  */
 public class ResourceAddRemoveTestBase {
+
+    private final AtomicReference<ModelNode> operationHolder = new AtomicReference<ModelNode>();
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected OperationContext mockOperationContext(SubsystemState stateService, final List<OperationStepHandler> addedSteps, ResultAction stepResult) {
+    protected OperationContext mockOperationContext(SubsystemState stateService, final List<OperationStepHandler> addedSteps,
+                                                    final ResultAction stepResult) {
         ServiceRegistry serviceRegistry = Mockito.mock(ServiceRegistry.class);
         ServiceController serviceController = Mockito.mock(ServiceController.class);
         Mockito.when(serviceController.getValue()).thenReturn(stateService);
         Mockito.when(serviceRegistry.getService(SubsystemState.SERVICE_NAME)).thenReturn(serviceController);
         ModelNode result = new ModelNode();
-        OperationContext context = Mockito.mock(OperationContext.class);
+        final OperationContext context = Mockito.mock(OperationContext.class);
         Resource resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getModel()).thenReturn(result);
         Mockito.when(context.getServiceRegistry(true)).thenReturn(serviceRegistry);
@@ -61,6 +67,46 @@ public class ResourceAddRemoveTestBase {
                 return null;
             }
         }).when(context).addStep((OperationStepHandler) Mockito.anyObject(), Mockito.eq(OperationContext.Stage.RUNTIME));
+        Mockito.doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                if (stepResult == ResultAction.ROLLBACK) {
+                    Object[] args = invocation.getArguments();
+                    OperationContext.RollbackHandler handler = OperationContext.RollbackHandler.class.cast(args[0]);
+                    handler.handleRollback(context, operationHolder.get());
+                }
+                return null;
+            }
+        }).when(context).completeStep(Mockito.any(OperationContext.RollbackHandler.class));
         return context;
+    }
+
+    protected void execute(final OperationStepHandler handler, final OperationContext context,
+                                final ModelNode op) throws OperationFailedException {
+        operationHolder.set(op);
+        handler.execute(context, op);
+    }
+
+    protected void configureForRollback(final OperationContext context, final ModelNode operation) {
+        Mockito.doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                OperationContext.RollbackHandler handler = OperationContext.RollbackHandler.class.cast(args[0]);
+                handler.handleRollback(context, operation);
+                return null;
+            }
+        }).when(context).completeStep(Mockito.any(OperationContext.RollbackHandler.class));
+        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.ROLLBACK);
+    }
+
+    protected void configureForSuccess(final OperationContext context) {
+        Mockito.doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                return null;
+            }
+        }).when(context).completeStep(Mockito.any(OperationContext.RollbackHandler.class));
+        Mockito.when(context.completeStep()).thenReturn(OperationContext.ResultAction.KEEP);
     }
 }

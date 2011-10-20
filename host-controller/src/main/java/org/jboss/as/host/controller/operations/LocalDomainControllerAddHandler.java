@@ -40,6 +40,7 @@ import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.UnregisteredHostChannelRegistry;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -124,7 +125,6 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
 
     @Override
     public ModelNode getModelDescription(final Locale locale) {
-        // TODO - Return valid ModelDescription.
-        return new ModelNode();
+        return HostRootDescription.getLocalDomainControllerAdd(locale);
     }
 }

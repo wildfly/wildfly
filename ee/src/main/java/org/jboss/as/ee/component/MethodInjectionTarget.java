@@ -49,7 +49,7 @@ public final class MethodInjectionTarget extends InjectionTarget {
         super(className, name, paramType);
     }
 
-    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
         final String paramType = getDeclaredValueClassName();
@@ -62,26 +62,28 @@ public final class MethodInjectionTarget extends InjectionTarget {
         } catch (ClassNotFoundException e) {
             throw new DeploymentUnitProcessingException(e);
         }
-        Collection<Method> methods;
+        Collection<Method> methods = null;
         if (paramType != null) {
             // find the methods with the specific name and the param types
             methods = ClassReflectionIndexUtil.findMethods(reflectionIndex, classIndex, name, paramType);
-        } else {
+        }
+        // either paramType is not set, or we may need to find autoboxing methods
+        // e.g. setMyBoolean(boolean) for a Boolean
+        if (methods == null || methods.isEmpty()) {
             // find all the methods with the specific name and which accept just 1 parameter.
             methods = ClassReflectionIndexUtil.findAllMethods(reflectionIndex, classIndex, name, 1);
         }
         Iterator<Method> iterator = methods.iterator();
         if (!iterator.hasNext()) {
             throw new DeploymentUnitProcessingException("No matching method found for method " + name +
-                    paramType != null ? "(" + paramType + ")" : "" +
+                    "(" + paramType + ")" +
                     " on " + className);
         }
         Method method = iterator.next();
         if (iterator.hasNext()) {
-            throw new DeploymentUnitProcessingException("More than one matching method found for method '" + name +
-                    paramType != null ? "(" + paramType + ")" : "" +
+            throw new DeploymentUnitProcessingException("More than one matching method found for method '" + name + "(" + paramType + ")" +
                     " on " + className);
         }
-        return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method);
+        return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method, optional);
     }
 }

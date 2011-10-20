@@ -27,6 +27,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 
 /**
  * The processor to install the reflection index.
@@ -38,13 +39,17 @@ public final class InstallReflectionIndexProcessor implements DeploymentUnitProc
     /** {@inheritDoc} */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if(deploymentUnit.getParent() == null) {
             final DeploymentReflectionIndex index = DeploymentReflectionIndex.create();
             deploymentUnit.putAttachment(Attachments.REFLECTION_INDEX, index);
             deploymentUnit.putAttachment(Attachments.PROXY_REFLECTION_INDEX, new ProxyMetadataSource(index));
+            deploymentUnit.putAttachment(Attachments.CLASS_INDEX, new DeploymentClassIndex(index, module));
         } else {
-            deploymentUnit.putAttachment(Attachments.REFLECTION_INDEX, deploymentUnit.getParent().getAttachment(Attachments.REFLECTION_INDEX));
+            final DeploymentReflectionIndex index = deploymentUnit.getParent().getAttachment(Attachments.REFLECTION_INDEX);
+            deploymentUnit.putAttachment(Attachments.REFLECTION_INDEX, index);
             deploymentUnit.putAttachment(Attachments.PROXY_REFLECTION_INDEX, deploymentUnit.getParent().getAttachment(Attachments.PROXY_REFLECTION_INDEX));
+            deploymentUnit.putAttachment(Attachments.CLASS_INDEX, new DeploymentClassIndex(index, module));
         }
     }
 

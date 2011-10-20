@@ -33,7 +33,6 @@ import java.util.Set;
 import javax.ejb.NoSuchEJBException;
 
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ee.component.ComponentViewInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.SessionID;
@@ -125,8 +124,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
         if (viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
             final ComponentView view = (ComponentView) serviceController.getValue();
-            final ComponentViewInstance instance = view.createInstance(Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, id));
-            return (S) instance.createProxy();
+            return (S) view.createInstance(Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, id)).getInstance();
         } else {
             throw new IllegalStateException("View of type " + businessInterfaceType + " not found on bean " + ejbComponent);
         }

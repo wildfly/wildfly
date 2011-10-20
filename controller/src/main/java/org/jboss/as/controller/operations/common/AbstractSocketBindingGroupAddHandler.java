@@ -31,6 +31,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,27 +39,24 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public abstract class AbstractSocketBindingGroupAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public abstract class AbstractSocketBindingGroupAddHandler extends AbstractAddStepHandler {
 
     public static final String OPERATION_NAME = ADD;
-
-    private final ParametersValidator validator;
 
     /**
      * Create the AbstractSocketBindingGroupAddHandler
      */
-    protected AbstractSocketBindingGroupAddHandler(final ParametersValidator validator) {
-        this.validator = new ParametersValidator(validator);
-        this.validator.registerValidator(DEFAULT_INTERFACE, new StringLengthValidator(1, Integer.MAX_VALUE, true, true));
+    protected AbstractSocketBindingGroupAddHandler() {
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        validator.validate(operation);
+
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
         model.get(NAME).set(name);
 
-        model.get(DEFAULT_INTERFACE).set(operation.get(DEFAULT_INTERFACE));
+        SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.validateAndSet(operation, model);
+
         model.get(SOCKET_BINDING);
     }
 }

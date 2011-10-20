@@ -28,8 +28,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.metadata.ejb.spec.ApplicationExceptionMetaData;
-import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
@@ -58,18 +56,7 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
         if (assemblyDescriptor != null) {
             // get hold of the ejb jar description (to which we'll be adding this assembly description metadata)
             final EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
-            // process application-exception(s)
-            ApplicationExceptionsMetaData applicationExceptions = assemblyDescriptor.getApplicationExceptions();
-            if (applicationExceptions != null && !applicationExceptions.isEmpty()) {
-                for (ApplicationExceptionMetaData applicationException : applicationExceptions) {
-                    String exceptionClassName = applicationException.getExceptionClass();
-                    boolean rollback = applicationException.isRollback();
-                    // by default inherited is true
-                    boolean inherited = applicationException.isInherited() == null ? true : applicationException.isInherited();
-                    // add the application exception to the ejb jar description
-                    ejbJarDescription.addApplicationException(exceptionClassName, rollback, inherited);
-                }
-            }
+
 
             // process security-role(s)
             this.processSecurityRoles(assemblyDescriptor.getSecurityRoles(), ejbJarDescription);

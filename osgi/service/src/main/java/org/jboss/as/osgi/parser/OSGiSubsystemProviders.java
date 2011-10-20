@@ -71,7 +71,7 @@ class OSGiSubsystemProviders {
             subsystem.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.STORAGE).set(Flag.STORAGE_RUNTIME.toString());
 
             subsystem.get(CHILDREN, ModelConstants.CONFIGURATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration"));
-            subsystem.get(CHILDREN, ModelConstants.FRAMEWORK_PROPERTY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property"));
+            subsystem.get(CHILDREN, ModelConstants.PROPERTY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property"));
             subsystem.get(CHILDREN, ModelConstants.CAPABILITY, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("capability"));
             subsystem.get(CHILDREN, ModelConstants.BUNDLE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("bundle"));
 

@@ -21,16 +21,18 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityInvocationContextInterceptor;
@@ -38,10 +40,9 @@ import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.CMTTxInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.TransactionManagementType;
 
 /**
  * Description of an old school entity bean.
@@ -83,9 +84,9 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
 
     @Override
-    public ComponentConfiguration createConfiguration(EEApplicationDescription applicationDescription) {
+    public ComponentConfiguration createConfiguration( final ClassIndex classIndex) {
 
-        final ComponentConfiguration configuration = new ComponentConfiguration(this, applicationDescription.getClassConfiguration(getComponentClassName()));
+        final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex);
         // setup the component create service
         configuration.setComponentCreateServiceFactory(EntityBeanComponentCreateService.FACTORY);
 
@@ -93,7 +94,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
     }
 
     @Override
-    protected void setupViewInterceptors(ViewDescription view) {
+    protected void setupViewInterceptors(EJBViewDescription view) {
         // let super do its job first
         super.setupViewInterceptors(view);
 

@@ -44,7 +44,7 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
 
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
                     final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     performRuntime(context, operation, model, verificationHandler, controllers);
@@ -53,13 +53,16 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
                     }
 
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        rollbackRuntime(context, operation, model, controllers);
-                    }
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            rollbackRuntime(context, operation, model, controllers);
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     /**

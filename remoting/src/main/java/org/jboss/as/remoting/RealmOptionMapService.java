@@ -22,6 +22,7 @@
 package org.jboss.as.remoting;
 
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -36,6 +37,13 @@ import org.xnio.OptionMap;
 public class RealmOptionMapService implements Service<OptionMap> {
 
     private final InjectedValue<RealmAuthenticationProvider> realmAuthenticationProviderInjectedValue = new InjectedValue<RealmAuthenticationProvider>();
+
+    /** The base name of the service which provides the OptionMap */
+    private static final ServiceName BASE_NAME = RemotingServices.REMOTING_BASE.append("authentication_provider").append("option_map");
+
+    public static ServiceName createName(String connectorName) {
+        return BASE_NAME.append(connectorName);
+    }
 
     public void start(StartContext startContext) throws StartException {
     }

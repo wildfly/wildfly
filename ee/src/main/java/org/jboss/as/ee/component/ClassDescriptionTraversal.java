@@ -21,37 +21,42 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 /**
  * throwaway utility class for traversing a class configuration from most general superclass down
  */
 public abstract class ClassDescriptionTraversal {
-    final EEModuleClassConfiguration classConfiguration;
-    final EEApplicationDescription applicationDescription;
+    final Class<?> clazz;
+    final EEApplicationClasses applicationClasses;
 
-    public ClassDescriptionTraversal(final EEModuleClassConfiguration classConfiguration, final EEApplicationDescription applicationDescription) {
-        this.classConfiguration = classConfiguration;
-        this.applicationDescription = applicationDescription;
+    public ClassDescriptionTraversal(final Class<?> clazz, final EEApplicationClasses applicationClasses) {
+        this.clazz = clazz;
+        this.applicationClasses = applicationClasses;
     }
 
     public void run() throws DeploymentUnitProcessingException {
-        Class clazz = classConfiguration.getModuleClass();
-        final Deque<EEModuleClassConfiguration> queue = new ArrayDeque<EEModuleClassConfiguration>();
+        Class<?> clazz = this.clazz;
+        final List<EEModuleClassDescription> queue = new ArrayList<EEModuleClassDescription>();
+        final List<Class<?>> classQueue = new ArrayList<Class<?>>();
         while (clazz != null && clazz != Object.class) {
-            EEModuleClassConfiguration configuration = applicationDescription.getClassConfiguration(clazz.getName());
-            if (configuration != null) {
-                queue.addFirst(configuration);
-            }
+            final EEModuleClassDescription configuration = applicationClasses.getClassByName(clazz.getName());
+            queue.add(configuration);
+            classQueue.add(clazz);
             clazz = clazz.getSuperclass();
         }
-        for (EEModuleClassConfiguration configuration : queue) {
-            handle(configuration, configuration.getModuleClassDescription());
+        for (int i = queue.size() - 1; i >= 0; --i) {
+            final EEModuleClassDescription config = queue.get(i);
+            if(config != null) {
+                handle(classQueue.get(i), config);
+            } else {
+                handle(classQueue.get(i), null);
+            }
         }
     }
 
-    protected abstract void handle(final EEModuleClassConfiguration configuration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
+    protected abstract void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException;
 }

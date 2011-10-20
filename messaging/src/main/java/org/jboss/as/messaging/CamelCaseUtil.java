@@ -34,21 +34,24 @@ public class CamelCaseUtil {
 
     public static ModelNode convertSecurityRole(final ModelNode camelCase) {
         final ModelNode result = new ModelNode();
-        result.setEmptyObject();
+        result.setEmptyList();
         if (camelCase.isDefined()) {
-            for (Property prop : camelCase.asPropertyList()) {
-                String key = prop.getName();
-                if ("createDurableQueue".equals(key)) {
-                    key = SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName();
-                } else if ("deleteDurableQueue".equals(key)) {
-                    key = SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName();
-                } else if ("createNonDurableQueue".equals(key)) {
-                    key = SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName();
-                } else if ("deleteNonDurableQueue".equals(key)) {
-                    key = SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName();
-                }
+            for (ModelNode role : camelCase.asList()) {
+                final ModelNode roleNode = result.add();
+                for (Property prop : role.asPropertyList()) {
+                    String key = prop.getName();
+                    if ("createDurableQueue".equals(key)) {
+                        key = SecurityRoleAdd.CREATE_DURABLE_QUEUE.getName();
+                    } else if ("deleteDurableQueue".equals(key)) {
+                        key = SecurityRoleAdd.DELETE_DURABLE_QUEUE.getName();
+                    } else if ("createNonDurableQueue".equals(key)) {
+                        key = SecurityRoleAdd.CREATE_NON_DURABLE_QUEUE.getName();
+                    } else if ("deleteNonDurableQueue".equals(key)) {
+                        key = SecurityRoleAdd.DELETE_NON_DURABLE_QUEUE.getName();
+                    }
 
-                result.get(key).set(prop.getValue());
+                    roleNode.get(key).set(prop.getValue());
+                }
             }
         }
 

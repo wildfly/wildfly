@@ -21,31 +21,39 @@
  */
 package org.jboss.as.remoting;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.Provider;
+import java.security.Security;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.sasl.JBossSaslProvider;
 
-import javax.security.auth.callback.CallbackHandler;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
-
 /**
  * The service to make the RealmAuthenticationProvider available.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class RealmAuthenticationProviderService implements Service<RealmAuthenticationProvider> {
+public class RealmAuthenticationProviderService implements Service<RealmAuthenticationProvider> {
 
     private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
     private final InjectedValue<CallbackHandler> serverCallbackValue = new InjectedValue<CallbackHandler>();
 
     private volatile RealmAuthenticationProvider realmAuthenticationProvider = null;
+    /** The base name of the AuthenticationProvider service */
+    private static final ServiceName BASE_NAME = RemotingServices.REMOTING_BASE.append("authentication_provider");
+
+    public static ServiceName createName(String connectorName) {
+        return BASE_NAME.append(connectorName);
+    }
 
     public void start(StartContext startContext) throws StartException {
         AccessController.doPrivileged(new PrivilegedAction<Object>() {

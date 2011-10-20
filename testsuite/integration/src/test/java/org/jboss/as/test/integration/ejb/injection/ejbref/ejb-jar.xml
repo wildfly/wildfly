@@ -1,0 +1,33 @@
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+         version="3.1">
+    <enterprise-beans>
+        <session>
+            <ejb-name>SimpleBean</ejb-name>
+            <home>org.jboss.as.test.integration.ejb.injection.ejbref.HomeInterface</home>
+            <remote>org.jboss.as.test.integration.ejb.injection.ejbref.RemoteInterface</remote>
+            <local-home>org.jboss.as.test.integration.ejb.injection.ejbref.LocalHomeInterface</local-home>
+            <local>org.jboss.as.test.integration.ejb.injection.ejbref.LocalInterface</local>
+            <ejb-class>org.jboss.as.test.integration.ejb.injection.ejbref.SimpleBean</ejb-class>
+            <session-type>Stateless</session-type>
+        </session>
+
+        <session>
+            <ejb-name>LookupBean</ejb-name>
+            <ejb-ref>
+                <ejb-ref-name>ejb/remote</ejb-ref-name>
+                <ejb-ref-type>Session</ejb-ref-type>
+                <home>org.jboss.as.test.integration.ejb.injection.ejbref.HomeInterface</home>
+                <remote>org.jboss.as.test.integration.ejb.injection.ejbref.RemoteInterface</remote>
+            </ejb-ref>
+            <ejb-local-ref>
+                <ejb-ref-name>ejb/local</ejb-ref-name>
+                <ejb-ref-type>Session</ejb-ref-type>
+                <local-home>org.jboss.as.test.integration.ejb.injection.ejbref.LocalHomeInterface</local-home>
+                <local>org.jboss.as.test.integration.ejb.injection.ejbref.LocalInterface</local>
+            </ejb-local-ref>
+        </session>
+    </enterprise-beans>
+
+</ejb-jar>

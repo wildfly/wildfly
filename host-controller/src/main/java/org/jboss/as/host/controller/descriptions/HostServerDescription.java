@@ -112,9 +112,9 @@ public class HostServerDescription {
         root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
 
         root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("server.system-properties"));
-        root.get(CHILDREN, PATH, MIN_OCCURS).set(0);
-        root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
+        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
+        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
 
         root.get(CHILDREN, INTERFACE, DESCRIPTION).set(bundle.getString("server.interface"));
         root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);

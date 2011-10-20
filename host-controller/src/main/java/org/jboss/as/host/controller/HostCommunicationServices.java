@@ -31,8 +31,9 @@ import org.jboss.as.server.DomainServerMain;
  */
 class HostCommunicationServices {
 
-    static DomainServerMain.HostControllerCommunicationActivator createServerCommuncationActivator(final InetSocketAddress managementSocket, final String serverName, final String serverProcessName, final byte[] authKey) {
-        return new DomainServerMain.HostControllerCommunicationActivator(managementSocket, serverName, serverProcessName, authKey);
+    static DomainServerMain.HostControllerCommunicationActivator createServerCommuncationActivator(final InetSocketAddress managementSocket, final String serverName, final String serverProcessName,
+            final byte[] authKey, final boolean managementSubsystemEndpoint) {
+        return new DomainServerMain.HostControllerCommunicationActivator(managementSocket, serverName, serverProcessName, authKey, managementSubsystemEndpoint);
     }
 
 }

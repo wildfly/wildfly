@@ -5,6 +5,7 @@ package org.jboss.as.controller;
 
 import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.controller.ModelControllerImplUnitTestCase.getOperation;
+import static org.jboss.as.controller.ModelControllerImplUnitTestCase.useNonRecursive;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -38,6 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -103,17 +105,29 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testModelStageGoodNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageGood();
+    }
+
+    @Test
     public void testModelStageFailure() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
         System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this request is bad") > -1);
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this request is bad"));
 
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testModelStageFailureNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageFailure();
     }
 
     @Test
@@ -132,6 +146,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testModelStageUnhandledFailureNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageUnhandledFailure();
+    }
+
+    @Test
     public void testModelStageFailureNoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad", "attr2", 1);
@@ -141,11 +161,17 @@ public class CompositeOperationHandlerUnitTestCase {
         System.out.println(result);
         // Model stage failure should result in rollback regardless of the header
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().indexOf("this request is bad") > - 1);
+        assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this request is bad"));
 
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testModelStageFailureNoRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageFailureNoRollback();
     }
 
     @Test
@@ -168,6 +194,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testModelStageUnhandledFailureNoRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageUnhandledFailureNoRollback();
+    }
+
+    @Test
     public void testRuntimeStageFailed() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2, null, false);
         ModelNode step2 = getOperation("handleFailed", "attr2", 1, null, false);
@@ -181,6 +213,12 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testRuntimeStageFailedNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRuntimeStageFailed();
     }
 
     @Test
@@ -199,6 +237,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testRuntimeStageFailedNoRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRuntimeStageFailedNoRollback();
+    }
+
+    @Test
     public void testRuntimeStageOFENoRollback() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("operationFailedException", "attr2", 1);
@@ -210,6 +254,12 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testRuntimeStageOFENoRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRuntimeStageOFENoRollback();
     }
 
     @Test
@@ -229,6 +279,12 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testRuntimeStageUnhandledFailureNoRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRuntimeStageUnhandledFailureNoRollback();
     }
 
     @Test
@@ -257,6 +313,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testModelStageGoodNestedCompositeNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageGoodNestedComposite();
+    }
+
+    @Test
     public void testModelStageFailedNestedComposite() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -272,6 +334,12 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testModelStageFailedNestedCompositeNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageFailedNestedComposite();
     }
 
     @Test
@@ -295,6 +363,12 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testGoodServiceCompositeNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testGoodServiceComposite();
     }
 
     @Test
@@ -327,6 +401,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testGoodServiceNestedCompositeNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testGoodServiceNestedComposite();
+    }
+
+    @Test
     public void testBadService() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad-service", "attr2", 1);
@@ -347,6 +427,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testBadServiceNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testBadService();
+    }
+
+    @Test
     public void testMissingService() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("missing-service", "attr2", 1);
@@ -364,6 +450,12 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testMissingServiceNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testMissingService();
     }
 
     @Test
@@ -393,6 +485,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testBadServiceNestedCompositeNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testBadServiceNestedComposite();
+    }
+
+    @Test
     public void testMissingServiceNestedComposite() throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -419,6 +517,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testMissingServiceNestedCompositeNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testMissingServiceNestedComposite();
+    }
+
+    @Test
     public void testGoodServiceCompositeTxRollback() throws Exception {
 
         assertTrue(sharedState.get());
@@ -438,6 +542,12 @@ public class CompositeOperationHandlerUnitTestCase {
 
         Assert.assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr2", 3), null, null, null).get("result").asInt());
+    }
+
+    @Test
+    public void testGoodServiceCompositeTxRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testGoodServiceCompositeTxRollback();
     }
 
     @Test
@@ -467,6 +577,13 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testGoodServiceNestedCompositeTxRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testGoodServiceNestedCompositeTxRollback();
+    }
+
+    @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequired() throws Exception {
         ModelNode step1 = getOperation("reload-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -484,6 +601,14 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
+    public void testReloadRequiredNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testReloadRequired();
+    }
+
+    @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequired() throws Exception {
         ModelNode step1 = getOperation("restart-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -498,6 +623,13 @@ public class CompositeOperationHandlerUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 3), null, null, null);
         Assert.assertEquals("success", result.get(OUTCOME).asString());
         Assert.assertEquals(5, result.get(RESULT).asInt());
+    }
+
+    @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
+    public void testRestartRequiredNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRestartRequired();
     }
 
     @Test
@@ -519,6 +651,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testReloadRequiredTxRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testReloadRequiredTxRollback();
+    }
+
+    @Test
     public void testRestartRequiredTxRollback() throws Exception {
         ModelNode step1 = getOperation("restart-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -534,6 +672,12 @@ public class CompositeOperationHandlerUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         Assert.assertEquals("success", result.get(OUTCOME).asString());
         Assert.assertEquals(1, result.get(RESULT).asInt());
+    }
+
+    @Test
+    public void testRestartRequiredTxRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRestartRequiredTxRollback();
     }
 
     @Test
@@ -560,11 +704,23 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    public void testCompositeReleasesLocksNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testCompositeReleasesLocks();
+    }
+
+    @Test
     public void testSingleStepOperation() throws Exception {
         ModelNode step = getOperation("good", "attr2", 1);
         ModelNode comp = getCompositeOperation(null, step);
         ModelNode result = controller.execute(comp, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
         System.out.println(result);
+    }
+
+    @Test
+    public void testSingleStepOperationNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testSingleStepOperation();
     }
 
     public static ModelNode getCompositeOperation(Boolean rollback, ModelNode... steps) {

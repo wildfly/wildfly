@@ -24,7 +24,11 @@ package org.jboss.as.ejb3.component.singleton;
 
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.List;
@@ -48,6 +52,14 @@ public class SingletonComponentCreateServiceFactory extends EJBComponentCreateSe
             throw new IllegalStateException("EjbJarConfiguration hasn't been set in " + this +
                     " .Cannot create component create service for EJB " + configuration.getComponentName());
         }
+        // setup a injection dependency to inject the DefaultAccessTimeoutService in the singleton bean
+        // component create service
+        configuration.getCreateDependencies().add(new DependencyConfigurator<SingletonComponentCreateService>() {
+            @Override
+            public void configureDependency(ServiceBuilder<?> serviceBuilder, SingletonComponentCreateService componentCreateService) throws DeploymentUnitProcessingException {
+                serviceBuilder.addDependency(DefaultAccessTimeoutService.SINGLETON_SERVICE_NAME, DefaultAccessTimeoutService.class, componentCreateService.getDefaultAccessTimeoutInjector());
+            }
+        });
         return new SingletonComponentCreateService(configuration, this.ejbJarConfiguration, this.initOnStartup, dependsOn);
     }
 }

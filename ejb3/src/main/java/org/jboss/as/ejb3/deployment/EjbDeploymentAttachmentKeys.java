@@ -44,8 +44,9 @@ public class EjbDeploymentAttachmentKeys {
     public static final AttachmentKey<EjbJarMetaData> EJB_JAR_METADATA = AttachmentKey.create(EjbJarMetaData.class);
 
     public static final AttachmentKey<EjbJarDescription> EJB_JAR_DESCRIPTION = AttachmentKey.create(EjbJarDescription.class);
+    public static final AttachmentKey<ApplicationExceptionDescriptions> APPLICATION_EXCEPTION_DESCRIPTIONS = AttachmentKey.create(ApplicationExceptionDescriptions.class);
 
-    public static final AttachmentKey<EjbJarConfiguration> EJB_JAR_CONFIGURATION = AttachmentKey.create(EjbJarConfiguration.class);
+    public static final AttachmentKey<ApplicationExceptions> APPLICATION_EXCEPTION_DETAILS = AttachmentKey.create(ApplicationExceptions.class);
 
     public static final AttachmentKey<AttachmentList<EjbInjectionSource>> EJB_INJECTIONS = AttachmentKey.createList(EjbInjectionSource.class);
 

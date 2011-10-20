@@ -69,6 +69,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -84,6 +85,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -92,6 +94,8 @@ import org.junit.Test;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ModelControllerImplUnitTestCase {
+
+    protected static boolean useNonRecursive;
 
     private ServiceContainer container;
     private ModelController controller;
@@ -106,6 +110,10 @@ public class ModelControllerImplUnitTestCase {
 
     @Before
     public void setupController() throws InterruptedException {
+
+        // restore default
+        useNonRecursive = false;
+
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
         ControlledProcessState processState = new ControlledProcessState(true);
@@ -141,7 +149,11 @@ public class ModelControllerImplUnitTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
 
         ModelControllerService(final ControlledProcessState processState) {
-            super(OperationContext.Type.SERVER, new NullConfigurationPersister(), processState, DESC_PROVIDER, null);
+            this(processState, new NullConfigurationPersister());
+        }
+
+        ModelControllerService(final ControlledProcessState processState, final ConfigurationPersister configurationPersister) {
+            super(OperationContext.Type.SERVER, configurationPersister, processState, DESC_PROVIDER, null);
         }
 
         @Override
@@ -192,6 +204,12 @@ public class ModelControllerImplUnitTestCase {
         assertEquals(5, result.get(RESULT).asInt());
     }
 
+    @Test
+    public void testGoodModelExecutionNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testGoodModelExecution();
+    }
+
     /**
      * Test successfully updating the model but then having the caller roll back the transaction.
      * @throws Exception
@@ -215,6 +233,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    public void testGoodModelExecutionTxRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testGoodModelExecutionTxRollback();
+    }
+
+    @Test
     public void testModelStageFailureExecution() throws Exception {
         ModelNode result = controller.execute(getOperation("bad", "attr1", 5), null, null, null);
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -224,6 +248,12 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertEquals(1, result.get(RESULT).asInt());
+    }
+
+    @Test
+    public void testModelStageFailureExecutionNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageFailureExecution();
     }
 
     @Test
@@ -242,6 +272,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    public void testModelStageUnhandledFailureExecutionNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testModelStageUnhandledFailureExecution();
+    }
+
+    @Test
     public void testHandleFailedExecution() throws Exception {
         ModelNode result = controller.execute(getOperation("handleFailed", "attr1", 5, "good", false), null, null, null);
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -254,6 +290,12 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
+    }
+
+    @Test
+    public void testHandleFailedExecutionNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testHandleFailedExecution();
     }
 
     @Test
@@ -275,6 +317,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    public void testRuntimeStageFailedNoRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRuntimeStageFailedNoRollback();
+    }
+
+    @Test
     public void testRuntimeStageUnhandledFailureNoRollback() throws Exception {
 
         ModelNode op = getOperation("runtimeException", "attr1", 5, "good");
@@ -290,6 +338,12 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
+    }
+
+    @Test
+    public void testRuntimeStageUnhandledFailureNoRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRuntimeStageUnhandledFailureNoRollback();
     }
 
     @Test
@@ -309,6 +363,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    public void testOperationFailedExceptionNoRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testOperationFailedExceptionNoRollback();
+    }
+
+    @Test
     public void testPathologicalRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("bad", "attr1", 5), null, null, null); // don't tell it to call the 'good' op on rollback
         assertEquals(FAILED, result.get(OUTCOME).asString());
@@ -321,6 +381,12 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
+    }
+
+    @Test
+    public void testPathologicalRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testPathologicalRollback();
     }
 
     @Test
@@ -337,6 +403,12 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(5, result.get("result").asInt());
+    }
+
+    @Test
+    public void testGoodServiceNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testGoodService();
     }
 
     @Test
@@ -361,6 +433,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    public void testGoodServiceTxRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testGoodServiceTxRollback();
+    }
+
+    @Test
     public void testBadService() throws Exception {
         ModelNode result = controller.execute(getOperation("bad-service", "attr1", 5, "good"), null, null, null);
         System.out.println(result);
@@ -379,6 +457,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    public void testBadServiceNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testBadService();
+    }
+
+    @Test
     public void testMissingService() throws Exception {
         ModelNode result = controller.execute(getOperation("missing-service", "attr1", 5, "good"), null, null, null);
         System.out.println(result);
@@ -394,6 +478,12 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
+    }
+
+    @Test
+    public void testMissingServiceNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testMissingService();
     }
 
     @Test
@@ -439,6 +529,8 @@ public class ModelControllerImplUnitTestCase {
         operation.get(CHILD_TYPE).set("child");
     }
 
+    @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -453,6 +545,14 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
+    public void testReloadRequiredNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testReloadRequired();
+    }
+
+    @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -464,6 +564,13 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(5, result.get("result").asInt());
+    }
+
+    @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
+    public void testRestartRequiredNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRestartRequired();
     }
 
     @Test
@@ -482,6 +589,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    public void testReloadRequiredTxRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testReloadRequiredTxRollback();
+    }
+
+    @Test
     public void testRestartRequiredTxRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
         System.out.println(result);
@@ -494,6 +607,12 @@ public class ModelControllerImplUnitTestCase {
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
+    }
+
+    @Test
+    public void testRestartRequiredTxRollbackNonRecursive() throws Exception {
+        useNonRecursive = true;
+        testRestartRequiredTxRollback();
     }
 
     public static ModelNode getOperation(String opName, String attr, int val) {
@@ -554,7 +673,11 @@ public class ModelControllerImplUnitTestCase {
 
             context.getResult().set(current);
 
-            context.completeStep();
+            if (useNonRecursive) {
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            } else {
+                context.completeStep();
+            }
         }
     }
 
@@ -570,7 +693,11 @@ public class ModelControllerImplUnitTestCase {
 
             context.getFailureDescription().set("this request is bad");
 
-            context.completeStep();
+            if (useNonRecursive) {
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            } else {
+                context.completeStep();
+            }
         }
     }
 
@@ -612,13 +739,25 @@ public class ModelControllerImplUnitTestCase {
                 public void execute(OperationContext context, ModelNode operation) {
                     toggleRuntimeState(state);
                     context.getFailureDescription().set("handleFailed");
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                    if (useNonRecursive) {
+                        context.completeStep(new OperationContext.RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                toggleRuntimeState(state);
+                            }
+                        });
+                    }
+                    else if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         toggleRuntimeState(state);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
 
-            context.completeStep();
+            if (useNonRecursive) {
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            } else {
+                context.completeStep();
+            }
         }
     }
 
@@ -649,7 +788,11 @@ public class ModelControllerImplUnitTestCase {
                 }
             }, OperationContext.Stage.RUNTIME);
 
-            context.completeStep();
+            if (useNonRecursive) {
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            } else {
+                context.completeStep();
+            }
         }
     }
 
@@ -673,7 +816,11 @@ public class ModelControllerImplUnitTestCase {
                 }
             }, OperationContext.Stage.RUNTIME);
 
-            context.completeStep();
+            if (useNonRecursive) {
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            } else {
+                context.completeStep();
+            }
         }
     }
 
@@ -689,22 +836,33 @@ public class ModelControllerImplUnitTestCase {
             context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(OperationContext context, ModelNode operation) {
+                public void execute(final OperationContext context, ModelNode operation) {
 
                     context.getResult().set(current);
-                    ServiceName svcName =  ServiceName.JBOSS.append("good-service");
+                    final ServiceName svcName =  ServiceName.JBOSS.append("good-service");
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     context.getServiceTarget().addService(svcName, Service.NULL)
                             .addListener(verificationHandler)
                             .install();
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                    if (useNonRecursive) {
+                        context.completeStep(new OperationContext.RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                context.removeService(svcName);
+                            }
+                        });
+                    } else if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(svcName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
 
-            context.completeStep();
+            if (useNonRecursive) {
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            } else {
+                context.completeStep();
+            }
         }
     }
 
@@ -720,24 +878,35 @@ public class ModelControllerImplUnitTestCase {
             context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(OperationContext context, ModelNode operation) {
+                public void execute(final OperationContext context, ModelNode operation) {
 
                     context.getResult().set(current);
 
-                    ServiceName svcName = ServiceName.JBOSS.append("missing-service");
+                    final ServiceName svcName = ServiceName.JBOSS.append("missing-service");
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     context.getServiceTarget().addService(svcName, Service.NULL)
                             .addDependency(ServiceName.JBOSS.append("missing"))
                             .addListener(verificationHandler)
                             .install();
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                    if (useNonRecursive) {
+                        context.completeStep(new OperationContext.RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                context.removeService(svcName);
+                            }
+                        });
+                    } else if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(svcName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
 
-            context.completeStep();
+            if (useNonRecursive) {
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            } else {
+                context.completeStep();
+            }
         }
     }
 
@@ -753,7 +922,7 @@ public class ModelControllerImplUnitTestCase {
             context.addStep(new OperationStepHandler() {
 
                 @Override
-                public void execute(OperationContext context, ModelNode operation) {
+                public void execute(final OperationContext context, ModelNode operation) {
 
                     context.getResult().set(current);
 
@@ -775,25 +944,36 @@ public class ModelControllerImplUnitTestCase {
                         }
 
                     };
-                    ServiceName svcName = ServiceName.JBOSS.append("bad-service");
+                    final ServiceName svcName = ServiceName.JBOSS.append("bad-service");
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     context.getServiceTarget().addService(svcName, bad)
                             .addListener(verificationHandler)
                             .install();
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+                    if (useNonRecursive) {
+                        context.completeStep(new OperationContext.RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                context.removeService(svcName);
+                            }
+                        });
+                    } else if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         context.removeService(svcName);
                     }
                 }
             }, OperationContext.Stage.RUNTIME);
 
-            context.completeStep();
+            if (useNonRecursive) {
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            } else {
+                context.completeStep();
+            }
         }
     }
 
     public static class ReloadRequiredHandler implements OperationStepHandler {
         @Override
-        public void execute(OperationContext context, ModelNode operation) {
+        public void execute(final OperationContext context, ModelNode operation) {
 
             String name = operation.require(NAME).asString();
             ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -805,7 +985,14 @@ public class ModelControllerImplUnitTestCase {
 
             context.runtimeUpdateSkipped();
             context.reloadRequired();
-            if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+            if (useNonRecursive) {
+                context.completeStep(new OperationContext.RollbackHandler() {
+                    @Override
+                    public void handleRollback(OperationContext context, ModelNode operation) {
+                        context.revertReloadRequired();
+                    }
+                });
+            } else if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                 context.revertReloadRequired();
             }
         }
@@ -813,7 +1000,7 @@ public class ModelControllerImplUnitTestCase {
 
     public static class RestartRequiredHandler implements OperationStepHandler {
         @Override
-        public void execute(OperationContext context, ModelNode operation) {
+        public void execute(final OperationContext context, ModelNode operation) {
 
             String name = operation.require(NAME).asString();
             ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -825,7 +1012,14 @@ public class ModelControllerImplUnitTestCase {
 
             context.runtimeUpdateSkipped();
             context.restartRequired();
-            if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
+            if (useNonRecursive) {
+                context.completeStep(new OperationContext.RollbackHandler() {
+                    @Override
+                    public void handleRollback(OperationContext context, ModelNode operation) {
+                        context.revertRestartRequired();
+                    }
+                });
+            } else if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                 context.revertRestartRequired();
             }
         }

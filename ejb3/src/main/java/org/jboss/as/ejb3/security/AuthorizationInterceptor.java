@@ -22,17 +22,18 @@
 
 package org.jboss.as.ejb3.security;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+
+import javax.ejb.EJBAccessException;
+
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentViewInstance;
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
-
-import javax.ejb.EJBAccessException;
-import java.lang.reflect.Method;
-import java.util.Collection;
 
 /**
  * EJB authorization interceptor responsible for handling invocation on EJB methods and doing the necessary authorization
@@ -84,8 +85,8 @@ public class AuthorizationInterceptor implements Interceptor {
             throw new IllegalStateException("Unexpected component type: " + component.getClass() + " expected: " + EJBComponent.class);
         }
         final Method invokedMethod = context.getMethod();
-        final ComponentViewInstance componentViewInstance = context.getPrivateData(ComponentViewInstance.class);
-        final String viewClassOfInvokedMethod = componentViewInstance.getViewClass().getName();
+        final ComponentView componentView = context.getPrivateData(ComponentView.class);
+        final String viewClassOfInvokedMethod = componentView.getViewClass().getName();
         // shouldn't really happen if the interceptor was setup correctly. But let's be safe and do a check
         if (!this.viewClassName.equals(viewClassOfInvokedMethod) || !this.viewMethod.equals(invokedMethod)) {
             throw new IllegalStateException(this.getClass().getName() + " cannot handle method "

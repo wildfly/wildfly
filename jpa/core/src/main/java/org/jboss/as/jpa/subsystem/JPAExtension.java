@@ -95,7 +95,9 @@ public class JPAExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(DESCRIPTION);
-        nodeRegistration.registerOperationHandler(JPASubSystemAdd.OPERATION_NAME, JPASubSystemAdd.INSTANCE, JPASubSystemAdd.INSTANCE, false);
+        PersistenceUnitRegistryImpl persistenceUnitRegistry = new PersistenceUnitRegistryImpl();
+        JPASubSystemAdd subsystemAdd = new JPASubSystemAdd(persistenceUnitRegistry);
+        nodeRegistration.registerOperationHandler(JPASubSystemAdd.OPERATION_NAME, subsystemAdd, subsystemAdd, false);
         nodeRegistration.registerOperationHandler(JPASubSystemRemove.OPERATION_NAME, JPASubSystemRemove.INSTANCE, JPASubSystemRemove.INSTANCE, false);
         nodeRegistration.registerOperationHandler(DESCRIBE, JPADescribeHandler.INSTANCE, JPADescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         nodeRegistration.registerReadWriteAttribute(CommonAttributes.DEFAULT_DATASOURCE, null, JPADefaultDatasourceWriteHandler.INSTANCE, Storage.CONFIGURATION);
@@ -130,7 +132,7 @@ public class JPAExtension implements Extension {
                 };
                 final ManagementResourceRegistration jpaSubsystemDeployments = registration.registerDeploymentModel(JPA_SUBSYSTEM);
 
-                managementAdaptor.register(jpaSubsystemDeployments);
+                managementAdaptor.register(jpaSubsystemDeployments, persistenceUnitRegistry);
             }
         } catch (ModuleLoadException e) {
             JPA_LOGGER.errorPreloadingDefaultProviderAdaptor(e);

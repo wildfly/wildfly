@@ -22,6 +22,12 @@
 
 package org.jboss.as.ejb3.component.stateless;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
@@ -35,12 +41,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
-
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans
@@ -85,6 +85,8 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
         this.timeoutMethod = slsbComponentCreateService.getTimeoutMethod();
     }
+
+
 
 
     @Override

@@ -22,6 +22,11 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.server.deployment.Attachments.MODULE;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
+import java.lang.reflect.Field;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -31,11 +36,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.value.Value;
-
-import java.lang.reflect.Field;
-
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -53,7 +53,7 @@ public final class FieldInjectionTarget extends InjectionTarget {
         super(className, name, fieldType);
     }
 
-    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
         final Module module = deploymentUnit.getAttachment(MODULE);
@@ -69,6 +69,6 @@ public final class FieldInjectionTarget extends InjectionTarget {
         if (field == null) {
             throw new DeploymentUnitProcessingException("No matching field found for '" + name + "'");
         }
-        return new ManagedReferenceFieldInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, field);
+        return new ManagedReferenceFieldInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, field, optional);
     }
 }

@@ -25,10 +25,12 @@ package org.jboss.as.domain.controller.descriptions;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
@@ -81,6 +83,12 @@ public class ServerGroupDescription {
         root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, TYPE).set(ModelType.INT);
         root.get(ATTRIBUTES, SOCKET_BINDING_PORT_OFFSET, REQUIRED).set(false);
 
+        root.get(ATTRIBUTES, MANAGEMENT_SUBSYSTEM_ENDPOINT, DESCRIPTION).set(bundle.getString("server-group.management-subsystem-endpoint"));
+        root.get(ATTRIBUTES, MANAGEMENT_SUBSYSTEM_ENDPOINT, TYPE).set(ModelType.BOOLEAN);
+        root.get(ATTRIBUTES, MANAGEMENT_SUBSYSTEM_ENDPOINT, REQUIRED).set(false);
+        root.get(ATTRIBUTES, MANAGEMENT_SUBSYSTEM_ENDPOINT, DEFAULT).set(false);
+
+
         root.get(OPERATIONS).setEmptyObject();
 
         root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("server-group.deployment"));
@@ -123,6 +131,11 @@ public class ServerGroupDescription {
         root.get(REQUEST_PROPERTIES, JVM, DESCRIPTION).set(bundle.getString("server-group.add.jvm"));
         root.get(REQUEST_PROPERTIES, JVM, TYPE).set(ModelType.STRING);
         root.get(REQUEST_PROPERTIES, JVM, REQUIRED).set(false);
+
+        root.get(REQUEST_PROPERTIES, MANAGEMENT_SUBSYSTEM_ENDPOINT, DESCRIPTION).set(bundle.getString("server-group.management-subsystem-endpoint"));
+        root.get(REQUEST_PROPERTIES, MANAGEMENT_SUBSYSTEM_ENDPOINT, TYPE).set(ModelType.BOOLEAN);
+        root.get(REQUEST_PROPERTIES, MANAGEMENT_SUBSYSTEM_ENDPOINT, REQUIRED).set(false);
+        root.get(REQUEST_PROPERTIES, MANAGEMENT_SUBSYSTEM_ENDPOINT, DEFAULT).set(false);
 
         return root;
     }

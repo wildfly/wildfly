@@ -22,6 +22,13 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.server.deployment.Attachments.MODULE;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
@@ -32,8 +39,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
-import org.jboss.as.ee.component.EEApplicationDescription;
-import org.jboss.as.ee.component.EEModuleClassConfiguration;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.InjectionSource;
@@ -42,10 +48,10 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -58,12 +64,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
-import java.util.Set;
-
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -91,8 +91,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             try {
                 logger.tracef("Installing component %s", configuration.getComponentClass().getName());
                 deployComponent(phaseContext, configuration, dependencies, bindingDependencyService);
-            } catch (RuntimeException e) {
-                throw new DeploymentUnitProcessingException("Failed to install component " + configuration, e);
+            } catch (Exception e) {
+                throw new DeploymentUnitProcessingException("Failed to install component " + configuration.getComponentName(), e);
             }
         }
     }
@@ -105,8 +105,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final String applicationName = configuration.getApplicationName();
         final String moduleName = configuration.getModuleName();
         final String componentName = configuration.getComponentName();
-        final ServiceName baseName = configuration.getComponentDescription().getServiceName();
-        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
+        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
         //create additional injectors
 
@@ -141,10 +141,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         //set up the naming context if nessesary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             final NamingStoreService contextService = new NamingStoreService();
-            contextServiceName = ContextNames.contextServiceNameOfComponent(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName());
+            contextServiceName = configuration.getComponentDescription().getContextServiceName();
             serviceTarget.addService(contextServiceName, contextService).install();
         } else {
-            contextServiceName = ContextNames.contextServiceNameOfModule(configuration.getApplicationName(), configuration.getModuleName());
+            contextServiceName = configuration.getComponentDescription().getContextServiceName();
         }
 
         final InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
@@ -180,26 +180,35 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             // The bindings for the component
-            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies);
+            final Set<ServiceName> bound = new HashSet<ServiceName>();
+            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies, bound);
 
 
             // The bindings for the component class
-            new ClassDescriptionTraversal(configuration.getModuleClassConfiguration(), applicationDescription) {
+            new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
                 @Override
-                protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
+                protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                    if (classDescription != null) {
+                        processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
+                    }
                 }
             }.run();
 
 
             for (InterceptorDescription interceptor : configuration.getComponentDescription().getAllInterceptors()) {
-                final EEModuleClassConfiguration interceptorClass = applicationDescription.getClassConfiguration(interceptor.getInterceptorClassName());
-
+                final Class<?> interceptorClass;
+                try {
+                    interceptorClass = module.getClassLoader().loadClass(interceptor.getInterceptorClassName());
+                } catch (ClassNotFoundException e) {
+                    throw new DeploymentUnitProcessingException("Could not load interceptor class " + interceptor.getInterceptorClassName() + " on component " + configuration.getComponentClass(), e);
+                }
                 if (interceptorClass != null) {
-                    new ClassDescriptionTraversal(interceptorClass, applicationDescription) {
+                    new ClassDescriptionTraversal(interceptorClass, applicationClasses) {
                         @Override
-                        protected void handle(final EEModuleClassConfiguration classConfiguration, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classConfiguration.getBindingConfigurations(), dependencies);
+                        protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
+                            if (classDescription != null) {
+                                processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
+                            }
                         }
                     }.run();
                 }
@@ -210,14 +219,17 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         startBuilder.install();
     }
 
-    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
+    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final Set<ServiceName> dependencies, final Set<ServiceName> bound) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         for (BindingConfiguration bindingConfiguration : bindings) {
             if (bindingConfiguration.getName().startsWith("java:comp") || !bindingConfiguration.getName().startsWith("java:")) {
                 final String bindingName = bindingConfiguration.getName().startsWith("java:comp") ? bindingConfiguration.getName() : "java:comp/env/" + bindingConfiguration.getName();
                 final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(configuration.getApplicationName(), configuration.getModuleName(), configuration.getComponentName(), configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE, bindingName);
-
+                if(bound.contains(bindInfo.getBinderServiceName())) {
+                    continue;
+                }
+                bound.add(bindInfo.getBinderServiceName());
                 try {
                     final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
                     dependencies.add(bindInfo.getBinderServiceName());

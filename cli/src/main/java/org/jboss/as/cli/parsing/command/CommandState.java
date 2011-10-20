@@ -43,9 +43,9 @@ public class CommandState extends DefaultParsingState {
         this(AddressCommandSeparatorState.INSTANCE, ArgumentListState.INSTANCE, OutputTargetState.INSTANCE);
     }
 
-    CommandState(AddressCommandSeparatorState cmdName, ArgumentListState argList, OutputTargetState outputRedirect) {
+    CommandState(AddressCommandSeparatorState addrCmdSeparator, ArgumentListState argList, OutputTargetState outputRedirect) {
         super(ID);
-        setEnterHandler(new EnterStateCharacterHandler(cmdName));
+        setEnterHandler(new EnterStateCharacterHandler(addrCmdSeparator));
         setDefaultHandler(new EnterStateCharacterHandler(argList));
         this.setReturnHandler(new CharacterHandler() {
             @Override

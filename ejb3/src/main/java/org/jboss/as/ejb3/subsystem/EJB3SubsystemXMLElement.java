@@ -34,24 +34,28 @@ public enum EJB3SubsystemXMLElement {
     // must be first
     UNKNOWN(null),
 
+    ASYNC("async"),
+
     BEAN_INSTANCE_POOLS("bean-instance-pools"),
     BEAN_INSTANCE_POOL_REF("bean-instance-pool-ref"),
 
     DATA_STORE("data-store"),
-    DEFAULT_STATEFUL_ACCESS_TIMEOUT("default-stateful-access-timeout"),
-    DEFAULT_SINGLETON_ACCESS_TIMEOUT("default-singleton-access-timeout"),
     MDB("mdb"),
 
     POOLS("pools"),
 
+    REMOTE("remote"),
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
     RESOURCE_ADAPTER_REF("resource-adapter-ref"),
 
     SESSION_BEAN("session-bean"),
+    SINGLETON("singleton"),
+    STATEFUL("stateful"),
     STATELESS("stateless"),
     STRICT_MAX_POOL("strict-max-pool"),
 
     THREAD_POOL("thread-pool"),
+    THREAD_POOLS("thread-pools"),
     TIMER_SERVICE("timer-service"),
 
     ;

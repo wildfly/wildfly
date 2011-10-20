@@ -80,7 +80,7 @@ public class EJBViewDescription extends ViewDescription {
 
     @Override
     protected InjectionSource createInjectionSource(final ServiceName serviceName) {
-        if(methodIntf != MethodIntf.REMOTE) {
+        if(methodIntf != MethodIntf.REMOTE && methodIntf != MethodIntf.HOME) {
             return super.createInjectionSource(serviceName);
         } else {
             final EJBComponentDescription componentDescription = getComponentDescription();

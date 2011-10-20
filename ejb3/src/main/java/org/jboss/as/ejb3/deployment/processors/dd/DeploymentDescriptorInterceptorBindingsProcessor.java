@@ -21,6 +21,15 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -40,15 +49,6 @@ import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.modules.Module;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Processor that handles interceptor bindings that are defined in the deployment descriptor.
@@ -143,7 +143,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             final List<InterceptorBindingMetaData> classLevelBindings = new ArrayList<InterceptorBindingMetaData>();
             //we only want to exclude default and class level interceptors if every binding
             //has the exclude element.
-            Boolean classLevelExcludeDefaultInterceptors = null;
+            boolean classLevelExcludeDefaultInterceptors = false;
             Map<Method, Boolean> methodLevelExcludeDefaultInterceptors = new HashMap<Method, Boolean>();
             Map<Method, Boolean> methodLevelExcludeClassInterceptors = new HashMap<Method, Boolean>();
 
@@ -158,10 +158,8 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                     if (binding.getMethod() == null) {
                         classLevelBindings.add(binding);
                         //if even one binding does not say exclude default then we do not exclude
-                        if (binding.isExcludeDefaultInterceptors() && classLevelExcludeDefaultInterceptors == null) {
+                        if (binding.isExcludeDefaultInterceptors()) {
                             classLevelExcludeDefaultInterceptors = true;
-                        } else if (!binding.isExcludeClassInterceptors()) {
-                            classLevelExcludeDefaultInterceptors = false;
                         }
                         if (binding.isTotalOrdering()) {
                             if (classLevelAbsoluteOrder) {
@@ -236,8 +234,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             //build the list of default interceptors
             componentDescription.setDefaultInterceptors(defaultInterceptors);
 
-            boolean classLevelExclude = classLevelExcludeDefaultInterceptors == null ? false : classLevelExcludeDefaultInterceptors;
-            if(classLevelExclude) {
+            if(classLevelExcludeDefaultInterceptors) {
                 componentDescription.setExcludeDefaultInterceptors(true);
             }
 
@@ -277,7 +274,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                 Boolean excludeDefaultInterceptors = methodLevelExcludeDefaultInterceptors.get(method);
                 excludeDefaultInterceptors = excludeDefaultInterceptors == null ? false : excludeDefaultInterceptors;
                 if (!excludeDefaultInterceptors) {
-                    excludeDefaultInterceptors = componentDescription.isExcludeDefaultInterceptors(methodIdentifier);
+                    excludeDefaultInterceptors = componentDescription.isExcludeDefaultInterceptors() || componentDescription.isExcludeDefaultInterceptors(methodIdentifier);
                 }
 
                 Boolean excludeClassInterceptors = methodLevelExcludeClassInterceptors.get(method);

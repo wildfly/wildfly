@@ -33,7 +33,6 @@ import org.jboss.threads.JBossExecutors;
 import org.jboss.threads.QueuelessExecutor;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -41,12 +40,11 @@ import java.util.concurrent.ThreadFactory;
  *
  * @author John E. Bailey
  */
-public class QueuelessThreadPoolService implements Service<ExecutorService> {
+public class QueuelessThreadPoolService implements Service<ManagedQueuelessExecutorService> {
     private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
     private final InjectedValue<Executor> handoffExecutorValue = new InjectedValue<Executor>();
 
-    private QueuelessExecutor executor;
-    private ExecutorService value;
+    private ManagedQueuelessExecutorService executor;
 
     private int maxThreads;
     private boolean blocking;
@@ -61,30 +59,29 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
     public synchronized void start(final StartContext context) throws StartException {
         final TimeSpec keepAliveSpec = keepAlive;
         long keepAlive = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getUnit().toMillis(keepAliveSpec.getDuration());
-        executor = new QueuelessExecutor(threadFactoryValue.getValue(), JBossExecutors.directExecutor(), handoffExecutorValue.getOptionalValue(), keepAlive);
-        executor.setMaxThreads(maxThreads);
-        executor.setBlocking(blocking);
-        value = JBossExecutors.protectedExecutorService(executor);
+        final QueuelessExecutor queuelessExecutor = new QueuelessExecutor(threadFactoryValue.getValue(), JBossExecutors.directExecutor(), handoffExecutorValue.getOptionalValue(), keepAlive);
+        queuelessExecutor.setMaxThreads(maxThreads);
+        queuelessExecutor.setBlocking(blocking);
+        executor = new ManagedQueuelessExecutorService(queuelessExecutor);
     }
 
     public synchronized void stop(final StopContext context) {
-        final QueuelessExecutor executor = this.executor;
+        final ManagedQueuelessExecutorService executor = this.executor;
         if (executor == null) {
             throw new IllegalStateException();
         }
         context.asynchronous();
-        executor.shutdown();
+        executor.internalShutdown();
         executor.addShutdownListener(new EventListener<StopContext>() {
             public void handleEvent(final StopContext stopContext) {
                 stopContext.complete();
             }
         }, context);
         this.executor = null;
-        value = null;
     }
 
-    public synchronized ExecutorService getValue() throws IllegalStateException {
-        final ExecutorService value = this.value;
+    public synchronized ManagedQueuelessExecutorService getValue() throws IllegalStateException {
+        final ManagedQueuelessExecutorService value = this.executor;
         if (value == null) {
             throw new IllegalStateException();
         }
@@ -101,7 +98,7 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
 
     public synchronized void setMaxThreads(int maxThreads) {
         this.maxThreads = maxThreads;
-        final QueuelessExecutor executor = this.executor;
+        final ManagedQueuelessExecutorService executor = this.executor;
         if(executor != null) {
             executor.setMaxThreads(maxThreads);
         }
@@ -109,7 +106,7 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
 
     public synchronized void setBlocking(boolean blocking) {
         this.blocking = blocking;
-        final QueuelessExecutor executor = this.executor;
+        final ManagedQueuelessExecutorService executor = this.executor;
         if(executor != null) {
             executor.setBlocking(blocking);
         }
@@ -117,22 +114,34 @@ public class QueuelessThreadPoolService implements Service<ExecutorService> {
 
     public synchronized void setKeepAlive(TimeSpec keepAliveSpec) {
         keepAlive = keepAliveSpec;
-        final QueuelessExecutor executor = this.executor;
+        final ManagedQueuelessExecutorService executor = this.executor;
         if(executor != null) {
             long keepAlive = keepAliveSpec == null ? Long.MAX_VALUE : keepAliveSpec.getDuration();
-            executor.setKeepAliveTime(keepAlive);
+            executor.setKeepAlive(keepAlive);
         }
     }
 
     public int getCurrentThreadCount() {
+        final ManagedQueuelessExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
         return executor.getCurrentThreadCount();
     }
 
     public int getLargestThreadCount() {
+        final ManagedQueuelessExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
         return executor.getLargestThreadCount();
     }
 
     public int getRejectedCount() {
+        final ManagedQueuelessExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
         return executor.getRejectedCount();
     }
 }

@@ -207,9 +207,9 @@ public class WriteAttributeHandlers {
         }
     }
 
-    public static class AttributeDefinitionValidatatingHandler extends WriteAttributeOperationHandler {
+    public static class AttributeDefinitionValidatingHandler extends WriteAttributeOperationHandler {
 
-        public AttributeDefinitionValidatatingHandler(AttributeDefinition definition) {
+        public AttributeDefinitionValidatingHandler(AttributeDefinition definition) {
             super(definition.getValidator());
         }
     }

@@ -28,9 +28,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.threads.JBossExecutors;
 
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 
@@ -39,12 +37,11 @@ import java.util.concurrent.ThreadFactory;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ScheduledThreadPoolService implements Service<ScheduledExecutorService> {
+public final class ScheduledThreadPoolService implements Service<ManagedScheduledExecutorService> {
 
     private final InjectedValue<ThreadFactory> threadFactoryValue = new InjectedValue<ThreadFactory>();
 
-    private ScheduledThreadPoolExecutor executor;
-    private ScheduledExecutorService value;
+    private ManagedScheduledExecutorService executor;
     private StopContext context;
 
     private final int maxThreads;
@@ -56,27 +53,26 @@ public final class ScheduledThreadPoolService implements Service<ScheduledExecut
     }
 
     public synchronized void start(final StartContext context) throws StartException {
-        executor = new ExecutorImpl(0, threadFactoryValue.getValue());
-        executor.setCorePoolSize(maxThreads);
+        ScheduledThreadPoolExecutor scheduledExecutor = new ExecutorImpl(0, threadFactoryValue.getValue());
+        scheduledExecutor.setCorePoolSize(maxThreads);
         if(keepAlive != null)
-            executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
-        value = JBossExecutors.protectedScheduledExecutorService(executor);
+            scheduledExecutor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
+        executor = new ManagedScheduledExecutorService(scheduledExecutor);
     }
 
     public synchronized void stop(final StopContext context) {
-        final ScheduledThreadPoolExecutor executor = this.executor;
+        final ManagedScheduledExecutorService executor = this.executor;
         if (executor == null) {
             throw new IllegalStateException();
         }
         this.context = context;
         context.asynchronous();
-        executor.shutdown();
+        executor.internalShutdown();
         this.executor = null;
-        value = null;
     }
 
-    public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
-        final ScheduledExecutorService value = this.value;
+    public synchronized ManagedScheduledExecutorService getValue() throws IllegalStateException {
+        final ManagedScheduledExecutorService value = this.executor;
         if (value == null) {
             throw new IllegalStateException();
         }
@@ -88,18 +84,34 @@ public final class ScheduledThreadPoolService implements Service<ScheduledExecut
     }
 
     public int getActiveCount() {
+        final ManagedScheduledExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
         return executor.getActiveCount();
     }
 
     public long getCompletedTaskCount() {
+        final ManagedScheduledExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
         return executor.getCompletedTaskCount();
     }
 
     public int getLargestPoolSize() {
+        final ManagedScheduledExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
         return executor.getLargestPoolSize();
     }
 
     public long getTaskCount() {
+        final ManagedScheduledExecutorService executor = this.executor;
+        if(executor == null) {
+            throw new IllegalStateException("The exector service hasn't been initialized.");
+        }
         return executor.getTaskCount();
     }
 

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ee.component;
 
-import org.jboss.metadata.javaee.spec.Environment;
+import org.jboss.metadata.javaee.spec.RemoteEnvironment;
 
 /**
  * The environment as read from a deployment descriptor
@@ -32,9 +32,9 @@ public class DeploymentDescriptorEnvironment {
 
     private final String defaultContext;
 
-    private final Environment environment;
+    private final RemoteEnvironment environment;
 
-    public DeploymentDescriptorEnvironment(String defaultContext, Environment environment) {
+    public DeploymentDescriptorEnvironment(String defaultContext, RemoteEnvironment environment) {
         this.defaultContext = defaultContext;
         this.environment = environment;
     }
@@ -43,7 +43,7 @@ public class DeploymentDescriptorEnvironment {
         return defaultContext;
     }
 
-    public Environment getEnvironment() {
+    public RemoteEnvironment getEnvironment() {
         return environment;
     }
 }

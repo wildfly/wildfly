@@ -43,6 +43,7 @@ import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -57,12 +58,9 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
     private static final EnumSet<AttributeAccess.Flag> RESTART_NONE = EnumSet.of(AttributeAccess.Flag.RESTART_NONE);
     private static final EnumSet<AttributeAccess.Flag> RESTART_ALL = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
     private final Map<String, AttributeDefinition> runtimeAttributes = new HashMap<String, AttributeDefinition>();
     private ConnectionFactoryWriteAttributeHandler() {
-        for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
-            attributes.put(attr.getName(), attr);
-        }
+        super(JMSServices.CONNECTION_FACTORY_ATTRS);
         for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_WRITE_ATTRS) {
             runtimeAttributes.put(attr.getName(), attr);
         }
@@ -74,18 +72,6 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
             EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
             registry.registerReadWriteAttribute(attrName, null, this, flags);
         }
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateResolvedParameter(name, value);
     }
 
     @Override
@@ -101,7 +87,8 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
         }
         else {
             ServiceRegistry registry = context.getServiceRegistry(true);
-            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService == null) {
                 // The service isn't installed, so the work done in the Stage.MODEL part is all there is to it
                 return false;
@@ -129,7 +116,8 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
 
         if (runtimeAttributes.containsKey(attributeName)) {
             ServiceRegistry registry = context.getServiceRegistry(true);
-            ServiceController<?> hqService = registry.getService(MessagingServices.JBOSS_MESSAGING);
+            final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+            ServiceController<?> hqService = registry.getService(hqServiceName);
             if (hqService != null && hqService.getState() == ServiceController.State.UP) {
                 // Create and execute a write-attribute operation that uses the valueToRestore
                 ModelNode revertOp = operation.clone();

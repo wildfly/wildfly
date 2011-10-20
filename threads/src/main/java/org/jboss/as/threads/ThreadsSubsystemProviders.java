@@ -173,11 +173,11 @@ public class ThreadsSubsystemProviders {
             operation.get(ATTRIBUTES, CORE_THREADS, REQUIRED).set(false);
             operation.get(ATTRIBUTES, CORE_THREADS, VALUE_TYPE, COUNT, DESCRIPTION).set(
                     bundle.getString("threadpool.bounded.corethreads.count"));
-            operation.get(ATTRIBUTES, CORE_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.BIG_DECIMAL);
+            operation.get(ATTRIBUTES, CORE_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.INT);
             operation.get(ATTRIBUTES, CORE_THREADS, VALUE_TYPE, COUNT, REQUIRED).set(true);
             operation.get(ATTRIBUTES, CORE_THREADS, VALUE_TYPE, PER_CPU, DESCRIPTION).set(
                     bundle.getString("threadpool.bounded.corethreads.percpu"));
-            operation.get(ATTRIBUTES, CORE_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.BIG_DECIMAL);
+            operation.get(ATTRIBUTES, CORE_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.INT);
             operation.get(ATTRIBUTES, CORE_THREADS, VALUE_TYPE, PER_CPU, REQUIRED).set(true);
 
             operation.get(ATTRIBUTES, QUEUE_LENGTH, DESCRIPTION).set(bundle.getString("threadpool.bounded.queuelength"));
@@ -185,11 +185,11 @@ public class ThreadsSubsystemProviders {
             operation.get(ATTRIBUTES, QUEUE_LENGTH, REQUIRED).set(true);
             operation.get(ATTRIBUTES, QUEUE_LENGTH, VALUE_TYPE, COUNT, DESCRIPTION).set(
                     bundle.getString("threadpool.bounded.queuelength.count"));
-            operation.get(ATTRIBUTES, QUEUE_LENGTH, VALUE_TYPE, COUNT, TYPE).set(ModelType.BIG_DECIMAL);
+            operation.get(ATTRIBUTES, QUEUE_LENGTH, VALUE_TYPE, COUNT, TYPE).set(ModelType.INT);
             operation.get(ATTRIBUTES, QUEUE_LENGTH, VALUE_TYPE, COUNT, REQUIRED).set(true);
             operation.get(ATTRIBUTES, QUEUE_LENGTH, VALUE_TYPE, PER_CPU, DESCRIPTION).set(
                     bundle.getString("threadpool.bounded.queuelength.percpu"));
-            operation.get(ATTRIBUTES, QUEUE_LENGTH, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.BIG_DECIMAL);
+            operation.get(ATTRIBUTES, QUEUE_LENGTH, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.INT);
             operation.get(ATTRIBUTES, QUEUE_LENGTH, VALUE_TYPE, PER_CPU, REQUIRED).set(true);
 
             return operation;
@@ -257,11 +257,11 @@ public class ThreadsSubsystemProviders {
         node.get(ATTRIBUTES, MAX_THREADS, REQUIRED).set(true);
         node.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, COUNT, DESCRIPTION).set(
                 bundle.getString("threadpool.common.maxthreads.count"));
-        node.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.BIG_DECIMAL);
+        node.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.INT);
         node.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, COUNT, REQUIRED).set(true);
         node.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, PER_CPU, DESCRIPTION).set(
                 bundle.getString("threadpool.common.maxthreads.percpu"));
-        node.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.BIG_DECIMAL);
+        node.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.INT);
         node.get(ATTRIBUTES, MAX_THREADS, VALUE_TYPE, PER_CPU, REQUIRED).set(true);
 
         node.get(ATTRIBUTES, KEEPALIVE_TIME, DESCRIPTION).set(bundle.getString("threadpool.common.keepalive"));
@@ -367,11 +367,11 @@ public class ThreadsSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, CORE_THREADS, REQUIRED).set(false);
             operation.get(REQUEST_PROPERTIES, CORE_THREADS, VALUE_TYPE, COUNT, DESCRIPTION).set(
                     bundle.getString("threadpool.bounded.corethreads.count"));
-            operation.get(REQUEST_PROPERTIES, CORE_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.BIG_DECIMAL);
+            operation.get(REQUEST_PROPERTIES, CORE_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.INT);
             operation.get(REQUEST_PROPERTIES, CORE_THREADS, VALUE_TYPE, COUNT, REQUIRED).set(true);
             operation.get(REQUEST_PROPERTIES, CORE_THREADS, VALUE_TYPE, PER_CPU, DESCRIPTION).set(
                     bundle.getString("threadpool.bounded.corethreads.percpu"));
-            operation.get(REQUEST_PROPERTIES, CORE_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.BIG_DECIMAL);
+            operation.get(REQUEST_PROPERTIES, CORE_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.INT);
             operation.get(REQUEST_PROPERTIES, CORE_THREADS, VALUE_TYPE, PER_CPU, REQUIRED).set(true);
 
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, DESCRIPTION)
@@ -380,11 +380,11 @@ public class ThreadsSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, REQUIRED).set(true);
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, VALUE_TYPE, COUNT, DESCRIPTION).set(
                     bundle.getString("threadpool.bounded.queuelength.count"));
-            operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, VALUE_TYPE, COUNT, TYPE).set(ModelType.BIG_DECIMAL);
+            operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, VALUE_TYPE, COUNT, TYPE).set(ModelType.INT);
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, VALUE_TYPE, COUNT, REQUIRED).set(true);
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, VALUE_TYPE, PER_CPU, DESCRIPTION).set(
                     bundle.getString("threadpool.bounded.queuelength.percpu"));
-            operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.BIG_DECIMAL);
+            operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.INT);
             operation.get(REQUEST_PROPERTIES, QUEUE_LENGTH, VALUE_TYPE, PER_CPU, REQUIRED).set(true);
 
             return operation;
@@ -450,11 +450,11 @@ public class ThreadsSubsystemProviders {
         operation.get(REQUEST_PROPERTIES, MAX_THREADS, REQUIRED).set(true);
         operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, COUNT, DESCRIPTION).set(
                 bundle.getString("threadpool.common.maxthreads.count"));
-        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.BIG_DECIMAL);
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, COUNT, TYPE).set(ModelType.INT);
         operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, COUNT, REQUIRED).set(true);
         operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, PER_CPU, DESCRIPTION).set(
                 bundle.getString("threadpool.common.maxthreads.percpu"));
-        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.BIG_DECIMAL);
+        operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, PER_CPU, TYPE).set(ModelType.INT);
         operation.get(REQUEST_PROPERTIES, MAX_THREADS, VALUE_TYPE, PER_CPU, REQUIRED).set(true);
 
         operation.get(REQUEST_PROPERTIES, KEEPALIVE_TIME, DESCRIPTION).set(bundle.getString("threadpool.common.keepalive"));

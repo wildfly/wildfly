@@ -545,12 +545,14 @@
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
-                The directory configuration. All paths defined by the messaging subsystems have to relative
-                to the domain path configuration.
+                A directory location configuration.
 
-                The "relative-to" references a global path configuration in the domain model, with the default
-                to the JBoss Application data directory (jboss.server.data.dir).
-                The "path" the directory relative to the referenced path.
+                The "path" attribute denotes a relative or absolute filesystem pathname where the directory should be
+                located.
+
+                The "relative-to" attribute references a global path configuration in the domain model, defaulting
+                to the JBoss Application Server data directory (jboss.server.data.dir). If the value of the "path" attribute
+                does not specify an absolute pathname, it will treated as relative to this path.
             ]]>
             </xs:documentation>
         </xs:annotation>

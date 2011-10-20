@@ -113,7 +113,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     private String mappedName;
 
 
-
     public enum SessionBeanType {
         STATELESS,
         STATEFUL,
@@ -316,7 +315,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     *
      * @return The identifier of all async methods
      */
     public Set<MethodIdentifier> getAsynchronousMethods() {
@@ -333,7 +331,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     /**
-     *
      * @return The class name of all asynchronous classes
      */
     public Set<String> getAsynchronousClasses() {
@@ -348,7 +345,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public abstract SessionBeanType getSessionBeanType();
 
     @Override
-    protected void setupViewInterceptors(ViewDescription view) {
+    protected void setupViewInterceptors(EJBViewDescription view) {
         // let super do it's job first
         super.setupViewInterceptors(view);
 

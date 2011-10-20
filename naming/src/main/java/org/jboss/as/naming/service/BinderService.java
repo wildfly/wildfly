@@ -133,4 +133,9 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     public Injector<ServiceBasedNamingStore> getNamingStoreInjector() {
         return namingStoreValue;
     }
+
+    @Override
+    public String toString() {
+        return "BinderService[name=" + name + ",source=" + source + "]";
+    }
 }

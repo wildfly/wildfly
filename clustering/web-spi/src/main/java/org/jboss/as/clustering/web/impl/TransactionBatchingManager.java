@@ -26,13 +26,14 @@ import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.clustering.web.BatchingManager;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.clustering.web.impl.ClusteringWebLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.web.impl.ClusteringWebMessages.MESSAGES;
 
 /**
  * @author Paul Ferraro
  */
 public class TransactionBatchingManager implements BatchingManager {
-    private static final Logger log = Logger.getLogger(TransactionBatchingManager.class);
 
     private final TransactionManager tm;
 
@@ -73,17 +74,17 @@ public class TransactionBatchingManager implements BatchingManager {
             if (this.tm.getTransaction().getStatus() != Status.STATUS_MARKED_ROLLBACK) {
                 this.tm.commit();
             } else {
-                log.debug("endBatch(): rolling back batch");
+                ROOT_LOGGER.debug("endBatch(): rolling back batch");
 
                 this.tm.rollback();
             }
         } catch (RollbackException e) {
             // Do nothing here since cache may rollback automatically.
-            log.warn("endBatch(): rolling back transaction with exception", e);
+            ROOT_LOGGER.rollingBackTransaction(e, "endBatch()");
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("endTransaction(): Caught Exception ending batch: ", e);
+            throw MESSAGES.caughtExceptionEndingBatch(e, "endTransaction()");
         }
     }
 }

@@ -59,7 +59,7 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.FRAMEWORK_PROPERTY).asString();
+        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
         String propValue = model.get(ModelConstants.VALUE).asString();
 
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
@@ -70,7 +70,7 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.FRAMEWORK_PROPERTY).asString();
+        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
             subsystemState.setProperty(propName, null);

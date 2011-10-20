@@ -21,6 +21,8 @@ c * JBoss, Home of Professional Open Source.
  */
 package org.jboss.as.ejb3.timerservice.mk2;
 
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
@@ -116,17 +118,23 @@ public class TimerServiceImpl implements TimerService {
      */
     private final Map<TimerHandle, java.util.TimerTask> scheduledTimerFutures = new ConcurrentHashMap<TimerHandle, java.util.TimerTask>();
 
+    private final EJBComponent component;
+
+
     /**
      * Creates a {@link TimerServiceImpl}
      *
-     * @param invoker            The {@link TimedObjectInvoker} responsible for invoking the timeout method
+     *
+     * @param invoker            The {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker} responsible for invoking the timeout method
      * @param timerPersistence   The persistent timer store
      * @param transactionManager Transaction manager responsible for managing the transactional timer service
      * @param executor           Executor service responsible for creating scheduled timer tasks
+     * @param component
      * @throws IllegalArgumentException If either of the passed param is null
      */
     public TimerServiceImpl(final java.util.Timer timer, TimedObjectInvoker invoker, final TimerPersistence timerPersistence, TransactionManager transactionManager,
-                            ExecutorService executor) {
+                            ExecutorService executor, final EJBComponent component) {
+        this.component = component;
         if (invoker == null) {
             throw new IllegalArgumentException("Invoker cannot be null");
         }
@@ -150,6 +158,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createCalendarTimer(ScheduleExpression schedule) throws IllegalArgumentException,
             IllegalStateException, EJBException {
+        handleLifecycleCallback();
         return this.createCalendarTimer(schedule, null);
     }
 
@@ -159,6 +168,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig timerConfig)
             throws IllegalArgumentException, IllegalStateException, EJBException {
+        handleLifecycleCallback();
         Serializable info = timerConfig == null ? null : timerConfig.getInfo();
         boolean persistent = timerConfig == null || timerConfig.isPersistent();
         return this.createCalendarTimer(schedule, info, persistent, null);
@@ -170,6 +180,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig timerConfig)
             throws IllegalArgumentException, IllegalStateException, EJBException {
+        handleLifecycleCallback();
         if (initialExpiration == null) {
             throw new IllegalArgumentException("initialExpiration cannot be null while creating a timer");
         }
@@ -188,6 +199,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createIntervalTimer(long initialDuration, long intervalDuration, TimerConfig timerConfig)
             throws IllegalArgumentException, IllegalStateException, EJBException {
+        handleLifecycleCallback();
         if (initialDuration < 0) {
             throw new IllegalArgumentException("initialDuration cannot be negative while creating interval timer");
         }
@@ -204,6 +216,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createSingleActionTimer(Date expiration, TimerConfig timerConfig) throws IllegalArgumentException,
             IllegalStateException, EJBException {
+        handleLifecycleCallback();
         if (expiration == null) {
             throw new IllegalArgumentException("expiration cannot be null while creating a single action timer");
         }
@@ -220,6 +233,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createSingleActionTimer(long duration, TimerConfig timerConfig) throws IllegalArgumentException,
             IllegalStateException, EJBException {
+        handleLifecycleCallback();
         if (duration < 0)
             throw new IllegalArgumentException("duration cannot be negative while creating single action timer");
 
@@ -233,6 +247,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createTimer(long duration, Serializable info) throws IllegalArgumentException, IllegalStateException,
             EJBException {
+        handleLifecycleCallback();
         if (duration < 0)
             throw new IllegalArgumentException("Duration cannot negative while creating the timer");
 
@@ -245,6 +260,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createTimer(Date expiration, Serializable info) throws IllegalArgumentException, IllegalStateException,
             EJBException {
+        handleLifecycleCallback();
         if (expiration == null) {
             throw new IllegalArgumentException("Expiration date cannot be null while creating a timer");
         }
@@ -260,6 +276,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createTimer(long initialDuration, long intervalDuration, Serializable info)
             throws IllegalArgumentException, IllegalStateException, EJBException {
+        handleLifecycleCallback();
         if (initialDuration < 0) {
             throw new IllegalArgumentException("Initial duration cannot be negative while creating timer");
         }
@@ -276,6 +293,7 @@ public class TimerServiceImpl implements TimerService {
     @Override
     public Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info)
             throws IllegalArgumentException, IllegalStateException, EJBException {
+        handleLifecycleCallback();
         if (initialExpiration == null) {
             throw new IllegalArgumentException("intial expiration date cannot be null while creating a timer");
         }
@@ -305,11 +323,7 @@ public class TimerServiceImpl implements TimerService {
      */
     @Override
     public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
-        if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
-            throw new IllegalStateException(
-                    "getTimers() method invocation is not allowed during lifecycle callback of non-singleton EJBs");
-        }
-
+        handleLifecycleCallback();
         Set<Timer> activeTimers = new HashSet<Timer>();
         // get all active non-persistent timers for this timerservice
         for (TimerImpl timer : this.nonPersistentTimers.values()) {
@@ -761,17 +775,7 @@ public class TimerServiceImpl implements TimerService {
     }
 
     private boolean isSingletonBeanInvocation() {
-        InvocationContext currentInvocationContext = null;
-        try {
-            currentInvocationContext = CurrentInvocationContext.get();
-
-            //TODO: do this properly
-
-            return true;
-        } catch (IllegalStateException ise) {
-            // no context info available so return false
-            return true;
-        }
+        return component instanceof SingletonComponent;
     }
 
     private TimerImpl getPersistedTimer(TimerHandleImpl timerHandle) {
@@ -964,6 +968,13 @@ public class TimerServiceImpl implements TimerService {
             }
         } catch (Exception e) {
             throw new RuntimeException("Could not end transaction", e);
+        }
+    }
+
+
+    private void handleLifecycleCallback() {
+        if(isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
+            throw new IllegalStateException("Cannot invoke timer service methods in lifecycle callback of non-singleton beans");
         }
     }
 

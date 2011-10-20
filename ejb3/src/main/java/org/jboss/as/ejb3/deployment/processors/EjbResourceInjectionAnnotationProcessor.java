@@ -22,13 +22,16 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.List;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBs;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.BindingConfigurator;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.FieldInjectionTarget;
-import org.jboss.as.ee.component.InjectionConfigurator;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
@@ -49,10 +52,6 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBs;
-import java.util.List;
-
 /**
  * Deployment processor responsible for processing @EJB annotations within components.  Each @EJB annotation will be registered
  * as an injection binding for the component.
@@ -69,7 +68,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final List<AnnotationInstance> resourceAnnotations = index.getAnnotations(EJB_ANNOTATION_NAME);
 
@@ -77,11 +76,11 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
             final AnnotationTarget annotationTarget = annotation.target();
             final EJBResourceWrapper annotationWrapper = new EJBResourceWrapper(annotation);
             if (annotationTarget instanceof FieldInfo) {
-                processField(deploymentUnit, annotationWrapper, (FieldInfo) annotationTarget, applicationClasses);
+                processField(deploymentUnit, annotationWrapper, (FieldInfo) annotationTarget, moduleDescription);
             } else if (annotationTarget instanceof MethodInfo) {
-                processMethod(deploymentUnit, annotationWrapper, (MethodInfo) annotationTarget, applicationClasses);
+                processMethod(deploymentUnit, annotationWrapper, (MethodInfo) annotationTarget, moduleDescription);
             } else if (annotationTarget instanceof ClassInfo) {
-                processClass(deploymentUnit, annotationWrapper, (ClassInfo) annotationTarget, applicationClasses);
+                processClass(deploymentUnit, annotationWrapper, (ClassInfo) annotationTarget, moduleDescription);
             }
         }
         final List<AnnotationInstance> ejbsAnnotations = index.getAnnotations(EJBS_ANNOTATION_NAME);
@@ -92,7 +91,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
                 final AnnotationInstance[] ejbAnnotations = annotationValue.asNestedArray();
                 for (AnnotationInstance ejbAnnotation : ejbAnnotations) {
                     final EJBResourceWrapper annotationWrapper = new EJBResourceWrapper(ejbAnnotation);
-                    processClass(deploymentUnit, annotationWrapper, (ClassInfo) annotationTarget, applicationClasses);
+                    processClass(deploymentUnit, annotationWrapper, (ClassInfo) annotationTarget, moduleDescription);
                 }
             } else {
                 throw new DeploymentUnitProcessingException("EJBs annotation can only be placed on classes " + annotation.target());
@@ -103,16 +102,16 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void processField(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final FieldInfo fieldInfo, final EEApplicationClasses applicationClasses) {
+    private void processField(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final FieldInfo fieldInfo, final EEModuleDescription eeModuleDescription) {
         final String fieldName = fieldInfo.name();
         final String fieldType = fieldInfo.type().name().toString();
         final InjectionTarget targetDescription = new FieldInjectionTarget(fieldInfo.declaringClass().name().toString(), fieldName, fieldType);
         final String localContextName = isEmpty(annotation.name()) ? fieldInfo.declaringClass().name().toString() + "/" + fieldInfo.name() : annotation.name();
         final String beanInterfaceType = isEmpty(annotation.beanInterface()) || annotation.beanInterface().equals(Object.class.getName()) ? fieldType : annotation.beanInterface();
-        process(deploymentUnit, beanInterfaceType, annotation.beanName(), annotation.lookup(), fieldInfo.declaringClass(), targetDescription, localContextName, applicationClasses);
+        process(deploymentUnit, beanInterfaceType, annotation.beanName(), annotation.lookup(), fieldInfo.declaringClass(), targetDescription, localContextName, eeModuleDescription);
     }
 
-    private void processMethod(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final MethodInfo methodInfo, final EEApplicationClasses applicationClasses) {
+    private void processMethod(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final MethodInfo methodInfo, final EEModuleDescription eeModuleDescription) {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
             throw new IllegalArgumentException("@EJB injection target is invalid.  Only setter methods are allowed: " + methodInfo);
@@ -122,27 +121,27 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
         final String localContextName = isEmpty(annotation.name()) ? methodInfo.declaringClass().name().toString() + "/" + methodName.substring(3, 4).toLowerCase() + methodName.substring(4) : annotation.name();
         final String beanInterfaceType = isEmpty(annotation.beanInterface()) || annotation.beanInterface().equals(Object.class.getName()) ? methodParamType : annotation.beanInterface();
-        process(deploymentUnit, beanInterfaceType, annotation.beanName(), annotation.lookup(), methodInfo.declaringClass(), targetDescription, localContextName, applicationClasses);
+        process(deploymentUnit, beanInterfaceType, annotation.beanName(), annotation.lookup(), methodInfo.declaringClass(), targetDescription, localContextName, eeModuleDescription);
     }
 
-    private void processClass(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final ClassInfo classInfo, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
+    private void processClass(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final ClassInfo classInfo, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
             throw new DeploymentUnitProcessingException("@EJB attribute 'name' is required fo class level annotations. Class: " + classInfo.name());
         }
         if (isEmpty(annotation.beanInterface())) {
             throw new DeploymentUnitProcessingException("@EJB attribute 'beanInterface' is required fo class level annotations. Class: " + classInfo.name());
         }
-        process(deploymentUnit, annotation.beanInterface(), annotation.beanName(), annotation.lookup(), classInfo, null, annotation.name(), applicationClasses);
+        process(deploymentUnit, annotation.beanInterface(), annotation.beanName(), annotation.lookup(), classInfo, null, annotation.name(), eeModuleDescription);
     }
 
-    private void process(final DeploymentUnit deploymentUnit, final String beanInterface, final String beanName, final String lookup, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName, final EEApplicationClasses applicationClasses) {
+    private void process(final DeploymentUnit deploymentUnit, final String beanInterface, final String beanName, final String lookup, final ClassInfo classInfo, final InjectionTarget targetDescription, final String localContextName, final EEModuleDescription eeModuleDescription) {
 
         if (!isEmpty(lookup) && !isEmpty(beanName)) {
             logger.debug("Both beanName = " + beanName + " and lookup = " + lookup + " have been specified in @EJB annotation." +
                     " lookup will be given preference. Class: " + classInfo.name());
         }
 
-        final EEModuleClassDescription classDescription = applicationClasses.getOrAddClassByName(classInfo.name().toString());
+        final EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
 
         final InjectionSource valueSource;
         EjbInjectionSource ejbInjectionSource = null;
@@ -168,10 +167,9 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         // Create the binding from whence our injection comes.
         final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
 
-        // TODO: class hierarchies? shared bindings?
-        classDescription.getConfigurators().add(new BindingConfigurator(bindingConfiguration));
+        classDescription.getBindingConfigurations().add(bindingConfiguration);
         if (injectionConfiguration != null) {
-            classDescription.getConfigurators().add(new InjectionConfigurator(injectionConfiguration));
+            classDescription.addResourceInjection(injectionConfiguration);
         }
     }
 

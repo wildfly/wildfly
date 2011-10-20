@@ -241,7 +241,7 @@ class OSGiNamespace10Parser implements Namespace10, XMLStreamConstants, XMLEleme
 
                         ModelNode propNode = new ModelNode();
                         propNode.get(OP).set(ADD);
-                        propNode.get(OP_ADDR).set(address).add(ModelConstants.FRAMEWORK_PROPERTY, name);
+                        propNode.get(OP_ADDR).set(address).add(ModelConstants.PROPERTY, name);
                         propNode.get(ModelConstants.VALUE).set(value);
 
                         result.add(propNode);

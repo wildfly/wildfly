@@ -23,42 +23,68 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 
-import static org.jboss.dmr.ModelType.EXPRESSION;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import static org.jboss.dmr.ModelType.EXPRESSION;
 
 /**
  * Checks the value to see if it's a valid {@link Level}.
- *
+ * <p/>
  * Date: 13.07.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-final class LogLevelValidator implements ParameterValidator {
-    /**
-     * Default class constructor
-     */
-    LogLevelValidator() {
+final class LogLevelValidator extends ModelTypeValidator implements AllowedValuesValidator {
+    private final List<Level> allowedValues;
+
+    public LogLevelValidator(final boolean nullable) {
+        this(nullable, false);
+    }
+
+    public LogLevelValidator(final boolean nullable, final Level... levels) {
+        this(nullable, false, levels);
+    }
+
+    public LogLevelValidator(final boolean nullable, final boolean allowExpressions) {
+        this(nullable, allowExpressions, Level.ALL, Level.CONFIG, Level.FINE, Level.FINER, Level.FINEST, Level.INFO, Level.OFF, Level.SEVERE, Level.WARNING);
+    }
+
+    public LogLevelValidator(final boolean nullable, final boolean allowExpressions, final Level... levels) {
+        super(ModelType.STRING, nullable, allowExpressions);
+        allowedValues = Arrays.asList(levels);
     }
 
     @Override
     public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
-        if (value.isDefined() && value.getType() != EXPRESSION) {
-            final String level = value.asString();
+        super.validateParameter(parameterName, value);
+        if (value.isDefined()) {
+            final String levelString = value.asString();
             try {
-                Level.parse(level);
+                final Level level = Level.parse(levelString);
+                if (!allowedValues.contains(level)) {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(levelString)));
+                }
             } catch (IllegalArgumentException e) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(level)));
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidLogLevel(levelString)));
             }
         }
     }
 
     @Override
-    public void validateResolvedParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
-        validateParameter(parameterName, value.resolve());
+    public List<ModelNode> getAllowedValues() {
+        final List<ModelNode> result = new LinkedList<ModelNode>();
+        for (Level level : allowedValues) {
+            result.add(new ModelNode().set(level.getName()));
+        }
+        return result;
     }
 }

@@ -53,7 +53,7 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <ant antfile="build.xml"  inheritRefs="true">
+                                <ant antfile="build.xml" inheritRefs="true">
                                     <target name="all"/>
                                 </ant>
                             </target>
@@ -609,42 +609,47 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-appclient</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-cli</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-clustering-api</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-api</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-clustering-common</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-common</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-clustering-impl</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-impl</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-clustering-infinispan</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-infinispan</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-clustering-jgroups</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-jgroups</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-clustering-web-infinispan</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-web-infinispan</artifactId>
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-clustering-web-spi</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-web-spi</artifactId>
         </dependency>
 
         <dependency>
@@ -1005,6 +1010,11 @@
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-appclient</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
             <artifactId>jboss-metadata-common</artifactId>
         </dependency>
 
@@ -1060,7 +1070,7 @@
 
         <dependency>
             <groupId>org.jboss.osgi.http</groupId>
-            <artifactId>jboss-osgi-http</artifactId>
+            <artifactId>jbosgi-http</artifactId>
         </dependency>
 
         <dependency>
@@ -1405,6 +1415,26 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.ws.native</groupId>
+            <artifactId>jbossws-native-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.native</groupId>
+            <artifactId>jbossws-native-factories</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws.native</groupId>
+            <artifactId>jbossws-native-services</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jbossxb</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
         </dependency>
@@ -1518,8 +1548,12 @@
                                 </goals>
                                 <phase>package</phase>
                                 <configuration>
-                                    <licensesOutputDirectory>${project.build.directory}/jboss-as-${jboss.as.release.version}/docs/licenses</licensesOutputDirectory>
-                                    <licensesOutputFile>${project.build.directory}/jboss-as-${jboss.as.release.version}/docs/licenses/licenses.xml</licensesOutputFile>
+                                    <licensesOutputDirectory>
+                                        ${project.build.directory}/jboss-as-${jboss.as.release.version}/docs/licenses
+                                    </licensesOutputDirectory>
+                                    <licensesOutputFile>
+                                        ${project.build.directory}/jboss-as-${jboss.as.release.version}/docs/licenses/licenses.xml
+                                    </licensesOutputFile>
                                 </configuration>
                             </execution>
                         </executions>

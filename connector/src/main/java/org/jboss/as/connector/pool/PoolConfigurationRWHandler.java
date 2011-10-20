@@ -38,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.connector.ConnectorServices;
@@ -64,9 +65,9 @@ public class PoolConfigurationRWHandler {
 
     static final String[] NO_LOCATION = new String[0];
 
-    public static final String[] ATTRIBUTES = new String[]{MAX_POOL_SIZE.getName(), MIN_POOL_SIZE.getName(), BLOCKING_TIMEOUT_WAIT_MILLIS.getName(),
+    public static final List<String> ATTRIBUTES = Arrays.asList(MAX_POOL_SIZE.getName(), MIN_POOL_SIZE.getName(), BLOCKING_TIMEOUT_WAIT_MILLIS.getName(),
             IDLETIMEOUTMINUTES.getName(), BACKGROUNDVALIDATION.getName(), BACKGROUNDVALIDATIONMILLIS.getName(),
-            POOL_PREFILL.getName(), POOL_USE_STRICT_MIN.getName(), POOL_FLUSH_STRATEGY.getName()};
+            POOL_PREFILL.getName(), POOL_USE_STRICT_MIN.getName(), POOL_FLUSH_STRATEGY.getName());
 
     // TODO this seems to just do what the default handler does, so registering it is probably unnecessary
     public static class PoolConfigurationReadHandler implements OperationStepHandler {

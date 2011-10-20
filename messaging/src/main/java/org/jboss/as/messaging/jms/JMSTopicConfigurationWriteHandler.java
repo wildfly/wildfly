@@ -41,22 +41,12 @@ public class JMSTopicConfigurationWriteHandler extends ReloadRequiredWriteAttrib
     public static final JMSTopicConfigurationWriteHandler INSTANCE = new JMSTopicConfigurationWriteHandler();
 
     private JMSTopicConfigurationWriteHandler() {
+        super(CommonAttributes.ENTRIES);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         registry.registerReadWriteAttribute(CommonAttributes.ENTRIES.getName(), null, this, flags);
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        CommonAttributes.ENTRIES.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        // no-op, as we are not going to apply this value until the server is reloaded, so allow the
-        // any system property to be set between now and then
     }
 
 }

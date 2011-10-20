@@ -42,6 +42,7 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
 
     public EeWriteAttributeHandler(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
                           final GlobalModuleDependencyProcessor moduleDependencyProcessor) {
+        super(GlobalModulesDefinition.INSTANCE, EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED);
         this.isolationProcessor = isolationProcessor;
         this.moduleDependencyProcessor = moduleDependencyProcessor;
     }
@@ -49,24 +50,6 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
     public void registerAttributes(final ManagementResourceRegistration registry) {
         registry.registerReadWriteAttribute(GlobalModulesDefinition.INSTANCE, null, this);
         registry.registerReadWriteAttribute(EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED, null, this);
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        if (GlobalModulesDefinition.INSTANCE.getName().equals(name)) {
-            GlobalModulesDefinition.INSTANCE.getValidator().validateParameter(name, value);
-        } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(name)) {
-            EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getValidator().validateParameter(name, value);
-        }
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        if (GlobalModulesDefinition.INSTANCE.getName().equals(name)) {
-            GlobalModulesDefinition.INSTANCE.getValidator().validateResolvedParameter(name, value);
-        } else if (EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getName().equals(name)) {
-            EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.getValidator().validateResolvedParameter(name, value);
-        }
     }
 
     @Override

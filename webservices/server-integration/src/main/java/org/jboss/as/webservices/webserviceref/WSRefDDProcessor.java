@@ -73,7 +73,7 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
             bindingDescriptions.add(bindingConfiguration);
             final String serviceRefTypeName = serviceRefUMDM.getServiceRefType();
             final Class<?> serviceRefType = getClass(classLoader, serviceRefTypeName);
-            processInjectionTargets(moduleDescription, applicationClasses, valueSource, classLoader, deploymentReflectionIndex, serviceRefMD, serviceRefType);
+            processInjectionTargets(moduleDescription, componentDescription, applicationClasses, valueSource, classLoader, deploymentReflectionIndex, serviceRefMD, serviceRefType);
         }
         return bindingDescriptions;
     }

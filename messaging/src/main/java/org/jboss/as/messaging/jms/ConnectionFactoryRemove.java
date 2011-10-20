@@ -26,7 +26,11 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Update handler removing a connection factory from the JMS subsystem. The
@@ -40,9 +44,10 @@ public class ConnectionFactoryRemove extends AbstractRemoveStepHandler {
     public static final ConnectionFactoryRemove INSTANCE = new ConnectionFactoryRemove();
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        context.removeService(JMSServices.JMS_CF_BASE.append(name));
+        context.removeService(JMSServices.getConnectionFactoryBaseServiceName(hqServiceName).append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {

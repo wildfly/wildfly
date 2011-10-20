@@ -22,6 +22,9 @@
 
 package org.jboss.as.process;
 
+import static java.lang.Thread.holdsLock;
+import static org.jboss.as.process.ProcessMessages.MESSAGES;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,11 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.lang.Thread.holdsLock;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 /**
  * A managed process.
@@ -158,10 +158,11 @@ final class ManagedProcess {
         }
     }
 
-    public void reconnect(String hostName, int port) {
+    public void reconnect(String hostName, int port, boolean managementSubsystemEndpoint) {
         try {
             StreamUtils.writeUTFZBytes(stdin, hostName);
             StreamUtils.writeInt(stdin, port);
+            StreamUtils.writeBoolean(stdin, managementSubsystemEndpoint);
             stdin.flush();
         } catch (IOException e) {
             log.failedToSendReconnect(e, processName);
@@ -283,7 +284,7 @@ final class ManagedProcess {
 
                 if (shutdown) {
                     processController.removeProcess(processName);
-                } else if (isPrivileged() && exitCode == 99) {
+                } else if (isPrivileged() && exitCode == ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE) {
                     // Host Controller abort
                     processController.removeProcess(processName);
                     new Thread(new Runnable() {

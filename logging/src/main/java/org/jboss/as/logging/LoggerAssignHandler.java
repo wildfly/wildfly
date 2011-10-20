@@ -22,22 +22,24 @@
 
 package org.jboss.as.logging;
 
-import java.util.List;
-import java.util.logging.Handler;
-import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.Logger;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
+import java.util.logging.Handler;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 
 /**
@@ -45,41 +47,18 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Stan Silvert
  */
-public class LoggerAssignHandler extends AbstractModelUpdateHandler {
-    private static final String OPERATION_NAME = "assign-handler";
-    private static final LoggerAssignHandler INSTANCE = new LoggerAssignHandler();
+public class LoggerAssignHandler extends AbstractLogHandlerAssignmentHandler {
+    static final String OPERATION_NAME = "assign-handler";
+    static final LoggerAssignHandler INSTANCE = new LoggerAssignHandler();
 
-    /**
-     * @return the OPERATION_NAME
-     */
-    public static String getOperationName() {
-        return OPERATION_NAME;
-    }
-
-    /**
-     * @return the INSTANCE
-     */
-    public static LoggerAssignHandler getInstance() {
-        return INSTANCE;
+    @Override
+    protected void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        updateHandlersForAssign(HANDLERS, operation, model);
     }
 
     @Override
-    protected void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String handlerName = getHandlerName(operation);
-        ModelNode assignedHandlers = getAssignedHandlers(model);
-        if (assignedHandlers.isDefined() && assignedHandlers.asList().contains(operation.get(CommonAttributes.NAME)))
-            opFailed(MESSAGES.handlerAlreadyDefined(handlerName));
-        assignedHandlers.add(handlerName);
-    }
-
-    protected void opFailed(String description) throws OperationFailedException {
-        ModelNode failure = new ModelNode();
-        failure.get(FAILURE_DESCRIPTION, description);
-        throw new OperationFailedException(failure);
-    }
-
-    protected String getHandlerName(ModelNode operation) {
-        return operation.get(CommonAttributes.NAME).asString();
+    protected String getHandlerName(ModelNode operation) throws OperationFailedException {
+        return NAME.validateResolvedOperation(operation).asString();
     }
 
     protected String getLoggerName(ModelNode operation) {
@@ -87,25 +66,23 @@ public class LoggerAssignHandler extends AbstractModelUpdateHandler {
         return address.getLastElement().getValue();
     }
 
-    protected ModelNode getAssignedHandlers(ModelNode model) {
-        return model.get(CommonAttributes.HANDLERS);
-    }
-
     @Override
-    protected void performRuntime (final OperationContext context, final ModelNode operation, final ModelNode model,
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         String loggerName = getLoggerName(operation);
         String handlerName = getHandlerName(operation);
 
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-        ServiceController<?> loggerHandlerController = serviceRegistry.getService(LogServices.loggerHandlerName(loggerName,handlerName));
+        ServiceController<?> loggerHandlerController = serviceRegistry.getService(LogServices.loggerHandlerName(loggerName, handlerName));
         final ServiceController<Handler> handlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(handlerName));
 
         if (loggerHandlerController != null) {
-            opFailed(MESSAGES.handlerAlreadyDefined(handlerName));
+            throw createFailureMessage(MESSAGES.handlerAlreadyDefined(handlerName));
         }
 
-        if (handlerController == null) opFailed(MESSAGES.handlerNotFound(handlerName));
+        if (handlerController == null) {
+            throw createFailureMessage(MESSAGES.handlerNotFound(handlerName));
+        }
 
         ServiceTarget target = context.getServiceTarget();
         LoggerHandlerService service = new LoggerHandlerService(loggerName);

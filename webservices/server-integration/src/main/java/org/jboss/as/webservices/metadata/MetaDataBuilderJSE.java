@@ -21,20 +21,17 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import static org.jboss.as.webservices.util.ASHelper.getContextRoot;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionMetaData;
 import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
-import org.jboss.metadata.ear.jboss.JBossAppMetaData;
-import org.jboss.metadata.ear.spec.ModuleMetaData;
-import org.jboss.metadata.ear.spec.WebModuleMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -80,7 +77,7 @@ final class MetaDataBuilderJSE {
         final JSEArchiveMetaData jseArchiveMD = new JSEArchiveMetaData();
 
         // set context root
-        final String contextRoot = this.getContextRoot(dep, jbossWebMD);
+        final String contextRoot = getContextRoot(dep, jbossWebMD);
         jseArchiveMD.setContextRoot(contextRoot);
 
         // set servlet url patterns mappings
@@ -229,32 +226,4 @@ final class MetaDataBuilderJSE {
         return mappings;
     }
 
-    /**
-     * Returns context root associated with webservice deployment.
-     *
-     * If there's application.xml descriptor provided defining nested web module, then context root defined there will be
-     * returned. Otherwise context root defined in jboss-web.xml will be returned.
-     *
-     * @param dep webservice deployment
-     * @param jbossWebMD jboss web meta data
-     * @return context root
-     */
-    private String getContextRoot(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
-        final JBossAppMetaData jbossAppMD = unit.getParent() == null ? null : ASHelper.getOptionalAttachment(unit.getParent(),
-                WSAttachmentKeys.JBOSS_APP_METADATA_KEY);
-
-        String contextRoot = null;
-
-        if (jbossAppMD != null) {
-            final ModuleMetaData moduleMD = jbossAppMD.getModule(dep.getSimpleName());
-            if (moduleMD != null) {
-                final WebModuleMetaData webModuleMD = (WebModuleMetaData) moduleMD.getValue();
-                contextRoot = webModuleMD.getContextRoot();
-            }
-        }
-
-        // prefer context root defined in application.xml over one defined in jboss-web.xml
-        return contextRoot != null ? contextRoot : jbossWebMD.getContextRoot();
-    }
 }

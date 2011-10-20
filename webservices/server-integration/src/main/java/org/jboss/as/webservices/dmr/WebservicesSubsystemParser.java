@@ -17,6 +17,13 @@ import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 import static org.jboss.wsf.spi.util.StAXUtils.match;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -24,13 +31,6 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
 
 final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext> {
@@ -48,8 +48,8 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         writer.writeNamespace("javaee", Namespace.JAVAEE.getUriString());
         writer.writeNamespace("jaxwsconfig", Namespace.JAXWSCONFIG.getUriString());
         ModelNode node = context.getModelNode();
-        writeElement(writer, Element.WSDL_HOST, node.require(WSDL_HOST));
         writeElement(writer, Element.MODIFY_WSDL_ADDRESS, node.require(MODIFY_WSDL_ADDRESS));
+        writeElement(writer, Element.WSDL_HOST, node.require(WSDL_HOST));
         if (has(node, WSDL_SECURE_PORT)) {
             writeElement(writer, Element.WSDL_SECURE_PORT, node.require(WSDL_SECURE_PORT));
         }

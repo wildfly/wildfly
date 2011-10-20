@@ -26,7 +26,8 @@ package org.jboss.as.ee.component.interceptors;
  *
  * @author Stuart Douglas
  */
-public class InterceptorOrder {
+public class
+        InterceptorOrder {
 
     private InterceptorOrder() {
 
@@ -66,6 +67,7 @@ public class InterceptorOrder {
 
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
+        public static final int EJB_CLIENT_CONTEXT_INTERCEPTOR = 0x250;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JPA_SFSB_PRE_CREATE = 0x400;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x500;
@@ -74,6 +76,7 @@ public class InterceptorOrder {
         public static final int EJB_SET_SESSION_CONTEXT_METHOD_INVOCATION_INTERCEPTOR = 0x800;
         public static final int WELD_INJECTION = 0x900;
         public static final int JPA_SFSB_CREATE = 0xA00;
+        public static final int DEPENDENCY_INJECTION_COMPLETE = 0xA50;
         public static final int USER_INTERCEPTORS = 0xB00;
         public static final int CDI_INTERCEPTORS = 0xC00;
         public static final int SFSB_INIT_METHOD = 0xD00;
@@ -89,6 +92,7 @@ public class InterceptorOrder {
 
         public static final int TCCL_INTERCEPTOR = 0x100;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
+        public static final int EJB_CLIENT_CONTEXT_INTERCEPTOR = 0x250;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x400;
         public static final int JPA_SFSB_DESTROY = 0x500;
@@ -106,9 +110,13 @@ public class InterceptorOrder {
     public static final class View {
 
         public static final int NOT_BUSINESS_METHOD                                     = 0x000;
+        public static final int NO_SUCH_OBJECT_TRANSFORMER                              = 0x100;
         public static final int SECURITY_CONTEXT                                        = 0x150;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR                  = 0x200;
+        public static final int EJB_CLIENT_CONTEXT                                      = 0x250;
         public static final int INVOCATION_CONTEXT_INTERCEPTOR                          = 0x300;
+        // should happen before the CMT/BMT interceptors
+        public static final int REMOTE_TRANSACTION_PROPOGATION_INTERCEPTOR              = 0x350;
         public static final int CMT_TRANSACTION_INTERCEPTOR                             = 0x400;
         public static final int ASSOCIATING_INTERCEPTOR                                 = 0x500;
         public static final int JPA_SFSB_INTERCEPTOR                                    = 0x600;
@@ -118,23 +126,6 @@ public class InterceptorOrder {
 
 
         private View() {
-        }
-    }
-
-
-    public static final class ViewPostConstruct {
-        public static final int TERMINAL_INTERCEPTOR                                    = 0x100;
-
-        private ViewPostConstruct() {
-
-        }
-    }
-
-    public static final class ViewPreDestroy {
-        public static final int TERMINAL_INTERCEPTOR = 0x200;
-
-        private ViewPreDestroy() {
-
         }
     }
 

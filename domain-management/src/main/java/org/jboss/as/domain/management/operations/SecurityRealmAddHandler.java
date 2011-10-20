@@ -99,7 +99,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
 
         final SecurityRealmService securityRealmService = new SecurityRealmService(realmName);
         final ServiceName realmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(realmName);
-        ServiceBuilder realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
+        ServiceBuilder<?> realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
 
         ServiceName authenticationName = null;
         if (authentication != null) {
@@ -145,7 +145,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         ServiceName ldapServiceName = realmServiceName.append(UserLdapCallbackHandler.SERVICE_SUFFIX);
         UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(ldap);
 
-        ServiceBuilder ldapBuilder = serviceTarget.addService(ldapServiceName, ldapCallbackHandler);
+        ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapCallbackHandler);
         String connectionManager = ldap.require(CONNECTION).asString();
         ldapBuilder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, ldapCallbackHandler.getConnectionManagerInjector());
 
@@ -159,7 +159,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         ServiceName propsServiceName = realmServiceName.append(PropertiesCallbackHandler.SERVICE_SUFFIX);
         PropertiesCallbackHandler propsCallbackHandler = new PropertiesCallbackHandler(realmName, properties);
 
-        ServiceBuilder propsBuilder = serviceTarget.addService(propsServiceName, propsCallbackHandler);
+        ServiceBuilder<?> propsBuilder = serviceTarget.addService(propsServiceName, propsCallbackHandler);
         if (properties.hasDefined(RELATIVE_TO)) {
             propsBuilder.addDependency(pathName(properties.get(RELATIVE_TO).asString()), String.class, propsCallbackHandler.getRelativeToInjector());
         }
@@ -175,7 +175,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         ServiceName sslServiceName = realmServiceName.append(SSLIdentityService.SERVICE_SUFFIX);
         SSLIdentityService sslIdentityService = new SSLIdentityService(ssl);
 
-        ServiceBuilder sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
+        ServiceBuilder<?> sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
 
         if (ssl.hasDefined(KEYSTORE) && ssl.get(KEYSTORE).hasDefined(RELATIVE_TO)) {
             sslBuilder.addDependency(pathName(ssl.get(KEYSTORE, RELATIVE_TO).asString()), String.class, sslIdentityService.getRelativeToInjector());
@@ -204,7 +204,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         ServiceName usersServiceName = realmServiceName.append(UserDomainCallbackHandler.SERVICE_SUFFIX);
         UserDomainCallbackHandler usersCallbackHandler = new UserDomainCallbackHandler(realmName, users);
 
-        ServiceBuilder usersBuilder = serviceTarget.addService(usersServiceName, usersCallbackHandler);
+        ServiceBuilder<?> usersBuilder = serviceTarget.addService(usersServiceName, usersCallbackHandler);
 
 
         newControllers.add(usersBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND)

@@ -46,11 +46,17 @@ import org.xnio.Xnio;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class EndpointService implements Service<Endpoint> {
+
+    private final String endpointName;
     private Endpoint endpoint;
     private OptionMap optionMap;
     private Registration providerRegistration;
 
     private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
+
+    public EndpointService(String nodeName, EndpointType type) {
+        endpointName = nodeName + ":" + type;
+    }
 
     /**
      * Set the option map for this endpoint.
@@ -64,7 +70,7 @@ public final class EndpointService implements Service<Endpoint> {
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
         try {
-            endpoint = Remoting.createEndpoint("endpoint", executor.getValue(), optionMap);
+            endpoint = Remoting.createEndpoint(endpointName, executor.getValue(), optionMap);
             Xnio xnio = XnioUtil.getXnio();
 
             providerRegistration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
@@ -92,7 +98,12 @@ public final class EndpointService implements Service<Endpoint> {
      *
      * @return the injector
      */
-    Injector<Executor> getExecutorInjector() {
+    public Injector<Executor> getExecutorInjector() {
         return executor;
+    }
+
+    public enum EndpointType {
+        MANAGEMENT,
+        SUBSYSTEM;
     }
 }

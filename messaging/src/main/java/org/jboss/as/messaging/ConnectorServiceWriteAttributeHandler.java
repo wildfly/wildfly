@@ -22,12 +22,15 @@
 
 package org.jboss.as.messaging;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,23 +42,15 @@ public class ConnectorServiceWriteAttributeHandler extends ReloadRequiredWriteAt
 
     public static final ConnectorServiceWriteAttributeHandler INSTANCE = new ConnectorServiceWriteAttributeHandler();
 
-    private final Map<String, AttributeDefinition> attributes = new HashMap<String, AttributeDefinition>();
     private ConnectorServiceWriteAttributeHandler() {
+        super(CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES);
+    }
+
+    public void registerAttributes(final ManagementResourceRegistration registry) {
+        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         for (AttributeDefinition attr : CommonAttributes.CONNECTOR_SERVICE_ATTRIBUTES) {
-            attributes.put(attr.getName(), attr);
+            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
         }
-    }
-
-    @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-        AttributeDefinition attr = attributes.get(name);
-        attr.getValidator().validateParameter(name, value);
-    }
-
-    @Override
-    protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {
-        // no-op, as we are not going to apply this value until the server is reloaded, so allow the
-        // any system property to be set between now and then
     }
 
 }

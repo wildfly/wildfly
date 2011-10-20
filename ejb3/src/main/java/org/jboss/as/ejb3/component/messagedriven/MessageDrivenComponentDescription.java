@@ -22,29 +22,30 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 
+import java.util.Properties;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DependencyConfigurator;
-import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
+import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Properties;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -75,8 +76,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     }
 
     @Override
-    public ComponentConfiguration createConfiguration(EEApplicationDescription applicationDescription) {
-        final ComponentConfiguration mdbComponentConfiguration = new ComponentConfiguration(this, applicationDescription.getClassConfiguration(getComponentClassName()));
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
+        final ComponentConfiguration mdbComponentConfiguration = new ComponentConfiguration(this, classIndex);
         // setup the component create service
         mdbComponentConfiguration.setComponentCreateServiceFactory(new MessageDrivenComponentCreateServiceFactory());
 
@@ -106,7 +107,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     }
 
     @Override
-    protected void setupViewInterceptors(ViewDescription view) {
+    protected void setupViewInterceptors(EJBViewDescription view) {
         // let the super do its job
         super.setupViewInterceptors(view);
 

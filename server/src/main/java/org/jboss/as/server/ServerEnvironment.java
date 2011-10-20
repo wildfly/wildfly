@@ -21,6 +21,12 @@
  */
 package org.jboss.as.server;
 
+import org.jboss.as.controller.persistence.ConfigurationFile;
+import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
+
 import java.io.File;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -28,12 +34,6 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
-
-import org.jboss.as.controller.persistence.ConfigurationFile;
-import org.jboss.logging.Logger;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
 
 /**
  * Encapsulates the runtime environment for a server.
@@ -47,7 +47,8 @@ public class ServerEnvironment implements Serializable {
     public static enum LaunchType {
         DOMAIN,
         STANDALONE,
-        EMBEDDED
+        EMBEDDED,
+        APPCLIENT,
     }
 
     // Provide logging

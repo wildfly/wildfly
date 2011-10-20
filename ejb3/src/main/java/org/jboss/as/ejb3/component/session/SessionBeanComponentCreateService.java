@@ -37,7 +37,7 @@ import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.as.ejb3.deployment.EjbJarConfiguration;
+import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -62,7 +62,7 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
      *
      * @param componentConfiguration the component configuration
      */
-    public SessionBeanComponentCreateService(final ComponentConfiguration componentConfiguration, final EjbJarConfiguration ejbJarConfiguration) {
+    public SessionBeanComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
 
         final SessionBeanComponentDescription sessionBeanComponentDescription = (SessionBeanComponentDescription) componentConfiguration.getComponentDescription();

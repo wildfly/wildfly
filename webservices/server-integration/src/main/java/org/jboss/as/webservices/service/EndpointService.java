@@ -23,6 +23,7 @@ package org.jboss.as.webservices.service;
 
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.logging.Logger;
@@ -42,8 +43,6 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
-import javax.management.ObjectName;
-
 /**
  * WS endpoint service; this is meant for setting the lazy deployment time info into the Endpoint (stuff coming from
  * dependencies upon other AS services that are started during the deployment)
@@ -58,15 +57,9 @@ public final class EndpointService implements Service<Endpoint> {
     private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
 
-    private EndpointService(final Endpoint endpoint) {
+    private EndpointService(final Endpoint endpoint, final ServiceName name) {
         this.endpoint = endpoint;
-        final ObjectName on = endpoint.getName();
-        final String ctx = on.getKeyProperty(Endpoint.SEPID_PROPERTY_CONTEXT);
-        ServiceName n = WSServices.ENDPOINT_SERVICE;
-        if (ctx != null && !ctx.isEmpty()) {
-            n = n.append(ctx);
-        }
-        this.name = n.append(on.getKeyProperty(Endpoint.SEPID_PROPERTY_ENDPOINT));
+        this.name = name;
     }
 
     @Override
@@ -74,8 +67,12 @@ public final class EndpointService implements Service<Endpoint> {
         return endpoint;
     }
 
-    public ServiceName getName() {
-        return name;
+    public static ServiceName getServiceName(final DeploymentUnit unit, final String endpointName) {
+        if (unit.getParent() != null) {
+            return WSServices.ENDPOINT_SERVICE.append(unit.getParent().getName()).append(unit.getName()).append(endpointName);
+        } else {
+            return WSServices.ENDPOINT_SERVICE.append(unit.getName()).append(endpointName);
+        }
     }
 
     @Override
@@ -99,9 +96,10 @@ public final class EndpointService implements Service<Endpoint> {
         return securityDomainContextValue;
     }
 
-    public static void install(final ServiceTarget serviceTarget, final Endpoint endpoint) {
-        final EndpointService service = new EndpointService(endpoint);
-        final ServiceBuilder<Endpoint> builder = serviceTarget.addService(service.getName(), service);
+    public static void install(final ServiceTarget serviceTarget, final Endpoint endpoint, final DeploymentUnit unit) {
+        final ServiceName serviceName = getServiceName(unit, endpoint.getShortName());
+        final EndpointService service = new EndpointService(endpoint, serviceName);
+        final ServiceBuilder<Endpoint> builder = serviceTarget.addService(serviceName, service);
         builder.addDependency(DependencyType.REQUIRED,
                 SecurityDomainService.SERVICE_NAME.append(getDeploymentSecurityDomainName(endpoint)),
                 SecurityDomainContext.class, service.getSecurityDomainContextInjector());
@@ -115,4 +113,5 @@ public final class EndpointService implements Service<Endpoint> {
         return metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
                 .unprefixSecurityDomain(metaDataSecurityDomain.trim());
     }
+
 }

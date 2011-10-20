@@ -24,14 +24,12 @@ package org.jboss.as.webservices.invocation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.WebServiceException;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ee.component.ComponentViewInstance;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
@@ -50,8 +48,6 @@ import org.jboss.wsf.spi.ioc.IoCContainerProxyFactory;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
-   /** EJB3 JNDI context. */
-   private static final String EJB3_JNDI_PREFIX = "java:env/";
 
    /** MC kernel controller. */
    private final IoCContainerProxy iocContainer;
@@ -60,7 +56,8 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    private String ejbName;
 
    /** EJB3 container. */
-   private volatile ComponentViewInstance ejbComponentViewInstance;
+   private volatile ComponentView ejbComponentView;
+   private volatile ManagedReference reference;
 
    /**
     * Constructor.
@@ -89,20 +86,19 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     *
     * @return EJB3 container
     */
-   private ComponentViewInstance getComponentViewInstance() {
-      if (ejbComponentViewInstance == null) {
+   private ComponentView getComponentView() {
+      if (ejbComponentView == null) {
          synchronized(this) {
-            if (ejbComponentViewInstance == null) {
-               final ComponentView ejbView = iocContainer.getBean(ejbName, ComponentView.class);
-               if (ejbView == null) {
+            if (ejbComponentView == null) {
+               ejbComponentView= iocContainer.getBean(ejbName, ComponentView.class);
+               if (ejbComponentView == null) {
                   throw new WebServiceException("Cannot find ejb: " + ejbName);
                }
-               ejbComponentViewInstance = ejbView.createInstance();
+               reference = ejbComponentView.createInstance();
             }
          }
       }
-
-      return ejbComponentViewInstance;
+      return ejbComponentView;
    }
 
    /**
@@ -117,17 +113,17 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
          // prepare for invocation
          onBeforeInvocation(wsInvocation);
          // prepare invocation data
-         final ComponentViewInstance componentViewInstance = getComponentViewInstance();
-         final Method method = getEJBMethod(wsInvocation.getJavaMethod(), componentViewInstance.allowedMethods());
+         final ComponentView componentView = getComponentView();
+         final Method method = getEJBMethod(wsInvocation.getJavaMethod(), componentView.getViewMethods());
          final InterceptorContext context = new InterceptorContext();
          context.setMethod(method);
          context.setContextData(getWebServiceContext(wsInvocation).getMessageContext());
          context.setParameters(wsInvocation.getArgs());
-         context.setTarget(componentViewInstance.createProxy());
-         context.putPrivateData(Component.class, componentViewInstance.getComponent());
-         context.putPrivateData(ComponentViewInstance.class, componentViewInstance);
-         // invoke method
-         final Object retObj = componentViewInstance.getEntryPoint(method).processInvocation(context);
+         context.setTarget(reference.getInstance());
+         context.putPrivateData(Component.class, componentView.getComponent());
+         context.putPrivateData(ComponentView.class, componentView);
+          // invoke method
+         final Object retObj = componentView.invoke(context);
          // set return value
          wsInvocation.setReturnValue(retObj);
       }
@@ -140,20 +136,38 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
       }
    }
 
-   private Method getEJBMethod(final Method seiMethod, final Collection<Method> methods) {
-       for (final Method method : methods) {
-           if (seiMethod.equals(method)) {
-               return method;
+   /**
+    * Translates SEI method to EJB view method.
+    *
+    * @param seiMethod SEI method
+    * @param viewMethods EJB view methods
+    * @return matching EJB view method
+    */
+   private Method getEJBMethod(final Method seiMethod, final Collection<Method> viewMethods) {
+       for (final Method viewMethod : viewMethods) {
+           if (matches(seiMethod, viewMethod)) {
+               return viewMethod;
            }
        }
-
        throw new IllegalStateException();
    }
 
-   public Context getJNDIContext(final Endpoint ep) throws NamingException {
-      return null; // TODO: implement
-//      final EJBContainer ejb3Container = (EJBContainer) getComponentViewInstance();
-//      return (Context) ejb3Container.getEnc().lookup(EJB3_JNDI_PREFIX);
+   /**
+    * Compares two methods if they are identical.
+    *
+    * @param seiMethod reference method
+    * @param viewMethod target method
+    * @return true if they match, false otherwise
+    */
+   private boolean matches(final Method seiMethod, final Method viewMethod) {
+       if (!seiMethod.getName().equals(viewMethod.getName())) return false;
+       final Class<?>[] sourceParams = seiMethod.getParameterTypes();
+       final Class<?>[] targetParams = viewMethod.getParameterTypes();
+       if (sourceParams.length != targetParams.length) return false;
+       for (int i = 0; i < sourceParams.length; i++) {
+           if (!sourceParams[i].equals(targetParams[i])) return false;
+       }
+       return true;
    }
 
    /**
@@ -185,7 +199,6 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     */
    private WebServiceContext getWebServiceContext(final Invocation invocation) {
       final InvocationContext invocationContext = invocation.getInvocationContext();
-
       return invocationContext.getAttachment(WebServiceContext.class);
    }
 

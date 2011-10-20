@@ -22,15 +22,17 @@
 
 package org.jboss.as.ee.subsystem;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
+import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcessor;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
-import org.jboss.as.ee.component.deployers.EEClassConfigurationProcessor;
 import org.jboss.as.ee.component.deployers.EECleanUpProcessor;
 import org.jboss.as.ee.component.deployers.EEDistinctNameProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleConfigurationProcessor;
@@ -48,6 +50,7 @@ import org.jboss.as.ee.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.ee.managedbean.processors.ManagedBeanSubDeploymentMarkingProcessor;
 import org.jboss.as.ee.naming.ApplicationContextProcessor;
 import org.jboss.as.ee.naming.ModuleContextProcessor;
+import org.jboss.as.ee.structure.ApplicationClientDeploymentProcessor;
 import org.jboss.as.ee.structure.ComponentAggregationProcessor;
 import org.jboss.as.ee.structure.EarDependencyProcessor;
 import org.jboss.as.ee.structure.EarInitializationProcessor;
@@ -65,8 +68,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
 
 /**
  * Handler for adding the ee subsystem.
@@ -119,6 +120,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR_JBOSS_APP_XML_PARSE, new JBossAppMetaDataParsingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EAR, new EarStructureProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EJB_JAR_IN_EAR, new EjbJarDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_APPLICATION_CLIENT_IN_EAR, new ApplicationClientDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_MANAGED_BEAN_JAR_IN_EAR, new ManagedBeanSubDeploymentMarkingProcessor());
                 processorTarget.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_EE_MODULE_INIT, new EEModuleInitialProcessor());
 
@@ -134,6 +136,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_MANAGED_BEAN, new JavaEEDependencyProcessor());
                 processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_GLOBAL_MODULES, moduleDependencyProcessor);
+                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_EE_CLASS_DESCRIPTIONS, new ApplicationClassesAggregationProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_VALIDATOR_FACTORY, new BeanValidationFactoryDeployer());
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EAR_DEPENDENCY, new EarDependencyProcessor());
@@ -146,7 +149,6 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_CONTEXT, new ModuleContextProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_APP_CONTEXT, new ApplicationContextProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_MODULE_JNDI_BINDINGS, new ModuleJndiBindingProcessor());
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_CLASS_CONFIG, new EEClassConfigurationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_MODULE_CONFIG, new EEModuleConfigurationProcessor());
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new ComponentInstallProcessor());
 

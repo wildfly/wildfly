@@ -53,6 +53,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Implements the {@code read-attribute} operation for runtime attributes exposed by a HornetQ
@@ -82,8 +83,9 @@ public class JmsQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
 
         String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
-        ServiceController<?> hqService = context.getServiceRegistry(false).getService(MessagingServices.JBOSS_MESSAGING);
+        ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         JMSQueueControl control = JMSQueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_QUEUE + queueName));
 

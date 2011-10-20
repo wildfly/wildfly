@@ -22,18 +22,16 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+
 /**
+ *
+ * TODO: do we still need this?
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class EEModuleConfiguration {
@@ -41,19 +39,10 @@ public final class EEModuleConfiguration {
     private final String moduleName;
     private final List<ComponentConfiguration> componentConfigurations;
 
-    // Module Bindings
-    private final List<BindingConfiguration> bindingConfigurations = new ArrayList<BindingConfiguration>();
 
-    public EEModuleConfiguration(EEModuleDescription description, DeploymentPhaseContext context, final Module module) throws DeploymentUnitProcessingException {
-        DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-        ModuleClassLoader classLoader = module.getClassLoader();
+    public EEModuleConfiguration(EEModuleDescription description) throws DeploymentUnitProcessingException {
         applicationName = description.getApplicationName();
         moduleName = description.getModuleName();
-
-        // run this configuration through the module configurators
-        for (EEModuleConfigurator configurator : description.getConfigurators()) {
-            configurator.configure(context, description, this);
-        }
 
         this.componentConfigurations = new ArrayList<ComponentConfiguration>();
     }
@@ -74,7 +63,4 @@ public final class EEModuleConfiguration {
         componentConfigurations.add(configuration);
     }
 
-    public List<BindingConfiguration> getBindingConfigurations() {
-        return this.bindingConfigurations;
-    }
 }
