@@ -114,18 +114,26 @@
                     <bean-instance-pools>
                         <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
                                          instance-acquisition-timeout-unit="MINUTES"/>
+
+                        <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5"
+                                         instance-acquisition-timeout-unit="MINUTES"/>
                     </bean-instance-pools>
                 </pools>
+
+                <!-- Default MDB configurations -->
+                <mdb>
+                    <resource-adapter-ref resource-adapter-name="hornetq-ra"/>
+                    <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+                </mdb>
 
                 <!-- Session bean configurations -->
                 <session-bean>
                     <stateless>
                         <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
                     </stateless>
+                    <stateful default-access-timeout="5000"/>
+                    <singleton default-access-timeout="5000"/>
                 </session-bean>
-
-                <default-stateful-access-timeout>5000</default-stateful-access-timeout>
-                <default-singleton-access-timeout>5000</default-singleton-access-timeout>
 
                 <thread-pools>
                     <thread-pool name="default" max-threads="10" keepalive-time="100" />
