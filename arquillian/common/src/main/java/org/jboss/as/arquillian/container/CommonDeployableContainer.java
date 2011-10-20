@@ -16,7 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -131,7 +130,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     private void safeCloseClient() {
         try {
-            managementClient.getControllerClient().close();
+            managementClient.close();
         } catch (Exception e) {
             log.log(Level.WARNING, "Caught exception closing ModelControllerClient", e);
         }
