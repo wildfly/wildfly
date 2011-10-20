@@ -235,8 +235,9 @@ public enum Phase {
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
     public static final int PARSE_WS_EJB_INTEGRATION                    = 0x2050;
     public static final int PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION        = 0x2051;
-    public static final int PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS = 0x2052;
-    public static final int PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS = 0x2053;
+    public static final int PARSE_WS_JMS_INTEGRATION                    = 0x2052;
+    public static final int PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS = 0x2053;
+    public static final int PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS = 0x2054;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x2100;
     public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x2200;
     public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x2300;
@@ -339,7 +340,6 @@ public enum Phase {
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_REF_DESCRIPTOR               = 0x1800;
     public static final int POST_MODULE_WS_REF_ANNOTATION               = 0x1801;
-    public static final int POST_MODULE_WS_JMS_INTEGRATION              = 0x1802;
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;

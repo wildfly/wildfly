@@ -25,8 +25,8 @@ import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.metadata.WebServiceDeclaration;
-import org.jboss.as.webservices.metadata.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
+import org.jboss.as.webservices.metadata.DeploymentJaxws;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -54,7 +54,7 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        this.getAndPropagateAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY, WebServiceDeployment.class, unit, dep);
+        this.getAndPropagateAttachment(WSAttachmentKeys.WS_ENDPOINTS_KEY, DeploymentJaxws.class, unit, dep);
         //this.getAndPropagateAttachment(JBossMetaData.class, unit, dep); // TODO: propagate?
         final JBossWebMetaData webMetaData = ASHelper.getJBossWebMetaData(unit);
         if (webMetaData != null) {
@@ -62,10 +62,10 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
         }
 
         this.log.debug("Creating JAXWS EJB3 endpoints meta data model");
-        for (final WebServiceDeclaration container : ASHelper.getJaxwsEjbs(unit)) {
-            final String ejbName = container.getComponentName();
+        for (final EndpointJaxwsEjb container : ASHelper.getJaxwsEjbs(unit)) {
+            final String ejbName = container.getName();
             this.log.debug("EJB3 name: " + ejbName);
-            final String ejbClass = container.getComponentClassName();
+            final String ejbClass = container.getClassName();
             this.log.debug("EJB3 class: " + ejbClass);
 
             final Endpoint ep = this.newHttpEndpoint(ejbClass, ejbName, dep);
