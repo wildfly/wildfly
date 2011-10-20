@@ -67,10 +67,10 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
             }
         }
 
-        final WebServiceDeployment ejb3Deployment = WSHelper.getRequiredAttachment(dep, WebServiceDeployment.class);
+        final DeploymentJaxws ejb3Deployment = WSHelper.getRequiredAttachment(dep, DeploymentJaxws.class);
         final List<EJBMetaData> wsEjbsMD = new LinkedList<EJBMetaData>();
 
-        for (final WebServiceDeclaration jbossEjbMD : ejb3Deployment.getServiceEndpoints()) {
+        for (final EndpointJaxwsEjb jbossEjbMD : ejb3Deployment.getEjbEndpoints()) {
             this.buildEnterpriseBeanMetaData(wsEjbsMD, jbossEjbMD);
         }
 
@@ -85,13 +85,13 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
      * @param jbossEjbMD
      *            jboss specific EJB meta data
      */
-    private void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final WebServiceDeclaration jbossEjbMD) {
+    private void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EndpointJaxwsEjb jbossEjbMD) {
         final EJBMetaData wsEjbMD = this.newEjbMetaData(jbossEjbMD);
 
         if (wsEjbMD != null) {
             // set EJB name and class
-            wsEjbMD.setEjbName(jbossEjbMD.getComponentName());
-            wsEjbMD.setEjbClass(jbossEjbMD.getComponentClassName());
+            wsEjbMD.setEjbName(jbossEjbMD.getName());
+            wsEjbMD.setEjbClass(jbossEjbMD.getClassName());
 
             /*
              * TODO: implement final PortComponentSpec portComponentAnnotation =
@@ -125,7 +125,7 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
      *            jboss EJB meta data
      * @return webservices EJB meta data
      */
-    private EJBMetaData newEjbMetaData(final WebServiceDeclaration jbossEjbMD) {
+    private EJBMetaData newEjbMetaData(final EndpointJaxwsEjb jbossEjbMD) {
         return new SLSBMetaData();
         /*
          * TODO: implement final MessageDriven mdbAnnotation =

@@ -21,16 +21,17 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
@@ -60,14 +61,17 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
         final JBossWebMetaData webMetaData = ASHelper.getJBossWebMetaData(unit);
         if (webMetaData != null) {
             dep.addAttachment(JBossWebMetaData.class, webMetaData);
-            final List<ServletMetaData> servlets = ASHelper.getJaxwsServlets(unit);
-            for (ServletMetaData servlet : servlets) {
-                final String servletName = servlet.getName();
-                this.log.debug("JSE name: " + servletName);
-                final String servletClass = ASHelper.getEndpointClassName(servlet);
-                this.log.debug("JSE class: " + servletClass);
+        }
 
-                this.newHttpEndpoint(servletClass, servletName, dep);
+        final List<EndpointJaxwsPojo> pojoEndpoints = getJaxwsPojos(unit);
+        if (pojoEndpoints != null) {
+            for (final EndpointJaxwsPojo pojoEndpoint : pojoEndpoints) {
+                final String pojoName = pojoEndpoint.getName();
+                this.log.debug("JSE name: " + pojoName);
+                final String pojoClassName = pojoEndpoint.getClassName();
+                this.log.debug("JSE class: " + pojoClassName);
+
+                this.newHttpEndpoint(pojoClassName, pojoName, dep);
             }
         }
 

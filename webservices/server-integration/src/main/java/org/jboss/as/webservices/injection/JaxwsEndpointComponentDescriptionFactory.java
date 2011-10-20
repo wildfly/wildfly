@@ -27,6 +27,7 @@ import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.STATELESS_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINTS_KEY;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -37,14 +38,21 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.deployers.WSComponentDescriptionFactory;
+import org.jboss.as.webservices.metadata.DeploymentJaxws;
+import org.jboss.as.webservices.metadata.DeploymentJaxwsImpl;
+import org.jboss.as.webservices.metadata.EndpointJaxwsPojoImpl;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
+import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -59,11 +67,13 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
 
     @Override
     protected void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
+        final DeploymentJaxws wsDeployment = getWSDeployment(unit);
         if (isJaxwsEjb(classInfo)) {
             // Don't create component description for EJB3 endpoints.
             // There's already one created by EJB3 subsystem.
         } else {
             final String beanClassName = classInfo.name().toString();
+            if (isJmsEndpoint(unit, beanClassName)) return; // do not process JMS endpoints
             final ServiceName unitServiceName = unit.getServiceName();
             // TODO: refactor to convenient method that will return DD defined servlets matching class name
             List<ServletMetaData> ddServlets = ASHelper.getJaxwsServlets(unit);
@@ -81,19 +91,32 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
                     // registering dependency on WS endpoint service
                     final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
                     jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                    // register POJO endpoint
+                    final String urlPattern = ASHelper.getURLPattern(endpointName, unit);
+                    wsDeployment.addEndpoint(new EndpointJaxwsPojoImpl(endpointName, beanClassName, urlPattern));
                 }
             }
             if (!found) {
-                // TODO: JBWS-3276
-                /*
-                final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(beanClassName, beanClassName, moduleDescription, unitServiceName, applicationClasses);
+                // JSR 109, version 1.3 final spec, section 5.3.2.1 javax.jws.WebService annotation
+                final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(beanClassName, beanClassName, moduleDescription, unitServiceName);
                 moduleDescription.addComponent(jaxwsEndpointDescription);
-                // TODO: register dependency on WS endpoint service
+                // registering dependency on WS endpoint service
                 final ServiceName serviceName = EndpointService.getServiceName(unit, beanClassName);
                 jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
-                */
+                // register POJO endpoint
+                final String urlPattern = getUrlPattern(classInfo);
+                wsDeployment.addEndpoint(new EndpointJaxwsPojoImpl(beanClassName, urlPattern));
             }
         }
+    }
+
+    private static DeploymentJaxws getWSDeployment(final DeploymentUnit unit) {
+        DeploymentJaxws wsDeployment = unit.getAttachment(WS_ENDPOINTS_KEY);
+        if (wsDeployment == null) {
+            wsDeployment = new DeploymentJaxwsImpl();
+            unit.putAttachment(WS_ENDPOINTS_KEY, wsDeployment);
+        }
+        return wsDeployment;
     }
 
     @Override
@@ -105,6 +128,7 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
         if (!Modifier.isPublic(flags)) return false;
         if (isJaxwsService(clazz, index)) return false;
         // validate annotations
+        // TODO: Provide utility methods in ASHelper ...
         final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
         final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
         if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
@@ -126,6 +150,44 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
         final boolean isStateless = clazz.annotations().containsKey(STATELESS_ANNOTATION);
         final boolean isSingleton = clazz.annotations().containsKey(SINGLETON_ANNOTATION);
         return isStateless || isSingleton;
+    }
+
+    private static String getUrlPattern(final ClassInfo clazz) {
+        final AnnotationInstance webServiceAnnotation = getWebServiceAnnotation(clazz);
+        final String serviceName = getStringAttribute(webServiceAnnotation, "serviceName");
+        return "/" + (serviceName != null ? serviceName : clazz.name().local());
+    }
+
+    // TODO: Provide utility methods in ASHelper ...
+    private static String getStringAttribute(final AnnotationInstance annotation, final String attributeName) {
+        final AnnotationValue attributeValue = annotation.value(attributeName);
+        if (attributeValue != null) {
+            final String trimmedAttributeValue = attributeValue.asString().trim();
+            return "".equals(trimmedAttributeValue) ? null : trimmedAttributeValue;
+        }
+        return null;
+    }
+
+    private static AnnotationInstance getWebServiceAnnotation(final ClassInfo clazz) {
+        final List<AnnotationInstance> webServiceAnnotations = clazz.annotations().get(WEB_SERVICE_ANNOTATION);
+        if (webServiceAnnotations.size() > 0) {
+            return webServiceAnnotations.get(0);
+        }
+        final List<AnnotationInstance> webServiceProviderAnnotations = clazz.annotations().get(WEB_SERVICE_PROVIDER_ANNOTATION);
+        if (webServiceProviderAnnotations.size() > 0) {
+            return webServiceProviderAnnotations.get(0);
+        }
+        throw new IllegalStateException();
+    }
+
+    private static boolean isJmsEndpoint(final DeploymentUnit unit, final String endpointClass) {
+        final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
+        if (jmsEndpointsMD != null) {
+            for (JMSEndpointMetaData endpoint : jmsEndpointsMD.getEndpointsMetaData()) {
+                if (endpointClass.equals(endpoint.getImplementor())) return true;
+            }
+        }
+        return false;
     }
 
 }

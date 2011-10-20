@@ -27,40 +27,16 @@ import org.jboss.jandex.DotName;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * A minimum web service meta data representation that offers a generic
- * way to access more fine grained meta data through {@link #getAnnotation(Class)}
- * @author Heiko.Braun <heiko.braun@jboss.com>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-// TODO: get rid of this class
-@Deprecated
-public interface WebServiceDeclaration {
+public interface EndpointJaxwsEjb extends EndpointJaxws {
+
    /**
-    * A distinct identifier across deployments.<br>
-    * In case of EJB3 this would be the <code>ObjectName</code> under which get's registered with the MC.
+    * Get EJB container name.
+    *
     * @return
     */
    String getContainerName();
-
-   /**
-    * An identifier within a deployment.
-    * In case of EJB3 this would be the <code>ejb-name</code>.
-    * @return a name, that can be used to susequently address the service impl.
-    */
-   String getComponentName();
-
-   /**
-    * Web service endpoint implementation class
-    * @return
-    */
-   String getComponentClassName();
-
-   /**
-    * Get a unified meta data view represented by an annotation.
-    *
-    * @param t
-    * @return
-    */
-   AnnotationInstance getAnnotation(DotName dotName);
 
    /**
     * Get EJB context service name.
@@ -75,5 +51,13 @@ public interface WebServiceDeclaration {
     * @return
     */
    DeploymentDescriptorEnvironment getDeploymentDescriptorEnvironment();
+
+   /**
+    * Get a unified meta data view represented by an annotation.
+    *
+    * @param t
+    * @return
+    */
+   AnnotationInstance getAnnotation(DotName dotName);
 
 }

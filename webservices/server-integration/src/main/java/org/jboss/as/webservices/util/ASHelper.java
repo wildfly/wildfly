@@ -56,11 +56,13 @@ import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.metadata.ear.spec.WebModuleMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.as.webservices.metadata.WebServiceDeclaration;
-import org.jboss.as.webservices.metadata.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
+import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
+import org.jboss.as.webservices.metadata.DeploymentJaxws;
 import org.jboss.as.webservices.publish.WSEndpointDeploymentUnit;
 import org.jboss.as.webservices.webserviceref.WSReferences;
 
@@ -108,6 +110,16 @@ public final class ASHelper {
         return getWebServiceServlets(unit, true);
     }
 
+    public static String getURLPattern(final String servletName, final DeploymentUnit unit) {
+        final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
+        for (final ServletMappingMetaData servletMappingMD : jbossWebMD.getServletMappings()) {
+            if (servletName.equals(servletMappingMD.getServletName())) {
+                return servletMappingMD.getUrlPatterns().get(0);
+            }
+        }
+        throw new IllegalStateException();
+    }
+
     /**
      * Gets list of JAXRPC servlets meta data.
      *
@@ -124,10 +136,22 @@ public final class ASHelper {
      * @param unit deployment unit
      * @return list of JAXWS EJBs meta data
      */
-    public static List<WebServiceDeclaration> getJaxwsEjbs(final DeploymentUnit unit) {
-        final WebServiceDeployment wsDeployment = getRequiredAttachment(unit, WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
+    public static List<EndpointJaxwsEjb> getJaxwsEjbs(final DeploymentUnit unit) {
+        final DeploymentJaxws wsDeployment = getRequiredAttachment(unit, WSAttachmentKeys.WS_ENDPOINTS_KEY);
 
-        return Collections.unmodifiableList(wsDeployment.getServiceEndpoints());
+        return Collections.unmodifiableList(wsDeployment.getEjbEndpoints());
+    }
+
+    /**
+     * Gets list of JAXWS POJOs meta data.
+     *
+     * @param unit deployment unit
+     * @return list of JAXWS POJOs meta data
+     */
+    public static List<EndpointJaxwsPojo> getJaxwsPojos(final DeploymentUnit unit) {
+        final DeploymentJaxws wsDeployment = unit.getAttachment(WSAttachmentKeys.WS_ENDPOINTS_KEY);
+        final boolean hasPojoEndpoints = wsDeployment != null ? wsDeployment.getPojoEndpoints().size() > 0 : false;
+        return hasPojoEndpoints ? wsDeployment.getPojoEndpoints() : null;
     }
 
     /**
@@ -450,7 +474,7 @@ public final class ASHelper {
      * @return true if JAXWS EJB, false otherwise
      */
     public static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        return unit.hasAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY);
+        return unit.hasAttachment(WSAttachmentKeys.WS_ENDPOINTS_KEY);
     }
 
     /**
@@ -460,17 +484,11 @@ public final class ASHelper {
      * @return true if JAXWS JSE, false otherwise
      */
     public static boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
+        if (getJaxwsPojos(unit) != null) return true;
         if (unit instanceof WSEndpointDeploymentUnit) return true;
+        if (unit.hasAttachment(WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY)) return true;
 
-        final boolean hasWarMetaData = unit.hasAttachment(WarMetaData.ATTACHMENT_KEY);
-        if (hasWarMetaData) {
-            //once the deployment is a WAR, the endpoint(s) can be on either http (servlet) transport or jms transport
-            return getJaxwsServlets(unit).size() > 0 || unit.hasAttachment(WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
-        } else {
-            //otherwise the (JAR) deployment can be a jaxws_jse one if there're jms transport endpoints only (no ejb3)
-            return !unit.hasAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY) &&
-                    unit.hasAttachment(WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
-        }
+        return false;
     }
 
     public static WSReferences getWSRefRegistry(final DeploymentUnit unit) {
@@ -499,6 +517,7 @@ public final class ASHelper {
 
         String contextRoot = null;
 
+        // prefer context root defined in application.xml over one defined in jboss-web.xml
         if (jbossAppMD != null) {
             final ModuleMetaData moduleMD = jbossAppMD.getModule(dep.getSimpleName());
             if (moduleMD != null) {
@@ -507,12 +526,11 @@ public final class ASHelper {
             }
         }
 
-        // prefer context root defined in application.xml over one defined in jboss-web.xml
-        if (contextRoot != null) {
-            return contextRoot;
-        } else {
-            return jbossWebMD != null ? jbossWebMD.getContextRoot() : null;
+        if (contextRoot == null) {
+            contextRoot = jbossWebMD != null ? jbossWebMD.getContextRoot() : null;
         }
+
+        return contextRoot;
     }
 
 }

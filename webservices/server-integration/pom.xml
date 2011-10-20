@@ -44,7 +44,7 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                <showDeprecation>false</showDeprecation>
+                <showDeprecation>true</showDeprecation>
                 <compilerArguments>
                     <endorseddirs>${project.build.directory}/endorsed</endorseddirs>
                 </compilerArguments>

@@ -25,13 +25,12 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINTS_KEY;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -39,13 +38,13 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.webservices.metadata.WebServiceDeclaration;
-import org.jboss.as.webservices.metadata.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.DeploymentJaxwsImpl;
+import org.jboss.as.webservices.metadata.DeploymentJaxws;
+import org.jboss.as.webservices.metadata.EndpointJaxwsEjbImpl;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * WebServiceDeployment deployer processes EJB containers and its metadata and creates WS adapters wrapping it.
@@ -57,11 +56,11 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final WebServiceDeployment wsDeploymentAdapter = new WebServiceDeploymentAdapter();
+        final DeploymentJaxws wsDeploymentAdapter = new DeploymentJaxwsImpl();
         processAnnotation(unit, WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
         processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
-        if (!wsDeploymentAdapter.getServiceEndpoints().isEmpty()) {
-            unit.putAttachment(WEBSERVICE_DEPLOYMENT_KEY, wsDeploymentAdapter);
+        if (!wsDeploymentAdapter.getEjbEndpoints().isEmpty()) {
+            unit.putAttachment(WS_ENDPOINTS_KEY, wsDeploymentAdapter);
         }
     }
 
@@ -70,9 +69,8 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
         // NOOP
     }
 
-   private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final WebServiceDeployment wsDeployment) {
+   private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final DeploymentJaxws wsDeployment) {
        final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
-       final List<WebServiceDeclaration> endpoints = wsDeployment.getServiceEndpoints();
        final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
 
        for (final AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
@@ -87,7 +85,7 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
                if (sessionBean.isStateless() || sessionBean.isSingleton()) {
                    final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
                    final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
-                   endpoints.add(new WebServiceDeclarationAdapter(sessionBean, webServiceClassInfo, ejbViewName));
+                   wsDeployment.addEndpoint(new EndpointJaxwsEjbImpl(sessionBean, webServiceClassInfo, ejbViewName));
                }
            }
        }
@@ -101,117 +99,6 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
            }
        }
        return beans;
-   }
-
-   /**
-    * Adopts EJB3 bean meta data to a
-    * {@link org.jboss.wsf.spi.deployment.integration.WebServiceDeclaration}.
-    */
-   private static final class WebServiceDeclarationAdapter implements WebServiceDeclaration {
-
-      /** EJB meta data. */
-      private final SessionBeanComponentDescription ejbMD;
-      private final ClassInfo webServiceClassInfo; // TODO: propagate just annotations?
-      private final String containerName;
-
-      /**
-       * Constructor.
-       *
-       * @param ejbMD EJB metadata
-       */
-      private WebServiceDeclarationAdapter(final SessionBeanComponentDescription ejbMD, final ClassInfo webServiceClassInfo, final String containerName) {
-         this.ejbMD = ejbMD;
-         this.webServiceClassInfo = webServiceClassInfo;
-         this.containerName = containerName;
-      }
-
-      /**
-       * Returns EJB container name.
-       *
-       * @return container name
-       */
-      public String getContainerName() {
-         return containerName;
-      }
-
-      /**
-       * Returns EJB name.
-       *
-       * @return name
-       */
-      public String getComponentName() {
-          return ejbMD.getComponentName();
-      }
-
-      public ServiceName getContextServiceName() {
-          return ejbMD.getContextServiceName();
-      }
-
-      public DeploymentDescriptorEnvironment getDeploymentDescriptorEnvironment() {
-          return ejbMD.getDeploymentDescriptorEnvironment();
-      }
-
-      /**
-       * Returns EJB class name.
-       *
-       * @return class name
-       */
-      public String getComponentClassName() {
-          return ejbMD.getComponentClassName();
-      }
-
-      /**
-       * Returns requested annotation associated with EJB container or EJB bean.
-       *
-       * @param annotationType annotation type
-       * @param <T> annotation class type
-       * @return requested annotation or null if not found
-       */
-      public AnnotationInstance getAnnotation(final DotName annotationType) {// DotName
-          List<AnnotationInstance> list = webServiceClassInfo.annotations().get(annotationType);
-          if (list != null) {
-              return list.get(0);
-          }
-          return null;
-//          throw new UnsupportedOperationException(); // TODO: implement
-//         final boolean haveEjbContainer = this.ejbContainer != null;
-//
-//         if (haveEjbContainer)
-//         {
-//            return this.ejbContainer.getAnnotation(annotationType);
-//         }
-//         else
-//         {
-//            final Class<?> bean = this.getComponentClass();
-//            return (T) bean.getAnnotation(annotationType);
-//         }
-      }
-
-   }
-
-   /**
-    * Adopts an EJB deployment to a
-    * {@link org.jboss.wsf.spi.deployment.integration.WebServiceDeployment}.
-    */
-   private static final class WebServiceDeploymentAdapter implements WebServiceDeployment {
-      /** List of EJB endpoints. */
-      private final List<WebServiceDeclaration> endpoints = new ArrayList<WebServiceDeclaration>();
-
-      /**
-       * Constructor.
-       */
-      private WebServiceDeploymentAdapter() {
-         super();
-      }
-
-      /**
-       * Returns endpoints list.
-       *
-       * @return endpoints list
-       */
-      public List<WebServiceDeclaration> getServiceEndpoints() {
-         return this.endpoints;
-      }
    }
 
 }

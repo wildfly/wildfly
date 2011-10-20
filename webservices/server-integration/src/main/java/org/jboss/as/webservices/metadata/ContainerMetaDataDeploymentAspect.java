@@ -59,8 +59,8 @@ public final class ContainerMetaDataDeploymentAspect extends AbstractDeploymentA
     @Override
     public void start(final Deployment dep) {
         if (WSHelper.isJseDeployment(dep)) {
-            this.log.debug("Creating JBoss agnostic JSE meta data for deployment: " + dep.getSimpleName());
             if (WSHelper.hasAttachment(dep, JBossWebMetaData.class)) {
+                this.log.debug("Creating JBoss agnostic JSE meta data for deployment: " + dep.getSimpleName());
                 final JSEArchiveMetaData jseMetaData = this.metaDataBuilderJSE.create(dep);
                 dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
             }
