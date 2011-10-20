@@ -181,10 +181,10 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                 if(actionStr == null) {
                     return false;
                 }
-                if("add".equals(actionStr)) {
+/*                if("add".equals(actionStr)) {
                     return idProperty.isValueComplete(args);
                 }
-                if("remove".equals(actionStr)) {
+*/                if("remove".equals(actionStr)) {
                     return true;
                 }
                 return false;
@@ -212,7 +212,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
 
         if(action.equals("add")) {
             final String nodePath = this.nodePath.getValue(args, true);
-            final String propName = this.idProperty.getValue(args, true);
+            final String propName = this.idProperty.getValue(args, false);
             final String cmdName = this.commandName.getValue(args, true);
 
             if(!validateInput(ctx, profile.getValue(args), nodePath, propName)) {
@@ -223,7 +223,7 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
                 ctx.printLine("Command '" + cmdName + "' already registered.");
                 return;
             }
-            cmdRegistry.registerHandler(new GenericTypeOperationHandler(nodePath, idProperty.getValue(args)), cmdName);
+            cmdRegistry.registerHandler(new GenericTypeOperationHandler(nodePath, propName), cmdName);
             return;
         }
 
@@ -391,14 +391,16 @@ public class CommandCommandHandler extends CommandHandlerWithHelp {
             return false;
         }
 
-        for(Property prop : result.get("attributes").asPropertyList()) {
-            if(prop.getName().equals(propertyName)) {
-                ModelNode value = prop.getValue();
-                if(value.has("access-type") && "read-only".equals(value.get("access-type").asString())) {
-                    return true;
+        if(propertyName != null) {
+            for(Property prop : result.get("attributes").asPropertyList()) {
+                if(prop.getName().equals(propertyName)) {
+                    ModelNode value = prop.getValue();
+                    if(value.has("access-type") && "read-only".equals(value.get("access-type").asString())) {
+                        return true;
+                    }
+                    ctx.printLine("Property " + propertyName + " is not read-only.");
+                    return false;
                 }
-                ctx.printLine("Property " + propertyName + " is not read-only.");
-                return false;
             }
         }
         ctx.printLine("Property '" + propertyName + "' wasn't found among the properties of " + typePath);

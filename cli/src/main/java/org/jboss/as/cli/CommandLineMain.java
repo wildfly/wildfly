@@ -127,15 +127,6 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new UndeployHandler(), "undeploy");
         cmdRegistry.registerHandler(new PrintWorkingNodeHandler(), "pwd", "pwn");
 
-        cmdRegistry.registerHandler(new JmsQueueAddHandler(), "add-jms-queue");
-        cmdRegistry.registerHandler(new JmsQueueRemoveHandler(), "remove-jms-queue");
-        cmdRegistry.registerHandler(new JmsTopicAddHandler(), "add-jms-topic");
-        cmdRegistry.registerHandler(new JmsTopicRemoveHandler(), "remove-jms-topic");
-        cmdRegistry.registerHandler(new JmsCFAddHandler(), "add-jms-cf");
-        cmdRegistry.registerHandler(new JmsCFRemoveHandler(), "remove-jms-cf");
-        cmdRegistry.registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
-        cmdRegistry.registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
-
         cmdRegistry.registerHandler(new BatchHandler(), "batch");
         cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
         cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
@@ -148,6 +139,12 @@ public class CommandLineMain {
 
         cmdRegistry.registerHandler(new VersionHandler(), "version");
 
+        cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
+
+        // data-source
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/data-source", "jndi-name"), "data-source");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
+        // supported but hidden from the tab-completion
         cmdRegistry.registerHandler(new DataSourceAddHandler(), false, "add-data-source");
         cmdRegistry.registerHandler(new DataSourceModifyHandler(), false, "modify-data-source");
         cmdRegistry.registerHandler(new DataSourceRemoveHandler(), false, "remove-data-source");
@@ -155,11 +152,20 @@ public class CommandLineMain {
         cmdRegistry.registerHandler(new XADataSourceRemoveHandler(), false, "remove-xa-data-source");
         cmdRegistry.registerHandler(new XADataSourceModifyHandler(), false, "modify-xa-data-source");
 
-        cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
-
-        // data-source
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/data-source", "jndi-name"), "data-source");
-        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=datasources/xa-data-source", "jndi-name"), "xa-data-source");
+        // JMS
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=messaging/hornetq-server=default/jms-queue", "queue-address"), "jms-queue");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=messaging/hornetq-server=default/jms-topic", "topic-address"), "jms-topic");
+        cmdRegistry.registerHandler(new GenericTypeOperationHandler("/subsystem=messaging/hornetq-server=default/connection-factory", null), "connection-factory");
+        // supported but hidden from the tab-completion
+        cmdRegistry.registerHandler(new JmsQueueAddHandler(), false, "add-jms-queue");
+        cmdRegistry.registerHandler(new JmsQueueRemoveHandler(), false, "remove-jms-queue");
+        cmdRegistry.registerHandler(new JmsTopicAddHandler(), false, "add-jms-topic");
+        cmdRegistry.registerHandler(new JmsTopicRemoveHandler(), false, "remove-jms-topic");
+        cmdRegistry.registerHandler(new JmsCFAddHandler(), false, "add-jms-cf");
+        cmdRegistry.registerHandler(new JmsCFRemoveHandler(), false, "remove-jms-cf");
+        // these are used for the cts setup
+        cmdRegistry.registerHandler(new CreateJmsResourceHandler(), false, "create-jms-resource");
+        cmdRegistry.registerHandler(new DeleteJmsResourceHandler(), false, "delete-jms-resource");
     }
 
     public static void main(String[] args) throws Exception {
@@ -564,7 +570,7 @@ public class CommandLineMain {
         /** current command line */
         private String cmdLine;
         /** parsed command arguments */
-        private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
+        private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler(true);
 
         /** domain or standalone mode*/
         private boolean domainMode;
