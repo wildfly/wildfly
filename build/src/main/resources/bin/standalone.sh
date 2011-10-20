@@ -120,6 +120,8 @@ if $cygwin; then
     MODULEPATH=`cygpath --path --windows "$MODULEPATH"`
 fi
 
+CLASSPATH="$CLASSPATH:$JBOSS_HOME/jboss-modules.jar"
+
 # Display our environment
 echo "========================================================================="
 echo ""
@@ -131,6 +133,8 @@ echo "  JAVA: $JAVA"
 echo ""
 echo "  JAVA_OPTS: $JAVA_OPTS"
 echo ""
+echo "  CLASSPATH: $CLASSPATH"
+echo ""
 echo "========================================================================="
 echo ""
 
@@ -138,9 +142,10 @@ while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
       eval \"$JAVA\" $JAVA_OPTS \
+         -cp "$CLASSPATH" \
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/log/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties\" \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         org.jboss.modules.Main \
          -mp \"${MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
          -jaxpmodule javax.xml.jaxp-provider \
@@ -151,9 +156,10 @@ while true; do
    else
       # Execute the JVM in the background
       eval \"$JAVA\" $JAVA_OPTS \
+         -cp "$CLASSPATH" \
          \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/standalone/log/boot.log\" \
          \"-Dlogging.configuration=file:$JBOSS_HOME/standalone/configuration/logging.properties\" \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+         org.jboss.modules.Main \
          -mp \"${MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
          -jaxpmodule javax.xml.jaxp-provider \
