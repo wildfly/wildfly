@@ -157,7 +157,8 @@ class WebConfigurationHandlerUtils {
     }
     static void populateReWrite(final ModelNode operation, final Resource resource) {
         int num = 0;
-        for(final ModelNode entry : resource.getModel().get(REWRITE).asList()) {
+
+        for(final ModelNode entry : operation.get(REWRITE).asList()) {
             String name = "rule-" + num++;
             PathElement rewritepath = PathElement.pathElement(REWRITE, name);
             resource.registerChild(rewritepath, Resource.Factory.create());
