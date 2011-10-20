@@ -20,41 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.web;
-
-import static org.jboss.as.web.Constants.FLAGS;
-import static org.jboss.as.web.Constants.PATTERN;
-import static org.jboss.as.web.Constants.TEST;
+package org.jboss.as.modcluster;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@code OperationHandler} responsible for defining the accesslog entry.
- *
  * @author Jean-Frederic Clere
  */
-class WebReWriteConditionAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class ModClusterRemoveSSL extends AbstractRemoveStepHandler implements DescriptionProvider {
 
-    static final WebReWriteConditionAdd INSTANCE = new WebReWriteConditionAdd();
+    static final ModClusterRemoveSSL INSTANCE = new ModClusterRemoveSSL();
 
-    private WebReWriteConditionAdd() {
+    private ModClusterRemoveSSL() {
         //
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getReWriteConditionAdd(locale);
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(TEST)) model.get(TEST).set(operation.get(TEST));
-        if (operation.hasDefined(PATTERN)) model.get(PATTERN).set(operation.get(PATTERN));
-        if (operation.hasDefined(FLAGS)) model.get(FLAGS).set(operation.get(FLAGS));
+        return ModClusterSubsystemDescriptions.getModClusterRemoveSSL(locale);
     }
 }
