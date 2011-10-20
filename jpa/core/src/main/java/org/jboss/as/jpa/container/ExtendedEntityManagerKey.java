@@ -20,51 +20,58 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.ejb3;
+package org.jboss.as.jpa.container;
 
 import java.io.Serializable;
-
-import org.jboss.as.jpa.spi.SFSBContextHandle;
+import java.util.UUID;
 
 /**
- * Implementation of SFSBContextHandle that represents an EJB3 SFSB
+ * Uniquely identifies an ExtendedEntityManager instance.
  *
  * @author Scott Marlow
  */
-public class SFSBContextHandleImpl implements SFSBContextHandle {
+public class ExtendedEntityManagerKey implements Serializable {
+    private static final long serialVersionUID = 135790L;
+    private final String ID = UUID.randomUUID().toString();
 
-    private Serializable idSFSB;    // SFSB session id
+    /**
+     * generates a new unique ExtendedEntityManagerID
+     * @return unique ExtendedEntityManagerID
+     */
+    public static ExtendedEntityManagerKey extendedEntityManagerID() {
+        return new ExtendedEntityManagerKey();
+    }
 
-    public SFSBContextHandleImpl(Serializable id) {
-        this.idSFSB = id;
+    @Override
+    public String toString() {
+        return "ExtendedEntityManagerKey{" +
+            "ID='" + ID + '\'' +
+            '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || ! (o instanceof ExtendedEntityManagerKey))
+            return false;
 
-        SFSBContextHandleImpl that = (SFSBContextHandleImpl) o;
-
-        if (idSFSB != null ? !idSFSB.equals(that.idSFSB) : that.idSFSB != null) return false;
+        ExtendedEntityManagerKey that = (ExtendedEntityManagerKey) o;
+        if (ID != null ? !ID.equals(that.getKey()) : that.getKey() != null)
+            return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return idSFSB != null ? idSFSB.hashCode() : 0;
+        return ID != null ? ID.hashCode() : 0;
     }
 
-    @Override
-    public String toString() {
-        return "SFSBContextHandleImpl{" +
-            "idSFSB=" + idSFSB +
-            '}';
+
+    public String getKey() {
+        return ID;
     }
 
-    @Override
-    public Serializable getSerializable() {
-        return idSFSB;
-    }
+
 }

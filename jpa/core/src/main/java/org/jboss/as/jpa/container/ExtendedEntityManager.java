@@ -24,6 +24,7 @@ package org.jboss.as.jpa.container;
 
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import javax.persistence.EntityManager;
@@ -31,66 +32,95 @@ import javax.persistence.EntityManager;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
 /**
- * Extended lifetime scoped (XPC) entity manager will only be injected into SFSB beans.  At bean invocation time, they
- * will join the active JTA transaction if one is present.  If not active JTA transaction is present,
+ * Represents the Extended persistence context injected into a stateful bean.  At bean invocation time,
+ * will join the active JTA transaction if one is present.  If no active JTA transaction is present,
  * created/deleted/updated/loaded entities will remain associated with the entity manager until it is joined with a
  * transaction (commit will save the changes, rollback will lose them).
  * <p/>
- * At injection time, a persistence context will be associated with the SFSB.
+ * At injection time, a instance of this class is associated with the SFSB.
  * During a SFSB1 invocation, if a new SFSB2 is created with an XPC referencing the same
- * persistence unit, the new SFSB2 will share the same persistence context from SFSB1.
+ * persistence unit, the new SFSB2 will inherit the same persistence context from SFSB1.
  * Both SFSB1 + SFSB2 will maintain a reference to the underlying persistence context, such that
  * the underlying persistence context will be kept around until both SFSB1 + SFSB2 are destroyed.
+ * At cluster replication time or passivation, both SFSB1 + SFSB2 will be serialized consecutively and this
+ * instance will only be serialized once.
  * <p/>
  * Note:  Unlike TransactionScopedEntityManager, ExtendedEntityManager will directly be shared instead of the
- * underlying EntityManager.  This will facilitate access to the EntityManagerMetadata used in SFSBXPCMap.
+ * underlying EntityManager.
+ * <p/>
+ *
+ * During serialization, A NotSerializableException will be thrown if the following conditions are not met:
+ * - The underlying persistence provider (entity manager) must be Serializable.
+ * - The entity classes in the extended persistence context must also be Serializable.
  *
  * @author Scott Marlow
  */
 public class ExtendedEntityManager extends AbstractEntityManager implements Serializable {
 
-    private static final long serialVersionUID = 432435L;
+    /**
+     * Adding fields to this class, may require incrementing the serialVersionUID (always increment it).
+     * If a transient field is added that isn't serialized, serialVersionUID doesn't need to change.
+     * By default transient fields are not serialized but can be manually (de)serialized in readObject/writeObject.
+     * Just make sure you think about whether the newly added field should be serialized.
+     */
+    private static final long serialVersionUID = 432436L;
 
     /**
      * EntityManager obtained from the persistence provider that represents the XPC.
      */
-
     private EntityManager underlyingEntityManager;
 
+    /**
+     * fully application scoped persistence unit name
+     */
     private String puScopedName;
 
-    private boolean isInTx;
+    /**
+     * application deployment unique name that is used to get the SFSBXPCMap associated with the current app deployment
+     */
+    String deploymentBagKeyName;
 
-    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager) {
-        super(puScopedName, true);
+    private transient boolean isInTx;
+
+    /**
+     * the UUID representing the extended persistence context
+     */
+    private final ExtendedEntityManagerKey ID = ExtendedEntityManagerKey.extendedEntityManagerID();
+
+    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager, String deploymentBagKeyName) {
         this.underlyingEntityManager = underlyingEntityManager;
         this.puScopedName = puScopedName;
+        this.deploymentBagKeyName = deploymentBagKeyName;
     }
 
     /**
-     * See org.jboss.ejb3.stateful.EJB3XPCResolver.getExtendedPersistenceContext() for AS6 implementation.
      * The JPA SFSB interceptor will track the stack of SFSB invocations.  The underlying EM will be obtained from
      * the current SFSB being invoked (via our JPA SFSB interceptor).
      *
-     * @return
+     * Every entity manager call (to AbstractEntityManager) will call this method to get the underlying entity manager
+     * (e.g. the Hibernate persistence provider).
+     *
+     * See org.jboss.ejb3.stateful.EJB3XPCResolver.getExtendedPersistenceContext() to see the as6 implementation of this.
+     *
+     * @return EntityManager
      */
     @Override
     protected EntityManager getEntityManager() {
 
-        isInTx = TransactionUtil.getInstance().isInTx();
+        isInTx = TransactionUtil.isInTx();
 
         // ensure that a different XPC (with same name) is not already present in the TX
         if (isInTx) {
 
             // 7.6.3.1 throw EJBException if a different persistence context is already joined to the
             // transaction (with the same puScopedName).
-            EntityManager existing = TransactionUtil.getInstance().getTransactionScopedEntityManager(puScopedName);
+            EntityManager existing = TransactionUtil.getTransactionScopedEntityManager(puScopedName);
             if (existing != null && existing != this) {
                 // should be enough to test if not the same object
                 throw MESSAGES.cannotUseExtendedPersistenceTransaction(puScopedName, existing, this);
             } else if (existing == null) {
                 // JPA 7.9.1 join the transaction if not already done.
-                TransactionUtil.getInstance().registerExtendedUnderlyingWithTransaction(puScopedName, this, underlyingEntityManager);
+                TransactionUtil.registerExtendedUnderlyingWithTransaction(puScopedName, this, underlyingEntityManager);
             }
         }
 
@@ -128,24 +158,64 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
         return "ExtendedEntityManager [" + puScopedName + "]";
     }
 
+    /**
+     * Get the fully application scoped persistence unit name
+     * Private api
+     * @return scoped pu name
+     */
+    public String getScopedPuName() {
+        return puScopedName;
+    }
+
+    /**
+     * Check if this object's UUID is equal to the otherObject's UUID
+     *
+     * @param otherObject
+     * @return
+     */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object otherObject) {
+        if (this == otherObject)
+            return true;
 
-        ExtendedEntityManager that = (ExtendedEntityManager) o;
+        if (otherObject == null || ! (otherObject instanceof ExtendedEntityManagerKey))
+            return false;
 
-        if (!puScopedName.equals(that.puScopedName)) return false;
-        if (!underlyingEntityManager.equals(that.underlyingEntityManager)) return false;
+        ExtendedEntityManagerKey that = (ExtendedEntityManagerKey) otherObject;
 
-        return true;
+        return !(ID != null ? !ID.equals(that) : that != null);
+
     }
 
     @Override
     public int hashCode() {
-        int result = underlyingEntityManager.hashCode();
-        result = 31 * result + puScopedName.hashCode();
-        return result;
+        // return hashCode of the ExtendedEntityManagerKey
+        return ID != null ? ID.hashCode() : 0;
     }
+
+    /**
+     * Serialization handling methods start here
+     */
+
+
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        // write all non-transient fields
+        out.defaultWriteObject();
+
+        SFSBXPCMap.delegateWriteObject(out, this, deploymentBagKeyName);
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+
+        // read all non-transient fields
+        in.defaultReadObject();
+        SFSBXPCMap.delegateReadObject(in, this, deploymentBagKeyName);
+    }
+
+
+    /**
+     * Serialization handling methods end here
+     */
+
 
 }

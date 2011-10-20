@@ -35,7 +35,7 @@
 
     <artifactId>jboss-as-jpa-hibernate4</artifactId>
 
-    <name>JBoss Application Server: Hibernate 4.0.x JPA integration </name>
+    <name>JBoss Application Server: Hibernate 4.0.x JPA integration</name>
 
     <dependencies>
         <!-- Internal -->

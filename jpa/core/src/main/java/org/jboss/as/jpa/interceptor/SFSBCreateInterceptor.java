@@ -33,7 +33,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * For SFSB life cycle management.
- * Handles the closing of XPC after last SFSB using it is destroyed.
+ * Handles the (@PostConstruct time) creation of the extended persistence context (XPC).
  *
  * @author Scott Marlow
  */
@@ -48,7 +48,7 @@ public class SFSBCreateInterceptor implements Interceptor {
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
         StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) interceptorContext.getPrivateData(ComponentInstance.class);
-        SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
+        SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb.getId());
         sfsbxpcMap.finishRegistrationOfPersistenceContext(sfsbContextHandle);
         return interceptorContext.proceed();
     }
