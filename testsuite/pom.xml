@@ -21,6 +21,35 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
+
+<!--
+    1. The testsuite module has a small number of submodules:
+
+    api         - holds all API tests for AS7
+    benchmark   - holds all benchmark tests for AS7
+    domain      - holds all domain management tests for AS7
+    integration - holds all integration tests for AS7
+    spec        - holds all spec tests for AS7
+    stress      - holds all stress tests for AS7
+
+    All tests should fit into one of these four categories.
+
+    2. This pom is inherited by all submodules and should be used to do the following:
+    - set defaults for common testsuite system properties (which can then be overridden on the command line)
+    - define dependencies common to all tests (Arquillian, junit or testng, and container type)
+    - provide a workaround for @Resource(lookup=...) which requires libraries in jbossas/endorsed
+    - defines a default server configuration installed into target/jboasas in each submodule, which
+    represents an unmodified copy of the AS server. Custom server configurations are defined in the submodules.
+    - define profiles to allow selection of which test modules will be executed
+
+    3. This pom should not be used to do the following:
+    - define module-specific server configuration build steps
+    - define module-specific surefire executions
+    These elements should be defined in logical profiles associated with each logical grouping of tests,
+    in the pom for the module which contains the tests. See the submodule poms for more details.
+
+-->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -38,9 +67,13 @@
 
     <name>JBoss Application Server Test Suite: Aggregator</name>
 
+    <modules>
+        <!-- module>integration</module -->
+    </modules>
+
     <packaging>pom</packaging>
 
-<!-- global test system property defaults -->
+    <!-- global testsuite system property defaults -->
 
     <properties>
         <!-- used to provide an absolute location for the distribution under test -->
@@ -88,16 +121,34 @@
         <version.saxon>8.7</version.saxon>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Arquillian bill of materials, used to configure Arquillian versions -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.arquillian_core}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <version>${version.xml.maven.plugin}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-build</artifactId>
             <type>pom</type>
             <exclusions>
-              <exclusion>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.osgi.foundation</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.osgi.foundation</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -110,35 +161,38 @@
         </dependency>
         <!-- Needed for @Resource(lookup=) -->
         <dependency>
-           <groupId>org.jboss.spec.javax.annotation</groupId>
-           <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+            <groupId>org.jboss.spec.javax.annotation</groupId>
+            <artifactId>jboss-annotations-api_1.1_spec</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jboss.arquillian.container</groupId>
-          <artifactId>arquillian-container-test-api</artifactId>
-          <scope>test</scope>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-           <groupId>org.jboss.arquillian.junit</groupId>
-           <artifactId>arquillian-junit-container</artifactId>
-           <scope>test</scope>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-managed</artifactId>
+            <version>${version.arquillian_as7}</version>
         </dependency>
         <dependency>
-           <groupId>junit</groupId>
-           <artifactId>junit</artifactId>
-           <scope>test</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
 
-            <!-- Big complex hack just to get @Resource(lookup="foo") -->
+            <!--
+            Big complex hack just to get @Resource(lookup="foo")
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
+                <executions combine.children="append">
                     <execution>
+                        <id>copy-annotations-endorsed</id>
                         <goals>
                             <goal>copy</goal>
                         </goals>
@@ -162,13 +216,15 @@
                 </configuration>
             </plugin>
 
+            <!-- a build of target/jbossas which is shared by all modules -->
+            <!-- modules and bundles not copied as they are read-only (see surefire props) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <executions>
+                <executions combine.children="append">
                     <execution>
-                        <id>copy-resources</id>
-                        <phase>process-test-classes</phase>
+                        <id>build-jbossas.server</id>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
@@ -188,78 +244,358 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!--
+            adjust IP addresses used in server config files
+             -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions combine.children="append">
+                    <execution>
+                        <id>update-ip-addresses-jbossas.server</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <stylesheet>${xslt.scripts.dir}/changeIPAddresses.xsl
+                                    </stylesheet>
+                                    <includes>
+                                        <include>standalone.xml</include>
+                                        <include>standalone-preview.xml</include>
+                                        <include>standalone-xts.xml</include>
+                                    </includes>
+                                    <parameters>
+                                        <parameter>
+                                            <name>managementIPAddress</name>
+                                            <value>${node0}</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>publicIPAddress</name>
+                                            <value>${node0}</value>
+                                        </parameter>
+                                    </parameters>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sf.saxon</groupId>
+                        <artifactId>saxon</artifactId>
+                        <version>${version.saxon}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!--
+            sets general surefire system properties
+            (these can be overridden by inheriting plugin configurations)
+             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
-                    <!-- parallel>none</parallel -->
-                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
-                    <systemProperties>
-                        <property>
-                          <name>jboss.options</name>
-                          <value>${surefire.system.args}</value>
-                        </property>
-                        <property>
-                          <name>java.util.logging.manager</name>
-                          <value>org.jboss.logmanager.LogManager</value>
-                        </property>
-                        <property>
-                          <name>jboss.home</name>
-                          <value>${basedir}/target/jbossas</value>
-                        </property>
-                        <property>
-                          <name>module.path</name>
-                          <value>${jboss.home}/modules</value>
-                        </property>
-                    </systemProperties>
+                    <!-- don't halt the all test executions if a test fails -->
+                    <testFailureIgnore>${surefire.test.failure.ignore}</testFailureIgnore>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <systemPropertyVariables>
+                        <jboss.options>${surefire.system.args}</jboss.options>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <jboss.home>${basedir}/target/jbossas</jboss.home>
+                        <module.path>${jboss.dist}/modules</module.path>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 
     <profiles>
+
+        <!--
+           Module profiles
+           - used to activate modules alone or in combination
+           - naming convention: X.module.profile activated by -DX.module
+           - this requires that a default profile be set for each module
+
+        -->
         <profile>
-            <id>integration</id>
+            <id>all-modules.module.profile</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>all-modules</name>
+                </property>
             </activation>
             <modules>
+                <module>api</module>
+                <module>benchmark</module>
+                <module>domain</module>
                 <module>integration</module>
+                <module>spec</module>
+                <module>stress</module>
             </modules>
         </profile>
+
         <profile>
-            <id>allTests</id>
+            <id>api.module.profile</id>
             <activation>
-	          <property>
-	            <name>allTests</name>
-	          </property>
+                <property>
+                    <name>api.module</name>
+                </property>
             </activation>
-            <properties>
-                <skip.benchmark.tests>false</skip.benchmark.tests>
-                <skip.stress.tests>false</skip.stress.tests>
-            </properties>
             <modules>
-                <!--<module>stress</module>
-                <module>benchmark</module>-->
-                <module>integration</module>
-                <module>compat</module>
+                <module>api</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>benchmark.module.profile</id>
+            <activation>
+                <property>
+                    <name>benchmark.module</name>
+                </property>
+            </activation>
+            <modules>
+                <module>benchmark</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>domain.module.profile</id>
+            <activation>
+                <property>
+                    <name>domain.module</name>
+                </property>
+            </activation>
+            <modules>
                 <module>domain</module>
             </modules>
         </profile>
 
         <profile>
-          <id>jpda</id>
-          <activation>
-            <property>
-              <name>jpda</name>
-            </property>
-          </activation>
-          <properties>
-            <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
-          </properties>
+            <id>integration.module.profile</id>
+            <activation>
+                <property>
+                    <name>integration.module</name>
+                </property>
+            </activation>
+            <modules>
+                <module>integration</module>
+            </modules>
         </profile>
-    </profiles>
 
+        <profile>
+            <id>spec.module.profile</id>
+            <activation>
+                <property>
+                    <name>spec.module</name>
+                </property>
+            </activation>
+            <modules>
+                <module>spec</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>stress.module.profile</id>
+            <activation>
+                <property>
+                    <name>stress.module</name>
+                </property>
+            </activation>
+            <modules>
+                <module>stress</module>
+            </modules>
+        </profile>
+
+        <!--
+          Debugging profiles
+        -->
+        <profile>
+            <id>jpda.profile</id>
+            <activation>
+                <property>
+                    <name>jpda</name>
+                </property>
+            </activation>
+            <properties>
+                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
+            </properties>
+        </profile>
+
+        <!--
+          Database profiles
+          - here we define profiles used to configure default databases
+          - changing the default database involves:
+            - including a dependency for the database driver
+            - changing the server configuration file
+            - deploying the driver via the server's deployments directory
+          - for example, to change the default database from H2 to MySQL 5.1, use -Dds=mysql51
+        -->
+
+        <profile>
+            <!--
+                general profile used to help orchestrate database changes
+            -->
+            <id>ds.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>jdbcdrivers</groupId>
+                    <artifactId>${ds.db}</artifactId>
+                    <version>${ds.jdbc.driver.version}</version>
+                </dependency>
+            </dependencies>
+            <repositories>
+                <repository>
+                    <id>JBoss QA repository</id>
+                    <url>http://nexus.qa.jboss.com:8081/nexus/content/repositories/thirdparty</url>
+                </repository>
+            </repositories>
+            <build>
+                <plugins>
+                    <!-- copy the JDBC driver which needs to be installed -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>copy-jdbc-jars.database</id>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <!-- binds to process-sources -->
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>jdbcdrivers</groupId>
+                                            <artifactId>${ds.db}</artifactId>
+                                            <version>${ds.jdbc.driver.version}</version>
+                                            <destFileName>${ds.jdbc.driver.jar}</destFileName>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${basedir}/target/jdbcDrivers</outputDirectory>
+                                    <stripVersion>true</stripVersion>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <!-- replace the default datasource in server configurations (target/jbossas) -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution >
+                                <id>update-datasource.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                                <configuration>
+                                    <transformationSets>
+                                        <transformationSet>
+                                            <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                            <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                            <stylesheet>${xslt.scripts.dir}/changeDatabase.xsl</stylesheet>
+                                            <includes>
+                                                <include>standalone.xml</include>
+                                                <include>standalone-preview.xml</include>
+                                                <include>standalone-xts.xml</include>
+                                            </includes>
+                                            <parameters>
+                                                <parameter>
+                                                    <name>ds.jdbc.driver.jar</name>
+                                                    <value>${ds.jdbc.driver.jar}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>ds.jdbc.url</name>
+                                                    <value>${ds.jdbc.url}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>ds.jdbc.user</name>
+                                                    <value>${ds.jdbc.user}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>ds.jdbc.pass</name>
+                                                    <value>${ds.jdbc.pass}</value>
+                                                </parameter>
+                                            </parameters>
+                                        </transformationSet>
+                                    </transformationSets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>net.sf.saxon</groupId>
+                                <artifactId>saxon</artifactId>
+                                <version>${version.saxon}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+
+                    <!--
+                    deploy the jdbc driver by copying to the deployments directory
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>deploy-database-driver.server</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/jbossas/standalone/deployments</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/target/jdbcDrivers</directory>
+                                            <includes>
+                                                <include>${ds.db}-jdbc-driver.jar</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>mysql51.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>mysql51</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>mysql</ds.db>
+                <ds.jdbc.driver>com.mysql.jdbc.Driver</ds.jdbc.driver>
+                <ds.jdbc.url>jdbc:mysql://localhost:3306/test</ds.jdbc.url>
+                <ds.jdbc.driver.version>5.1.17</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+    </profiles>
 </project>
