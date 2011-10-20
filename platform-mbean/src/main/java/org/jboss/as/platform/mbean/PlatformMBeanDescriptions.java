@@ -66,6 +66,8 @@ import static org.jboss.as.platform.mbean.PlatformMBeanConstants.CURRENT_THREAD_
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.CURRENT_THREAD_USER_TIME;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.DAEMON_THREAD_COUNT;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.FILE_NAME;
+import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_LOGGER_LEVEL;
+import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_PARENT_LOGGER_NAME;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_INFOS;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.HEAP_MEMORY_USAGE;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.IDENTITY_HASH_CODE;
@@ -100,6 +102,7 @@ import static org.jboss.as.platform.mbean.PlatformMBeanConstants.OBJECT_NAME;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.OBJECT_PENDING_FINALIZATION_COUNT;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.PEAK_THREAD_COUNT;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.PEAK_USAGE;
+import static org.jboss.as.platform.mbean.PlatformMBeanConstants.SET_LOGGER_LEVEL;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.SPEC_NAME;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.SPEC_VENDOR;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.SPEC_VERSION;
@@ -801,6 +804,7 @@ public class PlatformMBeanDescriptions {
         populateAttribute(attrs, COUNT, ModelType.LONG, true, MeasurementUnit.NONE);
         populateAttribute(attrs, MEMORY_USED, ModelType.LONG, true, MeasurementUnit.BYTES);
         populateAttribute(attrs, TOTAL_CAPACITY, ModelType.LONG, true, MeasurementUnit.BYTES);
+        attrs.get(NAME, DESCRIPTION).set(bundle.getString("buffer-pools.name"));
 
         node.get(OPERATIONS).setEmptyObject();
 
@@ -815,7 +819,9 @@ public class PlatformMBeanDescriptions {
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("buffer-pools"));
 
-        node.get(ATTRIBUTES).setEmptyObject();
+        final ModelNode attrs = node.get(ATTRIBUTES);
+        populateAttribute(attrs, NAME, ModelType.STRING, false, null);
+        attrs.get(NAME, DESCRIPTION).set(bundle.getString("buffer-pools.name"));
 
         node.get(OPERATIONS).setEmptyObject();
 
@@ -852,11 +858,14 @@ public class PlatformMBeanDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(GET_LOGGER_LEVEL);
         node.get(DESCRIPTION).set(bundle.getString("logging.get-logger-level"));
 
         addLoggerNameParam(node.get(REQUEST_PROPERTIES), bundle);
 
-        node.get(REPLY_PROPERTIES); // TODO
+        node.get(REPLY_PROPERTIES);
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        node.get(REPLY_PROPERTIES, NILLABLE).set(true);
 
         return node;
     }
@@ -865,6 +874,7 @@ public class PlatformMBeanDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(SET_LOGGER_LEVEL);
         node.get(DESCRIPTION).set(bundle.getString("logging.set-logger-level"));
 
         final ModelNode reqProps = node.get(REQUEST_PROPERTIES);
@@ -883,11 +893,14 @@ public class PlatformMBeanDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(GET_PARENT_LOGGER_NAME);
         node.get(DESCRIPTION).set(bundle.getString("logging.get-parent-logger-name"));
 
         addLoggerNameParam(node.get(REQUEST_PROPERTIES), bundle);
 
-        node.get(REPLY_PROPERTIES); // TODO
+        node.get(REPLY_PROPERTIES);
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        node.get(REPLY_PROPERTIES, NILLABLE).set(true);
 
         return node;
     }

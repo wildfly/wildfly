@@ -62,6 +62,11 @@ public class CompilationMXBeanReadResourceHandler implements OperationStepHandle
             }
         }
 
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
+            CompilationMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
+        }
+
         context.completeStep();
     }
 }
