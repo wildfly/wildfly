@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,43 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.web;
-
-import static org.jboss.as.web.Constants.CACHE_CONTAINER;
-import static org.jboss.as.web.Constants.CACHE_NAME;
-import static org.jboss.as.web.Constants.DOMAIN;
-import static org.jboss.as.web.Constants.REAUTHENTICATE;
-
-import java.util.Locale;
-
+package org.jboss.as.messaging;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@code OperationHandler} responsible for defining the accesslog entry.
+ * Add handler for the messaging subsystem.
  *
- * @author Jean-Frederic Clere
+ * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class WebSSOAdd extends AbstractAddStepHandler implements DescriptionProvider {
+class MessagingSubsystemAdd extends AbstractAddStepHandler {
 
-    static final WebSSOAdd INSTANCE = new WebSSOAdd();
+    public static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
-    private WebSSOAdd() {
-        //
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return WebSubsystemDescriptions.getSSOAdd(locale);
+    private MessagingSubsystemAdd() {
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(CACHE_CONTAINER)) model.get(CACHE_CONTAINER).set(operation.get(CACHE_CONTAINER));
-        if (operation.hasDefined(CACHE_NAME)) model.get(CACHE_NAME).set(operation.get(CACHE_NAME));
-        if (operation.hasDefined(DOMAIN)) model.get(DOMAIN).set(operation.get(DOMAIN));
-        if (operation.hasDefined(REAUTHENTICATE)) model.get(REAUTHENTICATE).set(operation.get(REAUTHENTICATE));
+        // create the hook for children
+        model.get(CommonAttributes.HORNETQ_SERVER);
     }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return false;
+    }
+
 }
