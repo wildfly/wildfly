@@ -22,20 +22,22 @@
 
 package org.jboss.as.web;
 
-import java.util.List;
-import java.util.Locale;
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.services.path.AbstractPathService;
@@ -63,17 +65,28 @@ class WebVirtualHostAdd extends AbstractAddStepHandler implements DescriptionPro
         //
     }
 
+
+    @Override
+    protected void populateModel(final ModelNode operation, final Resource resource) {
+        final ModelNode model = resource.getModel();
+
+        populateModel(operation, model);
+        WebConfigurationHandlerUtils.initializeHost(resource, operation);
+    }
+
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.get(Constants.ALIAS).set(operation.get(Constants.ALIAS));
-        model.get(Constants.ACCESS_LOG).set(operation.get(Constants.ACCESS_LOG));
-        model.get(Constants.REWRITE).set(operation.get(Constants.REWRITE));
-        model.get(Constants.SSO).set(operation.get(Constants.SSO));
+//        model.get(Constants.ACCESS_LOG).set(operation.get(Constants.ACCESS_LOG));
+//        model.get(Constants.REWRITE).set(operation.get(Constants.REWRITE));
+//        model.get(Constants.SSO).set(operation.get(Constants.SSO));
         model.get(Constants.DEFAULT_WEB_MODULE).set(operation.get(Constants.DEFAULT_WEB_MODULE));
 
         final boolean welcome = operation.hasDefined(Constants.ENABLE_WELCOME_ROOT) && operation.get(Constants.ENABLE_WELCOME_ROOT).asBoolean();
         model.get(Constants.ENABLE_WELCOME_ROOT).set(welcome);
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();

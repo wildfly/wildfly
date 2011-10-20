@@ -66,7 +66,7 @@ class WebSubsystemDescriptions {
         node.get(DESCRIPTION).set(bundle.getString("web"));
         node.get(HEAD_COMMENT_ALLOWED).set(true);
         node.get(TAIL_COMMENT_ALLOWED).set(true);
-        node.get(NAMESPACE).set(Namespace.WEB_1_0.getUriString());
+        node.get(NAMESPACE).set(Namespace.WEB_1_1.getUriString());
 
         node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, TYPE).set(ModelType.STRING);
         node.get(ATTRIBUTES, Constants.DEFAULT_VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.default-virtual-server"));
@@ -83,7 +83,8 @@ class WebSubsystemDescriptions {
         node.get(ATTRIBUTES, Constants.INSTANCE_ID, REQUIRED).set(false);
 
         node.get(CHILDREN, Constants.CONTAINER_CONFIG, DESCRIPTION).set(bundle.getString("web.configuration"));
-        node.get(CHILDREN, Constants.CONTAINER_CONFIG, MODEL_DESCRIPTION);
+        node.get(CHILDREN, Constants.CONTAINER_CONFIG, MODEL_DESCRIPTION).setEmptyObject();
+
         node.get(CHILDREN, Constants.CONNECTOR, DESCRIPTION).set(bundle.getString("web.connector"));
         node.get(CHILDREN, Constants.CONNECTOR, MODEL_DESCRIPTION);
         node.get(CHILDREN, Constants.VIRTUAL_SERVER, DESCRIPTION).set(bundle.getString("web.virtual-server"));
@@ -148,8 +149,6 @@ class WebSubsystemDescriptions {
     static ModelNode getConfigurationCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
         node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
-        node.get(REQUIRED).set(false);
-
         if (ATTRIBUTES.equals(type)) {
             getStaticResourceDescription(node.get(CHILDREN, Constants.STATIC_RESOURCES), type, bundle);
             getJspConfigurationDescription(node.get(CHILDREN, Constants.JSP_CONFIGURATION), type, bundle);
@@ -181,10 +180,6 @@ class WebSubsystemDescriptions {
     }
 
     static ModelNode getStaticResourcesCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
-
-        node.get(TYPE).set(ModelType.OBJECT);
-        node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
-        node.get(REQUIRED).set(false);
 
         node.get(type, Constants.LISTINGS, TYPE).set(ModelType.BOOLEAN);
         node.get(type, Constants.LISTINGS, DESCRIPTION).set(bundle.getString("web.configuration.static.listings"));
@@ -420,7 +415,7 @@ class WebSubsystemDescriptions {
 
             /* add the ssl descriptions */
             node.get(CHILDREN, Constants.SSL, DESCRIPTION).set(bundle.getString("web.connector.ssl"));
-            node.get(CHILDREN, Constants.SSL, MODEL_DESCRIPTION);
+            node.get(CHILDREN, Constants.SSL, MODEL_DESCRIPTION).setEmptyObject();
         }
 
         return node;
@@ -547,11 +542,11 @@ class WebSubsystemDescriptions {
 
         if (ATTRIBUTES.equals(type)) {
             node.get(CHILDREN, Constants.ACCESS_LOG, DESCRIPTION).set(bundle.getString("web.virtual-server.access-log"));
-            node.get(CHILDREN, Constants.ACCESS_LOG, MODEL_DESCRIPTION);
+            node.get(CHILDREN, Constants.ACCESS_LOG, MODEL_DESCRIPTION).setEmptyObject();
             node.get(CHILDREN, Constants.REWRITE, DESCRIPTION).set(bundle.getString("web.virtual-server.rewrite"));
-            node.get(CHILDREN, Constants.REWRITE, MODEL_DESCRIPTION);
+            node.get(CHILDREN, Constants.REWRITE, MODEL_DESCRIPTION).setEmptyObject();
             node.get(CHILDREN, Constants.SSO, DESCRIPTION).set(bundle.getString("web.virtual-server.sso"));
-            node.get(CHILDREN, Constants.SSO, MODEL_DESCRIPTION);
+            node.get(CHILDREN, Constants.SSO, MODEL_DESCRIPTION).setEmptyObject();
 
         }
 
@@ -569,6 +564,11 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.CACHE_CONTAINER, TYPE).set(ModelType.STRING);
         node.get(type, Constants.CACHE_CONTAINER, DESCRIPTION).set(bundle.getString("web.virtual-server.sso.cache-container"));
         node.get(type, Constants.CACHE_CONTAINER, REQUIRED).set(false);
+
+        node.get(type, Constants.CACHE_NAME, TYPE).set(ModelType.STRING);
+        node.get(type, Constants.CACHE_NAME, DESCRIPTION).set(bundle.getString("web.virtual-server.sso.cache-name"));
+        node.get(type, Constants.CACHE_NAME, REQUIRED).set(false);
+
 
         node.get(type, Constants.DOMAIN, TYPE).set(ModelType.STRING);
         node.get(type, Constants.DOMAIN, DESCRIPTION).set(bundle.getString("web.virtual-server.sso.domain"));

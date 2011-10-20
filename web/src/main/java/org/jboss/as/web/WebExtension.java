@@ -22,8 +22,6 @@
 
 package org.jboss.as.web;
 
-import org.apache.catalina.servlets.WebdavServlet;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -36,10 +34,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.web.deployment.ServletDeploymentStats;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import java.util.Locale;
 
 /**
  * The web extension.
@@ -84,7 +79,8 @@ public class WebExtension implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), WebSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.WEB_1_1.getUriString(), WebSubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(Namespace.WEB_1_0.getUriString(), WebSubsystemParser.getInstance());
     }
 
 }
