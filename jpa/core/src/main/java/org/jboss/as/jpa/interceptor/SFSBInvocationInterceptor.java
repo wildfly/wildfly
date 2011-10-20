@@ -53,7 +53,7 @@ public class SFSBInvocationInterceptor implements Interceptor {
             throw MESSAGES.notSetInInterceptorContext("componentInstance", context);
         }
         StatefulSessionComponentInstance sfsb = (StatefulSessionComponentInstance) componentInstance;
-        SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb);
+        SFSBContextHandleImpl sfsbContextHandle = new SFSBContextHandleImpl(sfsb.getId());
 
         SFSBCallStack.pushCall(sfsbContextHandle);
         try {

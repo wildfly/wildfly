@@ -251,6 +251,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             for (PersistenceUnitMetadataHolder holder : puList) {
                 setAnnotationIndexes(holder, deploymentUnit);
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+
                     pu.setClassLoader(classLoader);
                     try {
                         final HashMap properties = new HashMap();

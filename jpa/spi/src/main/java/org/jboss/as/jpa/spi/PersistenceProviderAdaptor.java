@@ -35,6 +35,7 @@ public interface PersistenceProviderAdaptor {
 
     /**
      * pass the JtaManager in for internal use by PersistenceProviderAdaptor implementer
+     *
      * @param jtaManager
      */
     void injectJtaManager(JtaManager jtaManager);
