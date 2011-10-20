@@ -361,7 +361,8 @@ public enum Phase {
     public static final int INSTALL_WS_DEPLOYMENT_ASPECTS               = 0x0710;
     // IMPORTANT: WS integration installs deployment aspects dynamically
     // so consider INSTALL 0x0710 - 0x07FF reserved for WS subsystem!
-    public static final int INSTALL_RA_DEPLOYMENT                       = 0x0800;
+    public static final int INSTALL_RA_NATIVE                           = 0x0800;
+    public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
     public static final int INSTALL_POJO_DEPLOYMENT                     = 0x0A00;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;
