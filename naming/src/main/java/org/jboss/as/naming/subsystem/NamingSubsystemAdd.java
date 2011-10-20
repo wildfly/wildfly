@@ -20,11 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming.service;
+package org.jboss.as.naming.subsystem;
+
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+
+import java.util.List;
 
 import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.NamingException;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -37,16 +42,14 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.JndiNamingDependencySetupProcessor;
 import org.jboss.as.naming.management.JndiViewExtensionRegistry;
+import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
-
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

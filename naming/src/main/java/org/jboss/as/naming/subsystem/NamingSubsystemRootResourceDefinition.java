@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,57 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming.service;
+package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.naming.management.JndiViewOperation;
 import org.jboss.dmr.ModelNode;
 
 /**
- * @author Emanuel Muckenhuber
+ * {@link org.jboss.as.controller.ResourceDefinition} for the Naming subsystem's root management resource.
+ *
+ * @author Stuart Douglas
  */
-class NamingSubsystemProviders {
+public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    static final String RESOURCE_NAME = NamingSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+    public static final NamingSubsystemRootResourceDefinition INSTANCE = new NamingSubsystemRootResourceDefinition();
 
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(DESCRIPTION).set(bundle.getString("naming"));
-            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
-            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(NamingExtension.NAMESPACE);
-
-            return subsystem;
-        }
-    };
-
-    static final DescriptionProvider SUBSYSTEM_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode op = new ModelNode();
-            op.get(OPERATION_NAME).set(ADD);
-            op.get(DESCRIPTION).set(bundle.getString("naming.add"));
-
-            return op;
-        }
-    };
 
     static final DescriptionProvider JNDI_VIEW = new DescriptionProvider() {
 
@@ -85,10 +59,21 @@ class NamingSubsystemProviders {
         }
     };
 
+    private NamingSubsystemRootResourceDefinition() {
+        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME),
+                NamingExtension.getResourceDescriptionResolver(NamingExtension.SUBSYSTEM_NAME),
+                NamingSubsystemAdd.INSTANCE, NamingSubsystemRemove.INSTANCE,
+                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    }
+
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+        return ResourceBundle.getBundle(NamingExtension.RESOURCE_NAME, locale);
     }
 }

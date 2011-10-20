@@ -23,7 +23,7 @@ package org.jboss.as.naming;
 
 import java.io.IOException;
 
-import org.jboss.as.naming.service.NamingExtension;
+import org.jboss.as.naming.subsystem.NamingExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
@@ -38,7 +38,14 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return "<subsystem xmlns=\"urn:jboss:domain:naming:1.0\" />";
+        return
+                "<subsystem xmlns=\"urn:jboss:domain:naming:1.1\" >" +
+                        "<bindings>" +
+                            "<simple name=\"java:global/a\" value=\"100\" type=\"int\" />" +
+                            "<object-factory name=\"java:global/b\" module=\"org.jboss.as.naming\" class=\"org.jboss.as.naming.ManagedReferenceObjectFactory\" />" +
+                            "<lookup name=\"java:global/c\" lookup=\"java:global/b\" />" +
+                        "</bindings>" +
+                "</subsystem>";
     }
 
 }

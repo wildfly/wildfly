@@ -473,12 +473,13 @@ public abstract class AbstractSubsystemTest {
         ModelDescriptionValidator validator = new ModelDescriptionValidator(address, model, arbitraryDescriptors);
         List<ValidationFailure> validationMessages = validator.validateResource();
         if (validationMessages.size() > 0) {
-            System.out.println("VALIDATION ERRORS IN MODEL:");
+            final StringBuilder builder = new StringBuilder("VALIDATION ERRORS IN MODEL:");
             for (ValidationFailure failure :validationMessages) {
-                System.out.println(failure);
+                builder.append(failure);
             }
+            System.out.println(builder.toString());
             if (arbitraryDescriptors != null) {
-                Assert.fail("Failed due to validation errors in the model. Please fix :-)");
+                Assert.fail("Failed due to validation errors in the model. Please fix :-) " + builder.toString());
             }
         }
     }
