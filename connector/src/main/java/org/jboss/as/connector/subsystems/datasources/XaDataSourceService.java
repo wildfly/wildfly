@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
@@ -33,19 +34,19 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class XaDataSourceService extends AbstractDataSourceService {
 
-    private final InjectedValue<XaDataSource> dataSourceConfig = new InjectedValue<XaDataSource>();
+    private final InjectedValue<ModifiableXaDataSource> dataSourceConfig = new InjectedValue<ModifiableXaDataSource>();
 
     public XaDataSourceService(final String jndiName) {
         super(jndiName);
     }
 
-    public AS7DataSourceDeployer getDeployer() {
-        // this.dataSourceConfig = dataSourceConfig;
-        return new AS7DataSourceDeployer(dataSourceConfig.getValue());
+    @Override
+    public AS7DataSourceDeployer getDeployer() throws ValidateException {
+        return new AS7DataSourceDeployer(dataSourceConfig.getValue().getUnModifiableInstance());
 
     }
 
-    public Injector<XaDataSource> getDataSourceConfigInjector() {
+    public Injector<ModifiableXaDataSource> getDataSourceConfigInjector() {
         return dataSourceConfig;
     }
 }

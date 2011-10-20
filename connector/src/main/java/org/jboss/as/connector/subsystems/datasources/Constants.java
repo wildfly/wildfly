@@ -136,6 +136,8 @@ class Constants {
 
     private static final String XADATASOURCEPROPERTIES_NAME = "xa-datasource-properties";
 
+    private static final String XADATASOURCEPROPERTIES_VALUE_NAME = "value";
+
     private static final String XADATASOURCECLASS_NAME = "xa-datasource-class";
 
     private static final String INTERLEAVING_NAME = "interleaving";
@@ -284,6 +286,8 @@ class Constants {
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition XADATASOURCE_PROPERTIES = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition XADATASOURCE_PROPERTY_VALUE = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_VALUE_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
     static final SimpleAttributeDefinition DRIVER_NAME = new SimpleAttributeDefinition(DRIVER_NAME_NAME, Driver.Attribute.NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

@@ -25,6 +25,7 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_CONNECTION_PROPERTIES_DESC;
+import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XADATASOURCE_PROPERTIES_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
@@ -38,7 +39,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -49,9 +49,9 @@ import org.jboss.msc.service.ServiceTarget;
  * Adds a recovery-environment to the Transactions subsystem
  *
  */
-public class ConnectionPropertyAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class XaDataSourcePropertyAdd extends AbstractAddStepHandler implements DescriptionProvider {
 
-    public static final ConnectionPropertyAdd INSTANCE = new ConnectionPropertyAdd();
+    public static final XaDataSourcePropertyAdd INSTANCE = new XaDataSourcePropertyAdd();
 
 
     /**
@@ -60,14 +60,14 @@ public class ConnectionPropertyAdd extends AbstractAddStepHandler implements Des
     @Override
     public ModelNode getModelDescription(Locale locale) {
         // TODO use a ResourceDefinition and StandardResourceDescriptionResolver for this resource
-        return ADD_CONNECTION_PROPERTIES_DESC.getModelDescription(Locale.getDefault());
+        return ADD_XADATASOURCE_PROPERTIES_DESC.getModelDescription(Locale.getDefault());
     }
 
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
 
-        CONNECTION_PROPERTY_VALUE.validateAndSet(operation, modelNode);
+        XADATASOURCE_PROPERTY_VALUE.validateAndSet(operation, modelNode);
 
     }
 
@@ -76,30 +76,30 @@ public class ConnectionPropertyAdd extends AbstractAddStepHandler implements Des
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
-        final String configPropertyValue = CONNECTION_PROPERTY_VALUE.validateResolvedOperation(recoveryEnvModel).asString();
+        final String configPropertyValue = XADATASOURCE_PROPERTY_VALUE.validateResolvedOperation(recoveryEnvModel).asString();
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
         final String jndiName = path.getElement(path.size() - 2).getValue();
         final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
 
-        ServiceName serviceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append(configPropertyName);
-        ServiceName dsServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
+        ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append(configPropertyName);
+        ServiceName xadsServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
 
 
-        final ServiceName dataSourceConfigServiceName = DataSourceConfigService.SERVICE_NAME_BASE
+        final ServiceName dataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
                 .append(jndiName);
         final ServiceController<?> dataSourceConfigController = registry
                 .getService(dataSourceConfigServiceName);
-        if (dataSourceConfigController != null && !((DataSource) dataSourceConfigController.getValue()).isEnabled()) {
+        if (dataSourceConfigController != null && !((XaDataSource) dataSourceConfigController.getValue()).isEnabled()) {
 
 
             final ServiceTarget serviceTarget = context.getServiceTarget();
 
-            final ConnectionPropertiesService service = new ConnectionPropertiesService(configPropertyName, configPropertyValue);
+            final XaDataSourcePropertiesService service = new XaDataSourcePropertiesService(configPropertyName, configPropertyValue);
             serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addDependency(dsServiceName, ModifiableDataSource.class, service.getDSInjector())
+                    .addDependency(xadsServiceName, ModifiableXaDataSource.class, service.getXADSInjector())
                     .addListener(verificationHandler).install();
 
             context.addStep(verificationHandler, OperationContext.Stage.VERIFY);

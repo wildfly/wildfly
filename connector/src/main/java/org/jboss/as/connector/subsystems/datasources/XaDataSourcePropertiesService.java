@@ -22,8 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
-
+import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -36,16 +35,16 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
-final class ConnectionPropertiesService implements Service<String> {
+final class XaDataSourcePropertiesService implements Service<String> {
 
 
     private final String value;
         private final String name;
-        private final InjectedValue<ModifiableDataSource> ds = new InjectedValue<ModifiableDataSource>();
+        private final InjectedValue<ModifiableXaDataSource> xads = new InjectedValue<ModifiableXaDataSource>();
 
 
         /** create an instance **/
-        public ConnectionPropertiesService(String name, String value) {
+        public XaDataSourcePropertiesService(String name, String value) {
             this.name = name;
             this.value = value;
         }
@@ -57,7 +56,8 @@ final class ConnectionPropertiesService implements Service<String> {
 
         @Override
         public void start(StartContext context) throws StartException {
-            ds.getValue().addConnectionProperty(name,value);
+            Logger.getLogger(this.getClass()).infof("addinf %s,%s to %s",name,value, xads.getValue().getJndiName());
+            xads.getValue().addXaDataSourceProperty(name,value);
         }
 
         @Override
@@ -65,8 +65,8 @@ final class ConnectionPropertiesService implements Service<String> {
 
         }
 
-        public Injector<ModifiableDataSource> getDSInjector() {
-            return ds;
+        public Injector<ModifiableXaDataSource> getXADSInjector() {
+            return xads;
         }
 
 

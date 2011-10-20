@@ -32,6 +32,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -52,6 +53,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
 import static org.jboss.as.connector.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Abstract operation handler responsible for adding a DataSource.
@@ -62,18 +64,21 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
 
-        final String jndiName = Util.getJndiName(operation);
+        final ModelNode address = operation.require(OP_ADDR);
+        final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
+
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        boolean enabled = !operation.hasDefined(ENABLED.getName()) || operation.get(ENABLED.getName()).asBoolean();
+        boolean enabled = false;
+                //!operation.hasDefined(ENABLED.getName()) || operation.get(ENABLED.getName()).asBoolean();
 
         ModelNode node = operation.require(DATASOURCE_DRIVER.getName());
 
 
-        AbstractDataSourceService dataSourceService = createDataSourceService(jndiName);
+        AbstractDataSourceService dataSourceService = createDataSourceService(dsName);
 
-        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+        final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(dsName);
         final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
                 .addService(dataSourceServiceName, dataSourceService)
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
@@ -85,7 +90,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
-        controllers.add(startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, jndiName, serviceTarget, operation));
+        controllers.add(startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation));
 
         final String driverName = node.asString();
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
@@ -96,12 +101,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         final DataSourceReferenceFactoryService referenceFactoryService = new DataSourceReferenceFactoryService();
         final ServiceName referenceFactoryServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE
-                .append(jndiName);
+                .append(dsName);
         final ServiceBuilder<?> referenceBuilder = serviceTarget.addService(referenceFactoryServiceName,
                 referenceFactoryService).addDependency(dataSourceServiceName, DataSource.class,
                 referenceFactoryService.getDataSourceInjector());
 
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(dsName);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(bindInfo.getBinderServiceName(), binderService)
@@ -110,15 +115,15 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
+                                SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(dsName);
                                 break;
                             }
                             case START_REQUESTED_to_DOWN: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
+                                SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(dsName);
                                 break;
                             }
                             case REMOVING_to_REMOVED: {
-                                SUBSYSTEM_DATASOURCES_LOGGER.debugf("Removed JDBC Data-source [%s]", jndiName);
+                                SUBSYSTEM_DATASOURCES_LOGGER.debugf("Removed JDBC Data-source [%s]", dsName);
                                 break;
                             }
                         }
@@ -174,6 +179,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             if (existingModel.hasDefined(attribute.getName())) {
                 newModel.get(attribute.getName()).set(existingModel.get(attribute.getName()));
             }
+        }
+        if (existingModel.hasDefined(ENABLED.getName())) {
+              newModel.get(ENABLED.getName()).set(existingModel.get(ENABLED.getName()));
         }
 
     }

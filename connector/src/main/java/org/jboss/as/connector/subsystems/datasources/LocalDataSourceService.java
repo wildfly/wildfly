@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 
@@ -39,8 +40,8 @@ public class LocalDataSourceService extends AbstractDataSourceService {
         super(jndiName);
     }
 
-    public AS7DataSourceDeployer getDeployer() {
-        // this.dataSourceConfig = dataSourceConfig;
+    @Override
+    public AS7DataSourceDeployer getDeployer() throws ValidateException {
         return new AS7DataSourceDeployer(dataSourceConfig.getValue().getUnModifiableInstance());
 
     }
