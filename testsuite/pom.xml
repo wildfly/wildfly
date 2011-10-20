@@ -335,24 +335,10 @@
                 </property>
             </activation>
             <modules>
-                <module>api</module>
                 <module>benchmark</module>
                 <module>domain</module>
                 <module>integration</module>
-                <module>spec</module>
                 <module>stress</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>api.module.profile</id>
-            <activation>
-                <property>
-                    <name>api.module</name>
-                </property>
-            </activation>
-            <modules>
-                <module>api</module>
             </modules>
         </profile>
 
@@ -389,18 +375,6 @@
             </activation>
             <modules>
                 <module>integration</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>spec.module.profile</id>
-            <activation>
-                <property>
-                    <name>spec.module</name>
-                </property>
-            </activation>
-            <modules>
-                <module>spec</module>
             </modules>
         </profile>
 

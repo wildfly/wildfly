@@ -39,4 +39,14 @@
 
     </target>
 
+    <!-- Not needed, built with ShrinkWrap.
+    <target name="build-basic-integration-jars" description="Build the deployments.">
+        <war warfile="${tests.output.dir}/test-libs/jbws3207.war" webxml="${tests.output.dir}/test-classes/ws/tools/jbws3207/WEB-INF/web.xml">
+            <classes dir="${tests.output.dir}/test-classes">
+                <include name="org/jboss/as/testsuite/integration/ws/tools/jbws3207/service/*.class" />
+            </classes>
+        </war>
+    </target>
+    -->
+
 </project>
