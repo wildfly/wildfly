@@ -22,15 +22,11 @@
 
 package org.jboss.as.modcluster;
 
-import static org.jboss.as.web.Constants.FLAGS;
-import static org.jboss.as.web.Constants.PATTERN;
-import static org.jboss.as.web.Constants.SUBSTITUTION;
-
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -47,19 +43,13 @@ class ModClusterAddSSL extends AbstractAddStepHandler implements DescriptionProv
     }
 
     @Override
-    protected void populateModel(final ModelNode operation, final Resource resource) {
-        final ModelNode model = resource.getModel();
-        populateModel(operation, model);
-    }
-    @Override
     public ModelNode getModelDescription(Locale locale) {
         return ModClusterSubsystemDescriptions.getModClusterAddSSL(locale);
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        if (operation.hasDefined(PATTERN)) model.get(PATTERN).set(operation.get(PATTERN));
-        if (operation.hasDefined(SUBSTITUTION)) model.get(SUBSTITUTION).set(operation.get(SUBSTITUTION));
-        if (operation.hasDefined(FLAGS)) model.get(FLAGS).set(operation.get(FLAGS));
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        // TODO Auto-generated method stub
+
     }
 }
