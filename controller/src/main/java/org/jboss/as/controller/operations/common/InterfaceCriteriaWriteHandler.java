@@ -77,6 +77,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         final ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
         def.getValidator().validateParameter(name, value);
         model.get(name).set(value);
+        context.reloadRequired();
         // Verify the model in a later step
         context.addStep(VERIFY_HANDLER, OperationContext.Stage.VERIFY);
         context.completeStep();

@@ -23,10 +23,12 @@
 package org.jboss.as.controller;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -119,6 +121,29 @@ public class SimpleAttributeDefinitionBuilder {
     public SimpleAttributeDefinitionBuilder setFlags(AttributeAccess.Flag... flags) {
         this.flags = flags;
         return this;
+    }
+
+    public SimpleAttributeDefinitionBuilder addFlag(final AttributeAccess.Flag flag) {
+        if(flags == null) {
+            flags = new AttributeAccess.Flag[] { flag };
+        } else {
+            final int i = flags.length;
+            flags = Arrays.copyOf(flags, i + 1);
+            flags[i] = flag;
+        }
+        return this;
+    }
+
+    public SimpleAttributeDefinitionBuilder setStorageRuntime() {
+        return addFlag(AttributeAccess.Flag.STORAGE_RUNTIME);
+    }
+
+    public SimpleAttributeDefinitionBuilder setRestartAllServices() {
+        return addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    }
+
+    public SimpleAttributeDefinitionBuilder setRestartJVM() {
+        return addFlag(AttributeAccess.Flag.RESTART_JVM);
     }
 
     public static SimpleAttributeDefinitionBuilder create(final String name, final ModelType type) {
