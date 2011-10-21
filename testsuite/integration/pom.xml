@@ -212,7 +212,7 @@
 
             </dependencies>
             <!--
-            Server configuration executions
+                Server configuration executions.
             -->
             <build>
                 <plugins>
@@ -235,14 +235,14 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <!-- build the UDP server configs in target-->
+                                        <!-- Build the UDP server configs in target. -->
                                         <ant antfile="${basedir}/src/test/scripts/basic-integration-build.xml">
                                             <target name="build-basic-integration"/>
                                         </ant>
                                     </target>
                                 </configuration>
                             </execution>
-                            <!-- copy in some jars -->
+                            <!-- Copy in some jars. -->
                             <execution>
                                 <id>prepare-jars-basic-integration.server</id>
                                 <phase>process-test-resources</phase>
@@ -254,7 +254,8 @@
                                         <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
                                         <property name="tests.output.dir" value="${project.build.directory}"/>
 
-                                        <!-- Make jars available for use in deployments. Not used now - jbws3027.war created by SWrap.
+                                        <!-- Make jars available for use in deployments.
+                                             NOT USED NOW - jbws3027.war created by SWrap.
                                         <ant antfile="${basedir}/src/test/scripts/basic-integration-build.xml">
                                             <target name="build-basic-integration-jars"/>
                                         </ant>
@@ -272,7 +273,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions combine.children="append">
 
-                            <!-- disable default-test execution -->
+                            <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
                                 <goals>
@@ -291,62 +292,62 @@
                                 <configuration>
                                    <!-- Tests to execute. -->
                                    <includes>
-                                       <include>org/jboss/as/test/as835/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/as859/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/beanvalidation/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/common/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/datasourcedefinition/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/deployment/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/ejb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/injection/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/interceptors/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/jaxb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/jaxrs/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/jpa/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/jsf/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/mdb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/messaging/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/osgi/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/pojo/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/sar/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/security/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/transactionmanager/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/webejb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/websecurity/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/weld/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/weldejb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/ws/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/wsejb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/xerces/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/as835/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/as859/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/beanvalidation/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/common/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/datasourcedefinition/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/deployment/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/ejb/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/injection/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/interceptors/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/jaxb/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/jaxrs/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/jpa/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/jsf/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/mdb/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/osgi/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/pojo/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/sar/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/security/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/transactionmanager/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/webejb/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/websecurity/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/weld/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/weldejb/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/ws/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/wsejb/**/*TestCase.java</include>
+                                       <include>org/jboss/as/test/integration/xerces/**/*TestCase.java</include>
                                    </includes>
                                    <excludes>
                                        <!-- Messaging tests are excluded since the default/web profile doesn't support messaging -->
-                                       <exclude>org/jboss/as/test/messaging/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/integration/messaging/**/*TestCase.java</exclude>
                                        <!-- WebService tests are excluded since the default/web profile doesn't support webservices -->
-                                       <exclude>org/jboss/as/test/as1675/**/*TestCase.java</exclude>
-                                       <exclude>org/jboss/as/test/ws/**/*TestCase.java</exclude>
-                                       <exclude>org/jboss/as/test/wsejb/**/*TestCase.java</exclude>
-                                       <exclude>org/jboss/as/test/xerces/ws/**/*TestCase.java</exclude>
-                                       <exclude>org/jboss/as/test/mdb/**/*TestCase.java</exclude>
-                                       <exclude>org/jboss/as/test/ejb/async/**/*TestCase.java</exclude>
-                                       <exclude>org/jboss/as/test/ejb/entity/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/integration/as1675/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/integration/ws/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/integration/wsejb/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/integration/xerces/ws/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/integration/mdb/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/integration/ejb/async/**/*TestCase.java</exclude>
+                                       <exclude>org/jboss/as/test/integration/ejb/entity/**/*TestCase.java</exclude>
                                    </excludes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- arquillian configuration -->
+                                        <!-- Arquillian configuration. -->
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
-                                        <!-- client side system properties -->
+                                        <!-- Client side system properties. -->
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
-                                    <!-- access to resources for clustering tests -->
+                                    <!-- Access to resources for clustering tests. -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!-- XML report suffix -->
+                                    <!-- XML report suffix. -->
                                     <reportNameSuffix>tests-basic-integration-default</reportNameSuffix>
                                 </configuration>
                             </execution>
@@ -361,15 +362,15 @@
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <!-- Messaging tests are included since the preview profile supports messaging -->
-                                        <include>org/jboss/as/test/messaging/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
                                         <!-- Enable the Webservice testcases since "preview" profile has support for webservices -->
-                                        <include>org/jboss/as/test/as1675/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/ws/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/wsejb/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/exerces/ws/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/mdb/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/ejb/async/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/ejb/entity/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/as1675/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ws/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/wsejb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/exerces/ws/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/mdb/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/async/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/entity/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>none</exclude>
@@ -377,15 +378,15 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- arquillian configuration -->
+                                        <!-- Arquillian configuration. -->
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
 
-                                        <!-- client side system properties -->
+                                        <!-- Client side system properties. -->
                                         <jboss.server.config.file.name>standalone-preview.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
-                                    <!-- access to resources for clustering tests -->
+                                    <!-- Access to resources for clustering tests. -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
@@ -513,12 +514,12 @@
                                         <!-- Arquillian configuration. -->
                                         <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-udp</arquillian.launch>
-                                        <!-- Client side system properties -->
-                                        <!-- Use combin.children="append" to pick up parent properties automatically -->
+                                        <!-- Client side system properties. -->
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
-                                    <!-- Access to resources for clustering tests -->
+                                    <!-- Access to resources for clustering tests. -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
                                     </additionalClasspathElements>
@@ -590,7 +591,7 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <!-- build the UDP server configs in target-->
+                                        <!-- Build the UDP server configs in target. -->
                                         <ant antfile="${basedir}/src/test/scripts/smoke-build.xml">
                                             <target name="build-smoke"/>
                                         </ant>
@@ -643,7 +644,7 @@
 
                                         <!-- Client side system properties. -->
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <!-- Use combin.children="append" to pick up parent properties automatically. -->
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                     </systemPropertyVariables>
 
                                     <!-- Access to resources for clustering tests. -->
@@ -674,16 +675,16 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- arquillian configuration -->
+                                        <!-- Arquillian configuration. -->
                                         <arquillian.xml>smoke-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
 
-                                        <!-- client side system properties -->
+                                        <!-- Client side system properties. -->
                                         <jboss.server.config.file.name>standalone-preview.xml</jboss.server.config.file.name>
-                                        <!-- use combin.children="append" to pick up parent properties automatically -->
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                     </systemPropertyVariables>
 
-                                    <!-- access to resources for clustering tests -->
+                                    <!-- Access to resources for clustering tests. -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources/smoke</additionalClasspathElement>
                                     </additionalClasspathElements>
