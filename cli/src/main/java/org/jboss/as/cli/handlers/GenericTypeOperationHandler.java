@@ -223,9 +223,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
 
     @Override
     public Collection<CommandArgument> getArguments(CommandContext ctx) {
-
         ParsedCommandLine args = ctx.getParsedCommandLine();
-
         try {
             if(!name.isValueComplete(args)) {
                 return staticArgs;
@@ -233,8 +231,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         } catch (CommandFormatException e) {
             return Collections.emptyList();
         }
-
         final String op = operation.getValue(args);
+        return loadArguments(ctx, op).values();
+    }
+
+    private Map<String,CommandArgument> loadArguments(CommandContext ctx, String op) {
         if(op == null) {
             // list node properties
             if(nodeProps == null) {
@@ -264,7 +265,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 }
                 nodeProps = argMap;
             }
-            return nodeProps.values();
+            return nodeProps;
         } else {
             // list operation properties
             if(propsByOp == null) {
@@ -276,7 +277,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 try {
                     descr = getOperationDescription(ctx, op);
                 } catch (IOException e1) {
-                    return Collections.emptyList();
+                    return Collections.emptyMap();
                 }
 
                 if(descr == null || !descr.has("request-properties")) {
@@ -306,7 +307,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 }
                 propsByOp.put(op, opProps);
             }
-            return opProps.values();
+            return opProps;
         }
     }
 
@@ -353,9 +354,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             profile = null;
         }
 
-        if(nodeProps == null) {
-            getArguments(ctx);
-        }
+        final Map<String,CommandArgument> nodeProps = loadArguments(ctx, null);
         for(String argName : args.getPropertyNames()) {
             if(argName.equals("--profile") || this.name.getFullName().equals(argName)) {
                 continue;
@@ -413,11 +412,9 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             builder.addNode(node.getType(), node.getName());
         }
         builder.addNode(type, name);
-
         builder.setOperationName(operation);
 
-        getArguments(ctx);// TODO there should be a better way to ensure the data is there
-        final Map<String, CommandArgument> argsMap = propsByOp.get(operation);
+        final Map<String, CommandArgument> argsMap = loadArguments(ctx, operation);
 
         for(String argName : args.getPropertyNames()) {
             if(argName.equals("--profile")) {
