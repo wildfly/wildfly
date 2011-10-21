@@ -4742,8 +4742,16 @@
                         <artifactId>xercesImpl</artifactId>
                      </exclusion>
                      <exclusion>
+                        <groupId>com.wutka</groupId>
+                        <artifactId>dtdparser</artifactId>
+                     </exclusion>
+                     <exclusion>
                         <groupId>jboss</groupId>
                         <artifactId>jboss-common-core</artifactId>
+                     </exclusion>
+                     <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-reflect</artifactId>
                      </exclusion>
                      <exclusion>
                         <groupId>org.jboss.logging</groupId>
