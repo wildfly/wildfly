@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.smoke.embedded.configadmin;
+package org.jboss.as.test.smoke.configadmin;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

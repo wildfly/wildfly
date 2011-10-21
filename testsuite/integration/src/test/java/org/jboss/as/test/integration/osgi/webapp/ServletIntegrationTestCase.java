@@ -59,7 +59,7 @@ import org.osgi.framework.ServiceReference;
  * @since 13-May-2011
  */
 @RunWith(Arquillian.class)
-public class ServletIntegrationTestCase extends OSGiTestSupport {
+public class ServletIntegrationTestCase {
 
     static final String WAR_DEPLOYMENT_NAME = "web-osgi-client.war";
 
@@ -123,6 +123,6 @@ public class ServletIntegrationTestCase extends OSGiTestSupport {
 
     private String getHttpResponse(String message) throws IOException {
         String reqPath = "/web-osgi-client/servlet?msg=" + message;
-        return getHttpResponse("localhost", 8080, reqPath, 2000);
+        return OSGiTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
     }
 }

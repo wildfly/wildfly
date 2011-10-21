@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.smoke.embedded.configadmin;
+package org.jboss.as.test.smoke.configadmin;
 
 import org.jboss.as.osgi.service.ConfigAdminService;
 import org.jboss.msc.service.AbstractService;

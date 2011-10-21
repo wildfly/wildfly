@@ -47,13 +47,17 @@ import org.osgi.service.startlevel.StartLevel;
  * @author thomas.diesler@jboss.com
  * @since 24-May-2011
  */
-public abstract class OSGiTestSupport {
+public final class OSGiTestSupport {
+
+    // Hide ctor
+    private OSGiTestSupport() {
+    }
 
     /**
      * Changes the framework start level and waits for the STARTLEVEL_CHANGED event
      * Note, changing the framework start level is an asynchronous operation.
      */
-    protected void changeStartLevel(final BundleContext context, final int level, final long timeout, final TimeUnit units) throws InterruptedException, TimeoutException {
+    public static void changeStartLevel(final BundleContext context, final int level, final long timeout, final TimeUnit units) throws InterruptedException, TimeoutException {
         final ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
         final StartLevel startLevel = (StartLevel) context.getService(sref);
         if (level != startLevel.getStartLevel()) {
@@ -75,7 +79,7 @@ public abstract class OSGiTestSupport {
      * Use {@link PackageAdmin#getBundles(String, String)} to find a deployed bundle by
      * symbolic name and version range
      */
-    protected Bundle getDeployedBundle(BundleContext context, String symbolicName, String versionRange) {
+    public static Bundle getDeployedBundle(BundleContext context, String symbolicName, String versionRange) {
         ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
         PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
         Bundle[] bundles = packageAdmin.getBundles(symbolicName, versionRange);
@@ -84,7 +88,10 @@ public abstract class OSGiTestSupport {
         return bundles[0];
     }
 
-    protected  String getHttpResponse(String host, int port, String reqPath, int timeout) throws IOException
+    /**
+     * Execute a HTTP request against with a given timeout.
+     */
+    public static String getHttpResponse(String host, int port, String reqPath, int timeout) throws IOException
     {
        int fraction = 200;
 

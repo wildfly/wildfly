@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.smoke.embedded.stilts.bundle;
+package org.jboss.as.test.smoke.stilts.bundle;
 
 import org.jboss.logging.Logger;
 import org.projectodd.stilts.stomp.StompException;

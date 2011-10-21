@@ -57,7 +57,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 26-Oct-2009
  */
 @RunWith(Arquillian.class)
-public class OSGiWebAppNegativeTestCase extends OSGiTestSupport {
+public class OSGiWebAppNegativeTestCase {
 
     @Inject
     public BundleContext context;
@@ -89,7 +89,7 @@ public class OSGiWebAppNegativeTestCase extends OSGiTestSupport {
 
     @Test
     public void testServletAccess() throws Exception {
-        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
         try {
             bundle.start();
             fail("BundleException expected");
