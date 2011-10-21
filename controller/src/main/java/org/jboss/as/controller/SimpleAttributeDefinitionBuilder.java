@@ -39,6 +39,14 @@ import org.jboss.dmr.ModelType;
  */
 public class SimpleAttributeDefinitionBuilder {
 
+    public static SimpleAttributeDefinitionBuilder create(final String name, final ModelType type) {
+        return new SimpleAttributeDefinitionBuilder(name, type);
+    }
+
+    public static SimpleAttributeDefinitionBuilder create(final String name, final ModelType type, final boolean allowNull) {
+        return new SimpleAttributeDefinitionBuilder(name, type, allowNull);
+    }
+
     private final String name;
     private final ModelType type;
     private String xmlName;
@@ -134,20 +142,41 @@ public class SimpleAttributeDefinitionBuilder {
         return this;
     }
 
+    public SimpleAttributeDefinitionBuilder removeFlag(final AttributeAccess.Flag flag) {
+        if (flags != null && flags.length > 0) {
+            final int length = flags.length;
+            final AttributeAccess.Flag[] newFlags = new AttributeAccess.Flag[length - 1];
+            int k = 0;
+            for (int i = 0; i < length; i++) {
+                if (flags[i] != flag) {
+                    newFlags[k] = flags[i];
+                    k++;
+                }
+            }
+            if (k != length - 1) {
+                flags = newFlags;
+            }
+        }
+        return this;
+    }
+
     public SimpleAttributeDefinitionBuilder setStorageRuntime() {
+        removeFlag(AttributeAccess.Flag.STORAGE_CONFIGURATION);
         return addFlag(AttributeAccess.Flag.STORAGE_RUNTIME);
     }
 
     public SimpleAttributeDefinitionBuilder setRestartAllServices() {
+        removeFlag(AttributeAccess.Flag.RESTART_NONE);
+        removeFlag(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES);
+        removeFlag(AttributeAccess.Flag.RESTART_JVM);
         return addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES);
     }
 
     public SimpleAttributeDefinitionBuilder setRestartJVM() {
+        removeFlag(AttributeAccess.Flag.RESTART_NONE);
+        removeFlag(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES);
+        removeFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         return addFlag(AttributeAccess.Flag.RESTART_JVM);
-    }
-
-    public static SimpleAttributeDefinitionBuilder create(final String name, final ModelType type) {
-        return new SimpleAttributeDefinitionBuilder(name, type);
     }
 
 }
