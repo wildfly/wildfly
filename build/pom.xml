@@ -651,12 +651,12 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-clustering-web-spi</artifactId>
         </dependency>
-<!--
+
         <dependency>
            <groupId>org.jboss.as</groupId>
            <artifactId>jboss-as-cmp</artifactId>
         </dependency>
--->
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-console</artifactId>
