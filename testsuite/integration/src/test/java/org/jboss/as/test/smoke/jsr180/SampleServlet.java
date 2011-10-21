@@ -19,14 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment;
+package org.jboss.as.test.smoke.jsr180;
 
-import java.rmi.RemoteException;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBHome;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-public interface EchoHome extends EJBHome
+/**
+ * A sample servlet
+ *
+ * @author Thomas.Diesler@jboss.com
+ * @since 05-Apr-2005
+ */
+public class SampleServlet extends HttpServlet
 {
-   Echo create() throws RemoteException, CreateException;
+   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
+   {
+      PrintWriter out = res.getWriter();
+      out.print("Hello World!");
+      out.close();
+   }
 }

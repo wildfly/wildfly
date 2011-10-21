@@ -19,13 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment;
+package org.jboss.as.test.smoke.jsr180;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBObject;
+import javax.ejb.CreateException;
+import javax.ejb.EJBHome;
 
-public interface Echo extends EJBObject
+public interface EchoHome extends EJBHome
 {
-   String echo(String echo) throws RemoteException;
+   Echo create() throws RemoteException, CreateException;
 }
