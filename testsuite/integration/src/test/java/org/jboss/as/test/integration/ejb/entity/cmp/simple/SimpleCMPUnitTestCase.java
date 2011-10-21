@@ -21,10 +21,6 @@
  */
 package org.jboss.as.test.integration.ejb.entity.cmp.simple;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -43,6 +39,9 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -676,7 +675,7 @@ public class SimpleCMPUnitTestCase extends AbstractCmpTest {
         assertEquals(objectValue, simple.getObjectValue());
     }
 
-    @Test
+    @Ignore
     public void testDuplicateKey() throws Exception {
         try {
             SimpleHome simpleHome = getSimpleHome();

@@ -22,7 +22,9 @@
 package org.jboss.as.cmp.jdbc;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.ejb.FinderException;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
@@ -33,7 +35,23 @@ import org.jboss.as.cmp.context.CmpEntityBeanContext;
  * @version $Revision: 81030 $
  */
 public interface JDBCQueryCommand {
-    Collection execute(Method finderMethod, Object[] args, CmpEntityBeanContext ctx) throws FinderException;
+    Collection execute(Method finderMethod, Object[] args, CmpEntityBeanContext ctx, EntityProxyFactory factory) throws FinderException;
 
     JDBCStoreManager getSelectManager();
+
+    interface EntityProxyFactory {
+        Object getEntityObject(final Object primaryKey);
+
+        class Util {
+            static Collection<Object> getEntityCollection(final EntityProxyFactory factory, final Collection<Object> ids) {
+                List<Object> result = new ArrayList<Object>();
+                if (!ids.isEmpty()) {
+                    for (Object id : ids) {
+                        result.add(factory.getEntityObject(id));
+                    }
+                }
+                return result;
+            }
+        }
+    }
 }

@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.ejb.FinderException;
+import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.ejbql.Catalog;
 import org.jboss.as.cmp.ejbql.SelectFunction;
@@ -53,8 +54,7 @@ public final class JDBCDynamicQLQuery extends JDBCAbstractQueryCommand {
         metadata = (JDBCDynamicQLQueryMetaData) q;
     }
 
-    public Collection execute(Method finderMethod, Object[] args, CmpEntityBeanContext ctx)
-            throws FinderException {
+    public Collection execute(Method finderMethod, Object[] args, CmpEntityBeanContext ctx, EntityProxyFactory factory) throws FinderException {
         String dynamicQL = (String) args[0];
         if (getLog().isDebugEnabled()) {
             getLog().debug("DYNAMIC-QL: " + dynamicQL);
@@ -141,6 +141,14 @@ public final class JDBCDynamicQLQuery extends JDBCAbstractQueryCommand {
         // get the parameter order
         setParameterList(compiler.getInputParameters());
 
+        final CmpEntityBeanComponent component = ((JDBCStoreManager) compiler.getStoreManager()).getComponent();
+        EntityProxyFactory factoryToUse = new EntityProxyFactory() {
+            public Object getEntityObject(Object primaryKey) {
+                return metadata.isResultTypeMappingLocal() && component.getLocalHomeClass() != null ?
+                        component.getEjbLocalObject(primaryKey) : component.getEJBObject(primaryKey);
+            }
+        };
+
         return execute(
                 compiler.getSQL(),
                 parameters,
@@ -149,11 +157,12 @@ public final class JDBCDynamicQLQuery extends JDBCAbstractQueryCommand {
                 selectEntity,
                 selectField,
                 selectFunction,
-                (JDBCStoreManager)compiler.getStoreManager(),
+                (JDBCStoreManager) compiler.getStoreManager(),
                 mask,
                 compiler.getInputParameters(),
                 leftJoinCMRList,
                 metadata,
+                factoryToUse,
                 log
         );
     }

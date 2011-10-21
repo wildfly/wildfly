@@ -43,8 +43,8 @@ public final class JDBCFindEntitiesCommand {
         this.manager = manager;
     }
 
-    public Collection execute(Method finderMethod, Object[] args, CmpEntityBeanContext ctx) throws FinderException {
+    public Collection execute(Method finderMethod, Object[] args, final CmpEntityBeanContext ctx, final JDBCQueryCommand.EntityProxyFactory factory) throws FinderException {
         JDBCQueryCommand query = manager.getQueryManager().getQueryCommand(finderMethod);
-        return query.execute(finderMethod, args, ctx);
+        return query.execute(finderMethod, args, ctx, factory);
     }
 }

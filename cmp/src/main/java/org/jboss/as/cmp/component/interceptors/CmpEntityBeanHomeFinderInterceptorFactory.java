@@ -26,14 +26,13 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import javax.ejb.ObjectNotFoundException;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
+import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeFinderInterceptorFactory;
@@ -44,10 +43,12 @@ import org.jboss.invocation.InterceptorContext;
  */
 public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFinderInterceptorFactory {
     private final Method finderMethod;
+    private final boolean localHome;
 
-    public CmpEntityBeanHomeFinderInterceptorFactory(final Method finderMethod) {
+    public CmpEntityBeanHomeFinderInterceptorFactory(final Method finderMethod, final boolean localHome) {
         super(finderMethod);
         this.finderMethod = finderMethod;
+        this.localHome = localHome;
     }
 
 
@@ -69,24 +70,23 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
             cmpComponent.synchronizeEntitiesWithinTransaction(entityContext.getTransaction());
         }
 
+        final JDBCQueryCommand.EntityProxyFactory factory = new JDBCQueryCommand.EntityProxyFactory() {
+            public Object getEntityObject(final Object primaryKey) {
+                return localHome ? cmpComponent.getEjbLocalObject(primaryKey) : cmpComponent.getEJBObject(primaryKey);
+            }
+        };
+
         if (getReturnType() == ReturnType.SINGLE) {
-            return store.findEntity(context.getMethod(), context.getParameters(), entityContext);
+            return store.findEntity(context.getMethod(), context.getParameters(), entityContext, factory);
         } else {
-            return store.findEntities(context.getMethod(), context.getParameters(), entityContext);
+            return store.findEntities(context.getMethod(), context.getParameters(), entityContext, factory);
         }
     }
 
     protected Object prepareResults(final InterceptorContext context, final Object result, final EntityBeanComponent component) throws ObjectNotFoundException {
         switch (getReturnType()) {
             case COLLECTION: {
-                Collection keys = (Collection) result;
-                final Set<Object> results = new HashSet<Object>();
-                if (keys != null) {
-                    for (Object key : keys) {
-                        results.add(getLocalObject(key));
-                    }
-                }
-                return results;
+                return result;
             }
             case ENUMERATION: {
                 Collection<Object> entities = (Collection<Object>) result;
@@ -97,7 +97,7 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
                     }
 
                     public Object nextElement() {
-                        return getLocalObject(iterator.next());
+                        return iterator.next();
                     }
                 };
             }
@@ -105,7 +105,7 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
                 if (result == null) {
                     throw new ObjectNotFoundException("Could not find entity from " + finderMethod + " with params " + Arrays.toString(context.getParameters()));
                 }
-                return getLocalObject(result);
+                return result;
             }
         }
     }

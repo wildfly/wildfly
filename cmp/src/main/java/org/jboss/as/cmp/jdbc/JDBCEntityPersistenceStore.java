@@ -101,7 +101,7 @@ public interface JDBCEntityPersistenceStore {
      * @throws java.rmi.RemoteException thrown if some system exception occurs
      * @throws Exception                thrown if some heuristic problem occurs
      */
-    Object findEntity(Method finderMethod, Object[] args, CmpEntityBeanContext instance) throws Exception;
+    Object findEntity(Method finderMethod, Object[] args, CmpEntityBeanContext instance, final JDBCQueryCommand.EntityProxyFactory factory) throws Exception;
 
     /**
      * This method is called when collections of entities are to be found. The
@@ -118,7 +118,7 @@ public interface JDBCEntityPersistenceStore {
      * @throws java.rmi.RemoteException thrown if some system exception occurs
      * @throws Exception                thrown if some heuristic problem occurs
      */
-    Collection findEntities(Method finderMethod, Object[] args, CmpEntityBeanContext instance) throws Exception;
+    Collection findEntities(Method finderMethod, Object[] args, CmpEntityBeanContext instance, final JDBCQueryCommand.EntityProxyFactory factory) throws Exception;
 
     /**
      * This method is called when an entity shall be activated.

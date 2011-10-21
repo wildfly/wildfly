@@ -24,6 +24,7 @@ package org.jboss.as.cmp.jdbc2;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
+import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.cmp.jdbc.JDBCTypeFactory;
 import org.jboss.as.cmp.jdbc.QueryParameter;
 import org.jboss.as.cmp.jdbc.metadata.JDBCFunctionMappingMetaData;
@@ -83,7 +84,7 @@ public class FindByPrimaryKeyCommand
         setEntityReader(entity, false);
     }
 
-    public Object fetchOne(Schema schema, Object[] args) throws FinderException {
+    public Object fetchOne(Schema schema, Object[] args, JDBCQueryCommand.EntityProxyFactory factory) throws FinderException {
         Object pk = args[0];
         if (pk == null) {
             throw new IllegalArgumentException("Null argument for findByPrimaryKey");
@@ -92,7 +93,7 @@ public class FindByPrimaryKeyCommand
         Object instance;
         boolean cached = entity.getTable().hasRow(pk);
         if (!cached) {
-            instance = super.executeFetchOne(args);
+            instance = super.executeFetchOne(args, factory);
             if (instance == null) {
                 throw new ObjectNotFoundException("Instance not find: entity=" + entity.getEntityName() + ", pk=" + pk);
             }

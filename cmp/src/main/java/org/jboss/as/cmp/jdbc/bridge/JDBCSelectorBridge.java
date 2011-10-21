@@ -73,7 +73,7 @@ public class JDBCSelectorBridge implements SelectorBridge {
             manager.getComponent().synchronizeEntitiesWithinTransaction(tx);
         }
 
-        return execute(args);
+        return execute(ctx, args);
     }
 
     // SelectorBridge implementation
@@ -90,12 +90,19 @@ public class JDBCSelectorBridge implements SelectorBridge {
         return queryMetaData.getMethod().getReturnType();
     }
 
-    public Object execute(Object[] args) throws FinderException {
+    public Object execute(CmpEntityBeanContext ctx, Object[] args) throws FinderException {
         Collection retVal;
         Method method = getMethod();
         try {
             JDBCQueryCommand query = manager.getQueryManager().getQueryCommand(method);
-            retVal = query.execute(method, args, null);
+            final CmpEntityBeanComponent selectedComponent = query.getSelectManager().getComponent();
+            JDBCQueryCommand.EntityProxyFactory factory = new JDBCQueryCommand.EntityProxyFactory() {
+                public Object getEntityObject(Object primaryKey) {
+                    return queryMetaData.isResultTypeMappingLocal() && selectedComponent.getLocalHomeClass() != null ?
+                            selectedComponent.getEjbLocalObject(primaryKey) : selectedComponent.getEJBObject(primaryKey);
+                }
+            };
+            retVal = query.execute(method, args, null, factory);
         } catch (FinderException e) {
             throw e;
         } catch (EJBException e) {

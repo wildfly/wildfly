@@ -24,6 +24,7 @@ package org.jboss.as.cmp.jdbc2;
 
 import java.util.Collection;
 import javax.ejb.FinderException;
+import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.cmp.jdbc2.schema.Schema;
 
 
@@ -34,9 +35,9 @@ import org.jboss.as.cmp.jdbc2.schema.Schema;
 public interface QueryCommand {
     JDBCStoreManager2 getStoreManager();
 
-    Collection fetchCollection(Schema schema, Object[] args)
+    Collection fetchCollection(Schema schema, Object[] args, final JDBCQueryCommand.EntityProxyFactory factory)
             throws FinderException;
 
-    Object fetchOne(Schema schema, Object[] args)
+    Object fetchOne(Schema schema, Object[] args, final JDBCQueryCommand.EntityProxyFactory factory)
             throws FinderException;
 }

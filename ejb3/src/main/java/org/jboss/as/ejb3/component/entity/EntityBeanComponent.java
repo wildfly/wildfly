@@ -33,13 +33,10 @@ import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
 import org.jboss.as.ejb3.component.entity.entitycache.ReferenceCountingEntityCache;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
 import org.jboss.as.ejb3.pool.InfinitePool;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
@@ -108,7 +105,6 @@ public class EntityBeanComponent extends EJBComponent {
         create.put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
         return createViewInstanceProxy(getRemoteClass(), create);
     }
-
 
     public Class<EJBHome> getHomeClass() {
         return homeClass;

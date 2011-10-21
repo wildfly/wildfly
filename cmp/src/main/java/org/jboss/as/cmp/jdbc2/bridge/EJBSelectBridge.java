@@ -29,6 +29,7 @@ import javax.transaction.TransactionManager;
 import org.jboss.as.cmp.bridge.SelectorBridge;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
+import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.cmp.jdbc.metadata.JDBCQueryMetaData;
 import org.jboss.as.cmp.jdbc2.JDBCStoreManager2;
 import org.jboss.as.cmp.jdbc2.QueryCommand;
@@ -75,7 +76,7 @@ public class EJBSelectBridge implements SelectorBridge {
             instance.getComponent().synchronizeEntitiesWithinTransaction(tx);
         }
 
-        return execute(args);
+        return execute(instance, args);
     }
 
     // SelectorBridge implementation
@@ -88,14 +89,19 @@ public class EJBSelectBridge implements SelectorBridge {
         return metadata.getMethod();
     }
 
-    public Object execute(Object[] args) throws FinderException {
+    public Object execute(CmpEntityBeanContext ctx, Object[] args) throws FinderException {
         JDBCStoreManager2 manager = command.getStoreManager();
         final CmpEntityBeanComponent selectedComponent = manager.getComponent();
-
+        JDBCQueryCommand.EntityProxyFactory factory = new JDBCQueryCommand.EntityProxyFactory() {
+            public Object getEntityObject(Object primaryKey) {
+                return metadata.isResultTypeMappingLocal() && selectedComponent.getLocalHomeClass() != null ?
+                        selectedComponent.getEjbLocalObject(primaryKey) : selectedComponent.getEJBObject(primaryKey);
+            }
+        };
         Object result;
         switch (returnType) {
             case SINGLE:
-                result = command.fetchOne(schema, args);
+                result = command.fetchOne(schema, args, factory);
                 if (result == null && getMethod().getReturnType().isPrimitive()) {
                     throw new FinderException(
                             "Cannot return null as a value of primitive type " + getMethod().getReturnType().getName()
@@ -103,7 +109,7 @@ public class EJBSelectBridge implements SelectorBridge {
                 }
                 break;
             case COLLECTION:
-                result = command.fetchCollection(schema, args);
+                result = command.fetchCollection(schema, args, factory);
                 break;
             default:
                 throw new IllegalStateException("Unexpected return type: " + returnType);

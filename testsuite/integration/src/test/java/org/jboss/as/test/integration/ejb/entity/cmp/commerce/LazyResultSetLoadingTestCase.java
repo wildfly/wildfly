@@ -43,7 +43,6 @@ import org.junit.runner.RunWith;
  * @version <tt>$Revision: 81036 $</tt>
  */
 @RunWith(CmpTestRunner.class)
-@Ignore("AS7-2204")
 public class LazyResultSetLoadingTestCase extends AbstractCmpTest {
     @Deployment
     public static Archive<?> deploy() {

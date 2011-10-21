@@ -23,6 +23,7 @@ package org.jboss.as.cmp.bridge;
 
 import java.lang.reflect.Method;
 import javax.ejb.FinderException;
+import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
 /**
  * SelectorBridge represents one ejbSelect method.
@@ -41,5 +42,5 @@ public interface SelectorBridge extends EntityBridgeInvocationHandler.BridgeInvo
 
     Method getMethod();
 
-    Object execute(Object[] args) throws FinderException;
+    Object execute(CmpEntityBeanContext context, Object[] args) throws FinderException;
 }

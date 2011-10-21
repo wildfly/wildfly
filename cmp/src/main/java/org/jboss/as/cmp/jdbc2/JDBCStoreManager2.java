@@ -41,6 +41,7 @@ import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.ejbql.Catalog;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
+import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.cmp.jdbc.JDBCStartCommand;
 import org.jboss.as.cmp.jdbc.JDBCStopCommand;
 import static org.jboss.as.cmp.jdbc.JDBCStoreManager.CREATE_TABLES;
@@ -256,18 +257,18 @@ public class JDBCStoreManager2 implements JDBCEntityPersistenceStore {
 
     public Object findEntity(Method finderMethod,
                              Object[] args,
-                             CmpEntityBeanContext instance)
+                             CmpEntityBeanContext instance, final JDBCQueryCommand.EntityProxyFactory factory)
             throws FinderException {
         QueryCommand query = queryFactory.getQueryCommand(finderMethod);
-        return query.fetchOne(schema, args);
+        return query.fetchOne(schema, args, factory);
     }
 
     public Collection findEntities(Method finderMethod,
                                    Object[] args,
-                                   CmpEntityBeanContext instance)
+                                   CmpEntityBeanContext instance, final JDBCQueryCommand.EntityProxyFactory factory)
             throws FinderException {
         QueryCommand query = queryFactory.getQueryCommand(finderMethod);
-        return query.fetchCollection(schema, args);
+        return query.fetchCollection(schema, args, factory);
     }
 
     public void activateEntity(CmpEntityBeanContext ctx) {

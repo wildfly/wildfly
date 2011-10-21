@@ -131,7 +131,6 @@ public class CommerceTestCase extends AbstractCmpTest {
     }
 
     @Test
-    @Ignore("AS7-2204")
     public void test_getOrdersShippedToCA() throws Exception {
         OrderHome orderHome = getOrderHome();
         AddressHome addressHome = getAddressHome();
@@ -201,7 +200,6 @@ public class CommerceTestCase extends AbstractCmpTest {
     }
 
     @Test
-    @Ignore("AS7-2204")
     public void test_getAddressesInCA() throws Exception {
         OrderHome orderHome = getOrderHome();
         AddressHome addressHome = getAddressHome();

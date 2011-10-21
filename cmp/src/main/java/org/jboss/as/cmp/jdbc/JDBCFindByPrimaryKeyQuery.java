@@ -121,7 +121,7 @@ public final class JDBCFindByPrimaryKeyQuery extends JDBCAbstractQueryCommand {
         setParameterList(QueryParameter.createPrimaryKeyParameters(0, entity));
     }
 
-    public Collection execute(Method finderMethod, Object[] args, CmpEntityBeanContext ctx) throws FinderException {
+    public Collection execute(Method finderMethod, Object[] args, CmpEntityBeanContext ctx, EntityProxyFactory factory) throws FinderException {
         // Check in readahead cache.
         if (manager.getReadAheadCache().getPreloadDataMap(args[0], false) != null) {
             // copy pk [JBAS-1361]
@@ -133,8 +133,8 @@ public final class JDBCFindByPrimaryKeyQuery extends JDBCAbstractQueryCommand {
                 pk = pkField.setPrimaryKeyValue(pk, fieldValue);
             }
 
-            return Collections.singletonList(pk);
+            return Collections.singletonList(factory.getEntityObject(pk));
         }
-        return super.execute(finderMethod, args, ctx);
+        return super.execute(finderMethod, args, ctx, factory);
     }
 }

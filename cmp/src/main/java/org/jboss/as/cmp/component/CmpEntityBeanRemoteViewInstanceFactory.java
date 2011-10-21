@@ -20,43 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.cmp.component.interceptors;
+package org.jboss.as.cmp.component;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import javax.transaction.Transaction;
 import org.jboss.as.cmp.TransactionEntityMap;
-import org.jboss.as.cmp.component.CmpEntityBeanComponent;
-import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
-import org.jboss.invocation.InterceptorContext;
+import org.jboss.as.ejb3.component.entity.EntityBeanRemoteViewInstanceFactory;
 import org.jboss.tm.TxUtils;
 
 /**
  * @author John Bailey
  */
-public class CmpEntityBeanEjbCreateMethodInterceptorFactory extends EntityBeanEjbCreateMethodInterceptorFactory {
+public class CmpEntityBeanRemoteViewInstanceFactory extends EntityBeanRemoteViewInstanceFactory {
+    public CmpEntityBeanRemoteViewInstanceFactory(String applicationName, String moduleName, String distinctName, String beanName) {
+        super(applicationName, moduleName, distinctName, beanName);
+    }
 
-    public static final CmpEntityBeanEjbCreateMethodInterceptorFactory INSTANCE = new CmpEntityBeanEjbCreateMethodInterceptorFactory();
-
-    protected Object invokeEjbCreate(final InterceptorContext context, final Method ejbCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
+    protected Object invokeEjbCreate(final Map<Object, Object> contextData, final Method ejbCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
         final CmpEntityBeanComponentInstance cmpInstance = CmpEntityBeanComponentInstance.class.cast(instance);
         final JDBCEntityPersistenceStore storeManager = cmpInstance.getComponent().getStoreManager();
         storeManager.initEntity(cmpInstance.getEjbContext());
         ejbCreate.invoke(instance.getInstance(), params);
-        return storeManager.createEntity(context.getMethod(), context.getParameters(), cmpInstance.getEjbContext());
+        return storeManager.createEntity(ejbCreate, params, cmpInstance.getEjbContext());
     }
 
-    protected void invokeEjbPostCreate(final InterceptorContext context, final Method ejbPostCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
+    protected void invokeEjbPostCreate(final Map<Object, Object> contextData, final Method ejbPostCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
         final CmpEntityBeanComponentInstance cmpInstance = CmpEntityBeanComponentInstance.class.cast(instance);
         final CmpEntityBeanComponent component = cmpInstance.getComponent();
         final JDBCEntityPersistenceStore storeManager = component.getStoreManager();
-        storeManager.postCreateEntity(context.getMethod(), context.getParameters(), cmpInstance.getEjbContext());
+        storeManager.postCreateEntity(ejbPostCreate, params, cmpInstance.getEjbContext());
         ejbPostCreate.invoke(instance.getInstance(), params);
 
         if (storeManager.getCmpConfig().isInsertAfterEjbPostCreate()) {
-            storeManager.createEntity(context.getMethod(), context.getParameters(), cmpInstance.getEjbContext());
+            storeManager.createEntity(ejbPostCreate, params, cmpInstance.getEjbContext());
         }
 
         final Transaction transaction = component.getTransactionManager().getTransaction();

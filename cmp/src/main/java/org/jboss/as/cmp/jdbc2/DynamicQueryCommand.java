@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.FinderException;
 import org.jboss.as.cmp.jdbc.EJBQLToSQL92Compiler;
+import org.jboss.as.cmp.jdbc.JDBCQueryCommand;
 import org.jboss.as.cmp.jdbc.QLCompiler;
 import org.jboss.as.cmp.jdbc.QueryParameter;
 import org.jboss.as.cmp.jdbc.metadata.JDBCDynamicQLQueryMetaData;
@@ -64,7 +65,7 @@ public class DynamicQueryCommand implements QueryCommand {
         return (JDBCStoreManager2) entity.getManager();
     }
 
-    public Collection fetchCollection(Schema schema, Object[] args)
+    public Collection fetchCollection(Schema schema, Object[] args, JDBCQueryCommand.EntityProxyFactory factory)
             throws FinderException {
         if (log.isTraceEnabled()) {
             log.trace("executing dynamic-ql: " + args[0]);
@@ -105,10 +106,10 @@ public class DynamicQueryCommand implements QueryCommand {
                 entity, sql, toArray(compiler.getInputParameters()),
                 AbstractQueryCommand.toInt(args, offsetParam, offsetValue), AbstractQueryCommand.toInt(args, limitParam, limitValue),
                 new AbstractQueryCommand.EagerCollectionStrategy(collectionFactory, resultReader, log),
-                schema, (Object[]) args[1], log);
+                schema, (Object[]) args[1], factory, log);
     }
 
-    public Object fetchOne(Schema schema, Object[] args) throws FinderException {
+    public Object fetchOne(Schema schema, Object[] args, JDBCQueryCommand.EntityProxyFactory factory) throws FinderException {
         if (log.isTraceEnabled()) {
             log.trace("executing dynamic-ql: " + args[0]);
         }
@@ -140,7 +141,7 @@ public class DynamicQueryCommand implements QueryCommand {
         }
 
         return AbstractQueryCommand.fetchOne(entity, sql, toArray(compiler.getInputParameters()),
-                resultReader, (Object[]) args[1], log);
+                resultReader, (Object[]) args[1], factory, log);
     }
 
     private static Class[] getParamTypes(Object[] args)

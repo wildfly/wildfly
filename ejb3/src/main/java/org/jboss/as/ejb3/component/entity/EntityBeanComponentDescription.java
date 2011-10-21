@@ -29,6 +29,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -123,9 +124,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.setViewInstanceFactory(
-                            new EntityRemoteViewInstanceFactory(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName())
-                    );
+                    configuration.setViewInstanceFactory(getRemoteViewInstanceFactory(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
                 }
             });
         }
@@ -138,6 +137,10 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
     protected EntityBeanHomeViewConfigurator getHomeViewConfigurator() {
         return new EntityBeanHomeViewConfigurator();
+    }
+
+    protected ViewInstanceFactory getRemoteViewInstanceFactory(final String applicationName, final String moduleName, final String distinctName, final String componentName) {
+        return new EntityBeanRemoteViewInstanceFactory(applicationName, moduleName, distinctName, componentName);
     }
 
     protected void addSynchronizationInterceptor() {

@@ -33,8 +33,8 @@ import org.jboss.invocation.InterceptorFactory;
  * @author John Bailey
  */
 public class CmpEntityBeanHomeViewConfigurator extends EntityBeanHomeViewConfigurator {
-    protected EntityBeanHomeFinderInterceptorFactory createHomeFindInterceptorFactory(final Method ejbFind) {
-        return new CmpEntityBeanHomeFinderInterceptorFactory(ejbFind);
+    protected EntityBeanHomeFinderInterceptorFactory createHomeFindInterceptorFactory(final Method ejbFind, final boolean localHome) {
+        return new CmpEntityBeanHomeFinderInterceptorFactory(ejbFind, localHome);
     }
 
     protected InterceptorFactory createHomeRemoveInterceptorFactory(final Method remove) {

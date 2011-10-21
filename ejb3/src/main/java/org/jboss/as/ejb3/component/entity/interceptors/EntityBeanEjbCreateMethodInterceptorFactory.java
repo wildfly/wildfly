@@ -23,11 +23,9 @@ package org.jboss.as.ejb3.component.entity.interceptors;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
@@ -47,7 +45,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
 
     public static final EntityBeanEjbCreateMethodInterceptorFactory INSTANCE = new EntityBeanEjbCreateMethodInterceptorFactory();
 
-    private EntityBeanEjbCreateMethodInterceptorFactory() {
+    protected EntityBeanEjbCreateMethodInterceptorFactory() {
     }
 
     @Override
@@ -79,16 +77,16 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                 final EntityBeanComponentInstance instance = entityBeanComponent.getPool().get();
 
                 //call the ejbCreate method
-                final Object primaryKey = ejbCreate.invoke(instance.getInstance(), params);
+                final Object primaryKey = invokeEjbCreate(context, ejbCreate, instance, params);
                 instance.associate(primaryKey);
+                primaryKeyReference.set(primaryKey);
 
                 //now add the instance to the cache, so it is usable
                 //note that we do not release it back to the pool
                 //the cache will do that when it is expired or removed
                 entityBeanComponent.getCache().create(instance);
 
-                ejbPostCreate.invoke(instance.getInstance(), params);
-                primaryKeyReference.set(primaryKey);
+                invokeEjbPostCreate(context, ejbPostCreate, instance, params);
 
                 //if a transaction is active we register a sync
                 //and if the transaction is rolled back we release the instance back into the pool
@@ -112,8 +110,17 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
                 }
                 return context.proceed();
             }
+
+
         };
 
     }
 
+    protected void invokeEjbPostCreate(final InterceptorContext context, final Method ejbPostCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
+        ejbPostCreate.invoke(instance.getInstance(), params);
+    }
+
+    protected Object invokeEjbCreate(final InterceptorContext context, final Method ejbCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
+        return ejbCreate.invoke(instance.getInstance(), params);
+    }
 }

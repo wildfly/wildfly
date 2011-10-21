@@ -30,11 +30,13 @@ import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.entity.EntityBeanHomeViewConfigurator;
 import org.jboss.as.ejb3.component.entity.EntityBeanObjectViewConfigurator;
+import org.jboss.as.ejb3.component.entity.EntityBeanRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -92,6 +94,10 @@ public class CmpEntityBeanComponentDescription extends EntityBeanComponentDescri
 
     protected InterceptorFactory getSynchronizationInterceptorFactory() {
         return CmpEntityBeanSynchronizationInterceptor.FACTORY;
+    }
+
+    protected ViewInstanceFactory getRemoteViewInstanceFactory(final String applicationName, final String moduleName, final String distinctName, final String componentName) {
+        return new CmpEntityBeanRemoteViewInstanceFactory(applicationName, moduleName, distinctName, componentName);
     }
 
     public JDBCEntityMetaData getEntityMetaData() {
