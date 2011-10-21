@@ -117,7 +117,7 @@
         <!-- Arquillian dependency versions -->
         <version.arquillian_core>1.0.0.CR5</version.arquillian_core>
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
-        <version.xml.maven.plugin>1.0.1-SNAPSHOT</version.xml.maven.plugin>
+        <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
         <version.saxon>8.7</version.saxon>
     </properties>
 
@@ -131,14 +131,9 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
-            <dependency>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>xml-maven-plugin</artifactId>
-                <version>${version.xml.maven.plugin}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
-
+    
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
@@ -182,6 +177,17 @@
     </dependencies>
 
     <build>
+        <!-- Define XML plugin version. -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>xml-maven-plugin</artifactId>
+                    <version>${version.xml.maven.plugin}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    
         <plugins>
 
             <!--
