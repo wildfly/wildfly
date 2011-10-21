@@ -67,7 +67,12 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
                 if (attribute.equals(CommonAttributes.SSL)) {
                     conf.registerChild(SSLPath, Resource.Factory.create());
                     final Resource ssl = conf.getChild(SSLPath);
-                    populateConf(ssl.getModel(), configuration.get(attribute));
+                    ModelNode sslnode;
+                    if (configuration.get(attribute).hasDefined(CommonAttributes.CONFIGURATION))
+                        sslnode = configuration.get(attribute).get(CommonAttributes.CONFIGURATION);
+                    else
+                        sslnode = configuration.get(attribute);
+                    populateConf(ssl.getModel(), sslnode);
                 }
                 else
                     conf.getModel().get(attribute).set(configuration.get(attribute));
