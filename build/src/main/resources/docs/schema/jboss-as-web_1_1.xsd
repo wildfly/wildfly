@@ -40,13 +40,13 @@
                 ]]>
          </xs:documentation>
       </xs:annotation>
-      <!--  FIXME classloading delegation and package filtering ? -->
       <xs:sequence>
          <xs:element minOccurs="0" maxOccurs="1" name="configuration" type="webConfigType" />
          <xs:element maxOccurs="unbounded" ref="connector" />
          <xs:element maxOccurs="unbounded" ref="virtual-server" />
       </xs:sequence>
       <xs:attribute name="default-virtual-server"/>
+      <xs:attribute name="instance-id"/>
       <xs:attribute name="native" default="true" type="xs:boolean"/> 
    </xs:complexType>
 
