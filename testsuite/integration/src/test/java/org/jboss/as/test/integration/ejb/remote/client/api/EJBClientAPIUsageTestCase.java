@@ -71,6 +71,7 @@ import org.xnio.Xnio;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-2187")
 public class EJBClientAPIUsageTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientAPIUsageTestCase.class);
