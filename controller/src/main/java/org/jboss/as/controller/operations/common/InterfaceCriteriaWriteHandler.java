@@ -80,7 +80,9 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         context.reloadRequired();
         // Verify the model in a later step
         context.addStep(VERIFY_HANDLER, OperationContext.Stage.VERIFY);
-        context.completeStep();
+        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
+            context.revertReloadRequired();
+        }
     }
 
     static class ModelValidationStep implements OperationStepHandler {
@@ -93,11 +95,26 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
                 final String attributeName = definition.getName();
                 final boolean has = model.hasDefined(attributeName);
                 if(! has && isRequired(definition, model)) {
-                    throw new OperationFailedException(new ModelNode().set(attributeName + "is required"));
+                    throw new OperationFailedException(new ModelNode().set(attributeName + " is required"));
                 }
                 if(has) {
                     if(! isAllowed(definition, model)) {
-                        throw new OperationFailedException(new ModelNode().set(attributeName + "is invalid"));
+                        // TODO probably move this into AttributeDefinition
+                        String[] alts = definition.getAlternatives();
+                        StringBuilder sb = null;
+                        if (alts != null) {
+                            for (String alt : alts) {
+                                if (model.hasDefined(alt)) {
+                                    if (sb == null) {
+                                        sb = new StringBuilder();
+                                    } else {
+                                        sb.append(", ");
+                                    }
+                                    sb.append(alt);
+                                }
+                            }
+                        }
+                        throw new OperationFailedException(new ModelNode().set(String.format("%s is invalid in combination with %s", attributeName, sb)));
                     }
                 }
             }

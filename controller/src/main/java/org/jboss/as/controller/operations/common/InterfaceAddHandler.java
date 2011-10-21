@@ -98,6 +98,9 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
                 throw new OperationFailedException(new ModelNode().set(attributeName + " is invalid"));
             }
             definition.validateAndSet(operation, subModel);
+        } else {
+            // create the undefined node
+            subModel.get(definition.getName());
         }
     }
 
