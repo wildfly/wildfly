@@ -116,7 +116,10 @@ public class ModClusterSubsystemElementParser implements XMLElementReader<List<M
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
-        writeModClusterConfig(writer, node);
+        if (node.get(MOD_CLUSTER_CONFIG).isDefined() && node.get(MOD_CLUSTER_CONFIG).has(CONFIGURATION))
+            writeModClusterConfig(writer, node.get(MOD_CLUSTER_CONFIG).get(CONFIGURATION));
+        else
+            writeModClusterConfig(writer, node);
         writer.writeEndElement();
     }
 

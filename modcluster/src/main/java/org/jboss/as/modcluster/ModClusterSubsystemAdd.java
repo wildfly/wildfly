@@ -52,21 +52,35 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
     static final PathElement SSLPath = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
+    static final PathElement confPath = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
     @Override
     protected void populateModel(final ModelNode operation, final Resource resource) {
-         final ModelNode model = resource.getModel();
-        populateModel(operation, model);
-        if(model.hasDefined(CommonAttributes.SSL)) {
-            // Add ssl=configuration to be able to manage ssl.
-            resource.registerChild(SSLPath, Resource.Factory.create());
-            final Resource ssl = resource.getChild(SSLPath);
-            ssl.getModel().set(model.get(CommonAttributes.SSL));
+         if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
+            ModelNode configuration;
+            if (operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).hasDefined(CommonAttributes.CONFIGURATION))
+                configuration = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG).get(CommonAttributes.CONFIGURATION);
+            else
+                configuration = operation.get(CommonAttributes.MOD_CLUSTER_CONFIG);
+            resource.registerChild(confPath, Resource.Factory.create());
+            final Resource conf = resource.getChild(confPath);
+            for(final String attribute : configuration.keys()) {
+                if (attribute.equals(CommonAttributes.SSL)) {
+                    conf.registerChild(SSLPath, Resource.Factory.create());
+                    final Resource ssl = conf.getChild(SSLPath);
+                    populateConf(ssl.getModel(), configuration.get(attribute));
+                }
+                else
+                    conf.getModel().get(attribute).set(configuration.get(attribute));
+            }
         }
     }
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.set(operation.get(CommonAttributes.MOD_CLUSTER_CONFIG));
+    static void populateConf(final ModelNode subModel, final ModelNode operation) {
+        for(final String attribute : operation.keys()) {
+            if(operation.hasDefined(attribute)) {
+                subModel.get(attribute).set(operation.get(attribute));
+            }
+        }
     }
 
     @Override
@@ -100,6 +114,12 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler implements Descripti
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return ModClusterSubsystemDescriptions.getSubsystemAddDescription(locale);
+    }
+
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) {
+        // TODO Auto-generated method stub
+
     }
 
 }

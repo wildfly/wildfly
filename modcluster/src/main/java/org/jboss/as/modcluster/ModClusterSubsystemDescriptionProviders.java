@@ -24,4 +24,10 @@ public class ModClusterSubsystemDescriptionProviders {
             return ModClusterSubsystemDescriptions.getSSLDescription(locale);
         }
     };
+    public static DescriptionProvider CONFIGURATION = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return ModClusterSubsystemDescriptions.getConfigurationDescription(locale);
+        }
+    };
 }
