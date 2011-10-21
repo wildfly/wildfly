@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.mdb.activationconfig.unit;
 
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.jms.Message;
+import javax.jms.Queue;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
@@ -36,11 +41,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.Message;
-import javax.jms.Queue;
 
 /**
  * Tests activation config properties on a MDB
@@ -63,8 +63,12 @@ public class MDBActivationConfigTestCase {
     @Resource(mappedName = MDBActivationConfigTestCase.REPLY_QUEUE_JNDI_NAME)
     private Queue replyQueue;
 
+
+    private static JMSAdminOperations jmsAdminOperations;
+
     @Deployment
     public static Archive getDeployment() {
+         jmsAdminOperations = new JMSAdminOperations();
         // setup the queues
         createJmsDestinations();
 
@@ -77,16 +81,15 @@ public class MDBActivationConfigTestCase {
     }
 
     private static void createJmsDestinations() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.createJmsQueue("mdbtest/activation-config-queue", MDBWithUnknownActivationConfigProperties.QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("mdbtest/activation-config-replyQueue", REPLY_QUEUE_JNDI_NAME);
     }
 
     @AfterClass
     public static void afterTestClass() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.removeJmsQueue("mdbtest/activation-config-queue");
         jmsAdminOperations.removeJmsQueue("mdbtest/activation-config-replyQueue");
+        jmsAdminOperations.close();
     }
 
     /**

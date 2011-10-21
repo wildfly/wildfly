@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.mdb.unit;
 
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.jms.Message;
+import javax.jms.Queue;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
@@ -36,11 +41,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.Message;
-import javax.jms.Queue;
 
 /**
  * Tests MDB deployments
@@ -61,6 +61,8 @@ public class MDBTestCase {
     @Resource (mappedName = "java:jboss/mdbtest/replyQueue")
     private Queue replyQueue;
 
+    private static JMSAdminOperations jmsAdminOperations;
+
     @Deployment
     public static Archive getDeployment() {
         // setup the queues
@@ -76,16 +78,16 @@ public class MDBTestCase {
     }
 
     private static void createJmsDestinations() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.createJmsQueue("mdbtest/queue", "java:jboss/mdbtest/queue");
         jmsAdminOperations.createJmsQueue("mdbtest/replyQueue", "java:jboss/mdbtest/replyQueue");
     }
 
     @AfterClass
     public static void afterTestClass() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.removeJmsQueue("mdbtest/queue");
         jmsAdminOperations.removeJmsQueue("mdbtest/replyQueue");
+        jmsAdminOperations.close();
     }
 
     /**

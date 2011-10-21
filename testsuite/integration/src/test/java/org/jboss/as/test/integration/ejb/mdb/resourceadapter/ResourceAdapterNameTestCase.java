@@ -64,6 +64,8 @@ public class ResourceAdapterNameTestCase {
     @Resource(mappedName = OverriddenResourceAdapterNameMDB.QUEUE_JNDI_NAME)
     private Queue queue;
 
+    private static JMSAdminOperations jmsAdminOperations;
+
     @Deployment
     public static Archive getDeployment() {
 
@@ -77,16 +79,16 @@ public class ResourceAdapterNameTestCase {
 
     @BeforeClass
     public static void createJmsDestinations() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", OverriddenResourceAdapterNameMDB.QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
     }
 
     @AfterClass
     public static void afterTestClass() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/queue");
         jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/reply-queue");
+        jmsAdminOperations.close();
     }
 
     @Test
