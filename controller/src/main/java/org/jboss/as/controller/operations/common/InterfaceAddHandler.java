@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.dmr.ModelNode;
@@ -71,6 +72,10 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+
+        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+        model.get(ModelDescriptionConstants.NAME).set(address.getLastElement().getValue());
+
         for(final AttributeDefinition definition : ATTRIBUTES) {
             if(specified) {
                 validateAndSet(definition, operation, model);

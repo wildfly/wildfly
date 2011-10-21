@@ -2408,6 +2408,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writeInterfaceCriteria(writer, property.getValue(), true);
                 writer.writeEndElement();
                 break;
+            case NAME:
+                // not a criteria element; ignore
+                break;
             default: {
                 // TODO we perhaps should just log a warning.
                 throw new RuntimeException("Unknown property in interface criteria list: " + property.getName());

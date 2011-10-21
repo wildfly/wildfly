@@ -21,12 +21,6 @@
  */
 package org.jboss.as.controller.descriptions.common;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -36,21 +30,26 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Model descriptions for interface elements.
@@ -67,6 +66,7 @@ public class InterfaceDescription {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("named_interface"));
+        NAME.addResourceAttributeDescription(bundle, "interface", root);
         populateInterface(root, bundle, false);
         return root;
     }
@@ -76,6 +76,7 @@ public class InterfaceDescription {
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("specified_interface"));
+        NAME.addResourceAttributeDescription(bundle, "interface", root);
         populateInterface(root, bundle, true);
         return root;
     }
@@ -156,62 +157,65 @@ public class InterfaceDescription {
             localName(Element.ANY), localName(Element.NOT)
     };
 
-    static final AttributeDefinition ANY_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_ADDRESS, ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(false)
+    public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING)
+            .build();
+
+    public static final AttributeDefinition ANY_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_ADDRESS, ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(false)
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, true))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelDescriptionConstants.ANY_IPV6_ADDRESS)
             .build();
-    static final AttributeDefinition ANY_IPV4_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(false)
+    public static final AttributeDefinition ANY_IPV4_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(false)
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, true))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_ADDRESS, ModelDescriptionConstants.ANY_IPV6_ADDRESS)
             .build();
-    static final AttributeDefinition ANY_IPV6_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_IPV6_ADDRESS, ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(false)
+    public static final AttributeDefinition ANY_IPV6_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_IPV6_ADDRESS, ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(false)
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, true))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_ADDRESS, ModelDescriptionConstants.ANY_IPV4_ADDRESS)
             .build();
-    static final AttributeDefinition INET_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.INET_ADDRESS, ModelType.STRING)
+    public static final AttributeDefinition INET_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.INET_ADDRESS, ModelType.STRING)
             .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
             .build();
-    static final AttributeDefinition LINK_LOCAL_ADDRESS = SimpleAttributeDefinitionBuilder.create(localName(Element.LINK_LOCAL_ADDRESS), ModelType.BOOLEAN)
+    public static final AttributeDefinition LINK_LOCAL_ADDRESS = SimpleAttributeDefinitionBuilder.create(localName(Element.LINK_LOCAL_ADDRESS), ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
+            .build();
+    public static final AttributeDefinition LOOPBACK = SimpleAttributeDefinitionBuilder.create(localName(Element.LOOPBACK), ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
+            .build();
+    public static final AttributeDefinition LOOPBACK_ADDRESS = SimpleAttributeDefinitionBuilder.create(localName(Element.LOOPBACK_ADDRESS), ModelType.STRING)
             .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
             .build();
-    static final AttributeDefinition LOOPBACK = SimpleAttributeDefinitionBuilder.create(localName(Element.LOOPBACK), ModelType.BOOLEAN)
+    public static final AttributeDefinition NIC = SimpleAttributeDefinitionBuilder.create(localName(Element.NIC), ModelType.STRING)
             .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
             .build();
-    static final AttributeDefinition LOOPBACK_ADDRESS = SimpleAttributeDefinitionBuilder.create(localName(Element.LOOPBACK_ADDRESS), ModelType.STRING)
+    public static final AttributeDefinition NIC_MATCH = SimpleAttributeDefinitionBuilder.create(localName(Element.NIC_MATCH), ModelType.STRING)
             .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
             .build();
-    static final AttributeDefinition NIC = SimpleAttributeDefinitionBuilder.create(localName(Element.NIC), ModelType.STRING)
+    public static final AttributeDefinition MULTICAST = SimpleAttributeDefinitionBuilder.create(localName(Element.MULTICAST), ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
+            .build();
+    public static final AttributeDefinition POINT_TO_POINT = SimpleAttributeDefinitionBuilder.create(localName(Element.POINT_TO_POINT), ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
+            .build();
+    public static final AttributeDefinition PUBLIC_ADDRESS = SimpleAttributeDefinitionBuilder.create(localName(Element.PUBLIC_ADDRESS), ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
+            .build();
+    public static final AttributeDefinition SITE_LOCAL_ADDRESS = SimpleAttributeDefinitionBuilder.create(localName(Element.SITE_LOCAL_ADDRESS), ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
+            .build();
+    public static final AttributeDefinition SUBNET_MATCH = SimpleAttributeDefinitionBuilder.create(localName(Element.SUBNET_MATCH), ModelType.STRING)
             .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
             .build();
-    static final AttributeDefinition NIC_MATCH = SimpleAttributeDefinitionBuilder.create(localName(Element.NIC_MATCH), ModelType.STRING)
-            .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
+    public static final AttributeDefinition UP = SimpleAttributeDefinitionBuilder.create(localName(Element.UP), ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
             .build();
-    static final AttributeDefinition MULTICAST = SimpleAttributeDefinitionBuilder.create(localName(Element.MULTICAST), ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
+    public static final AttributeDefinition VIRTUAL = SimpleAttributeDefinitionBuilder.create(localName(Element.VIRTUAL), ModelType.BOOLEAN)
+            .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
             .build();
-    static final AttributeDefinition POINT_TO_POINT = SimpleAttributeDefinitionBuilder.create(localName(Element.POINT_TO_POINT), ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
-            .build();
-    static final AttributeDefinition PUBLIC_ADDRESS = SimpleAttributeDefinitionBuilder.create(localName(Element.PUBLIC_ADDRESS), ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
-            .build();
-    static final AttributeDefinition SITE_LOCAL_ADDRESS = SimpleAttributeDefinitionBuilder.create(localName(Element.SITE_LOCAL_ADDRESS), ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
-            .build();
-    static final AttributeDefinition SUBNET_MATCH = SimpleAttributeDefinitionBuilder.create(localName(Element.SUBNET_MATCH), ModelType.STRING)
-            .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
-            .build();
-    static final AttributeDefinition UP = SimpleAttributeDefinitionBuilder.create(localName(Element.UP), ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
-            .build();
-    static final AttributeDefinition VIRTUAL = SimpleAttributeDefinitionBuilder.create(localName(Element.VIRTUAL), ModelType.BOOLEAN)
-            .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY)
-            .build();
-    static final AttributeDefinition NOT = createNestedComplexType("not");
-    static final AttributeDefinition ANY = createNestedComplexType("any");
+    public static final AttributeDefinition NOT = createNestedComplexType("not");
+    public static final AttributeDefinition ANY = createNestedComplexType("any");
 
     /** The root attributes. */
     public static final AttributeDefinition[] ROOT_ATTRIBUTES = new AttributeDefinition[] {
@@ -227,6 +231,12 @@ public class InterfaceDescription {
             INET_ADDRESS, LINK_LOCAL_ADDRESS, LOOPBACK, LOOPBACK_ADDRESS, MULTICAST, NIC,
             NIC_MATCH, POINT_TO_POINT, PUBLIC_ADDRESS, SITE_LOCAL_ADDRESS, SUBNET_MATCH, UP, VIRTUAL
     };
+
+    /** The wildcard criteria attributes */
+    public static final AttributeDefinition[] WILDCARD_ATTRIBUTES = new AttributeDefinition[] {ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS };
+
+    public static final AttributeDefinition[] SIMPLE_ATTRIBUTES = new AttributeDefinition[] { LINK_LOCAL_ADDRESS, LOOPBACK,
+            MULTICAST, POINT_TO_POINT, PUBLIC_ADDRESS, SITE_LOCAL_ADDRESS, UP, VIRTUAL };
 
     /**
      * Create the AttributeDefinition for the nested 'not' / 'any' type.
