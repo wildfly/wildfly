@@ -84,7 +84,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                     if (metaData != null) {
                         createPermissions(metaData, policyConfiguration);
                     } else {
-                        log.debug("Cannot create permissions with 'null' metaData for id=" + contextId);
+                        log.debugf("Cannot create permissions with 'null' metaData for id=" + contextId);
                     }
                 }
                 if (!standalone) {
@@ -95,7 +95,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                         policyConfiguration.commit();
                         parent.commit();
                     } else {
-                        log.debug("Could not retrieve parent policy for policy " + contextId);
+                        log.debugf("Could not retrieve parent policy for policy " + contextId);
                     }
                 } else {
                     policyConfiguration.commit();
@@ -118,7 +118,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 policyConfiguration.delete();
             }
         } catch (Exception e) {
-            log.warn("Error deleting JACC policy", e);
+            log.warnf("Error deleting JACC policy", e);
         }
         policyConfiguration = null;
     }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.security.service;
 
+import javax.security.auth.login.Configuration;
+
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
@@ -39,8 +41,6 @@ import org.jboss.security.ISecurityManagement;
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.config.ApplicationPolicy;
 import org.jboss.security.config.ApplicationPolicyRegistration;
-
-import javax.security.auth.login.Configuration;
 
 /**
  * Service to install security domains.
@@ -80,8 +80,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        if (log.isDebugEnabled())
-            log.debug("Starting SecurityDomainService(" + name + ")");
+        log.debugf("Starting SecurityDomainService(" + name + ")");
         if (applicationPolicy != null) {
             final ApplicationPolicyRegistration applicationPolicyRegistration = (ApplicationPolicyRegistration) configurationValue
                     .getValue();

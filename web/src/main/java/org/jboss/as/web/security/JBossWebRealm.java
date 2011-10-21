@@ -213,9 +213,7 @@ public class JBossWebRealm extends RealmBase {
         try {
             boolean isValid = authenticationManager.isValid(userPrincipal, credentials, subject);
             if (isValid) {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is authenticated");
                 SecurityContext sc = SecurityActions.getSecurityContext();
                 if (sc == null)
                     throw new IllegalStateException("No SecurityContext found!");
@@ -287,9 +285,7 @@ public class JBossWebRealm extends RealmBase {
             Subject subject = new Subject();
             boolean isValid = authenticationManager.isValid(userPrincipal, certs, subject);
             if (isValid) {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is authenticated");
                 SecurityContext sc = SecurityActions.getSecurityContext();
                 if (sc == null)
                     throw new IllegalStateException("No SecurityContext found!");
@@ -327,13 +323,11 @@ public class JBossWebRealm extends RealmBase {
                     userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, certs, null, subject);
             } else {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is NOT authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is NOT authenticated");
                 userPrincipal = null;
             }
         } catch (Exception e) {
-            log.error("Error during authenticate(X509Certificate[])");
+            log.errorf("Error during authenticate(X509Certificate[])");
             exceptionAudit(userPrincipal, null, e);
         }
 
@@ -371,9 +365,7 @@ public class JBossWebRealm extends RealmBase {
             Subject subject = new Subject();
             boolean isValid = authenticationManager.isValid(userPrincipal, clientDigest, subject);
             if (isValid) {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is authenticated");
                 userPrincipal = getPrincipal(subject);
                 sc.getUtil().createSubjectInfo(userPrincipal, clientDigest, subject);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
@@ -408,13 +400,11 @@ public class JBossWebRealm extends RealmBase {
                     userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, clientDigest, null, subject);
             } else {
-                if (log.isTraceEnabled()) {
-                    log.trace("User: " + userPrincipal + " is NOT authenticated");
-                }
+                log.tracef("User: " + userPrincipal + " is NOT authenticated");
                 userPrincipal = null;
             }
         } catch (Exception e) {
-            log.error("Error during authenticate(String,String,String,String,String,String,String,String)");
+            log.errorf("Error during authenticate(String,String,String,String,String,String,String,String)");
         }
 
         if (userPrincipal != null) {
@@ -513,7 +503,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.error("Exception in obtaining helper", e);
+                log.errorf("Exception in obtaining helper", e);
                 return false;
             }
 
@@ -521,9 +511,8 @@ public class JBossWebRealm extends RealmBase {
                     requestURI(request), getPrincipalRoles(request));
         }
         boolean finalDecision = baseDecision && authzDecision;
-        if (log.isTraceEnabled())
-            log.trace("hasResourcePermission:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision
-                    + ":final=" + finalDecision);
+        log.tracef("hasResourcePermission:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision
+                + ":final=" + finalDecision);
         if (!finalDecision) {
             if (!disableAudit) {
                 Map<String, Object> entries = new HashMap<String, Object>();
@@ -574,7 +563,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.error("Error obtaining helper", e);
+                log.errorf("Error obtaining helper", e);
             }
             Subject callerSubject = sc.getUtil().getSubject();
             if (callerSubject == null) {
@@ -587,10 +576,8 @@ public class JBossWebRealm extends RealmBase {
                     PolicyContext.getContextID(), callerSubject, getPrincipalRoles(request));
         }
         boolean finalDecision = baseDecision && authzDecision;
-        if (log.isTraceEnabled()) {
-            log.trace("hasRole:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision + ":final="
-                    + finalDecision);
-        }
+        log.tracef("hasRole:RealmBase says:" + baseDecision + "::Authz framework says:" + authzDecision + ":final="
+                + finalDecision);
         if (finalDecision) {
             if (!disableAudit) {
                 Map<String, Object> entries = new HashMap<String, Object>();
@@ -623,7 +610,7 @@ public class JBossWebRealm extends RealmBase {
             try {
                 helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
             } catch (Exception e) {
-                log.error("Error obtaining helper", e);
+                log.errorf("Error obtaining helper", e);
             }
 
             Subject callerSubject = sc.getUtil().getSubject();
@@ -723,8 +710,7 @@ public class JBossWebRealm extends RealmBase {
     private String getServletName(Wrapper servlet) {
         // For jsp, the mapping will be (*.jsp, *.jspx)
         String[] mappings = servlet.findMappings();
-        if (log.isTraceEnabled())
-            log.trace("[getServletName:servletmappings=" + mappings + ":servlet.getName()=" + servlet.getName() + "]");
+        log.tracef("[getServletName:servletmappings=" + mappings + ":servlet.getName()=" + servlet.getName() + "]");
         if ("jsp".equals(servlet.getName()) && (mappings != null && mappings[0].indexOf("*.jsp") > -1))
             return "";
         else
@@ -740,9 +726,7 @@ public class JBossWebRealm extends RealmBase {
         try {
             return (HttpServletRequest) PolicyContext.getContext(SecurityConstants.WEB_REQUEST_KEY);
         } catch (Exception e) {
-            if (log.isTraceEnabled()) {
-                log.trace("Exception in getting servlet request:", e);
-            }
+            log.tracef("Exception in getting servlet request:", e);
         }
         return null;
     }

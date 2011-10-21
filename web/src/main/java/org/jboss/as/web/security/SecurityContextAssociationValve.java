@@ -75,7 +75,6 @@ public class SecurityContextAssociationValve extends ValveBase {
         JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         activeRequest.set(request);
 
-        boolean trace = log.isTraceEnabled();
         Session session = null;
         // Get the request caller which could be set due to SSO
         Principal caller = request.getPrincipal();
@@ -83,8 +82,7 @@ public class SecurityContextAssociationValve extends ValveBase {
         JBossGenericPrincipal principal = null;
         HttpSession hsession = request.getSession(false);
 
-        if (trace)
-            log.trace("Begin invoke, caller=" + caller);
+        log.tracef("Begin invoke, caller=" + caller);
 
         boolean createdSecurityContext = false;
         SecurityContext sc = SecurityActions.getSecurityContext();
@@ -106,8 +104,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                     RunAsIdentityMetaData identity = metaData.getRunAsIdentity(name);
                     RunAsIdentity runAsIdentity = null;
                     if (identity != null) {
-                        if (trace)
-                            log.trace(name + ", runAs: " + identity);
+                        log.tracef(name + ", runAs: " + identity);
                         runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(),
                                 identity.getRunAsRoles());
                     }
@@ -138,15 +135,14 @@ public class SecurityContextAssociationValve extends ValveBase {
 
                 // If there is a caller use this as the identity to propagate
                 if (principal != null) {
-                    if (trace)
-                        log.trace("Restoring principal info from cache");
+                    log.tracef("Restoring principal info from cache");
                     if (createdSecurityContext) {
                         sc.getUtil().createSubjectInfo(principal.getUserPrincipal(), principal.getCredentials(),
                                 principal.getSubject());
                     }
                 }
             } catch (Throwable e) {
-                log.debug("Failed to determine servlet", e);
+                log.debugf("Failed to determine servlet", e);
             }
             // set JACC contextID
             PolicyContext.setContextID(deploymentUnit.getName());
@@ -157,8 +153,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                 SecurityActions.popRunAsIdentity();
             }
         } finally {
-            if (trace)
-                log.trace("End invoke, caller=" + caller);
+            log.tracef("End invoke, caller=" + caller);
             SecurityActions.clearSecurityContext();
             SecurityRolesAssociation.setSecurityRoles(null);
             PolicyContext.setContextID(null);

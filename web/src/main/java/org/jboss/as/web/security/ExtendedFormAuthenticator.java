@@ -51,8 +51,6 @@ public class ExtendedFormAuthenticator extends FormAuthenticator {
 
     private static final Logger log = Logger.getLogger(ExtendedFormAuthenticator.class);
 
-    private static boolean trace = log.isTraceEnabled();
-
     private boolean includePassword;
 
     public boolean isIncludePassword() {
@@ -111,8 +109,7 @@ public class ExtendedFormAuthenticator extends FormAuthenticator {
      */
     @Override
     protected void forwardToErrorPage(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
-        if (trace)
-            log.trace("forwardToErrorPage");
+        log.tracef("forwardToErrorPage");
         populateSession(request);
         super.forwardToErrorPage(request, response, config);
         SecurityActions.clearAuthException();
@@ -127,8 +124,7 @@ public class ExtendedFormAuthenticator extends FormAuthenticator {
      */
     @Override
     protected void forwardToLoginPage(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
-        if (trace)
-            log.trace("forwardToLoginPage");
+        log.tracef("forwardToLoginPage");
         populateSession(request);
         super.forwardToLoginPage(request, response, config);
     }
@@ -146,35 +142,30 @@ public class ExtendedFormAuthenticator extends FormAuthenticator {
         if (session != null) {
             HttpSession httpSession = session.getSession();
 
-            if (trace)
-                log.trace("SessionID: " + httpSession.getId());
+            log.tracef("SessionID: " + httpSession.getId());
 
             // store username.
             String username = request.getParameter(Constants.FORM_USERNAME);
-            if (trace)
-                log.trace("Setting " + Constants.FORM_USERNAME + " = " + username);
+            log.tracef("Setting " + Constants.FORM_USERNAME + " = " + username);
             httpSession.setAttribute(Constants.FORM_USERNAME, username);
 
             // store password if requested.
             if (includePassword) {
                 String password = request.getParameter(Constants.FORM_PASSWORD);
                 String displayPassword = (password == null ? " = null" : " = --hidden--");
-                if (trace)
-                    log.trace("Setting " + Constants.FORM_PASSWORD + displayPassword);
+                log.tracef("Setting " + Constants.FORM_PASSWORD + displayPassword);
                 httpSession.setAttribute(Constants.FORM_PASSWORD, password);
             }
 
             // store SecurityAssociation context exception.
             Throwable t = SecurityActions.getAuthException();
-            if (trace)
-                log.trace("Setting " + LOGIN_EXCEPTION + " = " + t);
+            log.tracef("Setting " + LOGIN_EXCEPTION + " = " + t);
             httpSession.setAttribute(LOGIN_EXCEPTION, t);
 
             // finally, set a note so we do not do this again.
             session.setNote(DID_POPULATE, Boolean.TRUE);
         } else {
-            if (trace)
-                log.trace("No Session to store login parameters in");
+            log.tracef("No Session to store login parameters in");
         }
     }
 
