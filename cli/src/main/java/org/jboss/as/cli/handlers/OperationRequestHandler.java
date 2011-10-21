@@ -55,7 +55,7 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
      * @see org.jboss.as.cli.CommandHandler#handle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    public void handle(CommandContext ctx) throws CommandFormatException {
+    public void handle(CommandContext ctx) {
 
         ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
