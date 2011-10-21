@@ -24,7 +24,9 @@
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
+<!--
         <extension module="org.jboss.as.cmp"/>
+-->
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
@@ -167,7 +169,9 @@
                 <thread-pool name="default" max-threads="10" keepalive-time="100" />
             </thread-pools>
         </subsystem>
+<!--
         <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
+-->
         <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
             <cache-container name="hibernate" default-cache="local-query">
                 <local-cache name="entity">
