@@ -8,9 +8,9 @@
    <enterprise-beans>
       <session>
 	<ejb-name>EchoBean</ejb-name>
-	<home>org.jboss.as.test.smoke.embedded.deployment.EchoHome</home>
-	<remote>org.jboss.as.test.smoke.embedded.deployment.Echo</remote>
-	<ejb-class>org.jboss.as.test.smoke.embedded.deployment.EchoBean</ejb-class>
+	<home>org.jboss.as.test.smoke.jsr180.EchoHome</home>
+	<remote>org.jboss.as.test.smoke.jsr180.Echo</remote>
+	<ejb-class>org.jboss.as.test.smoke.jsr180.EchoBean</ejb-class>
         <session-type>Stateless</session-type>
         <transaction-type>Container</transaction-type>
       </session>

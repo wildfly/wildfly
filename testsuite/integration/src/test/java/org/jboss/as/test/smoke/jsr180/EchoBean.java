@@ -19,28 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment;
+package org.jboss.as.test.smoke.jsr180;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import javax.ejb.CreateException;
+import javax.ejb.SessionBean;
+import javax.ejb.SessionContext;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-/**
- * A sample servlet
- *
- * @author Thomas.Diesler@jboss.com
- * @since 05-Apr-2005
- */
-public class SampleServlet extends HttpServlet
+public class EchoBean implements SessionBean
 {
-   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
+   /** The serialVersionUID */
+   private static final long serialVersionUID = 1L;
+
+   public String echo(String echo)
    {
-      PrintWriter out = res.getWriter();
-      out.print("Hello World!");
-      out.close();
+      return echo;
+   }
+
+   public void ejbCreate() throws CreateException
+   {
+   }
+
+   public void ejbActivate()
+   {
+   }
+
+   public void ejbPassivate()
+   {
+   }
+
+   public void ejbRemove()
+   {
+   }
+
+   public void setSessionContext(SessionContext ctx)
+   {
    }
 }
