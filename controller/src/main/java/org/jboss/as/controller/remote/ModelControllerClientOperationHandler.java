@@ -36,6 +36,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -79,7 +81,7 @@ public class ModelControllerClientOperationHandler extends AbstractModelControll
     }
 
     /**
-     * Handles incoming {@link _TempNewProxyController#execute(ModelNode, OperationMessageHandler, ProxyOperationControl, org.jboss.as.controller.client._TempNewOperationAttachments)}
+     * Handles incoming {@link RemoteProxyController#execute(ModelNode, OperationMessageHandler, ProxyController.ProxyOperationControl, OperationAttachments)}
      * requests from the remote proxy controller and forwards them to the target model controller
      */
     private class ExecuteRequestHandler extends ManagementRequestHandler {
