@@ -28,13 +28,11 @@ import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
-import org.junit.Ignore;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Ignore("Seems to have some problems in the marshalling AS7-1795")
 public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public ModClusterSubsystemTestCase() {
@@ -50,6 +48,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                 "</subsystem>";
     }
 
+    @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization(){
             @Override
