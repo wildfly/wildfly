@@ -498,11 +498,9 @@
                 <cache-container name="web" default-cache="repl">
                     <alias>standard-session-cache</alias>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
-                        <locking isolation="REPEATABLE_READ"/>
                         <file-store/>
                     </replicated-cache>
                     <distributed-cache name="dist" mode="ASYNC" batching="true">
-                        <locking isolation="REPEATABLE_READ"/>
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
@@ -510,7 +508,6 @@
                     <alias>sfsb-cache</alias>
                     <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
-                        <locking isolation="REPEATABLE_READ"/>
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
                     </replicated-cache>
@@ -568,14 +565,13 @@
                     <protocol type="VERIFY_SUSPECT"/>
                     <protocol type="BARRIER"/>
                     <protocol type="pbcast.NAKACK"/>
-                    <protocol type="UNICAST"/>
+                    <protocol type="UNICAST2"/>
                     <protocol type="pbcast.STABLE"/>
-                    <protocol type="VIEW_SYNC"/>
                     <protocol type="pbcast.GMS"/>
                     <protocol type="UFC"/>
                     <protocol type="MFC"/>
                     <protocol type="FRAG2"/>
-                    <protocol type="pbcast.STREAMING_STATE_TRANSFER"/>
+                    <protocol type="pbcast.STATE_TRANSFER"/>
                     <protocol type="pbcast.FLUSH"/>
                 </stack>
                 <stack name="tcp">
@@ -587,14 +583,13 @@
                     <protocol type="VERIFY_SUSPECT"/>
                     <protocol type="BARRIER"/>
                     <protocol type="pbcast.NAKACK"/>
-                    <protocol type="UNICAST"/>
+                    <protocol type="UNICAST2"/>
                     <protocol type="pbcast.STABLE"/>
-                    <protocol type="VIEW_SYNC"/>
                     <protocol type="pbcast.GMS"/>
                     <protocol type="UFC"/>
                     <protocol type="MFC"/>
                     <protocol type="FRAG2"/>
-                    <protocol type="pbcast.STREAMING_STATE_TRANSFER"/>
+                    <protocol type="pbcast.STATE_TRANSFER"/>
                     <protocol type="pbcast.FLUSH"/>
                 </stack>
             </subsystem>

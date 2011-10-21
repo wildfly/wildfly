@@ -181,8 +181,7 @@ public class ConcurrentFailoverRequestsTestCase {
         Loader[] loaders = new Loader[THREADS];
 
         for (int i = 0; i < loaders.length; i++) {
-            loaders[i] = new Loader(pipelineHead, concurrentHandler, managers[1], id1, attrs.keySet(), startingGun,
-                    finishedSignal);
+            loaders[i] = new Loader(pipelineHead, concurrentHandler, managers[1], id1, attrs.keySet(), startingGun, finishedSignal);
             threadPool.execute(loaders[i]);
         }
 

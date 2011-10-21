@@ -550,11 +550,11 @@ public class SessionCountUnitTestCase {
     }
 
     @Test
+    @org.junit.Ignore
     public void testReplicatedRestart() throws Exception {
         System.out.println("Enter testReplicatedRestart");
 
         replicatedWarRedeployTest(true, true, false, false);
-
     }
 
     @Test
@@ -562,11 +562,9 @@ public class SessionCountUnitTestCase {
         System.out.println("Enter testReplicatedRestartWithPurge");
 
         replicatedWarRedeployTest(true, true, false, true);
-
     }
 
-    private void replicatedWarRedeployTest(boolean restartCache, boolean fullRestart, boolean totalReplication,
-            boolean purgeOnStartStop) throws Exception {
+    private void replicatedWarRedeployTest(boolean restartCache, boolean fullRestart, boolean totalReplication, boolean purgeOnStartStop) throws Exception {
         String warName = "test" + ++managerIndex;
         JBossWebMetaData webMetaData = SessionTestUtil.createWebMetaData(2, true, 30, 1);
         for (int i = 0; i < cacheContainers.length; ++i) {
@@ -677,9 +675,7 @@ public class SessionCountUnitTestCase {
             assertEquals("Passivated session count correct", 0, managers[0].getPassivatedSessionCount());
         }
 
-        // Due to ISPN-658 workaround, In DIST, restarting cache IS a full
-        // restart, so ignore this case for now
-        if (!fullRestart && totalReplication) {
+        if (!fullRestart) {
             assertEquals("Session count correct", 2, managers[1].getActiveSessionCount());
             assertEquals("Local session count correct", 2, managers[1].getLocalActiveSessionCount());
             assertEquals("Created session count correct", 2, managers[1].getCreatedSessionCount());

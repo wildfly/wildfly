@@ -1515,41 +1515,35 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
      * @param session the session. Cannot be <code>null</code>.
      */
     private void processSessionRepl(ClusteredSession<O> session) {
-        // If we are using SESSION granularity, we don't want to initiate a TX
-        // for a single put
-        boolean notSession = (this.getReplicationGranularity() != ReplicationGranularity.SESSION);
-        boolean doTx = false;
+        boolean endBatch = false;
         BatchingManager batchingManager = this.distributedCacheManager.getBatchingManager();
         try {
             // We need transaction so all the replication are sent in batch.
             // Don't do anything if there is already transaction context
             // associated with this thread.
-            if (notSession && batchingManager.isBatchInProgress() == false) {
+            if (!batchingManager.isBatchInProgress()) {
                 batchingManager.startBatch();
-                doTx = true;
+                endBatch = true;
             }
 
             session.processSessionReplication();
         } catch (Exception ex) {
             log.debug("processSessionRepl(): failed with exception", ex);
 
+            RuntimeException exception = null;
             try {
-                // if(doTx)
-                // Let's setRollbackOnly no matter what.
-                // (except if there's no tx due to SESSION (JBAS-3840))
-                if (notSession)
-                    batchingManager.setBatchRollbackOnly();
-            } catch (Exception exn) {
-                log.error("Caught exception rolling back transaction", exn);
+                batchingManager.setBatchRollbackOnly();
+            } catch (RuntimeException e) {
+                exception = e;
+            } catch (Exception e) {
+                exception = new RuntimeException("JBossCacheManager.processSessionRepl(): failed to replicate session.", e);
             }
-
-            // We will need to alert Tomcat of this exception.
-            if (ex instanceof RuntimeException)
-                throw (RuntimeException) ex;
-
-            throw new RuntimeException("JBossCacheManager.processSessionRepl(): failed to replicate session.", ex);
+            if (exception != null) {
+                log.error("Caught exception rolling back transaction", exception);
+                throw exception;
+            }
         } finally {
-            if (doTx) {
+            if (endBatch) {
                 batchingManager.endBatch();
             }
         }

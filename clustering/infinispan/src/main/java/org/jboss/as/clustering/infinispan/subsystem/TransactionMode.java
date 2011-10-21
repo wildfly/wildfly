@@ -26,16 +26,23 @@ package org.jboss.as.clustering.infinispan.subsystem;
  * @author Paul Ferraro
  */
 public enum TransactionMode {
-    NON_XA(false, false),
-    NON_DURABLE_XA(true, false),
-    FULL_XA(true, true),
+    NONE(org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL, false, false),
+    NON_XA(org.infinispan.transaction.TransactionMode.TRANSACTIONAL, false, false),
+    NON_DURABLE_XA(org.infinispan.transaction.TransactionMode.TRANSACTIONAL, true, false),
+    FULL_XA(org.infinispan.transaction.TransactionMode.TRANSACTIONAL, true, true),
     ;
-    private boolean xaEnabled;
-    private boolean recoveryEnabled;
+    private final org.infinispan.transaction.TransactionMode mode;
+    private final boolean xaEnabled;
+    private final boolean recoveryEnabled;
 
-    private TransactionMode(boolean xaEnabled, boolean recoveryEnabled) {
+    private TransactionMode(org.infinispan.transaction.TransactionMode mode, boolean xaEnabled, boolean recoveryEnabled) {
+        this.mode = mode;
         this.xaEnabled = xaEnabled;
         this.recoveryEnabled = recoveryEnabled;
+    }
+
+    public org.infinispan.transaction.TransactionMode getMode() {
+        return this.mode;
     }
 
     public boolean isXAEnabled() {

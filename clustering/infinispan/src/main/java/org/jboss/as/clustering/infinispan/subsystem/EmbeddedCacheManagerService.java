@@ -21,6 +21,15 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+
+import javax.management.MBeanServer;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.xa.XAResource;
+
 import org.infinispan.config.Configuration;
 import org.infinispan.config.FluentConfiguration;
 import org.infinispan.config.FluentGlobalConfiguration;
@@ -47,15 +56,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
-
-import javax.management.MBeanServer;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.xa.XAResource;
-
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
@@ -115,10 +115,9 @@ public class EmbeddedCacheManagerService implements Service<CacheContainer> {
             if (machine != null) {
                 fluentTransport.machineId(machine);
             }
-            fluentTransport.nodeName(transport.getEnvironment().getNodeName());
             fluentTransport.clusterName(this.configuration.getName());
 
-            ChannelProvider.init(global, transport.getChannelFactory());
+            ChannelProvider.init(global, transport.getChannel());
 
             Executor executor = transport.getExecutor();
             if (executor != null) {

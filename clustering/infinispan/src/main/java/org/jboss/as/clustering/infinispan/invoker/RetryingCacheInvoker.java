@@ -21,8 +21,10 @@
  */
 package org.jboss.as.clustering.infinispan.invoker;
 
+import javax.transaction.RollbackException;
+
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
+import org.infinispan.CacheException;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
 import org.infinispan.util.concurrent.TimeoutException;
 
@@ -37,8 +39,6 @@ import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 public class RetryingCacheInvoker implements CacheInvoker {
 
     private final int[] backOffIntervals;
-
-    private volatile boolean forceSynchronous = false;
 
     /**
      * Creates a new RetryingCacheInvoker.
@@ -60,10 +60,6 @@ public class RetryingCacheInvoker implements CacheInvoker {
         Exception exception = null;
 
         for (int i = 0; i <= this.backOffIntervals.length; ++i) {
-            if (this.forceSynchronous) {
-                cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
-            }
-
             try {
                 return operation.invoke(cache);
             } catch (TimeoutException e) {
@@ -88,15 +84,5 @@ public class RetryingCacheInvoker implements CacheInvoker {
         }
 
         throw MESSAGES.abortingCacheOperation(exception, Integer.valueOf(this.backOffIntervals.length + 1));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.ha.web.tomcat.service.session.distributedcache.impl.CacheInvoker#setForceSynchronous(boolean)
-     */
-    @Override
-    public void setForceSynchronous(boolean forceSynchronous) {
-        this.forceSynchronous = forceSynchronous;
     }
 }

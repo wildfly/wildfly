@@ -34,7 +34,7 @@ import org.jboss.msc.service.StopContext;
  * @author Paul Ferraro
  */
 public class ChannelFactoryService implements Service<ChannelFactory> {
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME);
+    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME).append("stack");
 
     private final ProtocolStackConfiguration configuration;
 

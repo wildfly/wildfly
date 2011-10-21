@@ -21,11 +21,7 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.io.IOException;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.junit.Ignore;
 
@@ -33,76 +29,16 @@ import org.junit.Ignore;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Ignore
-public class InfinispanSubsystemTestCase extends AbstractSubsystemBaseTest {
+//@Ignore
+public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
 
     public InfinispanSubsystemTestCase() {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), "subsystem-infinispan.xml");
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        //TODO: This is copied from standalone-ha.xml you may want to try more combinations
-
-        return
-        "<subsystem xmlns=\"urn:jboss:domain:infinispan:1.0\" default-cache-container=\"cluster\">" +
-        "<cache-container name=\"cluster\" default-cache=\"default\">" +
-        "    <alias>ha-partition</alias>" +
-        "    <replicated-cache name=\"default\" mode=\"SYNC\" batching=\"true\">" +
-        "        <locking isolation=\"REPEATABLE_READ\"/>" +
-        "    </replicated-cache>" +
-        "</cache-container>" +
-        "<cache-container name=\"web\" default-cache=\"repl\">" +
-        "    <alias>standard-session-cache</alias>" +
-        "    <replicated-cache name=\"repl\" mode=\"ASYNC\" batching=\"true\">" +
-        "        <locking isolation=\"REPEATABLE_READ\"/>" +
-        "        <file-store/>" +
-        "    </replicated-cache>" +
-        "    <distributed-cache name=\"dist\" mode=\"ASYNC\" batching=\"true\">" +
-        "        <locking isolation=\"REPEATABLE_READ\"/>" +
-        "        <file-store/>" +
-        "    </distributed-cache>" +
-        "</cache-container>" +
-        "<cache-container name=\"sfsb\" default-cache=\"repl\">" +
-        "    <alias>sfsb-cache</alias>" +
-        "    <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>" +
-        "    <replicated-cache name=\"repl\" mode=\"ASYNC\" batching=\"true\">" +
-        "        <locking isolation=\"REPEATABLE_READ\"/>" +
-        "        <eviction strategy=\"LRU\" max-entries=\"10000\"/>" +
-        "        <file-store/>" +
-        "    </replicated-cache>" +
-        "</cache-container>" +
-        "<cache-container name=\"hibernate\" default-cache=\"local-query\">" +
-        "    <invalidation-cache name=\"entity\" mode=\"SYNC\">" +
-        "        <eviction strategy=\"LRU\" max-entries=\"10000\"/>" +
-        "        <expiration max-idle=\"100000\"/>" +
-        "    </invalidation-cache>" +
-        "    <local-cache name=\"local-query\">" +
-        "        <eviction strategy=\"LRU\" max-entries=\"10000\"/>" +
-        "        <expiration max-idle=\"100000\"/>" +
-        "    </local-cache>" +
-        "    <replicated-cache name=\"timestamps\" mode=\"ASYNC\">" +
-        "        <eviction strategy=\"NONE\"/>" +
-        "    </replicated-cache>" +
-        "</cache-container>" +
-        "</subsystem>";
+    protected ValidationConfiguration getModelValidationConfiguration() {
+        //TODO fix validation https://issues.jboss.org/browse/AS7-1788
+        return null;
     }
-
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
-            @Override
-            protected OperationContext.Type getType() {
-                return OperationContext.Type.MANAGEMENT;
-            }
-
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix validation https://issues.jboss.org/browse/AS7-1788
-                return null;
-            }
-        };
-    }
-
-
 }

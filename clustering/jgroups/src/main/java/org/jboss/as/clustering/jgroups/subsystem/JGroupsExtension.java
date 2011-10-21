@@ -216,7 +216,7 @@ public class JGroupsExtension implements Extension, DescriptionProvider, XMLElem
             switch (attribute) {
                 case TYPE: {
                     try {
-                        this.getClass().getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(targetClass).newInstance();
+                        targetClass.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(targetClass).newInstance();
                         protocol.get(ModelKeys.TYPE).set(value);
                     } catch (Exception e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
