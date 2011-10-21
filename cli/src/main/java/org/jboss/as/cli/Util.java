@@ -42,6 +42,13 @@ import org.jboss.dmr.Property;
  */
 public class Util {
 
+    public static final String ADDRESS = "address";
+    public static final String NAME = "name";
+    public static final String OPERATION = "operation";
+    public static final String READ_OPERATION_DESCRIPTION = "read-operation-description";
+    public static final String REQUEST_PROPERTIES = "request-properties";
+    public static final String RESULT = "result";
+
     public static boolean isWindows() {
         return SecurityActions.getSystemProperty("os.name").toLowerCase().indexOf("windows") >= 0;
     }
