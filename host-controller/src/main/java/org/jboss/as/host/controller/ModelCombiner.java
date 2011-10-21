@@ -451,7 +451,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         if (serverGroup.hasDefined(DEPLOYMENT)) {
 
             FileRepository remoteRepository = null;
-            if (domainController.getLocalHostInfo().isMasterDomainController()) {
+            if (! domainController.getLocalHostInfo().isMasterDomainController()) {
                 remoteRepository = domainController.getRemoteFileRepository();
             }
 
