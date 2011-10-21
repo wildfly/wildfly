@@ -1,6 +1,6 @@
-Synopsis: connect [host][:port]
+Synopsis:   connect [host][:port]
 
-Description: connects to the controller on the specified host and port.
+Description:   connects to the controller on the specified host and port.
 
 Arguments:
 
