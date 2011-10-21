@@ -227,6 +227,10 @@
         <!-- Surefire args -->
         <surefire.jpda.args/>
         <surefire.system.args>-da ${surefire.jpda.args}</surefire.system.args>
+
+        <!-- Checkstyle configuration -->
+        <linkXRef>false</linkXRef>
+
     </properties>
 
     <modules>
