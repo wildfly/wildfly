@@ -56,7 +56,7 @@ import static org.junit.Assert.assertEquals;
  * @since 08-Oct-2011
  */
 @RunWith(Arquillian.class)
-public class RestEasyIntegrationTestCase extends OSGiTestSupport {
+public class RestEasyIntegrationTestCase {
 
     static final String DEPLOYMENT_NAME = "resteasy-osgi-client.war";
 
@@ -115,7 +115,7 @@ public class RestEasyIntegrationTestCase extends OSGiTestSupport {
 
     private String getHttpResponse(String message) throws IOException {
         String reqPath = "/resteasy-osgi-client/rest/echo/" + message;
-        return getHttpResponse("localhost", 8080, reqPath, 2000);
+        return OSGiTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
     }
 
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.smoke.embedded.osgi;
+package org.jboss.as.test.smoke.osgi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.test.integration.osgi.OSGiTestSupport;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -65,9 +66,10 @@ public class SimpleStartLevelTestCase {
     public StartLevel startLevel;
 
     @Deployment
-    @StartLevelAware(startLevel = 3)
+    @StartLevelAware(startLevel = 4)
     public static JavaArchive create() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq465-bundle");
+        archive.addClass(OSGiTestSupport.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -91,7 +93,11 @@ public class SimpleStartLevelTestCase {
         assertEquals("arq465-bundle", bundle.getSymbolicName());
 
         int bundleStartLevel = startLevel.getBundleStartLevel(bundle);
-        assertEquals("Bundle start level", 3, bundleStartLevel);
+        assertEquals("Bundle start level", 4, bundleStartLevel);
+
+        // Change the framework start level and wait for the changed event
+        OSGiTestSupport.changeStartLevel(context, 3, 6, TimeUnit.SECONDS);
+        assertEquals("Framework start level", 3, startLevel.getStartLevel());
 
         try {
             bundle.start(Bundle.START_TRANSIENT);
@@ -105,18 +111,8 @@ public class SimpleStartLevelTestCase {
         bundle.start();
         assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
 
-        // Change the frameworkj start level and wait for the changed event
-        final CountDownLatch latch = new CountDownLatch(1);
-        context.addFrameworkListener(new FrameworkListener() {
-            public void frameworkEvent(FrameworkEvent event) {
-                if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED)
-                    latch.countDown();
-            }
-        });
-        startLevel.setStartLevel(3);
-        if(!latch.await(6, TimeUnit.SECONDS)) {
-            Assert.fail("Bundle did not start within 6 seconds");
-        }
+        // Change the framework start level and wait for the changed event
+        OSGiTestSupport.changeStartLevel(context, 4, 6, TimeUnit.SECONDS);
 
         // The bundle should now be started
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
@@ -126,5 +122,8 @@ public class SimpleStartLevelTestCase {
 
         bundle.uninstall();
         assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+
+        // Change the framework start level and wait for the changed event
+        OSGiTestSupport.changeStartLevel(context, 3, 6, TimeUnit.SECONDS);
     }
 }

@@ -52,7 +52,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @since 12-Apr-2011
  */
 @RunWith(Arquillian.class)
-public class BundleDeploymentCaseTwoTestCase extends OSGiTestSupport {
+public class BundleDeploymentCaseTwoTestCase {
 
     static final String BUNDLE_DEPLOYMENT_NAME = "test-bundle-two";
 
@@ -84,7 +84,7 @@ public class BundleDeploymentCaseTwoTestCase extends OSGiTestSupport {
         deployer.deploy(BUNDLE_DEPLOYMENT_NAME);
 
         // Find the deployed bundle
-        Bundle bundle = getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
+        Bundle bundle = OSGiTestSupport.getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
 
         // Start the bundle. Note, it may have started already
         bundle.start();

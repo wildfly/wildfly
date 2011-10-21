@@ -57,7 +57,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 12-Feb-2009
  */
 @RunWith(Arquillian.class)
-public class MBeanServerTestCase extends OSGiTestSupport {
+public class MBeanServerTestCase {
 
     @Inject
     public BundleContext context;
@@ -87,7 +87,7 @@ public class MBeanServerTestCase extends OSGiTestSupport {
     @Test
     public void testMBeanAccess() throws Exception {
 
-        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         bundle.start();
         BundleContext context = bundle.getBundleContext();

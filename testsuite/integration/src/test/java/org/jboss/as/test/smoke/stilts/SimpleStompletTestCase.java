@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.smoke.embedded.stilts;
+package org.jboss.as.test.smoke.stilts;
 
-import static org.jboss.as.test.smoke.embedded.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
+import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,8 +29,8 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.smoke.embedded.stilts.bundle.SimpleStomplet;
-import org.jboss.as.test.smoke.embedded.stilts.bundle.SimpleStompletActivator;
+import org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet;
+import org.jboss.as.test.smoke.stilts.bundle.SimpleStompletActivator;
 import org.jboss.logging.Logger;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;

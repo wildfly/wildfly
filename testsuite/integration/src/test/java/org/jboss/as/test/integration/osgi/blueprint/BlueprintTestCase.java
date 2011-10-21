@@ -57,7 +57,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 12-Jul-2009
  */
 @RunWith(Arquillian.class)
-public class BlueprintTestCase extends OSGiTestSupport {
+public class BlueprintTestCase {
 
     @Inject
     public BundleContext context;
@@ -86,7 +86,7 @@ public class BlueprintTestCase extends OSGiTestSupport {
     @Test
     public void testBlueprintContainerAvailable() throws Exception {
 
-        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
 
         bundle.start();
         assertEquals("example-blueprint", bundle.getSymbolicName());

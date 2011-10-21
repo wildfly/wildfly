@@ -56,13 +56,13 @@ import org.w3c.dom.Node;
 /**
  * A test that uses a DOM parser to read an XML document.
  *
- * @see http://www.osgi.org/javadoc/r4v41/org/osgi/util/xml/XMLParserActivator.html
+ * http://www.osgi.org/javadoc/r4v41/org/osgi/util/xml/XMLParserActivator.html
  *
  * @author thomas.diesler@jboss.com
  * @since 21-Jul-2009
  */
 @RunWith(Arquillian.class)
-public class DOMParserTestCase extends OSGiTestSupport {
+public class DOMParserTestCase {
 
     @Inject
     public BundleContext context;
@@ -91,7 +91,7 @@ public class DOMParserTestCase extends OSGiTestSupport {
     @Test
     public void testDOMParser() throws Exception {
 
-        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
 
         bundle.start();
 

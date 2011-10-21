@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.smoke.embedded.osgi;
+package org.jboss.as.test.smoke.osgi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,7 +25,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.smoke.embedded.osgi.bundle.SimpleService;
+import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

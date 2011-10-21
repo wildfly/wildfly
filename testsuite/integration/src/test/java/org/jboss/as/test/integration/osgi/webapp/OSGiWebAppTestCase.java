@@ -55,7 +55,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 06-Oct-2009
  */
 @RunWith(Arquillian.class)
-public class OSGiWebAppTestCase extends OSGiTestSupport {
+public class OSGiWebAppTestCase {
 
     @Inject
     public BundleContext context;
@@ -87,7 +87,7 @@ public class OSGiWebAppTestCase extends OSGiTestSupport {
 
     @Test
     public void testServletAccess() throws Exception {
-        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
         bundle.start();
         String line = getHttpResponse("/example-webapp/servlet?test=plain", 5000);
         assertEquals("Hello from Servlet", line);
@@ -108,6 +108,6 @@ public class OSGiWebAppTestCase extends OSGiTestSupport {
     }
 
     private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return getHttpResponse("localhost", 8090, reqPath, timeout);
+        return OSGiTestSupport.getHttpResponse("localhost", 8090, reqPath, timeout);
     }
 }

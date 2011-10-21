@@ -58,7 +58,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 08-Dec-2009
  */
 @RunWith(Arquillian.class)
-public class EventAdminTestCase extends OSGiTestSupport {
+public class EventAdminTestCase {
 
     static String TOPIC = "org/jboss/test/osgi/example/event";
 
@@ -89,7 +89,7 @@ public class EventAdminTestCase extends OSGiTestSupport {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testEventHandler() throws Exception {
 
-        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         bundle.start();
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());

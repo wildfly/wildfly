@@ -21,13 +21,8 @@
  */
 package org.jboss.as.test.integration.osgi.logging;
 
-import java.io.InputStream;
-
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.osgi.OSGiTestSupport;
 import org.jboss.as.test.integration.osgi.logging.bundle.LoggingActivator;
 import org.jboss.as.test.integration.osgi.logging.bundle.LoggingDelegate;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
@@ -39,18 +34,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 
+import javax.inject.Inject;
+import java.io.InputStream;
+
 /**
  * @author David Bosschaert
  */
 @RunWith(Arquillian.class)
-public class LoggingTestCase extends OSGiTestSupport {
+public class LoggingTestCase {
     @Inject
     public Bundle bundle;
 
     @Deployment
     public static JavaArchive createDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-logging");
-        archive.addClasses(OSGiTestSupport.class, LoggingActivator.class, LoggingDelegate.class);
+        archive.addClasses(LoggingActivator.class, LoggingDelegate.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {

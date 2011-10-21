@@ -60,7 +60,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 23-Jan-2009
  */
 @RunWith(Arquillian.class)
-public class HttpServiceTestCase extends OSGiTestSupport {
+public class HttpServiceTestCase {
 
     @Inject
     public BundleContext context;
@@ -92,7 +92,7 @@ public class HttpServiceTestCase extends OSGiTestSupport {
     @Test
     public void testServletAccess() throws Exception {
 
-        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         bundle.start();
         String line = getHttpResponse("/example-http/servlet?test=plain", 5000);
