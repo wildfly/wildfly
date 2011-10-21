@@ -41,7 +41,7 @@ Description:    Allows to add new, remove and list existing generic type command
                 data-source --help                                  # describes the type itself
                 data-source --help --commands                       # will list all the operations exposed by the type
                 data-source --help --properties                     # will list all the properties exposed by the type
-                data-source	flush-all-connection-in-pool --help     # will describe the specific operation, in this case flush-all-connection-in-pool
+                data-source flush-all-connection-in-pool --help     # will describe the specific operation, in this case flush-all-connection-in-pool
 
 
 Arguments:
