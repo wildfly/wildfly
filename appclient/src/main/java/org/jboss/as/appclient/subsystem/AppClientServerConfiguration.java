@@ -195,7 +195,7 @@ class AppClientServerConfiguration {
         ModelNode add = new ModelNode();
         add.get(OP_ADDR).set(new ModelNode().setEmptyList()).add(INTERFACE, "public");
         add.get(OP).set(ADD);
-        add.get(CRITERIA).add().set("inet-address", "127.0.0.1");
+        add.get(CRITERIA).get("inet-address").set("127.0.0.1");
         nodes.add(add);
     }
 
