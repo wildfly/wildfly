@@ -625,7 +625,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                         boolean addPk = (loadOnFindCmr ? !pk.equals(prevPk) : true);
                         if (addPk) {
                             ids.add(pk);
-                            results.add(selectManager.getComponent().getEjbLocalObject(pk)); // TODO: jeb - Work in remote
+                            results.add(pk);
                             prevPk = pk;
                         }
 
@@ -685,8 +685,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
 
     }
 
-    class LazyCollectionFactory
-            implements QueryCollectionFactory {
+    class LazyCollectionFactory implements QueryCollectionFactory {
         public Collection createCollection(Connection con,
                                            PreparedStatement ps,
                                            ResultSet rs,
@@ -855,7 +854,7 @@ public abstract class JDBCAbstractQueryCommand implements JDBCQueryCommand {
                         boolean addPk = (loadOnFindCmr ? !curPk.equals(prevPk) : true);
                         if (addPk) {
                             prevPk = curPk;
-                            currentResult = selectManager.getComponent().getEjbLocalObject(curPk);  // TODO: jeb - Work in remote
+                            currentResult = curPk;
                         }
 
                         // read the preload fields

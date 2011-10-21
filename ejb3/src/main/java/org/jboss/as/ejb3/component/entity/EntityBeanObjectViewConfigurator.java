@@ -78,17 +78,24 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
                 configuration.addViewInterceptor(method, EntityIsIdenticalInterceptorFactory.INSTANCE, InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("getEJBLocalHome") && method.getParameterTypes().length == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-
                 final EntityBeanGetHomeInterceptorFactory factory = new EntityBeanGetHomeInterceptorFactory();
-
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
-
                 final EntityBeanComponentDescription entityBeanComponentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
-
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
                         serviceBuilder.addDependency(entityBeanComponentDescription.getEjbLocalHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
+                    }
+                });
+            } else if (method.getName().equals("getEJBHome") && method.getParameterTypes().length == 0) {
+                configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
+                final EntityBeanGetHomeInterceptorFactory factory = new EntityBeanGetHomeInterceptorFactory();
+                configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
+                final EntityBeanComponentDescription entityBeanComponentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
+                componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+                    @Override
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(entityBeanComponentDescription.getEjbHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
                     }
                 });
             } else if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) || method.getName().equals("equals") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Object.class) {

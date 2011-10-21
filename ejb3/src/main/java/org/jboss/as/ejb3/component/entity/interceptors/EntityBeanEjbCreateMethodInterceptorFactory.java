@@ -45,8 +45,6 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorFactory {
 
-    public static final Object EXISTING_ID_CONTEXT_KEY = new Object();
-
     public static final EntityBeanEjbCreateMethodInterceptorFactory INSTANCE = new EntityBeanEjbCreateMethodInterceptorFactory();
 
     private EntityBeanEjbCreateMethodInterceptorFactory() {
@@ -54,7 +52,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
 
     @Override
     public Interceptor create(InterceptorFactoryContext context) {
-        final Object existing = context.getContextData().get(EXISTING_ID_CONTEXT_KEY);
+        final Object existing = context.getContextData().get(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
 
         final AtomicReference<Object> primaryKeyReference = new AtomicReference<Object>();
         context.getContextData().put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKeyReference);

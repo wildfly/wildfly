@@ -245,8 +245,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 });
             }
         }
-
-
     }
 
     private void addViewSerializationInterceptor(final ViewDescription view) {

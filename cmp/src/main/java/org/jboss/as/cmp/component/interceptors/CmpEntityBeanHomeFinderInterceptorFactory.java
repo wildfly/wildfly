@@ -26,7 +26,9 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import javax.ejb.ObjectNotFoundException;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
@@ -77,7 +79,14 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
     protected Object prepareResults(final InterceptorContext context, final Object result, final EntityBeanComponent component) throws ObjectNotFoundException {
         switch (getReturnType()) {
             case COLLECTION: {
-                return result;
+                Collection keys = (Collection) result;
+                final Set<Object> results = new HashSet<Object>();
+                if (keys != null) {
+                    for (Object key : keys) {
+                        results.add(getLocalObject(key));
+                    }
+                }
+                return results;
             }
             case ENUMERATION: {
                 Collection<Object> entities = (Collection<Object>) result;
@@ -88,7 +97,7 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
                     }
 
                     public Object nextElement() {
-                        return iterator.next();
+                        return getLocalObject(iterator.next());
                     }
                 };
             }
@@ -96,7 +105,7 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
                 if (result == null) {
                     throw new ObjectNotFoundException("Could not find entity from " + finderMethod + " with params " + Arrays.toString(context.getParameters()));
                 }
-                return result;
+                return getLocalObject(result);
             }
         }
     }

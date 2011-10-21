@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -28,14 +32,40 @@ import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
+import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 
 /**
  * @author Stuart Douglas
  */
 public class EntityBeanComponentCreateService extends EJBComponentCreateService {
 
+    private final Class<EJBHome> homeClass;
+    private final Class<EJBLocalHome> localHomeClass;
+    private final Class<EJBObject> remoteClass;
+    private final Class<EJBLocalObject> localClass;
+
     public EntityBeanComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
+        final EntityBeanComponentDescription description = EntityBeanComponentDescription.class.cast(componentConfiguration.getComponentDescription());
+        final EntityBeanMetaData beanMetaData = EntityBeanMetaData.class.cast(description.getDescriptorData());
+
+        final ClassLoader classLoader = componentConfiguration.getComponentClass().getClassLoader();
+
+        homeClass = (Class<EJBHome>) load(classLoader, beanMetaData.getHome());
+        localHomeClass = (Class<EJBLocalHome>) load(classLoader, beanMetaData.getLocalHome());
+        localClass = (Class<EJBLocalObject>) load(classLoader, beanMetaData.getLocal());
+        remoteClass = (Class<EJBObject>) load(classLoader, beanMetaData.getRemote());
+    }
+
+    private Class<?> load(ClassLoader classLoader, String ejbClass) {
+        if(ejbClass != null) {
+            try {
+                return classLoader.loadClass(ejbClass);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Failed to load component view class: " + ejbClass, e);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -50,5 +80,19 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
         }
     };
 
+    public Class<EJBHome> getHomeClass() {
+        return homeClass;
+    }
 
+    public Class<EJBLocalHome> getLocalHomeClass() {
+        return localHomeClass;
+    }
+
+    public Class<EJBObject> getRemoteClass() {
+        return remoteClass;
+    }
+
+    public Class<EJBLocalObject> getLocalClass() {
+        return localClass;
+    }
 }

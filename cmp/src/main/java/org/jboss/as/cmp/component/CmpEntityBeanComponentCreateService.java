@@ -52,10 +52,6 @@ public class CmpEntityBeanComponentCreateService extends EntityBeanComponentCrea
     private final InjectedValue<TransactionEntityMap> transactionEntityMap = new InjectedValue<TransactionEntityMap>();
 
     private final JDBCEntityMetaData entityMetaData;
-    private final Class<?> homeClass;
-    private final Class<?> localHomeClass;
-    private final Class<?> remoteClass;
-    private final Class<?> localClass;
     private final InterceptorFactory relationInterceptorFactory;
     private Value<JDBCEntityPersistenceStore> storeManager;
 
@@ -63,11 +59,6 @@ public class CmpEntityBeanComponentCreateService extends EntityBeanComponentCrea
         super(componentConfiguration, applicationExceptions);
         final CmpEntityBeanComponentDescription cmpDescription = CmpEntityBeanComponentDescription.class.cast(componentConfiguration.getComponentDescription());
         entityMetaData = cmpDescription.getEntityMetaData();
-
-        homeClass = entityMetaData.getHomeClass();
-        localHomeClass = entityMetaData.getLocalHomeClass();
-        localClass = entityMetaData.getLocalClass();
-        remoteClass = entityMetaData.getRemoteClass();
 
         this.relationInterceptorFactory = Interceptors.getChainedInterceptorFactory(CmpEntityBeanComponentConfiguration.class.cast(componentConfiguration).getRelationInterceptors());
     }
@@ -83,22 +74,6 @@ public class CmpEntityBeanComponentCreateService extends EntityBeanComponentCrea
 
     public JDBCEntityPersistenceStore getStoreManager() {
         return storeManager.getValue();
-    }
-
-    public Class<?> getHomeClass() {
-        return homeClass;
-    }
-
-    public Class<?> getLocalHomeClass() {
-        return localHomeClass;
-    }
-
-    public Class<?> getRemoteClass() {
-        return remoteClass;
-    }
-
-    public Class<?> getLocalClass() {
-        return localClass;
     }
 
     public void setStoreManagerValue(final Value<JDBCEntityPersistenceStore> storeManager) {

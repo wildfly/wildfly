@@ -101,10 +101,7 @@ public interface JDBCEntityPersistenceStore {
      * @throws java.rmi.RemoteException thrown if some system exception occurs
      * @throws Exception                thrown if some heuristic problem occurs
      */
-    Object findEntity(Method finderMethod,
-                      Object[] args,
-                      CmpEntityBeanContext instance)
-            throws Exception;
+    Object findEntity(Method finderMethod, Object[] args, CmpEntityBeanContext instance) throws Exception;
 
     /**
      * This method is called when collections of entities are to be found. The

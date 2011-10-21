@@ -83,6 +83,16 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         if (local != null) {
             description.addEjbLocalObjectView(local);
         }
+
+        final String home = entity.getHome();
+        if (home != null) {
+            description.addRemoteHome(home);
+        }
+
+        final String remote = entity.getRemote();
+        if (remote != null) {
+            description.addEjbObjectView(remote);
+        }
     }
 
     protected boolean shouldProcess(EntityBeanMetaData entity) {

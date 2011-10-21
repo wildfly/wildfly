@@ -55,7 +55,7 @@ public class CmpEntityBeanEjbCreateMethodInterceptorFactory implements Intercept
     }
 
     public Interceptor create(InterceptorFactoryContext context) {
-        final Object existing = context.getContextData().get(EntityBeanEjbCreateMethodInterceptorFactory.EXISTING_ID_CONTEXT_KEY);
+        final Object existing = context.getContextData().get(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
 
         final AtomicReference<Object> primaryKeyReference = new AtomicReference<Object>();
         context.getContextData().put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKeyReference);

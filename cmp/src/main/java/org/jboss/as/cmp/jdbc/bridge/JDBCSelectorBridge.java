@@ -95,7 +95,6 @@ public class JDBCSelectorBridge implements SelectorBridge {
         Method method = getMethod();
         try {
             JDBCQueryCommand query = manager.getQueryManager().getQueryCommand(method);
-            final CmpEntityBeanComponent selectedComponent = query.getSelectManager().getComponent();
             retVal = query.execute(method, args, null);
         } catch (FinderException e) {
             throw e;

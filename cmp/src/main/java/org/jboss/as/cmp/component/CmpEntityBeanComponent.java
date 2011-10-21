@@ -26,14 +26,11 @@ import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.ejb.EJBException;
 import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import javax.transaction.Transaction;
 import org.jboss.as.cmp.TransactionEntityMap;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
@@ -45,7 +42,6 @@ import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentCreateService;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
 import org.jboss.as.ejb3.component.entity.entitycache.TransactionLocalEntityCache;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
@@ -59,10 +55,6 @@ import org.jboss.msc.value.Value;
 public class CmpEntityBeanComponent extends EntityBeanComponent {
 
     private final Value<JDBCEntityPersistenceStore> storeManager;
-    private final Class<?> homeClass;
-    private final Class<?> localHomeClass;
-    private final Class<?> localClass;
-    private final Class<?> remoteClass;
     private final InterceptorFactory relationInterceptorFactory;
     private boolean ejbStoreForClean;
 
@@ -71,10 +63,6 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
     public CmpEntityBeanComponent(final CmpEntityBeanComponentCreateService ejbComponentCreateService, final Value<JDBCEntityPersistenceStore> storeManager) {
         super(ejbComponentCreateService);
 
-        this.homeClass = ejbComponentCreateService.getHomeClass();
-        this.localHomeClass = ejbComponentCreateService.getLocalHomeClass();
-        this.localClass = ejbComponentCreateService.getLocalClass();
-        this.remoteClass = ejbComponentCreateService.getRemoteClass();
         this.storeManager = storeManager;
 
         this.relationInterceptorFactory = ejbComponentCreateService.getRelationInterceptorFactory();
@@ -88,22 +76,6 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
         return new CmpEntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptor);
     }
 
-    public Class<?> getHomeClass() {
-        return homeClass;
-    }
-
-    public Class<?> getLocalHomeClass() {
-        return localHomeClass;
-    }
-
-    public Class<?> getLocalClass() {
-        return localClass;
-    }
-
-    public Class<?> getRemoteClass() {
-        return remoteClass;
-    }
-
     public void start() {
         super.start();
         if (storeManager == null || storeManager.getValue() == null) {
@@ -115,16 +87,6 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
         return null;  // TODO: jeb - This should return proxy instances to local entities
     }
 
-    public EJBLocalObject getEjbLocalObject(final Object currentId) {
-        final HashMap<Object, Object> create = new HashMap<Object, Object>();
-        create.put(EntityBeanEjbCreateMethodInterceptorFactory.EXISTING_ID_CONTEXT_KEY, currentId);
-        return (EJBLocalObject) createViewInstanceProxy(getLocalClass(), create);
-    }
-
-    public EJBObject getEntityEJBObject(Object id) {
-        return null;  // TODO: jeb - this should return a proxy instance to remote a entity
-    }
-
     public void synchronizeEntitiesWithinTransaction(Transaction transaction) {
         // If there is no transaction, there is nothing to synchronize.
         if (transaction != null) {
@@ -133,7 +95,7 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
     }
 
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
-        return (EJBLocalHome) createViewInstanceProxy(getLocalHomeClass(), Collections.emptyMap());
+        return createViewInstanceProxy(getLocalHomeClass(), Collections.emptyMap());
     }
 
     public JDBCEntityPersistenceStore getStoreManager() {

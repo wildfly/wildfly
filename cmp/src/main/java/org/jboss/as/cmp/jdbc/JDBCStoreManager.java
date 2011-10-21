@@ -419,17 +419,11 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
         return postCreateEntityCommand.execute(createMethod, args, ctx);
     }
 
-    public Object findEntity(Method finderMethod,
-                             Object[] args,
-                             CmpEntityBeanContext ctx)
-            throws FinderException {
+    public Object findEntity(Method finderMethod, Object[] args, CmpEntityBeanContext ctx) throws FinderException {
         return findEntityCommand.execute(finderMethod, args, ctx);
     }
 
-    public Collection findEntities(Method finderMethod,
-                                   Object[] args,
-                                   CmpEntityBeanContext ctx)
-            throws FinderException {
+    public Collection findEntities(Method finderMethod, Object[] args, CmpEntityBeanContext ctx) throws FinderException {
         return findEntitiesCommand.execute(finderMethod, args, ctx);
     }
 

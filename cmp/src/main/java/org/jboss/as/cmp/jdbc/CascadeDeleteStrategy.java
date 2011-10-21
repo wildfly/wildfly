@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
 import javax.ejb.RemoveException;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
@@ -277,9 +278,13 @@ public abstract class CascadeDeleteStrategy {
          * Have to remove through EJB[Local}Object interface since the proxy contains the 'removed' flag
          * to be set on removal.
          */
-        final EJBLocalObject ejbObject = component.getEjbLocalObject(relatedId);
-        ejbObject.remove();
-        // TODO: jeb - determine how to decide to use remote
+        if(component.getLocalClass() != null) {
+            final EJBLocalObject ejbObject = component.getEjbLocalObject(relatedId);
+            ejbObject.remove();
+        } else {
+            final EJBObject ejbObject = component.getEJBObject(relatedId);
+            ejbObject.remove();
+        }
     }
 
     interface SecurityActions {

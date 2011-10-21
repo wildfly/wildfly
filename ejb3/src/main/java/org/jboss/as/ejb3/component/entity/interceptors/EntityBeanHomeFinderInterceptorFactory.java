@@ -104,7 +104,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
                 final Set<Object> results = new HashSet<Object>();
                 if (keys != null) {
                     for (Object key : keys) {
-                        results.add(getLocalObject(key, component));
+                        results.add(getLocalObject(key));
                     }
                 }
                 return results;
@@ -115,7 +115,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
                 if (keys != null) {
                     while (keys.hasMoreElements()) {
                         Object key = keys.nextElement();
-                        results.add(getLocalObject(key, component));
+                        results.add(getLocalObject(key));
                     }
                 }
                 final Iterator<Object> iterator = results.iterator();
@@ -136,7 +136,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
                 if (result == null) {
                     throw new ObjectNotFoundException("Could not find entity from " + finderMethod + " with params " + Arrays.toString(context.getParameters()));
                 }
-                return getLocalObject(result, component);
+                return getLocalObject(result);
             }
         }
     }
@@ -155,9 +155,9 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
         }
     }
 
-    protected Object getLocalObject(final Object result, final EntityBeanComponent component) {
+    protected Object getLocalObject(final Object result) {
         final HashMap<Object, Object> create = new HashMap<Object, Object>();
-        create.put(EntityBeanEjbCreateMethodInterceptorFactory.EXISTING_ID_CONTEXT_KEY, result);
+        create.put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, result);
         return viewToCreate.getValue().createInstance(create).getInstance();
     }
 

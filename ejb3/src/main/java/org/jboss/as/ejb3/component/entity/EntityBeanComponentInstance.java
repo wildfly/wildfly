@@ -151,11 +151,11 @@ public class EntityBeanComponentInstance extends BasicComponentInstance {
     }
 
     public EJBObject getEjbObject() {
-        throw new IllegalStateException("Not implemented yet");
+        return getComponent().getEJBObject(getPrimaryKey());
     }
 
     public EJBLocalObject getEjbLocalObject() {
-        throw new IllegalStateException("Not implemented yet");
+        return getComponent().getEjbLocalObject(getPrimaryKey());
     }
 
     public boolean isRemoved() {

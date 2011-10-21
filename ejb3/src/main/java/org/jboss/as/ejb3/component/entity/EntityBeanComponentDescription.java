@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
+import java.lang.reflect.Method;
 import javax.ejb.TransactionManagementType;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -32,6 +33,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityInvocationContextInterceptor;
@@ -115,6 +117,17 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
             view.getConfigurators().add(getHomeViewConfigurator());
         } else {
             view.getConfigurators().add(getObjectViewConfigurator());
+        }
+
+        if (view.getMethodIntf() == MethodIntf.REMOTE) {
+            view.getConfigurators().add(new ViewConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    configuration.setViewInstanceFactory(
+                            new EntityRemoteViewInstanceFactory(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName())
+                    );
+                }
+            });
         }
 
     }
