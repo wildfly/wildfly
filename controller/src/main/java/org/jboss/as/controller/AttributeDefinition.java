@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -171,7 +172,7 @@ public abstract class AttributeDefinition {
     public ModelNode validateOperation(final ModelNode operationObject) throws OperationFailedException {
 
         ModelNode node = new ModelNode();
-        if (operationObject.has(name)) {
+        if(operationObject.has(name)) {
             node.set(operationObject.get(name));
         }
         if (isAllowExpression() && node.getType() == ModelType.STRING) {
@@ -213,8 +214,8 @@ public abstract class AttributeDefinition {
      * @throws OperationFailedException if the value is not valid
      */
     public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
-        ModelNode node = new ModelNode();
-        if (operationObject.has(name)) {
+        final ModelNode node = new ModelNode();
+        if(operationObject.has(name)) {
             node.set(operationObject.get(name));
         }
         if (!node.isDefined() && defaultValue.isDefined()) {
@@ -344,7 +345,7 @@ public abstract class AttributeDefinition {
         return bundle.getString(bundleKey);
     }
 
-    private ModelNode getNoTextDescription(boolean forOperation) {
+    public ModelNode getNoTextDescription(boolean forOperation) {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.TYPE).set(type);
         result.get(ModelDescriptionConstants.DESCRIPTION); // placeholder

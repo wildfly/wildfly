@@ -240,5 +240,4 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
         }
     }
 
-
 }
