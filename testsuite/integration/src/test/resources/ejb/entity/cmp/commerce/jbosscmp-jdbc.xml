@@ -422,7 +422,7 @@
    <dependent-value-classes>
       <dependent-value-class>
          <description>Formal Name</description>
-         <class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.FormalName</class>
+         <class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.FormalName</class>
          <property>
             <property-name>first</property-name>
             <column-name>FIRST</column-name>
@@ -438,7 +438,7 @@
       </dependent-value-class>
       <dependent-value-class>
          <description>Credit Card</description>
-         <class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.Card</class>
+         <class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.Card</class>
          <property>
             <property-name>type</property-name>
             <column-name>TYPE</column-name>

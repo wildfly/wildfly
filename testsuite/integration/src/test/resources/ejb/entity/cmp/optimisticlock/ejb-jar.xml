@@ -11,23 +11,23 @@
 
         <session>
             <ejb-name>TestSession</ejb-name>
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testsession.TestSessionHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testsession.TestSession</local>
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testsession.TestSessionBean</ejb-class>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testsession.TestSessionHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testsession.TestSession</local>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testsession.TestSessionBean</ejb-class>
             <session-type>Stateless</session-type>
             <transaction-type>Container</transaction-type>
             <ejb-local-ref>
                 <ejb-ref-name>ejb/EntityA</ejb-ref-name>
                 <ejb-ref-type>Entity</ejb-ref-type>
-                <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityALocalHome</local-home>
-                <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityALocal</local>
+                <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityALocalHome</local-home>
+                <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityALocal</local>
                 <ejb-link>EntityA</ejb-link>
             </ejb-local-ref>
             <ejb-local-ref>
                 <ejb-ref-name>ejb/EntityB</ejb-ref-name>
                 <ejb-ref-type>Entity</ejb-ref-type>
-                <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBLocalHome</local-home>
-                <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBLocal</local>
+                <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBLocalHome</local-home>
+                <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBLocal</local>
                 <ejb-link>EntityB</ejb-link>
             </ejb-local-ref>
         </session>
@@ -35,9 +35,9 @@
         <!-- Entity Beans -->
         <entity>
             <ejb-name>EntityA</ejb-name>
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityALocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityALocal</local>
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityABean</ejb-class>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityALocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityALocal</local>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityABean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Long</prim-key-class>
             <reentrant>False</reentrant>
@@ -50,9 +50,9 @@
         </entity>
         <entity>
             <ejb-name>EntityB</ejb-name>
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBLocal</local>
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBBean</ejb-class>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBLocal</local>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.bug1006723.testentity.EntityBBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Long</prim-key-class>
             <reentrant>False</reentrant>
@@ -70,10 +70,10 @@
         <entity>
             <ejb-name>EntityGroupLocking</ejb-name>
 
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -119,10 +119,10 @@
         <entity>
             <ejb-name>EntityModifiedLocking</ejb-name>
 
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -168,10 +168,10 @@
         <entity>
             <ejb-name>EntityReadLocking</ejb-name>
 
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -217,10 +217,10 @@
         <entity>
             <ejb-name>EntityVersionLocking</ejb-name>
 
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -266,10 +266,10 @@
         <entity>
             <ejb-name>EntityExplicitVersionLocking</ejb-name>
 
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -315,10 +315,10 @@
         <entity>
             <ejb-name>EntityTimestampLocking</ejb-name>
 
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>
@@ -364,10 +364,10 @@
         <entity>
             <ejb-name>EntityKeyGeneratorLocking</ejb-name>
 
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.interfaces.CmpEntityLocal</local>
 
-            <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.optimisticlock.ejb.CmpEntityBean</ejb-class>
             <persistence-type>Container</persistence-type>
             <prim-key-class>java.lang.Integer</prim-key-class>
             <reentrant>false</reentrant>

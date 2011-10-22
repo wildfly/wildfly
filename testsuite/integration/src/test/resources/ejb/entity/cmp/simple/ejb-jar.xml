@@ -8,9 +8,9 @@
    <enterprise-beans>
       <entity>
          <ejb-name>SimpleEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.simple.SimpleHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.simple.Simple</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.simple.SimpleBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.simple.SimpleHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.simple.Simple</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.simple.SimpleBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.String</prim-key-class>
          <reentrant>False</reentrant>
@@ -75,9 +75,9 @@
 
       <entity>
          <ejb-name>SimpleEJBWithOptionA</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.simple.SimpleHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.simple.Simple</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.simple.SimpleBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.simple.SimpleHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.simple.Simple</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.simple.SimpleBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.String</prim-key-class>
          <reentrant>False</reentrant>

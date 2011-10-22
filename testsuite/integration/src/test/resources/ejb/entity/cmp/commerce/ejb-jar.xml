@@ -8,11 +8,11 @@
       <entity>
          <description>User</description>
          <ejb-name>UserEJB</ejb-name>
-         <home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.UserHome</home>
-         <remote>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.User</remote>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.UserLocalHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.UserLocal</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.UserBean</ejb-class>
+         <home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.UserHome</home>
+         <remote>org.jboss.as.test.integration.ejb.entity.cmp.commerce.User</remote>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.UserLocalHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.UserLocal</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.UserBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.String</prim-key-class>
          <reentrant>False</reentrant>
@@ -85,11 +85,11 @@
       <entity>
          <description>Customer</description>
          <ejb-name>CustomerEJB</ejb-name>
-         <home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.CustomerHome</home>
-         <remote>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.Customer</remote>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.CustomerLocalHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.CustomerLocal</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.CustomerBean</ejb-class>
+         <home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.CustomerHome</home>
+         <remote>org.jboss.as.test.integration.ejb.entity.cmp.commerce.Customer</remote>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.CustomerLocalHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.CustomerLocal</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.CustomerBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Long</prim-key-class>
          <reentrant>False</reentrant>
@@ -101,15 +101,15 @@
          <ejb-ref>
             <ejb-ref-name>ejb/User</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
-            <home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.UserHome</home>
-            <remote>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.User</remote>
+            <home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.UserHome</home>
+            <remote>org.jboss.as.test.integration.ejb.entity.cmp.commerce.User</remote>
             <ejb-link>UserEJB</ejb-link>
          </ejb-ref>
          <ejb-local-ref>
             <ejb-ref-name>ejb/UserLocal</ejb-ref-name>
             <ejb-ref-type>Entity</ejb-ref-type>
-            <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.UserLocalHome</local-home>
-            <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.UserLocal</local>
+            <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.UserLocalHome</local-home>
+            <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.UserLocal</local>
             <ejb-link>UserEJB</ejb-link>
          </ejb-local-ref>
          <query>
@@ -162,9 +162,9 @@
       <entity>
          <description>Order</description>
          <ejb-name>OrderEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.OrderHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.Order</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.OrderBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.OrderHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.Order</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.OrderBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Long</prim-key-class>
          <reentrant>False</reentrant>
@@ -334,9 +334,9 @@
       <entity>
          <description>Address</description>
          <ejb-name>AddressEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.AddressHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.Address</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.AddressBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.AddressHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.Address</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.AddressBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Long</prim-key-class>
          <reentrant>False</reentrant>
@@ -393,9 +393,9 @@
       <entity>
          <description>Order Line Item</description>
          <ejb-name>LineItemEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.LineItemHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.LineItem</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.LineItemBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.LineItemHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.LineItem</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.LineItemBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Long</prim-key-class>
          <reentrant>False</reentrant>
@@ -422,9 +422,9 @@
       <entity>
          <description>Models a Product</description>
          <ejb-name>ProductEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.Product</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.Product</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Long</prim-key-class>
          <reentrant>False</reentrant>
@@ -472,11 +472,11 @@
       <entity>
          <description>Models a ProductCategory</description>
          <ejb-name>ProductCategoryEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategory</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategory</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryBean</ejb-class>
          <persistence-type>Container</persistence-type>
-         <prim-key-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.CompositeId</prim-key-class>
+         <prim-key-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.CompositeId</prim-key-class>
          <reentrant>False</reentrant>
          <cmp-version>2.x</cmp-version>
          <abstract-schema-name>ProductCategory</abstract-schema-name>
@@ -500,11 +500,11 @@
       <entity>
          <description>A copy of ProductCategory used for batch-cascade-delete testing</description>
          <ejb-name>ProductCategoryBatchDeleteEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategory</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategory</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryBean</ejb-class>
          <persistence-type>Container</persistence-type>
-         <prim-key-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.CompositeId</prim-key-class>
+         <prim-key-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.CompositeId</prim-key-class>
          <reentrant>False</reentrant>
          <cmp-version>2.x</cmp-version>
          <abstract-schema-name>ProductCategoryBatchDelete</abstract-schema-name>
@@ -528,9 +528,9 @@
       <entity>
          <description>Models a ProductCategoryType</description>
          <ejb-name>ProductCategoryTypeEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryTypeHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryType</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryTypeBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryTypeHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryType</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryTypeBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Long</prim-key-class>
          <reentrant>False</reentrant>
@@ -543,9 +543,9 @@
       <entity>
          <description>A copy of ProductCategoryType used for batch-cascade-delete testing</description>
          <ejb-name>ProductCategoryTypeBatchDeleteEJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryTypeHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryType</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.commerce.ProductCategoryTypeBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryTypeHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryType</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.commerce.ProductCategoryTypeBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Long</prim-key-class>
          <reentrant>False</reentrant>

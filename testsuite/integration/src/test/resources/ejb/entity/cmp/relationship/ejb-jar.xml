@@ -9,9 +9,9 @@
       <entity>
          <description>A - one-to-one bidirectional table</description>
          <ejb-name>A_OneToOne_Bi_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -23,9 +23,9 @@
       <entity>
          <description>B - one-to-one bidirectional table</description>
          <ejb-name>B_OneToOne_Bi_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -38,9 +38,9 @@
       <entity>
          <description>A - one-to-one bidirectional foreign-key</description>
          <ejb-name>A_OneToOne_Bi_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -52,9 +52,9 @@
       <entity>
          <description>B - one-to-one bidirectional foreign-key</description>
          <ejb-name>B_OneToOne_Bi_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -67,9 +67,9 @@
       <entity>
          <description>A - one-to-one unidirectional table</description>
          <ejb-name>A_OneToOne_Uni_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -81,9 +81,9 @@
       <entity>
          <description>B - one-to-one unidirectional table</description>
          <ejb-name>B_OneToOne_Uni_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -96,9 +96,9 @@
       <entity>
          <description>A - one-to-one unidirectional foreign-key</description>
          <ejb-name>A_OneToOne_Uni_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -110,9 +110,9 @@
       <entity>
          <description>B - one-to-one unidirectional foreign-key</description>
          <ejb-name>B_OneToOne_Uni_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneUnidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -125,9 +125,9 @@
       <entity>
          <description>A - one-to-many bidirectional table</description>
          <ejb-name>A_OneToMany_Bi_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -139,9 +139,9 @@
       <entity>
          <description>B - one-to-many bidirectional table</description>
          <ejb-name>B_OneToMany_Bi_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -154,9 +154,9 @@
       <entity>
          <description>A - one-to-many bidirectional foreign-key</description>
          <ejb-name>A_OneToMany_Bi_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -168,9 +168,9 @@
       <entity>
          <description>B - one-to-many bidirectional foreign-key</description>
          <ejb-name>B_OneToMany_Bi_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyBidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -183,9 +183,9 @@
       <entity>
          <description>A - one-to-many unidirectional table</description>
          <ejb-name>A_OneToMany_Uni_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -197,9 +197,9 @@
       <entity>
          <description>B - one-to-many unidirectional table</description>
          <ejb-name>B_OneToMany_Uni_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -212,9 +212,9 @@
       <entity>
          <description>A - one-to-many unidirectional foreign-key</description>
          <ejb-name>A_OneToMany_Uni_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -226,9 +226,9 @@
       <entity>
          <description>B - one-to-many unidirectional foreign-key</description>
          <ejb-name>B_OneToMany_Uni_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToManyUnidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -241,9 +241,9 @@
       <entity>
          <description>A - many-to-one unidirectional table</description>
          <ejb-name>A_ManyToOne_Uni_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -255,9 +255,9 @@
       <entity>
          <description>B - many-to-one unidirectional table</description>
          <ejb-name>B_ManyToOne_Uni_Table_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -270,9 +270,9 @@
       <entity>
          <description>A - many-to-one unidirectional foreign-key</description>
          <ejb-name>A_ManyToOne_Uni_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -284,9 +284,9 @@
       <entity>
          <description>B - many-to-one unidirectional foreign-key</description>
          <ejb-name>B_ManyToOne_Uni_FK_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToOneUnidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -299,9 +299,9 @@
       <entity>
          <description>A - many-to-many bidirectional</description>
          <ejb-name>A_ManyToMany_Bi_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -313,9 +313,9 @@
       <entity>
          <description>B - many-to-many bidirectional</description>
          <ejb-name>B_ManyToMany_Bi_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyBidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -328,9 +328,9 @@
       <entity>
          <description>A - many-to-many unidirectional</description>
          <ejb-name>A_ManyToMany_Uni_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.AHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.A</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.ABean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.AHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.A</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.ABean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -342,9 +342,9 @@
       <entity>
          <description>B - many-to-many unidirectional</description>
          <ejb-name>B_ManyToMany_Uni_EJB</ejb-name>
-         <local-home>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.BHome</local-home>
-         <local>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.B</local>
-         <ejb-class>org.jboss.as.testsuite.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.BBean</ejb-class>
+         <local-home>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.BHome</local-home>
+         <local>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.B</local>
+         <ejb-class>org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyUnidirectional.BBean</ejb-class>
          <persistence-type>Container</persistence-type>
          <prim-key-class>java.lang.Integer</prim-key-class>
          <reentrant>False</reentrant>
@@ -445,7 +445,7 @@
             </relationship-role-source>
          </ejb-relationship-role>
       </ejb-relation>
-      
+
       <ejb-relation>
          <ejb-relation-name>AB_OneToMany_Bi_Table</ejb-relation-name>
          <ejb-relationship-role>
