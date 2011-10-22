@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import java.lang.management.ManagementFactory;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.ServiceLoader;
 import javax.management.MBeanServer;
 
 import org.jboss.as.webservices.util.WSServices;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.api.monitoring.RecordProcessor;
 import org.jboss.ws.api.monitoring.RecordProcessorFactory;
@@ -51,7 +53,12 @@ public class EndpointRecordProcessorDeploymentAspect extends org.jboss.ws.common
             list.addAll(factory.newRecordProcessors());
         }
         setProcessors(list);
-        setMbeanServer((MBeanServer) WSServices.getContainerRegistry().getService(ServiceName.JBOSS.append("mbean", "server"))
-                .getService().getValue());
+        final ServiceController<?> controller = WSServices.getContainerRegistry().getService(ServiceName.JBOSS.append("mbean", "server"));
+        if (controller != null) {
+            setMbeanServer((MBeanServer) controller.getService().getValue());
+        } else {
+            setMbeanServer(ManagementFactory.getPlatformMBeanServer());
+        }
+
     }
 }
