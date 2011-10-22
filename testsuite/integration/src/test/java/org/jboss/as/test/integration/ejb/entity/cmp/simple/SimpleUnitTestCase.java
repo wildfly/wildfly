@@ -43,6 +43,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -676,6 +677,7 @@ public class SimpleUnitTestCase extends AbstractCmpTest {
     }
 
     @Test
+    @Ignore("AS7-2204")
     public void testDuplicateKey() throws Exception {
         try {
             SimpleHome simpleHome = getSimpleHome();

@@ -34,6 +34,7 @@ import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,6 +43,7 @@ import org.junit.runner.RunWith;
  * @version <tt>$Revision: 81036 $</tt>
  */
 @RunWith(CmpTestRunner.class)
+@Ignore("AS7-2204")
 public class LazyResultSetLoadingTestCase extends AbstractCmpTest {
     @Deployment
     public static Archive<?> deploy() {
