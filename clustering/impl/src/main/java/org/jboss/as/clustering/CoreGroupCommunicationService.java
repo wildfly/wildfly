@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering;
 
+import static org.jboss.as.clustering.ClusteringImplMessages.MESSAGES;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -79,8 +81,6 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Buffer;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
-
-import static org.jboss.as.clustering.ClusteringImplMessages.MESSAGES;
 
 /**
  * Implementation of the {@link GroupCommunicationService} interface and its direct subinterfaces based on a <a
@@ -350,7 +350,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
      */
     @Override
     public <T> T callMethodOnCoordinatorNode(String serviceName, String methodName, Object[] args, Class<?>[] types, boolean excludeSelf) throws Exception {
-        return this.callMethodOnCoordinatorNode(serviceName, methodName, args, types, excludeSelf, this.getMethodCallTimeout(), false);
+        return this.<T>callMethodOnCoordinatorNode(serviceName, methodName, args, types, excludeSelf, this.getMethodCallTimeout(), false);
     }
 
     /**
@@ -372,7 +372,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             if (excludeSelf) {
                 return null;
             } else if (this.directlyInvokeLocal) {
-                return invokeDirectly(serviceName, methodName, args, types, null, null);
+                return this.<T>invokeDirectly(serviceName, methodName, args, types, null, null);
             }
         }
 
@@ -382,7 +382,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             opt.setFlags(Message.OOB);
         }
         try {
-            return this.dispatcher.callRemoteMethod(coord, m, opt);
+            return this.dispatcher.<T>callRemoteMethod(coord, m, opt);
         } catch (Exception e) {
             throw e;
         } catch (Error e) {
@@ -398,7 +398,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
     @Override
     public <T>  T callMethodOnNode(String serviceName, String methodName, Object[] args, Class<?>[] types,
             ClusterNode targetNode) throws Exception {
-        return this.callMethodOnNode(serviceName, methodName, args, types, this.getMethodCallTimeout(), targetNode, false);
+        return this.<T>callMethodOnNode(serviceName, methodName, args, types, this.getMethodCallTimeout(), targetNode, false);
     }
 
     /**
@@ -406,7 +406,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
      */
     @Override
     public <T> T callMethodOnNode(String serviceName, String methodName, Object[] args, Class<?>[] types, long methodTimeout, ClusterNode targetNode) throws Exception {
-        return this.callMethodOnNode(serviceName, methodName, args, types, methodTimeout, targetNode, false);
+        return this.<T>callMethodOnNode(serviceName, methodName, args, types, methodTimeout, targetNode, false);
     }
 
     /**
@@ -425,7 +425,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             this.log.tracef("callMethodOnNode( objName=%s, methodName=%s )", serviceName, methodName);
         }
         if (this.directlyInvokeLocal && this.me.equals(targetNode)) {
-            return invokeDirectly(serviceName, methodName, args, types, null, null);
+            return this.<T>invokeDirectly(serviceName, methodName, args, types, null, null);
         }
 
         RequestOptions opt = new RequestOptions(ResponseMode.GET_FIRST, methodTimeout, false, new NoHandlerForRPCRspFilter());
@@ -433,7 +433,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             opt.setFlags(Message.OOB);
         }
         try {
-            return this.dispatcher.callRemoteMethod(((ClusterNodeImpl) targetNode).getOriginalJGAddress(), m, opt);
+            return this.dispatcher.<T>callRemoteMethod(((ClusterNodeImpl) targetNode).getOriginalJGAddress(), m, opt);
         } catch (Exception e) {
             throw e;
         } catch (Error e) {
