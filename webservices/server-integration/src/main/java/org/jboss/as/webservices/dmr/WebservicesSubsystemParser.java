@@ -4,7 +4,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
@@ -183,13 +182,11 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
         final List<ModelNode> endpointConfigs = new ArrayList<ModelNode>();
 
         // elements
-        final EnumSet<Element> required = EnumSet.of(Element.MODIFY_WSDL_ADDRESS, Element.WSDL_HOST);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case WEBSERVICES_1_0: {
                     final Element element = Element.forName(reader.getLocalName());
-                    required.remove(element);
                     if (element != Element.ENDPOINT_CONFIG && !encountered.add(element)) {
                         throw unexpectedElement(reader);
                     }
@@ -227,10 +224,6 @@ final class WebservicesSubsystemParser implements XMLStreamConstants, XMLElement
                     throw unexpectedElement(reader);
                 }
             }
-        }
-
-        if (!required.isEmpty()) {
-            throw missingRequiredElement(reader, required);
         }
 
         list.add(subsystem);

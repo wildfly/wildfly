@@ -21,15 +21,19 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.namespace.QName;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 
 /**
@@ -39,7 +43,7 @@ import org.jboss.staxmapper.XMLElementWriter;
  *
  * @author Stuart Douglas
  */
-public class ApplicationClientConfigurationPersister implements ExtensibleConfigurationPersister {
+public class ApplicationClientConfigurationPersister extends XmlConfigurationPersister {
 
     /**
      * The absolute path to the deployment archive
@@ -57,21 +61,16 @@ public class ApplicationClientConfigurationPersister implements ExtensibleConfig
     private final List<String> parameters;
 
     /**
-     * Any additional modules that should be available to the deployment
-     */
-    private final String globalModules;
-
-    /**
      * The URL of the AS7 instance to connect to
      */
     private final String hostUrl;
 
-    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String globalModules, final String hostUrl, final List<String> parameters) {
+    public ApplicationClientConfigurationPersister(final String filePath, final String deploymentName, final String hostUrl, final List<String> parameters, final File configFile, final QName element, final XMLElementReader<List<ModelNode>> xmlparser) {
+        super(configFile, element, xmlparser, null);
         this.filePath = filePath;
         this.deploymentName = deploymentName;
         this.hostUrl = hostUrl;
         this.parameters = parameters;
-        this.globalModules = globalModules;
     }
 
 
@@ -97,7 +96,8 @@ public class ApplicationClientConfigurationPersister implements ExtensibleConfig
 
     @Override
     public List<ModelNode> load() throws ConfigurationPersistenceException {
-        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, globalModules, hostUrl, parameters);
+        List<ModelNode> nodes = super.load();
+        return AppClientServerConfiguration.serverConfiguration(filePath, deploymentName, hostUrl, parameters, nodes);
     }
 
     @Override

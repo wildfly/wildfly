@@ -33,6 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.xml.namespace.QName;
+
+import org.jboss.as.appclient.subsystem.parsing.AppClientXml;
+import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.ServerEnvironment;
@@ -59,13 +63,12 @@ public final class Main {
         System.out.println("    -H=<url>                           Set the url of the AS7 instance to connect to");
         System.out.println("    --host=<url>                       Set the url of the AS7 instance to connect to");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
-        System.out.println("    -global-modules                    Specify additional modules in a comma separated list to be made available to the application");
         System.out.println("    -h                                 Display this message and exit");
         System.out.println("    --help                             Display this message and exit");
         System.out.println("    -P=<url>                           Load system properties from the given url");
         System.out.println("    -P <url>                           Load system properties from the given url");
         System.out.println("    --properties=<url>                 Load system properties from the given url");
-        System.out.println("    -V                                 Print version and exit");
+        System.out.println("    --appclient-config=<config>        Name of the app client configuration file to use (default is \"appclient.xml\")");
         System.out.println("    -v                                 Print version and exit");
         System.out.println("    --version                          Print version and exit");
         System.out.println();
@@ -100,6 +103,7 @@ public final class Main {
                 abort(null);
             } else {
 
+                QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                 final String file = clientArgs.get(0);
                 final List<String> params = clientArgs.subList(1, clientArgs.size());
                 final String deploymentName;
@@ -120,11 +124,12 @@ public final class Main {
                     throw new RuntimeException("Could not locate app client deployment " + realFile.getAbsolutePath());
                 }
 
+                final AppClientXml parser = new AppClientXml(Module.getBootModuleLoader());
                 final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
-                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName, options.globalModules, options.hostUrl, params));
+                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName,  options.hostUrl, params, serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser));
                 bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
             }
         } catch (Throwable t) {
@@ -147,7 +152,7 @@ public final class Main {
         ParsedOptions ret = new ParsedOptions();
         ret.clientArguments = clientArguments;
         final int argsLength = args.length;
-        String serverConfig = null;
+        String appClientConfig = "appclient.xml";
         boolean clientArgs = false;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -202,9 +207,15 @@ public final class Main {
                     }
                     systemProperties.setProperty(name, value);
                     SecurityActions.setSystemProperty(name, value);
-                } else if (arg.startsWith(CommandLineConstants.GLOBAL_MODULES)) {
-                    ret.globalModules = parseValue(arg, CommandLineConstants.GLOBAL_MODULES);
+                } else if (arg.startsWith(CommandLineConstants.APPCLIENT_CONFIG)) {
+                    appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
                 } else {
+                    if(arg.startsWith("-")) {
+                        System.out.println("Unknown option " + arg);
+                        usage();
+
+                        return null;
+                    }
                     clientArgs = true;
                     clientArguments.add(arg);
                 }
@@ -216,7 +227,7 @@ public final class Main {
             }
         }
 
-        ret.environment = new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType);
+        ret.environment = new ServerEnvironment(systemProperties, systemEnvironment, appClientConfig, launchType);
         return ret;
     }
 
@@ -277,7 +288,6 @@ public final class Main {
     private static final class ParsedOptions {
         ServerEnvironment environment;
         List<String> clientArguments;
-        String globalModules = "";
         String hostUrl = "remote://localhost:9999";
     }
 }

@@ -41,9 +41,9 @@
 			</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="modify-wsdl-address" minOccurs="1"
+			<xs:element name="modify-wsdl-address" minOccurs="0"
 				maxOccurs="1" type="xs:boolean" />
-			<xs:element name="wsdl-host" minOccurs="1" maxOccurs="1"
+			<xs:element name="wsdl-host" minOccurs="0" maxOccurs="1"
 				type="xs:string">
 				<xs:annotation>
 					<xs:documentation>
