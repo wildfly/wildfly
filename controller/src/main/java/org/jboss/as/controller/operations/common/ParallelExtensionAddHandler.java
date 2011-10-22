@@ -35,7 +35,7 @@ import java.util.concurrent.ThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ParsedOp;
+import org.jboss.as.controller.ParsedBootOp;
 import org.jboss.as.controller.parsing.CommonXml;
 import org.jboss.dmr.ModelNode;
 
@@ -48,10 +48,10 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
 
     // TODO inject
     private final ExecutorService executor = CommonXml.bootExecutor;
-    private final List<ParsedOp> extensionAdds = new ArrayList<ParsedOp>();
+    private final List<ParsedBootOp> extensionAdds = new ArrayList<ParsedBootOp>();
 
-    public void addParsedOp(final ParsedOp op, final ExtensionAddHandler handler) {
-        extensionAdds.add(new ParsedOp(op, handler));
+    public void addParsedOp(final ParsedBootOp op, final ExtensionAddHandler handler) {
+        extensionAdds.add(new ParsedBootOp(op, handler));
     }
 
     @Override
@@ -59,7 +59,7 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
 
         context.addStep(getParallelExtensionInitializeStep(), OperationContext.Stage.IMMEDIATE);
 
-        for (ParsedOp op : extensionAdds) {
+        for (ParsedBootOp op : extensionAdds) {
             context.addStep(op.response, op.operation, op.handler, OperationContext.Stage.IMMEDIATE);
         }
 
@@ -74,7 +74,7 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
 
                 long start = System.currentTimeMillis();
                 final Map<String, Future<OperationFailedException>> futures = new LinkedHashMap<String, Future<OperationFailedException>>();
-                for (ParsedOp op : extensionAdds) {
+                for (ParsedBootOp op : extensionAdds) {
                     String module = op.address.getLastElement().getValue();
                     ExtensionAddHandler addHandler = ExtensionAddHandler.class.cast(op.handler);
                     Future<OperationFailedException> future = executor.submit(new ExtensionInitializeTask(module, addHandler));

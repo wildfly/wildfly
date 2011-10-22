@@ -45,11 +45,11 @@ import org.jboss.msc.service.ServiceTarget;
 class ParallelBootOperationContext extends AbstractOperationContext {
 
     private final OperationContext primaryContext;
-    private final List<ParsedOp> runtimeOps;
+    private final List<ParsedBootOp> runtimeOps;
 
     ParallelBootOperationContext(final ModelController.OperationTransactionControl transactionControl,
                                  final ControlledProcessState processState, final OperationContext primaryContext,
-                                 final List<ParsedOp> runtimeOps) {
+                                 final List<ParsedBootOp> runtimeOps) {
         super(Type.SERVER, transactionControl, processState);
         this.primaryContext = primaryContext;
         this.runtimeOps = runtimeOps;
@@ -81,7 +81,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
             case RUNTIME:
                 if (runtimeOps != null) {
                     // Cache for use by the runtime step from ParallelBootOperationStepHandler
-                    ParsedOp parsedOp = new ParsedOp(operation, step, response);
+                    ParsedBootOp parsedOp = new ParsedBootOp(operation, step, response);
                     runtimeOps.add(parsedOp);
                 } else {
                     super.addStep(response, operation, step, stage);
