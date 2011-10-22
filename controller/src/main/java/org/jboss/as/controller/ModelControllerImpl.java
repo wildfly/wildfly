@@ -22,9 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -130,13 +128,14 @@ class ModelControllerImpl implements ModelController {
         final ModelNode result = new ModelNode().setEmptyList();
         result.setEmptyList();
         boolean sawExtensionAdd = false;
-        List<ParsedOp> postExtensionOps = null;
+        List<ParsedBootOp> postExtensionOps = null;
         ParallelExtensionAddHandler parallelExtensionAddHandler = new ParallelExtensionAddHandler();
         ParallelBootOperationStepHandler parallelSubsystemHandler = controllerType == OperationContext.Type.SERVER
                 ? new ParallelBootOperationStepHandler(rootRegistration, processState, result) : null;
         boolean registeredParallelSubsystemHandler = false;
+        int subsystemIndex = 0;
         for (ModelNode bootOp : bootList) {
-            final ParsedOp parsedOp = new ParsedOp(bootOp, result.add());
+            final ParsedBootOp parsedOp = new ParsedBootOp(bootOp, result.add());
             if (postExtensionOps != null) {
                 // Handle cases like AppClient where extension adds are interleaved with subsystem ops
                 if (parsedOp.isExtensionAdd()) {
@@ -144,10 +143,16 @@ class ModelControllerImpl implements ModelController {
                     parallelExtensionAddHandler.addParsedOp(parsedOp, stepHandler);
                 } else {
                     if (parallelSubsystemHandler == null || !parallelSubsystemHandler.addSubsystemOperation(parsedOp)) {
-                        postExtensionOps.add(parsedOp);
+                        // Put any interface/socket op before the subsystem op
+                        if (registeredParallelSubsystemHandler && (parsedOp.isInterfaceOperation() || parsedOp.isSocketOperation())) {
+                            postExtensionOps.add(subsystemIndex++, parsedOp);
+                        } else {
+                            postExtensionOps.add(parsedOp);
+                        }
                     } else if (!registeredParallelSubsystemHandler) {
                         ModelNode op = Util.getEmptyOperation("parallel-subsystem-boot", new ModelNode().setEmptyList());
-                        postExtensionOps.add(new ParsedOp(op, parallelSubsystemHandler, result.add()));
+                        postExtensionOps.add(new ParsedBootOp(op, parallelSubsystemHandler, result.add()));
+                        subsystemIndex = postExtensionOps.size() - 1;
                         registeredParallelSubsystemHandler = true;
                     }
                 }
@@ -173,12 +178,13 @@ class ModelControllerImpl implements ModelController {
                     context.addStep(result.add(), bootOp, stepHandler, OperationContext.Stage.MODEL);
                 } else {
                     // Start the postExtension list
-                    postExtensionOps = new ArrayList<ParsedOp>();
+                    postExtensionOps = new ArrayList<ParsedBootOp>();
                     if (parallelSubsystemHandler == null || !parallelSubsystemHandler.addSubsystemOperation(parsedOp)) {
                         postExtensionOps.add(parsedOp);
-                    } else if (!registeredParallelSubsystemHandler) {
+                    } else {
+                        // First subsystem op; register the parallel handler and add the op to it
                         ModelNode op = Util.getEmptyOperation("parallel-subsystem-boot", new ModelNode().setEmptyList());
-                        postExtensionOps.add(new ParsedOp(op, parallelSubsystemHandler, result.add()));
+                        postExtensionOps.add(new ParsedBootOp(op, parallelSubsystemHandler, result.add()));
                         registeredParallelSubsystemHandler = true;
                     }
                 }
@@ -192,7 +198,7 @@ class ModelControllerImpl implements ModelController {
             final OperationContextImpl postExtContext = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
                     handler, null, model, control, processState, bootingFlag.get());
 
-            for (ParsedOp parsedOp : postExtensionOps) {
+            for (ParsedBootOp parsedOp : postExtensionOps) {
                 final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;
                 if (stepHandler == null) {
                     String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);

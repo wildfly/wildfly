@@ -24,29 +24,30 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
-import org.jboss.as.controller.interfaces.PublicAddressInterfaceCriteria;
 import org.jboss.dmr.ModelNode;
 
 /**
- * TODO class javadoc.
+ * Encapsulates information about a boot operation for use during boot execution.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ParsedOp {
+public class ParsedBootOp {
     public final ModelNode operation;
     public final String operationName;
     public final PathAddress address;
     public final OperationStepHandler handler;
     public final ModelNode response;
 
-    ParsedOp(final ModelNode operation, final ModelNode response) {
+    ParsedBootOp(final ModelNode operation, final ModelNode response) {
         this(operation, null, response);
     }
 
-    ParsedOp(final ModelNode operation, final OperationStepHandler handler, final ModelNode response) {
+    ParsedBootOp(final ModelNode operation, final OperationStepHandler handler, final ModelNode response) {
         this.operation = operation;
         this.address = PathAddress.pathAddress(operation.get(OP_ADDR));
         this.operationName = operation.require(OP).asString();
@@ -54,7 +55,7 @@ public class ParsedOp {
         this.response = response;
     }
 
-    public ParsedOp(final ParsedOp toCopy, final OperationStepHandler handler) {
+    public ParsedBootOp(final ParsedBootOp toCopy, final OperationStepHandler handler) {
         this.operation = toCopy.operation;
         this.address = toCopy.address;
         this.operationName = toCopy.operationName;
@@ -66,5 +67,13 @@ public class ParsedOp {
     boolean isExtensionAdd() {
         return address.size() == 1 && address.getElement(0).getKey().equals(EXTENSION)
                     && operationName.equals(ADD);
+    }
+
+    boolean isInterfaceOperation() {
+        return address.size() > 0 && address.getElement(0).getKey().equals(INTERFACE);
+    }
+
+    boolean isSocketOperation() {
+        return address.size() > 0 && address.getElement(0).getKey().equals(SOCKET_BINDING_GROUP);
     }
 }

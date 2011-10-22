@@ -51,7 +51,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
     // TODO inject
     private final Executor executor = CommonXml.bootExecutor;
 
-    private final Map<String, List<ParsedOp>> opsBySubsystem = new LinkedHashMap<String, List<ParsedOp>>();
+    private final Map<String, List<ParsedBootOp>> opsBySubsystem = new LinkedHashMap<String, List<ParsedBootOp>>();
 
     ParallelBootOperationStepHandler(final ImmutableManagementResourceRegistration rootRegistration,
                                      final ControlledProcessState processState, ModelNode bootResponse) {
@@ -60,12 +60,12 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         this.bootResponse = bootResponse;
     }
 
-    boolean addSubsystemOperation(final ParsedOp parsedOp) {
+    boolean addSubsystemOperation(final ParsedBootOp parsedOp) {
         final String subsystemName = getSubsystemName(parsedOp.address);
         if (subsystemName != null) {
-            List<ParsedOp> list = opsBySubsystem.get(subsystemName);
+            List<ParsedBootOp> list = opsBySubsystem.get(subsystemName);
             if (list == null) {
-                list = new ArrayList<ParsedOp>();
+                list = new ArrayList<ParsedBootOp>();
                 opsBySubsystem.put(subsystemName, list);
             }
             list.add(parsedOp);
@@ -95,7 +95,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         context.acquireControllerLock();
 
-        final Map<String, List<ParsedOp>> runtimeOpsBySubsystem = new LinkedHashMap<String, List<ParsedOp>>();
+        final Map<String, List<ParsedBootOp>> runtimeOpsBySubsystem = new LinkedHashMap<String, List<ParsedBootOp>>();
         final Map<String, ParallelBootTransactionControl> transactionControls = new LinkedHashMap<String, ParallelBootTransactionControl>();
 
         final CountDownLatch preparedLatch = new CountDownLatch(opsBySubsystem.size());
@@ -103,9 +103,9 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         final CountDownLatch completeLatch = new CountDownLatch(opsBySubsystem.size());
 
 
-        for (Map.Entry<String, List<ParsedOp>> entry : opsBySubsystem.entrySet()) {
+        for (Map.Entry<String, List<ParsedBootOp>> entry : opsBySubsystem.entrySet()) {
             String subsystemName = entry.getKey();
-            List<ParsedOp> subsystemRuntimeOps = new ArrayList<ParsedOp>();
+            List<ParsedBootOp> subsystemRuntimeOps = new ArrayList<ParsedBootOp>();
             runtimeOpsBySubsystem.put(subsystemName, subsystemRuntimeOps);
 
             final ParallelBootTransactionControl txControl = new ParallelBootTransactionControl(subsystemName, preparedLatch, committedLatch, completeLatch);
@@ -124,9 +124,9 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             checkForSubsystemFailures(context, transactionControls, OperationContext.Stage.MODEL);
 
             // Add any logging subsystem steps so we get logging early in the boot
-            List<ParsedOp> loggingOps = runtimeOpsBySubsystem.remove("logging");
+            List<ParsedBootOp> loggingOps = runtimeOpsBySubsystem.remove("logging");
             if (loggingOps != null) {
-                for (ParsedOp loggingOp : loggingOps) {
+                for (ParsedBootOp loggingOp : loggingOps) {
                     context.addStep(loggingOp.response, loggingOp.operation, loggingOp.handler, OperationContext.Stage.RUNTIME);
                 }
             }
@@ -198,7 +198,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         committedLatch.countDown();
     }
 
-    private OperationStepHandler getRuntimeStep(final Map<String, List<ParsedOp>> runtimeOpsBySubsystem) {
+    private OperationStepHandler getRuntimeStep(final Map<String, List<ParsedBootOp>> runtimeOpsBySubsystem) {
 
         return new OperationStepHandler() {
             @Override
@@ -214,7 +214,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 final CountDownLatch committedLatch = new CountDownLatch(1);
                 final CountDownLatch completeLatch = new CountDownLatch(runtimeOpsBySubsystem.size());
 
-                for (Map.Entry<String, List<ParsedOp>> entry : runtimeOpsBySubsystem.entrySet()) {
+                for (Map.Entry<String, List<ParsedBootOp>> entry : runtimeOpsBySubsystem.entrySet()) {
                     String subsystemName = entry.getKey();
                     final ParallelBootTransactionControl txControl = new ParallelBootTransactionControl(subsystemName, preparedLatch, committedLatch, completeLatch);
                     transactionControls.put(subsystemName, txControl);
@@ -258,17 +258,17 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
     private class ParallelBootTask implements Runnable {
 
         private final String subsystemName;
-        private final List<ParsedOp> bootOperations;
+        private final List<ParsedBootOp> bootOperations;
         private final OperationContext primaryContext;
         private final OperationContext.Stage executionStage;
         private final ParallelBootTransactionControl transactionControl;
-        private final List<ParsedOp> runtimeOps;
+        private final List<ParsedBootOp> runtimeOps;
 
         public ParallelBootTask(final String subsystemName,
-                                final List<ParsedOp> bootOperations,
+                                final List<ParsedBootOp> bootOperations,
                                 final OperationContext primaryContext,
                                 final ParallelBootTransactionControl transactionControl,
-                                final List<ParsedOp> runtimeOps) {
+                                final List<ParsedBootOp> runtimeOps) {
             this.subsystemName = subsystemName;
             this.bootOperations = bootOperations;
             this.primaryContext = primaryContext;
@@ -281,7 +281,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         public void run() {
             try {
                 OperationContext context = getOperationContext();
-                for (ParsedOp op : bootOperations) {
+                for (ParsedBootOp op : bootOperations) {
                     final OperationStepHandler osh = op.handler == null ? rootRegistration.getOperationHandler(op.address, op.operationName) : op.handler;
                     context.addStep(op.response, op.operation, osh, executionStage);
                 }
@@ -297,7 +297,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             } finally {
                 if (!transactionControl.signalled) {
 
-                    for (ParsedOp op : bootOperations) {
+                    for (ParsedBootOp op : bootOperations) {
                         if (op.response.hasDefined(ModelDescriptionConstants.SUCCESS) && !op.response.get(ModelDescriptionConstants.SUCCESS).asBoolean()) {
                             transactionControl.operationFailed(op.response);
                             break;
@@ -328,7 +328,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         private ModelNode response;
         private ModelController.OperationTransaction transaction;
         private boolean signalled;
-        private final long start = System.currentTimeMillis();
+//        private final long start = System.currentTimeMillis();
 
         public ParallelBootTransactionControl(String subsystemName, CountDownLatch preparedLatch, CountDownLatch committedLatch, CountDownLatch completeLatch) {
             this.preparedLatch = preparedLatch;
@@ -354,8 +354,8 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 preparedLatch.countDown();
                 signalled = true;
 
-                long elapsed = System.currentTimeMillis() - start;
-                System.out.println("Ran subsytem " + subsystemName + " operations in " + elapsed + " ms");
+//                long elapsed = System.currentTimeMillis() - start;
+//                System.out.println("Ran subsytem " + subsystemName + " operations in " + elapsed + " ms");
 
                 try {
                     committedLatch.await();
