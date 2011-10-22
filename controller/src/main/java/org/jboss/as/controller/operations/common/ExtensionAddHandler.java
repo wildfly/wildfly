@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import org.jboss.as.controller.descriptions.common.ExtensionDescription;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -64,11 +65,26 @@ public class ExtensionAddHandler extends AbstractAddStepHandler implements Descr
         this.extensionContext = extensionContext;
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String module = address.getLastElement().getValue();
-        model.get(ExtensionDescription.MODULE).set(module);
+        resource.getModel().get(ExtensionDescription.MODULE).set(module);
 
+        if (!context.isBooting()) {
+            initializeExtension(module);
+        }
+    }
+
+    protected void populateModel(final ModelNode operation, ModelNode model) throws OperationFailedException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ExtensionDescription.getExtensionAddOperation(locale);
+    }
+
+    void initializeExtension(String module) throws OperationFailedException {
         try {
             for (Extension extension : Module.loadServiceFromCallerModuleLoader(ModuleIdentifier.fromString(module), Extension.class)) {
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
@@ -81,11 +97,6 @@ public class ExtensionAddHandler extends AbstractAddStepHandler implements Descr
         } catch (ModuleLoadException e) {
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ExtensionDescription.getExtensionAddOperation(locale);
     }
 
     protected boolean requiresRuntime(OperationContext context) {

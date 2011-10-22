@@ -108,7 +108,7 @@ abstract class AbstractOperationContext implements OperationContext {
 
     void addStep(final ModelNode response, final ModelNode operation, final PathAddress address,
                          final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
-        assert Thread.currentThread() == initiatingThread;
+        assert isControllingThread();
         if (response == null) {
             throw new IllegalArgumentException("response is null");
         }

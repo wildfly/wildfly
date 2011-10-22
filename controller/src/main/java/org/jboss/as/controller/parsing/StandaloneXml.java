@@ -84,6 +84,8 @@ public class StandaloneXml extends CommonXml {
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList)
             throws XMLStreamException {
+
+        long start = System.currentTimeMillis();
         final ModelNode address = new ModelNode().setEmptyList();
 
         if (Element.forName(reader.getLocalName()) != Element.SERVER) {
@@ -104,6 +106,9 @@ public class StandaloneXml extends CommonXml {
               throw unexpectedElement(reader);
             }
         }
+
+        long elapsed = System.currentTimeMillis() - start;
+        System.out.println("Parsed standalone configuration in " + elapsed + " ms");
     }
 
     /**
