@@ -118,4 +118,15 @@ public class Util {
         }
         return op;
     }
+
+    public static PathAddress getParentAddressByKey(PathAddress address, String parentKey) {
+       for (int i = address.size() - 1; i >=0; i--) {
+            PathElement pe = address.getElement(i);
+            if (parentKey.equals(pe.getKey())) {
+                return address.subAddress(0, i + 1);
+            }
+        }
+
+        return null;
+    }
 }

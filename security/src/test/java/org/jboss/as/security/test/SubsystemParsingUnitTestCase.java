@@ -61,15 +61,6 @@ public class SubsystemParsingUnitTestCase {
         ModelNode props = operations.get(0);
         assertNotNull(props);
 
-        List<ModelNode> secProps = props.get("security-properties").asList();
-        assertEquals(2, secProps.size());
-        for (ModelNode secProp : secProps) {
-            Property prop = secProp.asProperty();
-            String name = prop.getName();
-            boolean present = "a".equals(name) || "c".equals(name);
-            if (!present)
-                fail("wrong props");
-        }
 
         ModelNode node = operations.get(1);
         assertNotNull(node);
@@ -86,12 +77,19 @@ public class SubsystemParsingUnitTestCase {
                 assertEquals("other", value);
             }
         }
-        ModelNode auth = node.get("authentication");
-        assertNotNull(auth);
-        List<ModelNode> domainNodes = auth.asList();
-        assertEquals(1, domainNodes.size());
 
-        ModelNode modelNode = domainNodes.get(0);
+        node = operations.get(2);
+        assertNotNull(node);
+        address = node.get(OP_ADDR);
+        properties = address.asPropertyList();
+        assertEquals(3, properties.size());
+        assertEquals("authentication", properties.get(2).getName());
+        assertEquals("classic", properties.get(2).getValue().asString());
+
+        List<ModelNode> loginNodes = node.get("login-modules").asList();
+        assertEquals(1, loginNodes.size());
+
+        ModelNode modelNode = loginNodes.get(0);
         ModelNode code = modelNode.get("code");
         assertEquals("UsersRoles", code.asString());
         ModelNode flag = modelNode.get("flag");

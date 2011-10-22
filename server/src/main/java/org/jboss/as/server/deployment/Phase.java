@@ -282,6 +282,7 @@ public enum Phase {
     public static final int DEPENDENCIES_WELD                           = 0x0A00;
     public static final int DEPENDENCIES_SEAM                           = 0x0A01;
     public static final int DEPENDENCIES_WS                             = 0x0C00;
+    public static final int DEPENDENCIES_SECURITY                       = 0x0C50;
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
     public static final int DEPENDENCIES_JPA                            = 0x1000;
@@ -361,6 +362,7 @@ public enum Phase {
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
     public static final int INSTALL_JPA_INTERCEPTORS                    = 0x0200;
     public static final int INSTALL_APP_CONTEXT                         = 0x0300;
+    public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
     public static final int INSTALL_MODULE_CONTEXT                      = 0x0401;
     public static final int INSTALL_RESOLVE_EJB_INJECTIONS              = 0x0402;

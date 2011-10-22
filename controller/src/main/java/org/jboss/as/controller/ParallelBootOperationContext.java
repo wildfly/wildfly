@@ -207,6 +207,11 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    public Resource getOriginalRootResource() {
+        return primaryContext.getOriginalRootResource();
+    }
+
+    @Override
     public boolean isModelAffected() {
         return primaryContext.isModelAffected();
     }
@@ -229,6 +234,16 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public void report(MessageSeverity severity, String message) {
         primaryContext.report(severity, message);
+    }
+
+    @Override
+    public boolean markResourceRestarted(PathAddress resource, Object owner) {
+        throw new UnsupportedOperationException("Resource restarting is not supported during boot");
+    }
+
+    @Override
+    public boolean revertResourceRestarted(PathAddress resource, Object owner) {
+        throw new UnsupportedOperationException("Resource restarting is not supported during boot");
     }
 
     @Override

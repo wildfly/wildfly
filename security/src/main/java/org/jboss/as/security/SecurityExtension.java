@@ -35,6 +35,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -64,31 +68,32 @@ public class SecurityExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "security";
 
+    private static final String RESOURCE_NAME = SecurityExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
+
+     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);
+    }
 
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SecuritySubsystemDescriptions.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, SecuritySubsystemAdd.INSTANCE, SecuritySubsystemDescriptions.SUBSYSTEM_ADD,
-                false);
-        registration.registerOperationHandler(DESCRIBE, SecurityDescribeHandler.INSTANCE,
-                SecuritySubsystemDescriptions.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SecuritySubsystemRootResourceDefinition.INSTANCE);
+        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        // security domains
-        final ManagementResourceRegistration securityDomain = registration.registerSubModel(PathElement.pathElement(SECURITY_DOMAIN),
-                SecuritySubsystemDescriptions.SECURITY_DOMAIN);
-        securityDomain.registerOperationHandler(SecurityDomainAdd.OPERATION_NAME, SecurityDomainAdd.INSTANCE,
-                SecuritySubsystemDescriptions.SECURITY_DOMAIN_ADD, false);
-        securityDomain.registerOperationHandler(SecurityDomainRemove.OPERATION_NAME, SecurityDomainRemove.INSTANCE,
-                SecuritySubsystemDescriptions.SECURITY_DOMAIN_REMOVE, false);
-
-        // add operations to the security domain
-        securityDomain.registerOperationHandler(SecurityDomainOperations.LIST_CACHED_PRINCIPALS,
-                SecurityDomainOperations.LIST_CACHED_PRINCIPALS_OP, SecuritySubsystemDescriptions.LIST_CACHED_PRINCIPALS);
-        securityDomain.registerOperationHandler(SecurityDomainOperations.FLUSH_CACHE, SecurityDomainOperations.FLUSH_CACHE_OP,
-                SecuritySubsystemDescriptions.FLUSH_CACHE);
-
+        final ManagementResourceRegistration securityDomain = registration.registerSubModel(SecurityDomainResourceDefinition.INSTANCE);
+        final ManagementResourceRegistration jaspi = securityDomain.registerSubModel(JASPIAuthenticationResourceDefinition.INSTANCE);
+        jaspi.registerSubModel(LoginModuleStackResourceDefinition.INSTANCE);
+        securityDomain.registerSubModel(ClassicAuthenticationResourceDefinition.INSTANCE);
+        securityDomain.registerSubModel(AuthorizationResourceDefinition.INSTANCE);
+        securityDomain.registerSubModel(MappingResourceDefinition.INSTANCE);
+        securityDomain.registerSubModel(ACLResourceDefinition.INSTANCE);
+        securityDomain.registerSubModel(AuditResourceDefinition.INSTANCE);
+        securityDomain.registerSubModel(IdentityTrustResourceDefinition.INSTANCE);
+        securityDomain.registerSubModel(JSSEResourceDefinition.INSTANCE);
+        registration.registerSubModel(VaultResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
     }
 
@@ -97,61 +102,4 @@ public class SecurityExtension implements Extension {
         context.setSubsystemXmlMapping(Namespace.SECURITY_1_0.getUriString(), PARSER);
         context.setSubsystemXmlMapping(Namespace.SECURITY_1_1.getUriString(), PARSER);
     }
-
-    private static class SecurityDescribeHandler implements OperationStepHandler {
-        static final SecurityDescribeHandler INSTANCE = new SecurityDescribeHandler();
-
-        @SuppressWarnings("deprecation")
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(OP).set(ADD);
-            subsystem.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-
-            if (model.hasDefined(AUTHENTICATION_MANAGER_CLASS_NAME)) {
-                subsystem.get(AUTHENTICATION_MANAGER_CLASS_NAME).set(model.get(AUTHENTICATION_MANAGER_CLASS_NAME));
-            }
-            if (model.hasDefined(DEEP_COPY_SUBJECT_MODE)) {
-                subsystem.get(DEEP_COPY_SUBJECT_MODE).set(model.get(DEEP_COPY_SUBJECT_MODE));
-            }
-            if (model.hasDefined(DEFAULT_CALLBACK_HANDLER_CLASS_NAME)) {
-                subsystem.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME).set(model.get(DEFAULT_CALLBACK_HANDLER_CLASS_NAME));
-            }
-            if (model.hasDefined(SUBJECT_FACTORY_CLASS_NAME)) {
-                subsystem.get(SUBJECT_FACTORY_CLASS_NAME).set(model.get(SUBJECT_FACTORY_CLASS_NAME));
-            }
-            if (model.hasDefined(AUTHORIZATION_MANAGER_CLASS_NAME)) {
-                subsystem.get(AUTHORIZATION_MANAGER_CLASS_NAME).set(model.get(AUTHORIZATION_MANAGER_CLASS_NAME));
-            }
-            if (model.hasDefined(AUDIT_MANAGER_CLASS_NAME)) {
-                subsystem.get(AUDIT_MANAGER_CLASS_NAME).set(model.get(AUDIT_MANAGER_CLASS_NAME));
-            }
-            if (model.hasDefined(IDENTITY_TRUST_MANAGER_CLASS_NAME)) {
-                subsystem.get(IDENTITY_TRUST_MANAGER_CLASS_NAME).set(model.get(IDENTITY_TRUST_MANAGER_CLASS_NAME));
-            }
-            if (model.hasDefined(MAPPING_MANAGER_CLASS_NAME)) {
-                subsystem.get(MAPPING_MANAGER_CLASS_NAME).set(model.get(MAPPING_MANAGER_CLASS_NAME));
-            }
-            if (model.hasDefined(SECURITY_PROPERTIES)) {
-                subsystem.get(SECURITY_PROPERTIES).set(model.get(SECURITY_PROPERTIES));
-            }
-            if (model.hasDefined(Constants.VAULT)) {
-                subsystem.get(Constants.VAULT).set(model.get(Constants.VAULT));
-            }
-
-            ModelNode result = context.getResult();
-            result.add(subsystem);
-
-            if (model.hasDefined(SECURITY_DOMAIN)) {
-                for (Property prop : model.get(SECURITY_DOMAIN).asPropertyList()) {
-                    final ModelNode addr = subsystem.get(OP_ADDR).clone().add(SECURITY_DOMAIN, prop.getName());
-                    result.add(SecurityDomainAdd.getRecreateOperation(addr, prop.getValue()));
-                }
-            }
-
-            context.completeStep();
-        }
-    }
-
 }

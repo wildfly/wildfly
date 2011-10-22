@@ -22,11 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
@@ -38,6 +34,7 @@ import java.util.List;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.security.Constants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -64,9 +61,18 @@ public class SecurityTest {
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, "security");
         op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
-        ModelNode loginModule = op.get(AUTHENTICATION).add();
+        updates.add(op);
+
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+
+        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
         loginModule.get(CODE).set("UsersRoles");
         loginModule.get(FLAG).set("required");
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         updates.add(op);
 
         applyUpdates(updates, client);

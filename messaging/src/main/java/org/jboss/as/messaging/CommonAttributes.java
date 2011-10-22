@@ -552,7 +552,7 @@ public interface CommonAttributes {
     String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
     String QUEUE ="queue";
     String QUEUE_NAMES ="queue-names";
-    String REMOTING_INTERCEPTORS_STRING ="remoting-interceptors";
+    String  REMOTING_INTERCEPTORS_STRING ="remoting-interceptors";
     String REMOTE_ACCEPTOR = "remote-acceptor";
     String REMOTE_CONNECTOR = "remote-connector";
     String REMOTING_INTERCEPTOR ="remoting-interceptor";

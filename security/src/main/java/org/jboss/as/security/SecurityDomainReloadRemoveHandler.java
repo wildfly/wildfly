@@ -19,30 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.security;
 
-package org.jboss.as.controller;
-
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RestartParentResourceRemoveHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * A handler for the "remove" operation that always puts the process in "reload-required" state.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Jason T. Greene
  */
-public class ReloadRequiredRemoveStepHandler extends AbstractRemoveStepHandler {
+public class SecurityDomainReloadRemoveHandler extends RestartParentResourceRemoveHandler {
 
-    public static final ReloadRequiredRemoveStepHandler INSTANCE = new ReloadRequiredRemoveStepHandler();
-
-    public ReloadRequiredRemoveStepHandler() {
+    public SecurityDomainReloadRemoveHandler() {
+        super(Constants.SECURITY_DOMAIN);
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        context.reloadRequired();
+    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) {
+        String domainName = parentAddress.getLastElement().getValue();
+        SecurityDomainAdd.INSTANCE.launchServices(context, domainName, parentModel, verificationHandler, null);
     }
 
     @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        context.revertReloadRequired();
+    protected ServiceName getParentServiceName(PathAddress parentAddress) {
+        return SecurityDomainResourceDefinition.getSecurityDomainServiceName(parentAddress);
     }
 }

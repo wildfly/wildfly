@@ -1007,7 +1007,7 @@ class SecuritySubsystemDescriptions {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode op = new ModelNode();
-            op.get(OPERATION_NAME).set(SecurityDomainOperations.LIST_CACHED_PRINCIPALS);
+            op.get(OPERATION_NAME).set(Constants.LIST_CACHED_PRINCIPALS);
             op.get(DESCRIPTION).set(bundle.getString("list-cached-principals"));
 
             return op;
@@ -1017,7 +1017,7 @@ class SecuritySubsystemDescriptions {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode op = new ModelNode();
-            op.get(OPERATION_NAME).set(SecurityDomainOperations.FLUSH_CACHE);
+            op.get(OPERATION_NAME).set(Constants.FLUSH_CACHE);
             op.get(DESCRIPTION).set(bundle.getString("flush-cache"));
 
             return op;

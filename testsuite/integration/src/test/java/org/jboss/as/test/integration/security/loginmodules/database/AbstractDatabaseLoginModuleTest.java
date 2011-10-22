@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.security.loginmodules.database;
 import org.h2.tools.Server;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.loginmodules.AbstractLoginModuleTest;
 import org.jboss.as.test.integration.security.loginmodules.common.Utils;
@@ -50,13 +51,9 @@ import java.util.Map;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.security.Constants.*;
 
 @DataSourceDefinition(
    name = "java:app/DataSource",
@@ -127,27 +124,37 @@ public abstract class AbstractDatabaseLoginModuleTest extends AbstractLoginModul
    }
 
    protected static void createSecurityDomains(Class caller) throws Exception {
-      final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-      List<ModelNode> updates = new ArrayList<ModelNode>();
-      ModelNode op = new ModelNode();
-      op.get(OP).set(ADD);
-      op.get(OP_ADDR).add(SUBSYSTEM, "security");
+       final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+       List<ModelNode> updates = new ArrayList<ModelNode>();
+       ModelNode op = new ModelNode();
 
-      op.get(OP_ADDR).add(SECURITY_DOMAIN, "database-login-module");
-      ModelNode loginModule = op.get(Constants.AUTHENTICATION).add();
-      loginModule.get(CODE).set(DatabaseServerLoginModule.class.getName());
-      loginModule.get(FLAG).set("required");
+       String securityDomain =  "database-login-module";
+       op.get(OP).set(ADD);
+       op.get(OP_ADDR).add(SUBSYSTEM, "security");
+       op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+       updates.add(op);
 
-      ModelNode moduleOptions = loginModule.get("module-options");
+       op = new ModelNode();
+       op.get(OP).set(ADD);
+       op.get(OP_ADDR).add(SUBSYSTEM, "security");
+       op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+       op.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
 
-      Map<String, String> optionsMap = classModuleOptionsMap.get(caller);
-      assertNotNull(optionsMap);
-      for (Map.Entry<String, String> entry : optionsMap.entrySet()) {
-         moduleOptions.get(entry.getKey()).set(entry.getValue());
-      }
+       ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+       loginModule.get(ModelDescriptionConstants.CODE).set(DatabaseServerLoginModule.class.getName());
+       loginModule.get(FLAG).set("required");
+       op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
-      updates.add(op);
-      applyUpdates(updates, client);
+       ModelNode moduleOptions = loginModule.get("module-options");
+
+       Map<String, String> optionsMap = classModuleOptionsMap.get(caller);
+       assertNotNull(optionsMap);
+       for (Map.Entry<String, String> entry : optionsMap.entrySet()) {
+           moduleOptions.get(entry.getKey()).set(entry.getValue());
+       }
+
+       updates.add(op);
+       applyUpdates(updates, client);
 
    }
 
