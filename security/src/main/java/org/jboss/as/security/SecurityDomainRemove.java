@@ -55,6 +55,9 @@ class SecurityDomainRemove extends AbstractRemoveStepHandler {
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String securityDomain = address.getLastElement().getValue();
+        final String cacheType = SecurityDomainAdd.getAuthenticationCacheType(operation);
+        SecurityDomainAdd.INSTANCE.launchServices(context, securityDomain, model);
     }
 }

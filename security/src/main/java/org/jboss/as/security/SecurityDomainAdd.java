@@ -23,49 +23,12 @@
 package org.jboss.as.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.security.Constants.ACL;
-import static org.jboss.as.security.Constants.ADDITIONAL_PROPERTIES;
-import static org.jboss.as.security.Constants.AUDIT;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.AUTHENTICATION_JASPI;
-import static org.jboss.as.security.Constants.AUTHORIZATION;
-import static org.jboss.as.security.Constants.AUTH_MODULE;
-import static org.jboss.as.security.Constants.CACHE_TYPE;
-import static org.jboss.as.security.Constants.CIPHER_SUITES;
-import static org.jboss.as.security.Constants.CLIENT_ALIAS;
-import static org.jboss.as.security.Constants.CLIENT_AUTH;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.IDENTITY_TRUST;
-import static org.jboss.as.security.Constants.JSSE;
-import static org.jboss.as.security.Constants.KEYSTORE_PASSWORD;
-import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER;
-import static org.jboss.as.security.Constants.KEYSTORE_PROVIDER_ARGUMENT;
-import static org.jboss.as.security.Constants.KEYSTORE_TYPE;
-import static org.jboss.as.security.Constants.KEYSTORE_URL;
-import static org.jboss.as.security.Constants.KEY_MANAGER_FACTORY_ALGORITHM;
-import static org.jboss.as.security.Constants.KEY_MANAGER_FACTORY_PROVIDER;
-import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK;
-import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK_REF;
-import static org.jboss.as.security.Constants.MAPPING;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
-import static org.jboss.as.security.Constants.NAME;
-import static org.jboss.as.security.Constants.PROTOCOLS;
-import static org.jboss.as.security.Constants.SERVER_ALIAS;
-import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
-import static org.jboss.as.security.Constants.TRUSTSTORE_PASSWORD;
-import static org.jboss.as.security.Constants.TRUSTSTORE_PROVIDER;
-import static org.jboss.as.security.Constants.TRUSTSTORE_PROVIDER_ARGUMENT;
-import static org.jboss.as.security.Constants.TRUSTSTORE_TYPE;
-import static org.jboss.as.security.Constants.TRUSTSTORE_URL;
-import static org.jboss.as.security.Constants.TRUST_MANAGER_FACTORY_ALGORITHM;
-import static org.jboss.as.security.Constants.TRUST_MANAGER_FACTORY_PROVIDER;
-import static org.jboss.as.security.Constants.TYPE;
+import static org.jboss.as.security.Constants.*;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -75,13 +38,17 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
 import javax.transaction.TransactionManager;
 
+import com.arjuna.ats.internal.jdbc.drivers.modifiers.list;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -103,11 +70,9 @@ import org.jboss.security.auth.container.config.AuthModuleEntry;
 import org.jboss.security.auth.login.AuthenticationInfo;
 import org.jboss.security.auth.login.JASPIAuthenticationInfo;
 import org.jboss.security.auth.login.LoginModuleStackHolder;
-import org.jboss.security.authorization.config.AuthorizationModuleEntry;
 import org.jboss.security.config.ACLInfo;
 import org.jboss.security.config.ApplicationPolicy;
 import org.jboss.security.config.AuditInfo;
-import org.jboss.security.config.AuthorizationInfo;
 import org.jboss.security.config.ControlFlag;
 import org.jboss.security.config.IdentityTrustInfo;
 import org.jboss.security.config.MappingInfo;
@@ -119,8 +84,9 @@ import org.jboss.security.plugins.TransactionManagerLocator;
 /**
  * Add a security domain configuration.
  *
- * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
+ * @author Marcus Moyses
  * @author Brian Stansberry
+ * @author Jason T. Greene
  */
 class SecurityDomainAdd extends AbstractAddStepHandler {
 
@@ -140,16 +106,33 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
     private SecurityDomainAdd() {
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        Util.copyParamsToModel(operation, model);
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        SecurityDomainResourceDefinition.CACHE_TYPE.validateAndSet(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String securityDomain = address.getLastElement().getValue();
-        final ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, operation);
-        final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(securityDomain, operation);
-        final String cacheType = getAuthenticationCacheType(operation);
+
+        // This needs to run after all child resources so that they can detect a fresh state
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+                launchServices(context, securityDomain, Resource.Tools.readModel(resource), verificationHandler, newControllers);
+                context.completeStep();
+            }
+        }, OperationContext.Stage.RUNTIME);
+    }
+
+    void launchServices(OperationContext context, String securityDomain, ModelNode model) {
+        launchServices(context, securityDomain, model, null, null);
+    }
+
+    public void launchServices(OperationContext context, String securityDomain, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, model);
+        final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(securityDomain, model);
+        final String cacheType = getAuthenticationCacheType(model);
 
         final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
                 applicationPolicy, jsseSecurityDomain, cacheType);
@@ -169,383 +152,412 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                         securityDomainService.getSecurityManagementInjector())
                 .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
                         securityDomainService.getConfigurationInjector())
-                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class,
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, TransactionManagerService.SERVICE_NAME, TransactionManager.class,
                         transactionManagerInjector);
 
         if ("infinispan".equals(cacheType)) {
             builder.addDependency(EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
                     EmbeddedCacheManager.class, securityDomainService.getCacheManagerInjector());
         }
-        newControllers.add(builder.addListener(verificationHandler)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
+
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
+        }
+
+        ServiceController<SecurityDomainContext> controller = builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        if (newControllers != null) {
+            newControllers.add(controller);
+        }
     }
 
-    private ApplicationPolicy createApplicationPolicy(String securityDomain, ModelNode operation) {
-        ApplicationPolicy applicationPolicy = null;
-        ModelNode node = null;
-        List<ModelNode> modules;
+    private ApplicationPolicy createApplicationPolicy(String securityDomain, final ModelNode model) {
+        final ApplicationPolicy applicationPolicy = new ApplicationPolicy(securityDomain);
 
-        // authentication
-        node = operation.get(AUTHENTICATION);
-        if (node.isDefined()) {
-            if (applicationPolicy == null)
-                applicationPolicy = new ApplicationPolicy(securityDomain);
-            AuthenticationInfo authenticationInfo = new AuthenticationInfo(securityDomain);
-            modules = node.asList();
-            for (ModelNode module : modules) {
-                String codeName = module.require(CODE).asString();
-                if (ModulesMap.AUTHENTICATION_MAP.containsKey(codeName))
-                    codeName = ModulesMap.AUTHENTICATION_MAP.get(codeName);
-                LoginModuleControlFlag controlFlag = getControlFlag(module.require(FLAG).asString());
-                Map<String, Object> options = new HashMap<String, Object>();
-                if (module.hasDefined(MODULE_OPTIONS)) {
-                    for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
-                        options.put(prop.getName(), prop.getValue().asString());
-                    }
-                }
-                AppConfigurationEntry entry = new AppConfigurationEntry(codeName, controlFlag, options);
-                authenticationInfo.addAppConfigurationEntry(entry);
-            }
-            applicationPolicy.setAuthenticationInfo(authenticationInfo);
+        boolean create;
+
+        create  = processClassicAuth(securityDomain, model, applicationPolicy);
+        create |= processJASPIAuth(securityDomain, model, applicationPolicy);
+        create |= processACL(securityDomain, model, applicationPolicy);
+        create |= processAudit(securityDomain, model, applicationPolicy);
+        create |= processIdentityTrust(securityDomain, model, applicationPolicy);
+        create |= processMapping(securityDomain, model, applicationPolicy);
+
+        return create ? applicationPolicy : null;
+    }
+
+    private boolean processMapping(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+        node = peek(node, MAPPING, CLASSIC);
+        if (node == null)
+            return false;
+
+        List<ModelNode> modules = node.get(MAPPING_MODULES).asList();
+
+        for (ModelNode module : modules) {
+            MappingInfo mappingInfo = new MappingInfo(securityDomain);
+            String codeName = extractCode(module, ModulesMap.MAPPING_MAP);
+
+            String mappingType;
+            if (module.hasDefined(TYPE))
+                mappingType = module.get(TYPE).asString();
+            else
+                mappingType = MappingType.ROLE.toString();
+
+            Map<String, Object> options = extractOptions(module);
+            MappingModuleEntry entry = new MappingModuleEntry(codeName, options, mappingType);
+            mappingInfo.add(entry);
+            applicationPolicy.setMappingInfo(mappingType, mappingInfo);
         }
 
-        // acl
-        node = operation.get(ACL);
-        if (node.isDefined()) {
-            if (applicationPolicy == null)
-                applicationPolicy = new ApplicationPolicy(securityDomain);
-            ACLInfo aclInfo = new ACLInfo(securityDomain);
-            modules = node.asList();
-            for (ModelNode module : modules) {
-                String codeName = module.require(CODE).asString();
-                ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
-                Map<String, Object> options = new HashMap<String, Object>();
-                if (module.hasDefined(MODULE_OPTIONS)) {
-                    for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
-                        options.put(prop.getName(), prop.getValue().asString());
-                    }
-                }
-                ACLProviderEntry entry = new ACLProviderEntry(codeName, options);
-                entry.setControlFlag(controlFlag);
-                aclInfo.add(entry);
+        return true;
+    }
 
-            }
-            applicationPolicy.setAclInfo(aclInfo);
+    private boolean processIdentityTrust(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+        node = peek(node, IDENTITY_TRUST, CLASSIC);
+        if (node == null)
+            return false;
+
+        IdentityTrustInfo identityTrustInfo = new IdentityTrustInfo(securityDomain);
+        List<ModelNode> modules = node.get(TRUST_MODULES).asList();
+        for (ModelNode module : modules) {
+            String codeName = module.require(CODE).asString();
+            ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
+            Map<String, Object> options = extractOptions(module);
+            IdentityTrustModuleEntry entry = new IdentityTrustModuleEntry(codeName, options);
+            entry.setControlFlag(controlFlag);
+            identityTrustInfo.add(entry);
+
         }
+        applicationPolicy.setIdentityTrustInfo(identityTrustInfo);
+        return true;
+    }
 
-        // audit
-        node = operation.get(AUDIT);
-        if (node.isDefined()) {
-            if (applicationPolicy == null)
-                applicationPolicy = new ApplicationPolicy(securityDomain);
-            AuditInfo auditInfo = new AuditInfo(securityDomain);
-            modules = node.asList();
-            for (ModelNode module : modules) {
-                String codeName = module.require(CODE).asString();
-                Map<String, Object> options = new HashMap<String, Object>();
-                if (module.hasDefined(MODULE_OPTIONS)) {
-                    for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
-                        options.put(prop.getName(), prop.getValue().asString());
-                    }
-                }
-                AuditProviderEntry entry = new AuditProviderEntry(codeName, options);
-                auditInfo.add(entry);
+    private boolean processAudit(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+        node = peek(node, AUDIT, CLASSIC);
+        if (node == null)
+            return false;
 
-            }
-            applicationPolicy.setAuditInfo(auditInfo);
+        AuditInfo auditInfo = new AuditInfo(securityDomain);
+        List<ModelNode> modules = node.get(PROVIDER_MODULES).asList();
+        for (ModelNode module : modules) {
+            String codeName = module.require(CODE).asString();
+            Map<String, Object> options = extractOptions(module);
+            AuditProviderEntry entry = new AuditProviderEntry(codeName, options);
+            auditInfo.add(entry);
+
         }
+        applicationPolicy.setAuditInfo(auditInfo);
+        return true;
+    }
 
-        // authorization
-        node = operation.get(AUTHORIZATION);
-        if (node.isDefined()) {
-            if (applicationPolicy == null)
-                applicationPolicy = new ApplicationPolicy(securityDomain);
-            AuthorizationInfo authorizationInfo = new AuthorizationInfo(securityDomain);
-            modules = node.asList();
-            for (ModelNode module : modules) {
-                String codeName = module.require(CODE).asString();
-                if (ModulesMap.AUTHORIZATION_MAP.containsKey(codeName))
-                    codeName = ModulesMap.AUTHORIZATION_MAP.get(codeName);
-                ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
-                Map<String, Object> options = new HashMap<String, Object>();
-                if (module.hasDefined(MODULE_OPTIONS)) {
-                    for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
-                        options.put(prop.getName(), prop.getValue().asString());
-                    }
-                }
-                AuthorizationModuleEntry entry = new AuthorizationModuleEntry(codeName, options);
-                entry.setControlFlag(controlFlag);
-                authorizationInfo.add(entry);
+    private boolean processACL(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+        node = peek(node, ACL, CLASSIC);
+        if (node == null)
+            return false;
 
-            }
-            applicationPolicy.setAuthorizationInfo(authorizationInfo);
+        ACLInfo aclInfo = new ACLInfo(securityDomain);
+        List<ModelNode> modules = node.get(ACL_MODULES).asList();
+        for (ModelNode module : modules) {
+            String codeName = module.require(CODE).asString();
+            ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
+            Map<String, Object> options = extractOptions(module);
+            ACLProviderEntry entry = new ACLProviderEntry(codeName, options);
+            entry.setControlFlag(controlFlag);
+            aclInfo.add(entry);
+
         }
+        applicationPolicy.setAclInfo(aclInfo);
+        return true;
+    }
 
-        // identity trust
-        node = operation.get(IDENTITY_TRUST);
-        if (node.isDefined()) {
-            if (applicationPolicy == null)
-                applicationPolicy = new ApplicationPolicy(securityDomain);
-            IdentityTrustInfo identityTrustInfo = new IdentityTrustInfo(securityDomain);
-            modules = node.asList();
-            for (ModelNode module : modules) {
-                String codeName = module.require(CODE).asString();
-                ControlFlag controlFlag = ControlFlag.valueOf(module.require(FLAG).asString());
-                Map<String, Object> options = new HashMap<String, Object>();
-                if (module.hasDefined(MODULE_OPTIONS)) {
-                    for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
-                        options.put(prop.getName(), prop.getValue().asString());
-                    }
-                }
-                IdentityTrustModuleEntry entry = new IdentityTrustModuleEntry(codeName, options);
-                entry.setControlFlag(controlFlag);
-                identityTrustInfo.add(entry);
+    private boolean processJASPIAuth(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+        node = peek(node, AUTHENTICATION, JASPI);
+        if (node == null)
+            return false;
 
-            }
-            applicationPolicy.setIdentityTrustInfo(identityTrustInfo);
-        }
+        JASPIAuthenticationInfo authenticationInfo = new JASPIAuthenticationInfo(securityDomain);
+        Map<String, LoginModuleStackHolder> holders = new HashMap<String, LoginModuleStackHolder>();
+        List <ModelNode> stacks = node.get(LOGIN_MODULE_STACK).asList();
+        for (ModelNode stack : stacks) {
+            String name = stack.require(NAME).asString();
+            List<ModelNode> nodes = stack.get(LOGIN_MODULES).asList();
 
-        // mapping
-        node = operation.get(MAPPING);
-        if (node.isDefined()) {
-            if (applicationPolicy == null)
-                applicationPolicy = new ApplicationPolicy(securityDomain);
-            modules = node.asList();
-            String mappingType = null;
-            for (ModelNode module : modules) {
-                MappingInfo mappingInfo = new MappingInfo(securityDomain);
-                String codeName = module.require(CODE).asString();
-                if (ModulesMap.MAPPING_MAP.containsKey(codeName))
-                    codeName = ModulesMap.MAPPING_MAP.get(codeName);
-                if (module.hasDefined(TYPE))
-                    mappingType = module.get(TYPE).asString();
-                else
-                    mappingType = MappingType.ROLE.toString();
-                Map<String, Object> options = new HashMap<String, Object>();
-                if (module.hasDefined(MODULE_OPTIONS)) {
-                    for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
-                        options.put(prop.getName(), prop.getValue().asString());
-                    }
-                }
-                MappingModuleEntry entry = new MappingModuleEntry(codeName, options, mappingType);
-                mappingInfo.add(entry);
-                applicationPolicy.setMappingInfo(mappingType, mappingInfo);
-            }
-        }
-
-        // authentication-jaspi
-        node = operation.get(AUTHENTICATION_JASPI);
-        if (node.isDefined()) {
-            if (applicationPolicy == null)
-                applicationPolicy = new ApplicationPolicy(securityDomain);
-            JASPIAuthenticationInfo authenticationInfo = new JASPIAuthenticationInfo(securityDomain);
-            Map<String, LoginModuleStackHolder> holders = new HashMap<String, LoginModuleStackHolder>();
-            ModelNode moduleStack = node.get(LOGIN_MODULE_STACK);
-            modules = moduleStack.asList();
-            for (ModelNode loginModuleStack : modules) {
-                List<ModelNode> nodes = loginModuleStack.asList();
-                Iterator<ModelNode> iter = nodes.iterator();
-                ModelNode nameNode = iter.next();
-                String name = nameNode.get(NAME).asString();
-                LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
-                holders.put(name, holder);
-                authenticationInfo.add(holder);
-                while (iter.hasNext()) {
-                    ModelNode lmsNode = iter.next();
-                    List<ModelNode> lms = lmsNode.asList();
-                    for (ModelNode lmNode : lms) {
-                        String code = lmNode.require(CODE).asString();
-                        if (ModulesMap.AUTHENTICATION_MAP.containsKey(code))
-                            code = ModulesMap.AUTHENTICATION_MAP.get(code);
-                        LoginModuleControlFlag controlFlag = getControlFlag(lmNode.require(FLAG).asString());
-                        Map<String, Object> options = new HashMap<String, Object>();
-                        if (lmNode.hasDefined(MODULE_OPTIONS)) {
-                            for (Property prop : lmNode.get(MODULE_OPTIONS).asPropertyList()) {
-                                options.put(prop.getName(), prop.getValue().asString());
-                            }
-                        }
-                        AppConfigurationEntry entry = new AppConfigurationEntry(code, controlFlag, options);
+            final LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
+            holders.put(name, holder);
+            authenticationInfo.add(holder);
+            for (ModelNode login : nodes) {
+                processLoginModules(login, new LoginModuleContainer() {
+                    public void addAppConfigurationEntry(AppConfigurationEntry entry) {
                         holder.addAppConfigurationEntry(entry);
                     }
-                }
+                });
             }
-            ModelNode authModuleNode = node.get(AUTH_MODULE);
-            List<ModelNode> authModules = authModuleNode.asList();
-            for (ModelNode authModule : authModules) {
-                String code = authModule.require(CODE).asString();
-                if (ModulesMap.AUTHENTICATION_MAP.containsKey(code))
-                    code = ModulesMap.AUTHENTICATION_MAP.get(code);
-                String loginStackRef = null;
-                if (authModule.hasDefined(LOGIN_MODULE_STACK_REF))
-                    loginStackRef = authModule.get(LOGIN_MODULE_STACK_REF).asString();
-                Map<String, Object> options = new HashMap<String, Object>();
-                if (authModule.hasDefined(MODULE_OPTIONS)) {
-                    for (Property prop : authModule.get(MODULE_OPTIONS).asPropertyList()) {
-                        options.put(prop.getName(), prop.getValue().asString());
-                    }
-                }
-                AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
-                if (loginStackRef != null) {
-                    if (!holders.containsKey(loginStackRef)) {
-                        throw new IllegalArgumentException("auth-module references a login module stack that doesn't exist: "
-                                + loginStackRef);
-                    }
-                    entry.setLoginModuleStackHolder(holders.get(loginStackRef));
-                }
-                authenticationInfo.add(entry);
-            }
-            applicationPolicy.setAuthenticationInfo(authenticationInfo);
         }
-
-        return applicationPolicy;
+        List<ModelNode> authModules = node.get(AUTH_MODULES).asList();
+        for (ModelNode authModule : authModules) {
+            String code = extractCode(authModule, ModulesMap.AUTHENTICATION_MAP);
+            String loginStackRef = null;
+            if (authModule.hasDefined(LOGIN_MODULE_STACK_REF))
+                loginStackRef = authModule.get(LOGIN_MODULE_STACK_REF).asString();
+            Map<String, Object> options = extractOptions(authModule) ;
+            AuthModuleEntry entry = new AuthModuleEntry(code, options, loginStackRef);
+            if (loginStackRef != null) {
+                if (!holders.containsKey(loginStackRef)) {
+                    throw new IllegalArgumentException("auth-module references a login module stack that doesn't exist: "
+                            + loginStackRef);
+                }
+                entry.setLoginModuleStackHolder(holders.get(loginStackRef));
+            }
+            authenticationInfo.add(entry);
+        }
+        applicationPolicy.setAuthenticationInfo(authenticationInfo);
+        return true;
     }
 
-    private JSSESecurityDomain createJSSESecurityDomain(String securityDomain, ModelNode operation) {
-        JBossJSSESecurityDomain jsseSecurityDomain = null;
-        ModelNode node = operation.get(JSSE);
-        if (node.isDefined()) {
-            jsseSecurityDomain = new JBossJSSESecurityDomain(securityDomain);
-            String value = null;
-            if (node.hasDefined(KEYSTORE_PASSWORD)) {
-                value = node.get(KEYSTORE_PASSWORD).asString();
-                try {
-                    jsseSecurityDomain.setKeyStorePassword(value);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(e);
+    private String extractCode(ModelNode node, Map<String, String> substitutions) {
+        String code = node.require(CODE).asString();
+        if (substitutions.containsKey(code))
+            code = substitutions.get(code);
+        return code;
+    }
+
+    private ModelNode peek(ModelNode node, String... args) {
+
+        for (String arg : args) {
+            if (!node.hasDefined(arg))
+                return null;
+
+            node = node.get(arg);
+        }
+
+        return node;
+    }
+
+    private boolean processClassicAuth(String securityDomain, ModelNode node, ApplicationPolicy applicationPolicy) {
+        node = peek(node, AUTHENTICATION, CLASSIC);
+        if (node == null)
+            return false;
+
+        final AuthenticationInfo authenticationInfo = new AuthenticationInfo(securityDomain);
+        if (node.hasDefined(Constants.LOGIN_MODULES)) {
+            processLoginModules(node.get(LOGIN_MODULES), new LoginModuleContainer() {
+                public void addAppConfigurationEntry(AppConfigurationEntry entry) {
+                    authenticationInfo.add(entry);
                 }
+            });
+        }
+        applicationPolicy.setAuthenticationInfo(authenticationInfo);
+
+        return true;
+    }
+
+    private interface LoginModuleContainer {
+        void addAppConfigurationEntry(AppConfigurationEntry entry);
+    }
+
+    private void processLoginModules(ModelNode node, LoginModuleContainer container) {
+        List<ModelNode> modules;
+        modules = node.asList();
+        for (ModelNode module : modules) {
+            String codeName = extractCode(module, ModulesMap.AUTHENTICATION_MAP);
+            LoginModuleControlFlag controlFlag = getControlFlag(module.require(FLAG).asString());
+            Map<String, Object> options = extractOptions(module);
+            AppConfigurationEntry entry = new AppConfigurationEntry(codeName, controlFlag, options);
+            container.addAppConfigurationEntry(entry);
+        }
+    }
+
+    private Map<String, Object> extractOptions(ModelNode module) {
+        Map<String, Object> options = new HashMap<String, Object>();
+        if (module.hasDefined(MODULE_OPTIONS)) {
+            for (Property prop : module.get(MODULE_OPTIONS).asPropertyList()) {
+                options.put(prop.getName(), prop.getValue().asString());
             }
-            if (node.hasDefined(KEYSTORE_TYPE)) {
-                value = node.get(KEYSTORE_TYPE).asString();
-                jsseSecurityDomain.setKeyStoreType(value);
+        }
+        return options;
+    }
+
+    private JSSESecurityDomain createJSSESecurityDomain(String securityDomain, ModelNode node) {
+        node = peek(node, JSSE, CLASSIC);
+        if (node == null)
+            return null;
+
+        final JBossJSSESecurityDomain jsseSecurityDomain = new JBossJSSESecurityDomain(securityDomain);
+        String value = null;
+
+        processKeyStore(node, KEYSTORE, new KeyStoreConfig() {
+            public void setKeyStorePassword(String value) throws Exception {
+                jsseSecurityDomain.setKeyStorePassword(value);
             }
-            if (node.hasDefined(KEYSTORE_URL)) {
-                value = node.get(KEYSTORE_URL).asString();
-                try {
-                    jsseSecurityDomain.setKeyStoreURL(value);
-                } catch (IOException ioe) {
-                    throw new IllegalArgumentException(ioe);
-                }
+            public void setKeyStoreType(String value) {
+                 jsseSecurityDomain.setKeyStoreType(value);
             }
-            if (node.hasDefined(KEYSTORE_PROVIDER)) {
-                value = node.get(KEYSTORE_PROVIDER).asString();
+            public void setKeyStoreURL(String value) throws IOException {
+                 jsseSecurityDomain.setKeyStoreURL(value);
+            }
+            public void setKeyStoreProvider(String value) {
                 jsseSecurityDomain.setKeyStoreProvider(value);
             }
-            if (node.hasDefined(KEYSTORE_PROVIDER_ARGUMENT)) {
-                value = node.get(KEYSTORE_PROVIDER_ARGUMENT).asString();
-                jsseSecurityDomain.setKeyStoreProviderArgument(value);
+            public void setKeyStoreProviderArgument(String value) {
+                 jsseSecurityDomain.setKeyStoreProviderArgument(value);
             }
-            if (node.hasDefined(KEY_MANAGER_FACTORY_PROVIDER)) {
-                value = node.get(KEY_MANAGER_FACTORY_PROVIDER).asString();
-                jsseSecurityDomain.setKeyManagerFactoryProvider(value);
+        });
+
+        processKeyStore(node, Constants.TRUSTSTORE, new KeyStoreConfig() {
+            public void setKeyStorePassword(String value) throws Exception {
+                jsseSecurityDomain.setTrustStorePassword(value);
             }
-            if (node.hasDefined(KEY_MANAGER_FACTORY_ALGORITHM)) {
-                value = node.get(KEY_MANAGER_FACTORY_ALGORITHM).asString();
-                jsseSecurityDomain.setKeyManagerFactoryAlgorithm(value);
+            public void setKeyStoreType(String value) {
+                 jsseSecurityDomain.setTrustStoreType(value);
             }
-            if (node.hasDefined(TRUSTSTORE_PASSWORD)) {
-                value = node.get(TRUSTSTORE_PASSWORD).asString();
-                try {
-                    jsseSecurityDomain.setTrustStorePassword(value);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(e);
-                }
+            public void setKeyStoreURL(String value) throws IOException {
+                 jsseSecurityDomain.setTrustStoreURL(value);
             }
-            if (node.hasDefined(TRUSTSTORE_TYPE)) {
-                value = node.get(TRUSTSTORE_TYPE).asString();
-                jsseSecurityDomain.setTrustStoreType(value);
-            }
-            if (node.hasDefined(TRUSTSTORE_URL)) {
-                value = node.get(TRUSTSTORE_URL).asString();
-                try {
-                    jsseSecurityDomain.setTrustStoreURL(value);
-                } catch (IOException ioe) {
-                    throw new IllegalArgumentException(ioe);
-                }
-            }
-            if (node.hasDefined(TRUSTSTORE_PROVIDER)) {
-                value = node.get(TRUSTSTORE_PROVIDER).asString();
+            public void setKeyStoreProvider(String value) {
                 jsseSecurityDomain.setTrustStoreProvider(value);
             }
-            if (node.hasDefined(TRUSTSTORE_PROVIDER_ARGUMENT)) {
-                value = node.get(TRUSTSTORE_PROVIDER_ARGUMENT).asString();
-                jsseSecurityDomain.setTrustStoreProviderArgument(value);
+            public void setKeyStoreProviderArgument(String value) {
+                 jsseSecurityDomain.setTrustStoreProviderArgument(value);
             }
-            if (node.hasDefined(TRUST_MANAGER_FACTORY_PROVIDER)) {
-                value = node.get(TRUST_MANAGER_FACTORY_PROVIDER).asString();
-                jsseSecurityDomain.setTrustManagerFactoryProvider(value);
+        });
+
+        processKeyManager(node, Constants.KEY_MANAGER, new KeyManagerConfig() {
+            public void setKeyManagerFactoryAlgorithm(String value) {
+                jsseSecurityDomain.setKeyManagerFactoryAlgorithm(value);
             }
-            if (node.hasDefined(TRUST_MANAGER_FACTORY_ALGORITHM)) {
-                value = node.get(TRUST_MANAGER_FACTORY_ALGORITHM).asString();
+            public void setKeyManagerFactoryProvider(String value) {
+                jsseSecurityDomain.setKeyManagerFactoryProvider(value);
+            }
+        });
+
+         processKeyManager(node, Constants.TRUST_MANAGER, new KeyManagerConfig() {
+            public void setKeyManagerFactoryAlgorithm(String value) {
                 jsseSecurityDomain.setTrustManagerFactoryAlgorithm(value);
             }
-            if (node.hasDefined(CLIENT_ALIAS)) {
-                value = node.get(CLIENT_ALIAS).asString();
-                jsseSecurityDomain.setClientAlias(value);
+            public void setKeyManagerFactoryProvider(String value) {
+                jsseSecurityDomain.setTrustManagerFactoryProvider(value);
             }
-            if (node.hasDefined(SERVER_ALIAS)) {
-                value = node.get(SERVER_ALIAS).asString();
-                jsseSecurityDomain.setServerAlias(value);
+        });
+
+        if (node.hasDefined(CLIENT_ALIAS)) {
+            value = node.get(CLIENT_ALIAS).asString();
+            jsseSecurityDomain.setClientAlias(value);
+        }
+        if (node.hasDefined(SERVER_ALIAS)) {
+            value = node.get(SERVER_ALIAS).asString();
+            jsseSecurityDomain.setServerAlias(value);
+        }
+        if (node.hasDefined(CLIENT_AUTH)) {
+            boolean clientAuth = node.get(CLIENT_AUTH).asBoolean();
+            jsseSecurityDomain.setClientAuth(clientAuth);
+        }
+        if (node.hasDefined(SERVICE_AUTH_TOKEN)) {
+            value = node.get(SERVICE_AUTH_TOKEN).asString();
+            try {
+                jsseSecurityDomain.setServiceAuthToken(value);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
             }
-            if (node.hasDefined(CLIENT_AUTH)) {
-                boolean clientAuth = node.get(CLIENT_AUTH).asBoolean();
-                jsseSecurityDomain.setClientAuth(clientAuth);
+        }
+        if (node.hasDefined(CIPHER_SUITES)) {
+            value = node.get(CIPHER_SUITES).asString();
+            jsseSecurityDomain.setCipherSuites(value);
+        }
+        if (node.hasDefined(PROTOCOLS)) {
+            value = node.get(PROTOCOLS).asString();
+            jsseSecurityDomain.setProtocols(value);
+        }
+        if (node.hasDefined(ADDITIONAL_PROPERTIES)) {
+            Properties properties = new Properties();
+            for (Property prop : node.get(ADDITIONAL_PROPERTIES).asPropertyList()) {
+                properties.setProperty(prop.getName(), prop.getValue().asString());
             }
-            if (node.hasDefined(SERVICE_AUTH_TOKEN)) {
-                value = node.get(SERVICE_AUTH_TOKEN).asString();
-                try {
-                    jsseSecurityDomain.setServiceAuthToken(value);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(e);
-                }
-            }
-            if (node.hasDefined(CIPHER_SUITES)) {
-                value = node.get(CIPHER_SUITES).asString();
-                jsseSecurityDomain.setCipherSuites(value);
-            }
-            if (node.hasDefined(PROTOCOLS)) {
-                value = node.get(PROTOCOLS).asString();
-                jsseSecurityDomain.setProtocols(value);
-            }
-            if (node.hasDefined(ADDITIONAL_PROPERTIES)) {
-                value = node.get(ADDITIONAL_PROPERTIES).asString();
-                // remove line breaks and tab
-                value = value.replaceAll("\\r", "").replaceAll("\\n", "").replaceAll("\\t", "");
-                String[] entries = value.split(";");
-                Properties properties = new Properties();
-                for (int i = 0; i < entries.length; i++) {
-                    String tmp = entries[i];
-                    // trim leading white spaces
-                    tmp = tmp.replaceAll("^\\s+", "");
-                    String[] entry = tmp.split("=");
-                    properties.put(entry[0], entry[1]);
-                }
-                jsseSecurityDomain.setAdditionalProperties(properties);
-            }
+            jsseSecurityDomain.setAdditionalProperties(properties);
         }
 
         return jsseSecurityDomain;
     }
 
-    private LoginModuleControlFlag getControlFlag(String flag) {
-        if ("required".equalsIgnoreCase(flag))
-            return LoginModuleControlFlag.REQUIRED;
-        if ("sufficient".equalsIgnoreCase(flag))
-            return LoginModuleControlFlag.SUFFICIENT;
-        if ("optional".equalsIgnoreCase(flag))
-            return LoginModuleControlFlag.OPTIONAL;
-        if ("requisite".equalsIgnoreCase(flag))
-            return LoginModuleControlFlag.REQUISITE;
-        throw new RuntimeException(flag + " is not recognized");
+    private interface KeyStoreConfig {
+        void setKeyStorePassword(String value) throws Exception;
+        void setKeyStoreType(String value);
+        void setKeyStoreURL(String value) throws IOException;
+        void setKeyStoreProvider(String value);
+        void setKeyStoreProviderArgument(String value);
     }
 
-    private String getAuthenticationCacheType(ModelNode operation) {
+    private void processKeyStore(ModelNode node, String name, KeyStoreConfig config) {
+        final ModelNode value = peek(node, name, PASSWORD);
+        final ModelNode type = peek(node, name, TYPE);
+        final ModelNode url = peek(node, name, URL);
+        final ModelNode provider = peek(node, name, PROVIDER);
+        final ModelNode providerArgument = peek(node, name, PROVIDER_ARGUMENT);
+
+        if (value != null) {
+            try {
+                config.setKeyStorePassword(value.asString());
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        if (type != null) {
+            config.setKeyStoreType(type.asString());
+        }
+        if (url != null) {
+            try {
+                config.setKeyStoreURL(url.asString());
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+
+        if (provider != null) {
+            config.setKeyStoreProvider(provider.asString());
+        }
+
+        if (providerArgument != null) {
+            config.setKeyStoreProviderArgument(providerArgument.asString());
+        }
+    }
+
+     private interface KeyManagerConfig {
+        void setKeyManagerFactoryAlgorithm(String value);
+        void setKeyManagerFactoryProvider(String value);
+    }
+
+    private void processKeyManager(ModelNode node, String name, KeyManagerConfig config) {
+        final ModelNode algorithm = peek(node, name, ALGORITHM);
+        final ModelNode provider = peek(node, name, PROVIDER);
+
+        if (algorithm != null) {
+            config.setKeyManagerFactoryAlgorithm(algorithm.asString());
+        }
+
+        if (provider != null) {
+            config.setKeyManagerFactoryProvider(provider.asString());
+        }
+    }
+
+
+    private LoginModuleControlFlag getControlFlag(String flag) {
+        switch (ModuleFlag.valueOf(flag.toUpperCase())) {
+            case SUFFICIENT:
+                return LoginModuleControlFlag.SUFFICIENT;
+            case OPTIONAL:
+                return LoginModuleControlFlag.OPTIONAL;
+            case REQUISITE:
+                return LoginModuleControlFlag.REQUISITE;
+            case REQUIRED:
+            default:
+                return LoginModuleControlFlag.REQUIRED;
+        }
+    }
+
+    static String getAuthenticationCacheType(ModelNode node) {
         String type = null;
-        if (operation.hasDefined(CACHE_TYPE)) {
-            type = operation.get(CACHE_TYPE).asString();
+        if (node.hasDefined(CACHE_TYPE)) {
+            type = node.get(CACHE_TYPE).asString();
         }
 
         return type;
     }
-
 }

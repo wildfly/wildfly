@@ -42,9 +42,7 @@
       </xs:annotation>
       <xs:all>
          <xs:element name="security-management" type="securityManagementType" minOccurs="0" maxOccurs="1"/>
-         <xs:element name="subject-factory" type="subjectFactoryType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="security-domains" type="securityDomainsType" minOccurs="0" maxOccurs="1"/>
-         <xs:element name="security-properties" type="properties" minOccurs="0" maxOccurs="1"/>
          <xs:element name="vault" type="vaultType" minOccurs="0" maxOccurs="1"/>
       </xs:all>
    </xs:complexType>
@@ -54,53 +52,15 @@
       <xs:annotation>
          <xs:documentation>
                 <![CDATA[
-                    The optional "authentication-manager-class-name" attribute specifies the AuthenticationManager
-                    implementation class name to use. To use the container default set the value to "default".
-
                     The optional "deep-copy-subject-mode" attribute sets the copy mode of subjects done by the security
                     managers to be deep copies that makes copies of the subject principals and credentials if they are
                     cloneable. It should be set to true if subject include mutable content that can be corrupted when
                     multiple threads have the same identity and cache flushes/logout clearing the subject in one thread
                     results in subject references affecting other threads. Default value is "false".
-
-                    The optional "default-callback-handler-class-name" specifies a global class name for the
-                    CallbackHandler implementation to be used with login modules. To use the container default set the
-                    value to "default".
-
-                    The optional "authorization-manager-class-name" attribute specifies the AuthorizationManager
-                    implementation class name to use. To use the container default set the value to "default".
-
-                    The optional "audit-manager-class-name" attribute specifies the AuditManager
-                    implementation class name to use. To use the container default set the value to "default".
-
-                    The optional "identity-trust-manager-class-name" attribute specifies the IdentityTrustManager
-                    implementation class name to use. To use the container default set the value to "default".
-
-                    The optional "mapping-manager-class-name" attribute specifies the MappingManager
-                    implementation class name to use. To use the container default set the value to "default".
                 ]]>
          </xs:documentation>
       </xs:annotation>
-      <xs:attribute name="authentication-manager-class-name" type="xs:string" use="optional"/>
       <xs:attribute name="deep-copy-subject-mode" type="xs:boolean" use="optional"/>
-      <xs:attribute name="default-callback-handler-class-name" type="xs:string" use="optional"/>
-      <xs:attribute name="authorization-manager-class-name" type="xs:string" use="optional"/>
-      <xs:attribute name="audit-manager-class-name" type="xs:string" use="optional"/>
-      <xs:attribute name="identity-trust-manager-class-name" type="xs:string" use="optional"/>
-      <xs:attribute name="mapping-manager-class-name" type="xs:string" use="optional"/>
-   </xs:complexType>
-
-   <!-- The subject factory element -->
-   <xs:complexType name="subjectFactoryType">
-      <xs:annotation>
-         <xs:documentation>
-               <![CDATA[
-                    The optional "subject-factory-class-name" attribute sets the class name for the SubjectFactory
-                    implementation to be used. To use the container default set the value to "default".
-                ]]>
-         </xs:documentation>
-      </xs:annotation>
-      <xs:attribute name="subject-factory-class-name" type="xs:string" use="optional"/>
    </xs:complexType>
 
    <!-- Configuration for security domains -->
@@ -138,7 +98,6 @@
          <xs:element name="jsse" type="jsseType" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
-      <xs:attribute name="extends" type="xs:string" use="optional"/>
       <xs:attribute name="cache-type" type="xs:string" use="optional"/>
    </xs:complexType>
 
@@ -409,7 +368,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:sequence>
-        <xs:element name="additional-properties" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="additional-properties" type="properties" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
       <xs:attribute name="keystore-password" type="xs:string" use="optional"/>
       <xs:attribute name="keystore-type" type="xs:string" use="optional"/>

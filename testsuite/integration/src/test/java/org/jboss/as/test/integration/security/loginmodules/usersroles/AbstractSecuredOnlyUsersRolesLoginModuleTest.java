@@ -22,10 +22,12 @@
 package org.jboss.as.test.integration.security.loginmodules.usersroles;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.security.auth.spi.DatabaseServerLoginModule;
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -37,10 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
@@ -96,36 +96,46 @@ public abstract class AbstractSecuredOnlyUsersRolesLoginModuleTest extends Abstr
 
    }
 
-      protected static void createSecurityDomains(Class testClass) throws Exception {
-      checkClass(testClass);
+    protected static void createSecurityDomains(Class testClass) throws Exception {
+        checkClass(testClass);
 
-      final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
-      List<ModelNode> updates = new ArrayList<ModelNode>();
-      ModelNode op = new ModelNode();
-      op.get(OP).set(ADD);
-      op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        final ModelControllerClient client = ModelControllerClient.Factory.create(InetAddress.getByName("localhost"), 9999);
+        List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
 
-      op.get(OP_ADDR).add(SECURITY_DOMAIN, "users-roles-login-module");
-      ModelNode loginModule = op.get(Constants.AUTHENTICATION).add();
-      loginModule.get(CODE).set(UsersRolesLoginModule.class.getName());
-      loginModule.get(FLAG).set("required");
+        String securityDomain =  "users-roles-login-module";
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        updates.add(op);
 
-      ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
 
-      URL usersProp = tccl.getResource("users-roles-login-module.war/users.properties");
-      URL rolesProp = tccl.getResource("users-roles-login-module.war/roles.properties");
-      ModelNode moduleOptions = loginModule.get("module-options");
+        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+        loginModule.get(ModelDescriptionConstants.CODE).set(UsersRolesLoginModule.class.getName());
+        loginModule.get(FLAG).set("required");
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
-      Map<String, String> moduleOptionsMap = classModuleOptionsMap.get(testClass);
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
-      moduleOptions.get("usersProperties").set(usersProp.getFile());
-      moduleOptions.get("rolesProperties").set(rolesProp.getFile());
-      for (Map.Entry<String, String> entry : moduleOptionsMap.entrySet()) {
-         moduleOptions.get(entry.getKey()).set(entry.getValue());
-      }
+        URL usersProp = tccl.getResource("users-roles-login-module.war/users.properties");
+        URL rolesProp = tccl.getResource("users-roles-login-module.war/roles.properties");
+        ModelNode moduleOptions = loginModule.get("module-options");
 
-      updates.add(op);
-      applyUpdates(updates, client);
+        Map<String, String> moduleOptionsMap = classModuleOptionsMap.get(testClass);
 
-   }
+        moduleOptions.get("usersProperties").set(usersProp.getFile());
+        moduleOptions.get("rolesProperties").set(rolesProp.getFile());
+        for (Map.Entry<String, String> entry : moduleOptionsMap.entrySet()) {
+            moduleOptions.get(entry.getKey()).set(entry.getValue());
+        }
+
+        updates.add(op);
+        applyUpdates(updates, client);
+
+    }
 }

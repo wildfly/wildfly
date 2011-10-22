@@ -83,12 +83,17 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final OperationAttachments attachments;
     /** Tracks whether any steps have gotten write access to the model */
     private final Map<PathAddress, Object> affectsModel;
+    /** Resources that have had their services restarted, used by ALLOW_RESOURCE_SERVICE_RESTART This should be confined to a thread, so no sync needed */
+    private Map<PathAddress, Object> restartedResources = Collections.emptyMap();
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
     private boolean respectInterruption = true;
 
     private volatile Resource model;
+
+    private volatile Resource originalModel;
+
     /** Tracks whether any steps have gotten write access to the runtime */
     private volatile boolean affectsRuntime;
     /** The step that acquired the write lock */
@@ -103,6 +108,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         super(contextType, transactionControl, processState);
         this.booting = booting;
         this.model = model;
+        this.originalModel = model;
         this.modelController = modelController;
         this.messageHandler = messageHandler;
         this.attachments = attachments;
@@ -230,6 +236,31 @@ final class OperationContextImpl extends AbstractOperationContext {
             doRemove(controller);
         }
         return controller;
+    }
+
+    @Override
+    public boolean markResourceRestarted(PathAddress resource, Object owner) {
+        if (restartedResources.containsKey(resource) ) {
+            return false;
+        }
+
+        if (restartedResources == Collections.EMPTY_MAP) {
+            restartedResources = new HashMap<PathAddress, Object>();
+        }
+
+        restartedResources.put(resource, owner);
+
+        return true;
+    }
+
+    @Override
+    public boolean revertResourceRestarted(PathAddress resource, Object owner) {
+        if (restartedResources.get(resource) == owner) {
+            restartedResources.remove(resource);
+            return true;
+        }
+
+        return false;
     }
 
     public void removeService(final ServiceController<?> controller) throws UnsupportedOperationException {
@@ -431,6 +462,11 @@ final class OperationContextImpl extends AbstractOperationContext {
             resource = resource.requireChild(element);
         }
         return resource;
+    }
+
+    @Override
+    public Resource getOriginalRootResource() {
+        return originalModel.clone();
     }
 
     public Resource createResource(PathAddress relativeAddress) {

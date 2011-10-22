@@ -30,7 +30,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ParametersValidator {
+public class ParametersValidator implements ParameterValidator {
 
     final Map<String, ParameterValidator> validators = new ConcurrentHashMap<String, ParameterValidator>();
 
@@ -59,5 +59,15 @@ public class ParametersValidator {
             ModelNode paramVal = operation.has(paramName) ? operation.get(paramName) : new ModelNode();
             entry.getValue().validateResolvedParameter(paramName, paramVal);
         }
+    }
+
+    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+        ParameterValidator parameterValidator = validators.get(parameterName);
+        if (parameterValidator != null) parameterValidator.validateParameter(parameterName, value);
+    }
+
+    public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
+        ParameterValidator parameterValidator = validators.get(parameterName);
+        if (parameterValidator != null) parameterValidator.validateResolvedParameter(parameterName, value);
     }
 }

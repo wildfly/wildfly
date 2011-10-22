@@ -141,29 +141,37 @@ public class UsersRolesLoginModuleTestCase9 extends AbstractUsersRolesLoginModul
       makeCall(URL, "marcus", "marcus", 403);
    }
 
-   protected static void createSecurityDomains(final ModelControllerClient client) throws Exception {
-      List<ModelNode> updates = new ArrayList<ModelNode>();
-      ModelNode op = new ModelNode();
-      op.get(OP).set(ADD);
-      op.get(OP_ADDR).add(SUBSYSTEM, "security");
+    protected static void createSecurityDomains(final ModelControllerClient client) throws Exception {
+        List<ModelNode> updates = new ArrayList<ModelNode>();
+        ModelNode op = new ModelNode();
+        String securityDomain =  "users-roles-login-module";
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        updates.add(op);
 
-      op.get(OP_ADDR).add(SECURITY_DOMAIN, "users-roles-login-module");
-      ModelNode loginModule = op.get(Constants.AUTHENTICATION).add();
-      loginModule.get(ModelDescriptionConstants.CODE).set(UsersRolesLoginModule.class.getName());
-      loginModule.get(FLAG).set("required");
+        op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SUBSYSTEM, "security");
+        op.get(OP_ADDR).add(SECURITY_DOMAIN, securityDomain);
+        op.get(OP_ADDR).add(Constants.AUTHENTICATION, Constants.CLASSIC);
 
-      ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        ModelNode loginModule = op.get(Constants.LOGIN_MODULES).add();
+        loginModule.get(ModelDescriptionConstants.CODE).set(UsersRolesLoginModule.class.getName());
+        loginModule.get(FLAG).set("required");
+        op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
 
-      URL usersProp = tccl.getResource("users-roles-login-module.war/users.properties");
-      URL rolesProp = tccl.getResource("users-roles-login-module.war/roles.properties");
-      ModelNode moduleOptions = loginModule.get("module-options");
-      moduleOptions.get("usersProperties").set(usersProp.getFile());
-      moduleOptions.get("rolesProperties").set(rolesProp.getFile());
+        URL usersProp = tccl.getResource("users-roles-login-module.war/users.properties");
+        URL rolesProp = tccl.getResource("users-roles-login-module.war/roles.properties");
+        ModelNode moduleOptions = loginModule.get("module-options");
+        moduleOptions.get("usersProperties").set(usersProp.getFile());
+        moduleOptions.get("rolesProperties").set(rolesProp.getFile());
 
-      updates.add(op);
-      applyUpdates(updates, client);
+        updates.add(op);
+        applyUpdates(updates, client);
 
-   }
+    }
 
    protected static void removeSecurityDomains(final ModelControllerClient client) throws Exception {
       removeSecurityDomain(client, "users-roles-login-module");

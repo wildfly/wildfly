@@ -63,7 +63,7 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
     }
 
     protected void describe(final Resource resource, final ModelNode address, ModelNode result, final ImmutableManagementResourceRegistration registration) {
-        if(registration.isRemote() || registration.isRuntimeOnly() || resource.isProxy() || resource.isRuntime()) {
+        if(resource == null || registration.isRemote() || registration.isRuntimeOnly() || resource.isProxy() || resource.isRuntime()) {
             return;
         }
         final Set<PathElement> children = registration.getChildAddresses(PathAddress.EMPTY_ADDRESS);
