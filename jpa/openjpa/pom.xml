@@ -29,31 +29,41 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-jpa-parent</artifactId>
         <version>7.1.0.CR1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-jpa-parent</artifactId>
+    <artifactId>jboss-as-jpa-openjpa</artifactId>
     <version>7.1.0.CR1-SNAPSHOT</version>
-    <packaging>pom</packaging>
 
-    <name>JBoss Application Server: JPA Subsystem</name>
-
-    <modules>
-        <module>core</module>
-        <module>util</module>
-        <module>spi</module>
-        <module>hibernate4</module>
-        <module>hibernate3</module>
-        <module>openjpa</module>
-    </modules>
+    <name>JBoss Application Server: OpenJPA 2.x JPA integration</name>
 
     <dependencies>
+
+        <!-- Internal -->
+
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jpa-spi</artifactId>
         </dependency>
+
+        <!-- External -->
+
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa-kernel</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa-lib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa-persistence</artifactId>
+        </dependency>
+
     </dependencies>
 </project>
