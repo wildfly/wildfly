@@ -49,7 +49,7 @@ public class CmpEntityBeanJdbcRelationshipInterceptor implements Interceptor {
             return context.proceed();
         }
         final CmpEntityBeanComponentInstance instance = (CmpEntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
-        final CmpEntityBeanContext ctx = instance.getEntityContext();
+        final CmpEntityBeanContext ctx = instance.getEjbContext();
 
         // We are going to work with the context a lot
         JDBCCMRFieldBridge cmrField = (JDBCCMRFieldBridge) context.getParameters()[0];

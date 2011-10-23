@@ -47,7 +47,7 @@ public class CmpEntityBeanSynchronizationInterceptor extends EntityBeanSynchroni
         if (instance.getPrimaryKey() == null) {
             return context.proceed();
         }
-        final CmpEntityBeanContext entityContext = instance.getEntityContext();
+        final CmpEntityBeanContext entityContext = instance.getEjbContext();
 
         if (!entityContext.isValid()) {
             component.getStoreManager().loadEntity(entityContext);
@@ -57,7 +57,7 @@ public class CmpEntityBeanSynchronizationInterceptor extends EntityBeanSynchroni
         // now it's ready and can be scheduled for the synchronization
         final Transaction transaction = component.getTransactionManager().getTransaction();
         if (TxUtils.isActive(transaction)) {
-            entityContext.getTxAssociation().scheduleSync(transaction, instance.getEntityContext());
+            entityContext.getTxAssociation().scheduleSync(transaction, instance.getEjbContext());
         }
 
         return super.processInvocation(context);

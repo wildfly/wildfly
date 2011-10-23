@@ -43,7 +43,6 @@ import javax.transaction.UserTransaction;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
-import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
@@ -54,6 +53,7 @@ import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
@@ -63,7 +63,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponent extends BasicComponent implements org.jboss.as.ejb3.context.spi.EJBComponent {
+public abstract class EJBComponent extends BasicComponent{
     private static final Logger log = Logger.getLogger(EJBComponent.class);
 
     private static final ApplicationExceptionDetails APPLICATION_EXCEPTION = new ApplicationExceptionDetails("java.lang.Exception", true, false);
@@ -186,7 +186,7 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
     }
 
     protected TransactionAttributeType getCurrentTransactionAttribute() {
-        final InvocationContext currentInvocationContext = CurrentInvocationContext.get();
+        final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
         if (currentInvocationContext == null) {
             return null;
         }
@@ -199,7 +199,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         return this.getTransactionAttributeType(invokedMethod);
     }
 
-    @Override
     public EJBHome getEJBHome() throws IllegalStateException {
         if (ejbHome == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have a Home interface");
@@ -209,7 +208,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         return EJBClient.createProxy(new StatelessEJBLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), applicationName, moduleName, getComponentName(), distinctName));
     }
 
-    @Override
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
         if (ejbLocalHome == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have a Local Home interface");
@@ -217,7 +215,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         return createViewInstanceProxy(EJBLocalHome.class, Collections.emptyMap(), ejbLocalHome);
     }
 
-    @Override
     public boolean getRollbackOnly() throws IllegalStateException {
         if (isBeanManagedTransaction()) {
             throw new IllegalStateException("EJB 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
@@ -257,7 +254,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         return utilities.getSecurityManager();
     }
 
-    @Override
     public TimerService getTimerService() throws IllegalStateException {
         return timerService;
     }
@@ -286,7 +282,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         return -1; // un-configured
     }
 
-    @Override
     public UserTransaction getUserTransaction() throws IllegalStateException {
         if (!isBeanManagedTransaction())
             throw new IllegalStateException("EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with bean-managed transaction demarcation can use this method.");
@@ -301,13 +296,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         return utilities.getSecurityManager().isCallerInRole(roleName);
     }
 
-    @Deprecated
-    @Override
-    public boolean isCallerInRole(final Principal callerPrincipal, final String roleName) throws IllegalStateException {
-        return isCallerInRole(roleName);
-    }
-
-    @Override
     public Object lookup(String name) throws IllegalArgumentException {
         if (name == null) {
             throw new IllegalArgumentException("jndi name cannot be null during lookup");
@@ -355,7 +343,6 @@ public abstract class EJBComponent extends BasicComponent implements org.jboss.a
         }
     }
 
-    @Override
     public void setRollbackOnly() throws IllegalStateException {
         if (isBeanManagedTransaction()) {
             throw new IllegalStateException("EJB 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +

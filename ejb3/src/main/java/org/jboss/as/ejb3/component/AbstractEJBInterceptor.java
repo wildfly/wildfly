@@ -29,7 +29,8 @@ import org.jboss.invocation.InterceptorContext;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class AbstractEJBInterceptor implements Interceptor {
-    protected static <C extends Component> C getComponent(InterceptorContext context, Class<C> componentType) {
+
+    protected static <C extends EJBComponent> C getComponent(InterceptorContext context, Class<C> componentType) {
         Component component = context.getPrivateData(Component.class);
         if (component == null) {
             throw new IllegalStateException("Component not set in InterceptorContext: " + context);

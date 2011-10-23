@@ -36,7 +36,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.session.SessionInvocationContextInterceptor;
+import org.jboss.as.ejb3.component.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
 import org.jboss.as.ejb3.timerservice.TimerServiceService;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;
@@ -87,7 +87,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
 
-                        configuration.addTimeoutInterceptor(SessionInvocationContextInterceptor.FACTORY, InterceptorOrder.Component.TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR);
+                        configuration.addTimeoutInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.Component.TIMEOUT_INVOCATION_CONTEXT_INTERCEPTOR);
 
                         //install the timer create service
                         final TimerServiceService service = new TimerServiceService(ejbComponentDescription.getScheduleMethods(), module.getClassLoader());

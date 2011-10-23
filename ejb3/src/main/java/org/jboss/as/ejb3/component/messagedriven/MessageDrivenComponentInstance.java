@@ -21,21 +21,23 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
-import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ejb3.component.EjbComponentInstance;
-import org.jboss.as.ejb3.context.base.BaseMessageDrivenContext;
-import org.jboss.as.ejb3.context.spi.MessageDrivenContext;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.invocation.Interceptor;
-
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ejb3.component.EjbComponentInstance;
+import org.jboss.as.ejb3.context.EJBContextImpl;
+import org.jboss.as.ejb3.context.MessageDrivenContext;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MessageDrivenComponentInstance extends EjbComponentInstance {
+
+    private final MessageDrivenContext messageDrivenContext;
 
     /**
      * Construct a new instance.
@@ -44,15 +46,8 @@ public class MessageDrivenComponentInstance extends EjbComponentInstance {
      */
     public MessageDrivenComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final Map<Method, Interceptor> timeoutInterceptors) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
+        this.messageDrivenContext = new MessageDrivenContext(this);
     }
-
-    protected class MessageDrivenComponentInstanceContext extends BaseMessageDrivenContext {
-        protected MessageDrivenComponentInstanceContext() {
-            super(MessageDrivenComponentInstance.this.getComponent(), MessageDrivenComponentInstance.this);
-        }
-    }
-
-    private final MessageDrivenContext messageDrivenContext = new MessageDrivenComponentInstanceContext();
 
 
     @Override
@@ -60,7 +55,8 @@ public class MessageDrivenComponentInstance extends EjbComponentInstance {
         return (MessageDrivenComponent) super.getComponent();
     }
 
-    protected MessageDrivenContext getMessageDrivenContext() {
+    @Override
+    public EJBContextImpl getEjbContext() {
         return messageDrivenContext;
     }
 }

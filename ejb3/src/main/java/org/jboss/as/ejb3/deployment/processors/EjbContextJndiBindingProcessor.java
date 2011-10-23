@@ -29,7 +29,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.context.CurrentEJBContext;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -72,7 +72,7 @@ public class EjbContextJndiBindingProcessor extends AbstractComponentConfigProce
         }
 
         public Object getInstance() {
-            return CurrentEJBContext.get();
+            return CurrentInvocationContext.getEjbContext();
         }
     };
 

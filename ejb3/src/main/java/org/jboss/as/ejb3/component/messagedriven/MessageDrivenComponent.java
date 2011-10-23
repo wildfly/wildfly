@@ -21,29 +21,10 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
-import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.component.pool.PooledComponent;
-import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
-import org.jboss.as.ejb3.inflow.MessageEndpointService;
-import org.jboss.as.ejb3.timerservice.PooledTimedObjectInvokerImpl;
-import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.ejb3.context.spi.MessageDrivenBeanComponent;
-import org.jboss.as.ejb3.pool.Pool;
-import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.StopContext;
+import static java.util.Collections.emptyMap;
+import static javax.ejb.TransactionAttributeType.REQUIRED;
+import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,14 +32,33 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.Collections.emptyMap;
-import static javax.ejb.TransactionAttributeType.REQUIRED;
-import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.ResourceAdapter;
+import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.TransactionManager;
+
+import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.pool.PoolConfig;
+import org.jboss.as.ejb3.component.pool.PooledComponent;
+import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
+import org.jboss.as.ejb3.inflow.MessageEndpointService;
+import org.jboss.as.ejb3.pool.Pool;
+import org.jboss.as.ejb3.pool.StatelessObjectFactory;
+import org.jboss.as.ejb3.timerservice.PooledTimedObjectInvokerImpl;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.StopContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class MessageDrivenComponent extends EJBComponent implements MessageDrivenBeanComponent, PooledComponent<MessageDrivenComponentInstance> {
+public class MessageDrivenComponent extends EJBComponent implements PooledComponent<MessageDrivenComponentInstance> {
     private static final Logger logger = Logger.getLogger(MessageDrivenComponent.class);
 
     private final Pool<MessageDrivenComponentInstance> pool;

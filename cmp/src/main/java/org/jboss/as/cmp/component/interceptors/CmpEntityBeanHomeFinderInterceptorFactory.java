@@ -62,7 +62,7 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
 
         final JDBCEntityPersistenceStore store = cmpComponent.getStoreManager();
 
-        final CmpEntityBeanContext entityContext = cmpInstance.getEntityContext();
+        final CmpEntityBeanContext entityContext = cmpInstance.getEjbContext();
 
         // as per the spec 9.6.4, entities must be synchronized with the datastore when an ejbFind<METHOD> is called.
         if (!store.getCmpConfig().isSyncOnCommitOnly()) {

@@ -47,8 +47,9 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.tx.SingletonLifecycleCMTTxInterceptorFactory;
-import org.jboss.as.ejb3.tx.TimerCMTTxInterceptorFactory;
+import org.jboss.as.ejb3.tx.SingletonLifecycleCMTTxInterceptor;
+import org.jboss.as.ejb3.tx.StatelessBMTInterceptor;
+import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
@@ -100,10 +101,10 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
-                    configuration.addPostConstructInterceptor(new SingletonLifecycleCMTTxInterceptorFactory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
-                    configuration.addPreDestroyInterceptor(new SingletonLifecycleCMTTxInterceptorFactory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
+                    configuration.addPostConstructInterceptor(new SingletonLifecycleCMTTxInterceptor.Factory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
+                    configuration.addPreDestroyInterceptor(new SingletonLifecycleCMTTxInterceptor.Factory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
 
-                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptorFactory.INSTANCE, InterceptorOrder.Component.TIMEOUT_CMT_INTERCEPTOR);
+                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.Component.TIMEOUT_CMT_INTERCEPTOR);
 
                 }
             });
@@ -119,7 +120,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                                 throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
                                         " isn't a singleton component");
                             }
-                            return new SingletonBMTInterceptor((SingletonComponent) component);
+                            return new StatelessBMTInterceptor((SingletonComponent) component);
                         }
                     };
                     configuration.addPostConstructInterceptor(slsbBmtInterceptorFactory, InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);

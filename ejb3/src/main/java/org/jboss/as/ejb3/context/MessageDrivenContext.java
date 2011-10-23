@@ -19,16 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.context.spi;
+package org.jboss.as.ejb3.context;
+
+import org.jboss.as.ejb3.component.EjbComponentInstance;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface SessionContext extends EJBContext, javax.ejb.SessionContext {
-    SessionBeanComponent getComponent();
+public class MessageDrivenContext extends EJBContextImpl {
 
-    /**
-     * @since 3.1
-     */
-    boolean wasCancelCalled() throws IllegalStateException;
+
+    public MessageDrivenContext(final EjbComponentInstance instance) {
+        super(instance);
+    }
+
+    @Override
+    public MessageDrivenComponent getComponent() {
+        return (MessageDrivenComponent) super.getComponent();
+    }
 }

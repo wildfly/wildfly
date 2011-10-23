@@ -21,8 +21,8 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
-import java.lang.reflect.Method;
 import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -30,15 +30,15 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.tx.CMTTxInterceptorFactory;
+import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
@@ -78,7 +78,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptor(EntityInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
+                configuration.addViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
             }
         });
 
@@ -107,7 +107,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
                 EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
                 // Add CMT interceptor factory
                 if (TransactionManagementType.CONTAINER.equals(ejbComponentDescription.getTransactionManagementType())) {
-                    configuration.addViewInterceptor(CMTTxInterceptorFactory.INSTANCE, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
+                    configuration.addViewInterceptor(CMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
                 }
             }
         });

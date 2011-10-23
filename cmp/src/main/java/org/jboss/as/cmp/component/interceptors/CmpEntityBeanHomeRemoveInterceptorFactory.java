@@ -40,7 +40,7 @@ public class CmpEntityBeanHomeRemoveInterceptorFactory extends EntityBeanHomeRem
     protected void afterRemove(final EntityBeanComponentInstance instance) throws RemoveException, RemoteException {
         // Invoke CMP remove
         final CmpEntityBeanComponentInstance cmpInstance = CmpEntityBeanComponentInstance.class.cast(instance);
-        cmpInstance.getComponent().getStoreManager().removeEntity(cmpInstance.getEntityContext());
+        cmpInstance.getComponent().getStoreManager().removeEntity(cmpInstance.getEjbContext());
         super.afterRemove(instance);
     }
 }

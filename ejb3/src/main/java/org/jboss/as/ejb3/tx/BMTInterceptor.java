@@ -21,12 +21,14 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.logging.Logger;
-
 import javax.ejb.EJBException;
-import javax.interceptor.AroundInvoke;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 /**
  * Suspend an incoming tx.
@@ -35,25 +37,27 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class BMTInterceptor {
+public abstract class BMTInterceptor implements Interceptor {
     private static final Logger log = Logger.getLogger(BMTInterceptor.class);
 
-    protected abstract String getComponentName();
+    private final EJBComponent component;
 
-    protected abstract Object handleInvocation(TransactionalInvocationContext invocation) throws Exception;
+    public BMTInterceptor(final EJBComponent component) {
+        this.component = component;
+    }
 
-    @AroundInvoke
-    public Object invoke(TransactionalInvocationContext invocation) throws Exception {
-        TransactionManager tm = this.getTransactionManager();
+    protected abstract Object handleInvocation(InterceptorContext invocation) throws Exception;
+
+    @Override
+    public Object processInvocation(final InterceptorContext context) throws Exception {
+        TransactionManager tm = component.getTransactionManager();
         Transaction oldTx = tm.suspend();
         try {
-            return handleInvocation(invocation);
+            return handleInvocation(context);
         } finally {
             if (oldTx != null) tm.resume(oldTx);
         }
     }
-
-    protected abstract TransactionManager getTransactionManager();
 
     /**
      * Checks if the passed exception is an application exception. If yes, then throws back the
@@ -62,8 +66,8 @@ public abstract class BMTInterceptor {
      * @param ex The exception to handle
      * @throws Exception Either the passed exception or an EJBException
      */
-    protected Exception handleException(TransactionalInvocationContext invocation, Exception ex) throws Exception {
-        ApplicationExceptionDetails ae = invocation.getApplicationException(ex.getClass());
+    protected Exception handleException(final InterceptorContext invocation, Exception ex) throws Exception {
+        ApplicationExceptionDetails ae = component.getApplicationException(ex.getClass(), invocation.getMethod());
         // it's an application exception, so just throw it back as-is
         if (ae != null) {
             throw ex;
@@ -73,5 +77,9 @@ public abstract class BMTInterceptor {
         } else {
             throw new EJBException(ex);
         }
+    }
+
+    public EJBComponent getComponent() {
+        return component;
     }
 }

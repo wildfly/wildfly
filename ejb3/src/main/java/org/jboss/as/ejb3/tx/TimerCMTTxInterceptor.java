@@ -26,6 +26,11 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+
 /**
  * CMT interceptor for timer invocations. An exception is thrown if the transaction is rolled back, so the timer
  * service knows to retry the timeout.
@@ -39,10 +44,12 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
      */
     private static final ThreadLocal<Throwable> EXCEPTION = new ThreadLocal<Throwable>();
 
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new TimerCMTTxInterceptor());
+
     @Override
-    public void handleExceptionInOurTx(final TransactionalInvocationContext invocation, final Throwable t, final Transaction tx) throws Exception {
+    public void handleExceptionInOurTx(final InterceptorContext invocation, final Throwable t, final Transaction tx, final EJBComponent component) throws Exception {
         EXCEPTION.set(t);
-        super.handleExceptionInOurTx(invocation, t, tx);
+        super.handleExceptionInOurTx(invocation, t, tx, component);
     }
 
     @Override

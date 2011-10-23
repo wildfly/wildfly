@@ -47,6 +47,7 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.tx.StatefulBMTInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
@@ -67,9 +68,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     private static final Logger logger = Logger.getLogger(StatefulComponentDescription.class);
 
-    private MethodDescription afterBegin;
-    private MethodDescription afterCompletion;
-    private MethodDescription beforeCompletion;
+    private Method afterBegin;
+    private Method afterCompletion;
+    private Method beforeCompletion;
     private final Set<StatefulRemoveMethod> removeMethods = new HashSet<StatefulRemoveMethod>();
     private StatefulTimeoutInfo statefulTimeout;
 
@@ -194,15 +195,15 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         return true;
     }
 
-    public MethodDescription getAfterBegin() {
+    public Method getAfterBegin() {
         return afterBegin;
     }
 
-    public MethodDescription getAfterCompletion() {
+    public Method getAfterCompletion() {
         return afterCompletion;
     }
 
-    public MethodDescription getBeforeCompletion() {
+    public Method getBeforeCompletion() {
         return beforeCompletion;
     }
 
@@ -211,16 +212,16 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         return SessionBeanComponentDescription.SessionBeanType.STATEFUL;
     }
 
-    public void setAfterBegin(String className, String methodName) {
-        this.afterBegin = new MethodDescription(className, methodName);
+    public void setAfterBegin(final Method afterBegin) {
+        this.afterBegin = afterBegin;
     }
 
-    public void setAfterCompletion(String className, String methodName) {
-        this.afterCompletion = new MethodDescription(className, methodName, boolean.class.getName());
+    public void setAfterCompletion(final  Method afterCompletion) {
+        this.afterCompletion = afterCompletion;
     }
 
-    public void setBeforeCompletion(String className, String methodName) {
-        this.beforeCompletion = new MethodDescription(className, methodName);
+    public void setBeforeCompletion(final Method afterCompletion) {
+        this.beforeCompletion = afterCompletion;
     }
 
     @Override

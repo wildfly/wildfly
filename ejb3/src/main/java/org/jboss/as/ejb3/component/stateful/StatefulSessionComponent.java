@@ -45,13 +45,13 @@ import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
@@ -113,16 +113,14 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         });
     }
 
-    @Override
-    public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
+    public <T> T getBusinessObject(Class<T> businessInterface, final InterceptorContext context) throws IllegalStateException {
         if (businessInterface == null) {
             throw new IllegalStateException("Business interface type cannot be null");
         }
-        return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)));
+        return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(context)));
     }
 
-        @Override
-    public EJBObject getEJBObject(SessionContext ctx) throws IllegalStateException {
+    public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbObjectView() == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
         }

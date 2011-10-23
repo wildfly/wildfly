@@ -76,7 +76,7 @@ public class CmpEntityBeanRemoveInterceptorFactory implements InterceptorFactory
                 }
 
                 // Invoke CMP remove
-                component.getStoreManager().removeEntity(instance.getEntityContext());
+                component.getStoreManager().removeEntity(instance.getEjbContext());
                 instance.setRemoved(true);
                 return null;
             }

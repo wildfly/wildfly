@@ -33,22 +33,19 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TransactionAttributeType;
 
-import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.as.ejb3.context.spi.SessionContext;
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class SessionBeanComponent extends EJBComponent implements org.jboss.as.ejb3.context.spi.SessionBeanComponent {
+public abstract class SessionBeanComponent extends EJBComponent {
 
     private static final Logger logger = Logger.getLogger(SessionBeanComponent.class);
 
@@ -76,35 +73,31 @@ public abstract class SessionBeanComponent extends EJBComponent implements org.j
         this.ejbObjectView = ejbComponentCreateService.getEjbObjectview();
     }
 
-    @Override
-    public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
+    public <T> T getBusinessObject(Class<T> businessInterface, final InterceptorContext context) throws IllegalStateException {
         if (businessInterface == null) {
             throw new IllegalStateException("Business interface type cannot be null");
         }
         return createViewInstanceProxy(businessInterface, emptyMap());
     }
 
-    protected SessionID getSessionIdOf(final SessionContext ctx) {
-        return ((SessionBeanComponentInstance.SessionBeanComponentInstanceContext) ctx).getId();
+    protected SessionID getSessionIdOf(final InterceptorContext ctx) {
+        final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) ctx.getPrivateData(ComponentInstance.class);
+        return instance.getId();
     }
 
-    @Override
-    public EJBLocalObject getEJBLocalObject(SessionContext ctx) throws IllegalStateException {
+    public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
         if (ejbLocalObjectView == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBLocalObject");
         }
         return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbLocalObjectView);
     }
 
-    @Override
-    public EJBObject getEJBObject(SessionContext ctx) throws IllegalStateException {
+    public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
         if (ejbObjectView == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
         }
-        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbObjectView);
-        final ComponentView view = (ComponentView) serviceController.getValue();
-        return EJBClient.createProxy(new StatelessEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), getApplicationName(), getModuleName(), getComponentName(), getDistinctName()));
-    }
+        return createViewInstanceProxy(EJBObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbObjectView);
+   }
 
     /**
      * Return the {@link Executor} used for asynchronous invocations.

@@ -56,14 +56,14 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
         return (CmpEntityBeanComponent) super.getComponent();
     }
 
-    public CmpEntityBeanContext getEntityContext() {
-        return (CmpEntityBeanContext) super.getEntityContext();
+    public CmpEntityBeanContext getEjbContext() {
+        return (CmpEntityBeanContext) super.getEjbContext();
     }
 
     public void setupContext() {
         try {
             final CmpEntityBeanContext context = new CmpEntityBeanContext(this);
-            setEntityContext(context);
+            setEjbContext(context);
             getInstance().setEntityContext(context);
             getComponent().getStoreManager().activateEntity(context);
         } catch (RemoteException e) {
@@ -84,7 +84,7 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
         try {
             if (!isRemoved()) {
                 instance.ejbStore();
-                final CmpEntityBeanContext context = getEntityContext();
+                final CmpEntityBeanContext context = getEjbContext();
                 final JDBCEntityPersistenceStore store = getComponent().getStoreManager();
                 if (context.getPrimaryKey() != null && store.isStoreRequired(context)) {
                     store.storeEntity(context);
@@ -100,7 +100,7 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
     public void passivate() {
         final JDBCEntityPersistenceStore store = getComponent().getStoreManager();
         try {
-            store.passivateEntity(this.getEntityContext());
+            store.passivateEntity(this.getEjbContext());
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
         } catch (Exception e) {

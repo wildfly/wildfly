@@ -19,26 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.context.base;
-
-import javax.ejb.EntityBean;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
-import org.jboss.as.ejb3.context.spi.EntityContext;
-import org.jboss.as.ejb3.context.spi.MessageDrivenBeanComponent;
+package org.jboss.as.ejb3.context;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
+import javax.ejb.EntityBean;
+import javax.transaction.UserTransaction;
+
+import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 
 /**
  * @author Stuart Douglas
  */
-public class BaseEntityContext extends BaseEJBContext implements EntityContext {
+public class EntityContextImpl extends EJBContextImpl implements javax.ejb.EntityContext {
 
     private final EntityBeanComponentInstance instance;
 
-    public BaseEntityContext(EntityBeanComponentInstance componentInstance) {
-        super(componentInstance.getComponent(), componentInstance.getInstance());
+    public EntityContextImpl(EntityBeanComponentInstance componentInstance) {
+        super(componentInstance);
         this.instance = componentInstance;
     }
 
@@ -48,16 +47,18 @@ public class BaseEntityContext extends BaseEJBContext implements EntityContext {
     }
 
     @Override
+    public UserTransaction getUserTransaction() throws IllegalStateException {
+        return getComponent().getUserTransaction();
+    }
+
     public EJBLocalObject getEJBLocalObject() throws IllegalStateException {
         return instance.getEjbLocalObject();
     }
 
-    @Override
     public EJBObject getEJBObject() throws IllegalStateException {
         return instance.getEjbObject();
     }
 
-    @Override
     public Object getPrimaryKey() throws IllegalStateException {
         return instance.getPrimaryKey();
     }

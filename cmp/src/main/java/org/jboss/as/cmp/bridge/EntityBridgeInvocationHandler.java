@@ -21,14 +21,11 @@
  */
 package org.jboss.as.cmp.bridge;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Map;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
-import org.jboss.as.cmp.component.CmpProxy;
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 
 /**
@@ -68,7 +65,7 @@ public class EntityBridgeInvocationHandler {
             }
         }
         try {
-            return invoker.invoke(instance.getEntityContext(), method, args);
+            return invoker.invoke(instance.getEjbContext(), method, args);
         } catch (RuntimeException e) {
             throw e;
         } catch (FinderException e) {

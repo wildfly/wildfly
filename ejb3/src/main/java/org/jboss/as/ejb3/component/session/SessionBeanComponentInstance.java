@@ -27,8 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
-import org.jboss.as.ejb3.context.base.BaseSessionContext;
-import org.jboss.as.ejb3.context.spi.SessionContext;
+import org.jboss.as.ejb3.context.SessionContextImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
@@ -37,7 +36,7 @@ import org.jboss.invocation.Interceptor;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public abstract class SessionBeanComponentInstance extends EjbComponentInstance {
-    private volatile SessionBeanComponentInstanceContext sessionContext;
+    private volatile SessionContextImpl sessionContext;
 
     /**
      * Construct a new instance.
@@ -48,29 +47,18 @@ public abstract class SessionBeanComponentInstance extends EjbComponentInstance 
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors, timeoutInterceptors);
     }
 
-    protected class SessionBeanComponentInstanceContext extends BaseSessionContext {
-        protected SessionBeanComponentInstanceContext() {
-            super((SessionBeanComponent) SessionBeanComponentInstance.this.getComponent(), SessionBeanComponentInstance.this.getInstance());
-        }
-
-        protected SessionBeanComponentInstance getComponentInstance() {
-            return SessionBeanComponentInstance.this;
-        }
-
-        protected SessionID getId() {
-            return SessionBeanComponentInstance.this.getId();
-        }
+    @Override
+    public SessionBeanComponent getComponent() {
+        return (SessionBeanComponent) super.getComponent();
     }
-
 
     protected abstract SessionID getId();
 
-    protected SessionContext getSessionContext() {
+    public SessionContextImpl getEjbContext() {
         if (sessionContext == null) {
             synchronized (this) {
                 if (sessionContext == null) {
-
-                    this.sessionContext = new SessionBeanComponentInstanceContext();
+                    this.sessionContext = new SessionContextImpl(this);
                 }
             }
         }

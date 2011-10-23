@@ -19,37 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateless;
+package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ejb3.context.spi.InvocationContext;
-import org.jboss.as.ejb3.tx.TransactionalInvocationContext;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import javax.transaction.TransactionManager;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class StatelessBMTInterceptor extends org.jboss.as.ejb3.tx.StatelessBMTInterceptor implements Interceptor {
-    private final StatelessSessionComponent component;
+public class CurrentInvocationContextInterceptor implements Interceptor {
 
-    StatelessBMTInterceptor(StatelessSessionComponent component) {
-        this.component = component;
-    }
-
-    @Override
-    protected String getComponentName() {
-        return component.getComponentName();
-    }
-
-    @Override
-    protected TransactionManager getTransactionManager() {
-        return component.getTransactionManager();
-    }
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new CurrentInvocationContextInterceptor());
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
-        return super.invoke((TransactionalInvocationContext) context.getPrivateData(InvocationContext.class));
+        CurrentInvocationContext.push(context);
+        try {
+            return context.proceed();
+        } finally {
+            CurrentInvocationContext.pop();
+        }
     }
+
 }

@@ -36,7 +36,6 @@ import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeCreateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -83,10 +82,10 @@ public class CmpEntityBeanEjbCreateMethodInterceptorFactory implements Intercept
 
                 //call the ejbCreate method
                 try {
-                    storeManager.initEntity(instance.getEntityContext());
+                    storeManager.initEntity(instance.getEjbContext());
                     ejbCreate.invoke(instance.getInstance(), params);
 
-                    final Object primaryKey = storeManager.createEntity(context.getMethod(), context.getParameters(), instance.getEntityContext());
+                    final Object primaryKey = storeManager.createEntity(context.getMethod(), context.getParameters(), instance.getEjbContext());
                     instance.associate(primaryKey);
 
                     //now add the instance to the cache, so it is usable
@@ -94,18 +93,18 @@ public class CmpEntityBeanEjbCreateMethodInterceptorFactory implements Intercept
                     //the cache will do that when it is expired or removed
                     entityBeanComponent.getCache().create(instance);
 
-                    storeManager.postCreateEntity(context.getMethod(), context.getParameters(), instance.getEntityContext());
+                    storeManager.postCreateEntity(context.getMethod(), context.getParameters(), instance.getEjbContext());
 
                     ejbPostCreate.invoke(instance.getInstance(), params);
                     primaryKeyReference.set(primaryKey);
 
                     if (((CmpEntityBeanComponent) component).getStoreManager().getCmpConfig().isInsertAfterEjbPostCreate()) {
-                        storeManager.createEntity(context.getMethod(), context.getParameters(), instance.getEntityContext());
+                        storeManager.createEntity(context.getMethod(), context.getParameters(), instance.getEjbContext());
                     }
 
                     final Transaction transaction = entityBeanComponent.getTransactionManager().getTransaction();
                     if (TxUtils.isActive(transaction)) {
-                        TransactionEntityMap.NONE.scheduleSync(transaction, instance.getEntityContext());
+                        TransactionEntityMap.NONE.scheduleSync(transaction, instance.getEjbContext());
                     }
                 } catch (DuplicateKeyException e) {
                     throw e;

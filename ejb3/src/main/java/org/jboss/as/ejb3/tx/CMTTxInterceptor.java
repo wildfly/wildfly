@@ -21,14 +21,9 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.as.ejb3.context.spi.InvocationContext;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
-import org.jboss.tm.TransactionTimeoutConfiguration;
-import org.jboss.util.deadlock.ApplicationDeadlockException;
+import java.rmi.RemoteException;
+import java.util.Random;
 
-import javax.annotation.Resource;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
 import javax.ejb.EJBTransactionRolledbackException;
@@ -40,8 +35,16 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.rmi.RemoteException;
-import java.util.Random;
+
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.logging.Logger;
+import org.jboss.tm.TransactionTimeoutConfiguration;
+import org.jboss.util.deadlock.ApplicationDeadlockException;
 
 /**
  * Ensure the correct exceptions are thrown based on both caller
@@ -59,7 +62,8 @@ public class CMTTxInterceptor implements Interceptor {
     private static final int MAX_RETRIES = 5;
     private static final Random RANDOM = new Random();
 
-    private TransactionManager tm;
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new CMTTxInterceptor());
+
 
     /**
      * The <code>endTransaction</code> method ends a transaction and
@@ -95,7 +99,8 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    protected int getCurrentTransactionTimeout() throws SystemException {
+    protected int getCurrentTransactionTimeout(final EJBComponent component) throws SystemException {
+        final TransactionManager tm = component.getTransactionManager();
         if (tm instanceof TransactionTimeoutConfiguration) {
             return ((TransactionTimeoutConfiguration) tm).getTransactionTimeout();
         }
@@ -108,8 +113,8 @@ public class CMTTxInterceptor implements Interceptor {
         throw new EJBException(e);
     }
 
-    protected void handleInCallerTx(TransactionalInvocationContext invocation, Throwable t, Transaction tx) throws Exception {
-        ApplicationExceptionDetails ae = invocation.getApplicationException(t.getClass());
+    protected void handleInCallerTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
+        ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
 
         if (ae != null) {
             if (ae.isRollback()) setRollbackOnly(tx);
@@ -141,8 +146,8 @@ public class CMTTxInterceptor implements Interceptor {
         throw (Exception) t;
     }
 
-    public void handleExceptionInOurTx(TransactionalInvocationContext invocation, Throwable t, Transaction tx) throws Exception {
-        ApplicationExceptionDetails ae = invocation.getApplicationException(t.getClass());
+    public void handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
+        ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
         if (ae != null) {
             if (ae.isRollback()) setRollbackOnly(tx);
             throw (Exception) t;
@@ -168,41 +173,41 @@ public class CMTTxInterceptor implements Interceptor {
         throw (Exception) t;
     }
 
-    public Object processInvocation(InterceptorContext context) throws Exception {
-        final TransactionalInvocationContext invocation = (TransactionalInvocationContext)context.getPrivateData(InvocationContext.class);
-        TransactionAttributeType attr = invocation.getTransactionAttribute();
+    public Object processInvocation(InterceptorContext invocation) throws Exception {
+        final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
+        TransactionAttributeType attr = component.getTransactionAttributeType(invocation.getMethod());
         switch (attr) {
             case MANDATORY:
-                return mandatory(invocation);
+                return mandatory(invocation, component);
             case NEVER:
-                return never(invocation);
+                return never(invocation, component);
             case NOT_SUPPORTED:
-                return notSupported(invocation);
+                return notSupported(invocation, component);
             case REQUIRED:
-                return required(invocation);
+                return required(invocation, component);
             case REQUIRES_NEW:
-                return requiresNew(invocation);
+                return requiresNew(invocation, component);
             case SUPPORTS:
-                return supports(invocation);
+                return supports(invocation, component);
             default:
                 throw new IllegalStateException("Unexpected tx attribute " + attr + " on " + invocation);
         }
     }
 
-    protected Object invokeInCallerTx(TransactionalInvocationContext invocation, Transaction tx) throws Exception {
+    protected Object invokeInCallerTx(InterceptorContext invocation, Transaction tx, final EJBComponent component) throws Exception {
         try {
             return invocation.proceed();
         } catch (Throwable t) {
-            handleInCallerTx(invocation, t, tx);
+            handleInCallerTx(invocation, t, tx, component);
         }
         throw new RuntimeException("UNREACHABLE");
     }
 
-    protected Object invokeInNoTx(TransactionalInvocationContext invocation) throws Exception {
+    protected Object invokeInNoTx(InterceptorContext invocation) throws Exception {
         return invocation.proceed();
     }
 
-    protected Object invokeInOurTx(TransactionalInvocationContext invocation, TransactionManager tm) throws Exception {
+    protected Object invokeInOurTx(InterceptorContext invocation, TransactionManager tm, final EJBComponent component) throws Exception {
         for (int i = 0; i < MAX_RETRIES; i++) {
             tm.begin();
             Transaction tx = tm.getTransaction();
@@ -210,7 +215,7 @@ public class CMTTxInterceptor implements Interceptor {
                 try {
                     return invocation.proceed();
                 } catch (Throwable t) {
-                    handleExceptionInOurTx(invocation, t, tx);
+                    handleExceptionInOurTx(invocation, t, tx, component);
                 } finally {
                     endTransaction(tm, tx);
                 }
@@ -231,22 +236,25 @@ public class CMTTxInterceptor implements Interceptor {
         throw new RuntimeException("UNREACHABLE");
     }
 
-    protected Object mandatory(TransactionalInvocationContext invocation) throws Exception {
+    protected Object mandatory(InterceptorContext invocation, final EJBComponent component) throws Exception {
+        final TransactionManager tm = component.getTransactionManager();
         Transaction tx = tm.getTransaction();
         if (tx == null) {
             throw new EJBTransactionRequiredException("Transaction is required for invocation: " + invocation);
         }
-        return invokeInCallerTx(invocation, tx);
+        return invokeInCallerTx(invocation, tx, component);
     }
 
-    protected Object never(TransactionalInvocationContext invocation) throws Exception {
+    protected Object never(InterceptorContext invocation, final EJBComponent component) throws Exception {
+        final TransactionManager tm = component.getTransactionManager();
         if (tm.getTransaction() != null) {
             throw new EJBException("Transaction present on server in Never call (EJB3 13.6.2.6)");
         }
         return invokeInNoTx(invocation);
     }
 
-    protected Object notSupported(TransactionalInvocationContext invocation) throws Exception {
+    protected Object notSupported(InterceptorContext invocation, final EJBComponent component) throws Exception {
+        final TransactionManager tm = component.getTransactionManager();
         Transaction tx = tm.getTransaction();
         if (tx != null) {
             tm.suspend();
@@ -254,7 +262,7 @@ public class CMTTxInterceptor implements Interceptor {
                 return invokeInNoTx(invocation);
             } catch (Exception e) {
                 // If application exception was thrown, rethrow
-                if (invocation.getApplicationException(e.getClass()) != null) {
+                if (component.getApplicationException(e.getClass(), invocation.getMethod()) != null) {
                     throw e;
                 }
                 // Otherwise wrap in EJBException
@@ -269,9 +277,10 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    protected Object required(TransactionalInvocationContext invocation) throws Exception {
-        int oldTimeout = getCurrentTransactionTimeout();
-        int timeout = invocation.getTransactionTimeout();
+    protected Object required(InterceptorContext invocation, final EJBComponent component) throws Exception {
+        final TransactionManager tm = component.getTransactionManager();
+        int oldTimeout = getCurrentTransactionTimeout(component);
+        int timeout = component.getTransactionTimeout(invocation.getMethod());
 
         try {
             if (timeout != -1 && tm != null) {
@@ -281,9 +290,9 @@ public class CMTTxInterceptor implements Interceptor {
             Transaction tx = tm.getTransaction();
 
             if (tx == null) {
-                return invokeInOurTx(invocation, tm);
+                return invokeInOurTx(invocation, tm, component);
             } else {
-                return invokeInCallerTx(invocation, tx);
+                return invokeInCallerTx(invocation, tx, component);
             }
         } finally {
             if (tm != null) {
@@ -292,9 +301,10 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    protected Object requiresNew(TransactionalInvocationContext invocation) throws Exception {
-        int oldTimeout = getCurrentTransactionTimeout();
-        int timeout = invocation.getTransactionTimeout();
+    protected Object requiresNew(InterceptorContext invocation, final EJBComponent component) throws Exception {
+        final TransactionManager tm = component.getTransactionManager();
+        int oldTimeout = getCurrentTransactionTimeout(component);
+        int timeout = component.getTransactionTimeout(invocation.getMethod());
 
         try {
             if (timeout != -1 && tm != null) {
@@ -305,12 +315,12 @@ public class CMTTxInterceptor implements Interceptor {
             if (tx != null) {
                 tm.suspend();
                 try {
-                    return invokeInOurTx(invocation, tm);
+                    return invokeInOurTx(invocation, tm, component);
                 } finally {
                     tm.resume(tx);
                 }
             } else {
-                return invokeInOurTx(invocation, tm);
+                return invokeInOurTx(invocation, tm, component);
             }
         } finally {
             if (tm != null) {
@@ -336,17 +346,13 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
-    @Resource
-    public void setTransactionManager(TransactionManager tm) {
-        this.tm = tm;
-    }
-
-    protected Object supports(TransactionalInvocationContext invocation) throws Exception {
+    protected Object supports(InterceptorContext invocation, final EJBComponent component) throws Exception {
+        final TransactionManager tm = component.getTransactionManager();
         Transaction tx = tm.getTransaction();
         if (tx == null) {
             return invokeInNoTx(invocation);
         } else {
-            return invokeInCallerTx(invocation, tx);
+            return invokeInCallerTx(invocation, tx, component);
         }
     }
 }

@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.timerservice.mk2;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
-import org.jboss.as.ejb3.context.spi.InvocationContext;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.api.TimerService;
 import org.jboss.as.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
@@ -34,6 +33,7 @@ import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.mk2.task.TimerTask;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 
 import javax.ejb.EJBException;
@@ -706,7 +706,7 @@ public class TimerServiceImpl implements TimerService {
      * @return
      */
     protected boolean isLifecycleCallbackInvocation() {
-        InvocationContext currentInvocationContext = null;
+        InterceptorContext currentInvocationContext = null;
         try {
             currentInvocationContext = CurrentInvocationContext.get();
         } catch (IllegalStateException ise) {

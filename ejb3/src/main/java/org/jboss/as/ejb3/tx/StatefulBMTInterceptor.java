@@ -21,14 +21,16 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.logging.Logger;
+import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
 
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 /**
  * A per instance interceptor that keeps an association with the outcoming transaction.
@@ -43,7 +45,7 @@ import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
  *
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class StatefulBMTInterceptor extends BMTInterceptor {
+public class StatefulBMTInterceptor extends BMTInterceptor {
     private static final Logger log = Logger.getLogger(StatefulBMTInterceptor.class);
 
     /**
@@ -51,9 +53,13 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor {
      */
     private volatile Transaction transaction;
 
+    public StatefulBMTInterceptor(final EJBComponent component) {
+        super(component);
+    }
+
     private void checkBadStateful() {
         int status = Status.STATUS_NO_TRANSACTION;
-        TransactionManager tm = this.getTransactionManager();
+        TransactionManager tm = getComponent().getTransactionManager();
         try {
             status = tm.getStatus();
         } catch (SystemException ex) {
@@ -70,7 +76,7 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor {
                 } catch (Exception ex) {
                     log.error("Failed to rollback", ex);
                 }
-                String msg = "BMT stateful bean '" + getComponentName()
+                String msg = "BMT stateful bean '" + getComponent().getComponentName()
                         + "' did not complete user transaction properly status=" + statusAsString(status);
                 log.error(msg);
         }
@@ -81,8 +87,8 @@ public abstract class StatefulBMTInterceptor extends BMTInterceptor {
     }
 
     @Override
-    protected Object handleInvocation(TransactionalInvocationContext invocation) throws Exception {
-        TransactionManager tm = this.getTransactionManager();
+    protected Object handleInvocation(final InterceptorContext invocation) throws Exception {
+        TransactionManager tm = getComponent().getTransactionManager();
         assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
 
         // Is the instance already associated with a transaction?

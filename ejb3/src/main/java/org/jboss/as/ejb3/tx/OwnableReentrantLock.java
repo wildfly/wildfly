@@ -22,11 +22,13 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.as.ejb3.context.util.ThreadLocalStack;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.Lock;
+
+import org.jboss.as.ejb3.util.ThreadLocalStack;
+
 
 /**
  * A lock that supports reentrancy based on owner (and not on current thread).  For this to work, the lock needs to be

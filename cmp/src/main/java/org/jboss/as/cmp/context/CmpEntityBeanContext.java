@@ -24,15 +24,16 @@ package org.jboss.as.cmp.context;
 
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+
 import org.jboss.as.cmp.TransactionEntityMap;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
-import org.jboss.as.ejb3.context.base.BaseEntityContext;
+import org.jboss.as.ejb3.context.EntityContextImpl;
 
 /**
  * @author John Bailey
  */
-public class CmpEntityBeanContext extends BaseEntityContext {
+public class CmpEntityBeanContext extends EntityContextImpl {
 
     private Object persistenceContext;
     private boolean valid;

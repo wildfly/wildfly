@@ -31,11 +31,11 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.entity.EntityBeanHomeViewConfigurator;
 import org.jboss.as.ejb3.component.entity.EntityBeanObjectViewConfigurator;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -69,7 +69,7 @@ public class CmpEntityBeanComponentDescription extends EntityBeanComponentDescri
 
                 cmpConfig.addRelationInterceptor(getSynchronizationInterceptorFactory(), InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR);
                 cmpConfig.addRelationInterceptor(EntityBeanReentrancyInterceptor.FACTORY, InterceptorOrder.Component.REENTRANCY_INTERCEPTOR);
-                cmpConfig.addRelationInterceptor(EntityInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
+                cmpConfig.addRelationInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
                 cmpConfig.addRelationInterceptor(CmpEntityBeanJdbcRelationshipInterceptor.FACTORY, InterceptorOrder.Component.CMP_RELATIONSHIP_INTERCEPTOR);
             }
         });

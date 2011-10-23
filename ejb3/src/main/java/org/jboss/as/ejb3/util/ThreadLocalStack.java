@@ -19,30 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.tx;
+package org.jboss.as.ejb3.util;
 
-import org.jboss.as.ee.component.Component;
-import org.jboss.as.ee.component.ComponentInterceptorFactory;
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
+import java.util.LinkedList;
 
 /**
 * @author Stuart Douglas
 */
-public class CMTTxInterceptorFactory extends ComponentInterceptorFactory {
+public class ThreadLocalStack<T> {
+    private final ThreadLocal<LinkedList<T>> stack = new ThreadLocal<LinkedList<T>>();
 
-    public static final CMTTxInterceptorFactory INSTANCE = new CMTTxInterceptorFactory();
-
-    private CMTTxInterceptorFactory() {
-
+    public void push(T obj) {
+        LinkedList<T> list = stack.get();
+        if (list == null) {
+            list = new LinkedList<T>();
+            stack.set(list);
+        }
+        list.addLast(obj);
     }
 
+    public T pop() {
+        LinkedList<T> list = stack.get();
+        if (list == null) {
+            return null;
+        }
+        T rtn = list.removeLast();
+        if (list.size() == 0) {
+            stack.remove();
+        }
+        return rtn;
+    }
 
-    @Override
-    protected Interceptor create(Component component, InterceptorFactoryContext context) {
-        final CMTTxInterceptor interceptor = new CMTTxInterceptor();
-        interceptor.setTransactionManager(((EJBComponent) component).getTransactionManager());
-        return interceptor;
+    public T get() {
+        LinkedList<T> list = stack.get();
+        if (list == null) {
+            return null;
+        }
+        return list.getLast();
     }
 }
