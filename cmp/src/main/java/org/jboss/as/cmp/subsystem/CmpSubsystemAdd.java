@@ -22,8 +22,11 @@
 
 package org.jboss.as.cmp.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPCLIENT;
+
 import java.util.List;
 import java.util.Locale;
+
 import org.jboss.as.cmp.component.CmpEntityBeanComponentDescription;
 import org.jboss.as.cmp.processors.CmpDependencyProcessor;
 import org.jboss.as.cmp.processors.CmpEntityBeanComponentDescriptionFactory;
@@ -52,14 +55,18 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
 
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         logger.info("Activating EJB CMP Subsystem");
+        final boolean appclient = model.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_CMP_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new CmpEntityBeanComponentDescriptionFactory());
-                processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_CMP, new CmpDependencyProcessor());
-                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_PARSE, new CmpParsingProcessor());
-                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_ENTITY_METADATA, new CmpEntityMetaDataProcessor(CmpEntityBeanComponentDescription.class));
-                processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_STORE_MANAGER, new CmpStoreManagerProcessor());
+
+                processorTarget.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_CMP_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS, new CmpEntityBeanComponentDescriptionFactory(appclient));
+                if (!appclient) {
+                    processorTarget.addDeploymentProcessor(Phase.DEPENDENCIES, Phase.DEPENDENCIES_CMP, new CmpDependencyProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_PARSE, new CmpParsingProcessor());
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_ENTITY_METADATA, new CmpEntityMetaDataProcessor(CmpEntityBeanComponentDescription.class));
+                    processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_CMP_STORE_MANAGER, new CmpStoreManagerProcessor());
+                }
             }
         }, OperationContext.Stage.RUNTIME);
 

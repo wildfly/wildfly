@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors.entity;
 
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.processors.EJBComponentDescriptionFactory;
@@ -39,6 +40,16 @@ import org.jboss.msc.service.ServiceName;
 public class EntityBeanComponentDescriptionFactory extends EJBComponentDescriptionFactory {
 
     private static final Logger logger = Logger.getLogger(EntityBeanComponentDescriptionFactory.class);
+
+    /**
+     * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
+     * the deployment, but do not actuall install them
+     */
+    private final boolean appclient;
+
+    public EntityBeanComponentDescriptionFactory(final boolean appclient) {
+        this.appclient = appclient;
+    }
 
     @Override
     protected void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
@@ -66,7 +77,12 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         final EntityBeanComponentDescription description = createDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
 
         // add it to the ejb jar description
-        ejbJarDescription.getEEModuleDescription().addComponent(description);
+        if (appclient) {
+            deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, description);
+        } else {
+            // Add this component description to module description
+            ejbJarDescription.getEEModuleDescription().addComponent(description);
+        }
         description.setDescriptorData(entity);
 
         description.setPersistenceType(entity.getPersistenceType());

@@ -33,6 +33,10 @@ import org.jboss.msc.service.ServiceName;
  * @author John Bailey
  */
 public class CmpEntityBeanComponentDescriptionFactory extends EntityBeanComponentDescriptionFactory {
+    public CmpEntityBeanComponentDescriptionFactory(boolean appclient) {
+        super(appclient);
+    }
+
     protected boolean shouldProcess(final EntityBeanMetaData entity) {
         return entity.isCMP();
     }
