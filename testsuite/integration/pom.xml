@@ -346,49 +346,6 @@
                                 </configuration>
                             </execution>
 
-                            <execution>
-                                <id>basic-integration-preview.surefire</id>
-                                <phase>none</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <!-- Messaging tests are included since the preview profile supports messaging -->
-                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
-                                        <!-- Enable the Webservice testcases since "preview" profile has support for webservices -->
-                                        <include>org/jboss/as/test/integration/as1675/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/wsejb/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/exerces/ws/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/mdb/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/async/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/entity/**/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>none</exclude>
-                                    </excludes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <!-- Arquillian configuration. -->
-                                        <arquillian.xml>arquillian.xml</arquillian.xml>
-                                        <arquillian.launch>jboss</arquillian.launch>
-
-                                        <!-- Client side system properties. -->
-                                        <jboss.server.config.file.name>standalone-preview.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-
-                                    <!-- Access to resources for clustering tests. -->
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!-- XML report suffix -->
-                                    <reportNameSuffix>tests-basic-integration-preview</reportNameSuffix>
-                                </configuration>
-                            </execution>
                          </executions>
 
                     </plugin>
@@ -622,14 +579,6 @@
                                     <includes>
                                         <include>org/jboss/as/test/smoke/**/*TestCase.java</include>
                                     </includes>
-                                    <excludes>
-                                        <!-- These are in preview. -->
-                                        <exclude>org/jboss/as/test/smoke/embedded/demos/client/jms/**/*.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/embedded/demos/jms/**/*.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/embedded/demos/messaging/**/*.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/embedded/demos/ws/**/*.java</exclude>
-                                    </excludes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -652,42 +601,6 @@
                                 </configuration>
                             </execution>
 
-                            <execution>
-                                <id>smoke-preview.surefire</id>
-                                <phase>none</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>**/org/jboss/as/test/smoke/embedded/demos/client/jms/**/*.java</include>
-                                        <include>**/org/jboss/as/test/smoke/embedded/demos/client/messaging/**/*.java</include>
-                                        <include>**/org/jboss/as/test/smoke/embedded/demos/jms/**/*.java</include>
-                                        <include>**/org/jboss/as/test/smoke/embedded/demos/messaging/**/*.java</include>
-                                        <include>**/org/jboss/as/test/smoke/embedded/demos/ws/**/*.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <!-- Arquillian configuration. -->
-                                        <arquillian.xml>smoke-arquillian.xml</arquillian.xml>
-                                        <arquillian.launch>jboss</arquillian.launch>
-
-                                        <!-- Client side system properties. -->
-                                        <jboss.server.config.file.name>standalone-preview.xml</jboss.server.config.file.name>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                    </systemPropertyVariables>
-
-                                    <!-- Access to resources for clustering tests. -->
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/src/test/resources/smoke</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!-- XML report suffix -->
-                                    <reportNameSuffix>tests-smoke-preview</reportNameSuffix>
-                                </configuration>
-                            </execution>
                         </executions>
 
                     </plugin>
