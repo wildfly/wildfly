@@ -26,6 +26,7 @@ import java.io.IOException;
 import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
+import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
 
@@ -158,6 +159,11 @@ public abstract class ProtocolChannel implements Channel, Channel.Receiver {
             doHandle(message);
         } finally {
         }
+    }
+
+    @Override
+    public Connection getConnection() {
+        return channel.getConnection();
     }
 
     protected abstract void doHandle(final MessageInputStream message);

@@ -46,7 +46,6 @@ import org.xnio.IoUtils;
  */
 public class ManagementChannel extends ProtocolChannel {
 
-    private final ManagementChannelPinger pinger = ManagementChannelPinger.getInstance();
     private final RequestReceiver requestReceiver = new RequestReceiver();
     private final ResponseReceiver responseReceiver = new ResponseReceiver();
     private final AtomicBoolean byeByeSent = new AtomicBoolean();
@@ -56,7 +55,6 @@ public class ManagementChannel extends ProtocolChannel {
 
     ManagementChannel(String name, Channel channel) {
         super(name, channel);
-        pinger.addChannel(this);
     }
 
     /**
@@ -83,17 +81,16 @@ public class ManagementChannel extends ProtocolChannel {
             return;
         }
         ROOT_LOGGER.tracef("Closing %s by sending bye bye", this);
-        pinger.removeChannel(this);
         ManagementByeByeHeader byeByeHeader = new ManagementByeByeHeader(ManagementProtocol.VERSION);
 
         try {
             SimpleDataOutput out = new SimpleDataOutput(Marshalling.createByteOutput(writeMessage()));
             try {
                 byeByeHeader.write(out);
-            } catch (IOException ingore) {
-            }finally {
+            } finally {
                 IoUtils.safeClose(out);
             }
+        } catch (IOException ignore) {
         } finally {
             ROOT_LOGGER.tracef("Invoking close on %s", this);
             super.close();

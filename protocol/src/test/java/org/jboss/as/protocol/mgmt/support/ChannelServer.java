@@ -39,7 +39,6 @@ import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
-import org.xnio.Xnio;
 import org.xnio.channels.AcceptingChannel;
 import org.xnio.channels.ConnectedStreamChannel;
 
@@ -67,10 +66,9 @@ public class ChannelServer implements Closeable {
         }
         configuration.validate();
 
-        final Endpoint endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
-        final Xnio xnio = Xnio.getInstance();
+        final Endpoint endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
 
-        Registration registration = endpoint.addConnectionProvider(configuration.getUriScheme(), new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+        Registration registration = endpoint.addConnectionProvider(configuration.getUriScheme(), new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
         final NetworkServerProvider networkServerProvider = endpoint.getConnectionProviderInterface(configuration.getUriScheme(), NetworkServerProvider.class);
         SimpleServerAuthenticationProvider provider = new SimpleServerAuthenticationProvider();
@@ -110,11 +108,6 @@ public class ChannelServer implements Closeable {
         IoUtils.safeClose(streamServer);
         IoUtils.safeClose(registration);
         IoUtils.safeClose(endpoint);
-
-        //TODO do I need to shut down the executor or will this be injected in from somewhere and so should be kept alive?
-//        executorService.shutdown();
-//        executorService.awaitTermination(1L, TimeUnit.DAYS);
-//        executorService.shutdownNow();
     }
 
     public static final class Configuration {
