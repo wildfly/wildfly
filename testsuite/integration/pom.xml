@@ -265,13 +265,6 @@
                                     <target>
                                         <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
                                         <property name="tests.output.dir" value="${project.build.directory}"/>
-
-                                        <!-- Make jars available for use in deployments.
-                                             NOT USED NOW - jbws3027.war created by SWrap.
-                                        <ant antfile="${basedir}/src/test/scripts/basic-integration-build.xml">
-                                            <target name="build-basic-integration-jars"/>
-                                        </ant>
-                                        -->
                                     </target>
                                 </configuration>
                             </execution>
@@ -341,19 +334,15 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- Arquillian configuration. -->
                                         <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
-                                        <!-- Client side system properties. -->
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
-                                    <!-- Access to resources for clustering tests. -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!-- XML report suffix. -->
                                     <reportNameSuffix>tests-basic-integration-default</reportNameSuffix>
                                 </configuration>
                             </execution>
@@ -441,20 +430,15 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- Arquillian configuration. -->
                                         <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-udp-single</arquillian.launch>
-                                        <!-- Client side system properties. -->
-                                        <!-- Server side system properties. -->
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
-                                    <!-- Access to resources for clustering tests. -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!-- XML report suffix. -->
                                     <reportNameSuffix>tests-clustering-single-node</reportNameSuffix>
                                 </configuration>
                             </execution>
@@ -474,20 +458,16 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- Arquillian configuration. -->
                                         <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-udp</arquillian.launch>
-                                        <!-- Client side system properties. -->
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
-                                    <!-- Access to resources for clustering tests. -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!-- XML report suffix. -->
                                     <reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>
                                 </configuration>
                             </execution>
@@ -594,11 +574,9 @@
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- Arquillian configuration. -->
                                         <arquillian.xml>smoke-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>jboss</arquillian.launch>
 
-                                        <!-- Client side system properties. -->
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                     </systemPropertyVariables>
@@ -608,7 +586,6 @@
                                         <additionalClasspathElement>${project.basedir}/src/test/resources/smoke</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!-- XML report suffix. -->
                                     <reportNameSuffix>tests-smoke-default</reportNameSuffix>
                                 </configuration>
                             </execution>
