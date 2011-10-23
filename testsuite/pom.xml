@@ -342,6 +342,7 @@
             </activation>
             <modules>
                 <module>benchmark</module>
+                <module>compat</module>
                 <module>domain</module>
                 <module>integration</module>
                 <module>stress</module>
@@ -357,6 +358,18 @@
             </activation>
             <modules>
                 <module>benchmark</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>compat.module.profile</id>
+            <activation>
+                <property>
+                    <name>compat.module</name>
+                </property>
+            </activation>
+            <modules>
+                <module>compat</module>
             </modules>
         </profile>
 

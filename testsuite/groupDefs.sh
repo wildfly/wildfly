@@ -10,5 +10,6 @@ SMOKE_TESTS="-Dintegration.module -Dsmoke.integration.tests"
 #SPEC_TESTS="-Dspec.module"
 STRESS_TESTS="-Dstress.module"
 DOMAIN_TESTS="-Ddomain.module"
+COMPAT_TESTS="-Dcompat.module"
 
 ALL_TESTS="$INTEGRATION_TESTS $DOMAIN_TESTS $SMOKE_TESTS"

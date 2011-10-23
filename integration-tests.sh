@@ -75,19 +75,29 @@ process_test_directives() {
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $ALL_TESTS"
         TESTS_SPECIFIED="Y"
         ;;
-      # if someone specified -Dbenchmark-tests, run stress tests only
+      # Benchmark tests.
       -Dbenchmark-tests)
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BENCHMARK_TESTS"
         TESTS_SPECIFIED="Y"
         ;;
-      # if someone specified -Dsmoke-tests, run stress tests only
+      # Smoke tests.
       -Dsmoke-tests)
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $SMOKE_TESTS"
         TESTS_SPECIFIED="Y"
         ;;
-      # if someone specified -Dstress-tests, run stress tests only
+      # Stress tests.
       -Dstress-tests)
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $STRESS_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # Domain tests
+      -Ddomain-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $DOMAIN_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # Compat tests
+      -Dcompat-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $COMPAT_TESTS"
         TESTS_SPECIFIED="Y"
         ;;
       # pass through all other params
