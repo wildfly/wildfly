@@ -1,9 +1,9 @@
 package org.jboss.as.web;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
 
 /**
  * Common web description providers.
@@ -44,6 +44,13 @@ class WebSubsystemDescriptionProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return WebSubsystemDescriptions.getDeploymentServletDescription(locale);
+        }
+    };
+
+    public static DescriptionProvider SSL = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getSSLDescription(locale);
         }
     };
 

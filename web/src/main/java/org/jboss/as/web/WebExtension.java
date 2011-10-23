@@ -48,6 +48,7 @@ public class WebExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "web";
     private static final PathElement connectorPath =  PathElement.pathElement(Constants.CONNECTOR);
     private static final PathElement hostPath = PathElement.pathElement(Constants.VIRTUAL_SERVER);
+    private static final PathElement sslPath = PathElement.pathElement(Constants.SSL);
 
     /** {@inheritDoc} */
     @Override
@@ -66,6 +67,7 @@ public class WebExtension implements Extension {
         for(final String attributeName : WebConnectorMetrics.ATTRIBUTES) {
             connectors.registerMetric(attributeName, WebConnectorMetrics.INSTANCE);
         }
+        connectors.registerSubModel(sslPath, WebSubsystemDescriptionProviders.SSL);
         //hosts
         final ManagementResourceRegistration hosts = registration.registerSubModel(hostPath, WebSubsystemDescriptionProviders.VIRTUAL_SERVER);
         hosts.registerOperationHandler(ADD, WebVirtualHostAdd.INSTANCE, WebVirtualHostAdd.INSTANCE, false);
