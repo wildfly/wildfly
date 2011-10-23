@@ -55,15 +55,15 @@ import org.junit.runner.RunWith;
  * @version $Revision: 81036 $
  */
 @RunWith(CmpTestRunner.class)
-public class SimpleUnitTestCase extends AbstractCmpTest {
-    private static Logger log = Logger.getLogger(SimpleUnitTestCase.class);
+public class SimpleCMPUnitTestCase extends AbstractCmpTest {
+    private static Logger log = Logger.getLogger(SimpleCMPUnitTestCase.class);
 
     private static final String ARCHIVE_NAME = "cmp2-simple.jar";
 
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME);
-        jar.addPackage(SimpleUnitTestCase.class.getPackage());
+        jar.addPackage(SimpleCMPUnitTestCase.class.getPackage());
         jar.addAsManifestResource("ejb/entity/cmp/simple/ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource("ejb/entity/cmp/simple/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/entity/cmp/simple/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
@@ -71,7 +71,7 @@ public class SimpleUnitTestCase extends AbstractCmpTest {
         return jar;
     }
 
-    public SimpleUnitTestCase() {
+    public SimpleCMPUnitTestCase() {
         Calendar c = Calendar.getInstance();
         c.clear();    // Must clear time components
         c.set(1981, 4, 5);
@@ -677,7 +677,6 @@ public class SimpleUnitTestCase extends AbstractCmpTest {
     }
 
     @Test
-    @Ignore("AS7-2204")
     public void testDuplicateKey() throws Exception {
         try {
             SimpleHome simpleHome = getSimpleHome();
