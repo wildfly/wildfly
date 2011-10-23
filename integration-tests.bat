@@ -134,7 +134,7 @@ if "%1" == "" (
 REM  Replace occurrences of directives with corresponding maven profiles
 REM  -DallTests
 if "%1" == "-DallTests" (
-  set "CMD_LINE_PARAMS=%CMD_LINE_PARAMS% %INTEGRATION_TESTS% %SPEC_TESTS% %API_TESTS% %DOMAIN_TESTS%"
+  set "CMD_LINE_PARAMS=%CMD_LINE_PARAMS% %INTEGRATION_TESTS% %DOMAIN_TESTS% %COMPAT_TESTS% %SMOKE_TESTS%"
   set "TESTS_SPECIFIED=Y"
   goto processed
 )
