@@ -118,7 +118,7 @@ public class DefaultLockManagerSource implements LockManagerSource {
             try {
                 this.service.start();
             } catch (Exception e) {
-                throw MESSAGES.errorStartingGroupCommunications(channel.getClusterName());
+                throw MESSAGES.errorStartingGroupCommunications(e, channel.getClusterName());
             }
 
             this.lockManager = new SharedLocalYieldingClusterLockManager(SERVICE_NAME, this.service, this.service);
@@ -127,7 +127,7 @@ public class DefaultLockManagerSource implements LockManagerSource {
                 this.lockManager.start();
             } catch (Exception e) {
                 this.service.stop();
-                throw MESSAGES.errorStartingLockManager(channel.getClusterName());
+                throw MESSAGES.errorStartingLockManager(e, channel.getClusterName());
             }
         }
 
