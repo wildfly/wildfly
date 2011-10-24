@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +58,7 @@ public abstract class AttributeDefinition {
     private final MeasurementUnit measurementUnit;
     private final String[] alternatives;
     private final String[] requires;
+    private final ParameterCorrector valueCorrector;
     private final ParameterValidator validator;
     private final EnumSet<AttributeAccess.Flag> flags;
 
@@ -66,6 +66,15 @@ public abstract class AttributeDefinition {
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
                                final AttributeAccess.Flag... flags) {
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                null, validator, alternatives, requires, flags);
+    }
+
+    protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
+            final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+            final ParameterCorrector valueCorrector, final ParameterValidator validator,
+            final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+
         this.name = name;
         this.xmlName = xmlName;
         this.type = type;
@@ -79,6 +88,7 @@ public abstract class AttributeDefinition {
         this.measurementUnit = measurementUnit;
         this.alternatives = alternatives;
         this.requires = requires;
+        this.valueCorrector = valueCorrector;
         this.validator = validator;
         if (flags == null || flags.length == 0) {
             this.flags = EnumSet.noneOf(AttributeAccess.Flag.class);
@@ -196,8 +206,10 @@ public abstract class AttributeDefinition {
      *
      * @throws OperationFailedException if the value is not valid
      */
-    public final void validateAndSet(final ModelNode operationObject, final ModelNode model) throws OperationFailedException {
-
+    public final void validateAndSet(ModelNode operationObject, final ModelNode model) throws OperationFailedException {
+        if(this.valueCorrector != null) {
+            valueCorrector.correct(operationObject.get(name), model.get(name));
+        }
         ModelNode node = validateOperation(operationObject);
         model.get(name).set(node);
     }
