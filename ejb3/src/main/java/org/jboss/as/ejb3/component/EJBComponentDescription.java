@@ -51,6 +51,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactory;
+import org.jboss.as.ejb3.component.stateful.NoSuchObjectExceptionTransformingInterceptorFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -103,6 +104,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The @RunAs role associated with this bean, if any
      */
     private String runAsRole;
+
+    /**
+     * The @RunAsPrincipal associated with this bean, if any
+     */
+    private String runAsPrincipal;
 
     /**
      * The @DenyAll/exclude-list map of methods. The key is the view class name and the value is a collection of EJB methods
@@ -524,6 +530,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public String getRunAs() {
         return this.runAsRole;
+    }
+
+    public void setRunAsPrincipal(String principal) {
+        this.runAsPrincipal = principal;
+    }
+
+    public String getRunAsPrincipal() {
+        return runAsPrincipal;
     }
 
     public void setSecurityDomain(String securityDomain) {
