@@ -44,10 +44,13 @@ import org.jboss.as.webservices.metadata.EndpointJaxwsPojoImpl;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
+import org.jboss.as.webservices.util.WebMetaDataHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.jboss.JBossServletsMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -76,7 +79,8 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
             if (isJmsEndpoint(unit, beanClassName)) return; // do not process JMS endpoints
             final ServiceName unitServiceName = unit.getServiceName();
             // TODO: refactor to convenient method that will return DD defined servlets matching class name
-            List<ServletMetaData> ddServlets = ASHelper.getJaxwsServlets(unit);
+            final JBossWebMetaData jbossWebMD = ASHelper.getJBossWebMetaData(unit);
+            final JBossServletsMetaData ddServlets = WebMetaDataHelper.getServlets(jbossWebMD);
             boolean found = false;
             for (final ServletMetaData servletMD : ddServlets) {
                 if (beanClassName.equals(ASHelper.getEndpointClassName(servletMD))) {
