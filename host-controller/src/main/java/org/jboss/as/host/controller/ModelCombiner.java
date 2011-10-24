@@ -18,48 +18,9 @@
  */
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.ExtensionAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -74,8 +35,53 @@ import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
+import org.jboss.as.server.services.net.LocalDestinationClientSocketBindingAddHandler;
+import org.jboss.as.server.services.net.RemoteDestinationClientSocketBindingAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_CLIENT_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_CLIENT_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * Combines the relevant parts of the domain-level and host-level models to
@@ -439,6 +445,44 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             }
             updates.add(SocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
                     PathElement.pathElement(SOCKET_BINDING, name)), binding));
+        }
+        // client-socket-binding (for local destination)
+        if (group.hasDefined(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING)) {
+            for(final Property localDestinationClientSocketBindings : group.get(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING).asPropertyList()) {
+                final String clientSocketBindingName = localDestinationClientSocketBindings.getName();
+                final ModelNode binding = localDestinationClientSocketBindings.getValue();
+                if(! binding.isDefined()) {
+                    continue;
+                }
+                // if an explicit source-interface has been defined, then use it.
+                // Else use the "default-interface" that's defined at the socket-binding-group level,
+                // as the source interface
+                if(!binding.get(SOURCE_INTERFACE).isDefined()) {
+                    binding.get(SOURCE_INTERFACE).set(defaultInterface);
+                }
+                // add the local destination client socket binding add operation
+                updates.add(LocalDestinationClientSocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
+                        PathElement.pathElement(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING, clientSocketBindingName)), binding));
+            }
+        }
+        // client-socket-binding (for remote destination)
+        if (group.hasDefined(REMOTE_DESTINATION_CLIENT_SOCKET_BINDING)) {
+            for(final Property remoteDestinationClientSocketBindings : group.get(REMOTE_DESTINATION_CLIENT_SOCKET_BINDING).asPropertyList()) {
+                final String clientSocketBindingName = remoteDestinationClientSocketBindings.getName();
+                final ModelNode binding = remoteDestinationClientSocketBindings.getValue();
+                if(! binding.isDefined()) {
+                    continue;
+                }
+                // if an explicit source-interface has been defined, then use it.
+                // Else use the "default-interface" that's defined at the socket-binding-group level,
+                // as the source interface
+                if(!binding.get(SOURCE_INTERFACE).isDefined()) {
+                    binding.get(SOURCE_INTERFACE).set(defaultInterface);
+                }
+                // add the local destination client socket binding add operation
+                updates.add(RemoteDestinationClientSocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
+                        PathElement.pathElement(ModelDescriptionConstants.REMOTE_DESTINATION_CLIENT_SOCKET_BINDING, clientSocketBindingName)), binding));
+            }
         }
     }
 

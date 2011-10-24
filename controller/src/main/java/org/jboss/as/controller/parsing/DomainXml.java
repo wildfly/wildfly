@@ -22,10 +22,28 @@
 
 package org.jboss.as.controller.parsing;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -47,7 +65,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
-import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
@@ -56,25 +73,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly  {@code domain.xml}.
@@ -270,15 +268,16 @@ public class DomainXml extends CommonXml {
     void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
                                  final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
-        final Set<String> socketBindings = new HashSet<String>();
+        // both client-socket-bindings and socket-binding names
+        final Set<String> uniqueBindingNames = new HashSet<String>();
 
         // Handle attributes
         final String[] attrValues = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.DEFAULT_INTERFACE.getLocalName());
-        final String name = attrValues[0];
+        final String socketBindingGroupName = attrValues[0];
         final String defaultInterface = attrValues[1];
 
         final ModelNode groupAddress = new ModelNode().set(address);
-        groupAddress.add(SOCKET_BINDING_GROUP, name);
+        groupAddress.add(SOCKET_BINDING_GROUP, socketBindingGroupName);
 
         final ModelNode bindingGroupUpdate = new ModelNode();
         bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
@@ -305,8 +304,17 @@ public class DomainXml extends CommonXml {
                 }
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
-                    if (!socketBindings.add(bindingName)) {
-                        throw new XMLStreamException("socket-binding " + bindingName + " already declared", reader.getLocation());
+                    if (!uniqueBindingNames.add(bindingName)) {
+                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.CLIENT_SOCKET_BINDING.getLocalName()
+                                + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                    }
+                    break;
+                }
+                case CLIENT_SOCKET_BINDING: {
+                    final String bindingName = parseClientSocketBinding(reader, interfaces, socketBindingGroupName, groupAddress, updates);
+                    if (!uniqueBindingNames.add(bindingName)) {
+                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.CLIENT_SOCKET_BINDING.getLocalName()
+                                + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }

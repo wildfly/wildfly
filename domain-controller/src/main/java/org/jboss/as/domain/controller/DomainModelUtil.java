@@ -112,6 +112,9 @@ import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymen
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
 import org.jboss.as.domain.controller.resource.SocketBindingResourceDefinition;
 import org.jboss.as.server.deployment.repository.api.ContentRepository;
+import org.jboss.as.server.services.net.ClientSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.LocalDestinationSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.RemoteDestinationClientSocketBindingResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -211,6 +214,11 @@ public class DomainModelUtil {
 
         final ManagementResourceRegistration socketBindingGroup = root.registerSubModel(new SocketBindingGroupResourceDefinition(SocketBindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, true));
         socketBindingGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);
+        // client-socket-binding (for remote destination)
+        socketBindingGroup.registerSubModel(RemoteDestinationClientSocketBindingResourceDefinition.INSTANCE);
+        // client-socket-binding (for local destination)
+        socketBindingGroup.registerSubModel(LocalDestinationSocketBindingResourceDefinition.INSTANCE);
+
 
         final ManagementResourceRegistration serverGroups = root.registerSubModel(PathElement.pathElement(SERVER_GROUP), DomainDescriptionProviders.SERVER_GROUP);
         serverGroups.registerOperationHandler(ADD, ServerGroupAddHandler.INSTANCE, ServerGroupAddHandler.INSTANCE, false);

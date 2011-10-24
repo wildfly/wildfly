@@ -85,6 +85,7 @@ public class ModelDescriptionConstants {
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FILE = "file";
     public static final String FIXED_PORT = "fixed-port";
+    public static final String FIXED_SOURCE_PORT = "fixed-source-port";
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
     public static final String GRACEFUL_SHUTDOWN_TIMEOUT = "graceful-shutdown-timeout";
     public static final String GROUP = "group";
@@ -110,6 +111,7 @@ public class ModelDescriptionConstants {
     public static final String KEYSTORE = "keystore";
     public static final String LDAP = "ldap";
     public static final String LOCAL = "local";
+    public static final String LOCAL_DESTINATION_CLIENT_SOCKET_BINDING = "local-destination-client-socket-binding";
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MANAGEMENT = "management";
@@ -178,6 +180,7 @@ public class ModelDescriptionConstants {
     public static final String RELATIVE_TO = "relative-to";
     public static final String REMOVE = "remove";
     public static final String REMOTE = "remote";
+    public static final String REMOTE_DESTINATION_CLIENT_SOCKET_BINDING = "remote-destination-client-socket-binding";
     public static final String REPLACE_DEPLOYMENT = "replace-deployment";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
@@ -216,9 +219,12 @@ public class ModelDescriptionConstants {
     public static final String OPERATION_REQUIRES_RESTART = "operation-requires-restart";
     public static final String SHUTDOWN = "shutdown";
     public static final String SOCKET_BINDING = "socket-binding";
+    public static final String SOCKET_BINDING_REF = "socket-binding-ref";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";
     public static final String SOCKET_BINDING_GROUP_NAME = "socket-binding-group-name";
     public static final String SOCKET_BINDING_PORT_OFFSET = "socket-binding-port-offset";
+    public static final String SOURCE_INTERFACE = "source-interface";
+    public static final String SOURCE_PORT = "source-port";
     public static final String SSL = "ssl";
     public static final String START = "start";
     public static final String STATUS = "status";
