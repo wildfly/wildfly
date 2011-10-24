@@ -27,7 +27,7 @@ import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.STATELESS_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -115,10 +115,10 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
     }
 
     private static DeploymentJaxws getWSDeployment(final DeploymentUnit unit) {
-        DeploymentJaxws wsDeployment = unit.getAttachment(WS_ENDPOINTS_KEY);
+        DeploymentJaxws wsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
         if (wsDeployment == null) {
             wsDeployment = new DeploymentJaxwsImpl();
-            unit.putAttachment(WS_ENDPOINTS_KEY, wsDeployment);
+            unit.putAttachment(JAXWS_ENDPOINTS_KEY, wsDeployment);
         }
         return wsDeployment;
     }

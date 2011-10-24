@@ -54,7 +54,7 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        this.getAndPropagateAttachment(WSAttachmentKeys.WS_ENDPOINTS_KEY, DeploymentJaxws.class, unit, dep);
+        this.getAndPropagateAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY, DeploymentJaxws.class, unit, dep);
         //this.getAndPropagateAttachment(JBossMetaData.class, unit, dep); // TODO: propagate?
         final JBossWebMetaData webMetaData = ASHelper.getJBossWebMetaData(unit);
         if (webMetaData != null) {

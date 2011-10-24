@@ -29,7 +29,7 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
             addEndpoint(jbossWebMetaData, jaxwsDeployment, urlPatternToClassName.get(urlPattern), urlPattern);
         }
         this.putAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY, jbossWebMetaData);
-        this.putAttachment(WSAttachmentKeys.WS_ENDPOINTS_KEY, jaxwsDeployment);
+        this.putAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY, jaxwsDeployment);
         this.putAttachment(WSAttachmentKeys.CLASSLOADER_KEY, loader);
     }
 

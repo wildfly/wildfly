@@ -25,7 +25,7 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
         processAnnotation(unit, WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
         processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
         if (!wsDeploymentAdapter.getEjbEndpoints().isEmpty()) {
-            unit.putAttachment(WS_ENDPOINTS_KEY, wsDeploymentAdapter);
+            unit.putAttachment(JAXWS_ENDPOINTS_KEY, wsDeploymentAdapter);
         }
     }
 

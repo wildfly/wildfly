@@ -75,17 +75,6 @@ public final class ASHelper {
         super();
     }
 
-    /**
-     * Returns true if unit contains JAXWS JSE, JAXRPC JSE, JAXWS EJB or JAXRPC EJB deployment.
-     *
-     * @param unit deployment unit
-     * @return true if JAXWS JSE, JAXRPC JSE, JAXWS EJB or JAXRPC EJB deployment, false otherwise.
-     */
-    public static boolean isWebServiceDeployment(final DeploymentUnit unit) {
-        return getOptionalAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY) != null;
-        // TODO: replace with WSDeploymentMarker
-    }
-
     public static String getURLPattern(final String servletName, final DeploymentUnit unit) {
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
         for (final ServletMappingMetaData servletMappingMD : jbossWebMD.getServletMappings()) {
@@ -103,9 +92,9 @@ public final class ASHelper {
      * @return list of JAXWS EJBs meta data
      */
     public static List<EndpointJaxwsEjb> getJaxwsEjbs(final DeploymentUnit unit) {
-        final DeploymentJaxws wsDeployment = getRequiredAttachment(unit, WSAttachmentKeys.WS_ENDPOINTS_KEY);
-
-        return Collections.unmodifiableList(wsDeployment.getEjbEndpoints());
+        final DeploymentJaxws wsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
+        final boolean hasEjb3Endpoints = wsDeployment != null ? wsDeployment.getEjbEndpoints().size() > 0 : false;
+        return hasEjb3Endpoints ? wsDeployment.getEjbEndpoints() : Collections.<EndpointJaxwsEjb>emptyList();
     }
 
     /**
@@ -115,9 +104,9 @@ public final class ASHelper {
      * @return list of JAXWS POJOs meta data
      */
     public static List<EndpointJaxwsPojo> getJaxwsPojos(final DeploymentUnit unit) {
-        final DeploymentJaxws wsDeployment = unit.getAttachment(WSAttachmentKeys.WS_ENDPOINTS_KEY);
+        final DeploymentJaxws wsDeployment = unit.getAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
         final boolean hasPojoEndpoints = wsDeployment != null ? wsDeployment.getPojoEndpoints().size() > 0 : false;
-        return hasPojoEndpoints ? wsDeployment.getPojoEndpoints() : null;
+        return hasPojoEndpoints ? wsDeployment.getPojoEndpoints() : Collections.<EndpointJaxwsPojo>emptyList();
     }
 
     /**
@@ -128,7 +117,6 @@ public final class ASHelper {
      */
     public static String getEndpointName(final ServletMetaData servletMD) {
         final String endpointName = servletMD.getName();
-
         return endpointName != null ? endpointName.trim() : null;
     }
 
@@ -140,7 +128,6 @@ public final class ASHelper {
      */
     public static String getEndpointClassName(final ServletMetaData servletMD) {
         final String endpointClass = servletMD.getServletClass();
-
         return endpointClass != null ? endpointClass.trim() : null;
     }
 
@@ -261,55 +248,6 @@ public final class ASHelper {
     public static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
        final CompositeIndex compositeIndex = getRequiredAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
        return compositeIndex.getAnnotations(annotation);
-    }
-    /**
-     * Returns true if JAXRPC EJB deployment is detected.
-     *
-     * @param unit deployment unit
-     * @return true if JAXRPC EJB, false otherwise
-     */
-    public static boolean isJaxrpcEjbDeployment(final DeploymentUnit unit) {
-        //TODO
-//        final boolean hasWebservicesMD = hasAttachment(unit, AttachmentKeys.WEBSERVICES_METADATA_KEY);
-//        final boolean hasJBossMD = unit.getAllMetaData(JBossMetaData.class).size() > 0;
-//
-//        return hasWebservicesMD && hasJBossMD;
-        return false;
-    }
-
-    /**
-     * Returns true if JAXRPC JSE deployment is detected.
-     *
-     * @param unit deployment unit
-     * @return true if JAXRPC JSE, false otherwise
-     */
-    public static boolean isJaxrpcJseDeployment(final DeploymentUnit unit) {
-        final boolean hasWebservicesMD = unit.hasAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
-        final boolean hasJBossWebMD = getJBossWebMetaData(unit) != null;
-        return hasWebservicesMD && hasJBossWebMD;
-    }
-
-    /**
-     * Returns true if JAXWS EJB deployment is detected.
-     *
-     * @param unit deployment unit
-     * @return true if JAXWS EJB, false otherwise
-     */
-    public static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        return unit.hasAttachment(WSAttachmentKeys.WS_ENDPOINTS_KEY);
-    }
-
-    /**
-     * Returns true if JAXWS JSE deployment is detected.
-     *
-     * @param unit deployment unit
-     * @return true if JAXWS JSE, false otherwise
-     */
-    public static boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
-        if (getJaxwsPojos(unit) != null) return true;
-        if (unit.hasAttachment(WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY)) return true;
-
-        return false;
     }
 
     public static WSReferences getWSRefRegistry(final DeploymentUnit unit) {
