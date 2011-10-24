@@ -84,7 +84,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class AppClientXml extends CommonXml {
 
     public AppClientXml(final ModuleLoader loader) {
-        super(loader);
+        super(loader, null);
     }
 
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList)
