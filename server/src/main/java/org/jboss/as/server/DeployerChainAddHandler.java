@@ -47,20 +47,10 @@ import org.jboss.dmr.ModelNode;
  */
 public class DeployerChainAddHandler implements OperationStepHandler, DescriptionProvider {
     static final String NAME = "add-deployer-chains";
-    static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
-
-    static final ThreadLocal<EnumMap<Phase, Set<RegisteredProcessor>>> DEPLOYERS = new ThreadLocal<EnumMap<Phase, Set<RegisteredProcessor>>>() {
-        protected EnumMap<Phase, Set<RegisteredProcessor>> initialValue() {
-            final EnumMap<Phase, Set<RegisteredProcessor>> deployers = new EnumMap<Phase, Set<RegisteredProcessor>>(Phase.class);
-            for (Phase phase : Phase.values()) {
-                deployers.put(phase, new TreeSet<RegisteredProcessor>());
-            }
-            return deployers;
-        }
-    };
+    public static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
 
     static void addDeploymentProcessor(Phase phase, int priority, DeploymentUnitProcessor processor) {
-        final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = DEPLOYERS.get();
+        final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = INSTANCE.deployerMap;
         if (deployerMap == null) {
             throw new IllegalStateException("No deployers set");
         }
@@ -73,11 +63,29 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
         OPERATION.get(ADDRESS).setEmptyList();
     }
 
+    private  EnumMap<Phase, Set<RegisteredProcessor>> deployerMap;
+
+    private DeployerChainAddHandler() {
+    }
+
+    /** This is only public so AbstractSubsystemTest can use it. */
+    public void initDeployerMap() {
+        deployerMap = new EnumMap<Phase, Set<RegisteredProcessor>>(Phase.class);
+        for (Phase phase : Phase.values()) {
+            deployerMap.put(phase, new TreeSet<RegisteredProcessor>());
+        }
+    }
+
+    /** This is only public so AbstractSubsystemTest can use it. */
+    public void clearDeployerMap() {
+        deployerMap = null;
+    }
+
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if(context.getType() == OperationContext.Type.SERVER) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final EnumMap<Phase, Set<RegisteredProcessor>> deployerMap = DEPLOYERS.get();
+
                     if (deployerMap == null) {
                         throw new IllegalStateException("No deployers set");
                     }

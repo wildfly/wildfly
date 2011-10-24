@@ -47,6 +47,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.server.DeployerChainAddHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -596,13 +597,14 @@ public abstract class AbstractSubsystemTest {
                 if (validateOps) {
                     new OperationValidator(rootRegistration).validateOperations(bootOperations);
                 }
-
+                DeployerChainAddHandler.INSTANCE.initDeployerMap();
                 super.boot(persister.bootOperations);
             } catch (Exception e) {
                 error = e;
             } catch (Throwable t) {
                 error = new Exception(t);
             } finally {
+                DeployerChainAddHandler.INSTANCE.clearDeployerMap();
                 latch.countDown();
             }
         }
