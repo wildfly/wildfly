@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,36 +21,32 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.util.ASHelper.CONTAINER_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
-import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
-import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
+import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.metadata.DeploymentJaxws;
-import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
+import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.Endpoint;
 
 /**
- * Creates new JAXWS EJB3 deployment.
+ * Creates new JAXWS JSE deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuilder {
+final class DeploymentModelBuilderJAXWS_POJO extends AbstractDeploymentModelBuilder {
 
     /**
      * Constructor.
      */
-    DeploymentModelBuilderJAXWS_EJB3() {
-        super(JAXWS, JAXWS_EJB3);
+    DeploymentModelBuilderJAXWS_POJO() {
+        super(JAXWS, JAXWS_JSE);
     }
 
     /**
-     * Creates new JAXWS EJB3 deployment and registers it with deployment unit.
+     * Creates new JAXWS JSE deployment and registers it with deployment unit.
      *
      * @param dep webservice deployment
      * @param unit deployment unit
@@ -58,21 +54,17 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
         // propagate
-        final DeploymentJaxws jaxwsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
-        dep.addAttachment(DeploymentJaxws.class, jaxwsDeployment);
-        // propagate
         final JBossWebMetaData webMetaData = getJBossWebMetaData(unit);
         dep.addAttachment(JBossWebMetaData.class, webMetaData);
 
-        log.debug("Creating JAXWS EJB3 endpoints meta data model");
-        for (final EndpointJaxwsEjb ejbEndpoint : getJaxwsEjbs(unit)) {
-            final String ejbName = ejbEndpoint.getName();
-            log.debug("EJB3 name: " + ejbName);
-            final String ejbClass = ejbEndpoint.getClassName();
-            log.debug("EJB3 class: " + ejbClass);
+        log.debug("Creating JAXWS POJO endpoints meta data model");
+        for (final EndpointJaxwsPojo pojoEndpoint : getJaxwsPojos(unit)) {
+            final String pojoEndpointName = pojoEndpoint.getName();
+            log.debug("POJO name: " + pojoEndpointName);
+            final String pojoEndpointClassName = pojoEndpoint.getClassName();
+            log.debug("POJO" + pojoEndpointClassName);
 
-            final Endpoint ep = newHttpEndpoint(ejbClass, ejbName, dep);
-            ep.setProperty(CONTAINER_NAME, ejbEndpoint.getContainerName());
+            newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
         }
     }
 

@@ -57,13 +57,13 @@ import static org.jboss.as.webservices.dmr.WSEndpointMetrics.REQUEST_COUNT;
 import static org.jboss.as.webservices.dmr.WSEndpointMetrics.RESPONSE_COUNT;
 import static org.jboss.as.webservices.dmr.WSEndpointMetrics.TOTAL_PROCESSING_TIME;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  * Deployment model providers.

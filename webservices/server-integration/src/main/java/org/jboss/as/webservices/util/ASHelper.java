@@ -47,7 +47,6 @@ import org.jboss.metadata.ear.spec.ModuleMetaData;
 import org.jboss.metadata.ear.spec.WebModuleMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -73,16 +72,6 @@ public final class ASHelper {
      */
     private ASHelper() {
         super();
-    }
-
-    public static String getURLPattern(final String servletName, final DeploymentUnit unit) {
-        final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
-        for (final ServletMappingMetaData servletMappingMD : jbossWebMD.getServletMappings()) {
-            if (servletName.equals(servletMappingMD.getServletName())) {
-                return servletMappingMD.getUrlPatterns().get(0);
-            }
-        }
-        throw new IllegalStateException();
     }
 
     /**
@@ -145,7 +134,7 @@ public final class ASHelper {
             }
         }
 
-        throw new IllegalStateException("Cannot find servlet for link: " + servletName);
+        return null;
     }
 
     /**

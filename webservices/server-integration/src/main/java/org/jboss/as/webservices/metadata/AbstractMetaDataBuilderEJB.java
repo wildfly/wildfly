@@ -23,16 +23,10 @@ package org.jboss.as.webservices.metadata;
 
 import java.util.Iterator;
 
-import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
-import org.jboss.metadata.ejb.jboss.JBossMetaData;
-import org.jboss.metadata.ejb.jboss.WebservicesMetaData;
-import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
-import org.jboss.wsf.spi.metadata.j2ee.PublishLocationAdapter;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

@@ -22,12 +22,17 @@
 
 package org.jboss.as.webservices.injection;
 
+import static org.jboss.as.webservices.util.ASHelper.getEndpointClassName;
+import static org.jboss.as.webservices.util.ASHelper.getEndpointName;
+import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
+import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.STATELESS_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -42,8 +47,6 @@ import org.jboss.as.webservices.metadata.DeploymentJaxws;
 import org.jboss.as.webservices.metadata.DeploymentJaxwsImpl;
 import org.jboss.as.webservices.metadata.EndpointJaxwsPojoImpl;
 import org.jboss.as.webservices.service.EndpointService;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
@@ -51,6 +54,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -79,14 +83,14 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
             if (isJmsEndpoint(unit, beanClassName)) return; // do not process JMS endpoints
             final ServiceName unitServiceName = unit.getServiceName();
             // TODO: refactor to convenient method that will return DD defined servlets matching class name
-            final JBossWebMetaData jbossWebMD = ASHelper.getJBossWebMetaData(unit);
+            final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
             final JBossServletsMetaData ddServlets = WebMetaDataHelper.getServlets(jbossWebMD);
             boolean found = false;
             for (final ServletMetaData servletMD : ddServlets) {
-                if (beanClassName.equals(ASHelper.getEndpointClassName(servletMD))) {
+                if (beanClassName.equals(getEndpointClassName(servletMD))) {
                     // creating component description for POJO endpoint
                     found = true;
-                    final String endpointName = ASHelper.getEndpointName(servletMD);
+                    final String endpointName = getEndpointName(servletMD);
                     ComponentDescription jaxwsEndpointDescription = moduleDescription.getComponentByName(endpointName);
                     if (jaxwsEndpointDescription == null) {
                         jaxwsEndpointDescription = new WSComponentDescription(endpointName, beanClassName, moduleDescription, unitServiceName);
@@ -96,7 +100,7 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
                     final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
                     jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
                     // register POJO endpoint
-                    final String urlPattern = ASHelper.getURLPattern(endpointName, unit);
+                    final String urlPattern = getURLPattern(endpointName, unit);
                     wsDeployment.addEndpoint(new EndpointJaxwsPojoImpl(endpointName, beanClassName, urlPattern));
                 }
             }
@@ -172,6 +176,16 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
         return null;
     }
 
+    private static String getURLPattern(final String servletName, final DeploymentUnit unit) {
+        final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
+        for (final ServletMappingMetaData servletMappingMD : jbossWebMD.getServletMappings()) {
+            if (servletName.equals(servletMappingMD.getServletName())) {
+                return servletMappingMD.getUrlPatterns().get(0);
+            }
+        }
+        throw new IllegalStateException();
+    }
+
     private static AnnotationInstance getWebServiceAnnotation(final ClassInfo clazz) {
         final List<AnnotationInstance> webServiceAnnotations = clazz.annotations().get(WEB_SERVICE_ANNOTATION);
         if (webServiceAnnotations.size() > 0) {
@@ -185,11 +199,9 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
     }
 
     private static boolean isJmsEndpoint(final DeploymentUnit unit, final String endpointClass) {
-        final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
-        if (jmsEndpointsMD != null) {
-            for (JMSEndpointMetaData endpoint : jmsEndpointsMD.getEndpointsMetaData()) {
-                if (endpointClass.equals(endpoint.getImplementor())) return true;
-            }
+        final JMSEndpointsMetaData jmsEndpointsMD = getRequiredAttachment(unit, JMS_ENDPOINT_METADATA_KEY);
+        for (final JMSEndpointMetaData endpoint : jmsEndpointsMD.getEndpointsMetaData()) {
+            if (endpointClass.equals(endpoint.getImplementor())) return true;
         }
         return false;
     }

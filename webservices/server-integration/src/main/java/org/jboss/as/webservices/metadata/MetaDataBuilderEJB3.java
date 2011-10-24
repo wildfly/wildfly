@@ -23,7 +23,6 @@ package org.jboss.as.webservices.metadata;
 
 import static org.jboss.as.webservices.util.ASHelper.getContextRoot;
 
-
 import java.util.LinkedList;
 import java.util.List;
 

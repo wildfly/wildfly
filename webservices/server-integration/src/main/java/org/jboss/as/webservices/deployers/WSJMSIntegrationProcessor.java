@@ -23,9 +23,9 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
 import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -38,15 +38,12 @@ import javax.xml.namespace.QName;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.AttachmentList;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-//import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
@@ -62,7 +59,6 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
  * DUP for detecting JMS WS endpoints
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class WSJMSIntegrationProcessor implements DeploymentUnitProcessor {
 
@@ -100,8 +96,8 @@ public final class WSJMSIntegrationProcessor implements DeploymentUnitProcessor 
         }
 
         //extract SOAP-over-JMS 1.0 bindings
+        final JMSEndpointsMetaData endpointsMetaData = new JMSEndpointsMetaData();
         if (!map.isEmpty()) {
-            final JMSEndpointsMetaData endpointsMetaData = new JMSEndpointsMetaData();
 
             final boolean trace = LOG.isTraceEnabled();
             for (String wsdlLocation : map.keySet()) {
@@ -132,6 +128,7 @@ public final class WSJMSIntegrationProcessor implements DeploymentUnitProcessor 
                             //service name ?
                             JMSEndpointMetaData endpointMetaData = new JMSEndpointMetaData(endpointsMetaData);
                             endpointMetaData.setEndpointName(port);
+                            endpointMetaData.setName(beanClassName);
                             endpointMetaData.setImplementor(beanClassName);
                             //endpointMetaData.setName(name);
                             endpointMetaData.setSoapAddress(soapAddress);
@@ -148,10 +145,8 @@ public final class WSJMSIntegrationProcessor implements DeploymentUnitProcessor 
                 }
             }
 
-            if (!endpointsMetaData.getEndpointsMetaData().isEmpty()) {
-                unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, endpointsMetaData);
-            }
         }
+        unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, endpointsMetaData);
     }
 
     @Override

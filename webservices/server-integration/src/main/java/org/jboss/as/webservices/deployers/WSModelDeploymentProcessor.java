@@ -36,13 +36,14 @@ import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
 public final class WSModelDeploymentProcessor extends TCCLDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void internalDeploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void internalDeploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         WSDeploymentBuilder.getInstance().build(unit);
     }
 
     @Override
-    public void internalUndeploy(org.jboss.as.server.deployment.DeploymentUnit context) {
-        //NOOP
+    public void internalUndeploy(final org.jboss.as.server.deployment.DeploymentUnit context) {
+        // does nothing
     }
+
 }
