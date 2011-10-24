@@ -161,4 +161,8 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
         }
         return executor.getLargestThreadCount();
     }
+
+    TimeUnit getKeepAliveUnit() {
+        return keepAlive == null ? TimeSpec.DEFAULT_KEEPALIVE.getUnit() : keepAlive.getUnit();
+    }
 }
