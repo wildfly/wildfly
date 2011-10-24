@@ -63,6 +63,7 @@ public class ReferenceCountingEntityCache implements ReadyEntityCache {
     }
 
     public void release(final EntityBeanComponentInstance instance, boolean success) {
+        if(instance.getPrimaryKey() == null) return;  // TODO: Should this be an Exception
         final CacheEntry cacheEntry = cache.get(instance.getPrimaryKey());
         if (cacheEntry == null) {
             throw new IllegalArgumentException("Instance [" + instance + "] not found in cache");

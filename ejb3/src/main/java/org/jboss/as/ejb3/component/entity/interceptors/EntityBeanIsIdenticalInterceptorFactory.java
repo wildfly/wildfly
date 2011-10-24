@@ -19,7 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.ejb3.component.entity.interceptors;
+
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
@@ -29,58 +33,45 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
- * Interceptor for equals / hashCode for Entity beans.
+ * Interceptor that handles the {@link javax.ejb.EJBLocalObject#isIdentical(javax.ejb.EJBLocalObject)}
+ * && {@link javax.ejb.EJBObject#isIdentical(javax.ejb.EJBObject)} methods
  *
  * @author Stuart Douglas
- * @author John Bailey
  */
-public class EntityIdentityInterceptorFactory implements InterceptorFactory {
-    public static final EntityIdentityInterceptorFactory INSTANCE = new EntityIdentityInterceptorFactory();
+public class EntityBeanIsIdenticalInterceptorFactory implements InterceptorFactory {
 
-    public Interceptor create(final InterceptorFactoryContext context) {
-        final ComponentView componentView = (ComponentView) context.getContextData().get(ComponentView.class);
-        return new EntityIdentityInterceptor(componentView);
+    public static final EntityBeanIsIdenticalInterceptorFactory INSTANCE = new EntityBeanIsIdenticalInterceptorFactory();
+
+    private EntityBeanIsIdenticalInterceptorFactory() {
     }
 
-    private class EntityIdentityInterceptor implements Interceptor {
+    @Override
+    public Interceptor create(final InterceptorFactoryContext context) {
+        final ComponentView componentView = (ComponentView) context.getContextData().get(ComponentView.class);
+        return new EntityIsIdenticalInterceptor(componentView);
+
+    }
+
+    private class EntityIsIdenticalInterceptor implements Interceptor {
 
         private final ComponentView componentView;
 
-        public EntityIdentityInterceptor(final ComponentView componentView) {
+        public EntityIsIdenticalInterceptor(final ComponentView componentView) {
             this.componentView = componentView;
         }
 
+        @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
             final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
-
-            if (context.getMethod().getName().equals("equals") && context.getParameters().length == 1 && context.getMethod().getParameterTypes()[0] == Object.class) {
-                final Object other = context.getParameters()[0];
-                final Class<?> proxyType = componentView.getProxyClass();
-                if( proxyType.isAssignableFrom(other.getClass())) {
-                    //now we know that this is an ejb for the correct component view
-                    //as digging out the session id from the proxy object is not really
-                    //a viable option, we invoke equals() for the other instance with a
-                    //PrimaryKeyHolder as the other side
-                    return other.equals(new PrimaryKeyHolder(primaryKey));
-                } else if(other instanceof PrimaryKeyHolder) {
-                    return primaryKey.equals(((PrimaryKeyHolder) other).primaryKey);
-                } else {
-                    return false;
-                }
-            } else if (context.getMethod().getName().equals("hashCode")) {
-                //use the identity of the component view as a hash code
-                return primaryKey.hashCode();
-            } else {
-                return context.proceed();
+            final Object other = context.getParameters()[0];
+            if(!componentView.getViewClass().isAssignableFrom(other.getClass())) {
+                return false;
             }
-        }
-    }
-
-    private static class PrimaryKeyHolder {
-        private final Object primaryKey;
-
-        public PrimaryKeyHolder(final Object primaryKey) {
-            this.primaryKey = primaryKey;
+            if (context.getMethod().getParameterTypes()[0].equals(EJBLocalObject.class)) {
+                return ((EJBLocalObject) other).getPrimaryKey().equals(primaryKey);
+            } else {
+                return ((EJBObject) other).getPrimaryKey().equals(primaryKey);
+            }
         }
     }
 }
