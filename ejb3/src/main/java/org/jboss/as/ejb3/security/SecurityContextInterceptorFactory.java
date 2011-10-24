@@ -53,8 +53,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         }
         final String runAs = securityMetaData.getRunAs();
         // TODO - We should do something with DeclaredRoles although it never has much meaning in JBoss AS
-        // TODO: must come from metadata
-        final String runAsPrincipal = "run-as-principal";
+        final String runAsPrincipal = securityMetaData.getRunAsPrincipal();
         return new SecurityContextInterceptor(securityManager, securityDomain, runAs, runAsPrincipal);
     }
 }

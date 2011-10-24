@@ -22,11 +22,11 @@
 
 package org.jboss.as.ejb3.security;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
-
 import java.util.Collections;
 import java.util.Set;
+
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 
 /**
  * Holds the EJB component level security metadata.
@@ -57,6 +57,11 @@ public class EJBSecurityMetaData {
     private final Set<String> declaredRoles;
 
     /**
+     * The run-as principal (if any) for this EJB component
+     */
+    private final String runAsPrincipal;
+
+    /**
      * @param componentConfiguration Component configuration of the EJB component
      */
     public EJBSecurityMetaData(final ComponentConfiguration componentConfiguration) {
@@ -68,6 +73,7 @@ public class EJBSecurityMetaData {
         this.ejbName = ejbComponentDescription.getEJBName();
         this.runAsRole = ejbComponentDescription.getRunAs();
         this.securityDomain = ejbComponentDescription.getSecurityDomain();
+        this.runAsPrincipal = ejbComponentDescription.getRunAsPrincipal();
         // @DeclareRoles
         final Set<String> roles = ejbComponentDescription.getDeclaredRoles();
         this.declaredRoles = roles == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(roles);
@@ -99,6 +105,15 @@ public class EJBSecurityMetaData {
      */
     public String getSecurityDomain() {
         return this.securityDomain;
+    }
+
+    /**
+     * Returns the run-as principal associated with this bean. Returns 'anonymous' if no principal was set.
+     *
+     * @return
+     */
+    public String getRunAsPrincipal() {
+        return runAsPrincipal;
     }
 
 }
