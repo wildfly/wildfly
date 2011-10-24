@@ -198,7 +198,7 @@ final class MetaDataBuilderJSE {
         final Map<String, String> mappings = new HashMap<String, String>();
         final List<ServletMappingMetaData> servletMappings = WebMetaDataHelper.getServletMappings(jbossWebMD);
 
-        if (pojoEndpoints != null) {
+        if (pojoEndpoints.size() > 0) {
             for (final EndpointJaxwsPojo pojoEndpoint : pojoEndpoints) {
                 mappings.put(pojoEndpoint.getName(), pojoEndpoint.getUrlPattern());
                 if (!pojoEndpoint.isDeclared()) {
@@ -210,11 +210,9 @@ final class MetaDataBuilderJSE {
             }
         } else {
             // TODO: do the same for JAXRPC POJO endpoints
-            //if (servletMappings != null) {
             for (final ServletMappingMetaData mapping : servletMappings) {
                 mappings.put(mapping.getServletName(), mapping.getUrlPatterns().get(0));
             }
-            //}
         }
 
         return mappings;
@@ -230,7 +228,7 @@ final class MetaDataBuilderJSE {
         final Map<String, String> mappings = new HashMap<String, String>();
         final JBossServletsMetaData servlets = WebMetaDataHelper.getServlets(jbossWebMD);
 
-        if (pojoEndpoints != null) {
+        if (pojoEndpoints.size() > 0) {
             for (final EndpointJaxwsPojo pojoEndpoint : pojoEndpoints) {
                 final String pojoName = pojoEndpoint.getName();
                 final String pojoClassName = pojoEndpoint.getClassName();

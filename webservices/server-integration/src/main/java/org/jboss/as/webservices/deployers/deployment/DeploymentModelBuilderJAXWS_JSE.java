@@ -63,16 +63,13 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
             dep.addAttachment(JBossWebMetaData.class, webMetaData);
         }
 
-        final List<EndpointJaxwsPojo> pojoEndpoints = getJaxwsPojos(unit);
-        if (pojoEndpoints != null) {
-            for (final EndpointJaxwsPojo pojoEndpoint : pojoEndpoints) {
-                final String pojoName = pojoEndpoint.getName();
-                this.log.debug("JSE name: " + pojoName);
-                final String pojoClassName = pojoEndpoint.getClassName();
-                this.log.debug("JSE class: " + pojoClassName);
+        for (final EndpointJaxwsPojo pojoEndpoint : getJaxwsPojos(unit)) {
+            final String pojoName = pojoEndpoint.getName();
+            this.log.debug("JSE name: " + pojoName);
+            final String pojoClassName = pojoEndpoint.getClassName();
+            this.log.debug("JSE class: " + pojoClassName);
 
-                this.newHttpEndpoint(pojoClassName, pojoName, dep);
-            }
+            this.newHttpEndpoint(pojoClassName, pojoName, dep);
         }
 
         final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);

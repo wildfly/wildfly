@@ -42,7 +42,7 @@ public final class WSAttachmentKeys {
     public static final AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
     public static final AttachmentKey<JBossAppMetaData> JBOSS_APP_METADATA_KEY = AttachmentKey.create(JBossAppMetaData.class);
     public static final AttachmentKey<JMSEndpointsMetaData> JMS_ENDPOINT_METADATA_KEY = AttachmentKey.create(JMSEndpointsMetaData.class);
-    public static final AttachmentKey<DeploymentJaxws> WS_ENDPOINTS_KEY = AttachmentKey.create(DeploymentJaxws.class);
+    public static final AttachmentKey<DeploymentJaxws> JAXWS_ENDPOINTS_KEY = AttachmentKey.create(DeploymentJaxws.class);
     public static final AttachmentKey<WebservicesMetaData> WEBSERVICES_METADATA_KEY = AttachmentKey.create(WebservicesMetaData.class);
     public static final AttachmentKey<JBossWebMetaData> JBOSSWEB_METADATA_KEY = AttachmentKey.create(JBossWebMetaData.class);
     public static final AttachmentKey<ClassLoader> CLASSLOADER_KEY = AttachmentKey.create(ClassLoader.class);

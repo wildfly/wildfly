@@ -37,7 +37,7 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
  * Adaptor of DeploymentAspect to DeploymentUnitProcessor
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
- * @since 17-Jan-2011
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class AspectDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -63,7 +63,7 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        if (ASHelper.isWebServiceDeployment(unit)) {
+        if (isWebServiceDeployment(unit)) {
             ensureAspectInitialised();
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             if (aspect.canHandle(dep)) {
@@ -82,11 +82,11 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
     }
 
     @Override
-    public void undeploy(final DeploymentUnit context) {
-        if (ASHelper.isWebServiceDeployment(context)) {
-            final Deployment dep = ASHelper.getRequiredAttachment(context, WSAttachmentKeys.DEPLOYMENT_KEY);
+    public void undeploy(final DeploymentUnit unit) {
+        if (isWebServiceDeployment(unit)) {
+            final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             if (aspect.canHandle(dep)) {
-                log.debug(this.aspect + " stop: " + context.getName());
+                log.debug(this.aspect + " stop: " + unit.getName());
                 ClassLoader origClassLoader = SecurityActions.getContextClassLoader();
                 try {
                     SecurityActions.setContextClassLoader(aspect.getLoader());
@@ -112,4 +112,9 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
             }
         }
     }
+
+    private static boolean isWebServiceDeployment(final DeploymentUnit unit) {
+        return unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY) != null;
+    }
+
 }
