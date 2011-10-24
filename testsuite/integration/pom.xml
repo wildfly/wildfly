@@ -186,14 +186,13 @@
                 </executions>
             </plugin>
 
+            <!-- Cleaning before test run. -->
             <plugin>
-                <!-- We need to clean the serialized timer info before each run -->
-                <!-- to make sure we have no serialized timers hanging around.  -->
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>2.4.1</version>
                 <executions>
-                    <execution >
-                        <id>clean-old-timers</id>
+                    <execution>
+                        <id>clean-before-test-run</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>clean</goal>
@@ -202,7 +201,11 @@
                             <excludeDefaultDirectories>true</excludeDefaultDirectories>
                             <filesets>
                                 <fileset>
+                                    <!-- We need to clean the serialized timer info before each run -->
+                                    <!-- to make sure we have no serialized timers hanging around.  -->
                                     <directory>target/jbossas/standalone/data/</directory>
+                                    <!-- HttpDeploymentUploadUnitTestCase would fail with dirty data. TODO -->
+                                    <directory>target/smoke</directory>
                                 </fileset>
                             </filesets>
                         </configuration>
