@@ -471,7 +471,6 @@ public class DistributedCacheManagerTest {
     private void setForceSynchronous(boolean forceSynchronous) {
         this.manager.setForceSynchronous(forceSynchronous);
         
-        @SuppressWarnings("unused")
         AdvancedCache<SessionKey, Map<Object, Object>> syncCache = mock(AdvancedCache.class);
         SessionKey key = mock(SessionKey.class);
         String sessionId = "abc";

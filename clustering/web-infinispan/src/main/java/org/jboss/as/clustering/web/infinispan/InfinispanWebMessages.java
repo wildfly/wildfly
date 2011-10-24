@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.web.infinispan;
 
-import org.jboss.as.clustering.ClusteringLogger;
 import org.jboss.as.clustering.ClusteringMessages;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
@@ -51,7 +50,7 @@ interface InfinispanWebMessages extends ClusteringMessages {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 10330, value = "Unexpected exception while starting group communication service for %s")
-    IllegalStateException errorStartingGroupCommunications(String clusterName);
+    IllegalStateException errorStartingGroupCommunications(@Cause Throwable cause, String clusterName);
 
     /**
      * Creates an exception indicating an unexpected exception occurred while starting the lock manager for the cluster
@@ -62,7 +61,7 @@ interface InfinispanWebMessages extends ClusteringMessages {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 10331, value = "Unexpected exception while starting lock manager for %s")
-    IllegalStateException errorStartingLockManager(String clusterName);
+    IllegalStateException errorStartingLockManager(@Cause Throwable cause, String clusterName);
 
     /**
      * A message indicating a failure to configure a web application for distributable sessions.
