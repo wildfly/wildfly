@@ -155,7 +155,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
 
     // TODO perhaps have this provided by subclasses via an abstract method
-    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
+    static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     /** The restricted path names. */
     protected static final Set<String> RESTRICTED_PATHS;
@@ -374,7 +374,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         long elapsed = System.currentTimeMillis() - start;
-        System.out.println("Parsed extensions in " + elapsed + " ms");
+        if (log.isDebugEnabled()) {
+            log.debugf("Parsed extensions in [%d] ms", elapsed);
+        }
     }
 
     private void addExtensionAddOperation(ModelNode address, List<ModelNode> list, String moduleName) {

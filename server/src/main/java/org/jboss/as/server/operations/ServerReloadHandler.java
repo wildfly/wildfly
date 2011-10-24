@@ -61,7 +61,6 @@ public class ServerReloadHandler implements OperationStepHandler, DescriptionPro
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(Services.JBOSS_AS);
-                context.reloadRequired();
                 if(context.completeStep() == OperationContext.ResultAction.KEEP) {
                     service.addListener(new AbstractServiceListener<Object>() {
                         public void listenerAdded(final ServiceController<?> controller) {

@@ -108,8 +108,10 @@ public class StandaloneXml extends CommonXml {
             }
         }
 
-        long elapsed = System.currentTimeMillis() - start;
-        System.out.println("Parsed standalone configuration in " + elapsed + " ms");
+        if (log.isDebugEnabled()) {
+            long elapsed = System.currentTimeMillis() - start;
+            log.debugf("Parsed standalone configuration in [%d] ms", elapsed);
+        }
     }
 
     /**

@@ -105,7 +105,19 @@ public class HostControllerBootstrap {
 
         @Override
         public synchronized void stop(final StopContext context) {
-            executorService.shutdown();
+            context.asynchronous();
+            Thread executorShutdown = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        executorService.shutdown();
+                    } finally {
+                        executorService = null;
+                        context.complete();
+                    }
+                }
+            }, "HostController ExecutorService Shutdown Thread");
+            executorShutdown.start();
         }
 
         @Override

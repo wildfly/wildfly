@@ -100,7 +100,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         final CountDownLatch preparedLatch = new CountDownLatch(opsBySubsystem.size());
         final CountDownLatch committedLatch = new CountDownLatch(1);
         final CountDownLatch completeLatch = new CountDownLatch(opsBySubsystem.size());
-
+        final Thread controllingThread = Thread.currentThread();
 
         for (Map.Entry<String, List<ParsedBootOp>> entry : opsBySubsystem.entrySet()) {
             String subsystemName = entry.getKey();
@@ -111,7 +111,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             transactionControls.put(entry.getKey(), txControl);
 
             // Execute the subsystem's ops in another thread
-            ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), context, txControl, subsystemRuntimeOps);
+            ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), context, txControl, subsystemRuntimeOps, controllingThread);
             executor.execute(subsystemTask);
         }
 
@@ -138,8 +138,10 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             Thread.currentThread().interrupt();
         }
 
-        long elapsed = System.currentTimeMillis() - start;
-        System.out.println("Ran subsystem model operations in " + elapsed + " ms");
+        if (log.isDebugEnabled()) {
+            long elapsed = System.currentTimeMillis() - start;
+            log.debugf("Ran subsystem model operations in [%d] ms", elapsed);
+        }
 
         // Continue boot
         OperationContext.ResultAction resultAction = context.completeStep();
@@ -212,6 +214,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 final CountDownLatch preparedLatch = new CountDownLatch(runtimeOpsBySubsystem.size());
                 final CountDownLatch committedLatch = new CountDownLatch(1);
                 final CountDownLatch completeLatch = new CountDownLatch(runtimeOpsBySubsystem.size());
+                final Thread controllingThread = Thread.currentThread();
 
                 for (Map.Entry<String, List<ParsedBootOp>> entry : runtimeOpsBySubsystem.entrySet()) {
                     String subsystemName = entry.getKey();
@@ -219,7 +222,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     transactionControls.put(subsystemName, txControl);
 
                     // Execute the subsystem's ops in another thread
-                    ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), context, txControl, null);
+                    ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), context, txControl, null, controllingThread);
                     executor.execute(subsystemTask);
                 }
 
@@ -235,8 +238,10 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     Thread.currentThread().interrupt();
                 }
 
-                long elapsed = System.currentTimeMillis() - start;
-                System.out.println("Ran subsystem runtime operations in " + elapsed + " ms");
+                if (log.isDebugEnabled()) {
+                    long elapsed = System.currentTimeMillis() - start;
+                    log.debugf("Ran subsystem runtime operations in [%d] ms", elapsed);
+                }
 
                 // Continue boot
                 OperationContext.ResultAction resultAction = context.completeStep();
@@ -262,29 +267,33 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         private final OperationContext.Stage executionStage;
         private final ParallelBootTransactionControl transactionControl;
         private final List<ParsedBootOp> runtimeOps;
+        private final Thread controllingThread;
 
         public ParallelBootTask(final String subsystemName,
                                 final List<ParsedBootOp> bootOperations,
                                 final OperationContext primaryContext,
                                 final ParallelBootTransactionControl transactionControl,
-                                final List<ParsedBootOp> runtimeOps) {
+                                final List<ParsedBootOp> runtimeOps,
+                                final Thread controllingThread) {
             this.subsystemName = subsystemName;
             this.bootOperations = bootOperations;
             this.primaryContext = primaryContext;
             this.executionStage = primaryContext.getCurrentStage();
             this.transactionControl = transactionControl;
             this.runtimeOps = runtimeOps;
+            this.controllingThread = controllingThread;
         }
 
         @Override
         public void run() {
             try {
-                OperationContext context = getOperationContext();
+                final OperationContext operationContext = new ParallelBootOperationContext(transactionControl, processState,
+                        primaryContext, runtimeOps, controllingThread);
                 for (ParsedBootOp op : bootOperations) {
                     final OperationStepHandler osh = op.handler == null ? rootRegistration.getOperationHandler(op.address, op.operationName) : op.handler;
-                    context.addStep(op.response, op.operation, osh, executionStage);
+                    operationContext.addStep(op.response, op.operation, osh, executionStage);
                 }
-                context.completeStep();
+                operationContext.completeStep();
             } catch (Exception e) {
                 log.errorf(e, "Failed executing subsystem %s boot operations", subsystemName);
                 if (!transactionControl.signalled) {
@@ -312,10 +321,6 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 transactionControl.operationCompleted(transactionControl.response);
             }
         }
-
-        private OperationContext getOperationContext() {
-            return new ParallelBootOperationContext(transactionControl, processState, primaryContext, runtimeOps);
-        }
     }
 
     private static class ParallelBootTransactionControl implements ProxyController.ProxyOperationControl {
@@ -327,7 +332,6 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         private ModelNode response;
         private ModelController.OperationTransaction transaction;
         private boolean signalled;
-//        private final long start = System.currentTimeMillis();
 
         public ParallelBootTransactionControl(String subsystemName, CountDownLatch preparedLatch, CountDownLatch committedLatch, CountDownLatch completeLatch) {
             this.preparedLatch = preparedLatch;
@@ -353,9 +357,6 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 preparedLatch.countDown();
                 signalled = true;
 
-//                long elapsed = System.currentTimeMillis() - start;
-//                System.out.println("Ran subsytem " + subsystemName + " operations in " + elapsed + " ms");
-
                 try {
                     committedLatch.await();
                 } catch (InterruptedException e) {
@@ -369,18 +370,6 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         public void operationCompleted(ModelNode response) {
             this.response = response;
             completeLatch.countDown();
-        }
-    }
-
-    private static final class ParallelBootThreadFactory implements ThreadFactory {
-
-        private int threadCount;
-        @Override
-        public Thread newThread(Runnable r) {
-
-            Thread t = new Thread(r, ParallelBootThreadFactory.class.getSimpleName() + "-" + (++threadCount));
-            t.setDaemon(true);
-            return t;
         }
     }
 }
