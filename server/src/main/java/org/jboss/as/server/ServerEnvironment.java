@@ -164,8 +164,7 @@ public class ServerEnvironment implements Serializable {
     public static final String QUALIFIED_HOST_NAME = "jboss.qualified.host.name";
 
     /**
-     * Constant that holds the name of the system property for specifying the max threads used by bootstrap ServiceContainer
-     * is running on.
+     * Constant that holds the name of the system property for specifying the max threads used by the bootstrap ServiceContainer.
      */
     public static final String BOOTSTRAP_MAX_THREADS = "org.jboss.server.bootstrap.maxThreads";
 
@@ -202,6 +201,7 @@ public class ServerEnvironment implements Serializable {
     private final File serverLogDir;
     private final File serverTempDir;
     private final boolean standalone;
+    private final boolean allowModelControllerExecutor;
 
     public ServerEnvironment(Properties props, Map<String, String> env, String serverConfig, LaunchType launchType) {
         if (props == null) {
@@ -315,6 +315,19 @@ public class ServerEnvironment implements Serializable {
             tmp = new File(serverBaseDir, "tmp");
         }
         serverTempDir = tmp;
+
+        boolean allowExecutor = true;
+        String maxThreads = SecurityActions.getSystemProperty(BOOTSTRAP_MAX_THREADS);
+        if (maxThreads != null && maxThreads.length() > 0) {
+            try {
+                Integer.decode(maxThreads);
+                // Property was set to a valid value; user wishes to control core service threads
+                allowExecutor = false;
+            } catch(NumberFormatException ex) {
+                log.warnf(ex, "Failed to parse property(%s), value(%s) as an integer", BOOTSTRAP_MAX_THREADS, maxThreads);
+            }
+        }
+        allowModelControllerExecutor = allowExecutor;
     }
 
     void install() {
@@ -427,9 +440,14 @@ public class ServerEnvironment implements Serializable {
         return standalone;
     }
 
+    // package protected for now as this is not a stable API
+    boolean isAllowModelControllerExecutor() {
+        return allowModelControllerExecutor;
+    }
+
     /**
      * Determine the number of threads to use for the bootstrap service container. This reads
-     * the #BOOTSTRAP_MAX_THREADS system property and if not set, defaults to 2*cpus.
+     * the {@link #BOOTSTRAP_MAX_THREADS} system property and if not set, defaults to 2*cpus.
      * @see Runtime#availableProcessors()
      * @return the maximum number of threads to use for the bootstrap service container.
      */
@@ -441,7 +459,7 @@ public class ServerEnvironment implements Serializable {
         if (maxThreads != null && maxThreads.length() > 0) {
             try {
                 int max = Integer.decode(maxThreads);
-                defaultThreads = Math.min(max, defaultThreads);
+                defaultThreads = Math.max(max, 1);
             } catch(NumberFormatException ex) {
                 log.warnf(ex, "Failed to parse property(%s), value(%s) as an integer", BOOTSTRAP_MAX_THREADS, maxThreads);
             }

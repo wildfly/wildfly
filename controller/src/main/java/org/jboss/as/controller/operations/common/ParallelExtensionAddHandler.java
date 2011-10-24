@@ -36,19 +36,21 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ParsedBootOp;
-import org.jboss.as.controller.parsing.CommonXml;
 import org.jboss.dmr.ModelNode;
 
 /**
- * TODO class javadoc.
+ * Special handler that executes extension initialization in parallel.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ParallelExtensionAddHandler implements OperationStepHandler {
 
-    // TODO inject
-    private final ExecutorService executor = CommonXml.bootExecutor;
+    private final ExecutorService executor;
     private final List<ParsedBootOp> extensionAdds = new ArrayList<ParsedBootOp>();
+
+    public ParallelExtensionAddHandler(ExecutorService executorService) {
+        this.executor = executorService;
+    }
 
     public void addParsedOp(final ParsedBootOp op, final ExtensionAddHandler handler) {
         extensionAdds.add(new ParsedBootOp(op, handler));
@@ -121,19 +123,6 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
                 failure = e;
             }
             return failure;
-        }
-    }
-
-
-    private static final class ParallelExtensionAddhreadFactory implements ThreadFactory {
-
-        private int threadCount;
-        @Override
-        public Thread newThread(Runnable r) {
-
-            Thread t = new Thread(r, ParallelExtensionAddhreadFactory.class.getSimpleName() + "-" + (++threadCount));
-            t.setDaemon(true);
-            return t;
         }
     }
 }

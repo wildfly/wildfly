@@ -33,11 +33,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.as.appclient.subsystem.parsing.AppClientXml;
 import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.ServerEnvironment;
@@ -87,7 +89,7 @@ public final class Main {
         try {
             Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
 
-            ParsedOptions options = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.APPCLIENT);
+            final ParsedOptions options = determineEnvironment(args, new Properties(SecurityActions.getSystemProperties()), SecurityActions.getSystemEnvironment(), ServerEnvironment.LaunchType.APPCLIENT);
             ServerEnvironment serverEnvironment = options.environment;
             final List<String> clientArgs = options.clientArguments;
 
@@ -97,7 +99,7 @@ public final class Main {
                 abort(null);
             } else {
 
-                QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
+                final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                 final String file = clientArgs.get(0);
                 final List<String> params = clientArgs.subList(1, clientArgs.size());
                 final String deploymentName;
@@ -123,7 +125,15 @@ public final class Main {
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
-                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName,  options.hostUrl, params, serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser));
+                final Bootstrap.ConfigurationPersisterFactory delegate = new Bootstrap.ConfigurationPersisterFactory() {
+
+                    @Override
+                    public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
+                        return new ApplicationClientConfigurationPersister(earPath, deploymentName, options.hostUrl, params,
+                                serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser);
+                    }
+                };
+                configuration.setConfigurationPersisterFactory(new Bootstrap.CachingConfigurationPersisterFactory(delegate));
                 bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
             }
         } catch (Throwable t) {

@@ -111,18 +111,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     public static final ServiceName SERVICE_NAME = HostControllerBootstrap.SERVICE_NAME_BASE.append("model", "controller");
 
-    private final HostControllerConfigurationPersister configurationPersister;
+    private HostControllerConfigurationPersister hostControllerConfigurationPersister;
     private final HostControllerEnvironment environment;
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final FileRepository localFileRepository;
     private final RemoteFileRepository remoteFileRepository;
-    private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
     private final InjectedValue<ProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<ProcessControllerConnectionService>();
     private final Map<String, ProxyController> hostProxies;
     private final Map<String, ProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
     private ManagementResourceRegistration modelNodeRegistration;
-    private volatile MasterDomainControllerClient masterDomainControllerClient;
 
     private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
     private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
@@ -140,10 +138,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo,
                 Collections.unmodifiableMap(hostProxies), Collections.unmodifiableMap(serverProxies));
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
-                hostControllerInfo, new HostControllerConfigurationPersister(environment, hostControllerInfo),
-                hostProxies, serverProxies, prepareStepHandler);
+                hostControllerInfo, hostProxies, serverProxies, prepareStepHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
-                .addDependency(HostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.injectedExecutorService)
+                .addDependency(HostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
@@ -152,13 +149,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private DomainModelControllerService(final HostControllerEnvironment environment,
                                          final ControlledProcessState processState,
                                          final LocalHostControllerInfoImpl hostControllerInfo,
-                                         final HostControllerConfigurationPersister configurationPersister,
                                          final Map<String, ProxyController> hostProxies,
                                          final Map<String, ProxyController> serverProxies,
                                          final PrepareStepHandler prepareStepHandler) {
-        super(OperationContext.Type.HOST, configurationPersister, processState, DomainDescriptionProviders.ROOT_PROVIDER,
-                prepareStepHandler);
-        this.configurationPersister = configurationPersister;
+        super(OperationContext.Type.HOST, processState, DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler);
         this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);
@@ -253,17 +247,20 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        DomainModelUtil.updateCoreModel(rootResource.getModel());
-        HostModelUtil.createHostRegistry(rootRegistration, configurationPersister, environment, localFileRepository,
-                hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this);
-        this.modelNodeRegistration = rootRegistration;
+    public void start(StartContext context) throws StartException {
+        final ExecutorService executorService = getExecutorServiceInjector().getValue();
+        this.hostControllerConfigurationPersister = new HostControllerConfigurationPersister(environment, hostControllerInfo, executorService);
+        setConfigurationPersister(hostControllerConfigurationPersister);
+        prepareStepHandler.setExecutorService(executorService);
+        super.start(context);
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        prepareStepHandler.setExecutorService(injectedExecutorService.getValue());
-        super.start(context);
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        DomainModelUtil.updateCoreModel(rootResource.getModel());
+        HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, localFileRepository,
+                hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this);
+        this.modelNodeRegistration = rootRegistration;
     }
 
     // See superclass start. This method is invoked from a separate non-MSC thread after start. So we can do a fair
@@ -276,7 +273,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         try {
-            super.boot(configurationPersister.load()); // This parses the host.xml and invokes all ops
+            super.boot(hostControllerConfigurationPersister.load()); // This parses the host.xml and invokes all ops
 
             //Install the server inventory
             NetworkInterfaceBinding nativeManagementInterfaceBinding = getNativeManagementNetworkInterfaceBinding();
@@ -296,7 +293,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                         hostControllerInfo.getRemoteDomainControllertPort(),
                         hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
                         remoteFileRepository);
-                masterDomainControllerClient = getFuture(clientFuture);
+                MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
                 //Registers us with the master and gets down the master copy of the domain model to our DC
                 //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
                 try {
@@ -310,7 +307,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             } else {
                 // TODO look at having LocalDomainControllerAdd do this, using Stage.IMMEDIATE for the steps
                 // parse the domain.xml and load the steps
-                ConfigurationPersister domainPersister = configurationPersister.getDomainPersister();
+                ConfigurationPersister domainPersister = hostControllerConfigurationPersister.getDomainPersister();
                 super.boot(domainPersister.load());
 
                 ManagementRemotingServices.installManagementChannelServices(serviceTarget, endpointName, new MasterDomainControllerOperationHandlerService(this, this),
@@ -338,7 +335,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             startServers();
 
-            // TODO when to call configurationPersister.successful boot? Look into this for standalone as well; may be broken now
+            // TODO when to call hostControllerConfigurationPersister.successful boot? Look into this for standalone as well; may be broken now
         } finally {
             finishBoot();
         }
@@ -435,11 +432,13 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public synchronized void registerChannel(final String hostName, final ManagementChannel channel, final ProxyCreatedCallback callback) {
-        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
 
+        /* Disable this as part of the REM3-121 workarounds
+        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
         if (modelNodeRegistration.getProxyController(addr) != null) {
             throw new IllegalArgumentException("There is already a registered slave named '" + hostName + "'");
         }
+        */
         if (unregisteredHostChannels.containsKey(hostName)) {
             throw new IllegalArgumentException("Already have a connection for host " + hostName);
         }

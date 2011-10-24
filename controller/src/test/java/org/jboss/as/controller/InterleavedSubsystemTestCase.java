@@ -193,10 +193,10 @@ public class InterleavedSubsystemTestCase {
         }
 
         @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             String module = address.getLastElement().getValue();
-            model.get(ExtensionDescription.MODULE).set(module);
+            resource.getModel().get(ExtensionDescription.MODULE).set(module);
 
             ManagementResourceRegistration subsystem = rootRegistration.registerSubModel(PathElement.pathElement(SUBSYSTEM, module), ModelControllerImplUnitTestCase.DESC_PROVIDER);
             subsystem.registerOperationHandler("add", new FakeSubsystemAddHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER);

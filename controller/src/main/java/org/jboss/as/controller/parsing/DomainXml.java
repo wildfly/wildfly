@@ -62,6 +62,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
@@ -82,8 +83,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class DomainXml extends CommonXml {
 
-    public DomainXml(final ModuleLoader loader) {
-        super(loader);
+    public DomainXml(final ModuleLoader loader, ExecutorService executorService) {
+        super(loader, executorService);
     }
 
     @Override

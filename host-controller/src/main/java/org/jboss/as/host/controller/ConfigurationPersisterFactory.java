@@ -22,6 +22,7 @@
 package org.jboss.as.host.controller;
 
 import java.io.File;
+import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
@@ -42,28 +43,28 @@ import org.jboss.modules.Module;
  */
 public class ConfigurationPersisterFactory {
 
-    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {
-        HostXml hostXml = new HostXml(Module.getBootModuleLoader());
+    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final File configDir, final ConfigurationFile file, ExecutorService executorService) {
+        HostXml hostXml = new HostXml(Module.getBootModuleLoader(), executorService);
         BackupXmlConfigurationPersister persister =  new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
         persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "host"), hostXml);
         return persister;
     }
 
-    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, final ConfigurationFile file) {
-        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
+    public static ExtensibleConfigurationPersister createDomainXmlConfigurationPersister(final File configDir, final ConfigurationFile file, ExecutorService executorService) {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService);
         BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
         persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "domain"), domainXml);
         return persister;
     }
 
-    public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir) {
-        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
+    public static ExtensibleConfigurationPersister createCachedRemoteDomainXmlConfigurationPersister(final File configDir, ExecutorService executorService) {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService);
         File file = new File(configDir, "domain.cached-remote.xml");
         return new XmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "domain"), domainXml, domainXml);
     }
 
-    public static ExtensibleConfigurationPersister createTransientDomainXmlConfigurationPersister() {
-        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader());
+    public static ExtensibleConfigurationPersister createTransientDomainXmlConfigurationPersister(ExecutorService executorService) {
+        DomainXml domainXml = new DomainXml(Module.getBootModuleLoader(), executorService);
         return new NullConfigurationPersister(domainXml);
     }
 }

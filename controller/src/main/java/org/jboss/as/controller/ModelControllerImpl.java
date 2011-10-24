@@ -36,6 +36,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
@@ -61,6 +62,8 @@ import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 
 /**
+ * Default {@link ModelController} implementation.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class ModelControllerImpl implements ModelController {
@@ -78,10 +81,11 @@ class ModelControllerImpl implements ModelController {
     private final AtomicBoolean bootingFlag = new AtomicBoolean(true);
     private final OperationStepHandler prepareStep;
     private final ControlledProcessState processState;
+    private final ExecutorService executorService;
 
     ModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
-                        final OperationStepHandler prepareStep, final ControlledProcessState processState) {
+                        final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -91,6 +95,7 @@ class ModelControllerImpl implements ModelController {
         this.prepareStep = prepareStep == null ? new DefaultPrepareStepHandler() : prepareStep;
         this.processState = processState;
         this.serviceTarget.addListener(ServiceListener.Inheritance.ALL, stateMonitor);
+        this.executorService = executorService;
     }
 
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {
@@ -121,17 +126,67 @@ class ModelControllerImpl implements ModelController {
 
     void boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control) {
 
-        // Execute all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
-        // This gets extensions registered before proceeding to other ops that count on these registrations
         final OperationContextImpl context = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
                 handler, null, model, control, processState, bootingFlag.get());
+
+        // Add to the context all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
+        // This gets extensions registered before proceeding to other ops that count on these registrations
+        List<ParsedBootOp> postExtensionOps = organizeBootOperations(bootList, context);
+
+        // Run the steps up to the last ExtensionAddHandler
+        if (context.completeStep() == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
+
+            // Success. Now any extension handlers are registered. Continue with remaining ops
+            final OperationContextImpl postExtContext = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
+                    handler, null, model, control, processState, bootingFlag.get());
+
+            for (ParsedBootOp parsedOp : postExtensionOps) {
+                final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;
+                if (stepHandler == null) {
+                    String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
+                    log.error(msg);
+                    postExtContext.setRollbackOnly();
+                    // stop
+                    break;
+                } else {
+                    postExtContext.addStep(parsedOp.response, parsedOp.operation, stepHandler, OperationContext.Stage.MODEL);
+                }
+            }
+
+            postExtContext.completeStep();
+        }
+    }
+
+    /**
+     * Organizes the list of boot operations such that all extension add operations are executed in the given context,
+     * while all non-extension add operations found after the first extension add are stored for subsequent invocation
+     * in a separate context. Also:
+     * <ol>
+     *     <li>Ensures that any operations affecting interfaces or sockets are run before any operations affecting
+     *     subsystems. This improves boot performance by ensuring required services are available as soon as possible.
+     *     </li>
+     *     <li>If an executor service is available, organizes all extension add ops so the extension initialization
+     *      can be done in parallel by the executor service.
+     *     </li>
+     *     <li>If an executor service is available and the controller type is SERVER, organizes all subsystem ops so
+     *     they can be done in parallel by the executor service.
+     *     </li>
+     * </ol>
+     *
+     * @param bootList the list of boot operations
+     * @param context operation context to use for all ops prior to the last extension add operation.
+     *
+     * @return a list of operations to execute in a separate context, or {@code null} if there are no such ops
+     */
+    private List<ParsedBootOp> organizeBootOperations(List<ModelNode> bootList, OperationContextImpl context) {
+
         final ModelNode result = new ModelNode().setEmptyList();
-        result.setEmptyList();
+
         boolean sawExtensionAdd = false;
         List<ParsedBootOp> postExtensionOps = null;
-        ParallelExtensionAddHandler parallelExtensionAddHandler = new ParallelExtensionAddHandler();
-        ParallelBootOperationStepHandler parallelSubsystemHandler = controllerType == OperationContext.Type.SERVER
-                ? new ParallelBootOperationStepHandler(rootRegistration, processState, result) : null;
+        ParallelExtensionAddHandler parallelExtensionAddHandler = executorService == null ? null : new ParallelExtensionAddHandler(executorService);
+        ParallelBootOperationStepHandler parallelSubsystemHandler = (executorService != null && controllerType == OperationContext.Type.SERVER)
+                ? new ParallelBootOperationStepHandler(executorService, rootRegistration, processState) : null;
         boolean registeredParallelSubsystemHandler = false;
         int subsystemIndex = 0;
         for (ModelNode bootOp : bootList) {
@@ -140,7 +195,11 @@ class ModelControllerImpl implements ModelController {
                 // Handle cases like AppClient where extension adds are interleaved with subsystem ops
                 if (parsedOp.isExtensionAdd()) {
                     final ExtensionAddHandler stepHandler = (ExtensionAddHandler) rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName);
-                    parallelExtensionAddHandler.addParsedOp(parsedOp, stepHandler);
+                    if (parallelExtensionAddHandler != null) {
+                        parallelExtensionAddHandler.addParsedOp(parsedOp, stepHandler);
+                    } else {
+                        context.addStep(parsedOp.response, parsedOp.operation, stepHandler, OperationContext.Stage.MODEL);
+                    }
                 } else {
                     if (parallelSubsystemHandler == null || !parallelSubsystemHandler.addSubsystemOperation(parsedOp)) {
                         // Put any interface/socket op before the subsystem op
@@ -167,12 +226,16 @@ class ModelControllerImpl implements ModelController {
                     // stop
                     break;
                 } else if (stepHandler instanceof ExtensionAddHandler) {
-                    parallelExtensionAddHandler.addParsedOp(parsedOp, (ExtensionAddHandler) stepHandler);
-                    if (!sawExtensionAdd) {
-                        ModelNode op = Util.getEmptyOperation("parallel-extension-add", new ModelNode().setEmptyList());
-                        context.addStep(result.add(), op, parallelExtensionAddHandler, OperationContext.Stage.MODEL);
-                        sawExtensionAdd = true;
+                    if (parallelExtensionAddHandler != null) {
+                        parallelExtensionAddHandler.addParsedOp(parsedOp, (ExtensionAddHandler) stepHandler);
+                        if (!sawExtensionAdd) {
+                            ModelNode op = Util.getEmptyOperation("parallel-extension-add", new ModelNode().setEmptyList());
+                            context.addStep(result.add(), op, parallelExtensionAddHandler, OperationContext.Stage.MODEL);
+                        }
+                    } else {
+                        context.addStep(parsedOp.response, parsedOp.operation, stepHandler, OperationContext.Stage.MODEL);
                     }
+                    sawExtensionAdd = true;
                 } else if (!sawExtensionAdd) {
                     // An operation prior to the first Extension Add
                     context.addStep(result.add(), bootOp, stepHandler, OperationContext.Stage.MODEL);
@@ -190,32 +253,10 @@ class ModelControllerImpl implements ModelController {
                 }
             }
         }
-
-        // Run the steps up to the last ExtensionAddHandler
-        if (context.completeStep() == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
-
-            // Success. Now any extension handlers are registered. Continue with remaining ops
-            final OperationContextImpl postExtContext = new OperationContextImpl(this, controllerType, EnumSet.noneOf(OperationContextImpl.ContextFlag.class),
-                    handler, null, model, control, processState, bootingFlag.get());
-
-            for (ParsedBootOp parsedOp : postExtensionOps) {
-                final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;
-                if (stepHandler == null) {
-                    String msg = String.format("No handler for operation %s at address %s", parsedOp.operationName, parsedOp.address);
-                    log.error(msg);
-                    postExtContext.setRollbackOnly();
-                    // stop
-                    break;
-                } else {
-                    postExtContext.addStep(parsedOp.response, parsedOp.operation, stepHandler, OperationContext.Stage.MODEL);
-                }
-            }
-
-            postExtContext.completeStep();
-        }
+        return postExtensionOps;
     }
 
-    void finshBoot() {
+    void finishBoot() {
         bootingFlag.set(false);
     }
 
@@ -360,26 +401,6 @@ class ModelControllerImpl implements ModelController {
 
     ServiceTarget getServiceTarget() {
         return serviceTarget;
-    }
-
-    ControlledProcessState.State getState() {
-        return processState.getState();
-    }
-
-    Object setReloadRequired() {
-        return processState.setReloadRequired();
-    }
-
-    Object setRestartRequired() {
-        return processState.setRestartRequired();
-    };
-
-    void revertReloadRequired(Object stamp) {
-        processState.revertReloadRequired(stamp);
-    }
-
-    void revertRestartRequired(Object stamp) {
-        processState.revertRestartRequired(stamp);
     }
 
     private class DefaultPrepareStepHandler implements OperationStepHandler {

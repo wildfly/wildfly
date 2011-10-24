@@ -23,12 +23,15 @@
 package org.jboss.as.server;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
+import javax.security.auth.login.Configuration;
 import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.modules.Module;
@@ -74,7 +77,7 @@ public interface Bootstrap {
 
         private ServerEnvironment serverEnvironment;
         private ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        private ExtensibleConfigurationPersister configurationPersister;
+        private ConfigurationPersisterFactory configurationPersisterFactory;
         private long startTime = Module.getStartTime();
 
         /**
@@ -125,33 +128,46 @@ public interface Bootstrap {
         }
 
         /**
-         * Get the configuration persister to use.
+         * Get the factory for the configuration persister to use.
          *
-         * @return the configuration persister
+         * @return the configuration persister factory
          */
-        public synchronized ExtensibleConfigurationPersister getConfigurationPersister() {
-            if (configurationPersister == null) {
+        public synchronized ConfigurationPersisterFactory getConfigurationPersisterFactory() {
+            if (configurationPersisterFactory == null) {
                 if (serverEnvironment == null) {
-                    configurationPersister = new NullConfigurationPersister(new StandaloneXml(moduleLoader));
+                    final ModuleLoader localModuleLoader = this.moduleLoader;
+                    final ConfigurationPersisterFactory delegate = new ConfigurationPersisterFactory() {
+                        @Override
+                        public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
+                            return new NullConfigurationPersister(new StandaloneXml(localModuleLoader, executorService));
+                        }
+                    };
+                    configurationPersisterFactory = new CachingConfigurationPersisterFactory(delegate);
                 }
                 else {
-                    QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
-                    StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader());
-                    BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
-                    persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "server"), parser);
-                    configurationPersister = persister;
+                    final ConfigurationPersisterFactory delegate = new ConfigurationPersisterFactory() {
+                        @Override
+                        public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
+                            QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
+                            StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), executorService);
+                            BackupXmlConfigurationPersister persister = new BackupXmlConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
+                            persister.registerAdditionalRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), "server"), parser);
+                            return persister;
+                        }
+                    };
+                    configurationPersisterFactory = new CachingConfigurationPersisterFactory(delegate);
                 }
             }
-            return configurationPersister;
+            return configurationPersisterFactory;
         }
 
         /**
-         * Set the configuration persister to use.
+         * Set the configuration persister factory to use.
          *
-         * @param configurationPersister the configuration persister
+         * @param configurationPersisterFactory the configuration persister factory
          */
-        public synchronized void setConfigurationPersister(final ExtensibleConfigurationPersister configurationPersister) {
-            this.configurationPersister = configurationPersister;
+        public synchronized void setConfigurationPersisterFactory(final ConfigurationPersisterFactory configurationPersisterFactory) {
+            this.configurationPersisterFactory = configurationPersisterFactory;
         }
 
         /**
@@ -173,6 +189,18 @@ public interface Bootstrap {
         }
     }
 
+    /** A factory for the {@link ExtensibleConfigurationPersister} to be used by this server */
+    interface ConfigurationPersisterFactory {
+        /**
+         *
+         * @param serverEnvironment the server environment. Cannot be {@code null}
+         * @param executorService an executor service the configuration persister can use.
+         *                        May be {@code null} if asynchronous work is not supported
+         * @return the configuration persister. Will not be {@code null}
+         */
+        ExtensibleConfigurationPersister createConfigurationPersister(final ServerEnvironment serverEnvironment, final ExecutorService executorService);
+    }
+
     /**
      * The factory for creating new instances of {@link org.jboss.as.server.Bootstrap}.
      */
@@ -188,6 +216,29 @@ public interface Bootstrap {
          */
         public static Bootstrap newInstance() {
             return new BootstrapImpl();
+        }
+    }
+
+    /**
+     *  {@link Bootstrap.ConfigurationPersisterFactory} that simply delegates to another factory to create the
+     *  configuration persister, but then caches the result for future use.
+     */
+    final class CachingConfigurationPersisterFactory implements ConfigurationPersisterFactory {
+
+        private final ConfigurationPersisterFactory delegate;
+        private ExtensibleConfigurationPersister configurationPersister;
+
+        public CachingConfigurationPersisterFactory(ConfigurationPersisterFactory delegate) {
+            this.delegate = delegate;
+        }
+
+
+        @Override
+        public synchronized ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
+            if (configurationPersister == null) {
+                configurationPersister = delegate.createConfigurationPersister(serverEnvironment, executorService);
+            }
+            return configurationPersister;
         }
     }
 }

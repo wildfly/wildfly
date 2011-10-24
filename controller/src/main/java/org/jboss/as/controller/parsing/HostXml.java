@@ -64,6 +64,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
@@ -81,8 +82,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class HostXml extends CommonXml {
 
-    public HostXml(final ModuleLoader loader) {
-        super(loader);
+    public HostXml(final ModuleLoader loader, ExecutorService executorService) {
+        super(loader, executorService);
     }
 
     @Override

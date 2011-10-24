@@ -23,6 +23,7 @@
 package org.jboss.as.controller;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -39,6 +40,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * A base class for controller services.
@@ -94,11 +96,26 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     private final OperationContext.Type controllerType;
-    private final ConfigurationPersister configurationPersister;
     private final DescriptionProvider rootDescriptionProvider;
     private final ControlledProcessState processState;
     private final OperationStepHandler prepareStep;
+    private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
     private volatile ModelControllerImpl controller;
+    private ConfigurationPersister configurationPersister;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param controllerType          the controller type for the new controller
+     * @param rootDescriptionProvider the root description provider
+     * @param prepareStep             the prepare step to prepend to operation execution
+     */
+    protected AbstractControllerService(final OperationContext.Type controllerType,
+                                        final ControlledProcessState processState,
+                                        final DescriptionProvider rootDescriptionProvider,
+                                        final OperationStepHandler prepareStep) {
+        this(controllerType, null, processState, rootDescriptionProvider, prepareStep);
+    }
 
     /**
      * Construct a new instance.
@@ -109,7 +126,8 @@ public abstract class AbstractControllerService implements Service<ModelControll
      * @param prepareStep             the prepare step to prepend to operation execution
      */
     protected AbstractControllerService(final OperationContext.Type controllerType, final ConfigurationPersister configurationPersister,
-                                        final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider, final OperationStepHandler prepareStep) {
+                                        final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
+                                        final OperationStepHandler prepareStep) {
         this.controllerType = controllerType;
         this.configurationPersister = configurationPersister;
         this.rootDescriptionProvider = rootDescriptionProvider;
@@ -118,10 +136,19 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     public void start(final StartContext context) throws StartException {
+
+        if (configurationPersister == null) {
+            throw new StartException("No configuration persister was injected");
+        }
         final ServiceController<?> serviceController = context.getController();
         final ServiceContainer container = serviceController.getServiceContainer();
         final ServiceTarget target = context.getChildTarget();
-        final ModelControllerImpl controller = new ModelControllerImpl(container, target, ManagementResourceRegistration.Factory.create(rootDescriptionProvider), new ContainerStateMonitor(container, serviceController), configurationPersister, controllerType, prepareStep, processState);
+        final ExecutorService executorService = injectedExecutorService.getOptionalValue();
+        final ModelControllerImpl controller = new ModelControllerImpl(container, target,
+                ManagementResourceRegistration.Factory.create(rootDescriptionProvider),
+                new ContainerStateMonitor(container, serviceController),
+                configurationPersister, controllerType, prepareStep,
+                processState, executorService);
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;
 
@@ -174,7 +201,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     protected void finishBoot() throws ConfigurationPersistenceException {
-        controller.finshBoot();
+        controller.finishBoot();
         configurationPersister.successfulBoot();
     }
 
@@ -188,6 +215,14 @@ public abstract class AbstractControllerService implements Service<ModelControll
             throw new IllegalStateException();
         }
         return controller;
+    }
+
+    public InjectedValue<ExecutorService> getExecutorServiceInjector() {
+        return injectedExecutorService;
+    }
+
+    protected void setConfigurationPersister(final ConfigurationPersister persister) {
+        this.configurationPersister = persister;
     }
 
     protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
