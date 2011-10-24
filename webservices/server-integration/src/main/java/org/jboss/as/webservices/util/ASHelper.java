@@ -22,28 +22,19 @@
 package org.jboss.as.webservices.util;
 
 import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
-import static org.jboss.as.webservices.util.DotNames.OBJECT_CLASS;
-import static org.jboss.as.webservices.util.DotNames.SERVLET_CLASS;
-import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
-import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-
-import javax.jws.WebService;
-import javax.servlet.Servlet;
-import javax.xml.ws.WebServiceProvider;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.as.webservices.metadata.DeploymentJaxws;
+import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
+import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
+import org.jboss.as.webservices.webserviceref.WSReferences;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -60,11 +51,6 @@ import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
-import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
-import org.jboss.as.webservices.metadata.DeploymentJaxws;
-import org.jboss.as.webservices.publish.WSEndpointDeploymentUnit;
-import org.jboss.as.webservices.webserviceref.WSReferences;
 
 /**
  * JBoss AS integration helper class.
@@ -100,16 +86,6 @@ public final class ASHelper {
         // TODO: replace with WSDeploymentMarker
     }
 
-    /**
-     * Gets list of JAXWS servlets meta data.
-     *
-     * @param unit deployment unit
-     * @return list of JAXWS servlets meta data
-     */
-    public static List<ServletMetaData> getJaxwsServlets(final DeploymentUnit unit) {
-        return getWebServiceServlets(unit, true);
-    }
-
     public static String getURLPattern(final String servletName, final DeploymentUnit unit) {
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
         for (final ServletMappingMetaData servletMappingMD : jbossWebMD.getServletMappings()) {
@@ -118,16 +94,6 @@ public final class ASHelper {
             }
         }
         throw new IllegalStateException();
-    }
-
-    /**
-     * Gets list of JAXRPC servlets meta data.
-     *
-     * @param unit deployment unit
-     * @return list of JAXRPC servlets meta data
-     */
-    public static List<ServletMetaData> getJaxrpcServlets(final DeploymentUnit unit) {
-        return getWebServiceServlets(unit, false);
     }
 
     /**
@@ -247,143 +213,6 @@ public final class ASHelper {
         return null;
     }
 
-    /**
-     * Gets list of JAXRPC or JAXWS servlets meta data.
-     *
-     * @param unit deployment unit
-     * @param jaxws if passed value is <b>true</b> JAXWS servlets list will be returned, otherwise JAXRPC servlets list
-     * @return either JAXRPC or JAXWS servlets list
-     */
-    private static List<ServletMetaData> getWebServiceServlets(final DeploymentUnit unit, final boolean jaxws) {
-        final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
-        return selectWebServiceServlets(unit, jbossWebMD != null ? jbossWebMD.getServlets() : null, jaxws);
-    }
-
-    /**
-     * Return a new sublist of the provided ServletMetaData list including the WS servlet data only
-     *
-     * @param annotationIndex the annotation index to use for scanning for annotations
-     * @param smd the initial servlet metadata collection
-     * @param jaxws if passed value is <b>true</b> JAXWS servlets list will be returned, otherwise JAXRPC servlets list
-     * @return either JAXRPC or JAXWS servlets list
-     */
-    private static <T extends ServletMetaData> List<ServletMetaData> selectWebServiceServlets(final DeploymentUnit unit, final Collection<T> smd, final boolean jaxws) {
-        if (smd == null) return Collections.emptyList();
-        final CompositeIndex index = getOptionalAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
-
-        final List<ServletMetaData> endpoints = new ArrayList<ServletMetaData>();
-
-        for (final ServletMetaData servletMD : smd) {
-            final boolean isWebServiceEndpoint = index != null ? isWebserviceEndpoint(servletMD, index, jaxws) : isWebserviceEndpoint(
-                    servletMD, unit.getAttachment(WSAttachmentKeys.CLASSLOADER_KEY), jaxws);
-            if (isWebServiceEndpoint) {
-                endpoints.add(servletMD);
-            }
-        }
-
-        return endpoints;
-    }
-
-    private static boolean isWebserviceEndpoint(final ServletMetaData servletMD, final CompositeIndex index, boolean jaxws) {
-        final String endpointClassName = getEndpointClassName(servletMD);
-        if (isJSP(endpointClassName)) return false;
-        final DotName endpointDotName = DotName.createSimple(endpointClassName);
-        final ClassInfo endpointClassInfo = index.getClassByName(endpointDotName);
-
-        if (endpointClassInfo != null) {
-            if (jaxws) {
-                //directly check annotations when looking for jaxws endpoints
-                if (endpointClassInfo.annotations().containsKey(WEB_SERVICE_ANNOTATION))
-                    return true;
-                if (endpointClassInfo.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION))
-                    return true;
-            } else {
-                //just verify the class is not a servlet for jaxrpc endpoints
-                if (!isServlet(endpointClassInfo, index))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean isWebserviceEndpoint(final ServletMetaData servletMD, final ClassLoader loader, boolean jaxws) {
-        final String endpointClassName = getEndpointClassName(servletMD);
-        if (isJSP(endpointClassName)) return false;
-        final Class<?> endpointClass = getEndpointClass(endpointClassName, loader);
-        if (endpointClass != null) {
-            if (jaxws) {
-                if (endpointClass.isAnnotationPresent(WebService.class))
-                    return true;
-                if (endpointClass.isAnnotationPresent(WebServiceProvider.class))
-                    return true;
-            } else {
-                if (!Servlet.class.isAssignableFrom(endpointClass))
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    private static Class<?> getEndpointClass(final String endpointClassName, final ClassLoader loader) {
-        try {
-            final Class<?> endpointClass = loader.loadClass(endpointClassName);
-            return (!Servlet.class.isAssignableFrom(endpointClass)) ? endpointClass : null;
-        } catch (ClassNotFoundException cnfe) {
-            LOGGER.warn("Cannot load servlet class: " + endpointClassName, cnfe);
-            return null;
-        }
-    }
-
-    private static boolean isJSP(final String endpointClassName) {
-        return endpointClassName == null || endpointClassName.length() == 0;
-    }
-
-    public static boolean isServlet(final ClassInfo info, CompositeIndex index) {
-        Set<DotName> interfacesToProcess = new HashSet<DotName>();
-        Set<DotName> processedInterfaces = new HashSet<DotName>();
-        boolean b = isServlet(info, index, interfacesToProcess);
-        while (!b && !interfacesToProcess.isEmpty()) {
-            final Iterator<DotName> toProcess = interfacesToProcess.iterator();
-            DotName dn = toProcess.next();
-            toProcess.remove();
-            processedInterfaces.add(dn);
-            b = extendsServlet(dn, index, interfacesToProcess, processedInterfaces);
-        }
-        return b;
-    }
-
-    private static boolean isServlet(final ClassInfo info, CompositeIndex index, Set<DotName> interfaces) {
-        for (DotName dn : info.interfaces()) {
-            if (SERVLET_CLASS.equals(dn)) {
-                return true;
-            } else {
-                interfaces.add(dn);
-            }
-        }
-        final DotName superName = info.superName();
-        if (!OBJECT_CLASS.equals(superName)) {
-            ClassInfo su = index.getClassByName(superName);
-            if (su != null) {
-                return isServlet(su, index, interfaces);
-            }
-        }
-        return false;
-    }
-
-    private static boolean extendsServlet(DotName current, CompositeIndex index, Set<DotName> interfacesToProcess, Set<DotName> processedInterfaces) {
-        ClassInfo ci = index.getClassByName(current);
-        if (ci != null) {
-            final DotName superName = ci.superName();
-            if (SERVLET_CLASS.equals(superName)) {
-                return true;
-            } else if (!OBJECT_CLASS.equals(superName) && !processedInterfaces.contains(superName)) {
-                interfacesToProcess.add(superName);
-            }
-        }
-        return false;
-    }
-
     public static boolean isJaxwsService(final ClassInfo current, final CompositeIndex index) {
         ClassInfo tmp = current;
         while (tmp != null) {
@@ -457,14 +286,7 @@ public final class ASHelper {
     public static boolean isJaxrpcJseDeployment(final DeploymentUnit unit) {
         final boolean hasWebservicesMD = unit.hasAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
         final boolean hasJBossWebMD = getJBossWebMetaData(unit) != null;
-
-        // TODO: at least also check for jaxrpc mapping file element in WebservicesMD as a JAXWS deployment is also allowed to
-        // have webservices.xml despite that being very uncommon.
-        if (hasWebservicesMD && hasJBossWebMD) {
-            return getJaxrpcServlets(unit).size() > 0;
-        }
-
-        return false;
+        return hasWebservicesMD && hasJBossWebMD;
     }
 
     /**
@@ -485,7 +307,6 @@ public final class ASHelper {
      */
     public static boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
         if (getJaxwsPojos(unit) != null) return true;
-        if (unit instanceof WSEndpointDeploymentUnit) return true;
         if (unit.hasAttachment(WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY)) return true;
 
         return false;
