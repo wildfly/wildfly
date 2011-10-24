@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!DOCTYPE web-app PUBLIC
+   "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+   "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+   <description>The standard web descriptor for the html adaptor</description>
+
+   <servlet>
+      <servlet-name>HtmlAdaptor</servlet-name>
+      <servlet-class>org.jboss.jmx.adaptor.html.HtmlAdaptorServlet</servlet-class>
+   </servlet>
+   <servlet>
+      <servlet-name>DisplayMBeans</servlet-name>
+      <jsp-file>/displayMBeans.jsp</jsp-file>
+   </servlet>
+   <servlet>
+      <servlet-name>InspectMBean</servlet-name>
+      <jsp-file>/inspectMBean.jsp</jsp-file>
+   </servlet>
+   <servlet>
+      <servlet-name>DisplayOpResult</servlet-name>
+      <jsp-file>/displayOpResult.jsp</jsp-file>
+   </servlet>
+
+   <servlet-mapping>
+      <servlet-name>HtmlAdaptor</servlet-name>
+      <url-pattern>/HtmlAdaptor</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>DisplayMBeans</servlet-name>
+      <url-pattern>/DisplayMBeans</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>InspectMBean</servlet-name>
+      <url-pattern>/InspectMBean</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>DisplayOpResult</servlet-name>
+      <url-pattern>/DisplayOpResult</url-pattern>
+   </servlet-mapping>
+
+   <!-- Display a generic error page when HTTP Status 500 exceptions occur. --> 
+   <error-page>
+      <error-code>500</error-code>
+      <location>/genericError.jsp</location>
+   </error-page> 
+
+   <!-- A security constraint that restricts access to the HTML JMX console
+   to users with the role JBossAdmin. Edit the roles to what you want and
+   uncomment the WEB-INF/jboss-web.xml/security-domain element to enable
+   secured access to the HTML JMX console.
+   <security-constraint>
+     <web-resource-collection>
+       <web-resource-name>HtmlAdaptor</web-resource-name>
+       <description>An example security config that only allows users with the
+         role JBossAdmin to access the HTML JMX console web application
+       </description>
+       <url-pattern>/*</url-pattern>
+     </web-resource-collection>
+     <auth-constraint>
+       <role-name>JBossAdmin</role-name>
+     </auth-constraint>
+   </security-constraint>
+   -->
+
+   <login-config>
+      <auth-method>BASIC</auth-method>
+      <realm-name>JBoss JMX Console</realm-name>
+   </login-config>
+
+   <security-role>
+      <role-name>JBossAdmin</role-name>
+   </security-role>
+   
+</web-app>
