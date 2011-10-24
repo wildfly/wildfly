@@ -42,8 +42,11 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class StatefulSessionComponentCreateService extends SessionBeanComponentCreateService {
     private final InterceptorFactory afterBegin;
+    private final Method afterBeginMethod;
     private final InterceptorFactory afterCompletion;
+    private final Method afterCompletionMethod;
     private final InterceptorFactory beforeCompletion;
+    private final Method beforeCompletionMethod;
     private final StatefulTimeoutInfo statefulTimeout;
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
 
@@ -58,17 +61,19 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         final StatefulComponentDescription componentDescription = (StatefulComponentDescription) componentConfiguration.getComponentDescription();
         final InterceptorFactory tcclInterceptorFactory = new ImmediateInterceptorFactory(new TCCLInterceptor(componentConfiguration.getComponentClass().getClassLoader()));
         final InterceptorFactory namespaceContextInterceptorFactory = componentConfiguration.getNamespaceContextInterceptorFactory();
-        final Class<?> beanClass = componentConfiguration.getComponentClass();
+        this.afterBeginMethod = componentDescription.getAfterBegin();
         if (componentDescription.getAfterBegin() != null) {
             this.afterBegin = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(componentDescription.getAfterBegin()));
         } else {
             this.afterBegin = null;
         }
+        this.afterCompletionMethod = componentDescription.getAfterCompletion();
         if (componentDescription.getAfterCompletion() != null) {
             this.afterCompletion = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(componentDescription.getAfterCompletion()));
         } else {
             this.afterCompletion = null;
         }
+        this.beforeCompletionMethod = componentDescription.getBeforeCompletion();
         if (componentDescription.getBeforeCompletion() != null) {
             this.beforeCompletion = Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(componentDescription.getBeforeCompletion()));
         } else {
@@ -98,6 +103,18 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
 
     public InterceptorFactory getBeforeCompletion() {
         return beforeCompletion;
+    }
+
+    public Method getAfterBeginMethod() {
+        return afterBeginMethod;
+    }
+
+    public Method getAfterCompletionMethod() {
+        return afterCompletionMethod;
+    }
+
+    public Method getBeforeCompletionMethod() {
+        return beforeCompletionMethod;
     }
 
     public StatefulTimeoutInfo getStatefulTimeout() {

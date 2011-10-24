@@ -79,7 +79,12 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
 
     public MessageContext getMessageContext() throws IllegalStateException {
         final InterceptorContext invocation = CurrentInvocationContext.get();
-        return invocation.getPrivateData(MessageContext.class);
+        final MessageContext context =  invocation.getPrivateData(MessageContext.class);
+        if(context == null) {
+            throw new IllegalStateException("Cannot call getMessageContext(), no MessageContext is present for this invocation");
+
+        }
+        return context;
     }
 
     public boolean wasCancelCalled() throws IllegalStateException {

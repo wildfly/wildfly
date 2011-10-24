@@ -75,8 +75,11 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     private final Cache<StatefulSessionComponentInstance> cache;
 
     private final InterceptorFactory afterBegin;
+    private final Method afterBeginMethod;
     private final InterceptorFactory afterCompletion;
+    private final Method afterCompletionMethod;
     private final InterceptorFactory beforeCompletion;
+    private final Method beforeCompletionMethod;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
@@ -89,8 +92,11 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         super(ejbComponentCreateService);
 
         this.afterBegin = ejbComponentCreateService.getAfterBegin();
+        this.afterBeginMethod = ejbComponentCreateService.getAfterBeginMethod();
         this.afterCompletion = ejbComponentCreateService.getAfterCompletion();
+        this.afterCompletionMethod = ejbComponentCreateService.getAfterCompletionMethod();
         this.beforeCompletion = ejbComponentCreateService.getBeforeCompletion();
+        this.beforeCompletionMethod = ejbComponentCreateService.getBeforeCompletionMethod();
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutService();
 
@@ -215,45 +221,57 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         return beforeCompletion;
     }
 
+    public Method getAfterBeginMethod() {
+        return afterBeginMethod;
+    }
+
+    public Method getAfterCompletionMethod() {
+        return afterCompletionMethod;
+    }
+
+    public Method getBeforeCompletionMethod() {
+        return beforeCompletionMethod;
+    }
+
     /**
- * A {@link javax.transaction.Synchronization} which removes a stateful session in it's {@link javax.transaction.Synchronization#afterCompletion(int)}
- * callback.
- */
-private static class RemoveSynchronization implements Synchronization {
-    private final StatefulSessionComponent statefulComponent;
-    private final SessionID sessionId;
+     * A {@link javax.transaction.Synchronization} which removes a stateful session in it's {@link javax.transaction.Synchronization#afterCompletion(int)}
+     * callback.
+     */
+    private static class RemoveSynchronization implements Synchronization {
+        private final StatefulSessionComponent statefulComponent;
+        private final SessionID sessionId;
 
-    public RemoveSynchronization(final StatefulSessionComponent component, final SessionID sessionId) {
-        if (sessionId == null) {
-            throw new IllegalArgumentException("Session id cannot be null");
+        public RemoveSynchronization(final StatefulSessionComponent component, final SessionID sessionId) {
+            if (sessionId == null) {
+                throw new IllegalArgumentException("Session id cannot be null");
+            }
+            if (component == null) {
+                throw new IllegalArgumentException("Stateful component cannot be null");
+            }
+            this.sessionId = sessionId;
+            this.statefulComponent = component;
+
         }
-        if (component == null) {
-            throw new IllegalArgumentException("Stateful component cannot be null");
+
+        public void beforeCompletion() {
         }
-        this.sessionId = sessionId;
-        this.statefulComponent = component;
+
+        public void afterCompletion(int status) {
+            try {
+                // remove the session
+                this.statefulComponent.getCache().remove(this.sessionId);
+            } catch (Throwable t) {
+                // An exception thrown from afterCompletion is gobbled up
+                logger.error("Failed to remove bean: " + this.statefulComponent.getComponentName() + " with session id " + this.sessionId, t);
+                if (t instanceof Error)
+                    throw (Error) t;
+                if (t instanceof RuntimeException)
+                    throw (RuntimeException) t;
+                throw new RuntimeException(t);
+            }
+        }
 
     }
-
-    public void beforeCompletion() {
-    }
-
-    public void afterCompletion(int status) {
-        try {
-            // remove the session
-            this.statefulComponent.getCache().remove(this.sessionId);
-        } catch (Throwable t) {
-            // An exception thrown from afterCompletion is gobbled up
-            logger.error("Failed to remove bean: " + this.statefulComponent.getComponentName() + " with session id " + this.sessionId, t);
-            if (t instanceof Error)
-                throw (Error) t;
-            if (t instanceof RuntimeException)
-                throw (RuntimeException) t;
-            throw new RuntimeException(t);
-        }
-    }
-
-}
 
     @Override
     public void start() {
