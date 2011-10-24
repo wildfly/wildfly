@@ -22,6 +22,7 @@
 
 package org.jboss.as.webservices.injection;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.util.ASHelper.getEndpointClassName;
 import static org.jboss.as.webservices.util.ASHelper.getEndpointName;
 import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
@@ -72,52 +73,40 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
     }
 
     @Override
-    protected void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
-        final JAXWSDeployment wsDeployment = getWSDeployment(unit);
+    protected void processAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
         if (isJaxwsEjb(classInfo)) {
             // Don't create component description for EJB3 endpoints.
             // There's already one created by EJB3 subsystem.
         } else {
-            final String beanClassName = classInfo.name().toString();
-            if (isJmsEndpoint(unit, beanClassName)) return; // do not process JMS endpoints
-            final ServiceName unitServiceName = unit.getServiceName();
+            final String endpointClassName = classInfo.name().toString();
+            if (isJmsEndpoint(unit, endpointClassName)) return; // do not process JMS endpoints
             // TODO: refactor to convenient method that will return DD defined servlets matching class name
             final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
             final JBossServletsMetaData ddServlets = WebMetaDataHelper.getServlets(jbossWebMD);
+            final JAXWSDeployment jaxwsDeployment = getJaxwsDeployment(unit);
             boolean found = false;
             for (final ServletMetaData servletMD : ddServlets) {
-                if (beanClassName.equals(getEndpointClassName(servletMD))) {
+                if (endpointClassName.equals(getEndpointClassName(servletMD))) {
                     // creating component description for POJO endpoint
                     found = true;
                     final String endpointName = getEndpointName(servletMD);
-                    ComponentDescription jaxwsEndpointDescription = moduleDescription.getComponentByName(endpointName);
-                    if (jaxwsEndpointDescription == null) {
-                        jaxwsEndpointDescription = new WSComponentDescription(endpointName, beanClassName, moduleDescription, unitServiceName);
-                        moduleDescription.addComponent(jaxwsEndpointDescription);
-                    }
-                    // registering dependency on WS endpoint service
-                    final ServiceName serviceName = EndpointService.getServiceName(unit, endpointName);
-                    jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                    createComponentDescription(unit, endpointName, endpointClassName, endpointName);
                     // register POJO endpoint
-                    final String urlPattern = getURLPattern(endpointName, unit);
-                    wsDeployment.addEndpoint(new POJOEndpoint(endpointName, beanClassName, urlPattern));
+                    final String urlPattern = getUrlPattern(endpointName, unit);
+                    jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointName, endpointClassName, urlPattern));
                 }
             }
             if (!found) {
                 // JSR 109, version 1.3 final spec, section 5.3.2.1 javax.jws.WebService annotation
-                final ComponentDescription jaxwsEndpointDescription = new WSComponentDescription(beanClassName, beanClassName, moduleDescription, unitServiceName);
-                moduleDescription.addComponent(jaxwsEndpointDescription);
-                // registering dependency on WS endpoint service
-                final ServiceName serviceName = EndpointService.getServiceName(unit, beanClassName);
-                jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+                createComponentDescription(unit, endpointClassName, endpointClassName, endpointClassName);
                 // register POJO endpoint
                 final String urlPattern = getUrlPattern(classInfo);
-                wsDeployment.addEndpoint(new POJOEndpoint(beanClassName, urlPattern));
+                jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointClassName, urlPattern));
             }
         }
     }
 
-    private static JAXWSDeployment getWSDeployment(final DeploymentUnit unit) {
+    private static JAXWSDeployment getJaxwsDeployment(final DeploymentUnit unit) {
         JAXWSDeployment wsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
         if (wsDeployment == null) {
             wsDeployment = new JAXWSDeployment();
@@ -175,7 +164,7 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
         return null;
     }
 
-    private static String getURLPattern(final String servletName, final DeploymentUnit unit) {
+    private static String getUrlPattern(final String servletName, final DeploymentUnit unit) {
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
         for (final ServletMappingMetaData servletMappingMD : jbossWebMD.getServletMappings()) {
             if (servletName.equals(servletMappingMD.getServletName())) {

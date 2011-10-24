@@ -37,14 +37,12 @@ import java.lang.reflect.Modifier;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.deployers.WSComponentDescriptionFactory;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
-import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.Logger;
@@ -63,31 +61,18 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
     }
 
     @Override
-    protected void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
-        final ServiceName unitServiceName = unit.getServiceName();
+    protected void processAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
         final WSEndpointHandlersMapping mapping = getRequiredAttachment(unit, WS_ENDPOINT_HANDLERS_MAPPING_KEY);
         final String endpointClassName = classInfo.name().toString();
 
         if (isJaxwsEjb(classInfo)) {
-            for (final EJBEndpoint container : getJaxwsEjbs(unit)) {
-                if (endpointClassName.equals(container.getClassName())) {
+            for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
+                if (endpointClassName.equals(ejbEndpoint.getClassName())) {
                     for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
-                        final String ejbName = container.getName();
-                        final String handlerID = ejbName + "-" + handlerClassName;
-                        final ServiceName ejbContextServiceName = container.getContextServiceName();
-                        final DeploymentDescriptorEnvironment ejbEnv = container.getDeploymentDescriptorEnvironment();
-                        if (moduleDescription.getComponentByName(handlerID) == null) {
-                            // register JAXWS handler component for EJB3 endpoint
-                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerID, handlerClassName, moduleDescription, unitServiceName);
-                            moduleDescription.addComponent(jaxwsHandlerDescription);
-                            // registering dependency on WS endpoint service
-                            final ServiceName serviceName = EndpointService.getServiceName(unit, ejbName);
-                            jaxwsHandlerDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
-                            // configure JAXWS EJB3 handler to be able to see EJB3 environment
-                            jaxwsHandlerDescription.setContextServiceName(ejbContextServiceName);
-                            jaxwsHandlerDescription.setDeploymentDescriptorEnvironment(ejbEnv);
-                            jaxwsHandlerDescription.addDependency(ejbContextServiceName, ServiceBuilder.DependencyType.REQUIRED);
-                        }
+                        final String ejbEndpointName = ejbEndpoint.getName();
+                        final String handlerName = ejbEndpointName + "-" + handlerClassName;
+                        final ComponentDescription jaxwsHandlerDescription = createComponentDescription(unit, handlerName, handlerClassName, ejbEndpointName);
+                        propagateNamingContext(jaxwsHandlerDescription, ejbEndpoint);
                     }
                 }
             }
@@ -95,20 +80,22 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
             for (final POJOEndpoint pojoEndpoint : getJaxwsPojos(unit)) {
                 if (endpointClassName.equals(pojoEndpoint.getClassName())) {
                     for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
-                        final String pojoName = pojoEndpoint.getName();
-                        final String handlerID = pojoName + "-" + handlerClassName;
-                        if (moduleDescription.getComponentByName(handlerID) == null) {
-                            // register JAXWS handler component for POJO endpoint
-                            final ComponentDescription jaxwsHandlerDescription = new WSComponentDescription(handlerID, handlerClassName, moduleDescription, unitServiceName);
-                            moduleDescription.addComponent(jaxwsHandlerDescription);
-                            // registering dependency on WS endpoint service
-                            final ServiceName serviceName = EndpointService.getServiceName(unit, pojoName);
-                            jaxwsHandlerDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
-                        }
+                        final String pojoEndpointName = pojoEndpoint.getName();
+                        final String handlerName = pojoEndpointName + "-" + handlerClassName;
+                        createComponentDescription(unit, handlerName, handlerClassName, pojoEndpointName);
                     }
                 }
             }
         }
+    }
+
+    private static void propagateNamingContext(final ComponentDescription jaxwsHandlerDescription, final EJBEndpoint ejbEndpoint) {
+        final ServiceName ejbContextServiceName = ejbEndpoint.getContextServiceName();
+        final DeploymentDescriptorEnvironment ejbEnv = ejbEndpoint.getDeploymentDescriptorEnvironment();
+        // configure JAXWS EJB3 handler to be able to see EJB3 environment
+        jaxwsHandlerDescription.setContextServiceName(ejbContextServiceName);
+        jaxwsHandlerDescription.setDeploymentDescriptorEnvironment(ejbEnv);
+        jaxwsHandlerDescription.addDependency(ejbContextServiceName, ServiceBuilder.DependencyType.REQUIRED);
     }
 
     @Override
