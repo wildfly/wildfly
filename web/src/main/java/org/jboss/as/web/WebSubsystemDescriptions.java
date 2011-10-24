@@ -936,7 +936,7 @@ class WebSubsystemDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.ssl-add"));
+        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl-add"));
 
         addSSLCommonDescription(node, REQUEST_PROPERTIES, bundle);
         return node;
@@ -946,7 +946,7 @@ class WebSubsystemDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(REMOVE);
-        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.ssl-remove"));
+        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl-remove"));
         return node;
     }
 
