@@ -26,6 +26,8 @@ import static org.jboss.as.webservices.util.ASHelper.getContextRoot;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -66,10 +68,10 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
             }
         }
 
-        final DeploymentJaxws ejb3Deployment = WSHelper.getRequiredAttachment(dep, DeploymentJaxws.class);
+        final JAXWSDeployment ejb3Deployment = WSHelper.getRequiredAttachment(dep, JAXWSDeployment.class);
         final List<EJBMetaData> wsEjbsMD = new LinkedList<EJBMetaData>();
 
-        for (final EndpointJaxwsEjb jbossEjbMD : ejb3Deployment.getEjbEndpoints()) {
+        for (final EJBEndpoint jbossEjbMD : ejb3Deployment.getEjbEndpoints()) {
             this.buildEnterpriseBeanMetaData(wsEjbsMD, jbossEjbMD);
         }
 
@@ -84,7 +86,7 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
      * @param jbossEjbMD
      *            jboss specific EJB meta data
      */
-    private void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EndpointJaxwsEjb jbossEjbMD) {
+    private void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint jbossEjbMD) {
         final EJBMetaData wsEjbMD = this.newEjbMetaData(jbossEjbMD);
 
         if (wsEjbMD != null) {
@@ -124,7 +126,7 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
      *            jboss EJB meta data
      * @return webservices EJB meta data
      */
-    private EJBMetaData newEjbMetaData(final EndpointJaxwsEjb jbossEjbMD) {
+    private EJBMetaData newEjbMetaData(final EJBEndpoint jbossEjbMD) {
         return new SLSBMetaData();
         /*
          * TODO: implement final MessageDriven mdbAnnotation =

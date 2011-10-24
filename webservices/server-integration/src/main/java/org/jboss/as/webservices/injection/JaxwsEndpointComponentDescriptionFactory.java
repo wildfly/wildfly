@@ -43,9 +43,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.deployers.WSComponentDescriptionFactory;
-import org.jboss.as.webservices.metadata.DeploymentJaxws;
-import org.jboss.as.webservices.metadata.DeploymentJaxwsImpl;
-import org.jboss.as.webservices.metadata.EndpointJaxwsPojoImpl;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
 import org.jboss.jandex.AnnotationInstance;
@@ -74,7 +73,7 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
 
     @Override
     protected void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
-        final DeploymentJaxws wsDeployment = getWSDeployment(unit);
+        final JAXWSDeployment wsDeployment = getWSDeployment(unit);
         if (isJaxwsEjb(classInfo)) {
             // Don't create component description for EJB3 endpoints.
             // There's already one created by EJB3 subsystem.
@@ -101,7 +100,7 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
                     jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
                     // register POJO endpoint
                     final String urlPattern = getURLPattern(endpointName, unit);
-                    wsDeployment.addEndpoint(new EndpointJaxwsPojoImpl(endpointName, beanClassName, urlPattern));
+                    wsDeployment.addEndpoint(new POJOEndpoint(endpointName, beanClassName, urlPattern));
                 }
             }
             if (!found) {
@@ -113,15 +112,15 @@ public class JaxwsEndpointComponentDescriptionFactory extends WSComponentDescrip
                 jaxwsEndpointDescription.addDependency(serviceName, ServiceBuilder.DependencyType.REQUIRED);
                 // register POJO endpoint
                 final String urlPattern = getUrlPattern(classInfo);
-                wsDeployment.addEndpoint(new EndpointJaxwsPojoImpl(beanClassName, urlPattern));
+                wsDeployment.addEndpoint(new POJOEndpoint(beanClassName, urlPattern));
             }
         }
     }
 
-    private static DeploymentJaxws getWSDeployment(final DeploymentUnit unit) {
-        DeploymentJaxws wsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
+    private static JAXWSDeployment getWSDeployment(final DeploymentUnit unit) {
+        JAXWSDeployment wsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
         if (wsDeployment == null) {
-            wsDeployment = new DeploymentJaxwsImpl();
+            wsDeployment = new JAXWSDeployment();
             unit.putAttachment(JAXWS_ENDPOINTS_KEY, wsDeployment);
         }
         return wsDeployment;

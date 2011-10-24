@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
 import org.jboss.logging.Logger;
@@ -77,7 +78,7 @@ final class MetaDataBuilderJSE {
     JSEArchiveMetaData create(final Deployment dep) {
         final JBossWebMetaData jbossWebMD = WSHelper.getRequiredAttachment(dep, JBossWebMetaData.class);
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
-        final List<EndpointJaxwsPojo> pojoEndpoints = ASHelper.getJaxwsPojos(unit);
+        final List<POJOEndpoint> pojoEndpoints = ASHelper.getJaxwsPojos(unit);
         final JSEArchiveMetaData jseArchiveMD = new JSEArchiveMetaData();
 
         // set context root
@@ -192,12 +193,12 @@ final class MetaDataBuilderJSE {
      * @param jbossWebMD jboss web meta data
      * @return servlet name to url pattern mappings
      */
-    private Map<String, String> getServletUrlPatternsMappings(final JBossWebMetaData jbossWebMD, final List<EndpointJaxwsPojo> pojoEndpoints) {
+    private Map<String, String> getServletUrlPatternsMappings(final JBossWebMetaData jbossWebMD, final List<POJOEndpoint> pojoEndpoints) {
         final Map<String, String> mappings = new HashMap<String, String>();
         final List<ServletMappingMetaData> servletMappings = WebMetaDataHelper.getServletMappings(jbossWebMD);
 
         if (pojoEndpoints.size() > 0) {
-            for (final EndpointJaxwsPojo pojoEndpoint : pojoEndpoints) {
+            for (final POJOEndpoint pojoEndpoint : pojoEndpoints) {
                 mappings.put(pojoEndpoint.getName(), pojoEndpoint.getUrlPattern());
                 if (!pojoEndpoint.isDeclared()) {
                     final String endpointName = pojoEndpoint.getName();
@@ -222,12 +223,12 @@ final class MetaDataBuilderJSE {
      * @param jbossWebMD jboss web meta data
      * @return servlet name to servlet mappings
      */
-    private Map<String, String> getServletClassMappings(final JBossWebMetaData jbossWebMD, final List<EndpointJaxwsPojo> pojoEndpoints) {
+    private Map<String, String> getServletClassMappings(final JBossWebMetaData jbossWebMD, final List<POJOEndpoint> pojoEndpoints) {
         final Map<String, String> mappings = new HashMap<String, String>();
         final JBossServletsMetaData servlets = WebMetaDataHelper.getServlets(jbossWebMD);
 
         if (pojoEndpoints.size() > 0) {
-            for (final EndpointJaxwsPojo pojoEndpoint : pojoEndpoints) {
+            for (final POJOEndpoint pojoEndpoint : pojoEndpoints) {
                 final String pojoName = pojoEndpoint.getName();
                 final String pojoClassName = pojoEndpoint.getClassName();
                 this.log.debug("Creating JBoss agnostic JSE meta data for POJO bean: " + pojoName + " " + pojoClassName);

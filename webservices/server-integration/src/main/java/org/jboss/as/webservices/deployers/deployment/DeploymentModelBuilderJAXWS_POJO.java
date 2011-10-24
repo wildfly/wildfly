@@ -27,7 +27,7 @@ import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 
@@ -58,7 +58,7 @@ final class DeploymentModelBuilderJAXWS_POJO extends AbstractDeploymentModelBuil
         dep.addAttachment(JBossWebMetaData.class, webMetaData);
 
         log.debug("Creating JAXWS POJO endpoints meta data model");
-        for (final EndpointJaxwsPojo pojoEndpoint : getJaxwsPojos(unit)) {
+        for (final POJOEndpoint pojoEndpoint : getJaxwsPojos(unit)) {
             final String pojoEndpointName = pojoEndpoint.getName();
             log.debug("POJO name: " + pojoEndpointName);
             final String pojoEndpointClassName = pojoEndpoint.getClassName();

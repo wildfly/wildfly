@@ -19,16 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices.metadata;
-
-import java.util.List;
+package org.jboss.as.webservices.metadata.model;
 
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
-public interface DeploymentJaxws {
-    void addEndpoint(EndpointJaxwsEjb ep);
-    void addEndpoint(EndpointJaxwsPojo ep);
-    List<EndpointJaxwsEjb> getEjbEndpoints();
-    List<EndpointJaxwsPojo> getPojoEndpoints();
+public interface WSEndpoint {
+
+   /**
+    * Web service endpoint name.
+    *
+    * @return endpoint name
+    */
+   String getName();
+
+   /**
+    * Web service endpoint implementation class name.
+    *
+    * @return enpoint class name
+    */
+   String getClassName();
+
 }

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.util.ASHelper.CONTAINER_NAME;
+import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
@@ -29,8 +29,8 @@ import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.metadata.DeploymentJaxws;
-import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -58,21 +58,21 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
         // propagate
-        final DeploymentJaxws jaxwsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
-        dep.addAttachment(DeploymentJaxws.class, jaxwsDeployment);
+        final JAXWSDeployment jaxwsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
+        dep.addAttachment(JAXWSDeployment.class, jaxwsDeployment);
         // propagate
         final JBossWebMetaData webMetaData = getJBossWebMetaData(unit);
         dep.addAttachment(JBossWebMetaData.class, webMetaData);
 
         log.debug("Creating JAXWS EJB3 endpoints meta data model");
-        for (final EndpointJaxwsEjb ejbEndpoint : getJaxwsEjbs(unit)) {
+        for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
             final String ejbName = ejbEndpoint.getName();
             log.debug("EJB3 name: " + ejbName);
             final String ejbClass = ejbEndpoint.getClassName();
             log.debug("EJB3 class: " + ejbClass);
 
             final Endpoint ep = newHttpEndpoint(ejbClass, ejbName, dep);
-            ep.setProperty(CONTAINER_NAME, ejbEndpoint.getContainerName());
+            ep.setProperty(EJB_COMPONENT_VIEW_NAME, ejbEndpoint.getComponentViewName());
         }
     }
 

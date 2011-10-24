@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices.metadata;
+package org.jboss.as.webservices.metadata.model;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,30 +27,29 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
-public final class DeploymentJaxwsImpl implements DeploymentJaxws {
+public final class JAXWSDeployment {
 
-    private final List<EndpointJaxwsEjb> ejbEndpoints = new LinkedList<EndpointJaxwsEjb>();
-    private final List<EndpointJaxwsPojo> pojoEndpoints = new LinkedList<EndpointJaxwsPojo>();
+    private final List<EJBEndpoint> ejbEndpoints = new LinkedList<EJBEndpoint>();
+    private final List<POJOEndpoint> pojoEndpoints = new LinkedList<POJOEndpoint>();
     private final Map<String, String> urlPatternToClassMapping = new HashMap<String, String>();
 
-    public List<EndpointJaxwsEjb> getEjbEndpoints() {
+    public List<EJBEndpoint> getEjbEndpoints() {
         return Collections.unmodifiableList(ejbEndpoints);
     }
 
-    public List<EndpointJaxwsPojo> getPojoEndpoints() {
+    public List<POJOEndpoint> getPojoEndpoints() {
         return Collections.unmodifiableList(pojoEndpoints);
     }
 
-    @Override
-    public void addEndpoint(final EndpointJaxwsEjb ep) {
+    public void addEndpoint(final EJBEndpoint ep) {
         ejbEndpoints.add(ep);
     }
 
-    @Override
-    public void addEndpoint(final EndpointJaxwsPojo ep) {
+    public void addEndpoint(final POJOEndpoint ep) {
         final String urlPattern = ep.getUrlPattern();
         final String className = ep.getClassName();
         if (urlPatternToClassMapping.keySet().contains((urlPattern))) {
