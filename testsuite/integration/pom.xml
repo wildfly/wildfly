@@ -215,15 +215,18 @@
 
     <!--
       Test profiles
-      - here we define logical groupings of test cases to be executed
-      - these should be used to define:
-        - maven-antrun-plugin executions for creating server configurations to be started and stopped
-        - maven-surefire-plugin executions for executing sets of test cases against a server
+      
+      - Here we define logical groupings of test cases to be executed.
+      - These should be used to define:
+        - maven-antrun-plugin executions for creating server configurations to be started and stopped.
+        - maven-surefire-plugin executions for executing sets of test cases against a server.
 
-      - naming convention:
-        test profiles are named group.module.tests.profile and are activated by -Dgroup.module.tests
-        where 'group' is the logical grouping of tests (e.g. activate the clustering integration tests
-        via -Dclustering.integration.tests)
+      - Naming convention:
+          Test profiles are named group.module.tests.profile and are activated by -Dgroup.module.tests
+          where 'group' is the logical grouping of tests (e.g. activate the clustering integration tests
+          via -Dclustering.integration.tests)
+          
+      Note that the profiles are executed in reversed order than they are defined here.
     -->
 
     <profiles>
@@ -354,6 +357,7 @@
                                        <include>org/jboss/as/test/integration/xerces/**/*TestCase.java</include>
                                    </includes>
                                    <excludes>
+                                       <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                    </excludes>
 
                                     <!-- Parameters to test cases. -->
@@ -370,6 +374,25 @@
                                     <reportNameSuffix>tests-basic-integration-default</reportNameSuffix>
                                 </configuration>
                             </execution>
+                            <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skipTests>false</skipTests>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <enableAssertions>true</enableAssertions>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>none</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
 
                          </executions>
 
@@ -378,6 +401,48 @@
                 </plugins>
             </build>
         </profile>
+
+
+        <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
+        <!--
+        <profile>
+            <id>basic.integration.z2nd.tests.profile</id>
+            <activation>
+                <property>
+                    <name>basic.integration.tests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skipTests>false</skipTests>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <enableAssertions>true</enableAssertions>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>none</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        -->
 
 
         <!-- ********************************************************************************** -->
@@ -449,7 +514,7 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/web/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
@@ -477,7 +542,7 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/ClusteredWebTestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
