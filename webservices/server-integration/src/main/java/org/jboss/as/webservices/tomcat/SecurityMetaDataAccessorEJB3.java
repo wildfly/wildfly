@@ -26,8 +26,8 @@ import static org.jboss.as.webservices.util.DotNames.SECURITY_DOMAIN_ANNOTATION;
 
 import java.util.Iterator;
 
-import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
 import org.jboss.as.webservices.metadata.DeploymentJaxws;
+import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;

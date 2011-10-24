@@ -21,8 +21,8 @@
  */
 package org.jboss.as.webservices.tomcat;
 
-import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
+import org.jboss.wsf.spi.deployment.Deployment;
 
 /**
  * Modifies web meta data to configure webservice stack endpoints and properties.

@@ -45,8 +45,6 @@ import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
 import org.jboss.ws.common.integration.WSConstants;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.HttpEndpoint;
 import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData.JSEResourceCollection;

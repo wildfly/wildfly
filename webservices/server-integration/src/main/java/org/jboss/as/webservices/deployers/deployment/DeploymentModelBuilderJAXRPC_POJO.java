@@ -21,12 +21,15 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.util.ASHelper.getEndpointClassName;
+import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
+import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
+import static org.jboss.as.webservices.util.ASHelper.getServletForName;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -39,11 +42,12 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class DeploymentModelBuilderJAXRPC_JSE extends AbstractDeploymentModelBuilder {
+final class DeploymentModelBuilderJAXRPC_POJO extends AbstractDeploymentModelBuilder {
+
     /**
      * Constructor.
      */
-    DeploymentModelBuilderJAXRPC_JSE() {
+    DeploymentModelBuilderJAXRPC_POJO() {
         super(JAXRPC, JAXRPC_JSE);
     }
 
@@ -55,26 +59,25 @@ final class DeploymentModelBuilderJAXRPC_JSE extends AbstractDeploymentModelBuil
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        final JBossWebMetaData webMetaData = ASHelper.getJBossWebMetaData(unit);
-        if (webMetaData != null) {
-            dep.addAttachment(JBossWebMetaData.class, webMetaData);
-        }
-        final WebservicesMetaData wsMetaData = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.WEBSERVICES_METADATA_KEY);
-        if (wsMetaData != null) {
-            dep.addAttachment(WebservicesMetaData.class, wsMetaData);
-        }
+        // propagate
+        final JBossWebMetaData webMetaData = getJBossWebMetaData(unit);
+        dep.addAttachment(JBossWebMetaData.class, webMetaData);
+        // propagate
+        final WebservicesMetaData wsMetaData = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
+        dep.addAttachment(WebservicesMetaData.class, wsMetaData);
 
-        this.log.debug("Creating JAXRPC JSE endpoints meta data model");
-        for (WebserviceDescriptionMetaData wsd : wsMetaData.getWebserviceDescriptions()) {
-            for (PortComponentMetaData pcmd : wsd.getPortComponents()) {
-                final String servletName = pcmd.getServletLink();
-                this.log.debug("JSE name: " + servletName);
-                final ServletMetaData servletMD = ASHelper.getServletForName(webMetaData, servletName);
-                final String servletClass = ASHelper.getEndpointClassName(servletMD);
-                this.log.debug("JSE class: " + servletClass);
+        log.debug("Creating JAXRPC POJO endpoints meta data model");
+        for (final WebserviceDescriptionMetaData wsDescriptionMD : wsMetaData.getWebserviceDescriptions()) {
+            for (final PortComponentMetaData portCompomentMD : wsDescriptionMD.getPortComponents()) {
+                final String pojoEndpointName = portCompomentMD.getServletLink();
+                log.debug("POJO name: " + pojoEndpointName);
+                final ServletMetaData servletMD = getServletForName(webMetaData, pojoEndpointName);
+                final String pojoEndpointClassName = getEndpointClassName(servletMD);
+                log.debug("POJO class: " + pojoEndpointClassName);
 
-                this.newHttpEndpoint(servletClass, servletName, dep);
+                newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
             }
         }
     }
+
 }

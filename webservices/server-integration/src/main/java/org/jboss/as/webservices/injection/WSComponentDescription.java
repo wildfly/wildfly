@@ -23,7 +23,6 @@
 package org.jboss.as.webservices.injection;
 
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.msc.service.ServiceName;
 

@@ -21,16 +21,13 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
+import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
+import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
-import java.util.List;
-
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
@@ -41,11 +38,12 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuilder {
+final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuilder {
+
     /**
      * Constructor.
      */
-    DeploymentModelBuilderJAXWS_JSE() {
+    DeploymentModelBuilderJAXWS_JMS() {
         super(JAXWS, JAXWS_JSE);
     }
 
@@ -57,30 +55,24 @@ final class DeploymentModelBuilderJAXWS_JSE extends AbstractDeploymentModelBuild
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        this.log.debug("Creating JAXWS JSE endpoints meta data model");
-        final JBossWebMetaData webMetaData = ASHelper.getJBossWebMetaData(unit);
-        if (webMetaData != null) {
-            dep.addAttachment(JBossWebMetaData.class, webMetaData);
-        }
+        // propagate
+        final JBossWebMetaData webMetaData = getJBossWebMetaData(unit);
+        dep.addAttachment(JBossWebMetaData.class, webMetaData);
+        // propagate
+        final JMSEndpointsMetaData jmsEndpointsMD = getOptionalAttachment(unit, JMS_ENDPOINT_METADATA_KEY);
+        dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
 
-        for (final EndpointJaxwsPojo pojoEndpoint : getJaxwsPojos(unit)) {
-            final String pojoName = pojoEndpoint.getName();
-            this.log.debug("JSE name: " + pojoName);
-            final String pojoClassName = pojoEndpoint.getClassName();
-            this.log.debug("JSE class: " + pojoClassName);
+        log.debug("Creating JAXWS JMS endpoints meta data model");
+        for (final JMSEndpointMetaData jmsEndpoint : jmsEndpointsMD.getEndpointsMetaData()) {
+            final String jmsEndpointName = jmsEndpoint.getName();
+            log.debug("JMS name: " + jmsEndpointName);
+            final String jmsEndpointClassName = jmsEndpoint.getImplementor();
+            log.debug("JMS class: " + jmsEndpointClassName);
+            final String jmsEndpointAddress = jmsEndpoint.getSoapAddress();
+            log.debug("JMS address: " + jmsEndpointAddress);
 
-            this.newHttpEndpoint(pojoClassName, pojoName, dep);
-        }
-
-        final JMSEndpointsMetaData jmsEndpointsMD = ASHelper.getOptionalAttachment(unit, WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY);
-        if (jmsEndpointsMD != null) {
-            dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
-            for (JMSEndpointMetaData endpoint : jmsEndpointsMD.getEndpointsMetaData()) {
-                if (endpoint.getName() == null) {
-                    endpoint.setName(endpoint.getImplementor());
-                }
-                this.newJMSEndpoint(endpoint.getImplementor(), endpoint.getName(), endpoint.getSoapAddress(), dep);
-            }
+            newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
         }
     }
+
 }

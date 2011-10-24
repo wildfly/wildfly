@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.service;
 
+import java.util.Map;
+
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.webservices.publish.EndpointPublisherImpl;
@@ -37,8 +39,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.spi.publish.Context;
-
-import java.util.Map;
 
 /**
  * WS endpoint publish service, allows for publishing a WS endpoint on AS 7

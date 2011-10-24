@@ -22,9 +22,6 @@
 
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
@@ -32,6 +29,10 @@ import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**

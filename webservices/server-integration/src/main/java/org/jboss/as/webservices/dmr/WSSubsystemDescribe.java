@@ -22,10 +22,6 @@
 
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -33,6 +29,11 @@ import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
