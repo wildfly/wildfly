@@ -22,21 +22,28 @@
 package org.jboss.as.threads;
 
 
+import static org.jboss.as.threads.CommonAttributes.TIME;
+import static org.jboss.as.threads.CommonAttributes.UNIT;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PropagatingCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -90,7 +97,34 @@ public interface PoolAttributeDefinitions {
 
     SimpleAttributeDefinition MAX_THREADS = new SimpleAttributeDefinition(CommonAttributes.MAX_THREADS, ModelType.OBJECT, false);
 
-    SimpleAttributeDefinition KEEPALIVE_TIME = new SimpleAttributeDefinition(CommonAttributes.KEEPALIVE_TIME, ModelType.OBJECT, true);
+    SimpleAttributeDefinition KEEPALIVE_TIME = new SimpleAttributeDefinition(CommonAttributes.KEEPALIVE_TIME, ModelType.OBJECT, true,
+            PropagatingCorrector.INSTANCE, new ParameterValidator(){
+                @Override
+                public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                    if(value.getType() == ModelType.UNDEFINED) {
+                        return;
+                    }
+                    if(value.getType() != ModelType.OBJECT) {
+                        throw new IllegalArgumentException("Attribute " + parameterName +
+                                " expects values of type OBJECT but got " + value + " of type " + value.getType());
+                    }
+                    final Set<String> keys = value.keys();
+                    if(keys.size() != 2) {
+                        throw new IllegalArgumentException("Attribute " + parameterName +
+                                " expects values consisting of '" + TIME +
+                                "' and '" + UNIT + "' but the new value consists of " + keys);
+                    }
+                    if (!keys.contains(TIME)) {
+                        throw new IllegalArgumentException("Missing '" + TIME + "' for '" + parameterName + "'");
+                    }
+                    if (!keys.contains(UNIT)) {
+                        throw new IllegalArgumentException("Missing '" + UNIT + "' for '" + parameterName + "'");
+                    }
+                }
+                @Override
+                public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                    validateParameter(parameterName, value);
+                }});
 
     SimpleAttributeDefinition CORE_THREADS = new SimpleAttributeDefinition(CommonAttributes.CORE_THREADS, ModelType.OBJECT, true);
 
