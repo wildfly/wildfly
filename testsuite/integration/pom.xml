@@ -335,7 +335,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
-                                        <arquillian.launch>clustering-udp</arquillian.launch>
+                                        <arquillian.launch>clustering-udp-single</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
