@@ -27,6 +27,7 @@ import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 
 import java.util.List;
 
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -36,11 +37,15 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.webservices.injection.WSComponentDescription;
+import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -68,7 +73,6 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
                 logger.trace("Skipping WS annotation processing since no composite annotation index found in unit: " + unit);
             }
         } else {
-            final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
             for (final DotName dotName : dotNames) {
                 final List<AnnotationInstance> wsAnnotations = index.getAnnotations(dotName);
                 if (!wsAnnotations.isEmpty()) {
@@ -77,7 +81,7 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
                         if (target instanceof ClassInfo) {
                             final ClassInfo classInfo = (ClassInfo) target;
                             if (matches(classInfo, index)) {
-                                processWSAnnotation(unit, classInfo, wsAnnotation, index, moduleDescription);
+                                processAnnotation(unit, classInfo, wsAnnotation, index);
                             }
                         }
                     }
@@ -91,8 +95,24 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
         // does nothing
     }
 
-    protected abstract void processWSAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException;
+    protected abstract void processAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException;
 
     protected abstract boolean matches(final ClassInfo classInfo, final CompositeIndex index);
+
+    protected static ComponentDescription createComponentDescription(final DeploymentUnit unit, final String componentName, final String componentClassName, final String dependsOnEndpointClassName) {
+        final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
+        ComponentDescription componentDescription = moduleDescription.getComponentByName(componentName);
+
+        if (componentDescription == null) {
+            // register WS component
+            componentDescription = new WSComponentDescription(componentName, componentClassName, moduleDescription, unit.getServiceName());
+            moduleDescription.addComponent(componentDescription);
+            // registering WS dependency
+            final ServiceName endpointServiceName = EndpointService.getServiceName(unit, dependsOnEndpointClassName);
+            componentDescription.addDependency(endpointServiceName, ServiceBuilder.DependencyType.REQUIRED);
+        }
+
+        return componentDescription;
+    }
 
 }
