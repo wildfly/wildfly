@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -45,19 +46,17 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
+    private final Executor executor;
     private final ImmutableManagementResourceRegistration rootRegistration;
     private final ControlledProcessState processState;
-    private final ModelNode bootResponse;
-    // TODO inject
-    private final Executor executor = CommonXml.bootExecutor;
 
     private final Map<String, List<ParsedBootOp>> opsBySubsystem = new LinkedHashMap<String, List<ParsedBootOp>>();
 
-    ParallelBootOperationStepHandler(final ImmutableManagementResourceRegistration rootRegistration,
-                                     final ControlledProcessState processState, ModelNode bootResponse) {
+    ParallelBootOperationStepHandler(final ExecutorService executorService, final ImmutableManagementResourceRegistration rootRegistration,
+                                     final ControlledProcessState processState) {
+        this.executor = executorService;
         this.rootRegistration = rootRegistration;
         this.processState = processState;
-        this.bootResponse = bootResponse;
     }
 
     boolean addSubsystemOperation(final ParsedBootOp parsedOp) {

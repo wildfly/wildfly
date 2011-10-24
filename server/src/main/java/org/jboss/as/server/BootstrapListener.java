@@ -155,11 +155,6 @@ class BootstrapListener extends AbstractServiceListener<Object> {
         final int never = map.get(ServiceController.Mode.NEVER).get();
         if (failed == 0) {
             log.infof("JBoss AS %s \"%s\" started in %dms - Started %d of %d services (%d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(onDemand + passive));
-            try {
-                configuration.getConfigurationPersister().successfulBoot();
-            } catch (ConfigurationPersistenceException e) {
-                log.error(e);
-            }
         } else {
             log.errorf("JBoss AS %s \"%s\" started (with errors) in %dms - Started %d of %d services (%d services failed or missing dependencies, %d services are passive or on-demand)", Version.AS_VERSION, Version.AS_RELEASE_CODENAME, Long.valueOf(elapsedTime), Integer.valueOf(started), Integer.valueOf(active + passive + onDemand + never), Integer.valueOf(failed), Integer.valueOf(onDemand + passive));
         }

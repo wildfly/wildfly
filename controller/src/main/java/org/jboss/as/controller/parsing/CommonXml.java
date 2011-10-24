@@ -32,14 +32,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
@@ -61,7 +59,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
@@ -108,7 +105,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
-import javax.xml.stream.XMLStreamException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -123,12 +119,12 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -151,6 +147,8 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
+ * Bits of parsing and marshalling logic that are common across more than one of standalone.xml, domain.xml and host.xml.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -158,8 +156,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     // TODO perhaps have this provided by subclasses via an abstract method
     private static final Logger log = Logger.getLogger("org.jboss.as.controller");
-
-    public static final ExecutorService bootExecutor = Executors.newCachedThreadPool();
 
     /** The restricted path names. */
     protected static final Set<String> RESTRICTED_PATHS;
@@ -186,9 +182,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected final ModuleLoader moduleLoader;
+    private final ExecutorService bootExecutor;
 
-    protected CommonXml(final ModuleLoader loader) {
+    protected CommonXml(final ModuleLoader loader, ExecutorService executorService) {
         moduleLoader = loader;
+        bootExecutor = executorService;
     }
 
     protected String getDefaultName() {
@@ -317,8 +315,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         final ExtensionParsingContextImpl context = new ExtensionParsingContextImpl(reader.getXMLMapper());
 
-        final Map<String, Future<XMLStreamException>> loadFutures = new HashMap<String, Future<XMLStreamException>>();
-
+        final Map<String, Future<XMLStreamException>> loadFutures = bootExecutor != null
+                ? new HashMap<String, Future<XMLStreamException>>() : null;
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -335,59 +333,82 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 throw invalidAttributeValue(reader, 0);
             }
 
-            Future<XMLStreamException> future = bootExecutor.submit(new Callable<XMLStreamException>() {
-                @Override
-                public XMLStreamException call() throws Exception {
-                    // Register element handlers for this extension
-                    try {
-                        final Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
-                        boolean initialized = false;
-                        for (final Extension extension : module.loadService(Extension.class)) {
-                            ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
-                            try {
-                                extension.initializeParsers(context);
-                            } finally {
-                                SecurityActions.setThreadContextClassLoader(oldTccl);
-                            }
-                            if (!initialized) {
-                                initialized = true;
-                            }
-                        }
-                        if (!initialized) {
-                            throw new IllegalStateException("No META-INF/services/" + Extension.class.getName() + " found for "
-                                    + module.getIdentifier());
-                        }
-                        return null;
-                    } catch (final ModuleLoadException e) {
-                        return new XMLStreamException("Failed to load module", e);
+            if (loadFutures != null) {
+                // Load the module asynchronously
+                Callable<XMLStreamException> callable = new Callable<XMLStreamException>() {
+                    @Override
+                    public XMLStreamException call() throws Exception {
+                        return loadModule(moduleName, context);
                     }
-                }
-            });
-            loadFutures.put(moduleName, future);
-        }
-
-        for (Map.Entry<String, Future<XMLStreamException>> entry : loadFutures.entrySet()) {
-
-            try {
-                XMLStreamException xse = entry.getValue().get();
+                };
+                Future<XMLStreamException> future = bootExecutor.submit(callable);
+                loadFutures.put(moduleName, future);
+            } else {
+                // Load the module from this thread
+                XMLStreamException xse = loadModule(moduleName, context);
                 if (xse != null) {
                     throw xse;
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new XMLStreamException(String.format("Interrupted awaiting loading of module %s", entry.getKey()));
-            } catch (ExecutionException e) {
-                throw new XMLStreamException(String.format("Failed loading module %s", entry.getKey()), e);
+                addExtensionAddOperation(address, list, moduleName);
             }
 
-            final ModelNode add = new ModelNode();
-            add.get(OP_ADDR).set(address).add(EXTENSION, entry.getKey());
-            add.get(OP).set(ADD);
-            list.add(add);
+        }
+
+        if (loadFutures != null) {
+            for (Map.Entry<String, Future<XMLStreamException>> entry : loadFutures.entrySet()) {
+
+                try {
+                    XMLStreamException xse = entry.getValue().get();
+                    if (xse != null) {
+                        throw xse;
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new XMLStreamException(String.format("Interrupted awaiting loading of module %s", entry.getKey()));
+                } catch (ExecutionException e) {
+                    throw new XMLStreamException(String.format("Failed loading module %s", entry.getKey()), e);
+                }
+
+                addExtensionAddOperation(address, list, entry.getKey());
+            }
         }
 
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("Parsed extensions in " + elapsed + " ms");
+    }
+
+    private void addExtensionAddOperation(ModelNode address, List<ModelNode> list, String moduleName) {
+        final ModelNode add = new ModelNode();
+        add.get(OP_ADDR).set(address).add(EXTENSION, moduleName);
+        add.get(OP).set(ADD);
+        list.add(add);
+    }
+
+    private XMLStreamException loadModule(final String moduleName, final ExtensionParsingContext context) throws XMLStreamException {
+        // Register element handlers for this extension
+        try {
+            final Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
+            boolean initialized = false;
+            for (final Extension extension : module.loadService(Extension.class)) {
+                ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(extension.getClass());
+                try {
+                    extension.initializeParsers(context);
+                } finally {
+                    SecurityActions.setThreadContextClassLoader(oldTccl);
+                }
+                if (!initialized) {
+                    initialized = true;
+                }
+            }
+            if (!initialized) {
+                throw new IllegalStateException("No META-INF/services/" + Extension.class.getName() + " found for "
+                        + module.getIdentifier());
+            }
+            return null;
+        } catch (final ModuleLoadException e) {
+            return new XMLStreamException("Failed to load module", e);
+        }
+
     }
 
     protected void parseFSBaseType(final XMLExtendedStreamReader reader, final ModelNode parent, final boolean isArchive)
