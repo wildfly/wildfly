@@ -54,11 +54,11 @@ interface ProcessMessages {
      *
      * @return the message.
      */
-    @Message(value = "If this host is not the Domain Controller and cannot contact the Domain Controller at boot, boot using a locally cached copy of the domain configuration (see -backup)")
+    @Message(value = "If this host is not the Domain Controller and cannot contact the Domain Controller at boot, boot using a locally cached copy of the domain configuration (see --backup)")
     String argCachedDc();
 
     /**
-     * Instructions for the {@link CommandLineArgument#DOMAIN_CONFIG} command line argument.
+     * Instructions for the {@link CommandLineArgument#DOMAIN_CONFIG} and {@link CommandLineArgument#SHORT_DOMAIN_CONFIG} command line arguments.
      *
      * @return the message.
      */
@@ -152,6 +152,14 @@ interface ProcessMessages {
      */
     @Message(value = "Set system property jboss.bind.address.<interface> to the given value")
     String argInterfaceBindAddress();
+
+    /**
+     * Instructions for the {@link CommandLineArgument#DEFAULT_MULTICAST_ADDRESS} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(value = "Set system property jboss.default.multicast.address to the given value")
+    String argDefaultMulticastAddress();
 
     /**
      * Instructions for the {@link CommandLineArgument#INTERFACE_BIND_ADDRESS} command line argument.

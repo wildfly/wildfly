@@ -59,6 +59,8 @@ public final class Main {
         System.out.println("    -b=<value>                         Set system property jboss.bind.address to the given value");
         System.out.println("    -b <value>                         Set system property jboss.bind.address to the given value");
         System.out.println("    -b<interface>=<value>              Set system property jboss.bind.address.<interface> to the given value");
+        System.out.println("    -c=<config>                        Name of the server configuration file to use (default is \"standalone.xml\")");
+        System.out.println("    -c <config>                        Name of the server configuration file to use (default is \"standalone.xml\")");
         System.out.println("    -D<name>[=<value>]                 Set a system property");
         System.out.println("    -h                                 Display this message and exit");
         System.out.println("    --help                             Display this message and exit");
@@ -66,6 +68,8 @@ public final class Main {
         System.out.println("    -P <url>                           Load system properties from the given url");
         System.out.println("    --properties=<url>                 Load system properties from the given url");
         System.out.println("    --server-config=<config>           Name of the server configuration file to use (default is \"standalone.xml\")");
+        System.out.println("    -u=<value>                         Set system property jboss.default.multicast.address to the given value");
+        System.out.println("    -u <value>                         Set system property jboss.default.multicast.address to the given value");
         System.out.println("    -V                                 Print version and exit");
         System.out.println("    -v                                 Print version and exit");
         System.out.println("    --version                          Print version and exit");
@@ -134,10 +138,16 @@ public final class Main {
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
                     usage();
                     return null;
-                } else if (CommandLineConstants.SERVER_CONFIG.equals(arg) || CommandLineConstants.OLD_SERVER_CONFIG.equals(arg)) {
+                } else if (CommandLineConstants.SERVER_CONFIG.equals(arg) || CommandLineConstants.SHORT_SERVER_CONFIG.equals(arg)
+                        || CommandLineConstants.OLD_SERVER_CONFIG.equals(arg)) {
                     serverConfig = args[++i];
                 } else if (arg.startsWith(CommandLineConstants.SERVER_CONFIG)) {
                     serverConfig = parseValue(arg, CommandLineConstants.SERVER_CONFIG);
+                    if (serverConfig == null) {
+                        return null;
+                    }
+                } else if (arg.startsWith(CommandLineConstants.SHORT_SERVER_CONFIG)) {
+                    serverConfig = parseValue(arg, CommandLineConstants.SHORT_SERVER_CONFIG);
                     if (serverConfig == null) {
                         return null;
                     }
@@ -204,6 +214,18 @@ public final class Main {
                     }
                     systemProperties.setProperty(propertyName, value);
                     SecurityActions.setSystemProperty(propertyName, value);
+                } else if (arg.startsWith(CommandLineConstants.DEFAULT_MULTICAST_ADDRESS)) {
+
+                    int idx = arg.indexOf('=');
+                    if (idx == arg.length() - 1) {
+                        System.err.printf("Argument expected for option %s\n", arg);
+                        usage();
+                        return null;
+                    }
+                    String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
+
+                    systemProperties.setProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
+                    SecurityActions.setSystemProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else {
                     System.err.printf("Invalid option '%s'\n", arg);
                     usage();

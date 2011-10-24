@@ -72,12 +72,14 @@ public class CommandLineConstants {
     /** Passed in to a DC to choose the domain.xml file */
     public static final String OLD_DOMAIN_CONFIG = "-domain-config";
     public static final String DOMAIN_CONFIG = "--domain-config";
+    public static final String SHORT_DOMAIN_CONFIG = "-c";
 
     /** Passed in to a HC to choose the domain.xml file */
     public static final String OLD_HOST_CONFIG = "-host-config";
     public static final String HOST_CONFIG = "--host-config";
 
     /** Passed in to a standalone instance to choose the standalone.xml file */
+    public static final String SHORT_SERVER_CONFIG = "-c";
     public static final String OLD_SERVER_CONFIG = "-server-config";
     public static final String SERVER_CONFIG = "--server-config";
 
@@ -92,7 +94,8 @@ public class CommandLineConstants {
     public static final String SYS_PROP = "-D";
 
     public static final String PUBLIC_BIND_ADDRESS = "-b";
-    public static final String DEFAULT_INTERFACE = "public";
+
+    public static final String DEFAULT_MULTICAST_ADDRESS = "-u";
 
     /** Additional class path items, used only by app client*/
     public static final String APPCLIENT_CONFIG = "--appclient-config";
