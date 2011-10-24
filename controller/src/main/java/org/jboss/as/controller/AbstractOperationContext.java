@@ -59,7 +59,7 @@ abstract class AbstractOperationContext implements OperationContext {
     static final ThreadLocal<Thread> controllingThread = new ThreadLocal<Thread>();
 
     private final Type contextType;
-    private final Thread initiatingThread;
+    final Thread initiatingThread;
     private final EnumMap<Stage, Deque<Step>> steps;
     private final ModelController.OperationTransactionControl transactionControl;
     private final ControlledProcessState processState;
@@ -180,7 +180,7 @@ abstract class AbstractOperationContext implements OperationContext {
      */
     private void doCompleteStep() {
 
-        assert Thread.currentThread() == initiatingThread;
+        assert isControllingThread();
         // If someone called this when the operation is done, fail.
         if (currentStage == null) {
             throw new IllegalStateException("Operation already complete");
@@ -412,7 +412,7 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     public final Type getType() {
-        assert Thread.currentThread() == initiatingThread;
+        assert isControllingThread();
         return contextType;
     }
 
@@ -495,7 +495,7 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     boolean isControllingThread() {
-        return Thread.currentThread() == initiatingThread || Thread.currentThread() == controllingThread.get();
+        return Thread.currentThread() == initiatingThread || controllingThread.get() == initiatingThread;
     }
 
     abstract void releaseStepLocks(Step step);
@@ -507,7 +507,7 @@ abstract class AbstractOperationContext implements OperationContext {
         final PathAddress address;
         private Object restartStamp;
         private RollbackHandler rollbackHandler;
-        private Step predecessor;
+        Step predecessor;
 
         private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation, final PathAddress address) {
             this.handler = handler;

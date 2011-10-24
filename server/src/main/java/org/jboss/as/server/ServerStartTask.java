@@ -79,7 +79,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
         configuration.setServerEnvironment(providedEnvironment);
-        final Bootstrap.ConfigurationPersisterFactory delegate = new Bootstrap.ConfigurationPersisterFactory() {
+        final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
             @Override
             public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                 return new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader(), executorService)) {
@@ -107,7 +107,7 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
                 };
             }
         };
-        configuration.setConfigurationPersisterFactory(new Bootstrap.CachingConfigurationPersisterFactory(delegate));
+        configuration.setConfigurationPersisterFactory(configurationPersisterFactory);
         return bootstrap.bootstrap(configuration, startServices);
     }
 

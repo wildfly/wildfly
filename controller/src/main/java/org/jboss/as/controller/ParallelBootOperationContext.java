@@ -49,10 +49,11 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     ParallelBootOperationContext(final ModelController.OperationTransactionControl transactionControl,
                                  final ControlledProcessState processState, final OperationContext primaryContext,
-                                 final List<ParsedBootOp> runtimeOps) {
+                                 final List<ParsedBootOp> runtimeOps, final Thread controllingThread) {
         super(Type.SERVER, transactionControl, processState);
         this.primaryContext = primaryContext;
         this.runtimeOps = runtimeOps;
+        AbstractOperationContext.controllingThread.set(controllingThread);
     }
 
     @Override

@@ -139,7 +139,7 @@ public class EmbeddedStandAloneServerFactory {
                     Bootstrap.Configuration configuration = new Bootstrap.Configuration();
 
                     // do not persist anything in embedded mode
-                    final Bootstrap.ConfigurationPersisterFactory delegate = new Bootstrap.ConfigurationPersisterFactory() {
+                    final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
                         @Override
                         public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                             final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
@@ -147,7 +147,7 @@ public class EmbeddedStandAloneServerFactory {
                             return new TransientConfigurationPersister(serverEnvironment.getServerConfigurationFile(), rootElement, parser, parser);
                         }
                     };
-                    configuration.setConfigurationPersisterFactory(new Bootstrap.CachingConfigurationPersisterFactory(delegate));
+                    configuration.setConfigurationPersisterFactory(configurationPersisterFactory);
 
                     configuration.setServerEnvironment(serverEnvironment);
 

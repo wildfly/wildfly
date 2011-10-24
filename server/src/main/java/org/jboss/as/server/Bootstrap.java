@@ -136,16 +136,15 @@ public interface Bootstrap {
             if (configurationPersisterFactory == null) {
                 if (serverEnvironment == null) {
                     final ModuleLoader localModuleLoader = this.moduleLoader;
-                    final ConfigurationPersisterFactory delegate = new ConfigurationPersisterFactory() {
+                    configurationPersisterFactory = new ConfigurationPersisterFactory() {
                         @Override
                         public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                             return new NullConfigurationPersister(new StandaloneXml(localModuleLoader, executorService));
                         }
                     };
-                    configurationPersisterFactory = new CachingConfigurationPersisterFactory(delegate);
                 }
                 else {
-                    final ConfigurationPersisterFactory delegate = new ConfigurationPersisterFactory() {
+                    configurationPersisterFactory = new ConfigurationPersisterFactory() {
                         @Override
                         public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
                             QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
@@ -155,7 +154,6 @@ public interface Bootstrap {
                             return persister;
                         }
                     };
-                    configurationPersisterFactory = new CachingConfigurationPersisterFactory(delegate);
                 }
             }
             return configurationPersisterFactory;
@@ -216,29 +214,6 @@ public interface Bootstrap {
          */
         public static Bootstrap newInstance() {
             return new BootstrapImpl();
-        }
-    }
-
-    /**
-     *  {@link Bootstrap.ConfigurationPersisterFactory} that simply delegates to another factory to create the
-     *  configuration persister, but then caches the result for future use.
-     */
-    final class CachingConfigurationPersisterFactory implements ConfigurationPersisterFactory {
-
-        private final ConfigurationPersisterFactory delegate;
-        private ExtensibleConfigurationPersister configurationPersister;
-
-        public CachingConfigurationPersisterFactory(ConfigurationPersisterFactory delegate) {
-            this.delegate = delegate;
-        }
-
-
-        @Override
-        public synchronized ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
-            if (configurationPersister == null) {
-                configurationPersister = delegate.createConfigurationPersister(serverEnvironment, executorService);
-            }
-            return configurationPersister;
         }
     }
 }

@@ -37,6 +37,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ParsedBootOp;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * Special handler that executes extension initialization in parallel.
@@ -44,6 +45,8 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ParallelExtensionAddHandler implements OperationStepHandler {
+
+    private static final Logger log = Logger.getLogger("org.jboss.as.controller");
 
     private final ExecutorService executor;
     private final List<ParsedBootOp> extensionAdds = new ArrayList<ParsedBootOp>();
@@ -97,8 +100,11 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
                     }
                 }
 
-                long elapsed = System.currentTimeMillis() - start;
-                System.out.println("Initialized extensions in " + elapsed + " ms");
+                if (log.isDebugEnabled()) {
+                    long elapsed = System.currentTimeMillis() - start;
+                    log.debugf("Initialized extensions in [%d] ms", elapsed);
+                }
+
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         };

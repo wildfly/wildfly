@@ -29,7 +29,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
@@ -115,7 +118,7 @@ public final class ServerService extends AbstractControllerService {
     private final Bootstrap.Configuration configuration;
     private final BootstrapListener bootstrapListener;
     private final ControlledProcessState processState;
-    private volatile QueuelessExecutor queuelessExecutor;
+    private volatile ExecutorService queuelessExecutor;
     private volatile ExtensibleConfigurationPersister extensibleConfigurationPersister;
 
     /**
@@ -165,10 +168,11 @@ public final class ServerService extends AbstractControllerService {
             final ThreadGroup threadGroup = new ThreadGroup("ModelController ThreadGroup");
             final String namePattern = "ServerService Thread Pool -- %t";
             final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null, AccessController.getContext());
-            final long keepAlive = 5000L;
-            QueuelessExecutor queuelessExecutor = new QueuelessExecutor(threadFactory, JBossExecutors.directExecutor(), null, keepAlive);
-            queuelessExecutor.setMaxThreads(Integer.MAX_VALUE);
-            getExecutorServiceInjector().inject(JBossExecutors.protectedBlockingExecutorService(queuelessExecutor));
+            queuelessExecutor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                                      5L, TimeUnit.SECONDS,
+                                      new SynchronousQueue<Runnable>(),
+                                      threadFactory);
+            getExecutorServiceInjector().inject(queuelessExecutor);
         }
     }
 
@@ -253,13 +257,18 @@ public final class ServerService extends AbstractControllerService {
 
         if (queuelessExecutor != null) {
             context.asynchronous();
-            queuelessExecutor.shutdown();
-            queuelessExecutor.addShutdownListener(new EventListener<StopContext>() {
-                public void handleEvent(final StopContext stopContext) {
-                    stopContext.complete();
+            Thread executorShutdown = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        queuelessExecutor.shutdown();
+                    } finally {
+                        queuelessExecutor = null;
+                        context.complete();
+                    }
                 }
-            }, context);
-            this.queuelessExecutor = null;
+            }, "Controller ExecutorService Shutdown Thread");
+            executorShutdown.start();
         }
     }
 

@@ -125,7 +125,7 @@ public final class Main {
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
-                final Bootstrap.ConfigurationPersisterFactory delegate = new Bootstrap.ConfigurationPersisterFactory() {
+                final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
 
                     @Override
                     public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
@@ -133,7 +133,7 @@ public final class Main {
                                 serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser);
                     }
                 };
-                configuration.setConfigurationPersisterFactory(new Bootstrap.CachingConfigurationPersisterFactory(delegate));
+                configuration.setConfigurationPersisterFactory(configurationPersisterFactory);
                 bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
             }
         } catch (Throwable t) {
