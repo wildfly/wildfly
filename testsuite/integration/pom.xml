@@ -186,6 +186,30 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <!-- We need to clean the serialized timer info before each run -->
+                <!-- to make sure we have no serialized timers hanging around.  -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.4.1</version>
+                <executions>
+                    <execution >
+                        <id>clean-old-timers</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                            <filesets>
+                                <fileset>
+                                    <directory>target/jbossas/standalone/data/</directory>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -221,17 +245,17 @@
             </properties>
 
             <dependencies>
-
             </dependencies>
+            
             <!--
                 Server configuration executions.
             -->
             <build>
                 <plugins>
 
-                    <!-- build the target/jbossas server configuration -->
+                    <!-- Build the target/jbossas server configuration. -->
                     <!--
-                      NOTE: this execution is *disabled* (phase == one), as the target/jbossas server configuration
+                      NOTE: this execution is *disabled* (phase == none), as the target/jbossas server configuration
                       is constrcuted by the parent pom in testsuite/pom.xml
                     -->
 
