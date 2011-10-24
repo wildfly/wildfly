@@ -153,7 +153,7 @@
         <version.org.jboss.osgi.http>1.0.5</version.org.jboss.osgi.http>
         <version.org.jboss.osgi.jmx>1.0.10</version.org.jboss.osgi.jmx>
         <version.org.jboss.osgi.logging>1.0.0</version.org.jboss.osgi.logging>
-        <version.org.jboss.osgi.resolver>1.0.9</version.org.jboss.osgi.resolver>
+        <version.org.jboss.osgi.resolver>1.0.10</version.org.jboss.osgi.resolver>
         <version.org.jboss.osgi.spi>1.0.28</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.0.6</version.org.jboss.osgi.vfs>
         <version.org.jboss.osgi.webapp>1.0.5</version.org.jboss.osgi.webapp>
