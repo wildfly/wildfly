@@ -118,7 +118,10 @@ import org.jboss.as.server.operations.ServerStateAttributeHandler;
 import org.jboss.as.server.operations.SpecifiedPathAddHandler;
 import org.jboss.as.server.operations.SpecifiedPathRemoveHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
+import org.jboss.as.server.services.net.ClientSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.LocalDestinationSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.NetworkInterfaceRuntimeHandler;
+import org.jboss.as.server.services.net.RemoteDestinationClientSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.SocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
@@ -268,6 +271,10 @@ public class ServerControllerModelUtil {
         // Sockets
         ManagementResourceRegistration socketGroup = root.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false));
         socketGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);
+        // client-socket-binding (for remote destination)
+        socketGroup.registerSubModel(RemoteDestinationClientSocketBindingResourceDefinition.INSTANCE);
+        // client-socket-binding (for local destination)
+        socketGroup.registerSubModel(LocalDestinationSocketBindingResourceDefinition.INSTANCE);
 
         // Deployments
         ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);

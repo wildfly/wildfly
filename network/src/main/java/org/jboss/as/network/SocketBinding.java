@@ -115,18 +115,6 @@ public final class SocketBinding {
     }
 
     /**
-     * Create and bind a socket.
-     *
-     * @return the socket
-     * @throws IOException
-     */
-    public Socket createSocket() throws IOException {
-        final Socket socket = getSocketFactory().createSocket(name);
-        socket.bind(getSocketAddress());
-        return socket;
-    }
-
-    /**
      * Create and bind a server socket
      *
      * @return the server socket
