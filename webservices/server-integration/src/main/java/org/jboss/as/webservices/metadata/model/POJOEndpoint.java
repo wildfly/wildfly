@@ -19,45 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices.metadata;
-
-import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.msc.service.ServiceName;
+package org.jboss.as.webservices.metadata.model;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public interface EndpointJaxwsEjb extends EndpointJaxws {
+public final class POJOEndpoint implements WSEndpoint {
 
-   /**
-    * Get EJB container name.
-    *
-    * @return
-    */
-   String getContainerName();
+    private final String pojoName;
+    private final String pojoClassName;
+    private final String urlPattern;
+    private final boolean isDeclared;
 
-   /**
-    * Get EJB context service name.
-    *
-    * @return
-    */
-   ServiceName getContextServiceName();
+    public POJOEndpoint(final String pojoName, final String pojoClassName, final String urlPattern) {
+       this.pojoName = pojoName;
+       this.pojoClassName = pojoClassName;
+       this.urlPattern = urlPattern;
+       this.isDeclared = true;
+    }
 
-   /**
-    * Get EJB descriptor environment.
-    *
-    * @return
-    */
-   DeploymentDescriptorEnvironment getDeploymentDescriptorEnvironment();
+    public POJOEndpoint(final String pojoClassName, final String urlPattern) {
+        this.pojoName = pojoClassName;
+        this.pojoClassName = pojoClassName;
+        this.urlPattern = urlPattern;
+        this.isDeclared = false;
+    }
 
-   /**
-    * Get a unified meta data view represented by an annotation.
-    *
-    * @param t
-    * @return
-    */
-   AnnotationInstance getAnnotation(DotName dotName);
+    public String getName() {
+        return pojoName;
+    }
+
+    public String getClassName() {
+        return pojoClassName;
+    }
+
+    public String getUrlPattern() {
+        return urlPattern;
+    }
+
+    public boolean isDeclared() {
+        return isDeclared;
+    }
 
 }

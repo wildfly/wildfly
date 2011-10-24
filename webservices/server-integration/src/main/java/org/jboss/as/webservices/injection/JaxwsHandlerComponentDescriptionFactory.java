@@ -42,8 +42,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.deployers.WSComponentDescriptionFactory;
-import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
-import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
@@ -69,7 +69,7 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
         final String endpointClassName = classInfo.name().toString();
 
         if (isJaxwsEjb(classInfo)) {
-            for (final EndpointJaxwsEjb container : getJaxwsEjbs(unit)) {
+            for (final EJBEndpoint container : getJaxwsEjbs(unit)) {
                 if (endpointClassName.equals(container.getClassName())) {
                     for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
                         final String ejbName = container.getName();
@@ -92,7 +92,7 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
                 }
             }
         } else {
-            for (final EndpointJaxwsPojo pojoEndpoint : getJaxwsPojos(unit)) {
+            for (final POJOEndpoint pojoEndpoint : getJaxwsPojos(unit)) {
                 if (endpointClassName.equals(pojoEndpoint.getClassName())) {
                     for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
                         final String pojoName = pojoEndpoint.getName();

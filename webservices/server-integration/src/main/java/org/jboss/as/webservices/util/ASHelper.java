@@ -31,9 +31,9 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.as.webservices.metadata.DeploymentJaxws;
-import org.jboss.as.webservices.metadata.EndpointJaxwsEjb;
-import org.jboss.as.webservices.metadata.EndpointJaxwsPojo;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.webserviceref.WSReferences;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
@@ -59,11 +59,6 @@ import org.jboss.wsf.spi.deployment.Deployment;
  */
 public final class ASHelper {
 
-    /**
-     * EJB invocation property.
-     */
-    public static final String CONTAINER_NAME = "org.jboss.wsf.spi.invocation.ContainerName";
-
     /** Logger. */
     private static final Logger LOGGER = Logger.getLogger(ASHelper.class);
 
@@ -80,10 +75,10 @@ public final class ASHelper {
      * @param unit deployment unit
      * @return list of JAXWS EJBs meta data
      */
-    public static List<EndpointJaxwsEjb> getJaxwsEjbs(final DeploymentUnit unit) {
-        final DeploymentJaxws wsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
+    public static List<EJBEndpoint> getJaxwsEjbs(final DeploymentUnit unit) {
+        final JAXWSDeployment wsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
         final boolean hasEjb3Endpoints = wsDeployment != null ? wsDeployment.getEjbEndpoints().size() > 0 : false;
-        return hasEjb3Endpoints ? wsDeployment.getEjbEndpoints() : Collections.<EndpointJaxwsEjb>emptyList();
+        return hasEjb3Endpoints ? wsDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
     }
 
     /**
@@ -92,10 +87,10 @@ public final class ASHelper {
      * @param unit deployment unit
      * @return list of JAXWS POJOs meta data
      */
-    public static List<EndpointJaxwsPojo> getJaxwsPojos(final DeploymentUnit unit) {
-        final DeploymentJaxws wsDeployment = unit.getAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
+    public static List<POJOEndpoint> getJaxwsPojos(final DeploymentUnit unit) {
+        final JAXWSDeployment wsDeployment = unit.getAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
         final boolean hasPojoEndpoints = wsDeployment != null ? wsDeployment.getPojoEndpoints().size() > 0 : false;
-        return hasPojoEndpoints ? wsDeployment.getPojoEndpoints() : Collections.<EndpointJaxwsPojo>emptyList();
+        return hasPojoEndpoints ? wsDeployment.getPojoEndpoints() : Collections.<POJOEndpoint>emptyList();
     }
 
     /**

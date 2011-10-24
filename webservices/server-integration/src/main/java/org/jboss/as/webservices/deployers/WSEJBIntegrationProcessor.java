@@ -38,17 +38,14 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.webservices.metadata.DeploymentJaxws;
-import org.jboss.as.webservices.metadata.DeploymentJaxwsImpl;
-import org.jboss.as.webservices.metadata.EndpointJaxwsEjbImpl;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
 /**
- * WebServiceDeployment deployer processes EJB containers and its metadata and creates WS adapters wrapping it.
- *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor {
@@ -56,11 +53,11 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final DeploymentJaxws wsDeploymentAdapter = new DeploymentJaxwsImpl();
-        processAnnotation(unit, WEB_SERVICE_ANNOTATION, wsDeploymentAdapter);
-        processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION, wsDeploymentAdapter);
-        if (!wsDeploymentAdapter.getEjbEndpoints().isEmpty()) {
-            unit.putAttachment(JAXWS_ENDPOINTS_KEY, wsDeploymentAdapter);
+        final JAXWSDeployment jaxwsDeployment = new JAXWSDeployment();
+        processAnnotation(unit, WEB_SERVICE_ANNOTATION, jaxwsDeployment);
+        processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION, jaxwsDeployment);
+        if (!jaxwsDeployment.getEjbEndpoints().isEmpty()) {
+            unit.putAttachment(JAXWS_ENDPOINTS_KEY, jaxwsDeployment);
         }
     }
 
@@ -69,7 +66,7 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
         // NOOP
     }
 
-   private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final DeploymentJaxws wsDeployment) {
+   private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final JAXWSDeployment jaxwsDeployment) {
        final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
        final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
 
@@ -77,15 +74,14 @@ public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor 
            final AnnotationTarget target = webServiceAnnotation.target();
            final ClassInfo webServiceClassInfo = (ClassInfo) target;
            final String beanClassName = webServiceClassInfo.name().toString();
-
            final List<ComponentDescription> componentDescriptions = moduleDescription.getComponentsByClassName(beanClassName);
-
            final List<SessionBeanComponentDescription> sessionBeans = getSessionBeans(componentDescriptions);
+
            for(SessionBeanComponentDescription sessionBean : sessionBeans) {
                if (sessionBean.isStateless() || sessionBean.isSingleton()) {
                    final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
                    final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
-                   wsDeployment.addEndpoint(new EndpointJaxwsEjbImpl(sessionBean, webServiceClassInfo, ejbViewName));
+                   jaxwsDeployment.addEndpoint(new EJBEndpoint(sessionBean, webServiceClassInfo, ejbViewName));
                }
            }
        }

@@ -5,9 +5,8 @@ import java.util.Map;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.SimpleAttachable;
-import org.jboss.as.webservices.metadata.DeploymentJaxws;
-import org.jboss.as.webservices.metadata.DeploymentJaxwsImpl;
-import org.jboss.as.webservices.metadata.EndpointJaxwsPojoImpl;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
@@ -23,7 +22,7 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         this.deploymentName = context + ".deployment";
 
         JBossWebMetaData jbossWebMetaData = new JBossWebMetaData();
-        DeploymentJaxws jaxwsDeployment = new DeploymentJaxwsImpl();
+        JAXWSDeployment jaxwsDeployment = new JAXWSDeployment();
         jbossWebMetaData.setContextRoot(context);
         for (String urlPattern : urlPatternToClassName.keySet()) {
             addEndpoint(jbossWebMetaData, jaxwsDeployment, urlPatternToClassName.get(urlPattern), urlPattern);
@@ -33,7 +32,7 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         this.putAttachment(WSAttachmentKeys.CLASSLOADER_KEY, loader);
     }
 
-    private void addEndpoint(JBossWebMetaData jbossWebMetaData, DeploymentJaxws jaxwsDeployment, String className, String urlPattern) {
+    private void addEndpoint(JBossWebMetaData jbossWebMetaData, JAXWSDeployment jaxwsDeployment, String className, String urlPattern) {
         if (urlPattern == null) {
             urlPattern = "/*";
         } else {
@@ -42,7 +41,7 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
                 urlPattern = "/" + urlPattern;
             }
         }
-        jaxwsDeployment.addEndpoint(new EndpointJaxwsPojoImpl(className, urlPattern));
+        jaxwsDeployment.addEndpoint(new POJOEndpoint(className, urlPattern));
     }
 
     @Override
