@@ -419,9 +419,7 @@ class WebSubsystemDescriptions {
         return node;
     }
 
-    static ModelNode getSSLCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
-
-        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl"));
+    static ModelNode addSSLCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
 
         node.get(type, Constants.NAME, TYPE).set(ModelType.STRING);
         node.get(type, Constants.NAME, DESCRIPTION).set(bundle.getString("web.connector.ssl.name"));
@@ -476,6 +474,12 @@ class WebSubsystemDescriptions {
         node.get(type, Constants.SESSION_TIMEOUT, REQUIRED).set(false);
 
         return node;
+    }
+
+    static ModelNode getSSLCommonDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
+
+        node.get(DESCRIPTION).set(bundle.getString("web.connector.ssl"));
+        return addSSLCommonDescription(node, type, bundle);
     }
 
     static ModelNode getConnectorAdd(final Locale locale) {
@@ -926,6 +930,23 @@ class WebSubsystemDescriptions {
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(REMOVE);
         node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.sso-remove"));
+        return node;
+    }
+    public static ModelNode getSSLAdd(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.ssl-add"));
+
+        addSSLCommonDescription(node, REQUEST_PROPERTIES, bundle);
+        return node;
+    }
+
+    public static ModelNode getSSLRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(REMOVE);
+        node.get(DESCRIPTION).set(bundle.getString("web.virtual-server.ssl-remove"));
         return node;
     }
 

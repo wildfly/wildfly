@@ -54,4 +54,77 @@ class WebSubsystemDescriptionProviders {
         }
     };
 
+    public static DescriptionProvider ACCESS_LOG = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getAccessLogDescription(locale);
+        }
+
+    };
+
+    public static DescriptionProvider DIRECTORY = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getDirectoryDescription(locale);
+        }
+
+    };
+
+    public static DescriptionProvider SSO  = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getSSODescription(locale);
+        }
+
+    };
+
+    public static DescriptionProvider REWRITE  = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getReWriteDescription(locale);
+        }
+
+    };
+
+    public static DescriptionProvider REWRITECOND = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getReWriteCondDescription(locale);
+        }
+
+    };
+
+    public static final DescriptionProvider JSP_CONFIGURATION = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getJspConfigurationDescription(locale);
+        }
+
+    };
+
+    public static final DescriptionProvider STATIC_RESOURCES = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getStaticResourceDescription(locale);
+        }
+
+    };
+
+    public static DescriptionProvider CONFIGURATION = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getConfigurationDescription(locale);
+        }
+
+    };
+
+    public static DescriptionProvider CONTAINER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return WebSubsystemDescriptions.getContainerDescription(locale);
+        }
+
+    };
+
+
 }

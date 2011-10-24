@@ -38,6 +38,7 @@ interface Constants {
     String CHECK_INTERVAL = "check-interval";
     String CIPHER_SUITE = "cipher-suite";
     String CONDITION = "condition";
+    String CONFIGURATION = "configuration";
     String CONNECTOR = "connector";
     String CONTAINER = "container";
     String CONTAINER_CONFIG = "configuration";
