@@ -233,6 +233,129 @@
 
 
         <!-- ********************************************************************************** -->
+        <!-- *********************************** Clustering *********************************** -->
+        <!-- ********************************************************************************** -->
+
+        <profile>
+            <id>clustering.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>clustering.integration.tests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+            </properties>
+            <!--
+                Server configuration executions.
+                Naming convention for executions (which we read in the log): for server config X, call it X.server
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-clustering.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- build the UDP server configs in target-->
+                                        <ant antfile="${basedir}/src/test/scripts/clustering-build.xml">
+                                            <target name="build-clustering-udp"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Single node clustering tests. -->
+                            <execution>
+                                <id>tests-clustering-single-node.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-udp-single</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-clustering-single-node</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                            <!-- Multi node clustering tests. -->
+                            <execution>
+                                <id>tests-clustering-multi-node.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-udp</arquillian.launch>
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+        <!-- ********************************************************************************** -->
         <!-- ******************************** Basic Integration ******************************* -->
         <!-- ********************************************************************************** -->
 
@@ -398,171 +521,6 @@
 
                     </plugin>
 
-                </plugins>
-            </build>
-        </profile>
-
-
-        <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
-        <!--
-        <profile>
-            <id>basic.integration.z2nd.tests.profile</id>
-            <activation>
-                <property>
-                    <name>basic.integration.tests</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>basic-integration-2nd.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <skipTests>false</skipTests>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <enableAssertions>true</enableAssertions>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>none</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        -->
-
-
-        <!-- ********************************************************************************** -->
-        <!-- *********************************** Clustering *********************************** -->
-        <!-- ********************************************************************************** -->
-
-        <profile>
-            <id>clustering.integration.tests.profile</id>
-            <activation>
-                <property>
-                    <name>clustering.integration.tests</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <properties>
-            </properties>
-            <!--
-                Server configuration executions.
-                Naming convention for executions (which we read in the log): for server config X, call it X.server
-            -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>build-clustering.server</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <!-- build the UDP server configs in target-->
-                                        <ant antfile="${basedir}/src/test/scripts/clustering-build.xml">
-                                            <target name="build-clustering-udp"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!--
-                       Surefire test executions
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-
-                            <!-- Single node clustering tests. -->
-                            <execution>
-                                <id>tests-clustering-single-node.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
-                                        <arquillian.launch>clustering-udp-single</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <reportNameSuffix>tests-clustering-single-node</reportNameSuffix>
-                                </configuration>
-                            </execution>
-
-                            <!-- Multi node clustering tests. -->
-                            <execution>
-                                <id>tests-clustering-multi-node.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
-                                        <arquillian.launch>clustering-udp</arquillian.launch>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
