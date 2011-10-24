@@ -158,4 +158,8 @@ public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThre
         }
         return executor.getTaskCount();
     }
+
+    TimeUnit getKeepAliveUnit() {
+        return keepAlive == null ? TimeSpec.DEFAULT_KEEPALIVE.getUnit() : keepAlive.getUnit();
+    }
 }
