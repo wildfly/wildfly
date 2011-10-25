@@ -23,14 +23,15 @@ package org.jboss.as.xts;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.Ignore;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Ignore("AS7-1799")
 public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public XTSSubsystemTestCase() {

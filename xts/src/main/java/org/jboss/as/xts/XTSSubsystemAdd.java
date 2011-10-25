@@ -22,6 +22,8 @@
 
 package org.jboss.as.xts;
 
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.txn.TxnServices;
 
 import org.jboss.as.webservices.service.EndpointPublishService;
@@ -42,6 +44,7 @@ import org.jboss.wsf.spi.publish.Context;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -50,7 +53,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:adinn@redhat.com">Andrew Dinn</a>
  */
-class XTSSubsystemAdd implements OperationStepHandler {
+class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final XTSSubsystemAdd INSTANCE = new XTSSubsystemAdd();
 
@@ -60,6 +63,7 @@ class XTSSubsystemAdd implements OperationStepHandler {
             "ws-t11-participant.war",
             "ws-t11-client.war",
     };
+
 
     /**
      * class used to record the url pattern and service endpoint implementation class name of
@@ -134,22 +138,22 @@ class XTSSubsystemAdd implements OperationStepHandler {
     private XTSSubsystemAdd() {
     }
 
-    /** {@inheritDoc} */
-    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).set(operation.get(CommonAttributes.XTS_ENVIRONMENT).require(ModelDescriptionConstants.URL));
 
-        final String coordinatorURL = operation.get(CommonAttributes.XTS_ENVIRONMENT).hasDefined(ModelDescriptionConstants.URL) ? operation.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).asString() : null;
-        if (coordinatorURL != null) {
-            if(log.isDebugEnabled()) {
-                log.debugf("nodeIdentifier=%s\n", coordinatorURL);
-            }
+    }
 
-            final ModelNode subModel = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-            subModel.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).set(operation.get(CommonAttributes.XTS_ENVIRONMENT).require(ModelDescriptionConstants.URL));
+
+    @Override
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final String coordinatorURL = model.get(CommonAttributes.XTS_ENVIRONMENT).hasDefined(ModelDescriptionConstants.URL) ? model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).asString() : null;
+        if (coordinatorURL != null && log.isDebugEnabled()) {
+            log.debugf("nodeIdentifier=%s\n", coordinatorURL);
         }
 
-        context.addStep(new OperationStepHandler() {
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final ServiceTarget target = context.getServiceTarget();
+
+        final ServiceTarget target = context.getServiceTarget();
 
                 // TODO eventually we should add a config service which manages the XTS configuration
                 // this will allow us to include a switch enabling or disabling deployment of
@@ -216,13 +220,5 @@ class XTSSubsystemAdd implements OperationStepHandler {
 
                 txBridgeOutboundRecoveryServiceBuilder.setInitialMode(Mode.ACTIVE).install();
 
-
-                if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                    context.removeService(XTSServices.JBOSS_XTS_MAIN);
-                }
-            }
-        }, OperationContext.Stage.RUNTIME);
-
-        context.completeStep();
     }
 }

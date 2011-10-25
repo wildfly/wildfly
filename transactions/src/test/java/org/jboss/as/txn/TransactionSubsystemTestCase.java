@@ -33,7 +33,6 @@ import org.junit.Ignore;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Ignore
 public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public TransactionSubsystemTestCase() {
