@@ -20,24 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ws.pojoWithoutWebXml;
+package org.jboss.as.test.integration.ws.anonymousPojos;
 
 import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 
 /**
- * Webservice endpoint implementation.
- *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-@WebService(
-        endpointInterface = "org.jboss.as.test.integration.ws.pojoWithoutWebXml.SimpleWebserviceEndpointIface",
-        targetNamespace = "org.jboss.as.test.integration.ws.pojoWithoutWebXml",
-        serviceName = "SimpleService"
-)
-public class SimpleWebserviceEndpointImpl {
+@WebService
+@SOAPBinding
+public interface POJOIface {
 
-    public String echo(final String s) {
-        return s;
-    }
+    String echo(String s);
 
 }

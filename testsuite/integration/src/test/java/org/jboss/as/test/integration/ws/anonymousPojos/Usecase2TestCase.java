@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ws.pojoWithoutWebXml;
+package org.jboss.as.test.integration.ws.anonymousPojos;
 
 import java.net.URL;
 import java.util.logging.Logger;
@@ -37,32 +37,32 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests simple stateless web service endpoint invocation.
+ * [JBWS-3276] Tests anonymous POJO in web archive that is missing web.xml.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
-public class SimpleWebserviceEndpointTestCase {
+public class Usecase2TestCase {
 
-    private static final Logger log = Logger.getLogger(SimpleWebserviceEndpointTestCase.class.getName());
+    private static final Logger log = Logger.getLogger(Usecase2TestCase.class.getName());
 
     @Deployment
     public static WebArchive createDeployment() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "pojo-without-webxml.war");
-        war.addPackage(SimpleWebserviceEndpointImpl.class.getPackage());
-        war.addClass(SimpleWebserviceEndpointImpl.class);
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, "anonymous-pojo-usecase2.war");
+        war.addPackage(AnonymousPOJO.class.getPackage());
+        war.addClass(AnonymousPOJO.class);
         log.info(war.toString(true));
         return war;
     }
 
     @Test
-    public void testSimpleStatelessWebserviceEndpoint() throws Exception {
-        final QName serviceName = new QName("org.jboss.as.test.integration.ws.pojoWithoutWebXml", "SimpleService");
-        final URL wsdlURL = new URL("http://localhost:8080/pojo-without-webxml/SimpleService?wsdl");
+    public void testAnonymousEndpoint() throws Exception {
+        final QName serviceName = new QName("org.jboss.as.test.integration.ws.anonymousPojos", "AnonymousPOJOService");
+        final URL wsdlURL = new URL("http://localhost:8080/anonymous-pojo-usecase2/AnonymousPOJOService?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
-        final SimpleWebserviceEndpointIface port = service.getPort(SimpleWebserviceEndpointIface.class);
+        final POJOIface port = service.getPort(POJOIface.class);
         final String result = port.echo("hello");
-        Assert.assertEquals("hello", result);
+        Assert.assertEquals("hello from anonymous POJO", result);
     }
 
 }
