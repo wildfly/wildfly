@@ -36,6 +36,11 @@ import org.jboss.dmr.ModelNode;
  */
 public class ActivationAttributeHandler implements OperationStepHandler {
 
+    static final ActivationAttributeHandler INSTANCE = new ActivationAttributeHandler();
+
+    private ActivationAttributeHandler() {
+    }
+
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         Activation val = Activation.valueOf(operation.require(ModelDescriptionConstants.VALUE).asString().toUpperCase());
