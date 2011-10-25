@@ -24,10 +24,6 @@ package org.jboss.as.protocol;
 import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
@@ -36,9 +32,13 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
@@ -190,7 +190,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         private String uriScheme;
         private URI uri;
         private ProtocolChannelFactory<T> channelFactory;
-        private Executor executor;
         private long connectTimeout = -1;
         private String connectTimeoutProperty;
 
@@ -227,12 +226,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
                 if (!uriScheme.equals(uri.getScheme())) {
                     throw MESSAGES.unmatchedScheme(uriScheme, uri);
                 }
-            }
-            if (endpoint != null && executor != null) {
-                throw MESSAGES.executorUnneeded();
-            }
-            if (endpoint == null && executor == null) {
-                throw MESSAGES.executorNeeded();
             }
             if (channelFactory == null) {
                 throw MESSAGES.nullVar("channelFactory");
@@ -322,14 +315,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
         public void setUri(final URI uri) {
             this.uri = uri;
-        }
-
-        public Executor getExecutor() {
-            return executor;
-        }
-
-        public void setExecutor(final Executor readExecutor) {
-            this.executor = readExecutor;
         }
 
         public ProtocolChannelFactory<T> getChannelFactory() {
