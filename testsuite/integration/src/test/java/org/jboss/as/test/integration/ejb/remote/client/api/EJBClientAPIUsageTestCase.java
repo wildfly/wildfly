@@ -44,7 +44,6 @@ import org.jboss.ejb.client.remoting.IoFutureHelper;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
@@ -62,7 +61,6 @@ import org.junit.runner.RunWith;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-import org.xnio.Xnio;
 
 /**
  * Tests the various common use cases of the EJB remote client API
@@ -112,9 +110,8 @@ public class EJBClientAPIUsageTestCase {
      */
     @BeforeClass
     public static void beforeTestClass() throws Exception {
-        final Endpoint endpoint = Remoting.createEndpoint("endpoint", Executors.newSingleThreadExecutor(), OptionMap.EMPTY);
-        final Xnio xnio = Xnio.getInstance();
-        final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+        endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
 
         // open a connection

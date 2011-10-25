@@ -67,10 +67,9 @@ public class ChannelServer implements Closeable {
         }
         configuration.validate();
 
-        final Endpoint endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
-        final Xnio xnio = Xnio.getInstance();
+        final Endpoint endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
 
-        Registration registration = endpoint.addConnectionProvider(configuration.getUriScheme(), new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+        Registration registration = endpoint.addConnectionProvider(configuration.getUriScheme(), new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
         final NetworkServerProvider networkServerProvider = endpoint.getConnectionProviderInterface(configuration.getUriScheme(), NetworkServerProvider.class);
         SimpleServerAuthenticationProvider provider = new SimpleServerAuthenticationProvider();

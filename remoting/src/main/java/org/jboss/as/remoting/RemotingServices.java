@@ -26,9 +26,7 @@ import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.security.AccessController;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +38,6 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -147,9 +144,6 @@ public class RemotingServices {
             final List<ServiceController<?>> newControllers) {
         EndpointService endpointService = new EndpointService(hostName, type);
         endpointService.setOptionMap(OptionMap.EMPTY);
-        final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
-        // TODO inject this from somewhere?
-        executorInjector.inject(Executors.newCachedThreadPool());
         addController(newControllers, verificationHandler, serviceTarget.addService(endpointName, endpointService)
                 .setInitialMode(ACTIVE));
     }

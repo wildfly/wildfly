@@ -51,7 +51,6 @@ import org.xnio.IoFuture.Status;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-import org.xnio.Xnio;
 
 /**
  * This class is not thread safe and should only be used by one thread
@@ -94,9 +93,8 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             endpoint = configuration.getEndpoint();
             return new ProtocolChannelClient<T>(false, endpoint, null, configuration.getUri(), configuration.getChannelFactory(), configuration.getConnectTimeout());
         } else {
-            endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getExecutor(), configuration.getOptionMap());
-            Xnio xnio = Xnio.getInstance();
-            Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+            endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
+            Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
             return new ProtocolChannelClient<T>(true, endpoint, providerRegistration, configuration.getUri(), configuration.getChannelFactory(), configuration.getConnectTimeout());
         }
     }

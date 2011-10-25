@@ -36,6 +36,10 @@
     <artifactId>jboss-as-protocol</artifactId>
     <name>JBoss Application Server: Protocol Utilities</name>
 
+    <properties>
+        <test.level>INFO</test.level>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -54,6 +58,7 @@
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.marshalling</groupId>
@@ -89,6 +94,25 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <property>
+                            <name>java.util.logging.manager</name>
+                            <value>org.jboss.logmanager.LogManager</value>
+                        </property>
+                        <property>
+                            <name>jboss.remoting.leakdebugging</name>
+                            <value>false</value>
+                        </property>
+                        <property>
+                            <name>test.level</name>
+                            <value>${test.level}</value>
+                        </property>
+                    </systemProperties>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

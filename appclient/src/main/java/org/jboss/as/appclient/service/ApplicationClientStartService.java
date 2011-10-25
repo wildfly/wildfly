@@ -26,9 +26,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.callback.Callback;
@@ -51,13 +48,11 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-import org.xnio.Xnio;
 
 
 /**
@@ -94,27 +89,12 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         try {
-            //TODO: this is a complete hack
-            //we need a real way of setting up the remote EJB
-            ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactory() {
-                @Override
-                public Thread newThread(final Runnable r) {
-                    Thread t = new Thread(r);
-                    t.setName("App Client Remoting Thread");
-                    t.setDaemon(true);
-                    return t;
-                }
-            });
-
-
-            final Endpoint endpoint = Remoting.createEndpoint("endpoint", executor, OptionMap.EMPTY);
-            final Xnio xnio = Xnio.getInstance();
-            final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
-
+            final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
             // open a connection
             final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
-            final Connection connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
+            final Connection connection = IoFutureHelper.get(futureConnection, 5L, TimeUnit.SECONDS);
 
             thread = new Thread(new Runnable() {
                 @Override

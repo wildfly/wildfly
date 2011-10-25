@@ -25,14 +25,11 @@ package org.jboss.as.remoting;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.xnio.OptionMap;
 
@@ -60,9 +57,6 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
         final EndpointService endpointService = new EndpointService(nodeName, EndpointService.EndpointType.SUBSYSTEM);
         // todo configure option map
         endpointService.setOptionMap(OptionMap.EMPTY);
-        final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
-        //TODO inject this from somewhere?
-        executorInjector.inject(Executors.newCachedThreadPool());
 
         newControllers.add(context
                 .getServiceTarget()
