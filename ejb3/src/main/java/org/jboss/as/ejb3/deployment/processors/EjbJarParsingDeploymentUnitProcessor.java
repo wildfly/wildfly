@@ -115,10 +115,8 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             ejbJarMetaData = jbossMetaData;
         } else if (jbossMetaData == null) {
             ejbJarMetaData = specMetaData;
-        } else if (specMetaData instanceof EjbJar31MetaData) {
-            ejbJarMetaData = jbossMetaData.createMerged((EjbJar31MetaData) specMetaData);
         } else {
-            throw new UnsupportedOperationException("AS7-1211: Only merging of EjbJar31MetaData is supported, actual is " + specMetaData);
+            ejbJarMetaData = jbossMetaData.createMerged(specMetaData);
         }
 
         // Mark it as a EJB deployment

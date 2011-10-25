@@ -22,13 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import java.lang.reflect.Modifier;
-import java.util.List;
-
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -52,6 +45,12 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionType;
 import org.jboss.msc.service.ServiceName;
+
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+import java.lang.reflect.Modifier;
+import java.util.List;
 
 /**
  * User: jpai
@@ -131,14 +130,18 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             final String ejbName = sessionBeanClassInfo.name().local();
             final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
-            final SessionBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, SessionBeanMetaData.class);
+            final EnterpriseBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName);
             final SessionBeanComponentDescription.SessionBeanType sessionBeanType;
             final String beanClassName;
+            if (beanMetaData != null && beanMetaData instanceof SessionBeanMetaData) {
+                sessionBeanType = override(annotatedSessionBeanType, descriptionOf(((SessionBeanMetaData) beanMetaData).getSessionType()));
+            }
+            else {
+                sessionBeanType = annotatedSessionBeanType;
+            }
             if (beanMetaData != null) {
-                sessionBeanType = override(annotatedSessionBeanType, descriptionOf(beanMetaData.getSessionType()));
                 beanClassName = override(sessionBeanClassInfo.name().toString(), beanMetaData.getEjbClass());
             } else {
-                sessionBeanType = annotatedSessionBeanType;
                 beanClassName = sessionBeanClassInfo.name().toString();
             }
 
