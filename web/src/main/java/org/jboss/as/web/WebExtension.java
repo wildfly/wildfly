@@ -54,7 +54,7 @@ public class WebExtension implements Extension {
     private static final PathElement hostPath = PathElement.pathElement(Constants.VIRTUAL_SERVER);
     private static final PathElement sslPath = PathElement.pathElement(Constants.SSL);
 
-    private static final PathElement confPath = PathElement.pathElement(Constants.CONFIGURATION);
+    private static final PathElement confPath = PathElement.pathElement(Constants.CONTAINER_CONFIG);
     private static final PathElement jspconfigurationPath = PathElement.pathElement(Constants.CONTAINER_CONFIG, Constants.JSP_CONFIGURATION);
     private static final PathElement resourcesPath = PathElement.pathElement(Constants.CONTAINER_CONFIG, Constants.STATIC_RESOURCES);
     private static final PathElement containerPath = PathElement.pathElement(Constants.CONTAINER_CONFIG, Constants.CONTAINER);

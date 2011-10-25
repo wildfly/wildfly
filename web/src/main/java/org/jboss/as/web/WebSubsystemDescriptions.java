@@ -757,8 +757,8 @@ class WebSubsystemDescriptions {
     public static ModelNode getStaticResourceDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
-
         node.get(DESCRIPTION).set(bundle.getString("web.configuration.static"));
+
         return getStaticResourcesCommonDescription(node, ATTRIBUTES, bundle);
     }
     public static ModelNode getStaticResourceDescription(final ModelNode node, final String type, final ResourceBundle bundle) {
@@ -779,6 +779,14 @@ class WebSubsystemDescriptions {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
         node.get(DESCRIPTION).set(bundle.getString("web.configuration"));
+
+        node.get(CHILDREN, Constants.STATIC_RESOURCES, DESCRIPTION).set(bundle.getString("web.configuration.static"));
+        node.get(CHILDREN, Constants.STATIC_RESOURCES, MODEL_DESCRIPTION).setEmptyObject();
+        node.get(CHILDREN, Constants.JSP_CONFIGURATION, DESCRIPTION).set(bundle.getString("web.configuration.jsp"));
+        node.get(CHILDREN, Constants.JSP_CONFIGURATION, MODEL_DESCRIPTION).setEmptyObject();
+        node.get(CHILDREN, Constants.CONTAINER, DESCRIPTION).set(bundle.getString("web.configuration.container"));
+        node.get(CHILDREN, Constants.CONTAINER, MODEL_DESCRIPTION).setEmptyObject();
+
         return node;
     }
     public static ModelNode getContainerDescription(Locale locale) {
