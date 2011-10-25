@@ -77,6 +77,22 @@ process_test_directives() {
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $ALL_TESTS"
         TESTS_SPECIFIED="Y"
         ;;
+      # Basic tests. Includes clustering tests.
+      -Dinteg-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $INTEGRATION_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # Clustering tests. Includes clustering tests.
+      -Dcluster-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $CLUSTER_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # Integration tests. Includes clustering tests.
+      -Dbasic-tests)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BASIC_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+
       # Benchmark tests.
       -Dbenchmark-tests)
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BENCHMARK_TESTS"
