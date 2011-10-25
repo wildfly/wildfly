@@ -22,6 +22,8 @@
 
 package org.jboss.as.xts;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -31,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -68,7 +71,7 @@ public class XTSExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(XTSSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ModelDescriptionConstants.ADD, XTSSubsystemAdd.INSTANCE, XTSSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, XTSDescribeHandler.INSTANCE, XTSDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parser);
     }
 
@@ -179,27 +182,4 @@ public class XTSExtension implements Extension {
         }
     }
 
-    private static class XTSDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final XTSDescribeHandler INSTANCE = new XTSDescribeHandler();
-        @Override
-        public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
-
-            ModelNode add = createEmptyAddOperation();
-
-            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-            if (model.hasDefined(CommonAttributes.XTS_ENVIRONMENT)) {
-                add.get(CommonAttributes.XTS_ENVIRONMENT).set(model.get(CommonAttributes.XTS_ENVIRONMENT));
-            }
-
-            context.getResult().add(add);
-
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
-    }
 }

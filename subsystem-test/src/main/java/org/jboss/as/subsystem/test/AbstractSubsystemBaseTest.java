@@ -101,15 +101,19 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         // Parse the subsystem xml and install into the first controller
         final String subsystemXml = configId == null ? getSubsystemXml() : getSubsystemXml(configId);
         final KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        Assert.assertNotNull(servicesA);
         //Get the model and the persisted xml from the first controller
         final ModelNode modelA = servicesA.readWholeModel();
+        Assert.assertNotNull(modelA);
 
         // Test marshaling
         final String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
+
         // validate the the normalized xmls
-        validateXml(normalizeXML(subsystemXml), normalizeXML(marshalled));
+        String normalizedSubsystem = normalizeXML(subsystemXml);
+        validateXml(normalizedSubsystem, normalizeXML(marshalled));
 
         //Install the persisted xml from the first controller into a second controller
         final KernelServices servicesB = super.installInController(additionalInit, marshalled);

@@ -23,11 +23,11 @@ public class Descriptions {
         // xts-environment
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("xts-environment"));
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.TYPE).set(ModelType.OBJECT);
-        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.REQUIRED).set(false);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.REQUIRED).set(true);
         // xts-environment.url
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("xts-environment.url"));
         subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.REQUIRED).set(false);
+        subsystem.get(ModelDescriptionConstants.ATTRIBUTES, CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.VALUE_TYPE, ModelDescriptionConstants.URL, ModelDescriptionConstants.REQUIRED).set(true);
 
         return subsystem;
     }
