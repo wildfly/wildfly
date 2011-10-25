@@ -39,46 +39,6 @@ class OSGiSubsystemDescribeHandler extends GenericSubsystemDescribeHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         super.execute(context, operation);
-
-        /*
-        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-        PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
-
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(rootAddress.toModelNode());
-        if (model.has(ACTIVATION)) {
-            subsystem.get(ACTIVATION).set(model.get(ACTIVATION));
-        }
-        ModelNode result = context.getResult();
-        result.add(subsystem);
-
-        if (model.has(CONFIGURATION)) {
-            for(Property conf : model.get(CONFIGURATION).asPropertyList()) {
-                ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.CONFIGURATION, conf.getName());
-                //result.add(OSGiConfigurationAdd.getAddOperation(address, conf.getValue()));
-            }
-        }
-
-        if (model.has(PROPERTY)) {
-            for (Property prop : model.get(PROPERTY).asPropertyList()) {
-                ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.PROPERTY, prop.getName());
-                //result.add(OSGiFrameworkPropertyAdd.getAddOperation(address, prop.getValue()));
-            }
-        }
-
-        if (model.has(CAPABILITY)) {
-            for (Property prop : model.get(CAPABILITY).asPropertyList()) {
-                ModelNode address = rootAddress.toModelNode();
-                address.add(CommonAttributes.CAPABILITY, prop.getName());
-                //result.add(OSGiCapabilityAdd.getAddOperation(address, prop.getValue()));
-            }
-        }
-        */
-
         context.completeStep();
     }
 }

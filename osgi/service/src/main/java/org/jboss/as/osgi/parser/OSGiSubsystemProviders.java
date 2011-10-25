@@ -55,6 +55,7 @@ class OSGiSubsystemProviders {
             subsystem.get(DESCRIPTION).set(resbundle.getString("subsystem"));
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
+            subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
 
             subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.activation"));
             subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
@@ -87,13 +88,12 @@ class OSGiSubsystemProviders {
             node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
             node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
             node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
-            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.RESTART_REQUIRED).set("no-services");
-
+            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_NONE.toString());
             return node;
         }
     };
 
-    static final DescriptionProvider FRAMEWORK_PROPERTY_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider PROPERTY_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(Locale locale) {
             final ModelNode node = new ModelNode();
             ResourceBundle resbundle = getResourceBundle(locale);
