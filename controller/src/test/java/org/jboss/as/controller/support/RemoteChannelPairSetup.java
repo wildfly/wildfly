@@ -109,7 +109,6 @@ public class RemoteChannelPairSetup {
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
         configuration.setUri(new URI("" + URI_SCHEME + "://127.0.0.1:" + PORT + ""));
-        configuration.setExecutor(executorService);
         configuration.setChannelFactory(new ManagementChannelFactory());
 
         ProtocolChannelClient <ManagementChannel>client = ProtocolChannelClient.create(configuration);
