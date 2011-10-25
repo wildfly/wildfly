@@ -16,10 +16,6 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.sasl.JBossSaslProvider;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * JBossAsManagedContainer
@@ -57,8 +57,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     protected void startInternal() throws LifecycleException {
         ManagedContainerConfiguration config = getContainerConfiguration();
 
-        if (!config.isAllowConnectingToRunningServer()) {
-            verifyNoRunningServer();
+        if(isServerRunning()) {
+            if(config.isAllowConnectingToRunningServer()) {
+                return;
+            } else {
+                failDueToRunning();
+            }
         }
 
         try {
@@ -82,7 +86,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             final String additionalJavaOpts = config.getJavaVmArguments();
 
             File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
-            if (modulesJar.exists() == false)
+            if (!modulesJar.exists())
                 throw new IllegalStateException("Cannot find: " + modulesJar);
 
             List<String> cmd = new ArrayList<String>();
@@ -166,14 +170,14 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         }
     }
 
-    private void verifyNoRunningServer() throws LifecycleException {
+    private boolean isServerRunning() {
         Socket socket = null;
         try {
             socket = new Socket(
                     getContainerConfiguration().getManagementAddress(),
                     getContainerConfiguration().getManagementPort());
         } catch (Exception ignored) { // nothing is running on defined ports
-            return;
+            return false;
         } finally {
             if (socket != null) {
                 try {
@@ -183,6 +187,10 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 }
             }
         }
+        return true;
+    }
+
+    private void failDueToRunning() throws LifecycleException {
         throw new LifecycleException(
                 "The server is already running! " +
                         "Managed containers does not support connecting to running server instances due to the " +
