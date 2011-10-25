@@ -60,9 +60,9 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-public final class WSJMSIntegrationProcessor implements DeploymentUnitProcessor {
+public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProcessor {
 
-    private static Logger LOG = Logger.getLogger(WSJMSIntegrationProcessor.class);
+    private static Logger LOG = Logger.getLogger(WSIntegrationProcessorJAXWS_JMS.class);
     private static final String WSDL_LOCATION = "wsdlLocation";
     private static final String PORT_NAME = "portName";
     private static final String SERVICE_NAME = "serviceName";

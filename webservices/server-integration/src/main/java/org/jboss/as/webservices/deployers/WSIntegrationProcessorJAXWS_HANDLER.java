@@ -20,43 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.webservices.injection;
+package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
-import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.DotNames.HANDLER_CHAIN_ANNOTATION;
-import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
-import static org.jboss.as.webservices.util.DotNames.STATELESS_ANNOTATION;
-import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
-import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINT_HANDLERS_MAPPING_KEY;
-
-import java.lang.reflect.Modifier;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.webservices.deployers.WSComponentDescriptionFactory;
+import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDescriptionFactory {
+public final class WSIntegrationProcessorJAXWS_HANDLER extends AbstractIntegrationProcessorJAXWS {
 
-    private static final Logger logger = Logger.getLogger(JaxwsHandlerComponentDescriptionFactory.class);
-
-    public JaxwsHandlerComponentDescriptionFactory() {
+    public WSIntegrationProcessorJAXWS_HANDLER() {
         super(HANDLER_CHAIN_ANNOTATION);
     }
 
@@ -96,32 +86,6 @@ public final class JaxwsHandlerComponentDescriptionFactory extends WSComponentDe
         jaxwsHandlerDescription.setContextServiceName(ejbContextServiceName);
         jaxwsHandlerDescription.setDeploymentDescriptorEnvironment(ejbEnv);
         jaxwsHandlerDescription.addDependency(ejbContextServiceName, ServiceBuilder.DependencyType.REQUIRED);
-    }
-
-    @Override
-    protected boolean matches(final ClassInfo clazz, final CompositeIndex index) {
-        // assert WS endpoint class - TODO: refactor common code
-        final short flags = clazz.flags();
-        if (Modifier.isInterface(flags)) return false;
-        if (Modifier.isAbstract(flags)) return false;
-        if (!Modifier.isPublic(flags)) return false;
-        if (isJaxwsService(clazz, index)) return false;
-        // validate annotations
-        final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
-        final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
-        if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
-            final String className = clazz.name().toString();
-            logger.warn("@HandlerChain can be specified only on classes annotated either with @WebService or @WebServiceProvider annotation - "
-                    + className + " won't be considered as a webservice endpoint, since it doesn't meet that requirement");
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean isJaxwsEjb(final ClassInfo clazz) { // TODO: refactor to ASHelper
-        final boolean isStateless = clazz.annotations().containsKey(STATELESS_ANNOTATION);
-        final boolean isSingleton = clazz.annotations().containsKey(SINGLETON_ANNOTATION);
-        return isStateless || isSingleton;
     }
 
 }

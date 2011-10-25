@@ -198,6 +198,7 @@ final class MetaDataBuilderJSE {
         final List<ServletMappingMetaData> servletMappings = WebMetaDataHelper.getServletMappings(jbossWebMD);
 
         if (pojoEndpoints.size() > 0) {
+            // JAXWS POJO endpoints
             for (final POJOEndpoint pojoEndpoint : pojoEndpoints) {
                 mappings.put(pojoEndpoint.getName(), pojoEndpoint.getUrlPattern());
                 if (!pojoEndpoint.isDeclared()) {
@@ -208,7 +209,7 @@ final class MetaDataBuilderJSE {
                 }
             }
         } else {
-            // TODO: do the same for JAXRPC POJO endpoints
+            // JAXRPC POJO endpoints
             for (final ServletMappingMetaData mapping : servletMappings) {
                 mappings.put(mapping.getServletName(), mapping.getUrlPatterns().get(0));
             }
@@ -228,6 +229,7 @@ final class MetaDataBuilderJSE {
         final JBossServletsMetaData servlets = WebMetaDataHelper.getServlets(jbossWebMD);
 
         if (pojoEndpoints.size() > 0) {
+            // JAXWS POJO endpoints
             for (final POJOEndpoint pojoEndpoint : pojoEndpoints) {
                 final String pojoName = pojoEndpoint.getName();
                 final String pojoClassName = pojoEndpoint.getClassName();
@@ -242,16 +244,14 @@ final class MetaDataBuilderJSE {
                 }
             }
         } else {
-            if (servlets != null) {
-                for (final ServletMetaData servlet : servlets) {
-                    if (servlet.getServletClass() == null || servlet.getServletClass().trim().length() == 0) {
-                        // Skip JSPs
-                        continue;
-                    }
-
-                    this.log.debug("Creating JBoss agnostic JSE meta data for POJO bean: " + servlet.getServletClass());
-                    mappings.put(servlet.getName(), servlet.getServletClass());
+            // JAXRPC POJO endpoints
+            for (final ServletMetaData servlet : servlets) {
+                if (servlet.getServletClass() == null || servlet.getServletClass().trim().length() == 0) {
+                    continue; // Skip JSPs
                 }
+
+                this.log.debug("Creating JBoss agnostic JSE meta data for POJO bean: " + servlet.getServletClass());
+                mappings.put(servlet.getName(), servlet.getServletClass());
             }
         }
 
