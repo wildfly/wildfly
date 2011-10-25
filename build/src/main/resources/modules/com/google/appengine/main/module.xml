@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat, Inc., and individual contributors
@@ -20,22 +21,24 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.1" name="org.infinispan">
+
+<module xmlns="urn:jboss:module:1.0" name="com.google.appengine">
     <resources>
-        <!-- Insert resources here -->
+        <resource-root path="appengine-api-1.0-sdk-1.5.5.jar">
+           <filter>
+               <include path="com/google/**"/>
+               <exclude path="**"/>
+           </filter>
+        </resource-root>
     </resources>
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.xml.bind.api"/>
-        <module name="net.jcip"/>
-        <module name="org.apache.xerces" services="import"/>
-        <module name="org.jboss.jandex"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.marshalling.river" services="import"/>
-        <module name="org.jgroups"/>
-        <module name="org.infinispan.query" optional="true"/>
+        <module name="javax.activation.api"/>
+        <module name="javax.mail.api"/>
+        <module name="org.jboss.capedwarf"/>
+        <!-- needed for annotations to work (@Transformable, @Indexed, ...) -->
+        <module name="org.infinispan.query"/>
+        <module name="org.hibernate.search"/>
     </dependencies>
 </module>

@@ -316,6 +316,10 @@
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
         </module-def>
 
+        <module-def name="com.google.appengine">
+            <maven-resource group="com.google.appengine" artifact="appengine-api-1.0-sdk" />
+        </module-def>
+
         <module-def name="com.google.guava">
             <maven-resource group="com.google.guava" artifact="guava" />
         </module-def>
@@ -481,6 +485,22 @@
             <maven-resource group="net.jcip" artifact="jcip-annotations"/>
         </module-def>
 
+        <module-def name="net.sourceforge.cssparser">
+            <maven-resource group="net.sourceforge.cssparser" artifact="cssparser"/>
+        </module-def>
+
+        <module-def name="net.sourceforge.nekohtml">
+            <maven-resource group="net.sourceforge.nekohtml" artifact="nekohtml"/>
+        </module-def>
+
+        <module-def name="org.apache.avro">
+            <maven-resource group="org.apache.avro" artifact="avro"/>
+        </module-def>
+
+        <module-def name="org.apache.ant">
+            <maven-resource group="org.apache.ant" artifact="ant"/>
+        </module-def>
+
         <module-def name="org.apache.commons.beanutils">
             <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
         </module-def>
@@ -567,6 +587,14 @@
             <maven-resource group="org.apache.juddi" artifact="uddi-ws"/>
         </module-def>
 
+        <module-def name="org.apache.lucene">
+            <maven-resource group="org.apache.lucene" artifact="lucene-core"/>
+        </module-def>
+
+        <module-def name="org.apache.log4j">
+            <maven-resource group="log4j" artifact="log4j"/>
+        </module-def>
+
         <module-def name="org.apache.neethi">
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
         </module-def>
@@ -642,6 +670,9 @@
         <module-def name="org.hibernate.envers">
             <maven-resource group="org.hibernate" artifact="hibernate-envers"/>
         </module-def>
+        <module-def name="org.hibernate.search">
+            <maven-resource group="org.hibernate" artifact="hibernate-search-engine"/>
+        </module-def>
         <module-def name="org.hibernate.validator">
             <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
         </module-def>
@@ -669,6 +700,10 @@
 
         <module-def name="org.infinispan.client.hotrod">
             <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod" />
+        </module-def>
+
+        <module-def name="org.infinispan.query">
+            <maven-resource group="org.infinispan" artifact="infinispan-query"/>
         </module-def>
 
         <module-def name="org.jacorb">
@@ -897,6 +932,21 @@
         </module-def>
         <module-def name="org.jboss.as.xts">
             <maven-resource group="org.jboss.as" artifact="jboss-as-xts"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.threads">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
+        </module-def>
+
+        <module-def name="org.jboss.capedwarf">
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-blobstore"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-common"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-datastore"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-files"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-images"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-mail"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-urlfetch"/>
+            <maven-resource group="org.jboss.capedwarf.blue" artifact="capedwarf-users"/>
         </module-def>
 
         <module-def name="org.jboss.classfilewriter">
