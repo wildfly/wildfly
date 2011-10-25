@@ -21,10 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.invoker;
 
-import javax.transaction.RollbackException;
-
 import org.infinispan.Cache;
-import org.infinispan.CacheException;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
 import org.infinispan.util.concurrent.TimeoutException;
 

@@ -33,7 +33,6 @@
         <module name="org.jboss.as.clustering.web.infinispan" services="import"/>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.metadata"/>

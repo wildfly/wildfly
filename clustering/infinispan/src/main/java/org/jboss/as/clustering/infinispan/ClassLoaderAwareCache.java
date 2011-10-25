@@ -27,6 +27,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,16 +49,12 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivate
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryVisited;
 import org.infinispan.notifications.cachelistener.event.Event;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
 
 /**
  * AdvancedCache decorator that gracefully handle TCCL switching for cache commands and events.
  * @author Paul Ferraro
  */
 public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
-
-    @SuppressWarnings("unchecked")
-    static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     final WeakReference<ClassLoader> classLoaderRef;
 
@@ -105,13 +102,16 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
         }
         @Override
         protected Object handleDefault(InvocationContext ctx, VisitableCommand command) throws Throwable {
-            ClassLoader classLoader = this.cache.getClassLoader();
-            ContextClassLoaderSwitcher.SwitchContext context = (classLoader != null) ? switcher.getSwitchContext(classLoader) : null;
+            ClassLoader cacheLoader = this.cache.getClassLoader();
+            ClassLoader contextLoader = getContextClassLoader();
+            if (cacheLoader != null) {
+                setContextClassLoader(cacheLoader);
+            }
             try {
                 return super.handleDefault(ctx, command);
             } finally {
-                if (context != null) {
-                    context.reset();
+                if (cacheLoader != null) {
+                    setContextClassLoader(contextLoader);
                 }
             }
         }
@@ -165,8 +165,11 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
         public <K, V> void event(Event<K, V> event) throws Throwable {
             List<Method> methods = this.methods.get(event.getType());
             if (methods != null) {
-                ClassLoader classLoader = this.cache.getClassLoader();
-                ContextClassLoaderSwitcher.SwitchContext context = (classLoader != null) ? switcher.getSwitchContext(classLoader) : null;
+                ClassLoader cacheLoader = this.cache.getClassLoader();
+                ClassLoader contextLoader = getContextClassLoader();
+                if (cacheLoader != null) {
+                    setContextClassLoader(cacheLoader);
+                }
                 try {
                     for (Method method : this.methods.get(event.getType())) {
                         try {
@@ -176,8 +179,8 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
                         }
                     }
                 } finally {
-                    if (context != null) {
-                        context.reset();
+                    if (cacheLoader != null) {
+                        setContextClassLoader(contextLoader);
                     }
                 }
             }
@@ -196,5 +199,26 @@ public class ClassLoaderAwareCache<K, V> extends AbstractDelegatingAdvancedCache
             }
             return this.listener.equals(object);
         }
+    }
+
+    static ClassLoader getContextClassLoader() {
+        PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
+            @Override
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        };
+        return AccessController.doPrivileged(action);
+    }
+
+    static void setContextClassLoader(final ClassLoader loader) {
+        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                Thread.currentThread().setContextClassLoader(loader);
+                return null;
+            }
+        };
+        AccessController.doPrivileged(action);
     }
 }

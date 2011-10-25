@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan;
 
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -37,16 +38,11 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
-import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
 
 /**
  * @author Paul Ferraro
  */
 public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
-    @SuppressWarnings("unchecked")
-    private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
-
     private final String defaultCache;
     private final EmbeddedCacheManager container;
 
@@ -79,13 +75,16 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
      */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean start) {
-        SwitchContext context = start ? switcher.getSwitchContext(DefaultEmbeddedCacheManager.class.getClassLoader()) : null;
+        ClassLoader loader = getContextClassLoader();
+        if (start) {
+            setContextClassLoader(DefaultEmbeddedCacheManager.class.getClassLoader());
+        }
         try {
             Cache<K, V> cache = this.container.<K, V>getCache(this.getCacheName(cacheName), start);
             return (cache != null) ? new DelegatingCache<K, V>(cache) : null;
         } finally {
-            if (context != null) {
-                context.reset();
+            if (start) {
+                setContextClassLoader(loader);
             }
         }
     }
@@ -340,5 +339,26 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
         public int hashCode() {
             return this.cache.hashCode();
         }
+    }
+
+    static ClassLoader getContextClassLoader() {
+        PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
+            @Override
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        };
+        return AccessController.doPrivileged(action);
+    }
+
+    static void setContextClassLoader(final ClassLoader loader) {
+        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                Thread.currentThread().setContextClassLoader(loader);
+                return null;
+            }
+        };
+        AccessController.doPrivileged(action);
     }
 }

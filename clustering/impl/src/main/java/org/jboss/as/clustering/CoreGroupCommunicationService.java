@@ -34,7 +34,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
-import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -56,11 +55,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.ClassLoaderAwareUpHandler;
 import org.jboss.logging.Logger;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
-import org.jboss.util.loading.ContextClassLoaderSwitcher.SwitchContext;
-import org.jboss.util.stream.MarshalledValueInputStream;
-import org.jboss.util.stream.MarshalledValueOutputStream;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.marshalling.MarshallerFactory;
+import org.jboss.marshalling.Marshalling;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
+import org.jboss.marshalling.Unmarshaller;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.Event;
@@ -69,6 +71,7 @@ import org.jgroups.MergeView;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
 import org.jgroups.StateTransferException;
+import org.jgroups.UpHandler;
 import org.jgroups.Version;
 import org.jgroups.View;
 import org.jgroups.blocks.MethodCall;
@@ -125,6 +128,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
     // Constants -----------------------------------------------------
 
     // Attributes ----------------------------------------------------
+    static final MarshallerFactory marshallerFactory = Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader());
 
     private ChannelFactory channelFactory;
     private String stackName;
@@ -161,9 +165,6 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
     String stateIdPrefix;
     final Map<String, StateTransferProvider> stateProviders = new ConcurrentHashMap<String, StateTransferProvider>();
     final Map<String, StateTransferTask<?, ?>> stateTransferTasks = new ConcurrentHashMap<String, StateTransferTask<?, ?>>();
-
-    @SuppressWarnings("unchecked")
-    final ContextClassLoaderSwitcher classLoaderSwitcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
 
     /** The cluster instance log category */
     protected ClusteringImplLogger log = Logger.getMessageLogger(ClusteringImplLogger.class, getClass().getName());
@@ -1009,34 +1010,37 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
     /**
      * Creates an object from a byte buffer
      */
-    Object objectFromByteBufferInternal(byte[] buffer, int offset, int length) throws Exception {
+    Object objectFromByteBufferInternal(ClassLoader loader, byte[] buffer, int offset, int length) throws Exception {
         if (buffer == null) return null;
-
-        ByteArrayInputStream bais = new ByteArrayInputStream(buffer, offset, length);
-        SwitchContext context = classLoaderSwitcher.getSwitchContext(this.getClass().getClassLoader());
+        MarshallingConfiguration config = new MarshallingConfiguration();
+        if (loader != null) {
+            config.setClassResolver(new SimpleClassResolver(loader));
+        }
+        Unmarshaller unmarshaller = marshallerFactory.createUnmarshaller(config);
+        unmarshaller.start(Marshalling.createByteInput(new ByteArrayInputStream(buffer, offset, length)));
         try {
-            MarshalledValueInputStream mvis = new MarshalledValueInputStream(bais);
-            return mvis.readObject();
+            return unmarshaller.readObject();
         } finally {
-            context.reset();
+            unmarshaller.close();
         }
     }
 
     /**
      * Serializes an object into a byte buffer. The object has to implement interface Serializable or Externalizable
      */
-    byte[] objectToByteBufferInternal(Object obj) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        MarshalledValueOutputStream mvos = new MarshalledValueOutputStream(baos);
-        mvos.writeObject(obj);
-        mvos.flush();
-        return baos.toByteArray();
+    byte[] objectToByteBufferInternal(Object object) throws Exception {
+        Marshaller marshaller = marshallerFactory.createMarshaller(new MarshallingConfiguration());
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        marshaller.start(Marshalling.createByteOutput(output));
+        marshaller.writeObject(object);
+        marshaller.close();
+        return output.toByteArray();
     }
 
     /**
      * Creates a response object from a byte buffer - optimized for response marshalling
      */
-    Object objectFromByteBufferResponseInternal(byte[] buffer, int offset, int length) throws Exception {
+    Object objectFromByteBufferResponseInternal(ClassLoader loader, byte[] buffer, int offset, int length) throws Exception {
         if (buffer == null) {
             return null;
         }
@@ -1045,15 +1049,18 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             return null;
         }
 
-        ByteArrayInputStream bais = new ByteArrayInputStream(buffer, offset, length);
+        MarshallingConfiguration config = new MarshallingConfiguration();
+        if (loader != null) {
+            config.setClassResolver(new SimpleClassResolver(loader));
+        }
+        Unmarshaller unmarshaller = marshallerFactory.createUnmarshaller(config);
+        unmarshaller.start(Marshalling.createByteInput(new ByteArrayInputStream(buffer, offset, length)));
         // read past the null/serializable byte
-        bais.read();
-        SwitchContext context = classLoaderSwitcher.getSwitchContext(this.getClass().getClassLoader());
+        unmarshaller.read();
         try {
-            MarshalledValueInputStream mvis = new MarshalledValueInputStream(bais);
-            return mvis.readObject();
+            return unmarshaller.readObject();
         } finally {
-            context.reset();
+            unmarshaller.close();
         }
     }
 
@@ -1066,13 +1073,14 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             return new byte[] { NULL_VALUE };
         }
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Marshaller marshaller = marshallerFactory.createMarshaller(new MarshallingConfiguration());
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        marshaller.start(Marshalling.createByteOutput(output));
         // write a marker to stream to distinguish from null value stream
-        baos.write(SERIALIZABLE_VALUE);
-        MarshalledValueOutputStream mvos = new MarshalledValueOutputStream(baos);
-        mvos.writeObject(obj);
-        mvos.flush();
-        return baos.toByteArray();
+        marshaller.write(SERIALIZABLE_VALUE);
+        marshaller.writeObject(obj);
+        marshaller.close();
+        return output.toByteArray();
     }
 
     private void notifyChannelLock() {
@@ -1326,7 +1334,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
 
         @Override
         public Object objectFromBuffer(byte[] buf, int offset, int length) throws Exception {
-            return CoreGroupCommunicationService.this.objectFromByteBufferInternal(buf, offset, length);
+            return CoreGroupCommunicationService.this.objectFromByteBufferInternal(null, buf, offset, length);
         }
     }
 
@@ -1342,7 +1350,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
 
         @Override
         public Object objectFromBuffer(byte[] buf, int offset, int length) throws Exception {
-            Object retval = CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(buf, offset, length);
+            Object retval = CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(HAServiceResponse.class.getClassLoader(), buf, offset, length);
             // HAServiceResponse is only received when a scoped classloader is required for unmarshalling
             if (!(retval instanceof HAServiceResponse)) {
                 return retval;
@@ -1352,12 +1360,11 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             byte[] payload = ((HAServiceResponse) retval).getPayload();
 
             WeakReference<ClassLoader> weak = CoreGroupCommunicationService.this.clmap.get(serviceName);
-            SwitchContext context = CoreGroupCommunicationService.this.classLoaderSwitcher.getSwitchContext((weak != null) ? weak.get() : CoreGroupCommunicationService.class.getClassLoader());
-            try {
-                return CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(payload, offset, length);
-            } finally {
-                context.reset();
+            ClassLoader serviceLoader = (weak != null) ? weak.get() : null;
+            if (serviceLoader == null) {
+                serviceLoader = CoreGroupCommunicationService.class.getClassLoader();
             }
+            return CoreGroupCommunicationService.this.objectFromByteBufferResponseInternal(serviceLoader, payload, offset, length);
         }
     }
 
@@ -1375,6 +1382,11 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             setChannel(channel);
             channel.addChannelListener(this);
             start();
+        }
+
+        @Override
+        public UpHandler getProtocolAdapter() {
+            return new ClassLoaderAwareUpHandler(this.prot_adapter, CoreGroupCommunicationService.class.getClassLoader());
         }
 
         /**
@@ -1404,7 +1416,7 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
             }
 
             try {
-                Object wrapper = CoreGroupCommunicationService.this.objectFromByteBufferInternal(req.getRawBuffer(), req.getOffset(), req.getLength());
+                Object wrapper = CoreGroupCommunicationService.this.objectFromByteBufferInternal(null, req.getRawBuffer(), req.getOffset(), req.getLength());
                 if (wrapper == null || !(wrapper instanceof Object[])) {
                     CoreGroupCommunicationService.this.log.invalidPartitionMessageWrapper(CoreGroupCommunicationService.this.getGroupName());
                     return null;
@@ -1430,14 +1442,15 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
 
             // If client registered the service with a classloader, override the thread classloader here
             WeakReference<ClassLoader> weak = CoreGroupCommunicationService.this.clmap.get(service);
-            SwitchContext context = CoreGroupCommunicationService.this.classLoaderSwitcher.getSwitchContext((weak != null) ? weak.get() : CoreGroupCommunicationService.class.getClassLoader());
+            ClassLoader serviceLoader = (weak != null) ? weak.get() : null;
+            if (serviceLoader == null) {
+                serviceLoader = CoreGroupCommunicationService.class.getClassLoader();
+            }
             try {
-                body = CoreGroupCommunicationService.this.objectFromByteBufferInternal(request_bytes, 0, request_bytes.length);
+                body = CoreGroupCommunicationService.this.objectFromByteBufferInternal(serviceLoader, request_bytes, 0, request_bytes.length);
             } catch (Exception e) {
                 CoreGroupCommunicationService.this.log.partitionFailedExtractingMessageBody(e, CoreGroupCommunicationService.this.getGroupName());
                 return null;
-            } finally {
-                context.reset();
             }
 
             if (body == null || !(body instanceof MethodCall)) {
@@ -1670,8 +1683,12 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
                     String serviceName = entry.getKey();
                     out.writeUTF(serviceName);
                     StateTransferProvider provider = entry.getValue();
+
+                    Marshaller marshaller = marshallerFactory.createMarshaller(new MarshallingConfiguration());
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
-                    new MarshalledValueOutputStream(output).writeObject(provider.getCurrentState());
+                    marshaller.start(Marshalling.createByteOutput(output));
+                    marshaller.writeObject(provider.getCurrentState());
+                    marshaller.close();
                     byte[] bytes = output.toByteArray();
                     out.writeInt(bytes.length);
                     out.write(bytes);
@@ -1844,22 +1861,17 @@ public class CoreGroupCommunicationService implements GroupRpcDispatcher, GroupM
 
         @Override
         protected void setState(InputStream is) throws IOException, ClassNotFoundException {
-            ClassLoader cl = getStateTransferClassLoader();
-            SwitchContext switchContext = CoreGroupCommunicationService.this.classLoaderSwitcher.getSwitchContext(cl);
-            try {
-                MarshalledValueInputStream mvis = new MarshalledValueInputStream(is);
-                this.state = (Serializable) mvis.readObject();
-            } finally {
-                switchContext.reset();
-            }
+            MarshallingConfiguration config = new MarshallingConfiguration();
+            config.setClassResolver(new SimpleClassResolver(getStateTransferClassLoader()));
+            Unmarshaller unmarshaller = marshallerFactory.createUnmarshaller(config);
+            unmarshaller.start(Marshalling.createByteInput(is));
+            this.state = unmarshaller.readObject(Serializable.class);
+            unmarshaller.close();
         }
 
         private ClassLoader getStateTransferClassLoader() {
-            ClassLoader cl = classloader == null ? null : classloader.get();
-            if (cl == null) {
-                cl = this.getClass().getClassLoader();
-            }
-            return cl;
+            ClassLoader loader = (classloader != null) ? classloader.get() : null;
+            return (loader != null) ? loader : this.getClass().getClassLoader();
         }
     }
 

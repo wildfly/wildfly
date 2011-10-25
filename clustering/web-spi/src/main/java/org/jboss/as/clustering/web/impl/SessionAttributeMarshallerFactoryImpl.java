@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.web.impl;
 
-import org.jboss.as.clustering.ClassLoaderProvider;
 import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.web.LocalDistributableSessionManager;
 import org.jboss.as.clustering.web.SessionAttributeMarshaller;
@@ -57,10 +56,10 @@ public class SessionAttributeMarshallerFactoryImpl implements SessionAttributeMa
         MarshallingConfiguration configuration = new MarshallingConfiguration();
         ApplicationClassResolver resolver = new ApplicationClassResolver(manager);
         configuration.setClassResolver(resolver);
-        return new SessionAttributeMarshallerImpl(new MarshallingContext(this.factory, configuration, resolver));
+        return new SessionAttributeMarshallerImpl(new MarshallingContext(this.factory, configuration));
     }
 
-    private static class ApplicationClassResolver extends AbstractClassResolver implements ClassLoaderProvider {
+    private static class ApplicationClassResolver extends AbstractClassResolver {
         private final LocalDistributableSessionManager manager;
 
         ApplicationClassResolver(LocalDistributableSessionManager manager) {

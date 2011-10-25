@@ -22,7 +22,6 @@
 package org.jboss.as.clustering.infinispan.invoker;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 
 /**
  * Encapsulates logic used to invoke an operation on a cache.

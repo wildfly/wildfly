@@ -30,7 +30,6 @@
 
     <dependencies>
         <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>
