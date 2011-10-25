@@ -110,13 +110,18 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         if (Modifier.isAbstract(flags)) return false;
         if (!Modifier.isPublic(flags)) return false;
         if (isJaxwsService(clazz, index)) return false;
-        if (Modifier.isFinal(flags)) return false;
         final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
         final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
         if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
             final String className = clazz.name().toString();
             logger.warn("[JAXWS 2.2 spec, section 7.7] The @WebService and @WebServiceProvider annotations are mutually exclusive - "
                     + className + " won't be considered as a webservice endpoint, since it doesn't meet that requirement");
+            return false;
+        }
+        if (Modifier.isFinal(flags)) {
+            final String className = clazz.name().toString();
+            logger.warn("WebService endpoint class cannot be final - "
+                    + className + " won't be considered as a webservice endpoint");
             return false;
         }
         return true;
