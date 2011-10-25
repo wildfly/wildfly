@@ -241,7 +241,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     try {
                         final HashMap properties = new HashMap();
                         if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                            ValidatorFactory validatorFactory = SerializableValidatorFactory.getINSTANCE();
+                            ValidatorFactory validatorFactory = SerializableValidatorFactory.validatorFactory();
                             properties.put("javax.persistence.validation.factory", validatorFactory);
                         }
                         final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder);
