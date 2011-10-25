@@ -43,8 +43,8 @@ import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
-import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -70,14 +70,8 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
             return new ExecuteRequestHandler();
         } else if (id == ModelControllerProtocol.COMPLETE_TX_REQUEST) {
             return new CompleteTxOperationHandler();
-        } else if (id == ModelControllerProtocol.TEMP_PING_REQUEST){
-            return new PingRequestHandler();
         }
         return null;
-    }
-
-    //TODO this should be deleted once REM3-121 is available
-    private static class PingRequestHandler extends ManagementRequestHandler {
     }
 
     /**

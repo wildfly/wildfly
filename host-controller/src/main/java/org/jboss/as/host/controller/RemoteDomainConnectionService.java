@@ -190,15 +190,15 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             }
         });
 
-        if (this.channelClient != null) {
-            try {
-                new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
-            } catch (Exception e) {
-            }
-
-            this.channelClient.close();
-            this.channelClient = null;
-        }
+//        if (this.channelClient != null) {
+//            try {
+//                new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
+//            } catch (Exception e) {
+//            }
+//
+//            this.channelClient.close();
+//            this.channelClient = null;
+//        }
 
         txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient<ManagementChannel> client;

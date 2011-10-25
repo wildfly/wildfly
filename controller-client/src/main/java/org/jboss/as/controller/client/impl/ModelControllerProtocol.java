@@ -38,8 +38,6 @@ public interface ModelControllerProtocol {
     byte GET_INPUTSTREAM_REQUEST = 0x4C;
     byte CANCEL_ASYNC_REQUEST = 0x4D;
     byte COMPLETE_TX_REQUEST = 0x4E;
-    //TODO this can go once REM3-121 is available
-    byte TEMP_PING_REQUEST = 0x4F;
 
 
     byte PARAM_END = 0x60;
