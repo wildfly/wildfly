@@ -28,10 +28,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.UUID;
 
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.util.id.GUID;
 import org.junit.Test;
 
 /**
@@ -39,18 +39,13 @@ import org.junit.Test;
  * 
  * @author Brian Stansberry
  */
-public class SimpleMarshalledValueFactoryTestCase implements ClassLoaderProvider {
+public class SimpleMarshalledValueFactoryTestCase {
     private final MarshallingContext context;
     private final SimpleMarshalledValueFactory factory;
     
     public SimpleMarshalledValueFactoryTestCase() {
-        this.context = new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), new MarshallingConfiguration(), this);
+        this.context = new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), new MarshallingConfiguration());
         this.factory = this.createFactory(this.context);
-    }
-    
-    @Override
-    public ClassLoader getClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
     }
 
     SimpleMarshalledValueFactory createFactory(MarshallingContext context) {
@@ -62,24 +57,24 @@ public class SimpleMarshalledValueFactoryTestCase implements ClassLoaderProvider
      */
     @Test
     public void get() throws Exception {
-        GUID guid = new GUID();
-        SimpleMarshalledValue<GUID> mv = this.factory.createMarshalledValue(guid);
+        UUID uuid = UUID.randomUUID();
+        SimpleMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
 
         assertNotNull(mv.peek());
-        assertSame(guid, mv.peek());
-        assertSame(guid, mv.get(this.context));
+        assertSame(uuid, mv.peek());
+        assertSame(uuid, mv.get(this.context));
 
-        SimpleMarshalledValue<GUID> copy = replicate(mv);
+        SimpleMarshalledValue<UUID> copy = replicate(mv);
 
         assertNull(copy.peek());
         
-        GUID guid2 = copy.get(this.context);
-        assertNotSame(guid, guid2);
-        assertEquals(guid, guid2);
+        UUID uuid2 = copy.get(this.context);
+        assertNotSame(uuid, uuid2);
+        assertEquals(uuid, uuid2);
 
         copy = replicate(copy);
-        guid2 = copy.get(this.context);
-        assertEquals(guid, guid2);
+        uuid2 = copy.get(this.context);
+        assertEquals(uuid, uuid2);
 
         mv = this.factory.createMarshalledValue(null);
         assertNull(mv.peek());
@@ -92,21 +87,21 @@ public class SimpleMarshalledValueFactoryTestCase implements ClassLoaderProvider
      */
     @Test
     public void equals() throws Exception {
-        GUID guid = new GUID();
-        SimpleMarshalledValue<GUID> mv = this.factory.createMarshalledValue(guid);
+        UUID uuid = UUID.randomUUID();
+        SimpleMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
 
         assertTrue(mv.equals(mv));
         assertFalse(mv.equals(null));
 
-        SimpleMarshalledValue<GUID> dup = this.factory.createMarshalledValue(guid);
+        SimpleMarshalledValue<UUID> dup = this.factory.createMarshalledValue(uuid);
         assertTrue(mv.equals(dup));
         assertTrue(dup.equals(mv));
 
-        SimpleMarshalledValue<GUID> replica = replicate(mv);
+        SimpleMarshalledValue<UUID> replica = replicate(mv);
         assertTrue(mv.equals(replica));
         assertTrue(replica.equals(mv));
 
-        SimpleMarshalledValue<GUID> nulled = this.factory.createMarshalledValue(null);
+        SimpleMarshalledValue<UUID> nulled = this.factory.createMarshalledValue(null);
         assertFalse(mv.equals(nulled));
         assertFalse(nulled.equals(mv));
         assertFalse(replica.equals(nulled));
@@ -121,12 +116,12 @@ public class SimpleMarshalledValueFactoryTestCase implements ClassLoaderProvider
      */
     @Test
     public void testHashCode() throws Exception {
-        GUID guid = new GUID();
-        SimpleMarshalledValue<GUID> mv = this.factory.createMarshalledValue(guid);
-        assertEquals(guid.hashCode(), mv.hashCode());
+        UUID uuid = UUID.randomUUID();
+        SimpleMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
+        assertEquals(uuid.hashCode(), mv.hashCode());
 
-        SimpleMarshalledValue<GUID> copy = replicate(mv);
-        this.validateHashCode(guid, copy);
+        SimpleMarshalledValue<UUID> copy = replicate(mv);
+        this.validateHashCode(uuid, copy);
 
         mv = this.factory.createMarshalledValue(null);
         assertEquals(0, mv.hashCode());

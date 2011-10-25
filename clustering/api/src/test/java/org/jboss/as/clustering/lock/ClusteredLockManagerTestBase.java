@@ -87,7 +87,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         testee.start();
 
-        verify(rpcDispatcher).registerRPCHandler(eq("test"), any(RpcTarget.class));
+        verify(rpcDispatcher).registerRPCHandler(eq("test"), any(RpcTarget.class), same(rpcDispatcher.getClass().getClassLoader()));
         verify(notifier).registerGroupMembershipListener(testee);
 
         assertEquals("Current view is correct", 1, testee.getCurrentView().size());
@@ -493,7 +493,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         testee.start();
         
-        verify(rpcDispatcher).registerRPCHandler(eq("test"), c.capture());
+        verify(rpcDispatcher).registerRPCHandler(eq("test"), c.capture(), same(rpcDispatcher.getClass().getClassLoader()));
         verify(notifier).registerGroupMembershipListener(same(testee));
         verify(handler).setLocalNode(same(node));
         

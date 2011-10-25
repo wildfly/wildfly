@@ -23,8 +23,8 @@ package org.jboss.as.clustering.jgroups;
 
 import java.lang.ref.WeakReference;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jgroups.Event;
 import org.jgroups.UpHandler;
 
@@ -33,14 +33,11 @@ import org.jgroups.UpHandler;
  * @author Paul Ferraro
  */
 public class ClassLoaderAwareUpHandler implements UpHandler {
-    @SuppressWarnings("unchecked")
-    private static final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
-
     private final UpHandler handler;
     private final WeakReference<ClassLoader> loaderRef;
 
     public ClassLoaderAwareUpHandler(UpHandler handler) {
-        this(handler, Thread.currentThread().getContextClassLoader());
+        this(handler, getContextClassLoader());
     }
 
     public ClassLoaderAwareUpHandler(UpHandler handler, ClassLoader loader) {
@@ -51,13 +48,37 @@ public class ClassLoaderAwareUpHandler implements UpHandler {
     @Override
     public Object up(Event event) {
         ClassLoader loader = this.loaderRef.get();
-        ContextClassLoaderSwitcher.SwitchContext context = (loader != null) ? switcher.getSwitchContext(loader) : null;
+        ClassLoader contextLoader = getContextClassLoader();
+        if (loader != null) {
+            setContextClassLoader(loader);
+        }
         try {
             return this.handler.up(event);
         } finally {
-            if (context != null) {
-                context.reset();
+            if (loader != null) {
+                setContextClassLoader(contextLoader);
             }
         }
+    }
+
+    private static ClassLoader getContextClassLoader() {
+        PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
+            @Override
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        };
+        return AccessController.doPrivileged(action);
+    }
+
+    private static void setContextClassLoader(final ClassLoader loader) {
+        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                Thread.currentThread().setContextClassLoader(loader);
+                return null;
+            }
+        };
+        AccessController.doPrivileged(action);
     }
 }
