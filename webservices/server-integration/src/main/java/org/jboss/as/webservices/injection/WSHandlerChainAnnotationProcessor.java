@@ -112,9 +112,10 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
 
             if (annotationTarget instanceof ClassInfo) {
                 final ClassInfo classInfo = (ClassInfo) annotationTarget;
-                assertWebServiceAnnotations(classInfo, index);
-                final String endpointClass = classInfo.name().toString();
-                processHandlerChainAnnotation(resourceRoot, handlerChainAnnotation, endpointClass, mapping);
+                if (isJaxwsEndpoint(classInfo, index)) {
+                    final String endpointClass = classInfo.name().toString();
+                    processHandlerChainAnnotation(resourceRoot, handlerChainAnnotation, endpointClass, mapping);
+                }
             } else {
                 // We ignore fields & methods annotated with @HandlerChain.
                 // These are used always in combination with @WebServiceRef
@@ -172,14 +173,14 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         return retVal;
     }
 
-    private static boolean assertWebServiceAnnotations(final ClassInfo clazz, final Index index) {
-        // assert WS endpoint class - TODO: refactor common code
+    private static boolean isJaxwsEndpoint(final ClassInfo clazz, final Index index) {
+        // assert JAXWS endpoint class flags
         final short flags = clazz.flags();
         if (Modifier.isInterface(flags)) return false;
         if (Modifier.isAbstract(flags)) return false;
-        if (Modifier.isFinal(flags)) return false;
         if (!Modifier.isPublic(flags)) return false;
         if (isJaxwsService(clazz, index)) return false;
+        if (Modifier.isFinal(flags)) return false;
         final boolean isWebService = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
         final boolean isWebServiceProvider = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
         return isWebService || isWebServiceProvider;
