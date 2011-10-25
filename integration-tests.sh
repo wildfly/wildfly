@@ -48,14 +48,16 @@ case "`uname`" in
         ;;
 esac
 
+
+
+
 #
-# integration testsuite support
+#  Integration testsuite support.
 #
 
 #
 CMD_LINE_PARAMS=
 TESTS_SPECIFIED="N"
-# each test module executes a different type of test
 . testsuite/groupDefs.sh
 
 #
@@ -66,11 +68,11 @@ TESTS_SPECIFIED="N"
 #
 process_test_directives() {
 
-  # for each parameter, check for testsuite directives
+  # For each parameter, check for testsuite directives.
   for param in $@
   do
     case $param in
-      # if someone specified -DallTests, run all tests except benchmark and
+      # -DallTests runs all tests except benchmark and stress.
       -DallTests)
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $ALL_TESTS"
         TESTS_SPECIFIED="Y"
@@ -98,6 +100,11 @@ process_test_directives() {
       # Compat tests
       -Dcompat-tests)
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $COMPAT_TESTS"
+        TESTS_SPECIFIED="Y"
+        ;;
+      # Don't run smoke tests if a single test is specified.
+      -Dtest=*)
+        CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param" # -DfailIfNoTests=false
         TESTS_SPECIFIED="Y"
         ;;
       # pass through all other params
