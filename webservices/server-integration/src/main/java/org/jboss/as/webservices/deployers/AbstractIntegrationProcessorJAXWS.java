@@ -24,7 +24,13 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
+import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
+import static org.jboss.as.webservices.util.DotNames.SINGLETON_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.STATELESS_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
+import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
@@ -50,13 +56,13 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public abstract class WSComponentDescriptionFactory implements DeploymentUnitProcessor {
+public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUnitProcessor {
 
-    private static final Logger logger = Logger.getLogger(WSComponentDescriptionFactory.class);
+    private static final Logger logger = Logger.getLogger(AbstractIntegrationProcessorJAXWS.class);
 
     private final DotName[] dotNames;
 
-    protected WSComponentDescriptionFactory(final DotName... dotNames) {
+    protected AbstractIntegrationProcessorJAXWS(final DotName... dotNames) {
         this.dotNames = dotNames;
     }
 
@@ -80,7 +86,7 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
                         final AnnotationTarget target = wsAnnotation.target();
                         if (target instanceof ClassInfo) {
                             final ClassInfo classInfo = (ClassInfo) target;
-                            if (matches(classInfo, index)) {
+                            if (isJaxwsEndpoint(classInfo, index)) {
                                 processAnnotation(unit, classInfo, wsAnnotation, index);
                             }
                         }
@@ -97,9 +103,26 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
 
     protected abstract void processAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException;
 
-    protected abstract boolean matches(final ClassInfo classInfo, final CompositeIndex index);
+    private static boolean isJaxwsEndpoint(final ClassInfo clazz, final CompositeIndex index) {
+        // assert JAXWS endpoint class flags
+        final short flags = clazz.flags();
+        if (Modifier.isInterface(flags)) return false;
+        if (Modifier.isAbstract(flags)) return false;
+        if (!Modifier.isPublic(flags)) return false;
+        if (isJaxwsService(clazz, index)) return false;
+        if (Modifier.isFinal(flags)) return false;
+        final boolean hasWebServiceAnnotation = clazz.annotations().containsKey(WEB_SERVICE_ANNOTATION);
+        final boolean hasWebServiceProviderAnnotation = clazz.annotations().containsKey(WEB_SERVICE_PROVIDER_ANNOTATION);
+        if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
+            final String className = clazz.name().toString();
+            logger.warn("[JAXWS 2.2 spec, section 7.7] The @WebService and @WebServiceProvider annotations are mutually exclusive - "
+                    + className + " won't be considered as a webservice endpoint, since it doesn't meet that requirement");
+            return false;
+        }
+        return true;
+    }
 
-    protected static ComponentDescription createComponentDescription(final DeploymentUnit unit, final String componentName, final String componentClassName, final String dependsOnEndpointClassName) {
+    static ComponentDescription createComponentDescription(final DeploymentUnit unit, final String componentName, final String componentClassName, final String dependsOnEndpointClassName) {
         final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
         ComponentDescription componentDescription = moduleDescription.getComponentByName(componentName);
 
@@ -107,12 +130,18 @@ public abstract class WSComponentDescriptionFactory implements DeploymentUnitPro
             // register WS component
             componentDescription = new WSComponentDescription(componentName, componentClassName, moduleDescription, unit.getServiceName());
             moduleDescription.addComponent(componentDescription);
-            // registering WS dependency
+            // register WS dependency
             final ServiceName endpointServiceName = EndpointService.getServiceName(unit, dependsOnEndpointClassName);
             componentDescription.addDependency(endpointServiceName, ServiceBuilder.DependencyType.REQUIRED);
         }
 
         return componentDescription;
+    }
+
+    static boolean isJaxwsEjb(final ClassInfo clazz) {
+        final boolean isStateless = clazz.annotations().containsKey(STATELESS_ANNOTATION);
+        final boolean isSingleton = clazz.annotations().containsKey(SINGLETON_ANNOTATION);
+        return isStateless || isSingleton;
     }
 
 }

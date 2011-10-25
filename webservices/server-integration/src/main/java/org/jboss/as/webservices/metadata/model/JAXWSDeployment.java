@@ -27,22 +27,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
 public final class JAXWSDeployment {
 
     private final List<EJBEndpoint> ejbEndpoints = new LinkedList<EJBEndpoint>();
+    private final List<EJBEndpoint> unmodifiableEjbEndpoints = Collections.unmodifiableList(ejbEndpoints);
     private final List<POJOEndpoint> pojoEndpoints = new LinkedList<POJOEndpoint>();
+    private final List<POJOEndpoint> unmodifiablePojoEndpoints = Collections.unmodifiableList(pojoEndpoints);
     private final Map<String, String> urlPatternToClassMapping = new HashMap<String, String>();
 
     public List<EJBEndpoint> getEjbEndpoints() {
-        return Collections.unmodifiableList(ejbEndpoints);
+        return unmodifiableEjbEndpoints;
     }
 
     public List<POJOEndpoint> getPojoEndpoints() {
-        return Collections.unmodifiableList(pojoEndpoints);
+        return unmodifiablePojoEndpoints;
     }
 
     public void addEndpoint(final EJBEndpoint ep) {

@@ -23,11 +23,12 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
+import static org.jboss.as.webservices.util.ASHelper.getJaxwsDeployment;
+import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
@@ -48,53 +49,50 @@ import org.jboss.jandex.DotName;
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class WSEJBIntegrationProcessor implements DeploymentUnitProcessor {
+public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final JAXWSDeployment jaxwsDeployment = new JAXWSDeployment();
-        processAnnotation(unit, WEB_SERVICE_ANNOTATION, jaxwsDeployment);
-        processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION, jaxwsDeployment);
-        if (!jaxwsDeployment.getEjbEndpoints().isEmpty()) {
-            unit.putAttachment(JAXWS_ENDPOINTS_KEY, jaxwsDeployment);
-        }
+        processAnnotation(unit, WEB_SERVICE_ANNOTATION);
+        processAnnotation(unit, WEB_SERVICE_PROVIDER_ANNOTATION);
     }
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-        // NOOP
+        // does nothing
     }
 
-   private static void processAnnotation(final DeploymentUnit unit, final DotName annotation, final JAXWSDeployment jaxwsDeployment) {
-       final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
-       final EEModuleDescription moduleDescription = unit.getAttachment(EE_MODULE_DESCRIPTION);
+    private static void processAnnotation(final DeploymentUnit unit, final DotName annotation) {
+        final List<AnnotationInstance> webServiceAnnotations = getAnnotations(unit, annotation);
+        final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
+        final JAXWSDeployment jaxwsDeployment = getJaxwsDeployment(unit);
 
-       for (final AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
-           final AnnotationTarget target = webServiceAnnotation.target();
-           final ClassInfo webServiceClassInfo = (ClassInfo) target;
-           final String beanClassName = webServiceClassInfo.name().toString();
-           final List<ComponentDescription> componentDescriptions = moduleDescription.getComponentsByClassName(beanClassName);
-           final List<SessionBeanComponentDescription> sessionBeans = getSessionBeans(componentDescriptions);
+        for (final AnnotationInstance webServiceAnnotation : webServiceAnnotations) {
+            final AnnotationTarget target = webServiceAnnotation.target();
+            final ClassInfo webServiceClassInfo = (ClassInfo) target;
+            final String webServiceClassName = webServiceClassInfo.name().toString();
+            final List<ComponentDescription> componentDescriptions = moduleDescription.getComponentsByClassName(webServiceClassName);
+            final List<SessionBeanComponentDescription> sessionBeans = getSessionBeans(componentDescriptions);
 
-           for(SessionBeanComponentDescription sessionBean : sessionBeans) {
-               if (sessionBean.isStateless() || sessionBean.isSingleton()) {
-                   final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
-                   final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
-                   jaxwsDeployment.addEndpoint(new EJBEndpoint(sessionBean, webServiceClassInfo, ejbViewName));
-               }
-           }
-       }
-   }
+            for (final SessionBeanComponentDescription sessionBean : sessionBeans) {
+                if (sessionBean.isStateless() || sessionBean.isSingleton()) {
+                    final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
+                    final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
+                    jaxwsDeployment.addEndpoint(new EJBEndpoint(sessionBean, webServiceClassInfo, ejbViewName));
+                }
+            }
+        }
+    }
 
-   private static List<SessionBeanComponentDescription> getSessionBeans(final List<ComponentDescription> componentDescriptions) {
-       final List<SessionBeanComponentDescription> beans = new ArrayList<SessionBeanComponentDescription>(1);
-       for(ComponentDescription componentDescription : componentDescriptions) {
-           if (componentDescription instanceof SessionBeanComponentDescription) {
-               beans.add((SessionBeanComponentDescription)componentDescription);
-           }
-       }
-       return beans;
-   }
+    private static List<SessionBeanComponentDescription> getSessionBeans(final List<ComponentDescription> componentDescriptions) {
+        final List<SessionBeanComponentDescription> sessionBeans = new LinkedList<SessionBeanComponentDescription>();
+        for (final ComponentDescription componentDescription : componentDescriptions) {
+            if (componentDescription instanceof SessionBeanComponentDescription) {
+                sessionBeans.add((SessionBeanComponentDescription) componentDescription);
+            }
+        }
+        return sessionBeans;
+    }
 
 }

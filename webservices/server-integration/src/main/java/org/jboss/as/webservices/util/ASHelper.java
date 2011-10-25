@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.util;
 
 import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
 import java.util.Collections;
 import java.util.List;
@@ -232,6 +233,15 @@ public final class ASHelper {
     public static List<AnnotationInstance> getAnnotations(final DeploymentUnit unit, final DotName annotation) {
        final CompositeIndex compositeIndex = getRequiredAttachment(unit, Attachments.COMPOSITE_ANNOTATION_INDEX);
        return compositeIndex.getAnnotations(annotation);
+    }
+
+    public static JAXWSDeployment getJaxwsDeployment(final DeploymentUnit unit) {
+        JAXWSDeployment wsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
+        if (wsDeployment == null) {
+            wsDeployment = new JAXWSDeployment();
+            unit.putAttachment(JAXWS_ENDPOINTS_KEY, wsDeployment);
+        }
+        return wsDeployment;
     }
 
     public static WSReferences getWSRefRegistry(final DeploymentUnit unit) {
