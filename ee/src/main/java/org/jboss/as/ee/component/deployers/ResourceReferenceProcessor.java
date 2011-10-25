@@ -141,6 +141,8 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
+            } else if (!isEmpty(resourceRef.getResUrl())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(resourceRef.getResUrl()));
             } else {
                 classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
                 if (classType == null) {
