@@ -137,7 +137,7 @@ public class MasterDomainControllerOperationHandlerImpl extends AbstractModelCon
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                error = e.getMessage();
+                error = SlaveRegistrationError.formatHostAlreadyExists(e.getMessage());
             }
         }
 
