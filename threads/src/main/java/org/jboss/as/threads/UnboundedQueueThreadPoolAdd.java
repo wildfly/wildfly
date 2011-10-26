@@ -81,7 +81,7 @@ public class UnboundedQueueThreadPoolAdd extends AbstractAddStepHandler implemen
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         for(final AttributeDefinition attribute : ATTRIBUTES) {
-            attribute.validateResolvedOperation(model);
+            attribute.resolveModelAttribute(context, model);
         }
 
         final BaseOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseUnboundedQueueThreadPoolOperationParameters(operation);

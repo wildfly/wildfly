@@ -98,7 +98,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
 
         for(final AttributeDefinition attribute : JMSServices.POOLED_CONNECTION_FACTORY_ATTRS) {
-            attribute.validateResolvedOperation(model);
+            attribute.resolveModelAttribute(context, model);
         }
 
         // We validated that jndiName part of the model in populateModel

@@ -92,10 +92,10 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
     void installSimpleBinding(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final String value = NamingBindingResourceDefinition.VALUE.validateResolvedOperation(model).asString();
+        final String value = NamingBindingResourceDefinition.VALUE.resolveModelAttribute(context, model).asString();
         final String type;
         if (model.hasDefined(TYPE)) {
-            type = NamingBindingResourceDefinition.TYPE.validateResolvedOperation(model).asString();
+            type = NamingBindingResourceDefinition.TYPE.resolveModelAttribute(context, model).asString();
         } else {
             type = null;
         }
@@ -126,8 +126,8 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
     void installObjectFactory(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModuleIdentifier moduleID = ModuleIdentifier.fromString(NamingBindingResourceDefinition.MODULE.validateResolvedOperation(model).asString());
-        final String className = NamingBindingResourceDefinition.CLASS.validateResolvedOperation(model).asString();
+        final ModuleIdentifier moduleID = ModuleIdentifier.fromString(NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString());
+        final String className = NamingBindingResourceDefinition.CLASS.resolveModelAttribute(context, model).asString();
         final Module module;
         try {
             module = Module.getBootModuleLoader().loadModule(moduleID);
@@ -188,7 +188,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
     void installLookup(final OperationContext context, final String name, final ModelNode model, ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final String lookup = NamingBindingResourceDefinition.LOOKUP.validateResolvedOperation(model).asString();
+        final String lookup = NamingBindingResourceDefinition.LOOKUP.resolveModelAttribute(context, model).asString();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);

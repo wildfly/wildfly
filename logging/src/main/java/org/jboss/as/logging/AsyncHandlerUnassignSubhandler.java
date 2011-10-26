@@ -22,6 +22,13 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+
+import java.util.List;
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -29,16 +36,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Handler;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.NAME;
-import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 
 /**
@@ -60,7 +57,7 @@ public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignment
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String asyncHandlerName = address.getLastElement().getValue();
-        String handlerNameToUnassign = NAME.validateResolvedOperation(model).asString();
+        String handlerNameToUnassign = NAME.resolveModelAttribute(context, model).asString();
 
         ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
@@ -73,6 +70,6 @@ public class AsyncHandlerUnassignSubhandler extends AbstractLogHandlerAssignment
 
     @Override
     protected String getHandlerName(final ModelNode model) throws OperationFailedException {
-        return NAME.validateResolvedOperation(model).asString();
+        return NAME.validateOperation(model).asString();
     }
 }

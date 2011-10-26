@@ -22,11 +22,12 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.FileHandler;
-
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 
 /**
  * Date: 12.10.2011
@@ -42,18 +43,18 @@ public class FileHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHa
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final FileHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final FileHandler handler) throws OperationFailedException {
         if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.validateResolvedOperation(operation).asBoolean());
+            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, operation).asBoolean());
         }
         // TODO (jrp) consider implementing FILE as well
         return false;
     }
 
     @Override
-    protected void revertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final FileHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final FileHandler handler) throws OperationFailedException {
         if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.validateResolvedOperation(valueToRestore).asBoolean());
+            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, valueToRestore).asBoolean());
         }
         // TODO (jrp) consider implementing FILE as well
     }

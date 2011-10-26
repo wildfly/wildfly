@@ -107,7 +107,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.validateResolvedOperation(submodel) : newValue.resolve();
+                    ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : newValue.resolve();
                     validateResolvedValue(attributeName, newValue);
                     HandbackHolder<T> handback = new HandbackHolder<T>();
                     boolean restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);

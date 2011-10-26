@@ -79,7 +79,7 @@ class SecurityRoleAttributeHandler extends AbstractWriteAttributeHandler<Set<Rol
             }
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode subModel = resource.getModel();
-            final Role updatedRole = SecurityRoleAdd.transform(roleName, subModel);
+            final Role updatedRole = SecurityRoleAdd.transform(context, roleName, subModel);
             newRoles.add(updatedRole);
             server.getSecurityRepository().addMatch(match, newRoles);
         }

@@ -84,7 +84,7 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
                 return true;
             } else {
                 // Actually apply the update
-                applyOperation(operation, attributeName, service);
+                applyOperation(context, operation, attributeName, service);
                 handbackHolder.setHandback(Boolean.TRUE);
                 return false;
             }
@@ -102,7 +102,7 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
                 // Create and execute a write-attribute operation that uses the valueToRestore
                 ModelNode revertOp = operation.clone();
                 revertOp.get(attributeName).set(valueToRestore);
-                applyOperation(revertOp, attributeName, service);
+                applyOperation(context, revertOp, attributeName, service);
             }
         }
     }
@@ -117,5 +117,5 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
 
     protected abstract ServiceController<?> getService(final OperationContext context, final ModelNode operation) throws OperationFailedException;
 
-    protected abstract void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service);
+    protected abstract void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service);
 }

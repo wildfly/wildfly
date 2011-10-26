@@ -22,12 +22,13 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.SUFFIX;
+
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
-
-import static org.jboss.as.logging.CommonAttributes.APPEND;
-import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
 /**
  * Operation responsible for updating the properties of a periodic rotating log handler.
@@ -42,14 +43,14 @@ public class PeriodicHandlerUpdateProperties extends FlushingHandlerUpdateProper
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
-        super.updateRuntime(operation, handler);
-        final ModelNode suffix = SUFFIX.validateResolvedOperation(operation);
+    protected void updateRuntime(OperationContext context, final ModelNode operation, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+        super.updateRuntime(context, operation, handler);
+        final ModelNode suffix = SUFFIX.resolveModelAttribute(context, operation);
         if (suffix.isDefined()) {
             handler.setSuffix(suffix.asString());
         }
 
-        final ModelNode append = APPEND.validateResolvedOperation(operation);
+        final ModelNode append = APPEND.resolveModelAttribute(context, operation);
         if (append.isDefined()) {
             handler.setAppend(append.asBoolean());
         }

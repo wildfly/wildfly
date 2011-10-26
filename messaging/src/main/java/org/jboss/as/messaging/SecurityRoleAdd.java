@@ -22,6 +22,9 @@
 
 package org.jboss.as.messaging;
 
+import java.util.Locale;
+import java.util.Set;
+
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AttributeDefinition;
@@ -38,9 +41,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * {@code OperationStepHandler} for adding a new security role.
@@ -79,7 +79,7 @@ class SecurityRoleAdd implements OperationStepHandler, DescriptionProvider {
                         final String match = address.getElement(address.size() - 2).getValue();
                         final String role = address.getLastElement().getValue();
                         final Set<Role> roles = server.getSecurityRepository().getMatch(match);
-                        roles.add(transform(role, subModel));
+                        roles.add(transform(context, role, subModel));
                         server.getSecurityRepository().addMatch(match, roles);
                     }
                     context.completeStep();
@@ -106,14 +106,14 @@ class SecurityRoleAdd implements OperationStepHandler, DescriptionProvider {
         return operation;
     }
 
-    static Role transform(final String name, final ModelNode node) throws OperationFailedException {
-        final boolean send = SEND.validateResolvedOperation(node).asBoolean();
-        final boolean consume = CONSUME.validateResolvedOperation(node).asBoolean();
-        final boolean createDurableQueue = CREATE_DURABLE_QUEUE.validateResolvedOperation(node).asBoolean();
-        final boolean deleteDurableQueue = DELETE_DURABLE_QUEUE.validateResolvedOperation(node).asBoolean();
-        final boolean createNonDurableQueue = CREATE_NON_DURABLE_QUEUE.validateResolvedOperation(node).asBoolean();
-        final boolean deleteNonDurableQueue = DELETE_NON_DURABLE_QUEUE.validateResolvedOperation(node).asBoolean();
-        final boolean manage = MANAGE.validateResolvedOperation(node).asBoolean();
+    static Role transform(final OperationContext context, final String name, final ModelNode node) throws OperationFailedException {
+        final boolean send = SEND.resolveModelAttribute(context, node).asBoolean();
+        final boolean consume = CONSUME.resolveModelAttribute(context, node).asBoolean();
+        final boolean createDurableQueue = CREATE_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
+        final boolean deleteDurableQueue = DELETE_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
+        final boolean createNonDurableQueue = CREATE_NON_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
+        final boolean deleteNonDurableQueue = DELETE_NON_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
+        final boolean manage = MANAGE.resolveModelAttribute(context, node).asBoolean();
         return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
     }
 

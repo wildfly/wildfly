@@ -22,16 +22,11 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,11 +37,16 @@ import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.ENCODING;
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.NAME;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Date: 23.09.2011
@@ -91,11 +91,11 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
         final String name = address.getLastElement().getValue();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final T service = createHandlerService(model);
+        final T service = createHandlerService(context, model);
         final ServiceBuilder<Handler> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
-        final ModelNode level = LEVEL.validateResolvedOperation(model);
-        final ModelNode encoding = ENCODING.validateResolvedOperation(model);
-        final ModelNode formatter = FORMATTER.validateResolvedOperation(model);
+        final ModelNode level = LEVEL.resolveModelAttribute(context, model);
+        final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
+        final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
         // TODO - support filter
 
         if (level.isDefined()) {
@@ -110,7 +110,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
         }
 
         if (formatter.isDefined()) {
-            service.setFormatterSpec(AbstractFormatterSpec.fromModelNode(model));
+            service.setFormatterSpec(AbstractFormatterSpec.fromModelNode(context, model));
         }
 
         updateRuntime(context, serviceBuilder, name, service, model);
@@ -120,7 +120,7 @@ public abstract class HandlerAddProperties<T extends HandlerService> extends Abs
         newControllers.add(serviceBuilder.install());
     }
 
-    protected abstract T createHandlerService(ModelNode model) throws OperationFailedException;
+    protected abstract T createHandlerService(OperationContext context, ModelNode model) throws OperationFailedException;
 
     protected abstract void updateRuntime(OperationContext context, ServiceBuilder<Handler> serviceBuilder, String name, T service, ModelNode model) throws OperationFailedException;
 

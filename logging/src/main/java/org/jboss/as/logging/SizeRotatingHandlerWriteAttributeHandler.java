@@ -22,12 +22,13 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
+
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
-
-import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
-import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 
 /**
  * Date: 13.10.2011
@@ -42,21 +43,21 @@ public class SizeRotatingHandlerWriteAttributeHandler extends LogHandlerWriteAtt
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final SizeRotatingFileHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final SizeRotatingFileHandler handler) throws OperationFailedException {
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
-            handler.setMaxBackupIndex(MAX_BACKUP_INDEX.validateResolvedOperation(operation).asInt());
+            handler.setMaxBackupIndex(MAX_BACKUP_INDEX.resolveModelAttribute(context, operation).asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {
-            handler.setRotateSize(LoggingSubsystemParser.parseSize(ROTATE_SIZE.validateResolvedOperation(operation).asString()));
+            handler.setRotateSize(LoggingSubsystemParser.parseSize(ROTATE_SIZE.resolveModelAttribute(context, operation).asString()));
         }
         return false;
     }
 
     @Override
-    protected void revertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final SizeRotatingFileHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final SizeRotatingFileHandler handler) throws OperationFailedException {
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
-            handler.setMaxBackupIndex(MAX_BACKUP_INDEX.validateResolvedOperation(valueToRestore).asInt());
+            handler.setMaxBackupIndex(MAX_BACKUP_INDEX.resolveModelAttribute(context, valueToRestore).asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {
-            handler.setRotateSize(LoggingSubsystemParser.parseSize(ROTATE_SIZE.validateResolvedOperation(valueToRestore).asString()));
+            handler.setRotateSize(LoggingSubsystemParser.parseSize(ROTATE_SIZE.resolveModelAttribute(context, valueToRestore).asString()));
         }
     }
 }

@@ -73,7 +73,7 @@ public class AOConfigPropertyAdd extends AbstractBoottimeAddStepHandler implemen
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
-        final String configPropertyValue = CONFIG_PROPERTY_VALUE.validateResolvedOperation(recoveryEnvModel).asString();
+        final String configPropertyValue = CONFIG_PROPERTY_VALUE.resolveModelAttribute(context, recoveryEnvModel).asString();
         final ModelNode address = operation.require(OP_ADDR);
         PathAddress path = PathAddress.pathAddress(address);
         final String archiveName = path.getElement(path.size() -3).getValue();

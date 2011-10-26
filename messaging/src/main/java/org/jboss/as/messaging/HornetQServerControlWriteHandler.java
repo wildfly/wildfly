@@ -81,7 +81,7 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                 // No, don't barf; just let the update apply to the model and put the server in a reload-required state
                 return true;
             } else {
-                applyOperationToHornetQService(operation, attributeName, hqService);
+                applyOperationToHornetQService(context, operation, attributeName, hqService);
                 return false;
             }
         }
@@ -102,22 +102,22 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                 // Create and execute a write-attribute operation that uses the valueToRestore
                 ModelNode revertOp = operation.clone();
                 revertOp.get(attributeName).set(valueToRestore);
-                applyOperationToHornetQService(revertOp, attributeName, hqService);
+                applyOperationToHornetQService(context, revertOp, attributeName, hqService);
             }
         }
     }
 
-    private void applyOperationToHornetQService(ModelNode operation, String attributeName, ServiceController<?> hqService) {
+    private void applyOperationToHornetQService(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> hqService) {
         HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
         try {
             if (attributeName.equals(CommonAttributes.FAILOVER_ON_SHUTDOWN.getName()))  {
-                serverControl.setFailoverOnServerShutdown(CommonAttributes.FAILOVER_ON_SHUTDOWN.validateResolvedOperation(operation).asBoolean());
+                serverControl.setFailoverOnServerShutdown(CommonAttributes.FAILOVER_ON_SHUTDOWN.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD.getName())) {
-                serverControl.setMessageCounterSamplePeriod(CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD.validateResolvedOperation(operation).asLong());
+                serverControl.setMessageCounterSamplePeriod(CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD.resolveModelAttribute(context, operation).asLong());
             } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY.getName())) {
-                serverControl.setMessageCounterMaxDayCount(CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY.validateResolvedOperation(operation).asInt());
+                serverControl.setMessageCounterMaxDayCount(CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_ENABLED.getName())) {
-                boolean enabled = CommonAttributes.MESSAGE_COUNTER_ENABLED.validateResolvedOperation(operation).asBoolean();
+                boolean enabled = CommonAttributes.MESSAGE_COUNTER_ENABLED.resolveModelAttribute(context, operation).asBoolean();
                 if (enabled) {
                     serverControl.enableMessageCounters();
                 } else {

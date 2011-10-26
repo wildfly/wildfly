@@ -22,13 +22,14 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.handlers.ConsoleHandler;
+import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 import java.util.Locale;
 
-import static org.jboss.as.logging.CommonAttributes.TARGET;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logmanager.handlers.ConsoleHandler;
 
 /**
  * Operation responsible for updating the properties of a console logging handler.
@@ -43,9 +44,9 @@ public class ConsoleHandlerUpdateProperties extends FlushingHandlerUpdatePropert
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final ConsoleHandler handler) throws OperationFailedException {
-        super.updateRuntime(operation, handler);
-        switch (Target.fromString(TARGET.validateResolvedOperation(operation).asString().toUpperCase(Locale.US))) {
+    protected void updateRuntime(OperationContext context, final ModelNode operation, final ConsoleHandler handler) throws OperationFailedException {
+        super.updateRuntime(context, operation, handler);
+        switch (Target.fromString(TARGET.resolveModelAttribute(context, operation).asString().toUpperCase(Locale.US))) {
             case SYSTEM_ERR: {
                 handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                 ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);

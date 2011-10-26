@@ -96,9 +96,9 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
                                   ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
         final String poolName = strictMaxPoolModel.require(EJB3SubsystemModel.NAME).asString();
-        final int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.validateResolvedOperation(strictMaxPoolModel).asInt();
-        final long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.validateResolvedOperation(strictMaxPoolModel).asLong();
-        final String unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.validateResolvedOperation(strictMaxPoolModel).asString();
+        final int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, strictMaxPoolModel).asInt();
+        final long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.resolveModelAttribute(context, strictMaxPoolModel).asLong();
+        final String unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.resolveModelAttribute(context, strictMaxPoolModel).asString();
         // create the pool config
         final PoolConfig strictMaxPoolConfig = new StrictMaxPoolConfig(poolName, maxPoolSize, timeout, TimeUnit.valueOf(unit));
         // create and install the service

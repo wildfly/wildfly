@@ -83,7 +83,7 @@ public class BoundedQueueThreadPoolAdd extends AbstractAddStepHandler implements
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         for(final AttributeDefinition attribute : ATTRIBUTES) {
-            attribute.validateResolvedOperation(model);
+            attribute.resolveModelAttribute(context, model);
         }
 
         final BoundedOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseBoundedThreadPoolOperationParameters(operation);

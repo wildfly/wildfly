@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -43,7 +44,7 @@ public class CustomHandlerUpdateProperties extends HandlerUpdateProperties<Handl
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final Handler handler) throws OperationFailedException {
+    protected void updateRuntime(OperationContext context, final ModelNode operation, final Handler handler) throws OperationFailedException {
         if (operation.hasDefined(PROPERTIES)) {
             setProperties(handler, operation.get(PROPERTIES).asPropertyList());
         }

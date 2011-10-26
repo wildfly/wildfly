@@ -53,7 +53,8 @@ public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteA
         super(UnboundedQueueThreadPoolAdd.ATTRIBUTES, UnboundedQueueThreadPoolAdd.RW_ATTRIBUTES);
     }
 
-    protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
+    @Override
+    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
 
         final UnboundedQueueThreadPoolService pool =  (UnboundedQueueThreadPoolService) service.getService();
         try {

@@ -92,7 +92,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
-        controllers.add(startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler));
+        controllers.add(startConfigAndAddDependency(context, dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler));
 
         final String driverName = node.asString();
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
@@ -161,7 +161,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         return bindName;
     }
 
-    protected abstract ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
+    protected abstract ServiceController<?> startConfigAndAddDependency(OperationContext context, ServiceBuilder<?> dataSourceServiceBuilder,
             AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler serviceVerificationHandler)
             throws OperationFailedException;
 

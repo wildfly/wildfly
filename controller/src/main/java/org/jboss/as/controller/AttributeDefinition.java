@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -30,6 +31,7 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -38,8 +40,15 @@ import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource}, with utility
@@ -215,27 +224,36 @@ public abstract class AttributeDefinition {
     }
 
     /**
-     * Finds a value in the given {@code operationObject} whose key matches this attribute's {@link #getName() name},
+     *
+     * @deprecated Use {@link #resolveModelAttribute(OperationContext, ModelNode)} instead
+     */
+    @Deprecated
+    public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
+        return resolveModelAttribute(NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS, operationObject);
+    }
+
+    /**
+     * Finds a value in the given {@code model} whose key matches this attribute's {@link #getName() name},
      * resolves it and validates it using this attribute's {@link #getValidator() validator}. If the value is
      * undefined and a {@link #getDefaultValue() default value} is available, the default value is used.
      *
-     * @param operationObject model node of type {@link ModelType#OBJECT}, typically representing an operation request
+     * @param context the operation context
+     * @param model model node of type {@link ModelType#OBJECT}, typically representing a model resource
      *
-     * @return the resolved value, possibly the default value if the operation does not have a defined value matching
+     * @return the resolved value, possibly the default value if the model does not have a defined value matching
      *              this attribute's name
      * @throws OperationFailedException if the value is not valid
      */
-    public ModelNode validateResolvedOperation(final ModelNode operationObject) throws OperationFailedException {
+    public ModelNode resolveModelAttribute(OperationContext context, final ModelNode model) throws OperationFailedException {
         final ModelNode node = new ModelNode();
-        if(operationObject.has(name)) {
-            node.set(operationObject.get(name));
+        if(model.has(name)) {
+            node.set(model.get(name));
         }
         if (!node.isDefined() && defaultValue.isDefined()) {
             node.set(defaultValue);
         }
-        final ModelNode resolved = node.resolve();
+        final ModelNode resolved = context.resolveExpressions(node);
         validator.validateParameter(name, resolved);
-
         return resolved;
     }
 
@@ -420,4 +438,224 @@ public abstract class AttributeDefinition {
         }
         return result;
     }
+
+    private final OperationContext NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new OperationContext() {
+
+        @Override
+        public void setRollbackOnly() {
+        }
+
+        @Override
+        public void runtimeUpdateSkipped() {
+        }
+
+        @Override
+        public void revertRestartRequired() {
+        }
+
+        @Override
+        public void revertReloadRequired() {
+        }
+
+        @Override
+        public void restartRequired() {
+        }
+
+        @Override
+        public void report(MessageSeverity severity, String message) {
+        }
+
+        @Override
+        public void removeService(ServiceController<?> controller) throws UnsupportedOperationException {
+        }
+
+        @Override
+        public ServiceController<?> removeService(ServiceName name) throws UnsupportedOperationException {
+            return null;
+        }
+
+        @Override
+        public Resource removeResource(PathAddress address) throws UnsupportedOperationException {
+            return null;
+        }
+
+        @Override
+        public void reloadRequired() {
+        }
+
+        @Override
+        public Resource readResourceForUpdate(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Resource readResource(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public ModelNode readModelForUpdate(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public ModelNode readModel(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public boolean isRuntimeAffected() {
+            return false;
+        }
+
+        @Override
+        public boolean isRollbackOnly() {
+            return false;
+        }
+
+        @Override
+        public boolean isRollbackOnRuntimeFailure() {
+            return false;
+        }
+
+        @Override
+        public boolean isResourceServiceRestartAllowed() {
+            return false;
+        }
+
+        @Override
+        public boolean isResourceRegistryAffected() {
+            return false;
+        }
+
+        @Override
+        public boolean isModelAffected() {
+            return false;
+        }
+
+        @Override
+        public boolean isBooting() {
+            return false;
+        }
+
+        @Override
+        public boolean hasResult() {
+            return false;
+        }
+
+        @Override
+        public boolean hasFailureDescription() {
+            return false;
+        }
+
+        @Override
+        public Type getType() {
+            return null;
+        }
+
+        @Override
+        public ServiceTarget getServiceTarget() throws UnsupportedOperationException {
+            return null;
+        }
+
+        @Override
+        public ServiceRegistry getServiceRegistry(boolean modify) throws UnsupportedOperationException {
+            return null;
+        }
+
+        @Override
+        public Resource getRootResource() {
+            return null;
+        }
+
+        @Override
+        public ModelNode getResult() {
+            return null;
+        }
+
+        @Override
+        public ManagementResourceRegistration getResourceRegistrationForUpdate() {
+            return null;
+        }
+
+        @Override
+        public ImmutableManagementResourceRegistration getResourceRegistration() {
+            return null;
+        }
+
+        @Override
+        public ModelNode getFailureDescription() {
+            return null;
+        }
+
+        @Override
+        public Stage getCurrentStage() {
+            return null;
+        }
+
+        @Override
+        public int getAttachmentStreamCount() {
+            return 0;
+        }
+
+        @Override
+        public InputStream getAttachmentStream(int index) {
+            return null;
+        }
+
+        @Override
+        public Resource createResource(PathAddress address) throws UnsupportedOperationException {
+            return null;
+        }
+
+        @Override
+        public void completeStep(RollbackHandler rollbackHandler) {
+        }
+
+        @Override
+        public ResultAction completeStep() {
+            return null;
+        }
+
+        @Override
+        public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage)
+                throws IllegalArgumentException {
+        }
+
+        @Override
+        public void addStep(ModelNode operation, OperationStepHandler step, Stage stage) throws IllegalArgumentException {
+        }
+
+        @Override
+        public void addStep(OperationStepHandler step, Stage stage) throws IllegalArgumentException {
+        }
+
+        @Override
+        public void addResource(PathAddress address, Resource toAdd) {
+        }
+
+        @Override
+        public void acquireControllerLock() {
+        }
+
+        @Override
+        public ModelNode resolveExpressions(ModelNode node) {
+            return ExpressionResolver.DEFAULT.resolveExpressions(node);
+        }
+
+        @Override
+        public Resource getOriginalRootResource() {
+            return null;
+        }
+
+        @Override
+        public boolean markResourceRestarted(PathAddress resource, Object owner) {
+            return false;
+        }
+
+        @Override
+        public boolean revertResourceRestarted(PathAddress resource, Object owner) {
+            return false;
+        }
+    };
 }

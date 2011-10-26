@@ -23,10 +23,6 @@ package org.jboss.as.threads;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.threads.CommonAttributes.COUNT;
-import static org.jboss.as.threads.CommonAttributes.PER_CPU;
-
-import java.math.BigDecimal;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,7 +44,8 @@ public class ScheduledThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
         super(ScheduledThreadPoolAdd.ATTRIBUTES, ScheduledThreadPoolAdd.RW_ATTRIBUTES);
     }
 
-    protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
+    @Override
+    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
 
         throw new IllegalArgumentException("Unexpected attribute '" + attributeName + "'");
         //final UnboundedQueueThreadPoolService pool =  (UnboundedQueueThreadPoolService) service.getService();

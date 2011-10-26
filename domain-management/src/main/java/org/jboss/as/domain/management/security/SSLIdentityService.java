@@ -22,16 +22,12 @@
 
 package org.jboss.as.domain.management.security;
 
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,11 +38,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service to handle managing the SSL Identity of a security realm.
@@ -58,12 +59,14 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
     public static final String SERVICE_SUFFIX = "ssl";
 
     private final ModelNode ssl;
+    private final String unmaskedPassword;
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 
     private volatile SSLContext sslContext;
 
-    public SSLIdentityService(ModelNode ssl) {
+    public SSLIdentityService(ModelNode ssl, String unmaskedPassword) {
         this.ssl = ssl;
+        this.unmaskedPassword = unmaskedPassword;
     }
 
     public void start(StartContext context) throws StartException {

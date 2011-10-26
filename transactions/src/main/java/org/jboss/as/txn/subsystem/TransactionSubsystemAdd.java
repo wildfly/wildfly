@@ -22,12 +22,13 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
+
 import java.util.List;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -65,8 +66,8 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.tm.JBossXATerminator;
 import org.omg.CORBA.ORB;
 
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
-import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 
 
 /**
@@ -264,8 +265,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                             ServiceVerificationHandler verificationHandler,
                                             List<ServiceController<?>> controllers) throws OperationFailedException {
 
-        final String objectStorePathRef = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.validateResolvedOperation(recoveryEnvModel).asString();
-        final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.validateResolvedOperation(recoveryEnvModel).asString();
+        final String objectStorePathRef =TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, recoveryEnvModel).asString();
+        final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.resolveModelAttribute(context, recoveryEnvModel).asString();
         if (ROOT_LOGGER.isDebugEnabled()) {
             ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s\n", objectStorePathRef, objectStorePath);
         }
@@ -294,24 +295,24 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                                 ServiceVerificationHandler verificationHandler,
                                                 List<ServiceController<?>> controllers) throws OperationFailedException {
         // Configure the core configuration.
-        final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.validateResolvedOperation(coreEnvModel).asString();
+        final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, coreEnvModel).asString();
         final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier);
 
         String socketBindingName = null;
-        if (TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.validateResolvedOperation(coreEnvModel).asBoolean()) {
+        if (TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.resolveModelAttribute(context, coreEnvModel).asBoolean()) {
             // Use the UUID based id
             UuidProcessId id = new UuidProcessId();
             coreEnvironmentService.setProcessImplementation(id);
         } else {
             // Use the socket process id
             coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
-            socketBindingName = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.validateResolvedOperation(coreEnvModel).asString();
-            int ports = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.validateResolvedOperation(coreEnvModel).asInt();
+            socketBindingName = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.resolveModelAttribute(context, coreEnvModel).asString();
+            int ports = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.resolveModelAttribute(context, coreEnvModel).asInt();
             coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
         }
 
-        final String varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.validateResolvedOperation(coreEnvModel).asString();
-        final String varDirPath = TransactionSubsystemRootResourceDefinition.PATH.validateResolvedOperation(coreEnvModel).asString();
+        final String varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, coreEnvModel).asString();
+        final String varDirPath = TransactionSubsystemRootResourceDefinition.PATH.resolveModelAttribute(context, coreEnvModel).asString();
 
         if (ROOT_LOGGER.isDebugEnabled()) {
             ROOT_LOGGER.debugf("nodeIdentifier=%s\n", nodeIdentifier);
@@ -338,9 +339,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                             List<ServiceController<?>> controllers,
                                             final boolean jts) throws OperationFailedException {
         //recovery environment
-        final String recoveryBindingName = TransactionSubsystemRootResourceDefinition.BINDING.validateResolvedOperation(model).asString();
-        final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.validateResolvedOperation(model).asString();
-        final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateResolvedOperation(model).asBoolean();
+        final String recoveryBindingName = TransactionSubsystemRootResourceDefinition.BINDING.resolveModelAttribute(context, model).asString();
+        final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.resolveModelAttribute(context, model).asString();
+        final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.resolveModelAttribute(context, model).asBoolean();
 
         final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener, jts);
         final ServiceBuilder<RecoveryManagerService> recoveryManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService);
@@ -363,9 +364,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                                ServiceVerificationHandler verificationHandler,
                                                List<ServiceController<?>> controllers, final boolean jts) throws OperationFailedException {
 
-        final boolean coordinatorEnableStatistics = TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS.validateResolvedOperation(coordEnvModel).asBoolean();
-        final boolean transactionStatusManagerEnable = TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.validateResolvedOperation(coordEnvModel).asBoolean();
-        final int coordinatorDefaultTimeout = TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.validateResolvedOperation(coordEnvModel).asInt();
+        final boolean coordinatorEnableStatistics = TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS.resolveModelAttribute(context, coordEnvModel).asBoolean();
+        final boolean transactionStatusManagerEnable = TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.resolveModelAttribute(context, coordEnvModel).asBoolean();
+        final int coordinatorDefaultTimeout = TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.resolveModelAttribute(context, coordEnvModel).asInt();
 
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
         final ServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);

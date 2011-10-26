@@ -199,7 +199,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Transform the configuration based on the recursive model
                 final ModelNode model = Resource.Tools.readModel(resource);
-                final Configuration configuration = transformConfig(serverName, model);
+                final Configuration configuration = transformConfig(context, serverName, model);
 
                 // Create path services
 
@@ -268,103 +268,104 @@ class HornetQServerAdd implements OperationStepHandler {
     /**
      * Transform the detyped operation parameters into the hornetQ configuration.
      *
+     * @param context the operation context
      * @param serverName the name of the HornetQServer instance
      * @param model the subsystem root resource model
      * @return the hornetQ configuration
      */
-    private Configuration transformConfig(String serverName, final ModelNode model) throws OperationFailedException {
+    private Configuration transformConfig(final OperationContext context, String serverName, final ModelNode model) throws OperationFailedException {
 
         Configuration configuration = new ConfigurationImpl();
 
         configuration.setName(serverName);
 
         // --
-        configuration.setAllowAutoFailBack(ALLOW_FAILBACK.validateResolvedOperation(model).asBoolean());
-        configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.validateResolvedOperation(model).asBoolean());
+        configuration.setAllowAutoFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean());
+        configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
-        configuration.setBackup(BACKUP.validateResolvedOperation(model).asBoolean());
+        configuration.setBackup(BACKUP.resolveModelAttribute(context, model).asBoolean());
         if(model.hasDefined(LIVE_CONNECTOR_REF.getName())) {
-            configuration.setLiveConnectorName(LIVE_CONNECTOR_REF.validateResolvedOperation(model).asString());
+            configuration.setLiveConnectorName(LIVE_CONNECTOR_REF.resolveModelAttribute(context, model).asString());
         }
-        configuration.setClustered(CLUSTERED.validateResolvedOperation(model).asBoolean());
-        configuration.setClusterPassword(CLUSTER_PASSWORD.validateResolvedOperation(model).asString());
-        configuration.setClusterUser(CLUSTER_USER.validateResolvedOperation(model).asString());
-        configuration.setConnectionTTLOverride(CONNECTION_TTL_OVERRIDE.validateResolvedOperation(model).asInt());
-        configuration.setCreateBindingsDir(CREATE_BINDINGS_DIR.validateResolvedOperation(model).asBoolean());
-        configuration.setCreateJournalDir(CREATE_JOURNAL_DIR.validateResolvedOperation(model).asBoolean());
-        configuration.setFailbackDelay(FAILBACK_DELAY.validateResolvedOperation(model).asLong());
-        configuration.setFailoverOnServerShutdown(FAILOVER_ON_SHUTDOWN.validateResolvedOperation(model).asBoolean());
+        configuration.setClustered(CLUSTERED.resolveModelAttribute(context, model).asBoolean());
+        configuration.setClusterPassword(CLUSTER_PASSWORD.resolveModelAttribute(context, model).asString());
+        configuration.setClusterUser(CLUSTER_USER.resolveModelAttribute(context, model).asString());
+        configuration.setConnectionTTLOverride(CONNECTION_TTL_OVERRIDE.resolveModelAttribute(context, model).asInt());
+        configuration.setCreateBindingsDir(CREATE_BINDINGS_DIR.resolveModelAttribute(context, model).asBoolean());
+        configuration.setCreateJournalDir(CREATE_JOURNAL_DIR.resolveModelAttribute(context, model).asBoolean());
+        configuration.setFailbackDelay(FAILBACK_DELAY.resolveModelAttribute(context, model).asLong());
+        configuration.setFailoverOnServerShutdown(FAILOVER_ON_SHUTDOWN.resolveModelAttribute(context, model).asBoolean());
 
-        configuration.setIDCacheSize(ID_CACHE_SIZE.validateResolvedOperation(model).asInt());
+        configuration.setIDCacheSize(ID_CACHE_SIZE.resolveModelAttribute(context, model).asInt());
         // TODO do we want to allow the jmx configuration ?
-        configuration.setJMXDomain(JMX_DOMAIN.validateResolvedOperation(model).asString());
-        configuration.setJMXManagementEnabled(JMX_MANAGEMENT_ENABLED.validateResolvedOperation(model).asBoolean());
+        configuration.setJMXDomain(JMX_DOMAIN.resolveModelAttribute(context, model).asString());
+        configuration.setJMXManagementEnabled(JMX_MANAGEMENT_ENABLED.resolveModelAttribute(context, model).asBoolean());
         // Journal
-        final JournalType journalType = JournalType.valueOf(JOURNAL_TYPE.validateResolvedOperation(model).asString());
+        final JournalType journalType = JournalType.valueOf(JOURNAL_TYPE.resolveModelAttribute(context, model).asString());
         configuration.setJournalType(journalType);
 
         // AIO Journal
-        configuration.setJournalBufferSize_AIO(JOURNAL_BUFFER_SIZE.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO));
-        configuration.setJournalBufferTimeout_AIO(JOURNAL_BUFFER_TIMEOUT.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO));
-        configuration.setJournalMaxIO_AIO(JOURNAL_MAX_IO.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO));
+        configuration.setJournalBufferSize_AIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO));
+        configuration.setJournalBufferTimeout_AIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO));
+        configuration.setJournalMaxIO_AIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO));
         // NIO Journal
-        configuration.setJournalBufferSize_NIO(JOURNAL_BUFFER_SIZE.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO));
-        configuration.setJournalBufferTimeout_NIO(JOURNAL_BUFFER_TIMEOUT.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO));
-        configuration.setJournalMaxIO_NIO(JOURNAL_MAX_IO.validateResolvedOperation(model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO));
+        configuration.setJournalBufferSize_NIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO));
+        configuration.setJournalBufferTimeout_NIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO));
+        configuration.setJournalMaxIO_NIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO));
         //
-        configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.validateResolvedOperation(model).asInt());
-        configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.validateResolvedOperation(model).asInt());
-        configuration.setJournalFileSize(JOURNAL_FILE_SIZE.validateResolvedOperation(model).asInt());
-        configuration.setJournalMinFiles(JOURNAL_MIN_FILES.validateResolvedOperation(model).asInt());
-        configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.validateResolvedOperation(model).asBoolean());
-        configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.validateResolvedOperation(model).asBoolean());
-        configuration.setLogJournalWriteRate(LOG_JOURNAL_WRITE_RATE.validateResolvedOperation(model).asBoolean());
+        configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.resolveModelAttribute(context, model).asInt());
+        configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());
+        configuration.setJournalFileSize(JOURNAL_FILE_SIZE.resolveModelAttribute(context, model).asInt());
+        configuration.setJournalMinFiles(JOURNAL_MIN_FILES.resolveModelAttribute(context, model).asInt());
+        configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
+        configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
+        configuration.setLogJournalWriteRate(LOG_JOURNAL_WRITE_RATE.resolveModelAttribute(context, model).asBoolean());
 
-        configuration.setManagementAddress(SimpleString.toSimpleString(MANAGEMENT_ADDRESS.validateResolvedOperation(model).asString()));
-        configuration.setManagementNotificationAddress(SimpleString.toSimpleString(MANAGEMENT_NOTIFICATION_ADDRESS.validateResolvedOperation(model).asString()));
+        configuration.setManagementAddress(SimpleString.toSimpleString(MANAGEMENT_ADDRESS.resolveModelAttribute(context, model).asString()));
+        configuration.setManagementNotificationAddress(SimpleString.toSimpleString(MANAGEMENT_NOTIFICATION_ADDRESS.resolveModelAttribute(context, model).asString()));
 
-        configuration.setMemoryMeasureInterval(MEMORY_MEASURE_INTERVAL.validateResolvedOperation(model).asLong());
-        configuration.setMemoryWarningThreshold(MEMORY_WARNING_THRESHOLD.validateResolvedOperation(model).asInt());
+        configuration.setMemoryMeasureInterval(MEMORY_MEASURE_INTERVAL.resolveModelAttribute(context, model).asLong());
+        configuration.setMemoryWarningThreshold(MEMORY_WARNING_THRESHOLD.resolveModelAttribute(context, model).asInt());
 
-        configuration.setMessageCounterEnabled(MESSAGE_COUNTER_ENABLED.validateResolvedOperation(model).asBoolean());
-        configuration.setMessageCounterSamplePeriod(MESSAGE_COUNTER_SAMPLE_PERIOD.validateResolvedOperation(model).asInt());
-        configuration.setMessageCounterMaxDayHistory(MESSAGE_COUNTER_MAX_DAY_HISTORY.validateResolvedOperation(model).asInt());
-        configuration.setMessageExpiryScanPeriod(MESSAGE_EXPIRY_SCAN_PERIOD.validateResolvedOperation(model).asLong());
-        configuration.setMessageExpiryThreadPriority(MESSAGE_EXPIRY_THREAD_PRIORITY.validateResolvedOperation(model).asInt());
+        configuration.setMessageCounterEnabled(MESSAGE_COUNTER_ENABLED.resolveModelAttribute(context, model).asBoolean());
+        configuration.setMessageCounterSamplePeriod(MESSAGE_COUNTER_SAMPLE_PERIOD.resolveModelAttribute(context, model).asInt());
+        configuration.setMessageCounterMaxDayHistory(MESSAGE_COUNTER_MAX_DAY_HISTORY.resolveModelAttribute(context, model).asInt());
+        configuration.setMessageExpiryScanPeriod(MESSAGE_EXPIRY_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
+        configuration.setMessageExpiryThreadPriority(MESSAGE_EXPIRY_THREAD_PRIORITY.resolveModelAttribute(context, model).asInt());
 
         if (model.hasDefined(NAME_OPTIONAL.getName())) {
-            configuration.setName(NAME_OPTIONAL.validateResolvedOperation(model).asString());
+            configuration.setName(NAME_OPTIONAL.resolveModelAttribute(context, model).asString());
         }
 
-        configuration.setJournalPerfBlastPages(PERF_BLAST_PAGES.validateResolvedOperation(model).asInt());
-        configuration.setPersistDeliveryCountBeforeDelivery(PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY.validateResolvedOperation(model).asBoolean());
-        configuration.setPersistenceEnabled(PERSISTENCE_ENABLED.validateResolvedOperation(model).asBoolean());
-        configuration.setPersistIDCache(PERSIST_ID_CACHE.validateResolvedOperation(model).asBoolean());
+        configuration.setJournalPerfBlastPages(PERF_BLAST_PAGES.resolveModelAttribute(context, model).asInt());
+        configuration.setPersistDeliveryCountBeforeDelivery(PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY.resolveModelAttribute(context, model).asBoolean());
+        configuration.setPersistenceEnabled(PERSISTENCE_ENABLED.resolveModelAttribute(context, model).asBoolean());
+        configuration.setPersistIDCache(PERSIST_ID_CACHE.resolveModelAttribute(context, model).asBoolean());
 
-        configuration.setRunSyncSpeedTest(RUN_SYNC_SPEED_TEST.validateResolvedOperation(model).asBoolean());
+        configuration.setRunSyncSpeedTest(RUN_SYNC_SPEED_TEST.resolveModelAttribute(context, model).asBoolean());
 
-        configuration.setScheduledThreadPoolMaxSize(SCHEDULED_THREAD_POOL_MAX_SIZE.validateResolvedOperation(model).asInt());
-        configuration.setSecurityEnabled(SECURITY_ENABLED.validateResolvedOperation(model).asBoolean());
-        configuration.setSecurityInvalidationInterval(SECURITY_INVALIDATION_INTERVAL.validateResolvedOperation(model).asLong());
-        configuration.setServerDumpInterval(SERVER_DUMP_INTERVAL.validateResolvedOperation(model).asLong());
-        configuration.setSharedStore(SHARED_STORE.validateResolvedOperation(model).asBoolean());
-        configuration.setThreadPoolMaxSize(THREAD_POOL_MAX_SIZE.validateResolvedOperation(model).asInt());
-        configuration.setTransactionTimeout(TRANSACTION_TIMEOUT.validateResolvedOperation(model).asLong());
-        configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.validateResolvedOperation(model).asLong());
-        configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.validateResolvedOperation(model).asBoolean());
+        configuration.setScheduledThreadPoolMaxSize(SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
+        configuration.setSecurityEnabled(SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean());
+        configuration.setSecurityInvalidationInterval(SECURITY_INVALIDATION_INTERVAL.resolveModelAttribute(context, model).asLong());
+        configuration.setServerDumpInterval(SERVER_DUMP_INTERVAL.resolveModelAttribute(context, model).asLong());
+        configuration.setSharedStore(SHARED_STORE.resolveModelAttribute(context, model).asBoolean());
+        configuration.setThreadPoolMaxSize(THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
+        configuration.setTransactionTimeout(TRANSACTION_TIMEOUT.resolveModelAttribute(context, model).asLong());
+        configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
+        configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
         // --
-        processAddressSettings(configuration, model);
-        processSecuritySettings(configuration, model);
+        processAddressSettings(context, configuration, model);
+        processSecuritySettings(context, configuration, model);
 
         // Add in items from child resources
-        GroupingHandlerAdd.addGroupingHandlerConfig(configuration, model);
-        BroadcastGroupAdd.addBroadcastGroupConfigs(configuration, model);
-        DiscoveryGroupAdd.addDiscoveryGroupConfigs(configuration, model);
-        DivertAdd.addDivertConfigs(configuration, model);
-        QueueAdd.addQueueConfigs(configuration, model);
-        BridgeAdd.addBridgeConfigs(configuration, model);
-        ClusterConnectionAdd.addClusterConnectionConfigs(configuration, model);
-        ConnectorServiceAdd.addConnectorServiceConfigs(configuration, model);
+        GroupingHandlerAdd.addGroupingHandlerConfig(context,configuration, model);
+        BroadcastGroupAdd.addBroadcastGroupConfigs(context, configuration, model);
+        DiscoveryGroupAdd.addDiscoveryGroupConfigs(context, configuration, model);
+        DivertAdd.addDivertConfigs(context, configuration, model);
+        QueueAdd.addQueueConfigs(context, configuration, model);
+        BridgeAdd.addBridgeConfigs(context, configuration, model);
+        ClusterConnectionAdd.addClusterConnectionConfigs(context, configuration, model);
+        ConnectorServiceAdd.addConnectorServiceConfigs(context, configuration, model);
 
         return configuration;
     }
@@ -382,12 +383,12 @@ class HornetQServerAdd implements OperationStepHandler {
      * @param params        the detyped operation parameters
      * @throws org.jboss.as.controller.OperationFailedException
      */
-    static void processAddressSettings(final Configuration configuration, final ModelNode params) throws OperationFailedException {
+    static void processAddressSettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
         if (params.hasDefined(ADDRESS_SETTING)) {
             for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                 final String match = property.getName();
                 final ModelNode config = property.getValue();
-                final AddressSettings settings = AddressSettingAdd.createSettings(config);
+                final AddressSettings settings = AddressSettingAdd.createSettings(context, config);
                 configuration.getAddressesSettings().put(match, settings);
             }
         }
@@ -399,7 +400,7 @@ class HornetQServerAdd implements OperationStepHandler {
      * @param configuration the hornetQ configuration
      * @param params        the detyped operation parameters
      */
-    static void processSecuritySettings(final Configuration configuration, final ModelNode params) throws OperationFailedException {
+    static void processSecuritySettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
         if (params.get(SECURITY_SETTING).isDefined()) {
             for (final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
                 final String match = property.getName();
@@ -408,7 +409,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 if(config.hasDefined(CommonAttributes.ROLE)) {
                     final Set<Role> roles = new HashSet<Role>();
                     for (final Property role : config.get(CommonAttributes.ROLE).asPropertyList()) {
-                        roles.add(SecurityRoleAdd.transform(role.getName(), role.getValue()));
+                        roles.add(SecurityRoleAdd.transform(context, role.getName(), role.getValue()));
                     }
                     configuration.getSecurityRoles().put(match, roles);
                 }

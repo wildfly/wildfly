@@ -22,6 +22,12 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.PATH;
+import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+
+import java.util.List;
+
 import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -32,12 +38,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 
 /**
  * Operation responsible for changing the file attributes of file based logging handlers.
@@ -61,10 +61,10 @@ public class HandlerFileChange extends AbstractModelUpdateHandler {
         final String name = address.getLastElement().getValue();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final HandlerFileService service = new HandlerFileService(PATH.validateResolvedOperation(model).asString());
+        final HandlerFileService service = new HandlerFileService(PATH.resolveModelAttribute(context, model).asString());
         final ServiceBuilder<String> serviceBuilder = serviceTarget.addService(LogServices.handlerName(name), service);
 
-        final ModelNode relativeTo = RELATIVE_TO.validateResolvedOperation(model);
+        final ModelNode relativeTo = RELATIVE_TO.resolveModelAttribute(context, model);
         if (relativeTo.isDefined()) {
             serviceBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, service.getRelativeToInjector());
         }

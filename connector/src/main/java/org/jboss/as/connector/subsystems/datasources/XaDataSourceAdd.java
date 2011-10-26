@@ -27,6 +27,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOUR
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
@@ -55,13 +56,12 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
         return service;
     }
 
-    @Override
-    protected ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
-                                                               AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler handler)
+    protected ServiceController<?> startConfigAndAddDependency(OperationContext context, ServiceBuilder<?> dataSourceServiceBuilder,
+            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler handler)
             throws OperationFailedException {
         final ModifiableXaDataSource dataSourceConfig;
         try {
-            dataSourceConfig = xaFrom(operation);
+            dataSourceConfig = xaFrom(context, operation);
         } catch (ValidateException e) {
             throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("XaDataSource", operation, e.getLocalizedMessage())));
         }

@@ -124,6 +124,7 @@ import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingRe
 import org.jboss.as.server.services.net.SocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
+import org.jboss.as.server.services.security.RuntimeVaultReader;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.server.services.security.VaultRemoveHandler;
 import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
@@ -155,7 +156,8 @@ public class ServerControllerModelUtil {
     public static void initOperations(final ManagementResourceRegistration root, final ContentRepository contentRepository,
                                       final ExtensibleConfigurationPersister extensibleConfigurationPersister,
                                       final ServerEnvironment serverEnvironment,
-                                      final ControlledProcessState processState) {
+                                      final ControlledProcessState processState,
+                                      final RuntimeVaultReader vaultReader) {
         // Build up the core model registry
         root.registerReadWriteAttribute(NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
 
@@ -222,8 +224,10 @@ public class ServerControllerModelUtil {
 
         //vault
         ManagementResourceRegistration vault = root.registerSubModel(PathElement.pathElement(CORE_SERVICE, VAULT), CommonProviders.VAULT_PROVIDER);
-        vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, VaultAddHandler.VAULT_INSTANCE, VaultAddHandler.VAULT_INSTANCE, false);
-        vault.registerOperationHandler(VaultRemoveHandler.OPERATION_NAME, VaultRemoveHandler.INSTANCE, VaultRemoveHandler.INSTANCE, false);
+        VaultAddHandler vah = new VaultAddHandler(vaultReader);
+        vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, vah, vah, false);
+        VaultRemoveHandler vrh = new VaultRemoveHandler(vaultReader);
+        vault.registerOperationHandler(VaultRemoveHandler.OPERATION_NAME, vrh, vrh, false);
         VaultWriteAttributeHandler.INSTANCE.registerAttributes(vault);
 
         // Central Management

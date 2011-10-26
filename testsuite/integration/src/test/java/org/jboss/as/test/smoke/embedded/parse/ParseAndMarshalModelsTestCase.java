@@ -74,6 +74,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
 import org.jboss.as.controller.ModelController;
@@ -350,7 +351,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 ServerControllerModelUtil.updateCoreModel(model);
-                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null);
+                ServerControllerModelUtil.initOperations(rootRegistration, null, persister, null, null, null);
             }
         });
 
@@ -650,7 +651,7 @@ public class ParseAndMarshalModelsTestCase {
         private final Setup registration;
 
         ModelControllerService(final ControlledProcessState processState, final Setup registration, final ModelNode model) {
-            super(OperationContext.Type.MANAGEMENT, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null);
+            super(OperationContext.Type.MANAGEMENT, new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
             this.model = model;
             this.registration = registration;
         }

@@ -80,7 +80,7 @@ public class DivertRemove extends AbstractRemoveStepHandler implements Descripti
         if (hqService != null && hqService.getState() == ServiceController.State.UP) {
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-            final DivertConfiguration divertConfiguration = DivertAdd.createDivertConfiguration(name, model);
+            final DivertConfiguration divertConfiguration = DivertAdd.createDivertConfiguration(context, name, model);
 
             HornetQServer server = HornetQServer.class.cast(hqService.getValue());
             DivertAdd.createDivert(name, divertConfiguration, server.getHornetQServerControl());

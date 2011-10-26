@@ -107,18 +107,18 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
         return MessagingDescriptions.getGroupingHandlerAdd(locale);
     }
 
-    static void addGroupingHandlerConfig(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+    static void addGroupingHandlerConfig(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
             Property prop = model.get(CommonAttributes.BROADCAST_GROUP).asProperty();
-            configuration.setGroupingHandlerConfiguration(createGroupingHandlerConfiguration(prop.getName(), prop.getValue()));
+            configuration.setGroupingHandlerConfiguration(createGroupingHandlerConfiguration(context, prop.getName(), prop.getValue()));
         }
     }
 
-    static GroupingHandlerConfiguration createGroupingHandlerConfiguration(final String name, final ModelNode model) throws OperationFailedException {
+    static GroupingHandlerConfiguration createGroupingHandlerConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(CommonAttributes.TYPE.validateResolvedOperation(model).asString());
-        final String address = CommonAttributes.GROUPING_HANDLER_ADDRESS.validateResolvedOperation(model).asString();
-        final int timeout = CommonAttributes.TIMEOUT.validateResolvedOperation(model).asInt();
+        final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(CommonAttributes.TYPE.resolveModelAttribute(context, model).asString());
+        final String address = CommonAttributes.GROUPING_HANDLER_ADDRESS.resolveModelAttribute(context, model).asString();
+        final int timeout = CommonAttributes.TIMEOUT.resolveModelAttribute(context, model).asInt();
         return new GroupingHandlerConfiguration(SimpleString.toSimpleString(name), type, SimpleString.toSimpleString(address), timeout);
     }
 }

@@ -27,6 +27,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
@@ -55,12 +56,12 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
     }
 
     @Override
-    protected ServiceController<?> startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
-            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler handler)
+    protected ServiceController<?> startConfigAndAddDependency(OperationContext context, ServiceBuilder<?> dataSourceServiceBuilder,
+            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler serviceVerificationHandler)
             throws OperationFailedException {
         final ModifiableDataSource dataSourceConfig;
         try {
-            dataSourceConfig = from(operation);
+            dataSourceConfig = from(context, operation);
         } catch (ValidateException e) {
             e.printStackTrace();
             throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("DataSource", operation, e.getLocalizedMessage())));
@@ -69,7 +70,7 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
         final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);
 
         ServiceController<?> svcController = serviceTarget.addService(dataSourceCongServiceName, configService)
-                .addListener(handler)
+                .addListener(serviceVerificationHandler)
                 .install();
 
         dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableDataSource.class,
@@ -77,5 +78,4 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
 
         return svcController;
     }
-
 }

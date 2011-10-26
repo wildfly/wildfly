@@ -87,12 +87,12 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModelNode pathNode = TimerServiceResourceDefinition.PATH.validateResolvedOperation(model);
+        final ModelNode pathNode = TimerServiceResourceDefinition.PATH.resolveModelAttribute(context, model);
         final String path = pathNode.isDefined() ? pathNode.asString() : null;
-        final ModelNode relativeToNode = TimerServiceResourceDefinition.RELATIVE_TO.validateResolvedOperation(model);
+        final ModelNode relativeToNode = TimerServiceResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, model);
         final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
 
-        final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.validateResolvedOperation(model).asString();
+        final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final ServiceName threadPoolServiceName = EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName);
 
         context.addStep(new AbstractDeploymentChainStep() {

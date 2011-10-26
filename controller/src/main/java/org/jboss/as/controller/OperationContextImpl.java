@@ -30,14 +30,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.sun.corba.se.spi.orbutil.fsm.State;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -607,6 +604,11 @@ final class OperationContextImpl extends AbstractOperationContext {
             modelController.releaseContainerMonitor();
             containerMonitorStep = null;
         }
+    }
+
+    @Override
+    public ModelNode resolveExpressions(ModelNode node) {
+        return modelController.resolveExpressions(node);
     }
 
     class ContextServiceTarget implements ServiceTarget {
