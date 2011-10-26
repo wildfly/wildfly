@@ -372,6 +372,11 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     }
 
     @Override
+    public List<ClassTransformer> getTransformers() {
+        return transformers;
+    }
+
+    @Override
     public void addTransformer(ClassTransformer classTransformer) {
         transformers.add(classTransformer);
     }
