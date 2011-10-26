@@ -49,7 +49,19 @@ public enum Element {
     SHORT_RUNNING_THREADS("short-running-threads"),
 
     /** long-running-threads element **/
-    LONG_RUNNING_THREADS("long-running-threads");
+    LONG_RUNNING_THREADS("long-running-threads"),
+
+    /** workmanager element **/
+    WORKMANAGER("workmanager"),
+
+    WORKMANAGERS("workmanagers"),
+
+
+    /** bootstrap-contexts element **/
+    BOOTSTRAP_CONTEXTS("bootstrap-contexts"),
+
+    BOOTSTRAP_CONTEXT("bootstrap-context");
+
 
     private final String name;
 

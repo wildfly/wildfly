@@ -28,7 +28,11 @@ public enum Attribute {
 
     DEBUG("debug"),
 
-    ERROR("error");
+    ERROR("error"),
+
+    NAME("name"),
+
+    WORKMANAGER("workmanager");
 
     private final String name;
 

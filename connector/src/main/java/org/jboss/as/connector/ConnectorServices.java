@@ -47,8 +47,12 @@ public final class ConnectorServices {
 
     public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
-    public static final ServiceName DEFAULT_BOOTSTRAP_CONTEXT_SERVICE = ServiceName.JBOSS.append("connector",
-            "defaultbootstrapcontext");
+    public static final ServiceName BEAN_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "bean_validation", "config");
+
+    public static final ServiceName ARCHIVE_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "archive_validation", "config");
+
+    public static final ServiceName BOOTSTRAP_CONTEXT_SERVICE = ServiceName.JBOSS.append("connector",
+            "bootstrapcontext");
 
     public static final ServiceName TRANSACTION_INTEGRATION_SERVICE = ServiceName.JBOSS.append("connector",
             "transactionintegration");
