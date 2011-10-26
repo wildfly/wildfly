@@ -21,19 +21,20 @@
  */
 package org.jboss.as.ejb3.timerservice.mk2;
 
-import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Calendar;
+
+import javax.ejb.EJBException;
+import javax.ejb.ScheduleExpression;
+
 import org.jboss.as.ejb3.timerservice.mk2.persistence.CalendarTimerEntity;
 import org.jboss.as.ejb3.timerservice.mk2.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.timerservice.mk2.persistence.TimerEntity;
 import org.jboss.as.ejb3.timerservice.mk2.task.CalendarTimerTask;
 import org.jboss.as.ejb3.timerservice.mk2.task.TimerTask;
+import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.logging.Logger;
-
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Calendar;
 
 /**
  * Represents a {@link javax.ejb.Timer} which is created out a calendar expression
@@ -258,7 +259,7 @@ public class CalendarTimer extends TimerImpl {
         try {
             timeoutMethodDeclaringClass = Class.forName(declaringClass, false, timedObjectInvoker.getClassLoader());
         } catch (ClassNotFoundException cnfe) {
-            throw new RuntimeException("Could not load declaring class: " + declaringClass + " of timeout method");
+            throw new RuntimeException("Could not load declaring class: " + declaringClass + " of timeout method", cnfe);
         }
 
         String timeoutMethodName = timeoutMethodInfo.getMethodName();
@@ -274,7 +275,7 @@ public class CalendarTimer extends TimerImpl {
                 try {
                     methodParamClass = Class.forName(paramClassName, false, timedObjectInvoker.getClassLoader());
                 } catch (ClassNotFoundException cnfe) {
-                    throw new RuntimeException("Could not load method param class: " + paramClassName + " of timeout method");
+                    throw new RuntimeException("Could not load method param class: " + paramClassName + " of timeout method", cnfe);
                 }
                 timeoutMethodParamTypes[i++] = methodParamClass;
             }
@@ -290,14 +291,18 @@ public class CalendarTimer extends TimerImpl {
                     if (timeoutMethodParamTypes.length != methodParamTypes.length) {
                         continue;
                     }
+                    boolean match = true;
                     for (int i = 0; i < methodParamTypes.length; i++) {
                         // param type doesn't match
                         if (!timeoutMethodParamTypes[i].equals(methodParamTypes[i])) {
-                            continue;
+                            match = false;
+                            break;
                         }
                     }
-                    // match found
-                    return method;
+                    if (match) {
+                        // match found
+                        return method;
+                    }
                 }
             }
             klass = klass.getSuperclass();
