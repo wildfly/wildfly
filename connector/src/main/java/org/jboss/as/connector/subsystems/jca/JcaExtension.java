@@ -22,19 +22,16 @@
 package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
-import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
+import static org.jboss.as.connector.subsystems.jca.ArchiveValidationAdd.ArchiveValidationParameters;
+import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION;
+import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION;
+import static org.jboss.as.connector.subsystems.jca.Constants.BOOTSTRAP_CONTEXT;
+import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.jca.Constants.JCA;
-import static org.jboss.as.connector.subsystems.jca.Constants.LONG_RUNNING_THREADS;
-import static org.jboss.as.connector.subsystems.jca.Constants.SHORT_RUNNING_THREADS;
-import static org.jboss.as.connector.subsystems.jca.Constants.THREAD_POOL;
-import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM;
-import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM_ADD_DESC;
-import static org.jboss.as.connector.subsystems.jca.JcaSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -42,31 +39,26 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.threads.CommonAttributes.BLOCKING;
-import static org.jboss.as.threads.ThreadsDescriptionUtil.addBoundedQueueThreadPool;
-import static org.jboss.as.threads.ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC;
+import static org.jboss.as.threads.CommonAttributes.NAME;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.connector.subsystems.resourceadapters.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -74,6 +66,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.threads.BoundedQueueThreadPoolAdd;
 import org.jboss.as.threads.BoundedQueueThreadPoolRemove;
 import org.jboss.as.threads.ThreadsParser;
+import org.jboss.as.threads.ThreadsSubsystemProviders;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -84,6 +77,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class JcaExtension implements Extension {
 
@@ -92,27 +86,53 @@ public class JcaExtension implements Extension {
     @Override
     public void initialize(final ExtensionContext context) {
         ROOT_LOGGER.debugf("Initializing Connector Extension");
-        // Register the connector subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(JCA);
 
-        registration.registerXMLElementWriter(NewConnectorSubsystemParser.INSTANCE);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME);
 
-        // Connector subsystem description and operation handlers
-        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
-        subsystem.registerOperationHandler(ADD, JcaSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler(REMOVE, JcaSubSystemRemove.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, ConnectorSubsystemDescribeHandler.INSTANCE,
-                ConnectorSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JcaSubsystemProviders.SUBSYSTEM);
+        registration.registerOperationHandler(ADD, JcaSubsystemAdd.INSTANCE, JcaSubsystemProviders.SUBSYSTEM_ADD_DESC, false);
+        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
+        final ManagementResourceRegistration archiveValidation =
+            registration.registerSubModel(PathElement.pathElement(ARCHIVE_VALIDATION, ARCHIVE_VALIDATION), JcaSubsystemProviders.ARCHIVE_VALIDATION_DESC);
+        archiveValidation.registerOperationHandler(ADD, ArchiveValidationAdd.INSTANCE, JcaSubsystemProviders.ADD_ARCHIVE_VALIDATION_DESC, false);
+        archiveValidation.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_ARCHIVE_VALIDATION_DESC, false);
+
+        final ManagementResourceRegistration beanValidation =
+            registration.registerSubModel(PathElement.pathElement(BEAN_VALIDATION, BEAN_VALIDATION), JcaSubsystemProviders.BEAN_VALIDATION_DESC);
+        beanValidation.registerOperationHandler(ADD, BeanValidationAdd.INSTANCE, JcaSubsystemProviders.ADD_BEAN_VALIDATION_DESC, false);
+        beanValidation.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_BEAN_VALIDATION_DESC, false);
+
+        final ManagementResourceRegistration cachedConnectionManager =
+            registration.registerSubModel(PathElement.pathElement(CACHED_CONNECTION_MANAGER, CACHED_CONNECTION_MANAGER), JcaSubsystemProviders.CACHED_CONNECTION_MANAGER_DESC);
+        cachedConnectionManager.registerOperationHandler(ADD, CachedConnectionManagerAdd.INSTANCE, JcaSubsystemProviders.ADD_CACHED_CONNECTION_MANAGER_DESC, false);
+        cachedConnectionManager.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_CACHED_CONNECTION_MANAGER_DESC, false);
+
+        final ManagementResourceRegistration workManager =
+            registration.registerSubModel(PathElement.pathElement(WORKMANAGER), JcaSubsystemProviders.WORKMANAGER_DESC);
+        workManager.registerOperationHandler(ADD, WorkManagerAdd.INSTANCE, JcaSubsystemProviders.ADD_WORKMANAGER_DESC, false);
+        workManager.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_WORKMANAGER_DESC, false);
+        final ManagementResourceRegistration shortRunning = workManager.registerSubModel(PathElement.pathElement(WORKMANAGER_SHORT_RUNNING), ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC);
+        shortRunning.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE, BoundedQueueThreadPoolAdd.INSTANCE, false);
+        shortRunning.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE, BoundedQueueThreadPoolRemove.INSTANCE, false);
+        final ManagementResourceRegistration longRunning = workManager.registerSubModel(PathElement.pathElement(WORKMANAGER_LONG_RUNNING), ThreadsSubsystemProviders.BOUNDED_QUEUE_THREAD_POOL_DESC);
+        longRunning.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE, BoundedQueueThreadPoolAdd.INSTANCE, false);
+        longRunning.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE, BoundedQueueThreadPoolRemove.INSTANCE, false);
 
 
-        final ManagementResourceRegistration threadPools = subsystem.registerSubModel(PathElement.pathElement(THREAD_POOL), BOUNDED_QUEUE_THREAD_POOL_DESC);
-        threadPools.registerOperationHandler(ADD, BoundedQueueThreadPoolAdd.INSTANCE, BoundedQueueThreadPoolAdd.INSTANCE, false);
-        threadPools.registerOperationHandler(REMOVE, BoundedQueueThreadPoolRemove.INSTANCE, BoundedQueueThreadPoolRemove.INSTANCE, false);
+        final ManagementResourceRegistration bootstrapContext =
+            registration.registerSubModel(PathElement.pathElement(BOOTSTRAP_CONTEXT), JcaSubsystemProviders.BOOTSTRAP_CONTEXT_DESC);
+        bootstrapContext.registerOperationHandler(ADD, BootstrapContextAdd.INSTANCE, JcaSubsystemProviders.ADD_BOOTSTRAP_CONTEXT_DESC, false);
+        bootstrapContext.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_BOOTSTRAP_CONTEXT_DESC, false);
+
+        subsystem.registerXMLElementWriter(ConnectorSubsystemParser.INSTANCE);
+
     }
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(Namespace.CURRENT.getUriString(), NewConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.JCA_1_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(Namespace.JCA_1_1.getUriString(), ConnectorSubsystemParser.INSTANCE);
     }
 
     private static ModelNode createEmptyAddOperation() {
@@ -126,10 +146,10 @@ public class JcaExtension implements Extension {
         return subsystem;
     }
 
-    static final class NewConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+    static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
-        static final NewConnectorSubsystemParser INSTANCE = new NewConnectorSubsystemParser();
+        static final ConnectorSubsystemParser INSTANCE = new ConnectorSubsystemParser();
 
         /** {@inheritDoc} */
         @Override
@@ -139,77 +159,89 @@ public class JcaExtension implements Extension {
 
             writeArchiveValidation(writer, node);
             writeBeanValidation(writer, node);
-            writeDefaultWorkManager(writer, node);
+            writeWorkManagers(writer, node);
+            writeBootstrapContexts(writer, node);
             writeCachedConnectionManager(writer, node);
             writer.writeEndElement();
         }
 
-        private void writeArchiveValidation(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-            if (hasAnyOf(node, ARCHIVE_VALIDATION_ENABLED, ARCHIVE_VALIDATION_FAIL_ON_ERROR, ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
-                writer.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
-                if (has(node, ARCHIVE_VALIDATION_ENABLED)) {
-                    writeAttribute(writer, Attribute.ENABLED, node.require(ARCHIVE_VALIDATION_ENABLED));
-                }
-                if (has(node, ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
-                    writeAttribute(writer, Attribute.FAIL_ON_ERROR, node.require(ARCHIVE_VALIDATION_FAIL_ON_ERROR));
-                }
-                if (has(node, ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
-                    writeAttribute(writer, Attribute.FAIL_ON_WARN, node.require(ARCHIVE_VALIDATION_FAIL_ON_WARN));
+        private void writeArchiveValidation(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
+            if (parentNode.hasDefined(ARCHIVE_VALIDATION)) {
+                ModelNode node = parentNode.get(ARCHIVE_VALIDATION).get(ARCHIVE_VALIDATION);
+                if (ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().isMarshallable(node) ||
+                        ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().isMarshallable(node) ||
+                        ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().isMarshallable(node)) {
+                    writer.writeEmptyElement(Element.ARCHIVE_VALIDATION.getLocalName());
+                    ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().marshallAsAttribute(node, writer);
+                    ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().marshallAsAttribute(node, writer);
+                    ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().marshallAsAttribute(node, writer);
+
                 }
             }
         }
 
-        private void writeBeanValidation(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-            if (has(node, BEAN_VALIDATION_ENABLED)) {
-                writer.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
-                writeAttribute(writer, Attribute.ENABLED, node.require(BEAN_VALIDATION_ENABLED));
+        private void writeBeanValidation(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
+            if (parentNode.hasDefined(BEAN_VALIDATION)) {
+                ModelNode node = parentNode.get(BEAN_VALIDATION).get(BEAN_VALIDATION);
+
+                if (BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().isMarshallable(node)) {
+                    writer.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
+                    BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().marshallAsAttribute(node, writer);
+                }
             }
         }
 
-        private void writeCachedConnectionManager(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-            if (has(node, CACHED_CONNECTION_MANAGER_DEBUG) || has(node, CACHED_CONNECTION_MANAGER_ERROR)) {
-                writer.writeEmptyElement(Element.CACHED_CONNECTION_MANAGER.getLocalName());
-                if (has(node, CACHED_CONNECTION_MANAGER_DEBUG))
-                    writeAttribute(writer, Attribute.DEBUG, node.require(CACHED_CONNECTION_MANAGER_DEBUG));
-                if (has(node, CACHED_CONNECTION_MANAGER_ERROR))
-                    writeAttribute(writer, Attribute.ERROR, node.require(CACHED_CONNECTION_MANAGER_ERROR));
+        private void writeCachedConnectionManager(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
+            if (parentNode.hasDefined(CACHED_CONNECTION_MANAGER)) {
+                ModelNode node = parentNode.get(CACHED_CONNECTION_MANAGER).get(CACHED_CONNECTION_MANAGER);
+
+                if (CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().isMarshallable(node) ||
+                        CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().isMarshallable(node)) {
+                    writer.writeEmptyElement(Element.CACHED_CONNECTION_MANAGER.getLocalName());
+                    CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().marshallAsAttribute(node, writer);
+                    CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().marshallAsAttribute(node, writer);
+                }
             }
         }
 
-        private void writeDefaultWorkManager(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-            if (node.hasDefined(THREAD_POOL)) {
-                writer.writeStartElement(Element.DEFAULT_WORKMANAGER.getLocalName());
-                for (Property prop : node.get(THREAD_POOL).asPropertyList()) {
-                    if (LONG_RUNNING_THREADS.equals(prop.getName())) {
-                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
+        private void writeWorkManagers(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
+            if (parentNode.hasDefined(WORKMANAGER) && parentNode.get(WORKMANAGER).asList().size() != 0) {
+                for (Property property : parentNode.get(WORKMANAGER).asPropertyList()) {
+                    if ("default".equals(property.getValue().get(NAME).asString())) {
+                        writer.writeStartElement(Element.DEFAULT_WORKMANAGER.getLocalName());
+                    } else {
+                        writer.writeStartElement(Element.WORKMANAGER.getLocalName());
+                        WorkManagerAdd.WmParameters.NAME.getAttribute().marshallAsAttribute(property.getValue(), writer);
                     }
-                    if (SHORT_RUNNING_THREADS.equals(prop.getName())) {
-                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                    for (Property prop : property.getValue().asPropertyList()) {
+                        if (WORKMANAGER_LONG_RUNNING.equals(prop.getName())) {
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty().getValue(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
+                        }
+                        if (WORKMANAGER_SHORT_RUNNING.equals(prop.getName())) {
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty().getValue(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                        }
+                    }
+                    writer.writeEndElement();
+                }
+            }
+        }
+
+
+        private void writeBootstrapContexts(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
+            if (parentNode.hasDefined(BOOTSTRAP_CONTEXT) && parentNode.get(BOOTSTRAP_CONTEXT).asList().size() != 0) {
+                writer.writeStartElement(Element.BOOTSTRAP_CONTEXTS.getLocalName());
+
+                for (ModelNode node : parentNode.get(BOOTSTRAP_CONTEXT).asList()) {
+                    if (BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().isMarshallable(node) ||
+                            BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().isMarshallable(node)) {
+                        writer.writeStartElement(Element.BOOTSTRAP_CONTEXT.getLocalName());
+                        BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().marshallAsAttribute(node, writer);
+                        BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().marshallAsAttribute(node, writer);
+                        writer.writeEndElement();
                     }
                 }
                 writer.writeEndElement();
             }
-            // if (hasAnyOf(node, DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL,
-            // DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
-            // writer.writeStartElement(Element.DEFAULT_WORKMANAGER.getLocalName());
-            // if
-            // (node.hasDefined(DEFAULT_WORKMANAGER_LONG_RUNNING_THREAD_POOL)) {
-            // writer.writeStartElement(Element.LONG_RUNNING_THREADS.getLocalName());
-            // (new NewThreadsParser()).writeThreadsElement(writer,
-            // node.get(DEFAULT_WORKMANAGER_THREADS, LONG_RUNNING_THREADS).as);
-            // writer.writeEndElement();
-            // }
-            // if
-            // (node.hasDefined(DEFAULT_WORKMANAGER_SHORT_RUNNING_THREAD_POOL))
-            // {
-            // writer.writeStartElement(Element.SHORT_RUNNING_THREADS.getLocalName());
-            // (new NewThreadsParser()).writeThreadsElement(writer,
-            // node.get(DEFAULT_WORKMANAGER_THREADS, SHORT_RUNNING_THREADS));
-            // writer.writeEndElement();
-            // }
-            //
-            // writer.writeEndElement();
-            // }
         }
 
         private boolean hasAnyOf(ModelNode node, String... names) {
@@ -224,6 +256,8 @@ public class JcaExtension implements Extension {
         private boolean has(ModelNode node, String name) {
             return node.has(name) && node.get(name).isDefined();
         }
+
+
 
         private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value)
                 throws XMLStreamException {
@@ -245,10 +279,11 @@ public class JcaExtension implements Extension {
             // Handle elements
             final EnumSet<Element> visited = EnumSet.noneOf(Element.class);
             final EnumSet<Element> requiredElement = EnumSet.of(Element.DEFAULT_WORKMANAGER);
-
+            boolean ccmAdded = false;
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case JCA_1_1:
                     case JCA_1_0: {
                         final Element element = Element.forName(reader.getLocalName());
                         if (!visited.add(element)) {
@@ -257,24 +292,47 @@ public class JcaExtension implements Extension {
 
                         switch (element) {
                             case ARCHIVE_VALIDATION: {
-                                parseArchiveValidation(reader, subsystem);
+                                list.add(parseArchiveValidation(reader, address));
                                 break;
                             }
                             case BEAN_VALIDATION: {
-                                parseBeanValidation(reader, subsystem);
+                                list.add(parseBeanValidation(reader, address));
                                 break;
                             }
                             case DEFAULT_WORKMANAGER: {
-                                parseDefaultWorkManager(reader, address, list, subsystem);
-                                requiredElement.remove(Element.DEFAULT_WORKMANAGER);
-                                break;
+                                parseWorkManager(reader, address, list, subsystem, true);
+                                final ModelNode bootstrapContextOperation = new ModelNode();
+                                bootstrapContextOperation.get(OP).set(ADD);
+                                final ModelNode bootStrapCOntextAddress = address.clone();
+                                bootStrapCOntextAddress.add(BOOTSTRAP_CONTEXT, DEFAULT_NAME);
+                                bootStrapCOntextAddress.protect();
 
+                                bootstrapContextOperation.get(OP_ADDR).set(bootStrapCOntextAddress);
+                                bootstrapContextOperation.get(WORKMANAGER).set(DEFAULT_NAME);
+                                bootstrapContextOperation.get(NAME).set(DEFAULT_NAME);
+                                list.add(bootstrapContextOperation);
+
+                                requiredElement.remove(Element.DEFAULT_WORKMANAGER);
+
+                                break;
                             }
                             case CACHED_CONNECTION_MANAGER: {
-                                parseCcm(reader, subsystem);
+                                list.add(parseCcm(reader, address));
+                                ccmAdded = true;
                                 break;
                             }
-                            default:
+                            case WORKMANAGER: {
+                                parseWorkManager(reader, address, list, subsystem, false);
+                                break;
+                            }
+                            case BOOTSTRAP_CONTEXTS: {
+                                ModelNode operation = parseBootstrapContexts(reader, address);
+                                if (operation != null) {
+                                    list.add(operation);
+                                }
+                                break;
+                            }
+                           default:
                                 throw unexpectedElement(reader);
                         }
                         break;
@@ -286,26 +344,51 @@ public class JcaExtension implements Extension {
             if (!requiredElement.isEmpty()) {
                 throw missingRequiredElement(reader, requiredElement);
             }
+            if (!ccmAdded) {
+                final ModelNode ccmOperation = new ModelNode();
+                ccmOperation.get(OP).set(ADD);
+
+                final ModelNode ccmAddress = address.clone();
+                ccmAddress.add(CACHED_CONNECTION_MANAGER, CACHED_CONNECTION_MANAGER);
+                ccmAddress.protect();
+
+                ccmOperation.get(OP_ADDR).set(ccmAddress);
+                list.add(ccmOperation);
+            }
         }
 
-        private void parseArchiveValidation(final XMLExtendedStreamReader reader, final ModelNode node)
+        private ModelNode parseArchiveValidation(final XMLExtendedStreamReader reader, final ModelNode parentOperation)
                 throws XMLStreamException {
+            final ModelNode archiveValidationOperation = new ModelNode();
+            archiveValidationOperation.get(OP).set(ADD);
+
+            final ModelNode archiveValidationAddress = parentOperation.clone();
+            archiveValidationAddress.add(ARCHIVE_VALIDATION, ARCHIVE_VALIDATION);
+            archiveValidationAddress.protect();
+
+            archiveValidationOperation.get(OP_ADDR).set(archiveValidationAddress);
+
 
             final int cnt = reader.getAttributeCount();
             for (int i = 0; i < cnt; i++) {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case ENABLED: {
-                        node.get(ARCHIVE_VALIDATION_ENABLED).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
+                        final Location location = reader.getLocation();
+                        String value = rawAttributeText(reader,  ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getXmlName());
+                        ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, archiveValidationOperation, location);
                         break;
                     }
                     case FAIL_ON_ERROR: {
-                        node.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
-
+                        final Location location = reader.getLocation();
+                        String value = rawAttributeText(reader, ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getXmlName());
+                        ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().parseAndSetParameter(value, archiveValidationOperation, location);
                         break;
                     }
                     case FAIL_ON_WARN: {
-                        node.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(Boolean.parseBoolean(reader.getAttributeValue(i)));
+                        final Location location = reader.getLocation();
+                        String value = rawAttributeText(reader, ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getXmlName());
+                        ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().parseAndSetParameter(value, archiveValidationOperation, location);
                         break;
                     }
                     default: {
@@ -316,10 +399,48 @@ public class JcaExtension implements Extension {
             // Handle elements
             requireNoContent(reader);
 
+            return archiveValidationOperation;
+
         }
 
-        private void parseDefaultWorkManager(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
-                final List<ModelNode> list, final ModelNode node) throws XMLStreamException {
+        private void parseWorkManager(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
+                final List<ModelNode> list, final ModelNode node, boolean defaultWm) throws XMLStreamException {
+
+            final ModelNode workManagerOperation = new ModelNode();
+            workManagerOperation.get(OP).set(ADD);
+
+            final int cnt = reader.getAttributeCount();
+            String name = null;
+            for (int i = 0; i < cnt; i++) {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        final Location location = reader.getLocation();
+                        name = rawAttributeText(reader, WorkManagerAdd.WmParameters.NAME.getAttribute().getXmlName());
+                        WorkManagerAdd.WmParameters.NAME.getAttribute().parseAndSetParameter(name, workManagerOperation, location);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+
+            if (name == null) {
+                if (defaultWm) {
+                    name = DEFAULT_NAME;
+                    workManagerOperation.get(NAME).set(name);
+                } else {
+                    throw new XMLStreamException("name attribute is mandatory for workmanager element");
+                }
+            }
+
+            final ModelNode workManagerAddress = parentAddress.clone();
+            workManagerAddress.add(WORKMANAGER, name);
+            workManagerAddress.protect();
+
+            workManagerOperation.get(OP_ADDR).set(workManagerAddress);
+            list.add(workManagerOperation);
 
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
@@ -327,11 +448,11 @@ public class JcaExtension implements Extension {
 
                 switch (element) {
                     case LONG_RUNNING_THREADS: {
-                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, parentAddress, list, THREAD_POOL, LONG_RUNNING_THREADS);
+                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, WORKMANAGER_LONG_RUNNING);
                         break;
                     }
                     case SHORT_RUNNING_THREADS: {
-                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, parentAddress, list, THREAD_POOL, SHORT_RUNNING_THREADS);
+                        ThreadsParser.getInstance().parseBoundedQueueThreadPool(reader, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, WORKMANAGER_SHORT_RUNNING);
                         break;
                     }
                     default:
@@ -345,80 +466,156 @@ public class JcaExtension implements Extension {
                     op.get(BLOCKING).set(Boolean.TRUE);
                 }
             }
-            // Handle elements
-            requireNoContent(reader);
+
         }
 
-        private void parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
-            requireSingleAttribute(reader, Attribute.ENABLED.getLocalName());
-            final boolean value = reader.getAttributeValue(0) != null ? Boolean.parseBoolean(reader.getAttributeValue(0))
-                    : true;
-            requireNoContent(reader);
 
-            node.get(BEAN_VALIDATION_ENABLED).set(value);
-            // Don't add a requireNoContent here as readBooleanAttributeElement
-            // already performs that check.
-        }
 
-        private void parseCcm(final XMLExtendedStreamReader reader, final ModelNode node) throws XMLStreamException {
+        private ModelNode parseBeanValidation(final XMLExtendedStreamReader reader, final ModelNode parentOperation) throws XMLStreamException {
+            final ModelNode beanValidationOperation = new ModelNode();
+            beanValidationOperation.get(OP).set(ADD);
 
-            final boolean debug = Boolean.parseBoolean(reader.getAttributeValue("", Attribute.DEBUG.getLocalName()));
-            final boolean error = Boolean.parseBoolean(reader.getAttributeValue("", Attribute.ERROR.getLocalName()));
+            final ModelNode beanValidationAddress = parentOperation.clone();
+            beanValidationAddress.add(BEAN_VALIDATION, BEAN_VALIDATION);
+            beanValidationAddress.protect();
 
-            node.get(CACHED_CONNECTION_MANAGER_DEBUG).set(debug);
-            node.get(CACHED_CONNECTION_MANAGER_ERROR).set(error);
+            beanValidationOperation.get(OP_ADDR).set(beanValidationAddress);
 
-            requireNoContent(reader);
-        }
-    }
 
-    private static class ConnectorSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final ConnectorSubsystemDescribeHandler INSTANCE = new ConnectorSubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final ModelNode add = createEmptyAddOperation();
-            final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-            if (model.hasDefined(BEAN_VALIDATION_ENABLED)) {
-                add.get(BEAN_VALIDATION_ENABLED).set(model.get(BEAN_VALIDATION_ENABLED));
-            }
-            if (model.hasDefined(ARCHIVE_VALIDATION_ENABLED)) {
-                add.get(ARCHIVE_VALIDATION_ENABLED).set(model.get(ARCHIVE_VALIDATION_ENABLED));
-            }
-            if (model.hasDefined(ARCHIVE_VALIDATION_FAIL_ON_ERROR)) {
-                add.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_ERROR));
-            }
-            if (model.hasDefined(ARCHIVE_VALIDATION_FAIL_ON_WARN)) {
-                add.get(ARCHIVE_VALIDATION_FAIL_ON_WARN).set(model.get(ARCHIVE_VALIDATION_FAIL_ON_WARN));
-            }
-            if (model.hasDefined(CACHED_CONNECTION_MANAGER_DEBUG)) {
-                add.get(CACHED_CONNECTION_MANAGER_DEBUG).set(model.get(CACHED_CONNECTION_MANAGER_DEBUG));
-            }
-            if (model.hasDefined(CACHED_CONNECTION_MANAGER_ERROR)) {
-                add.get(CACHED_CONNECTION_MANAGER_ERROR).set(model.get(CACHED_CONNECTION_MANAGER_ERROR));
-            }
-
-            final ModelNode result = context.getResult();
-            result.add(add);
-
-            if (model.hasDefined(THREAD_POOL)) {
-                ModelNode pools = model.get(THREAD_POOL);
-                for (Property poolProp : pools.asPropertyList()) {
-                    if (poolProp.getName().equals(LONG_RUNNING_THREADS)) {
-                        addBoundedQueueThreadPool(result, poolProp.getValue(), PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(THREAD_POOL, LONG_RUNNING_THREADS));
-                    } else if (poolProp.getName().equals(SHORT_RUNNING_THREADS)) {
-                        addBoundedQueueThreadPool(result, poolProp.getValue(), PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME), PathElement.pathElement(THREAD_POOL, SHORT_RUNNING_THREADS));
+            final int cnt = reader.getAttributeCount();
+            for (int i = 0; i < cnt; i++) {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case ENABLED: {
+                        final Location location = reader.getLocation();
+                        String value = rawAttributeText(reader, BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getXmlName());
+                        BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().parseAndSetParameter(value, beanValidationOperation, location);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
                     }
                 }
             }
+            // Handle elements
+            requireNoContent(reader);
 
-            context.completeStep();
+            return beanValidationOperation;
+
         }
 
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        private ModelNode parseCcm(final XMLExtendedStreamReader reader, final ModelNode parentOperation) throws XMLStreamException {
+            final ModelNode ccmOperation = new ModelNode();
+            ccmOperation.get(OP).set(ADD);
+
+            final ModelNode ccmAddress = parentOperation.clone();
+            ccmAddress.add(CACHED_CONNECTION_MANAGER,CACHED_CONNECTION_MANAGER);
+            ccmAddress.protect();
+
+            ccmOperation.get(OP_ADDR).set(ccmAddress);
+
+
+            final int cnt = reader.getAttributeCount();
+            for (int i = 0; i < cnt; i++) {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case DEBUG: {
+                        final Location location = reader.getLocation();
+                        String value = rawAttributeText(reader, CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().getXmlName());
+                        CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().parseAndSetParameter(value, ccmOperation, location);
+                        break;
+                    }
+                    case ERROR: {
+                        final Location location = reader.getLocation();
+                        String value = rawAttributeText(reader, CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().getXmlName());
+                        CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().parseAndSetParameter(value, ccmOperation, location);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            // Handle elements
+            requireNoContent(reader);
+
+            return ccmOperation;
+
         }
+
+        private ModelNode parseBootstrapContexts(final XMLExtendedStreamReader reader, final ModelNode parentAddress) throws XMLStreamException {
+            ModelNode bootstrapContextOperation = null;
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+
+                final Element element = Element.forName(reader.getLocalName());
+
+                switch (element) {
+                    case BOOTSTRAP_CONTEXT: {
+                        bootstrapContextOperation = new ModelNode();
+                        bootstrapContextOperation.get(OP).set(ADD);
+
+                        final int cnt = reader.getAttributeCount();
+                        String name = null;
+                        String wmName = null;
+                        for (int i = 0; i < cnt; i++) {
+                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                            switch (attribute) {
+                                case NAME: {
+                                    final Location location = reader.getLocation();
+                                    name = rawAttributeText(reader, BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().getXmlName());
+                                    BootstrapContextAdd.BootstrapCtxParameters.NAME.getAttribute().parseAndSetParameter(name, bootstrapContextOperation, location);
+                                    break;
+                                }
+                                case WORKMANAGER: {
+                                    final Location location = reader.getLocation();
+                                    wmName = rawAttributeText(reader, BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().getXmlName());
+                                    BootstrapContextAdd.BootstrapCtxParameters.WORKMANAGER.getAttribute().parseAndSetParameter(wmName, bootstrapContextOperation, location);
+                                    break;
+                                }
+                                default: {
+                                    throw unexpectedAttribute(reader, i);
+                                }
+                            }
+                        }
+
+                        if (name == null) {
+                            if (DEFAULT_NAME.equals(wmName)) {
+                                name = DEFAULT_NAME;
+                            } else {
+                                throw new XMLStreamException("name attribute is mandatory for workmanager element");
+                            }
+                        }
+
+                        final ModelNode bootStrapCOntextAddress = parentAddress.clone();
+                        bootStrapCOntextAddress.add(BOOTSTRAP_CONTEXT, name);
+                        bootStrapCOntextAddress.protect();
+
+                        bootstrapContextOperation.get(OP_ADDR).set(bootStrapCOntextAddress);
+
+                        // Handle elements
+                        requireNoContent(reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedElement(reader);
+
+                    }
+                }
+            }
+            return bootstrapContextOperation;
+        }
+
+        public String rawElementText(XMLStreamReader reader) throws XMLStreamException {
+            String elementtext = reader.getElementText();
+            elementtext = elementtext == null || elementtext.trim().length() == 0 ? null : elementtext.trim();
+            return elementtext;
+        }
+
+        public String rawAttributeText(XMLStreamReader reader, String attributeName) {
+        String attributeString = reader.getAttributeValue("", attributeName) == null ? null : reader.getAttributeValue(
+                "", attributeName)
+                .trim();
+        return attributeString;
     }
-
+    }
 }

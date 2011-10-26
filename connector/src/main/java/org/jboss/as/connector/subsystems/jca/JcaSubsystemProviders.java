@@ -21,16 +21,16 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION_FAIL_ON_WARN;
-import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION_ENABLED;
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_DEBUG;
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER_ERROR;
-import static org.jboss.as.connector.subsystems.jca.Constants.THREAD_POOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.connector.subsystems.jca.ArchiveValidationAdd.ArchiveValidationParameters;
+import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION;
+import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION;
+import static org.jboss.as.connector.subsystems.jca.Constants.BOOTSTRAP_CONTEXT;
+import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
+import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
@@ -38,16 +38,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -67,43 +64,14 @@ class JcaSubsystemProviders {
             subsystem.get(DESCRIPTION).set(bundle.getString("jca"));
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(Namespace.JCA_1_0.getUriString());
+            subsystem.get(NAMESPACE).set(Namespace.JCA_1_1.getUriString());
 
-            subsystem.get(ATTRIBUTES, BEAN_VALIDATION_ENABLED, DESCRIPTION).set(bundle.getString("bean-validation.enabled"));
-            subsystem.get(ATTRIBUTES, BEAN_VALIDATION_ENABLED, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, BEAN_VALIDATION_ENABLED, REQUIRED).set(true);
+            subsystem.get(CHILDREN, ARCHIVE_VALIDATION , DESCRIPTION).set(bundle.getString("jca." + ARCHIVE_VALIDATION));
+            subsystem.get(CHILDREN, BEAN_VALIDATION , DESCRIPTION).set(bundle.getString("jca." + BEAN_VALIDATION));
+            subsystem.get(CHILDREN, BOOTSTRAP_CONTEXT , DESCRIPTION).set(bundle.getString("jca." + BOOTSTRAP_CONTEXT));
+            subsystem.get(CHILDREN, WORKMANAGER , DESCRIPTION).set(bundle.getString("jca." + WORKMANAGER));
+            subsystem.get(CHILDREN, CACHED_CONNECTION_MANAGER , DESCRIPTION).set(bundle.getString("jca." + CACHED_CONNECTION_MANAGER));
 
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_ENABLED, DESCRIPTION).set(
-                    bundle.getString("archive-validation.enabled"));
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_ENABLED, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_ENABLED, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_ENABLED, DEFAULT).set(true);
-
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, DESCRIPTION).set(
-                    bundle.getString("archive-validation.fail-on-error"));
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, DEFAULT).set(true);
-
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, DESCRIPTION).set(
-                    bundle.getString("archive-validation.fail-on-warn"));
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, ARCHIVE_VALIDATION_FAIL_ON_WARN, DEFAULT).set(false);
-
-            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, DESCRIPTION).set(
-                    bundle.getString("cached-connection-manager.debug"));
-            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_DEBUG, DEFAULT).set(false);
-
-            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DESCRIPTION).set(
-                    bundle.getString("cached-connection-manager.error"));
-            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, TYPE).set(ModelType.BOOLEAN);
-            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
-            subsystem.get(ATTRIBUTES, CACHED_CONNECTION_MANAGER_ERROR, DEFAULT).set(false);
-
-            subsystem.get(CHILDREN, THREAD_POOL, DESCRIPTION).set(bundle.getString("threadpool"));
 
             return subsystem;
         }
@@ -116,42 +84,9 @@ class JcaSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set("add");
-            operation.get(DESCRIPTION).set(bundle.getString("connector.add"));
+            operation.get(DESCRIPTION).set(bundle.getString("jca.add"));
             operation.get(REQUEST_PROPERTIES).setEmptyObject();
             operation.get(REPLY_PROPERTIES).setEmptyObject();
-
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_ENABLED, DESCRIPTION).set(
-                    bundle.getString("connector.archive-validation.enabled"));
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_ENABLED, TYPE).set(ModelType.BOOLEAN);
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_ENABLED, REQUIRED).set(false);
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_ENABLED, DEFAULT).set(false);
-
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, DESCRIPTION).set(
-                    bundle.getString("connector.archive-validation.fail-on-error"));
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, TYPE).set(ModelType.BOOLEAN);
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, REQUIRED).set(false);
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_ERROR, DEFAULT).set(true);
-
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_WARN, DESCRIPTION).set(
-                    bundle.getString("connector.archive-validation.fail-on-warn"));
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_WARN, TYPE).set(ModelType.BOOLEAN);
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_WARN, REQUIRED).set(false);
-            operation.get(REQUEST_PROPERTIES, ARCHIVE_VALIDATION_FAIL_ON_WARN, DEFAULT).set(false);
-
-            operation.get(REQUEST_PROPERTIES, BEAN_VALIDATION_ENABLED, DESCRIPTION).set(
-                    bundle.getString("connector.archive-validation.fail-on-warn"));
-            operation.get(REQUEST_PROPERTIES, BEAN_VALIDATION_ENABLED, TYPE).set(ModelType.BOOLEAN);
-            operation.get(REQUEST_PROPERTIES, BEAN_VALIDATION_ENABLED, REQUIRED).set(false);
-
-            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_DEBUG, DESCRIPTION).set(
-                    bundle.getString("cached-connection-manager.debug"));
-            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_DEBUG, TYPE).set(ModelType.BOOLEAN);
-            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_DEBUG, REQUIRED).set(false);
-
-            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_ERROR, DESCRIPTION).set(
-                    bundle.getString("cached-connection-manager.error"));
-            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_ERROR, TYPE).set(ModelType.BOOLEAN);
-            operation.get(REQUEST_PROPERTIES, CACHED_CONNECTION_MANAGER_ERROR, REQUIRED).set(false);
 
             return operation;
         }
@@ -164,11 +99,249 @@ class JcaSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
             ModelNode operation = new ModelNode();
             operation.get(OPERATION_NAME).set(REMOVE);
-            operation.get(DESCRIPTION).set(bundle.getString("connector.archive-validation.remove"));
+            operation.get(DESCRIPTION).set(bundle.getString("jca.archive-validation.remove"));
             operation.get(REPLY_PROPERTIES).setEmptyObject();
             return operation;
         }
     };
+
+    static DescriptionProvider ARCHIVE_VALIDATION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode configPropertiesNode = new ModelNode();
+            configPropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(DESCRIPTION).set("jca." + ARCHIVE_VALIDATION);
+
+            for (ArchiveValidationParameters parameter : ArchiveValidationParameters.values()) {
+                parameter.getAttribute().addResourceAttributeDescription(bundle, "jca.archive-validation", configPropertiesNode);
+            }
+
+            return configPropertiesNode;
+        }
+    };
+
+    static DescriptionProvider ADD_ARCHIVE_VALIDATION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+
+            op.get(DESCRIPTION).set(bundle.getString("jca.archive-validation.add"));
+            op.get(OPERATION_NAME).set(ADD);
+
+            for (ArchiveValidationParameters parameter : ArchiveValidationParameters.values()) {
+                parameter.getAttribute().addOperationParameterDescription(bundle, "jca.archive-validation", op);
+            }
+
+            return op;
+        }
+    };
+
+    static DescriptionProvider REMOVE_ARCHIVE_VALIDATION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("jca.archive-validation.remove"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider BEAN_VALIDATION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode configPropertiesNode = new ModelNode();
+            configPropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(DESCRIPTION).set("jca." + Constants.BEAN_VALIDATION);
+
+            for (BeanValidationAdd.BeanValidationParameters parameter : BeanValidationAdd.BeanValidationParameters.values()) {
+                parameter.getAttribute().addResourceAttributeDescription(bundle, "jca.bean-validation", configPropertiesNode);
+            }
+
+            return configPropertiesNode;
+        }
+    };
+
+    static DescriptionProvider ADD_BEAN_VALIDATION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+
+            op.get(DESCRIPTION).set(bundle.getString("jca.bean-validation.add"));
+            op.get(OPERATION_NAME).set(ADD);
+
+            for (BeanValidationAdd.BeanValidationParameters parameter : BeanValidationAdd.BeanValidationParameters.values()) {
+                parameter.getAttribute().addOperationParameterDescription(bundle, "jca.bean-validation", op);
+            }
+
+            return op;
+        }
+    };
+
+    static DescriptionProvider REMOVE_BEAN_VALIDATION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("jca.bean-validation.remove"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider CACHED_CONNECTION_MANAGER_DESC = new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                final ResourceBundle bundle = getResourceBundle(locale);
+
+                final ModelNode configPropertiesNode = new ModelNode();
+                configPropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+                configPropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+                configPropertiesNode.get(DESCRIPTION).set("jca." + Constants.CACHED_CONNECTION_MANAGER);
+
+                for (CachedConnectionManagerAdd.CcmParameters parameter : CachedConnectionManagerAdd.CcmParameters.values()) {
+                    parameter.getAttribute().addResourceAttributeDescription(bundle, "jca.cached-connection-manager", configPropertiesNode);
+                }
+
+                return configPropertiesNode;
+            }
+        };
+
+        static DescriptionProvider ADD_CACHED_CONNECTION_MANAGER_DESC = new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                final ResourceBundle bundle = getResourceBundle(locale);
+
+                final ModelNode op = new ModelNode();
+
+                op.get(DESCRIPTION).set(bundle.getString("jca.cached-connection-manager.add"));
+                op.get(OPERATION_NAME).set(ADD);
+
+                for (CachedConnectionManagerAdd.CcmParameters parameter : CachedConnectionManagerAdd.CcmParameters.values()) {
+                    parameter.getAttribute().addOperationParameterDescription(bundle, "jca.cached-connection-manager", op);
+                }
+
+                return op;
+            }
+        };
+
+        static DescriptionProvider REMOVE_CACHED_CONNECTION_MANAGER_DESC = new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(final Locale locale) {
+                final ResourceBundle bundle = getResourceBundle(locale);
+                final ModelNode operation = new ModelNode();
+                operation.get(OPERATION_NAME).set(REMOVE);
+                operation.get(DESCRIPTION).set(bundle.getString("jca.cached-connection-manager.remove"));
+                return operation;
+            }
+        };
+
+    static DescriptionProvider WORKMANAGER_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode configPropertiesNode = new ModelNode();
+            configPropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(DESCRIPTION).set("jca." + Constants.WORKMANAGER);
+
+            for (WorkManagerAdd.WmParameters parameter : WorkManagerAdd.WmParameters.values()) {
+                parameter.getAttribute().addResourceAttributeDescription(bundle, "jca.workmanager", configPropertiesNode);
+            }
+            configPropertiesNode.get(CHILDREN, WORKMANAGER_LONG_RUNNING, DESCRIPTION).set(bundle.getString(WORKMANAGER_LONG_RUNNING));
+            configPropertiesNode.get(CHILDREN, WORKMANAGER_SHORT_RUNNING , DESCRIPTION).set(bundle.getString(WORKMANAGER_SHORT_RUNNING));
+
+            return configPropertiesNode;
+        }
+    };
+
+    static DescriptionProvider ADD_WORKMANAGER_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+
+            op.get(DESCRIPTION).set(bundle.getString("jca.workmanager.add"));
+            op.get(OPERATION_NAME).set(ADD);
+
+            for (WorkManagerAdd.WmParameters parameter : WorkManagerAdd.WmParameters.values()) {
+                parameter.getAttribute().addOperationParameterDescription(bundle, "jca.workmanager", op);
+            }
+
+            return op;
+        }
+    };
+
+    static DescriptionProvider REMOVE_WORKMANAGER_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("jca.workmanager.remove"));
+            return operation;
+        }
+    };
+
+    static DescriptionProvider BOOTSTRAP_CONTEXT_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode configPropertiesNode = new ModelNode();
+            configPropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(DESCRIPTION).set("jca." + Constants.BOOTSTRAP_CONTEXT);
+
+            for (BootstrapContextAdd.BootstrapCtxParameters parameter : BootstrapContextAdd.BootstrapCtxParameters.values()) {
+                parameter.getAttribute().addResourceAttributeDescription(bundle, "jca.bootstrap-context", configPropertiesNode);
+            }
+
+            return configPropertiesNode;
+        }
+    };
+
+    static DescriptionProvider ADD_BOOTSTRAP_CONTEXT_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+
+            op.get(DESCRIPTION).set(bundle.getString("jca.bootstrap-context.add"));
+            op.get(OPERATION_NAME).set(ADD);
+
+            for (BootstrapContextAdd.BootstrapCtxParameters parameter : BootstrapContextAdd.BootstrapCtxParameters.values()) {
+                parameter.getAttribute().addOperationParameterDescription(bundle, "jca.bootstrap-context", op);
+            }
+
+            return op;
+        }
+    };
+
+    static DescriptionProvider REMOVE_BOOTSTRAP_CONTEXT_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("jca.bootstrap-context.remove"));
+            return operation;
+        }
+    };
+
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {

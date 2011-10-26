@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,6 +21,9 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
+import org.jboss.as.connector.bootstrap.NamedBootstrapContext;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,9 +31,10 @@ import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.jca.deployers.common.Configuration;
 
 /**
- * A ConnectorSubsystemConfiguration.
- * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
- *         Maestri</a>
+ * Configuration
+ *
+ * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class JcaSubsystemConfiguration implements Configuration {
 
@@ -46,7 +50,11 @@ public class JcaSubsystemConfiguration implements Configuration {
     /** Archive validation: Fail on Error */
     private final AtomicBoolean archiveValidationFailOnError = new AtomicBoolean(true);
 
+    /** Default bootstrap context */
     private CloneableBootstrapContext defaultBootstrapContext;
+
+    /** Bootstrap contexts */
+    private Map<String, CloneableBootstrapContext> bootstrapContexts = new HashMap<String, CloneableBootstrapContext>(0);
 
     /**
      * Create a new ConnectorSubsystemConfiguration.
@@ -133,14 +141,11 @@ public class JcaSubsystemConfiguration implements Configuration {
 
     @Override
     public void setBootstrapContexts(Map<String, CloneableBootstrapContext> value) {
-        // TODO if and when we will provide multiple bootstrap contexts
-
+        this.bootstrapContexts = value;
     }
 
     @Override
     public Map<String, CloneableBootstrapContext> getBootstrapContexts() {
-        // TODO if and when we will provide multiple bootstrap contexts
-        return null;
+        return bootstrapContexts;
     }
-
 }

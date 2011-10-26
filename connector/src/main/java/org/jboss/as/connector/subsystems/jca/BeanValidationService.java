@@ -22,10 +22,6 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
-import com.sun.tools.hat.internal.model.Root;
-import org.jboss.as.connector.ConnectorServices;
-import org.jboss.jca.Version;
-import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -33,36 +29,53 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.connector.ConnectorLogger.ROOT_LOGGER;
-
 /**
- * A ConnectorConfigService.
- * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * A ResourceAdaptersService.
+ * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
+ *         Maestri</a>
  */
-final class JcaConfigService implements Service<JcaSubsystemConfiguration> {
+final class BeanValidationService implements Service<BeanValidationService.BeanValidation> {
 
-    private final JcaSubsystemConfiguration value;
 
-    /** create an instance **/
-    public JcaConfigService(JcaSubsystemConfiguration value) {
-        super();
-        this.value = value;
+    private final BeanValidation value;
+        private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<JcaSubsystemConfiguration>();
+
+
+        /** create an instance **/
+        public BeanValidationService(BeanValidation value) {
+            this.value = value;
+        }
+
+        @Override
+        public BeanValidation getValue() throws IllegalStateException {
+            return value;
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+            jcaConfig.getValue().setBeanValidation(value.isEnabled());
+
+        }
+
+        @Override
+        public void stop(StopContext context) {
+
+        }
+
+        public Injector<JcaSubsystemConfiguration> getJcaConfigInjector() {
+            return jcaConfig;
+        }
+
+    public static class BeanValidation {
+        private final boolean enabled;
+
+        public BeanValidation(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
     }
-
-    @Override
-    public JcaSubsystemConfiguration getValue() throws IllegalStateException {
-        return ConnectorServices.notNull(value);
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        ROOT_LOGGER.startingSubsystem("JCA", Version.FULL_VERSION);
-        ROOT_LOGGER.tracef("config=%s", value);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-
-    }
-
 }
