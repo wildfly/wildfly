@@ -1,19 +1,17 @@
 package org.jboss.as.jaxr.extension;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.jaxr.service.JAXRServerService;
-import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.jaxr.service.JAXRConfiguration;
+import org.jboss.as.jaxr.service.JUDDIService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -24,8 +22,6 @@ import org.jboss.msc.service.ServiceTarget;
 class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final JAXRSubsystemAdd INSTANCE = new JAXRSubsystemAdd();
-
-    private final Logger log = Logger.getLogger(JAXRSubsystemAdd.class);
 
     private JAXRSubsystemAdd() {
     }
@@ -43,8 +39,10 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // [TODO] AS7-2278 JAXR configuration through the domain model
+                JAXRConfiguration config = new JAXRConfiguration();
                 ServiceTarget serviceTarget = context.getServiceTarget();
-                newControllers.add(JAXRServerService.addService(serviceTarget));
+                newControllers.add(JUDDIService.addService(serviceTarget, config));
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);

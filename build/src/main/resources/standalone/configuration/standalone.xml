@@ -30,6 +30,7 @@
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
         <extension module="org.jboss.as.jacorb"/>
+        <extension module="org.jboss.as.jaxr"/>
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jmx"/>
         <extension module="org.jboss.as.jpa"/>
@@ -184,6 +185,38 @@
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jacorb:1.1"/>
+            <orb name="JBoss" print-version="off" giop-minor-version="2">
+                <connection max-managed-buf-size="24" outbuf-cache-timeout="-1"/>
+                <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
+            </orb>
+            <poa monitoring="off" queue-wait="off">
+                <request-processors pool-size="2" max-threads="8"/>
+            </poa>
+            <interop sun="on" chunk-custom-rmi-valuetypes="on" strict-check-on-tc-creation="off"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jaxr:1.0">
+            <!--
+            <!- - Whether we want to run the db initialization scripts - ->
+            <!- - Should all tables be created on Start- ->
+            <attribute name="CreateOnStart">false</attribute>
+            <!- - Should all tables be dropped on Stop- ->
+            <attribute name="DropOnStop">false</attribute>
+            <!- - Should all tables be dropped on Start- ->
+            <attribute name="DropOnStart">false</attribute>
+            <!- - Datasource to Database- ->
+            <attribute name="DataSourceUrl">java:/DefaultDS</attribute>
+            <!- - Alias to the registry- ->
+            <attribute name="RegistryOperator">RegistryOperator</attribute>
+            <!- - Should I bind a Context to which JaxrConnectionFactory bound- ->
+            <attribute name="ShouldBindJaxr">true</attribute>
+            <!- - Context to which JaxrConnectionFactory to bind to.
+              If you have remote clients, please bind it to the global
+             namespace(default behavior). To just cater to clients running
+             on the same VM as JBoss, change to java:/JAXR - ->
+            <attribute name="BindJaxr">JAXR</attribute>
+            <attribute name="DropDB">false</attribute>
+            -->
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:1.0">
             <archive-validation enabled="false"/>
