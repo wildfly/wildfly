@@ -24,6 +24,7 @@
 package org.jboss.as.jpa.config;
 
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.jpa.spi.TempClassLoaderFactory;
 import org.jboss.jandex.Index;
 
 import javax.persistence.SharedCacheMode;
@@ -101,7 +102,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     private ClassLoader classloader;
 
-    private ClassLoader tempClassloader;
+    private TempClassLoaderFactory tempClassLoaderFactory;
 
     private Map<URL,Index> annotationIndex;
 
@@ -375,13 +376,14 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     }
 
     @Override
-    public void setTempClassloader(ClassLoader cl) {
-        this.tempClassloader = cl;
+    public void setTempClassLoaderFactory(TempClassLoaderFactory tempClassloaderFactory) {
+        this.tempClassLoaderFactory = tempClassloaderFactory;
     }
 
     @Override
     public ClassLoader getNewTempClassLoader() {
-        return tempClassloader;
+        return tempClassLoaderFactory != null ?
+                tempClassLoaderFactory.createNewTempClassLoader() : null;
     }
 
     @Override

@@ -46,7 +46,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.jpa.classloader.TempClassLoader;
+import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
@@ -237,7 +237,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             for (PersistenceUnitMetadataHolder holder : puList) {
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                     pu.setClassLoader(classLoader);
-                    pu.setTempClassloader(new TempClassLoader(classLoader));
+                    pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
                     try {
                         final HashMap properties = new HashMap();
                         if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
