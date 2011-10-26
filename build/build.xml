@@ -258,6 +258,10 @@
             <maven-resource group="jline" artifact="jline"/>
         </module-def>
 
+        <module-def name="juddi">
+            <maven-resource group="juddi" artifact="juddi"/>
+        </module-def>
+
         <module-def name="net.sourceforge.cssparser">
             <maven-resource group="net.sourceforge.cssparser" artifact="cssparser"/>
         </module-def>
@@ -350,8 +354,12 @@
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
         </module-def>
 
-    	<module-def name="org.apache.santuario.xmlsec">
+        <module-def name="org.apache.santuario.xmlsec">
             <maven-resource group="org.apache.santuario" artifact="xmlsec"/>
+        </module-def>
+
+        <module-def name="org.apache.scout">
+            <maven-resource group="apache-scout" artifact="scout"/>
         </module-def>
 
         <module-def name="org.apache.velocity">

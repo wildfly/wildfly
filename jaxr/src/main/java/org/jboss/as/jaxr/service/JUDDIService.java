@@ -202,8 +202,7 @@ public final class JUDDIService extends AbstractService<Void> {
                         log.debug("Statement to execute:" + nextStatement);
                         statement.execute(nextStatement);
                     } catch (SQLException e) {
-                        log
-                                .debug("Could not execute last statement of a juddi init script: "
+                        log.debug("Could not execute last statement of a juddi init script: "
                                         + e.getLocalizedMessage());
                         log.debug("Your settings are:dropOnStart ="
                                 + config.isDropOnStart() + ";createOnStart ="
@@ -221,7 +220,8 @@ public final class JUDDIService extends AbstractService<Void> {
         }
     }
 
-    /*
+
+    /* [TODO] AS7-2306 Bind JAXR ConnectionFactory to JNDI
    private void bindJAXRConnectionFactory() {
       if (this.bindJaxr == null || jndiAlreadyBound)
          return;// We will wait for it to be set
