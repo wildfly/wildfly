@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -75,18 +73,8 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
      */
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean start) {
-        ClassLoader loader = getContextClassLoader();
-        if (start) {
-            setContextClassLoader(DefaultEmbeddedCacheManager.class.getClassLoader());
-        }
-        try {
-            Cache<K, V> cache = this.container.<K, V>getCache(this.getCacheName(cacheName), start);
-            return (cache != null) ? new DelegatingCache<K, V>(cache) : null;
-        } finally {
-            if (start) {
-                setContextClassLoader(loader);
-            }
-        }
+        Cache<K, V> cache = this.container.<K, V>getCache(this.getCacheName(cacheName), start);
+        return (cache != null) ? new DelegatingCache<K, V>(cache) : null;
     }
 
     /**
@@ -339,26 +327,5 @@ public class DefaultEmbeddedCacheManager implements EmbeddedCacheManager {
         public int hashCode() {
             return this.cache.hashCode();
         }
-    }
-
-    static ClassLoader getContextClassLoader() {
-        PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        };
-        return AccessController.doPrivileged(action);
-    }
-
-    static void setContextClassLoader(final ClassLoader loader) {
-        PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                Thread.currentThread().setContextClassLoader(loader);
-                return null;
-            }
-        };
-        AccessController.doPrivileged(action);
     }
 }

@@ -166,6 +166,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         for (ModelNode cache : operation.require(ModelKeys.CACHE).asList()) {
             String cacheName = cache.require(ModelKeys.NAME).asString();
             Configuration configuration = new Configuration();
+            configuration.setClassLoader(this.getClass().getClassLoader());
             FluentConfiguration fluent = configuration.fluent();
             Configuration.CacheMode mode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
             requiresTransport |= mode.isClustered();
