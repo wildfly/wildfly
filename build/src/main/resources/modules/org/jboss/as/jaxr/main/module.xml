@@ -5,9 +5,13 @@
     
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.xml.soap.api"/>
+        <module name="juddi"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.web"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>

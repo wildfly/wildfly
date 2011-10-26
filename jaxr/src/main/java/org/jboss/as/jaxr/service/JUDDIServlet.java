@@ -70,14 +70,13 @@ import java.util.Vector;
  * Servlet that represents the JUDDI Registry
  * Based on the JUDDI standard servlets
  *
- * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
- * @since May 18, 2005
+ * Original source at https://svn.jboss.org/repos/jbossas/projects/jaxr/tags/2.0.2
+ *
+ * @author Anil.Saldhana@jboss.com
+ * @author Thomas.Diesler@jboss.com
+ * @since 26-Oct-2011
  */
 public class JUDDIServlet extends HttpServlet {
-    /**
-     * The serialVersionUID
-     */
-    private static final long serialVersionUID = 8768916717023791095L;
 
     // XML Document Builder
     private static DocumentBuilder docBuilder = null;
@@ -87,9 +86,6 @@ public class JUDDIServlet extends HttpServlet {
 
     private static Logger log = Logger.getLogger(JUDDIServlet.class);
 
-    /**
-     *
-     */
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         res.setHeader("Allow", "POST");

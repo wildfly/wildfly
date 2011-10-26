@@ -36,8 +36,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.CompositeName;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,11 +50,13 @@ import java.sql.Statement;
  * <p/>
  * Original source at https://svn.jboss.org/repos/jbossas/projects/jaxr/tags/2.0.2
  *
- * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
+ * @author Anil.Saldhana@jboss.com
  * @author Thomas.Diesler@jboss.com
  * @since 26-Oct-2011
  */
 public final class JUDDIService extends AbstractService<Void> {
+
+    static final ServiceName JUDDI_SERVICE_NAME = JAXRConfiguration.SERVICE_BASE_NAME.append("juddi", "service");
 
     // [TODO] AS7-2277 JAXR subsystem i18n
     private final Logger log = Logger.getLogger(JUDDIService.class);
@@ -68,14 +68,14 @@ public final class JUDDIService extends AbstractService<Void> {
 
     public static ServiceController<?> addService(final ServiceTarget target, final JAXRConfiguration config, final ServiceListener<Object>... listeners) {
         JUDDIService service = new JUDDIService(config);
-        ServiceBuilder<?> builder = target.addService(JAXRConfiguration.JUDDI_SERVICE_NAME, service);
+        ServiceBuilder<?> builder = target.addService(JUDDI_SERVICE_NAME, service);
         builder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, service.injectedNamingStore);
         builder.addDependency(ServiceName.JBOSS.append("data-source", config.getDataSourceUrl()));
         builder.addListener(listeners);
         return builder.install();
     }
 
-    JUDDIService(JAXRConfiguration config) {
+    private JUDDIService(JAXRConfiguration config) {
         this.config = config;
     }
 
@@ -203,7 +203,7 @@ public final class JUDDIService extends AbstractService<Void> {
                         statement.execute(nextStatement);
                     } catch (SQLException e) {
                         log.debug("Could not execute last statement of a juddi init script: "
-                                        + e.getLocalizedMessage());
+                                + e.getLocalizedMessage());
                         log.debug("Your settings are:dropOnStart ="
                                 + config.isDropOnStart() + ";createOnStart ="
                                 + config.isCreateOnStart());
