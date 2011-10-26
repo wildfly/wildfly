@@ -270,6 +270,7 @@
         <module>embedded</module>
         <module>host-controller</module>
         <module>jacorb</module>
+        <module>jaxr</module>
         <module>jaxrs</module>
         <module>jmx</module>
         <module>jpa</module>
@@ -839,6 +840,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jacorb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-jaxr</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
