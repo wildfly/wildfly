@@ -28,13 +28,21 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>6</version>
+      <version>7</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-build-config</artifactId>
     <name>JBoss Application Server: Build Configuration</name>
     <version>7.1.0.Alpha2-SNAPSHOT</version>
+
+    <licenses>
+        <license>
+            <name>lgpl</name>
+            <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <build>    
         <extensions>
