@@ -414,15 +414,6 @@ public interface JpaMessages {
     RuntimeException invalidUrlConnection(String integrationName, URLConnection connection);
 
     /**
-     * Creates an exception indicating the {@code persistence-unit-ref} without a {@code lookup} or
-     * {@code persistence-unit-name} is not yet supported (implemented).
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
-    @Message(id = 11454, value = "Support for persistence-unit-ref without a lookup or persistence-unit-name, isn't yet implemented")
-    RuntimeException lookupOrPersistenceUnitNameRequired();
-
-    /**
      * Creates an exception indicating the persistence unit metadata likely because thread local was not set.
      *
      * @return a {@link RuntimeException} for the error.

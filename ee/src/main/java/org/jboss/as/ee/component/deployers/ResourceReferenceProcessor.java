@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.EnvironmentEntriesMetaData;
 import org.jboss.metadata.javaee.spec.EnvironmentEntryMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
@@ -47,6 +48,9 @@ import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
  * @author Stuart Douglas
  */
 public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
+
+    private static final Logger logger = Logger.getLogger(ResourceReferenceProcessor.class);
+
 
     @Override
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, EEModuleDescription moduleDescription, ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
@@ -96,7 +100,8 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 } else {
                     //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
                     if (resourceEnvRef.getResourceEnvRefName().startsWith("java:")) {
-                        bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceEnvRef.getResourceEnvRefName()));
+                        logger.warnf("Could not resolve resource-env-ref %s", name);
+                        continue;
                     } else {
                         bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceEnvRef.getResourceEnvRefName()));
                     }
@@ -147,7 +152,9 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 } else if (!resourceRef.getResourceRefName().startsWith("java:")) {
                     bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceRef.getResourceRefName()));
                 } else {
-                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getResourceRefName()));
+                    //if we cannot resolve it just log
+                    logger.warnf("Could not resolve resource-ref %s", name);
+                    continue;
                 }
             }
             bindings.add(bindingConfiguration);
