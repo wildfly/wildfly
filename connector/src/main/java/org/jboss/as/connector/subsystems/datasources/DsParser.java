@@ -317,7 +317,7 @@ public class DsParser extends AbstractParser {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
                     enabled = Boolean.parseBoolean(value);
-                    ENABLED.parseAndSetParameter(value, operation, location);
+                    //ENABLED.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case JNDI_NAME: {
@@ -546,7 +546,7 @@ public class DsParser extends AbstractParser {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
                     enabled = Boolean.parseBoolean(value);
-                    ENABLED.parseAndSetParameter(value, operation, location);
+                    //ENABLED.parseAndSetParameter(value, operation, location);
                     break;
                 }
                 case JNDI_NAME: {

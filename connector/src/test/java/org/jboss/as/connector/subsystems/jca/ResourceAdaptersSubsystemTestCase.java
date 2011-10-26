@@ -53,14 +53,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
             protected OperationContext.Type getType() {
                 return OperationContext.Type.MANAGEMENT;
             }
-
-
-            @Override
-            protected ValidationConfiguration getModelValidationConfiguration() {
-                //TODO fix providers https://issues.jboss.org/browse/AS7-1789
-                return null;
-            }
-
         };
     }
 

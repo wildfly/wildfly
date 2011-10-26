@@ -64,17 +64,17 @@ public class Constants {
 
     public static final SimpleAttributeDefinition BACKGROUNDVALIDATIONMILLIS = new SimpleAttributeDefinition(BACKGROUNDVALIDATIONMILLIS_NAME, Validation.Tag.BACKGROUND_VALIDATION_MILLIS.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.MILLISECONDS);
 
-    public static final SimpleAttributeDefinition BACKGROUNDVALIDATION = new SimpleAttributeDefinition(BACKGROUNDVALIDATION_NAME, Validation.Tag.BACKGROUND_VALIDATION.getLocalName(), new ModelNode().set(Defaults.BACKGROUND_VALIDATION), ModelType.BOOLEAN, false, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition BACKGROUNDVALIDATION = new SimpleAttributeDefinition(BACKGROUNDVALIDATION_NAME, Validation.Tag.BACKGROUND_VALIDATION.getLocalName(), new ModelNode().set(Defaults.BACKGROUND_VALIDATION), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    public static final SimpleAttributeDefinition USE_FAST_FAIL = new SimpleAttributeDefinition(USE_FAST_FAIL_NAME, Validation.Tag.USE_FAST_FAIL.getLocalName(), new ModelNode().set(Defaults.USE_FAST_FAIl), ModelType.BOOLEAN, false, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition USE_FAST_FAIL = new SimpleAttributeDefinition(USE_FAST_FAIL_NAME, Validation.Tag.USE_FAST_FAIL.getLocalName(), new ModelNode().set(Defaults.USE_FAST_FAIl), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    public static final SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinition(MAX_POOL_SIZE_NAME, CommonPool.Tag.MAX_POOL_SIZE.getLocalName(), new ModelNode().set(Defaults.MAX_POOL_SIZE), ModelType.INT, false, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinition(MAX_POOL_SIZE_NAME, CommonPool.Tag.MAX_POOL_SIZE.getLocalName(), new ModelNode().set(Defaults.MAX_POOL_SIZE), ModelType.INT, true, true, MeasurementUnit.NONE);
 
-    public static final SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinition(MIN_POOL_SIZE_NAME, CommonPool.Tag.MIN_POOL_SIZE.getLocalName(), new ModelNode().set(Defaults.MIN_POOL_SIZE), ModelType.INT, false, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinition(MIN_POOL_SIZE_NAME, CommonPool.Tag.MIN_POOL_SIZE.getLocalName(), new ModelNode().set(Defaults.MIN_POOL_SIZE), ModelType.INT, true, true, MeasurementUnit.NONE);
 
-    public static final SimpleAttributeDefinition POOL_PREFILL = new SimpleAttributeDefinition(POOL_PREFILL_NAME, CommonPool.Tag.PREFILL.getLocalName(), new ModelNode().set(Defaults.PREFILL), ModelType.BOOLEAN, false, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition POOL_PREFILL = new SimpleAttributeDefinition(POOL_PREFILL_NAME, CommonPool.Tag.PREFILL.getLocalName(), new ModelNode().set(Defaults.PREFILL), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinition(POOL_USE_STRICT_MIN_NAME, CommonPool.Tag.USE_STRICT_MIN.getLocalName(), new ModelNode().set(Defaults.USE_STRICT_MIN), ModelType.BOOLEAN, false, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinition(POOL_USE_STRICT_MIN_NAME, CommonPool.Tag.USE_STRICT_MIN.getLocalName(), new ModelNode().set(Defaults.USE_STRICT_MIN), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     public static SimpleAttributeDefinition POOL_FLUSH_STRATEGY = new SimpleAttributeDefinition(FLUSH_STRATEGY_NAME, CommonPool.Tag.FLUSH_STRATEGY.getLocalName(), new ModelNode().set(Defaults.FLUSH_STRATEGY.getName()), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

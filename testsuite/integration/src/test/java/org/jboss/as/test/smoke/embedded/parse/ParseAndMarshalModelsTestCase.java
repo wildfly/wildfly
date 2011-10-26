@@ -231,6 +231,7 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
+        fixupDsDomain(originalModel);
         fixupOSGiDomain(originalModel, reparsedModel);
         compare(originalModel, reparsedModel);
     }
@@ -244,6 +245,19 @@ public class ParseAndMarshalModelsTestCase {
     private void fixupDs(ModelNode node) {
         if (node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
             node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").remove("set-tx-query-timeout");
+            //marshall/unmarshall without real server startup leave enabled to false
+            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
+        }
+    }
+
+     private void fixupDsDomain(ModelNode node) {
+        if (node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
+            //marshall/unmarshall without real server startup leave enabled to false
+            node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
+        }
+        if (node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
+            //marshall/unmarshall without real server startup leave enabled to false
+            node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
         }
     }
 

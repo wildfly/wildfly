@@ -180,9 +180,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 newModel.get(attribute.getName()).set(existingModel.get(attribute.getName()));
             }
         }
-        if (existingModel.hasDefined(ENABLED.getName())) {
-              newModel.get(ENABLED.getName()).set(existingModel.get(ENABLED.getName()));
-        }
+        newModel.get(ENABLED.getName()).set(false);
 
     }
 
