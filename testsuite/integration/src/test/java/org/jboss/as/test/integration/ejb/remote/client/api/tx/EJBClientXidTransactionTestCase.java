@@ -25,15 +25,12 @@ package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 import com.arjuna.ats.arjuna.recovery.RecoveryActivator;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple;
-import com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
-import com.arjuna.ats.jta.utils.JNDIManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
-import org.jboss.as.txn.ArjunaRecoveryManagerService;
 import org.jboss.ejb.client.ConstantContextSelector;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientContext;
@@ -60,16 +57,10 @@ import org.junit.runner.RunWith;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-import org.xnio.Xnio;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
 import java.net.URI;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -183,7 +174,7 @@ public class EJBClientXidTransactionTestCase {
     /**
      * Tests that a CMT stateless bean method, with Mandatory tx attribute, invocation works as expected
      * when the transaction is remotely started on the client side using a client side transaction manager
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -199,8 +190,13 @@ public class EJBClientXidTransactionTestCase {
         txManager.commit();
     }
 
+    /**
+     * Tests various transaction scenarios managed on the client side via the client side transaction manager
+     *
+     * @throws Exception
+     */
     @Test
-    public void testTransactionRollback() throws Exception {
+    public void testClientTransactionManagement() throws Exception {
         final StatelessEJBLocator<RemoteBatch> batchBeanLocator = new StatelessEJBLocator<RemoteBatch>(RemoteBatch.class, APP_NAME, MODULE_NAME, BatchCreationBean.class.getSimpleName(), "");
         final RemoteBatch batchBean = EJBClient.createProxy(batchBeanLocator);
 
