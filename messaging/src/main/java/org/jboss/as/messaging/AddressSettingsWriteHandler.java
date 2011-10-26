@@ -77,7 +77,7 @@ class AddressSettingsWriteHandler implements OperationStepHandler {
                     if(server != null) {
                         final ModelNode model = resource.getModel();
                         address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-                        final AddressSettings settings = AddressSettingAdd.createSettings(model);
+                        final AddressSettings settings = AddressSettingAdd.createSettings(context, model);
                         repository = server.getAddressSettingsRepository();
                         String match = address.getLastElement().getValue();
                         existingSettings = repository.getMatch(match);

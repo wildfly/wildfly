@@ -88,12 +88,12 @@ public class JMSQueueAdd extends AbstractAddStepHandler implements DescriptionPr
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ModelNode selectorNode = SELECTOR.validateResolvedOperation(model);
+        final ModelNode selectorNode = SELECTOR.resolveModelAttribute(context, model);
         final String selector = selectorNode.isDefined() ? selectorNode.asString() : null;
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         final JMSQueueService service = new JMSQueueService(name, selector,
-                DURABLE.validateResolvedOperation(model).asBoolean(), JndiEntriesAttribute.getJndiBindings(operation));
+                DURABLE.resolveModelAttribute(context, model).asBoolean(), JndiEntriesAttribute.getJndiBindings(operation));
         final ServiceName serviceName = JMSServices.getJmsQueueBaseServiceName(hqServiceName).append(name);
         newControllers.add(context.getServiceTarget().addService(serviceName, service)
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())

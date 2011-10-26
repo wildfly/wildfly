@@ -22,22 +22,21 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.FILE;
+import static org.jboss.as.logging.CommonAttributes.PATH;
+import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.logging.CommonAttributes.SUFFIX;
+
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.logging.Handler;
-
-import static org.jboss.as.logging.CommonAttributes.APPEND;
-import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
-import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -52,30 +51,30 @@ class PeriodicRotatingFileHandlerAdd extends FlushingHandlerAddProperties<Period
     }
 
     @Override
-    protected PeriodicRotatingFileHandlerService createHandlerService(final ModelNode model) throws OperationFailedException {
+    protected PeriodicRotatingFileHandlerService createHandlerService(OperationContext context, final ModelNode model) throws OperationFailedException {
         return new PeriodicRotatingFileHandlerService();
     }
 
     @Override
     protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final PeriodicRotatingFileHandlerService service, final ModelNode model) throws OperationFailedException {
         super.updateRuntime(context, serviceBuilder, name, service, model);
-        final ModelNode file = FILE.validateResolvedOperation(model);
+        final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
             final ServiceTarget serviceTarget = context.getServiceTarget();
-            final HandlerFileService fileService = new HandlerFileService(PATH.validateResolvedOperation(file).asString());
+            final HandlerFileService fileService = new HandlerFileService(PATH.resolveModelAttribute(context, file).asString());
             final ServiceBuilder<?> fileBuilder = serviceTarget.addService(LogServices.handlerFileName(name), fileService);
-            final ModelNode relativeTo = RELATIVE_TO.validateResolvedOperation(file);
+            final ModelNode relativeTo = RELATIVE_TO.resolveModelAttribute(context, file);
             if (relativeTo.isDefined()) {
                 fileBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, fileService.getRelativeToInjector());
             }
             fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
         }
-        final ModelNode append = APPEND.validateResolvedOperation(model);
+        final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
             service.setAppend(append.asBoolean());
         }
-        final ModelNode suffix = SUFFIX.validateResolvedOperation(model);
+        final ModelNode suffix = SUFFIX.resolveModelAttribute(context, model);
         if (suffix.isDefined()) {
             service.setSuffix(suffix.asString());
         }

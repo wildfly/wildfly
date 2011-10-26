@@ -25,7 +25,40 @@ package org.jboss.as.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.security.Constants.*;
+import static org.jboss.as.security.Constants.ACL;
+import static org.jboss.as.security.Constants.ACL_MODULES;
+import static org.jboss.as.security.Constants.ADDITIONAL_PROPERTIES;
+import static org.jboss.as.security.Constants.ALGORITHM;
+import static org.jboss.as.security.Constants.AUDIT;
+import static org.jboss.as.security.Constants.AUTH_MODULES;
+import static org.jboss.as.security.Constants.CACHE_TYPE;
+import static org.jboss.as.security.Constants.CIPHER_SUITES;
+import static org.jboss.as.security.Constants.CLASSIC;
+import static org.jboss.as.security.Constants.CLIENT_ALIAS;
+import static org.jboss.as.security.Constants.CLIENT_AUTH;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.IDENTITY_TRUST;
+import static org.jboss.as.security.Constants.JASPI;
+import static org.jboss.as.security.Constants.JSSE;
+import static org.jboss.as.security.Constants.KEYSTORE;
+import static org.jboss.as.security.Constants.LOGIN_MODULES;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK_REF;
+import static org.jboss.as.security.Constants.MAPPING;
+import static org.jboss.as.security.Constants.MAPPING_MODULES;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
+import static org.jboss.as.security.Constants.NAME;
+import static org.jboss.as.security.Constants.PASSWORD;
+import static org.jboss.as.security.Constants.PROTOCOLS;
+import static org.jboss.as.security.Constants.PROVIDER;
+import static org.jboss.as.security.Constants.PROVIDER_ARGUMENT;
+import static org.jboss.as.security.Constants.PROVIDER_MODULES;
+import static org.jboss.as.security.Constants.SERVER_ALIAS;
+import static org.jboss.as.security.Constants.SERVICE_AUTH_TOKEN;
+import static org.jboss.as.security.Constants.TRUST_MODULES;
+import static org.jboss.as.security.Constants.TYPE;
+import static org.jboss.as.security.Constants.URL;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,7 +71,6 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
 import javax.transaction.TransactionManager;
 
-import com.arjuna.ats.internal.jdbc.drivers.modifiers.list;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -131,7 +163,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
     public void launchServices(OperationContext context, String securityDomain, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         final ApplicationPolicy applicationPolicy = createApplicationPolicy(securityDomain, model);
-        final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(securityDomain, model);
+        final JSSESecurityDomain jsseSecurityDomain = createJSSESecurityDomain(context, securityDomain, model);
         final String cacheType = getAuthenticationCacheType(model);
 
         final SecurityDomainService securityDomainService = new SecurityDomainService(securityDomain,
@@ -376,7 +408,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         return options;
     }
 
-    private JSSESecurityDomain createJSSESecurityDomain(String securityDomain, ModelNode node) {
+    private JSSESecurityDomain createJSSESecurityDomain(OperationContext context, String securityDomain, ModelNode node) {
         node = peek(node, JSSE, CLASSIC);
         if (node == null)
             return null;
@@ -384,7 +416,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         final JBossJSSESecurityDomain jsseSecurityDomain = new JBossJSSESecurityDomain(securityDomain);
         String value = null;
 
-        processKeyStore(node, KEYSTORE, new KeyStoreConfig() {
+        processKeyStore(context, node, KEYSTORE, new KeyStoreConfig() {
             public void setKeyStorePassword(String value) throws Exception {
                 jsseSecurityDomain.setKeyStorePassword(value);
             }
@@ -402,7 +434,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             }
         });
 
-        processKeyStore(node, Constants.TRUSTSTORE, new KeyStoreConfig() {
+        processKeyStore(context, node, Constants.TRUSTSTORE, new KeyStoreConfig() {
             public void setKeyStorePassword(String value) throws Exception {
                 jsseSecurityDomain.setTrustStorePassword(value);
             }
@@ -485,7 +517,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         void setKeyStoreProviderArgument(String value);
     }
 
-    private void processKeyStore(ModelNode node, String name, KeyStoreConfig config) {
+    private void processKeyStore(OperationContext context, ModelNode node, String name, KeyStoreConfig config) {
         final ModelNode value = peek(node, name, PASSWORD);
         final ModelNode type = peek(node, name, TYPE);
         final ModelNode url = peek(node, name, URL);

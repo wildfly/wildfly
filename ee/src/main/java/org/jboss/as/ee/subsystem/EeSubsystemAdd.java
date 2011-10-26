@@ -103,10 +103,10 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addListener(verificationHandler)
                 .install();
 
-        final ModelNode globalModules = GlobalModulesDefinition.INSTANCE.validateResolvedOperation(model);
+        final ModelNode globalModules = GlobalModulesDefinition.INSTANCE.resolveModelAttribute(context, model);
         // see if the ear subdeployment isolation flag is set. By default, we don't isolate subdeployments, so that
         // they can see each other's classes.
-        final boolean earSubDeploymentsIsolated = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.validateResolvedOperation(model).asBoolean();
+        final boolean earSubDeploymentsIsolated = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.resolveModelAttribute(context, model).asBoolean();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {

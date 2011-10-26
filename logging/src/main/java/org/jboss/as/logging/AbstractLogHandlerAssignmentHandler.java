@@ -22,16 +22,15 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AbstractModelUpdateHandler;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Date: 13.10.2011
@@ -77,7 +76,7 @@ public abstract class AbstractLogHandlerAssignmentHandler extends AbstractModelU
         final ModelNode parent = getParent(model);
         if (handlerExists(handlerName, handlerAttribute, parent)) {
             // Get the current subhandlers
-            final ModelNode currentSubhandlers = handlerAttribute.validateResolvedOperation(parent);
+            final ModelNode currentSubhandlers = handlerAttribute.validateOperation(parent);
             // Create new list of subhandlers without the handler being removed
             final List<ModelNode> newSubhandlers = new ArrayList<ModelNode>();
             for (ModelNode node : currentSubhandlers.asList()) {

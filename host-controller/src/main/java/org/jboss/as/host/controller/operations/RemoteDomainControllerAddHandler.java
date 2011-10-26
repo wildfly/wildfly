@@ -105,8 +105,8 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler, D
         }
 
         hostControllerInfo.setMasterDomainController(false);
-        hostControllerInfo.setRemoteDomainControllerHost(HOST.validateResolvedOperation(remoteDC).asString());
-        hostControllerInfo.setRemoteDomainControllerPort(PORT.validateResolvedOperation(remoteDC).asInt());
+        hostControllerInfo.setRemoteDomainControllerHost(HOST.resolveModelAttribute(context, remoteDC).asString());
+        hostControllerInfo.setRemoteDomainControllerPort(PORT.resolveModelAttribute(context, remoteDC).asInt());
 
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 

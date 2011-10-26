@@ -53,7 +53,8 @@ public class QueuelessThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
         super(QueuelessThreadPoolAdd.ATTRIBUTES, QueuelessThreadPoolAdd.RW_ATTRIBUTES);
     }
 
-    protected void applyOperation(ModelNode operation, String attributeName, ServiceController<?> service) {
+    @Override
+    protected void applyOperation(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> service) {
 
         final QueuelessThreadPoolService pool =  (QueuelessThreadPoolService) service.getService();
         try {

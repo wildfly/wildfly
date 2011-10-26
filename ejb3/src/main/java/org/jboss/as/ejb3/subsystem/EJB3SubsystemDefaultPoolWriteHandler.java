@@ -83,7 +83,7 @@ public class EJB3SubsystemDefaultPoolWriteHandler extends AbstractWriteAttribute
 
     void updatePoolService(final OperationContext context, final ModelNode model, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModelNode poolName = poolAttribute.validateResolvedOperation(model);
+        final ModelNode poolName = poolAttribute.resolveModelAttribute(context, model);
 
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         ServiceController existingDefaultPoolConfigService = serviceRegistry.getService(poolConfigServiceName);

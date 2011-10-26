@@ -100,7 +100,7 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 return true;
             } else {
                 // Actually apply the update
-                applyOperationToHornetQService(operation, attributeName, hqService);
+                applyOperationToHornetQService(context, operation, attributeName, hqService);
 
                 return false;
             }
@@ -122,77 +122,77 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 // Create and execute a write-attribute operation that uses the valueToRestore
                 ModelNode revertOp = operation.clone();
                 revertOp.get(attributeName).set(valueToRestore);
-                applyOperationToHornetQService(revertOp, attributeName, hqService);
+                applyOperationToHornetQService(context, revertOp, attributeName, hqService);
             }
         }
     }
 
-    private void applyOperationToHornetQService(ModelNode operation, String attributeName, ServiceController<?> hqService) {
+    private void applyOperationToHornetQService(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> hqService) {
 
         final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         HornetQServer server =  HornetQServer.class.cast(hqService.getValue());
         ConnectionFactoryControl control = ConnectionFactoryControl.class.cast(server.getManagementService().getResource(ResourceNames.JMS_CONNECTION_FACTORY + name));
         try {
             if (attributeName.equals(CommonAttributes.CLIENT_ID.getName()))  {
-                final ModelNode node = CommonAttributes.CLIENT_ID.validateResolvedOperation(operation);
+                final ModelNode node = CommonAttributes.CLIENT_ID.resolveModelAttribute(context, operation);
                 control.setClientID(node.isDefined() ? node.asString() : null);
             } else if (attributeName.equals(CommonAttributes.COMPRESS_LARGE_MESSAGES.getName())) {
-                control.setCompressLargeMessages(CommonAttributes.COMPRESS_LARGE_MESSAGES.validateResolvedOperation(operation).asBoolean());
+                control.setCompressLargeMessages(CommonAttributes.COMPRESS_LARGE_MESSAGES.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD.getName())) {
-                control.setClientFailureCheckPeriod(CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD.validateResolvedOperation(operation).asLong());
+                control.setClientFailureCheckPeriod(CommonAttributes.CLIENT_FAILURE_CHECK_PERIOD.resolveModelAttribute(context, operation).asLong());
             } else if (attributeName.equals(CommonAttributes.CALL_TIMEOUT.getName())) {
-                control.setCallTimeout(CommonAttributes.CALL_TIMEOUT.validateResolvedOperation(operation).asLong());
+                control.setCallTimeout(CommonAttributes.CALL_TIMEOUT.resolveModelAttribute(context, operation).asLong());
             } else if (attributeName.equals(CommonAttributes.DUPS_OK_BATCH_SIZE.getName())) {
-                control.setDupsOKBatchSize(CommonAttributes.DUPS_OK_BATCH_SIZE.validateResolvedOperation(operation).asInt());
+                control.setDupsOKBatchSize(CommonAttributes.DUPS_OK_BATCH_SIZE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.CONSUMER_MAX_RATE.getName())) {
-                control.setConsumerMaxRate(CommonAttributes.CONSUMER_MAX_RATE.validateResolvedOperation(operation).asInt());
+                control.setConsumerMaxRate(CommonAttributes.CONSUMER_MAX_RATE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.CONSUMER_WINDOW_SIZE.getName())) {
-                control.setConsumerWindowSize(CommonAttributes.CONSUMER_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
+                control.setConsumerWindowSize(CommonAttributes.CONSUMER_WINDOW_SIZE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.PRODUCER_MAX_RATE.getName())) {
-                control.setProducerMaxRate(CommonAttributes.PRODUCER_MAX_RATE.validateResolvedOperation(operation).asInt());
+                control.setProducerMaxRate(CommonAttributes.PRODUCER_MAX_RATE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.CONFIRMATION_WINDOW_SIZE.getName())) {
-                control.setConfirmationWindowSize(CommonAttributes.CONFIRMATION_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
+                control.setConfirmationWindowSize(CommonAttributes.CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.BLOCK_ON_ACK.getName())) {
-                control.setBlockOnAcknowledge(CommonAttributes.BLOCK_ON_ACK.validateResolvedOperation(operation).asBoolean());
+                control.setBlockOnAcknowledge(CommonAttributes.BLOCK_ON_ACK.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.BLOCK_ON_DURABLE_SEND.getName())) {
-                control.setBlockOnDurableSend(CommonAttributes.BLOCK_ON_DURABLE_SEND.validateResolvedOperation(operation).asBoolean());
+                control.setBlockOnDurableSend(CommonAttributes.BLOCK_ON_DURABLE_SEND.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.BLOCK_ON_NON_DURABLE_SEND.getName())) {
-                control.setBlockOnNonDurableSend(CommonAttributes.BLOCK_ON_NON_DURABLE_SEND.validateResolvedOperation(operation).asBoolean());
+                control.setBlockOnNonDurableSend(CommonAttributes.BLOCK_ON_NON_DURABLE_SEND.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.PRE_ACK.getName())) {
-                control.setPreAcknowledge(CommonAttributes.PRE_ACK.validateResolvedOperation(operation).asBoolean());
+                control.setPreAcknowledge(CommonAttributes.PRE_ACK.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.CONNECTION_TTL.getName())) {
-                control.setConnectionTTL(CommonAttributes.CONNECTION_TTL.validateResolvedOperation(operation).asLong());
+                control.setConnectionTTL(CommonAttributes.CONNECTION_TTL.resolveModelAttribute(context, operation).asLong());
             } else if (attributeName.equals(CommonAttributes.TRANSACTION_BATCH_SIZE.getName())) {
-                control.setTransactionBatchSize(CommonAttributes.TRANSACTION_BATCH_SIZE.validateResolvedOperation(operation).asInt());
+                control.setTransactionBatchSize(CommonAttributes.TRANSACTION_BATCH_SIZE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.MIN_LARGE_MESSAGE_SIZE.getName())) {
-                control.setMinLargeMessageSize(CommonAttributes.MIN_LARGE_MESSAGE_SIZE.validateResolvedOperation(operation).asInt());
+                control.setMinLargeMessageSize(CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.AUTO_GROUP.getName())) {
-                control.setAutoGroup(CommonAttributes.AUTO_GROUP.validateResolvedOperation(operation).asBoolean());
+                control.setAutoGroup(CommonAttributes.AUTO_GROUP.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.RETRY_INTERVAL.getName())) {
-                control.setRetryInterval(CommonAttributes.RETRY_INTERVAL.validateResolvedOperation(operation).asLong());
+                control.setRetryInterval(CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(context, operation).asLong());
             } else if (attributeName.equals(CommonAttributes.RETRY_INTERVAL_MULTIPLIER.getName())) {
-                control.setRetryIntervalMultiplier(CommonAttributes.RETRY_INTERVAL_MULTIPLIER.validateResolvedOperation(operation).asDouble());
+                control.setRetryIntervalMultiplier(CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, operation).asDouble());
             } else if (attributeName.equals(CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS.getName())) {
-                control.setReconnectAttempts(CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS.validateResolvedOperation(operation).asInt());
+                control.setReconnectAttempts(CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION.getName())) {
-                control.setFailoverOnInitialConnection(CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION.validateResolvedOperation(operation).asBoolean());
+                control.setFailoverOnInitialConnection(CommonAttributes.FAILOVER_ON_INITIAL_CONNECTION.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.PRODUCER_WINDOW_SIZE.getName())) {
-                control.setProducerWindowSize(CommonAttributes.PRODUCER_WINDOW_SIZE.validateResolvedOperation(operation).asInt());
+                control.setProducerWindowSize(CommonAttributes.PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT.getName())) {
-                control.setCacheLargeMessagesClient(CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT.validateResolvedOperation(operation).asBoolean());
+                control.setCacheLargeMessagesClient(CommonAttributes.CACHE_LARGE_MESSAGE_CLIENT.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.MAX_RETRY_INTERVAL.getName())) {
-                control.setMaxRetryInterval(CommonAttributes.MAX_RETRY_INTERVAL.validateResolvedOperation(operation).asLong());
+                control.setMaxRetryInterval(CommonAttributes.MAX_RETRY_INTERVAL.resolveModelAttribute(context, operation).asLong());
             } else if (attributeName.equals(CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.getName())) {
-                control.setScheduledThreadPoolMaxSize(CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.validateResolvedOperation(operation).asInt());
+                control.setScheduledThreadPoolMaxSize(CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE.getName())) {
-                control.setThreadPoolMaxSize(CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE.validateResolvedOperation(operation).asInt());
+                control.setThreadPoolMaxSize(CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt());
             } else if (attributeName.equals(CommonAttributes.GROUP_ID.getName())) {
-                final ModelNode node = CommonAttributes.GROUP_ID.validateResolvedOperation(operation);
+                final ModelNode node = CommonAttributes.GROUP_ID.resolveModelAttribute(context, operation);
                 control.setGroupID(node.isDefined() ? node.asString() : null);
             } else if (attributeName.equals(CommonAttributes.USE_GLOBAL_POOLS.getName())) {
-                control.setUseGlobalPools(CommonAttributes.USE_GLOBAL_POOLS.validateResolvedOperation(operation).asBoolean());
+                control.setUseGlobalPools(CommonAttributes.USE_GLOBAL_POOLS.resolveModelAttribute(context, operation).asBoolean());
             } else if (attributeName.equals(CommonAttributes.LOAD_BALANCING_CLASS_NAME.getName())) {
-                control.setConnectionLoadBalancingPolicyClassName(CommonAttributes.LOAD_BALANCING_CLASS_NAME.validateResolvedOperation(operation).asString());
+                control.setConnectionLoadBalancingPolicyClassName(CommonAttributes.LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, operation).asString());
             } else {
                 // Bug! Someone added the attribute to the set but did not implement
                 throw MESSAGES.unsupportedRuntimeAttribute(attributeName);

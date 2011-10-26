@@ -22,14 +22,15 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.handlers.ConsoleHandler;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 import java.util.Locale;
 
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
-import static org.jboss.as.logging.CommonAttributes.TARGET;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logmanager.handlers.ConsoleHandler;
 
 /**
  * Date: 12.10.2011
@@ -44,9 +45,9 @@ public class ConsoleHandlerWriteAttributeHandler extends LogHandlerWriteAttribut
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final ConsoleHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final ConsoleHandler handler) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(TARGET.validateResolvedOperation(operation).asString().toUpperCase(Locale.US))) {
+            switch (Target.fromString(TARGET.resolveModelAttribute(context,operation).asString().toUpperCase(Locale.US))) {
                 case SYSTEM_ERR: {
                     handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                     ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
@@ -58,15 +59,15 @@ public class ConsoleHandlerWriteAttributeHandler extends LogHandlerWriteAttribut
                 }
             }
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.validateResolvedOperation(operation).asBoolean());
+            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, operation).asBoolean());
         }
         return false;
     }
 
     @Override
-    protected void revertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final ConsoleHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final ConsoleHandler handler) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(TARGET.validateResolvedOperation(valueToRestore).asString().toUpperCase(Locale.US))) {
+            switch (Target.fromString(TARGET.resolveModelAttribute(context,valueToRestore).asString().toUpperCase(Locale.US))) {
                 case SYSTEM_ERR: {
                     handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                     ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
@@ -78,7 +79,7 @@ public class ConsoleHandlerWriteAttributeHandler extends LogHandlerWriteAttribut
                 }
             }
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.validateResolvedOperation(valueToRestore).asBoolean());
+            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, valueToRestore).asBoolean());
         }
     }
 }

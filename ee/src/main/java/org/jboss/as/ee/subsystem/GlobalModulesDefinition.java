@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -74,7 +75,7 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
     }
 
     @Override
-    public ModelNode validateResolvedOperation(ModelNode operationObject) throws OperationFailedException {
+    public ModelNode resolveModelAttribute(OperationContext context, ModelNode operationObject) throws OperationFailedException {
         final ModelNode result = super.validateOperation(operationObject);
 
         if (result.isDefined()) {

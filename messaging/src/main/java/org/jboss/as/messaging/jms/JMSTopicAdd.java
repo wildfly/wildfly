@@ -78,7 +78,7 @@ public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionPr
         final String name = address.getLastElement().getValue();
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
-        ENTRIES.validateResolvedOperation(model);
+        ENTRIES.resolveModelAttribute(context, model);
 
         final JMSTopicService service = new JMSTopicService(name, JndiEntriesAttribute.getJndiBindings(operation));
         final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(hqServiceName).append(name);

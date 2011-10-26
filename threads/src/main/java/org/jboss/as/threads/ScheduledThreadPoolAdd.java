@@ -78,7 +78,7 @@ public class ScheduledThreadPoolAdd extends AbstractAddStepHandler implements De
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         for(final AttributeDefinition attribute : ATTRIBUTES) {
-            attribute.validateResolvedOperation(model);
+            attribute.resolveModelAttribute(context, model);
         }
 
         final BaseOperationParameters params = ThreadsSubsystemThreadPoolOperationUtils.parseScheduledThreadPoolOperationParameters(operation);

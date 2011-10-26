@@ -81,10 +81,12 @@ class ModelControllerImpl implements ModelController {
     private final OperationStepHandler prepareStep;
     private final ControlledProcessState processState;
     private final ExecutorService executorService;
+    private final ExpressionResolver expressionResolver;
 
     ModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister, final OperationContext.Type controllerType,
-                        final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService) {
+                        final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService,
+                        final ExpressionResolver expressionResolver) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -95,6 +97,7 @@ class ModelControllerImpl implements ModelController {
         this.processState = processState;
         this.serviceTarget.addListener(ServiceListener.Inheritance.ALL, stateMonitor);
         this.executorService = executorService;
+        this.expressionResolver = expressionResolver;
     }
 
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {
@@ -398,6 +401,11 @@ class ModelControllerImpl implements ModelController {
 
     ServiceTarget getServiceTarget() {
         return serviceTarget;
+    }
+
+
+    ModelNode resolveExpressions(ModelNode node) {
+        return expressionResolver.resolveExpressions(node);
     }
 
     private class DefaultPrepareStepHandler implements OperationStepHandler {

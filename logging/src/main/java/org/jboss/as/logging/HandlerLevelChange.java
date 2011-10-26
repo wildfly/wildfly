@@ -22,22 +22,21 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AbstractModelUpdateHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Operation responsible for changing a log handler logging level.
@@ -60,7 +59,7 @@ public class HandlerLevelChange extends AbstractModelUpdateHandler {
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
-        final ModelNode level = LEVEL.validateResolvedOperation(model);
+        final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         if (controller != null && level.isDefined()) {
             controller.getValue().setLevel(Level.parse(level.asString()));
         }

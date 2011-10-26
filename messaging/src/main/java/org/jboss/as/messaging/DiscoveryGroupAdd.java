@@ -22,8 +22,9 @@
 
 package org.jboss.as.messaging;
 
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -38,11 +39,9 @@ import org.hornetq.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
@@ -101,10 +100,10 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
                         .install();
             } else {
 
-                final ModelNode localAddrNode = CommonAttributes.LOCAL_BIND_ADDRESS.validateResolvedOperation(model);
+                final ModelNode localAddrNode = CommonAttributes.LOCAL_BIND_ADDRESS.resolveModelAttribute(context, model);
                 final String localAddress = localAddrNode.isDefined() ? localAddrNode.asString() : null;
-                final String groupAddress = CommonAttributes.GROUP_ADDRESS.validateResolvedOperation(model).asString();
-                final int groupPort = CommonAttributes.GROUP_PORT.validateResolvedOperation(model).asInt();
+                final String groupAddress = CommonAttributes.GROUP_ADDRESS.resolveModelAttribute(context, model).asString();
+                final int groupPort = CommonAttributes.GROUP_PORT.resolveModelAttribute(context, model).asInt();
 
                 try {
 
@@ -132,7 +131,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
         return MessagingDescriptions.getDiscoveryGroupAdd(locale);
     }
 
-    static void addDiscoveryGroupConfigs(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+    static void addDiscoveryGroupConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.DISCOVERY_GROUP)) {
             Map<String, DiscoveryGroupConfiguration> configs = configuration.getDiscoveryGroupConfigurations();
             if (configs == null) {
@@ -140,16 +139,16 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler implements Descrip
                 configuration.setDiscoveryGroupConfigurations(configs);
             }
             for (Property prop : model.get(CommonAttributes.DISCOVERY_GROUP).asPropertyList()) {
-                configs.put(prop.getName(), createDiscoveryGroupConfiguration(prop.getName(), prop.getValue()));
+                configs.put(prop.getName(), createDiscoveryGroupConfiguration(context, prop.getName(), prop.getValue()));
 
             }
         }
     }
 
-    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final ModelNode model) throws OperationFailedException {
+    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final long refreshTimeout = CommonAttributes.REFRESH_TIMEOUT.validateResolvedOperation(model).asLong();
-        final long initialWaitTimeout = CommonAttributes.INITIAL_WAIT_TIMEOUT.validateResolvedOperation(model).asLong();
+        final long refreshTimeout = CommonAttributes.REFRESH_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        final long initialWaitTimeout = CommonAttributes.INITIAL_WAIT_TIMEOUT.resolveModelAttribute(context, model).asLong();
         // Requires runtime service
         return new DiscoveryGroupConfiguration(name, null, null, 0, refreshTimeout, initialWaitTimeout);
     }

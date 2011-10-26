@@ -22,6 +22,21 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
+import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.LVQ;
+import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
+import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
+import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
+
+import java.util.List;
+import java.util.Locale;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -35,24 +50,10 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.messaging.CommonAttributes.ADDRESS_FULL_MESSAGE_POLICY;
-import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.LVQ;
-import static org.jboss.as.messaging.CommonAttributes.MAX_DELIVERY_ATTEMPTS;
-import static org.jboss.as.messaging.CommonAttributes.MAX_SIZE_BYTES_NODE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
-import static org.jboss.as.messaging.CommonAttributes.PAGE_SIZE_BYTES_NODE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.REDELIVERY_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.REDISTRIBUTION_DELAY;
-import static org.jboss.as.messaging.CommonAttributes.SEND_TO_DLA_ON_NO_ROUTE;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.List;
-import java.util.Locale;
 
 /**
  * {@code OperationStepHandler} adding a new address setting.
@@ -82,7 +83,7 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
         final HornetQServer server = getServer(context, operation);
         if(server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            final AddressSettings settings = createSettings(model);
+            final AddressSettings settings = createSettings(context, model);
             server.getAddressSettingsRepository().addMatch(address.getLastElement().getValue(), settings);
         }
     }
@@ -113,20 +114,20 @@ class AddressSettingAdd extends AbstractAddStepHandler implements DescriptionPro
      * @param config the detyped config
      * @return the address settings
      */
-    static AddressSettings createSettings(final ModelNode config) throws OperationFailedException {
+    static AddressSettings createSettings(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
-        final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(ADDRESS_FULL_MESSAGE_POLICY.validateResolvedOperation(config).asString());
+        final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
         settings.setAddressFullMessagePolicy(addressPolicy);
-        settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.validateResolvedOperation(config), null));
-        settings.setLastValueQueue(LVQ.validateResolvedOperation(config).asBoolean());
-        settings.setMaxDeliveryAttempts(MAX_DELIVERY_ATTEMPTS.validateResolvedOperation(config).asInt());
-        settings.setMaxSizeBytes(MAX_SIZE_BYTES_NODE_NAME.validateResolvedOperation(config).asInt());
-        settings.setMessageCounterHistoryDayLimit(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.validateResolvedOperation(config).asInt());
-        settings.setExpiryAddress(asSimpleString(EXPIRY_ADDRESS.validateResolvedOperation(config), null));
-        settings.setRedeliveryDelay(REDELIVERY_DELAY.validateResolvedOperation(config).asInt());
-        settings.setRedistributionDelay(REDISTRIBUTION_DELAY.validateResolvedOperation(config).asLong());
-        settings.setPageSizeBytes(PAGE_SIZE_BYTES_NODE_NAME.validateResolvedOperation(config).asLong());
-        settings.setSendToDLAOnNoRoute(SEND_TO_DLA_ON_NO_ROUTE.validateResolvedOperation(config).asBoolean());
+        settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
+        settings.setLastValueQueue(LVQ.resolveModelAttribute(context, config).asBoolean());
+        settings.setMaxDeliveryAttempts(MAX_DELIVERY_ATTEMPTS.resolveModelAttribute(context, config).asInt());
+        settings.setMaxSizeBytes(MAX_SIZE_BYTES_NODE_NAME.resolveModelAttribute(context, config).asInt());
+        settings.setMessageCounterHistoryDayLimit(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.resolveModelAttribute(context, config).asInt());
+        settings.setExpiryAddress(asSimpleString(EXPIRY_ADDRESS.resolveModelAttribute(context, config), null));
+        settings.setRedeliveryDelay(REDELIVERY_DELAY.resolveModelAttribute(context, config).asInt());
+        settings.setRedistributionDelay(REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
+        settings.setPageSizeBytes(PAGE_SIZE_BYTES_NODE_NAME.resolveModelAttribute(context, config).asLong());
+        settings.setSendToDLAOnNoRoute(SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
         return settings;
     }
 

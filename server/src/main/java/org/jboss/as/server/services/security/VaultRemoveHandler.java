@@ -39,12 +39,13 @@ public class VaultRemoveHandler extends AbstractRemoveStepHandler implements Des
 
     public static final String OPERATION_NAME = REMOVE;
 
-    public static final VaultRemoveHandler INSTANCE = new VaultRemoveHandler();
+    private final RuntimeVaultReader vaultReader;
 
     /**
      * Create the VaultRemoveHandler
      */
-    protected VaultRemoveHandler() {
+    public VaultRemoveHandler(RuntimeVaultReader vaultReader) {
+        this.vaultReader = vaultReader;
     }
 
     @Override
@@ -53,18 +54,12 @@ public class VaultRemoveHandler extends AbstractRemoveStepHandler implements Des
     }
 
     @Override
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        vaultReader.destroyVault();
+    }
+
+    @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getType() == OperationContext.Type.HOST || context.getType() == OperationContext.Type.SERVER;
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        // Let's not try to remove a core service without a reload
-        context.reloadRequired();
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        context.revertReloadRequired();
+        return false;
     }
 }

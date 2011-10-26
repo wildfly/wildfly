@@ -26,11 +26,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
@@ -56,6 +58,7 @@ import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.domain.management.security.UserDomainCallbackHandler;
 import org.jboss.as.domain.management.security.UserLdapCallbackHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -108,7 +111,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
             } else if (authentication.hasDefined(PROPERTIES)) {
                 authenticationName = addPropertiesService(authentication.require(PROPERTIES), realmServiceName, realmName, serviceTarget, newControllers);
             } else if (authentication.hasDefined(USERS)) {
-                authenticationName = addUsersService(authentication.require(USERS), realmServiceName, realmName, serviceTarget, newControllers);
+                authenticationName = addUsersService(context, authentication.require(USERS), realmServiceName, realmName, serviceTarget, newControllers);
             }
         }
         if (authenticationName != null) {
@@ -117,7 +120,7 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
 
         if (serverIdentities != null) {
             if (serverIdentities.hasDefined(SSL)) {
-                ServiceName sslServiceName = addSSLService(serverIdentities.require(SSL), realmServiceName, serviceTarget, newControllers);
+                ServiceName sslServiceName = addSSLService(context, serverIdentities.require(SSL), realmServiceName, serviceTarget, newControllers);
                 realmBuilder.addDependency(sslServiceName, SSLIdentityService.class, securityRealmService.getSSLIdentityInjector());
             }
             if (serverIdentities.hasDefined(SECRET)) {
@@ -171,9 +174,9 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
     }
 
     // TODO - The operation will also be split out into it's own handler when I make the operations more fine grained.
-    private ServiceName addSSLService(ModelNode ssl, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+    private ServiceName addSSLService(OperationContext context, ModelNode ssl, ServiceName realmServiceName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
         ServiceName sslServiceName = realmServiceName.append(SSLIdentityService.SERVICE_SUFFIX);
-        SSLIdentityService sslIdentityService = new SSLIdentityService(ssl);
+        SSLIdentityService sslIdentityService = new SSLIdentityService(ssl, unmaskSslKeystorePassword(context, ssl));
 
         ServiceBuilder<?> sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
 
@@ -200,9 +203,10 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
         return secretServiceName;
     }
 
-    private ServiceName addUsersService(ModelNode users, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+    private ServiceName addUsersService(OperationContext context, ModelNode users, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
         ServiceName usersServiceName = realmServiceName.append(UserDomainCallbackHandler.SERVICE_SUFFIX);
-        UserDomainCallbackHandler usersCallbackHandler = new UserDomainCallbackHandler(realmName, users);
+
+        UserDomainCallbackHandler usersCallbackHandler = new UserDomainCallbackHandler(realmName, unmaskUsersPasswords(context, users));
 
         ServiceBuilder<?> usersBuilder = serviceTarget.addService(usersServiceName, usersCallbackHandler);
 
@@ -215,5 +219,27 @@ public class SecurityRealmAddHandler extends AbstractAddStepHandler implements D
 
     private static ServiceName pathName(String relativeTo) {
         return ServiceName.JBOSS.append("server", "path", relativeTo);
+    }
+
+    private String unmaskSslKeystorePassword(OperationContext context, ModelNode ssl) {
+        if (!ssl.hasDefined(KEYSTORE)) {
+            return null;
+        }
+        if (!ssl.hasDefined(PASSWORD)) {
+            return null;
+        }
+        return context.resolveExpressions(ssl.get(KEYSTORE, PASSWORD)).asString();
+    }
+
+    private ModelNode unmaskUsersPasswords(OperationContext context, ModelNode users) {
+        users = users.clone();
+        for (Property property : users.get(USER).asPropertyList()) {
+            ModelNode user = property.getValue();
+            if (user.hasDefined(PASSWORD)) {
+                //TODO This will be cleaned up once it uses attribute definitions
+                user.set(PASSWORD, context.resolveExpressions(user.get(PASSWORD)).asString());
+            }
+        }
+        return users;
     }
 }

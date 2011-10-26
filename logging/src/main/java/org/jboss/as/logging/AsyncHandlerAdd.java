@@ -22,28 +22,20 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Handler;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -61,7 +53,7 @@ class AsyncHandlerAdd extends FlushingHandlerAddProperties<AsyncHandlerService> 
     protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final AsyncHandlerService service, final ModelNode model) throws OperationFailedException {
         super.updateRuntime(context, serviceBuilder, name, service, model);
         final List<InjectedValue<Handler>> list = new ArrayList<InjectedValue<Handler>>();
-        final ModelNode subhandlers = SUBHANDLERS.validateResolvedOperation(model);
+        final ModelNode subhandlers = SUBHANDLERS.resolveModelAttribute(context, model);
         if (subhandlers.isDefined()) {
             for (final ModelNode handlerName : subhandlers.asList()) {
                 final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
@@ -70,15 +62,15 @@ class AsyncHandlerAdd extends FlushingHandlerAddProperties<AsyncHandlerService> 
             }
         }
         service.addHandlers(list);
-        service.setQueueLength(QUEUE_LENGTH.validateResolvedOperation(model).asInt());
-        final ModelNode overflowAction = OVERFLOW_ACTION.validateResolvedOperation(model);
+        service.setQueueLength(QUEUE_LENGTH.resolveModelAttribute(context, model).asInt());
+        final ModelNode overflowAction = OVERFLOW_ACTION.resolveModelAttribute(context, model);
         if (overflowAction.isDefined()) {
             service.setOverflowAction(OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
         }
     }
 
     @Override
-    protected AsyncHandlerService createHandlerService(final ModelNode model) throws OperationFailedException {
+    protected AsyncHandlerService createHandlerService(OperationContext context, final ModelNode model) throws OperationFailedException {
         return new AsyncHandlerService();
     }
 

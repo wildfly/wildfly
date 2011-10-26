@@ -35,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.IOException;
 import java.security.AccessController;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,8 +83,10 @@ import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannel;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
+import org.jboss.as.server.services.security.RuntimeVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
@@ -125,6 +126,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final Map<String, ManagementChannel> unregisteredHostChannels = new HashMap<String, ManagementChannel>();
     private final Map<String, ProxyCreatedCallback> proxyCreatedCallbacks = new HashMap<String, ProxyCreatedCallback>();
     private final ExecutorService proxyExecutor = Executors.newCachedThreadPool();
+    private final RuntimeVaultReader vaultReader = new HostRuntimeVaultReader();
 
     private volatile ServerInventory serverInventory;
 
@@ -135,10 +137,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
         final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
-        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo,
-                Collections.unmodifiableMap(hostProxies), Collections.unmodifiableMap(serverProxies));
+        final RuntimeVaultReader vaultReader = new HostRuntimeVaultReader();
+        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
-                hostControllerInfo, hostProxies, serverProxies, prepareStepHandler);
+                hostControllerInfo, hostProxies, serverProxies, prepareStepHandler, vaultReader);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerBootstrap.SERVICE_NAME_BASE.append("executor"), ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -151,8 +153,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final LocalHostControllerInfoImpl hostControllerInfo,
                                          final Map<String, ProxyController> hostProxies,
                                          final Map<String, ProxyController> serverProxies,
-                                         final PrepareStepHandler prepareStepHandler) {
-        super(OperationContext.Type.HOST, processState, DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler);
+                                         final PrepareStepHandler prepareStepHandler,
+                                         final RuntimeVaultReader vaultReader) {
+        super(OperationContext.Type.HOST, processState, DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
         this.localFileRepository = new LocalFileRepository(environment);
@@ -259,7 +262,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         DomainModelUtil.updateCoreModel(rootResource.getModel());
         HostModelUtil.createHostRegistry(rootRegistration, hostControllerConfigurationPersister, environment, localFileRepository,
-                hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this);
+                hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, this, this, vaultReader);
         this.modelNodeRegistration = rootRegistration;
     }
 

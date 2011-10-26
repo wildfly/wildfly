@@ -25,9 +25,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -71,15 +68,18 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
@@ -559,7 +559,7 @@ public abstract class AbstractProxyControllerTest {
                     node.get(CHILDREN, PROFILE, MODEL_DESCRIPTION);
                     return node;
                 }
-            }, null);
+            }, null, ExpressionResolver.DEFAULT);
         }
 
         @Override
@@ -627,7 +627,7 @@ public abstract class AbstractProxyControllerTest {
                     node.get(CHILDREN, "hostchild", MODEL_DESCRIPTION);
                     return node;
                 }
-            }, null);
+            }, null, ExpressionResolver.DEFAULT);
         }
 
         @Override

@@ -22,11 +22,12 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.FileHandler;
-
-import static org.jboss.as.logging.CommonAttributes.APPEND;
 
 /**
  * Operation responsible for updating the properties of a file logging handler.
@@ -42,9 +43,9 @@ public class FileHandlerUpdateProperties extends FlushingHandlerUpdateProperties
     }
 
     @Override
-    protected void updateRuntime(final ModelNode operation, final FileHandler handler) throws OperationFailedException {
-        super.updateRuntime(operation, handler);
-        final ModelNode append = APPEND.validateResolvedOperation(operation);
+    protected void updateRuntime(OperationContext context, final ModelNode operation, final FileHandler handler) throws OperationFailedException {
+        super.updateRuntime(context, operation, handler);
+        final ModelNode append = APPEND.resolveModelAttribute(context, operation);
         if (append.isDefined()) {
             handler.setAppend(append.asBoolean());
         }

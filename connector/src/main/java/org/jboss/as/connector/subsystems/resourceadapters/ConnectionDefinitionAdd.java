@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
 
 import org.jboss.as.connector.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -39,7 +38,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.common.CommonConnDef;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -84,7 +82,7 @@ public class ConnectionDefinitionAdd extends AbstractBoottimeAddStepHandler impl
         final String jndiName = PathAddress.pathAddress(address).getLastElement().getValue();
 
         try {
-            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(operation);
+            final ModifiableConnDef connectionDefinitionValue = RaOperationUtil.buildConnectionDefinitionObject(context, operation);
 
 
             ServiceName serviceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveName, jndiName);

@@ -458,6 +458,16 @@ public interface OperationContext {
     boolean revertResourceRestarted(PathAddress resource, Object owner);
 
     /**
+     * Resolves any expressions in the passed in ModelNode.
+     * Expressions may either represent system properties or vaulted date. For vaulted data the format is
+     * ${VAULT::vault_block::attribute_name::sharedKey}
+     *
+     * @param node the ModelNode containing expressions.
+     * @return a copy of the node with expressions resolved
+     */
+    ModelNode resolveExpressions(ModelNode node);
+
+    /**
      * The stage at which a step should apply.
      */
     enum Stage {

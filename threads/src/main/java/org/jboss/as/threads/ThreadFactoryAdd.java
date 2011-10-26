@@ -80,9 +80,9 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler implements Descript
 //            attribute.validateResolvedOperation(model);
 //        }
 
-        final String threadNamePattern = PoolAttributeDefinitions.THREAD_NAME_PATTERN.validateResolvedOperation(model).asString();
-        final int priority = PoolAttributeDefinitions.PRIORITY.validateResolvedOperation(model).asInt();
-        final String groupName = PoolAttributeDefinitions.GROUP_NAME.validateResolvedOperation(model).asString();
+        final String threadNamePattern = PoolAttributeDefinitions.THREAD_NAME_PATTERN.resolveModelAttribute(context, model).asString();
+        final int priority = PoolAttributeDefinitions.PRIORITY.resolveModelAttribute(context, model).asInt();
+        final String groupName = PoolAttributeDefinitions.GROUP_NAME.resolveModelAttribute(context, model).asString();
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();

@@ -109,7 +109,7 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
 
-            BridgeConfiguration bridgeConfig = createBridgeConfiguration(name, model);
+            BridgeConfiguration bridgeConfig = createBridgeConfiguration(context, name, model);
 
             HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
             createBridge(name, bridgeConfig, serverControl);
@@ -124,37 +124,37 @@ public class BridgeAdd extends AbstractAddStepHandler implements DescriptionProv
         return MessagingDescriptions.getBridgeAdd(locale);
     }
 
-    static void addBridgeConfigs(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+    static void addBridgeConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.BRIDGE)) {
             final List<BridgeConfiguration> configs = configuration.getBridgeConfigurations();
             for (Property prop : model.get(CommonAttributes.BRIDGE).asPropertyList()) {
-                configs.add(createBridgeConfiguration(prop.getName(), prop.getValue()));
+                configs.add(createBridgeConfiguration(context, prop.getName(), prop.getValue()));
 
             }
         }
     }
 
-    static BridgeConfiguration createBridgeConfiguration(String name, ModelNode model) throws OperationFailedException {
+    static BridgeConfiguration createBridgeConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final String queueName = CommonAttributes.QUEUE_NAME.validateResolvedOperation(model).asString();
-        final ModelNode forwardingNode = CommonAttributes.BRIDGE_FORWARDING_ADDRESS.validateResolvedOperation(model);
+        final String queueName = CommonAttributes.QUEUE_NAME.resolveModelAttribute(context, model).asString();
+        final ModelNode forwardingNode = CommonAttributes.BRIDGE_FORWARDING_ADDRESS.resolveModelAttribute(context, model);
         final String forwardingAddress = forwardingNode.isDefined() ? forwardingNode.asString() : null;
-        final ModelNode filterNode = CommonAttributes.FILTER.validateResolvedOperation(model);
+        final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(context, model);
         final String filterString = filterNode.isDefined() ? filterNode.asString() : null;
-        final ModelNode transformerNode = CommonAttributes.TRANSFORMER_CLASS_NAME.validateResolvedOperation(model);
+        final ModelNode transformerNode = CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);
         final String transformerClassName = transformerNode.isDefined() ? transformerNode.asString() : null;
-        final long retryInterval = CommonAttributes.RETRY_INTERVAL.validateResolvedOperation(model).asLong();
-        final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.validateResolvedOperation(model).asDouble();
-        final int reconnectAttempts = CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS.validateResolvedOperation(model).asInt();
-        final boolean useDuplicateDetection = CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION.validateResolvedOperation(model).asBoolean();
-        final int confirmationWindowSize = CommonAttributes.CONFIRMATION_WINDOW_SIZE.validateResolvedOperation(model).asInt();
+        final long retryInterval = CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
+        final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
+        final int reconnectAttempts = CommonAttributes.BRIDGE_RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
+        final boolean useDuplicateDetection = CommonAttributes.BRIDGE_USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
+        final int confirmationWindowSize = CommonAttributes.CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final long clientFailureCheckPeriod = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-        final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.validateResolvedOperation(model);
+        final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;
-        final boolean ha = CommonAttributes.HA.validateResolvedOperation(model).asBoolean();
-        final String user = CommonAttributes.USER.validateResolvedOperation(model).asString();
-        final String password = CommonAttributes.PASSWORD.validateResolvedOperation(model).asString();
+        final boolean ha = CommonAttributes.HA.resolveModelAttribute(context, model).asBoolean();
+        final String user = CommonAttributes.USER.resolveModelAttribute(context, model).asString();
+        final String password = CommonAttributes.PASSWORD.resolveModelAttribute(context, model).asString();
 
         if (discoveryGroupName != null) {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,

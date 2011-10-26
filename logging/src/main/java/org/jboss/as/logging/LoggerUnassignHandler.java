@@ -22,18 +22,18 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.NAME;
+
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.NAME;
 
 
 /**
@@ -58,7 +58,7 @@ public class LoggerUnassignHandler extends AbstractLogHandlerAssignmentHandler {
 
     @Override
     protected String getHandlerName(ModelNode operation) throws OperationFailedException {
-        return NAME.validateResolvedOperation(operation).asString();
+        return NAME.validateOperation(operation).asString();
     }
 
     protected String getLoggerName(final ModelNode operation) {

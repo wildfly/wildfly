@@ -22,10 +22,14 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+
+import java.util.List;
+
 import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
@@ -33,11 +37,6 @@ import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 /**
  * Operation responsible for changing a logger's level.
@@ -58,7 +57,7 @@ public class LoggerLevelChange extends AbstractModelUpdateHandler {
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ModelNode level = LEVEL.validateResolvedOperation(model);
+        final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         final ServiceController<Logger> controller = (ServiceController<Logger>) serviceRegistry.getService(LogServices.loggerName(name));
         if (controller != null && level.isDefined()) {

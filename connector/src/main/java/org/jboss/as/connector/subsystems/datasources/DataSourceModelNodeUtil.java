@@ -35,12 +35,10 @@ import static org.jboss.as.connector.pool.Constants.USE_FAST_FAIL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
@@ -89,6 +87,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -99,23 +98,19 @@ import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CommonPoolImpl;
 import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
-import org.jboss.jca.common.metadata.ds.DataSourceImpl;
 import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.metadata.ds.StatementImpl;
 import org.jboss.jca.common.metadata.ds.TimeOutImpl;
 import org.jboss.jca.common.metadata.ds.ValidationImpl;
-import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
 
 /**
  * Utility used to help convert between JCA spi data-source instances and model
@@ -124,7 +119,7 @@ import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
  */
 class DataSourceModelNodeUtil {
 
-    static ModifiableDataSource from(final ModelNode dataSourceNode) throws ValidateException {
+    static ModifiableDataSource from(final OperationContext operationContext, final ModelNode dataSourceNode) throws ValidateException {
         final Map<String, String> connectionProperties= Collections.emptyMap();
 
         final String connectionUrl = getStringIfSetOrGetDefault(dataSourceNode, CONNECTION_URL, null);
@@ -151,7 +146,9 @@ class DataSourceModelNodeUtil {
 
         final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
 
-        final String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
+        //TODO This will be cleaned up once it uses attribute definitions
+        final String pwd = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
+        final String password = pwd == null ? null : operationContext.resolveExpressions(new ModelNode().set(pwd)).asString();
         final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
         final Extension reauthPlugin = extractExtension(dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
@@ -199,8 +196,17 @@ class DataSourceModelNodeUtil {
                 poolName, enabled, jndiName, spy, useCcm, jta, pool);
     }
 
-    static ModifiableXaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {
-        final Map<String, String> xaDataSourceProperty = new HashMap<String, String>(0);
+    static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode) throws ValidateException {
+        final Map<String, String> xaDataSourceProperty;
+        if (dataSourceNode.hasDefined(XADATASOURCE_PROPERTIES.getName())) {
+            List<Property> propertyList = dataSourceNode.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList();
+            xaDataSourceProperty = new HashMap<String, String>(propertyList.size());
+            for (Property property : propertyList) {
+                xaDataSourceProperty.put(property.getName(), property.getValue().asString());
+            }
+        } else {
+            xaDataSourceProperty = Collections.emptyMap();
+        }
 
         final String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
@@ -229,7 +235,9 @@ class DataSourceModelNodeUtil {
                 isSameRmOverride, interleaving, padXid, wrapXaDataSource, noTxSeparatePool);
 
         final String username = getStringIfSetOrGetDefault(dataSourceNode, USERNAME, null);
-        final String password = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
+        //TODO This will be cleaned up once it uses attribute definitions
+        final String pwd = getStringIfSetOrGetDefault(dataSourceNode, PASSWORD, null);
+        final String password = pwd == null ? null : operationContext.resolveExpressions(new ModelNode().set(pwd)).asString();
         final String securityDomain = getStringIfSetOrGetDefault(dataSourceNode, SECURITY_DOMAIN, null);
 
         final Extension reauthPlugin = extractExtension(dataSourceNode, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
@@ -273,7 +281,9 @@ class DataSourceModelNodeUtil {
                 validConnectionChecker, checkValidConnectionSql, validateOnMatch, staleConnectionChecker, exceptionSorter);
 
         final String recoveryUsername = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_USERNAME, null);
-        final String recoveryPassword = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_PASSWORD, null);
+        //TODO This will be cleaned up once it uses attribute definitions
+        final String rpwd = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_PASSWORD, null);
+        final String recoveryPassword = rpwd == null ? null : operationContext.resolveExpressions(new ModelNode().set(rpwd)).asString();
         final String recoverySecurityDomain = getStringIfSetOrGetDefault(dataSourceNode, RECOVERY_SECURITY_DOMAIN, null);
 
         final Credential credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);

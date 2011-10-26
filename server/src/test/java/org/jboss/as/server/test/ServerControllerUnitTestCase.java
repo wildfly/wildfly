@@ -32,9 +32,12 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 
+import junit.framework.Assert;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -60,7 +63,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -214,7 +216,7 @@ public class ServerControllerUnitTestCase {
         volatile Exception error;
 
         ModelControllerService(final OperationContext.Type type, final ControlledProcessState processState, final StringConfigurationPersister persister) {
-            super(type, persister, processState, ServerDescriptionProviders.ROOT_PROVIDER, null);
+            super(type, persister, processState, ServerDescriptionProviders.ROOT_PROVIDER, null, ExpressionResolver.DEFAULT);
             this.persister = persister;
             this.processState = processState;
         }
@@ -225,7 +227,7 @@ public class ServerControllerUnitTestCase {
             Properties properties = new Properties();
             properties.put("jboss.home.dir", ".");
             final ServerEnvironment environment = new ServerEnvironment(properties, new HashMap<String, String>(), null, ServerEnvironment.LaunchType.DOMAIN);
-            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState);
+            ServerControllerModelUtil.initOperations(rootRegistration, null, persister, environment, processState, null);
         }
 
         @Override

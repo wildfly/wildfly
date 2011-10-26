@@ -105,29 +105,29 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler implements Desc
         return MessagingDescriptions.getClusterConnectionAdd(locale);
     }
 
-    static void addClusterConnectionConfigs(final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+    static void addClusterConnectionConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.CLUSTER_CONNECTION)) {
             final List<ClusterConnectionConfiguration> configs = configuration.getClusterConfigurations();
             for (Property prop : model.get(CommonAttributes.CLUSTER_CONNECTION).asPropertyList()) {
-                configs.add(createClusterConnectionConfiguration(prop.getName(), prop.getValue()));
+                configs.add(createClusterConnectionConfiguration(context, prop.getName(), prop.getValue()));
 
             }
         }
     }
 
-    static ClusterConnectionConfiguration createClusterConnectionConfiguration(final String name, final ModelNode model) throws OperationFailedException {
+    static ClusterConnectionConfiguration createClusterConnectionConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final String address = CommonAttributes.CLUSTER_CONNECTION_ADDRESS.validateResolvedOperation(model).asString();
-        final String connectorName = CommonAttributes.CONNECTOR_REF.validateResolvedOperation(model).asString();
-        final long retryInterval = CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL.validateResolvedOperation(model).asLong();
-        final boolean duplicateDetection = CommonAttributes.CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION.validateResolvedOperation(model).asBoolean();
-        final boolean forwardWhenNoConsumers = CommonAttributes.FORWARD_WHEN_NO_CONSUMERS.validateResolvedOperation(model).asBoolean();
-        final int maxHops = CommonAttributes.MAX_HOPS.validateResolvedOperation(model).asInt();
-        final int confirmationWindowSize = CommonAttributes.CONFIRMATION_WINDOW_SIZE.validateResolvedOperation(model).asInt();
-        final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.validateResolvedOperation(model);
+        final String address = CommonAttributes.CLUSTER_CONNECTION_ADDRESS.resolveModelAttribute(context, model).asString();
+        final String connectorName = CommonAttributes.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
+        final long retryInterval = CommonAttributes.CLUSTER_CONNECTION_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
+        final boolean duplicateDetection = CommonAttributes.CLUSTER_CONNECTION_USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
+        final boolean forwardWhenNoConsumers = CommonAttributes.FORWARD_WHEN_NO_CONSUMERS.resolveModelAttribute(context, model).asBoolean();
+        final int maxHops = CommonAttributes.MAX_HOPS.resolveModelAttribute(context, model).asInt();
+        final int confirmationWindowSize = CommonAttributes.CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
+        final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         final List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;
-        final boolean allowDirectOnly = CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.validateResolvedOperation(model).asBoolean();
+        final boolean allowDirectOnly = CommonAttributes.ALLOW_DIRECT_CONNECTIONS_ONLY.resolveModelAttribute(context, model).asBoolean();
 
         if (discoveryGroupName != null) {
             return new ClusterConnectionConfiguration(name, address, connectorName, retryInterval, duplicateDetection,

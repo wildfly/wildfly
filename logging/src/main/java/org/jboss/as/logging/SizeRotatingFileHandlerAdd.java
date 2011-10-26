@@ -22,21 +22,21 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.services.path.AbstractPathService;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.logging.Handler;
-
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
+
+import java.util.logging.Handler;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.services.path.AbstractPathService;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -51,34 +51,34 @@ class SizeRotatingFileHandlerAdd extends FlushingHandlerAddProperties<SizeRotati
     }
 
     @Override
-    protected SizeRotatingFileHandlerService createHandlerService(final ModelNode model) throws OperationFailedException {
+    protected SizeRotatingFileHandlerService createHandlerService(OperationContext context, final ModelNode model) throws OperationFailedException {
         return new SizeRotatingFileHandlerService();
     }
 
     @Override
     protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final SizeRotatingFileHandlerService service, final ModelNode model) throws OperationFailedException {
         super.updateRuntime(context, serviceBuilder, name, service, model);
-        final ModelNode append = APPEND.validateResolvedOperation(model);
+        final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
             service.setAppend(append.asBoolean());
         }
-        final ModelNode file = FILE.validateResolvedOperation(model);
+        final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
-            final HandlerFileService fileService = new HandlerFileService(PATH.validateResolvedOperation(file).asString());
+            final HandlerFileService fileService = new HandlerFileService(PATH.resolveModelAttribute(context, file).asString());
             final ServiceBuilder<?> fileBuilder = context.getServiceTarget().addService(LogServices.handlerFileName(name), fileService);
-            final ModelNode relativeTo = RELATIVE_TO.validateResolvedOperation(file);
+            final ModelNode relativeTo = RELATIVE_TO.resolveModelAttribute(context, file);
             if (relativeTo.isDefined()) {
                 fileBuilder.addDependency(AbstractPathService.pathNameOf(relativeTo.asString()), String.class, fileService.getRelativeToInjector());
             }
             fileBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             serviceBuilder.addDependency(LogServices.handlerFileName(name), String.class, service.getFileNameInjector());
         }
-        final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.validateResolvedOperation(model);
+        final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.resolveModelAttribute(context, model);
         if (maxBackupIndex.isDefined()) {
             service.setMaxBackupIndex(maxBackupIndex.asInt());
         }
 
-        final ModelNode rotateSizeNode = ROTATE_SIZE.validateResolvedOperation(model);
+        final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, model);
         long rotateSize = ROTATE_SIZE.getDefaultValue().asLong();
         if (rotateSizeNode.isDefined()) {
             try {

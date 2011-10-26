@@ -22,22 +22,21 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+
+import java.util.Collection;
+import java.util.logging.Level;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.Collection;
-import java.util.logging.Level;
-
-import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -66,7 +65,7 @@ class RootLoggerAdd implements OperationStepHandler {
                     try {
 
                         final RootLoggerService service = new RootLoggerService();
-                        service.setLevel(Level.parse(LEVEL.validateResolvedOperation(operation).asString()));
+                        service.setLevel(Level.parse(LEVEL.resolveModelAttribute(context, operation).asString()));
                         target.addService(LogServices.ROOT_LOGGER, service)
                                 .addListener(verificationHandler)
                                 .setInitialMode(ServiceController.Mode.ACTIVE)

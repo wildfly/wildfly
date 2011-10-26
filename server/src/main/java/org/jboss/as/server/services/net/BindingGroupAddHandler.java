@@ -68,8 +68,8 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        int portOffset = SocketBindingGroupResourceDefinition.PORT_OFFSET.validateResolvedOperation(model).asInt();
-        String defaultInterface = SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.validateResolvedOperation(model).asString();
+        int portOffset = SocketBindingGroupResourceDefinition.PORT_OFFSET.resolveModelAttribute(context, model).asInt();
+        String defaultInterface = SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.resolveModelAttribute(context, model).asString();
 
         SocketBindingManagerService service = new SocketBindingManagerService(portOffset);
         final ServiceTarget serviceTarget = context.getServiceTarget();

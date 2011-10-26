@@ -22,13 +22,14 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 
 import java.io.Serializable;
 import java.util.logging.Handler;
 
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -39,7 +40,7 @@ public abstract class AbstractFormatterSpec implements Serializable {
 
     protected abstract void apply(Handler handler);
 
-    public static AbstractFormatterSpec fromModelNode(final ModelNode node) throws OperationFailedException {
-        return new PatternFormatterSpec(FORMATTER.validateResolvedOperation(node).asString());
+    public static AbstractFormatterSpec fromModelNode(final OperationContext context, final ModelNode node) throws OperationFailedException {
+        return new PatternFormatterSpec(FORMATTER.resolveModelAttribute(context, node).asString());
     }
 }

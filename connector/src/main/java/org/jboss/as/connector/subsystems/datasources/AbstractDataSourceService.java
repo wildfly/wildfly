@@ -22,6 +22,9 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.ConnectorLogger.DS_DEPLOYER_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
@@ -39,8 +42,6 @@ import javax.sql.DataSource;
 import org.jboss.as.connector.registry.DriverRegistry;
 import org.jboss.as.connector.registry.InstalledDriver;
 import org.jboss.as.connector.util.Injection;
-import org.jboss.as.connector.util.ParserException;
-import org.jboss.as.server.services.security.VaultUtil;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.spi.ClassLoaderPlugin;
@@ -75,10 +76,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
-import org.jboss.security.vault.SecurityVaultException;
-
-import static org.jboss.as.connector.ConnectorLogger.DS_DEPLOYER_LOGGER;
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * Base service for managing a data-source.
@@ -435,15 +432,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     managedConnectionFactory.setUserName(security.getUserName());
                 }
                 if (security.getPassword() != null) {
-                    String password = security.getPassword();
-                    if (VaultUtil.isVaultFormat(password)) {
-                        try {
-                            password = VaultUtil.getValueAsString(password);
-                        } catch (SecurityVaultException e) {
-                            throw new RuntimeException(e); // TODO: use bundle from IJ
-                        }
-                    }
-                    managedConnectionFactory.setPassword(password);
+                    managedConnectionFactory.setPassword(security.getPassword());
                 }
             }
 

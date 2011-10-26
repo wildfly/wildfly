@@ -53,6 +53,7 @@ import junit.framework.AssertionFailedError;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ExtensionContextImpl;
@@ -556,7 +557,7 @@ public abstract class AbstractSubsystemTest {
         volatile Exception error;
 
         ModelControllerService(final OperationContext.Type type, final Extension mainExtension, final ControllerInitializer controllerInitializer, final AdditionalInitialization additionalPreStep, final ControlledProcessState processState, final StringConfigurationPersister persister, boolean validateOps) {
-            super(type, persister, processState, DESC_PROVIDER, null);
+            super(type, persister, processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
             this.persister = persister;
             this.additionalInit = additionalPreStep;
             this.mainExtension = mainExtension;

@@ -22,15 +22,15 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.handlers.AsyncHandler;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 
 import java.util.Locale;
 
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
-import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
-import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logmanager.handlers.AsyncHandler;
 
 /**
  * Date: 12.10.2011
@@ -46,21 +46,21 @@ public class AsyncHandlerWriteAttributeHandler extends LogHandlerWriteAttributeH
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final AsyncHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final AsyncHandler handler) throws OperationFailedException {
         if (OVERFLOW_ACTION.getName().equals(attributeName)) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.validateResolvedOperation(operation).asString().toUpperCase(Locale.US)));
+            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.resolveModelAttribute(context, operation).asString().toUpperCase(Locale.US)));
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.validateResolvedOperation(operation).asBoolean());
+            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, operation).asBoolean());
         }
         return false;
     }
 
     @Override
-    protected void revertUpdateToRuntime(final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final AsyncHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final AsyncHandler handler) throws OperationFailedException {
         if (OVERFLOW_ACTION.getName().equals(attributeName)) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.validateResolvedOperation(valueToRestore).asString().toUpperCase(Locale.US)));
+            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.resolveModelAttribute(context, valueToRestore).asString().toUpperCase(Locale.US)));
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.validateResolvedOperation(valueToRestore).asBoolean());
+            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, valueToRestore).asBoolean());
         }
     }
 }
