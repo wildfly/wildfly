@@ -125,10 +125,13 @@ class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
         } else {
             // begin a new tx and add it to the tx repository
             // TODO: Fix the tx timeout (which currently is passed as 300 seconds)
+            // TODO: Also it appears that the TransactionReaper isn't cleared of the ReaperElement,
+            // after the subordinate tx is committed/rolledback. @see com.arjuna.ats.internal.jta.transaction.arjunacore.subordinate.SubordinateAtomicAction
+            // constructor which accepts the timeout value. The subordinate action is added to the reaper but never removed
+            // later
             final Transaction newSubOrdinateTx = SubordinationManager.getTransactionImporter().importTransaction(xidTransactionID.getXid(), 300);
+            // associate this tx with the thread
             transactionManager.resume(newSubOrdinateTx);
-            // get the tx that just got created and associated with the transaction manager
-//            final Transaction newlyCreatedTx = transactionManager.getTransaction();
             this.ejbRemoteTransactionsRepository.addTransaction(xidTransactionID, newSubOrdinateTx);
         }
     }
