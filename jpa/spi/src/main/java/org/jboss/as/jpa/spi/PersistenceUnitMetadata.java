@@ -88,7 +88,7 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
 
     void setClassLoader(ClassLoader cl);
 
-    void setTempClassloader(ClassLoader cl);
+    void setTempClassLoaderFactory(TempClassLoaderFactory tempClassLoaderFactory);
 
     void setSharedCacheMode(SharedCacheMode sharedCacheMode);
 }

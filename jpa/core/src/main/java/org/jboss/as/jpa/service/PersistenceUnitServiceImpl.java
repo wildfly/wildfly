@@ -76,9 +76,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             pu.setJtaDataSource(jtaDataSource.getOptionalValue());
             pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
             this.entityManagerFactory = createContainerEntityManagerFactory();
-
         } finally {
-            pu.setTempClassloader(null);    // release the temp classloader (only needed when creating the EMF)
+            pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
         }
     }
 
@@ -153,7 +152,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                 persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
             } finally {
                 pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
-                pu.setTempClassloader(null);    // close reference to temp classloader (only needed during call to createEntityManagerFactory)
+                pu.setTempClassLoaderFactory(null);    // close reference to temp classloader factory (only needed during call to createEntityManagerFactory)
             }
         }
     }
