@@ -65,7 +65,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     // Private to ensure a singleton.
     private WSSubsystemAdd() {
-        configValidator.registerValidator(WSDL_HOST, new ModelTypeValidator(ModelType.STRING));
+        configValidator.registerValidator(WSDL_HOST, new ModelTypeValidator(ModelType.STRING, true, true));
         configValidator.registerValidator(MODIFY_WSDL_ADDRESS, new ModelTypeValidator(ModelType.BOOLEAN));
         configValidator.registerValidator(WSDL_PORT, new ModelTypeValidator(ModelType.INT, true, true));
         configValidator.registerValidator(WSDL_SECURE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
@@ -84,7 +84,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
             configValidator.validate(operation);
             submodel.get(MODIFY_WSDL_ADDRESS).set(operation.require(MODIFY_WSDL_ADDRESS));
-            submodel.get(WSDL_HOST).set(operation.require(WSDL_HOST));
+            submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
             if (operation.has(WSDL_PORT)) {
                 submodel.get(WSDL_PORT).set(operation.require(WSDL_PORT));
             }
@@ -119,7 +119,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (!appclient) {
             WSServices.saveContainerRegistry(context.getServiceRegistry(false));
             ServiceTarget serviceTarget = context.getServiceTarget();
-            ServerConfigImpl serverConfig = createServerConfig(operation);
+            ServerConfigImpl serverConfig = createServerConfig(model);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
         }
@@ -128,7 +128,8 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static ServerConfigImpl createServerConfig(ModelNode configuration) {
         final ServerConfigImpl config = ServerConfigImpl.getInstance();
         try {
-            config.setWebServiceHost(configuration.require(WSDL_HOST).asString());
+            ModelNode wsdlHost = configuration.require(WSDL_HOST).resolve();
+            config.setWebServiceHost(wsdlHost.asString());
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
