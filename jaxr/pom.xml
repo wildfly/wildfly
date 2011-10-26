@@ -58,12 +58,12 @@
             <artifactId>jboss-as-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.servlet</groupId>
-            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-web</artifactId>
         </dependency>
         <dependency>
-          <groupId>juddi</groupId>
-          <artifactId>juddi</artifactId>
+            <groupId>juddi</groupId>
+            <artifactId>juddi</artifactId>
         </dependency>
         <!-- Test Dependencies -->
         <dependency>

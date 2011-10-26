@@ -6,6 +6,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jaxr.service.JAXRConfiguration;
+import org.jboss.as.jaxr.service.JUDDIContextService;
 import org.jboss.as.jaxr.service.JUDDIService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -43,6 +44,7 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 JAXRConfiguration config = new JAXRConfiguration();
                 ServiceTarget serviceTarget = context.getServiceTarget();
                 newControllers.add(JUDDIService.addService(serviceTarget, config));
+                newControllers.add(JUDDIContextService.addService(serviceTarget, config));
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);

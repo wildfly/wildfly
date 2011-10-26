@@ -34,8 +34,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class JAXRConfiguration {
 
-    public static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("jaxr", "as");
-    public static final ServiceName JUDDI_SERVICE_NAME = SERVICE_BASE_NAME.append("service");
+    static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("jaxr", "as");
 
     // Should all tables be created on Start
     private boolean createOnStart=true;
