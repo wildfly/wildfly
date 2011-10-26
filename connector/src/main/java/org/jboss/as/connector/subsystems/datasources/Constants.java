@@ -183,9 +183,9 @@ class Constants {
 
     static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinition(CONNECTION_URL_NAME, DataSource.Tag.CONNECTION_URL.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition DRIVER_CLASS = new SimpleAttributeDefinition(DATASOURCE_DRIVER_CLASS_NAME, DataSource.Tag.DRIVER_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition DRIVER_CLASS = new SimpleAttributeDefinition(DATASOURCE_DRIVER_CLASS_NAME, DataSource.Tag.DRIVER_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition DATASOURCE_CLASS = new SimpleAttributeDefinition(DATASOURCE_CLASS_NAME, DataSource.Tag.DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition DATASOURCE_CLASS = new SimpleAttributeDefinition(DATASOURCE_CLASS_NAME, DataSource.Tag.DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, DataSource.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
@@ -238,7 +238,7 @@ class Constants {
 
     static SimpleAttributeDefinition EXCEPTIONSORTERCLASSNAME = new SimpleAttributeDefinition(EXCEPTIONSORTERCLASSNAME_NAME, Validation.Tag.EXCEPTION_SORTER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, Validation.Tag.EXCEPTION_SORTER.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, Validation.Tag.EXCEPTION_SORTER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition STALECONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(STALECONNECTIONCHECKERCLASSNAME_NAME, Validation.Tag.STALE_CONNECTION_CHECKER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

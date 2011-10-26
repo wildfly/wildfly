@@ -46,6 +46,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABL
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
@@ -59,6 +60,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -124,8 +126,8 @@ class ResourceAdaptersSubsystemProviders {
             subsystem.get(NAMESPACE).set(Namespace.RESOURCEADAPTERS_1_0.getUriString());
             // Should this be an attribute instead
 
-            subsystem.get(CHILDREN, RESOURCEADAPTERS_NAME, DESCRIPTION).set(bundle.getString(RESOURCEADAPTERS_NAME));
-            subsystem.get(CHILDREN, RESOURCEADAPTERS_NAME, REQUIRED).set(false);
+            subsystem.get(CHILDREN, Constants.RESOURCEADAPTER_NAME, DESCRIPTION).set(bundle.getString(Constants.RESOURCEADAPTER_NAME));
+            //subsystem.get(CHILDREN, Constants.RESOURCEADAPTER_NAME, MODEL_DESCRIPTION);
 
             return subsystem;
 
@@ -182,6 +184,9 @@ class ResourceAdaptersSubsystemProviders {
             for (SimpleAttributeDefinition attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
                 attribute.addResourceAttributeDescription(bundle, null, connectionDefinitionNode);
             }
+
+            connectionDefinitionNode.get(CHILDREN, Constants.CONFIG_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(Constants.CONFIG_PROPERTIES.getName()));
+
             return connectionDefinitionNode;
         }
     };
@@ -192,16 +197,19 @@ class ResourceAdaptersSubsystemProviders {
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
 
-            final ModelNode connectionDefinitionNode = new ModelNode();
-            connectionDefinitionNode.get(HEAD_COMMENT_ALLOWED).set(true);
-            connectionDefinitionNode.get(TAIL_COMMENT_ALLOWED).set(true);
-            connectionDefinitionNode.get(DESCRIPTION).set(ADMIN_OBJECTS_NAME);
+            final ModelNode adminObjectNode = new ModelNode();
+            adminObjectNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            adminObjectNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            adminObjectNode.get(DESCRIPTION).set(ADMIN_OBJECTS_NAME);
 
 
             for (SimpleAttributeDefinition attribute : ADMIN_OBJECTS_NODEATTRIBUTE) {
-                attribute.addResourceAttributeDescription(bundle, null, connectionDefinitionNode);
+                attribute.addResourceAttributeDescription(bundle, null, adminObjectNode);
             }
-            return connectionDefinitionNode;
+
+            adminObjectNode.get(CHILDREN, Constants.CONFIG_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(Constants.CONFIG_PROPERTIES.getName()));
+
+            return adminObjectNode;
         }
     };
 
@@ -211,23 +219,24 @@ class ResourceAdaptersSubsystemProviders {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(ADD);
-            operation.get(DESCRIPTION).set(bundle.getString("resource-adapter.add"));
+            final ModelNode raNode = new ModelNode();
+            raNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            raNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            raNode.get(DESCRIPTION).set(RESOURCEADAPTER_NAME);
+
+            raNode.get(ATTRIBUTES, ARCHIVE.getName(), DESCRIPTION).set(bundle.getString(ARCHIVE.getName()));
+            raNode.get(ATTRIBUTES, ARCHIVE.getName(), TYPE).set(ModelType.STRING);
+            raNode.get(ATTRIBUTES, ARCHIVE.getName(), REQUIRED).set(true);
+            raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), DESCRIPTION).set(bundle.getString(TRANSACTIONSUPPORT.getName()));
+            raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), TYPE).set(ModelType.STRING);
+            raNode.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), REQUIRED).set(true);
+
+            raNode.get(CHILDREN, Constants.CONNECTIONDEFINITIONS_NAME, DESCRIPTION).set(bundle.getString(Constants.CONNECTIONDEFINITIONS_NAME));
+            raNode.get(CHILDREN, Constants.ADMIN_OBJECTS_NAME, DESCRIPTION).set(bundle.getString(Constants.ADMIN_OBJECTS_NAME));
+            raNode.get(CHILDREN, Constants.CONFIG_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(Constants.CONFIG_PROPERTIES.getName()));
 
 
-            final ModelNode adminObjectNode = new ModelNode();
-            adminObjectNode.get(DESCRIPTION).set(ADMIN_OBJECTS_NAME);
-
-
-            operation.get(ATTRIBUTES, ARCHIVE.getName(), DESCRIPTION).set(bundle.getString(ARCHIVE.getName()));
-            operation.get(ATTRIBUTES, ARCHIVE.getName(), TYPE).set(ModelType.STRING);
-            operation.get(ATTRIBUTES, ARCHIVE.getName(), REQUIRED).set(true);
-            operation.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), DESCRIPTION).set(bundle.getString(TRANSACTIONSUPPORT.getName()));
-            operation.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), TYPE).set(ModelType.STRING);
-            operation.get(ATTRIBUTES, TRANSACTIONSUPPORT.getName(), REQUIRED).set(true);
-
-            return operation;
+            return raNode;
         }
 
     };

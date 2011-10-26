@@ -60,10 +60,10 @@ public class ParseAndMarshalModelsTestCase extends TestCase {
             file.delete();
         }
         copyFile(getOriginalFile("dynamic-load-provider.xml"), file);
-     
+
         ModelNode originalModel = loadServerModel(file);
         ModelNode reparsedModel = loadServerModel(file);
-        
+
         if (!compare(originalModel, reparsedModel))
             fail("The node changed...");
     }
