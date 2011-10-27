@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
@@ -53,6 +54,8 @@ import org.jboss.dmr.Property;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ServerOperationResolver {
+
+
 
     private enum DomainKey {
 
@@ -131,9 +134,11 @@ public class ServerOperationResolver {
     }
 
     private final String localHostName;
+    private final Map<String,ProxyController> serverProxies;
 
-    public ServerOperationResolver(final String localHostName) {
+    public ServerOperationResolver(final String localHostName, final Map<String,ProxyController> serverProxies) {
         this.localHostName = localHostName;
+        this.serverProxies = serverProxies;
     }
 
     public Map<Set<ServerIdentity>, ModelNode> getServerOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
@@ -190,6 +195,12 @@ public class ServerOperationResolver {
         if (hostModel.hasDefined(SERVER_CONFIG)) {
             result = new HashSet<ServerIdentity>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
+
+                String serverName = prop.getName();
+                if (serverProxies.get(serverName) == null) {
+                    continue;
+                }
+
                 ModelNode server = prop.getValue();
 
                 String serverGroupName = server.require(GROUP).asString();
@@ -197,11 +208,7 @@ public class ServerOperationResolver {
                     continue;
                 }
 
-                if (server.hasDefined(AUTO_START) && !server.get(AUTO_START).asBoolean()) {
-                    continue;
-                }
-
-                ServerIdentity groupedServer = new ServerIdentity(localHostName, serverGroupName, prop.getName());
+                ServerIdentity groupedServer = new ServerIdentity(localHostName, serverGroupName, serverName);
                 result.add(groupedServer);
             }
         }
@@ -267,6 +274,12 @@ public class ServerOperationResolver {
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {
             Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
+
+                String serverName = prop.getName();
+                if (serverProxies.get(serverName) == null) {
+                    continue;
+                }
+
                 ModelNode server = prop.getValue();
 
                 String serverGroupName = server.require(GROUP).asString();
@@ -276,11 +289,7 @@ public class ServerOperationResolver {
                     continue;
                 }
 
-                if (server.hasDefined(AUTO_START) && !server.get(AUTO_START).asBoolean()) {
-                    continue;
-                }
-
-                ServerIdentity groupedServer = new ServerIdentity(localHostName, serverGroupName, prop.getName());
+                ServerIdentity groupedServer = new ServerIdentity(localHostName, serverGroupName, serverName);
                 servers.add(groupedServer);
             }
 
@@ -308,6 +317,12 @@ public class ServerOperationResolver {
         else if (hostModel.hasDefined(SERVER_CONFIG)) {
             Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
             for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
+
+                String serverName = prop.getName();
+                if (serverProxies.get(serverName) == null) {
+                    continue;
+                }
+
                 ModelNode server = prop.getValue();
 
                 String serverGroupName = server.require(GROUP).asString();
@@ -317,11 +332,7 @@ public class ServerOperationResolver {
                     continue;
                 }
 
-                if (server.hasDefined(AUTO_START) && !server.get(AUTO_START).asBoolean()) {
-                    continue;
-                }
-
-                ServerIdentity groupedServer = new ServerIdentity(localHostName, serverGroupName, prop.getName());
+                ServerIdentity groupedServer = new ServerIdentity(localHostName, serverGroupName, serverName);
                 servers.add(groupedServer);
             }
 
@@ -569,12 +580,17 @@ public class ServerOperationResolver {
             if (!overridden && host.hasDefined(SERVER_CONFIG)) {
                 servers = new HashSet<ServerIdentity>();
                 for (Property serverProp : host.get(SERVER_CONFIG).asPropertyList()) {
+
+                    String serverName = serverProp.getName();
+                    if (serverProxies.get(serverName) == null) {
+                        continue;
+                    }
+
                     ModelNode server = serverProp.getValue();
-                    if (!hasSystemProperty(server, propName)
-                            && (!server.hasDefined(AUTO_START) || server.get(AUTO_START).asBoolean())) {
+                    if (!hasSystemProperty(server, propName)) {
                         String groupName = server.require(GROUP).asString();
                         if (groups == null || groups.contains(groupName)) {
-                            servers.add(new ServerIdentity(localHostName, groupName, serverProp.getName()));
+                            servers.add(new ServerIdentity(localHostName, groupName, serverName));
                         }
                     }
                 }

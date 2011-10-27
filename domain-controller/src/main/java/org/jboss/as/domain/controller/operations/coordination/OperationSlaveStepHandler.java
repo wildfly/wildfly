@@ -48,6 +48,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -63,9 +64,11 @@ import org.jboss.dmr.ModelNode;
 public class OperationSlaveStepHandler {
 
     private final LocalHostControllerInfo localHostControllerInfo;
+    private final Map<String, ProxyController> serverProxies;
 
-    OperationSlaveStepHandler(final LocalHostControllerInfo localHostControllerInfo) {
+    OperationSlaveStepHandler(final LocalHostControllerInfo localHostControllerInfo, Map<String, ProxyController> serverProxies) {
         this.localHostControllerInfo = localHostControllerInfo;
+        this.serverProxies = serverProxies;
     }
 
     void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -96,7 +99,7 @@ public class OperationSlaveStepHandler {
             response.get(RESULT).set(IGNORED);
         }
 
-        ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName());
+        ServerOperationResolver resolver = new ServerOperationResolver(localHostControllerInfo.getLocalHostName(), serverProxies);
         ServerOperationsResolverHandler sorh = new ServerOperationsResolverHandler(localHostControllerInfo.getLocalHostName(),
                 resolver, parsedOp, originalAddress, originalRegistration, response, recordResponse);
         context.addStep(sorh, OperationContext.Stage.DOMAIN);

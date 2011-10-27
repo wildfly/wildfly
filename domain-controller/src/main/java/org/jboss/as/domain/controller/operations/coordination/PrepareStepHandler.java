@@ -66,7 +66,7 @@ public class PrepareStepHandler  implements OperationStepHandler {
                               final Map<String, ProxyController> hostProxies,
                               final Map<String, ProxyController> serverProxies) {
         this.localHostControllerInfo = localHostControllerInfo;
-        this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo);
+        this.slaveHandler = new OperationSlaveStepHandler(localHostControllerInfo, serverProxies);
         this.coordinatorHandler = new OperationCoordinatorStepHandler(localHostControllerInfo, hostProxies, serverProxies, slaveHandler);
     }
 
