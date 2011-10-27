@@ -34,7 +34,6 @@ import junit.framework.Assert;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.support.ChannelServer;
-import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.OpenListener;
@@ -103,7 +102,6 @@ public class CloseChannels {
             for (int i = 0 ; i < 1000 ; i++) {
                 ProtocolChannelClient.Configuration<ManagementChannel> clientConfig = new ProtocolChannelClient.Configuration<ManagementChannel>();
                 clientConfig.setEndpointName("Test");
-                clientConfig.setExecutor(executor);
                 clientConfig.setUri(new URI("testing://127.0.0.1:6999"));
                 clientConfig.setUriScheme("testing");
                 clientConfig.setChannelFactory(new ManagementChannelFactory());
