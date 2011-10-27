@@ -31,6 +31,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+
 /**
  * Processor that determines which application client should be started. This may be specifed on the command line,
  * or alternatively if there is only one app client in the deployment it will be used.
@@ -67,14 +69,14 @@ public class ActiveApplicationClientProcessor implements DeploymentUnitProcessor
             }
         }
         if(deploymentName != null && ! deploymentName.isEmpty()) {
-            throw new RuntimeException("Could not find application client " + deploymentName);
+            throw MESSAGES.cannotFindAppClient(deploymentName);
         }
         if (appClients.size() == 1) {
             appClients.get(0).putAttachment(AppClientAttachments.START_APP_CLIENT, true);
         } else if (appClients.isEmpty()) {
-            throw new RuntimeException("Could not find application client to start");
+            throw MESSAGES.cannotFindAppClient();
         } else {
-            throw new RuntimeException("More than one application client found and no app client name specified");
+            throw MESSAGES.multipleAppClientsFound();
         }
 
     }

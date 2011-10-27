@@ -39,7 +39,6 @@ import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.remoting.IoFutureHelper;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -53,6 +52,8 @@ import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+
+import static org.jboss.as.appclient.AppClientLogger.ROOT_LOGGER;
 
 
 /**
@@ -75,8 +76,6 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     final String hostUrl;
 
     private Thread thread;
-
-    private final Logger logger = Logger.getLogger(ApplicationClientStartService.class);
 
     public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader) {
         this.mainMethod = mainMethod;
@@ -118,11 +117,11 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                 NamespaceContextSelector.popCurrentSelector();
                             }
                         } catch (InvocationTargetException e) {
-                            logger.error(e.getTargetException(), e.getTargetException());
+                            ROOT_LOGGER.caughtException(e.getTargetException(), e.getTargetException());
                         } catch (IllegalAccessException e) {
-                            logger.error("IllegalAccessException running app client main", e);
+                            ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
                         } catch (InterruptedException e) {
-                            logger.error("InterruptedException running app client main", e);
+                            ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
                         } finally {
                             SecurityActions.setContextClassLoader(oldTccl);
                         }

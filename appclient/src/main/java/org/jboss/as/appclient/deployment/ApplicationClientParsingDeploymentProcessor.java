@@ -41,6 +41,8 @@ import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.parser.util.NoopXmlResolver;
 import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+
 /**
  * @author Stuart Douglas
  */
@@ -69,9 +71,9 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
                 deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT, environment);
 
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + appXml + " at [" + e.getLocation().getLineNumber() + "," +  e.getLocation().getColumnNumber() + "]");
+                throw MESSAGES.failedToParseXml(appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + appXml, e);
+                throw MESSAGES.failedToParseXml(e, appXml);
             } finally {
                 try {
                     if (is != null) {
