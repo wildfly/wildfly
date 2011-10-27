@@ -5,9 +5,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.jaxr.service.JAXRBootstrapService;
 import org.jboss.as.jaxr.service.JAXRConfiguration;
 import org.jboss.as.jaxr.service.JUDDIContextService;
-import org.jboss.as.jaxr.service.JUDDIService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -43,7 +43,7 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // [TODO] AS7-2278 JAXR configuration through the domain model
                 JAXRConfiguration config = new JAXRConfiguration();
                 ServiceTarget serviceTarget = context.getServiceTarget();
-                newControllers.add(JUDDIService.addService(serviceTarget, config));
+                newControllers.add(JAXRBootstrapService.addService(serviceTarget, config));
                 newControllers.add(JUDDIContextService.addService(serviceTarget, config));
                 context.completeStep();
             }

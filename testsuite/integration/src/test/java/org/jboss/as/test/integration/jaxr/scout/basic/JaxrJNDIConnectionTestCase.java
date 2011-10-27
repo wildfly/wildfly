@@ -41,7 +41,6 @@ import java.util.Properties;
  */
 public class JaxrJNDIConnectionTestCase
 {
-
     @Test
     @Ignore
     public void testJaxrJNDIConnection() throws Exception

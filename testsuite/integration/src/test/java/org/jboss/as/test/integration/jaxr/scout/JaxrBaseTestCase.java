@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.jaxr.scout;
 
 import junit.framework.TestCase;
+import org.jboss.as.jaxr.scout.SaajTransport;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,8 +107,7 @@ public abstract class JaxrBaseTestCase
         props.setProperty("javax.xml.registry.lifeCycleManagerURL",
                 puburl);
 
-        String transportClass = System.getProperty("scout.proxy.transportClass",
-                "org.jboss.jaxr.scout.transport.SaajTransport");
+        String transportClass = System.getProperty("scout.proxy.transportClass", SaajTransport.class.getName());
         System.setProperty("scout.proxy.transportClass", transportClass);
         try
         {
