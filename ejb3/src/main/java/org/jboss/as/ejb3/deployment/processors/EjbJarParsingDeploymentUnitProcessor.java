@@ -40,6 +40,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser;
+import org.jboss.as.ejb3.security.parser.SecurityRoleMetaDataParser;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -256,6 +257,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
             Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
             parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
+            parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
             final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
             final JBossEjb31MetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
             return ejbJarMetaData;

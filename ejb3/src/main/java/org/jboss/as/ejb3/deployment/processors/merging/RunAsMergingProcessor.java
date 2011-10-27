@@ -39,6 +39,8 @@ import org.jboss.metadata.ejb.jboss.ejb3.JBossEjb31MetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.SecurityIdentityMetaData;
 import org.jboss.metadata.javaee.spec.RunAsMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
 /**
  * Handles the {@link javax.annotation.security.RunAs} annotation merging
@@ -118,6 +120,16 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
                         }
                     }
                 }
+
+                // get extra roles from role-mapping
+                List<SecurityRoleMetaData> list = jbossMetaData.getAssemblyDescriptor().getAny(SecurityRoleMetaData.class);
+                SecurityRolesMetaData securityRoles = new SecurityRolesMetaData();
+                if (securityRoles != null) {
+                    for (SecurityRoleMetaData securityRoleMetaData : list) {
+                        securityRoles.add(securityRoleMetaData);
+                    }
+                }
+                componentConfiguration.setSecurityRoles(securityRoles);
             }
             if (principal != null)
                 componentConfiguration.setRunAsPrincipal(principal);
