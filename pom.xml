@@ -232,7 +232,6 @@
 
         <!-- Non-default plugin versions and configuration -->
         <version.javacc.plugin>2.5</version.javacc.plugin>
-        <version.surefire.plugin>2.9</version.surefire.plugin>
 
         <!-- Surefire args -->
         <surefire.jpda.args/>
