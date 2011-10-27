@@ -70,11 +70,12 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
 
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly {@code appclient.xml}.
@@ -355,8 +356,7 @@ public class AppClientXml extends CommonXml {
                     // FIXME JBAS-8825
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (socketBindings.contains(bindingName)) {
-                        throw new XMLStreamException("socket-binding " + bindingName + " already declared",
-                                reader.getLocation());
+                        throw MESSAGES.elementAlreadyDeclared("socket-binding", bindingName, reader.getLocation());
                     }
                     socketBindings.add(bindingName);
                     break;
@@ -379,7 +379,7 @@ public class AppClientXml extends CommonXml {
                 throw unexpectedElement(reader);
             }
             if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
-                throw new XMLStreamException("Duplicate subsystem declaration", reader.getLocation());
+                throw MESSAGES.duplicateSubsystemDeclaration(reader.getLocation());
             }
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();
@@ -387,10 +387,6 @@ public class AppClientXml extends CommonXml {
 
             // Process subsystems
             for (final ModelNode update : subsystems) {
-                // TODO remove logging
-                if (!update.has(OP_ADDR)) {
-                    Logger.getLogger("missing address").error(update);
-                }
                 // Process relative subsystem path address
                 final ModelNode subsystemAddress = address.clone();
                 for (final Property path : update.get(OP_ADDR).asPropertyList()) {
@@ -453,7 +449,7 @@ public class AppClientXml extends CommonXml {
         if (modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
             Set<String> groups = modelNode.get(SOCKET_BINDING_GROUP).keys();
             if (groups.size() > 1) {
-                throw new IllegalStateException(String.format("Model contains multiple %s nodes", SOCKET_BINDING_GROUP));
+                throw MESSAGES.multipleNodesFound(SOCKET_BINDING_GROUP);
             }
             for (String group : groups) {
                 writeSocketBindingGroup(writer, modelNode.get(SOCKET_BINDING_GROUP, group), true);

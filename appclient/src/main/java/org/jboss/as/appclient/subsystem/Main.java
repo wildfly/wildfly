@@ -21,6 +21,7 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
 import static org.jboss.as.process.Main.getVersionString;
 
 import java.io.File;
@@ -57,21 +58,7 @@ public final class Main {
 
 
     public static void usage() {
-        System.out.println("Usage: ./appclient.sh [args...] myear.ear#appClient.jar [client args...]\n");
-        System.out.println("where args include:");
-        System.out.println("    -H <url>                           Set the url of the AS7 instance to connect to");
-        System.out.println("    -H=<url>                           Set the url of the AS7 instance to connect to");
-        System.out.println("    --host=<url>                       Set the url of the AS7 instance to connect to");
-        System.out.println("    -D<name>[=<value>]                 Set a system property");
-        System.out.println("    -h                                 Display this message and exit");
-        System.out.println("    --help                             Display this message and exit");
-        System.out.println("    -P=<url>                           Load system properties from the given url");
-        System.out.println("    -P <url>                           Load system properties from the given url");
-        System.out.println("    --properties=<url>                 Load system properties from the given url");
-        System.out.println("    --appclient-config=<config>        Name of the app client configuration file to use (default is \"appclient.xml\")");
-        System.out.println("    -v                                 Print version and exit");
-        System.out.println("    --version                          Print version and exit");
-        System.out.println();
+        CommandLineArgument.printUsage(System.out);
     }
 
     private Main() {
@@ -98,7 +85,7 @@ public final class Main {
             final List<String> clientArgs = options.clientArguments;
 
             if (clientArgs.isEmpty()) {
-                System.err.println("You must specify the application client to execute");
+                System.err.println(MESSAGES.appClientNotSpecified());
                 usage();
                 abort(null);
             } else {
@@ -121,7 +108,7 @@ public final class Main {
                 File realFile = new File(earPath);
 
                 if (!realFile.exists()) {
-                    throw new RuntimeException("Could not locate app client deployment " + realFile.getAbsolutePath());
+                    throw MESSAGES.cannotFindAppClient(realFile.getAbsoluteFile());
                 }
 
                 final AppClientXml parser = new AppClientXml(Module.getBootModuleLoader());
@@ -211,7 +198,7 @@ public final class Main {
                     appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
                 } else {
                     if(arg.startsWith("-")) {
-                        System.out.println("Unknown option " + arg);
+                        System.out.println(MESSAGES.unknownOption(arg));
                         usage();
 
                         return null;
@@ -219,9 +206,8 @@ public final class Main {
                     clientArgs = true;
                     clientArguments.add(arg);
                 }
-            } catch (IndexOutOfBoundsException
-                    e) {
-                System.err.printf("Argument expected for option %s\n", arg);
+            } catch (IndexOutOfBoundsException e) {
+                System.err.println(MESSAGES.argumentExpected(arg));
                 usage();
                 return null;
             }
@@ -250,11 +236,11 @@ public final class Main {
             props.load(url.openConnection().getInputStream());
             return true;
         } catch (MalformedURLException e) {
-            System.err.printf("Malformed URL provided for option %s\n", arg);
+            System.err.println(MESSAGES.malformedUrl(arg));
             usage();
             return false;
         } catch (IOException e) {
-            System.err.printf("Unable to load properties from URL %s\n", url);
+            System.err.println(MESSAGES.cannotLoadProperties(url));
             usage();
             return false;
         }

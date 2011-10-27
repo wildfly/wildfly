@@ -39,6 +39,8 @@ import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
 
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+
 /**
  * Deployment descriptor that resolves interceptor methods definined in ejb-jar.xml that could not be resolved at
  * DD parse time.
@@ -61,7 +63,7 @@ public class ApplicationClientDescriptorMethodProcessor implements DeploymentUni
                         handleApplicationClient((ApplicationClientComponentDescription) component, classIndex, reflectionIndex, deploymentUnit);
 
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load component class", e);
+                        throw MESSAGES.cannotLoadComponentClass(e);
                     }
                 }
             }
