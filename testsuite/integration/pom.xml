@@ -109,6 +109,9 @@
         <!-- used to provide an absolute location for the XSLT scripts -->
         <!-- this value is overridden in modules with the correct relative pathname -->
         <xslt.scripts.dir>${basedir}/src/test/xslt</xslt.scripts.dir>
+        
+        <!-- Enable smoke tests by default -->
+        <noSmoke>true</noSmoke>
     </properties>
 
     <dependencies>
@@ -511,8 +514,7 @@
             <id>smoke.integration.tests.profile</id>
             <activation>
                 <property>
-                    <name>smoke.integration.tests</name>
-                    <value>true</value>
+                    <name>!noSmoke</name>
                 </property>
             </activation>
 
