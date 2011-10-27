@@ -68,6 +68,8 @@ TESTS_SPECIFIED="N"
 #
 process_test_directives() {
 
+  MVN_GOALS="";
+
   # For each parameter, check for testsuite directives.
   for param in $@
   do
@@ -123,6 +125,12 @@ process_test_directives() {
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param" # -DfailIfNoTests=false
         TESTS_SPECIFIED="Y"
         ;;
+      # Collect Maven goals.
+      clean)   MVN_GOALS="$MVN_GOALS$param ";;
+      test)    MVN_GOALS="$MVN_GOALS$param ";;
+      install) MVN_GOALS="$MVN_GOALS$param ";;
+      deploy)  MVN_GOALS="$MVN_GOALS$param ";;
+      site)    MVN_GOALS="$MVN_GOALS$param ";;
       # pass through all other params
       *)
         CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param"
@@ -130,7 +138,11 @@ process_test_directives() {
     esac
   done
 
-  # if no tests specified, run smoke tests
+  #  Default goal if none specified.
+  if [ -z "$MVN_GOALS" ]; then MVN_GOALS="install"; fi
+  CMD_LINE_PARAMS="$MVN_GOALS $CMD_LINE_PARAMS";
+
+  # If no tests specified, run smoke tests.
   if [[ $TESTS_SPECIFIED == "N" ]]; then
     CMD_LINE_PARAMS="$CMD_LINE_PARAMS $SMOKE_TESTS"
   fi
