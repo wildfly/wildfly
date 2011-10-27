@@ -66,6 +66,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -108,6 +109,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The @RunAsPrincipal associated with this bean, if any
      */
     private String runAsPrincipal;
+
+    /**
+     * Roles mapped with secuirty-role
+     */
+    private SecurityRolesMetaData securityRoles;
 
     /**
      * The @DenyAll/exclude-list map of methods. The key is the view class name and the value is a collection of EJB methods
@@ -545,6 +551,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public String getSecurityDomain() {
         return this.securityDomain;
+    }
+
+    public SecurityRolesMetaData getSecurityRoles() {
+        return securityRoles;
+    }
+
+    public void setSecurityRoles(SecurityRolesMetaData securityRoles) {
+        this.securityRoles = securityRoles;
     }
 
     public void applyDenyAllOnAllViewsForClass(final String className) {
