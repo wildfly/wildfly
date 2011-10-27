@@ -62,8 +62,20 @@
             <artifactId>jboss-as-web</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.spec.javax.xml.registry</groupId>
+            <artifactId>jboss-jaxr-api_1.0_spec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-common-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>juddi</groupId>
             <artifactId>juddi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>apache-scout</groupId>
+            <artifactId>scout</artifactId>
         </dependency>
         <!-- Test Dependencies -->
         <dependency>

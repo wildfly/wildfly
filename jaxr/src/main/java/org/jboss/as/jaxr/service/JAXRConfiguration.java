@@ -48,8 +48,8 @@ public class JAXRConfiguration {
     private String registryOperator="RegistryOperator";
     // Should I bind a Context to which JaxrConnectionFactory bound
     private boolean bindJaxr=true;
-    // Context to which JaxrConnectionFactory to bind to
-    private String namingContext ="java:/JAXR";
+    // Context to which JAXR ConnectionFactory to bind to
+    private String namingContext ="java:/jaxr/ConnectionFactory";
 
     boolean isDropOnStop() {
         return dropOnStop;
