@@ -99,6 +99,8 @@ public final class JUDDIService extends AbstractService<Void> {
                     timeout -= 200;
                 }
             }
+            if (datasource == null)
+                throw new IllegalStateException("Cannot obtain data source: " + lookup);
 
             if (config.isBindJaxr()) {
                 //bindJAXRConnectionFactory();

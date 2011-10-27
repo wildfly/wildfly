@@ -28,6 +28,7 @@ import org.apache.catalina.Loader;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
+import org.apache.juddi.registry.RegistryServlet;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
@@ -85,7 +86,7 @@ public final class JUDDIContextService implements Service<Context> {
     public synchronized void start(StartContext startContext) throws StartException {
         HttpManagement httpManagement = httpManagementInjector.getOptionalValue();
         try {
-            context.setPath("jaxr");
+            context.setPath("/juddi");
             context.addLifecycleListener(new ContextConfig());
             context.setDocBase(""); // [TODO] Define JAXR doc base
 
@@ -95,14 +96,9 @@ public final class JUDDIContextService implements Service<Context> {
             context.setLoader(loader);
             context.setInstanceManager(new LocalInstanceManager(httpManagement));
 
-            /*
-            context.setReplaceWelcomeFiles(true);
-            if (httpManagement != null) {
-                context.addWelcomeFile("index.html");
-            } else {
-                context.addWelcomeFile("index_noconsole.html");
-            }
-            */
+            // [TODO] AS7-2391 Add welcome page to JUDDI context
+            //context.setReplaceWelcomeFiles(true);
+            //context.addWelcomeFile("index.html");
 
             // Add the JUDDIServlet
             HttpServlet servlet = new JUDDIServlet();
@@ -112,7 +108,16 @@ public final class JUDDIContextService implements Service<Context> {
             wrapper.setServletClass(servlet.getClass().getName());
             context.addChild(wrapper);
 
-            context.addServletMapping("/juddi", "JUDDIServlet");
+            context.addServletMapping("/publish", "JUDDIServlet");
+            context.addServletMapping("/inquiry", "JUDDIServlet");
+
+            // Add the JUDDIServlet
+            servlet = new RegistryServlet();
+            wrapper = context.createWrapper();
+            wrapper.setName("JUDDIRegistryServlet");
+            wrapper.setServlet(servlet);
+            wrapper.setServletClass(servlet.getClass().getName());
+            context.addChild(wrapper);
 
             host.addChild(context);
             context.create();
