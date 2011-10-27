@@ -24,13 +24,13 @@ package org.jboss.as.test.integration.osgi.jaxrs;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.OSGiTestSupport;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -76,7 +76,7 @@ public class RestEasyIntegrationTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(TargetBundleActivator.class);
-                builder.addImportPackages(BundleActivator.class, Logger.class);
+                builder.addImportPackages(BundleActivator.class, ModuleIdentifier.class, Logger.class);
                 return builder.openStream();
             }
         });
