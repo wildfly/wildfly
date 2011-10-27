@@ -247,12 +247,20 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder);
 
 
-                        final PersistenceProvider provider;
+                        PersistenceProvider provider = null;
                         if (persistenceProviderDeploymentHolder != null &&
-                                persistenceProviderDeploymentHolder.getProvider() != null &&
-                                persistenceProviderDeploymentHolder.getProvider().getClass().getName().equals(pu.getPersistenceProviderClassName())) {
-                            provider = persistenceProviderDeploymentHolder.getProvider();
-                        } else {
+                            persistenceProviderDeploymentHolder.getProvider() != null) {
+
+                            List<PersistenceProvider> providerList = persistenceProviderDeploymentHolder.getProvider();
+                            for (PersistenceProvider persistenceProvider : providerList) {
+                                if (persistenceProvider.getClass().getName().equals(pu.getPersistenceProviderClassName())) {
+                                    provider = persistenceProvider;
+                                    break;
+                                }
+                            }
+                        }
+                        //  look provider up if we didn't use the providers packaged with the application
+                        if (provider == null) {
                             provider = lookupProvider(pu);
                         }
 
