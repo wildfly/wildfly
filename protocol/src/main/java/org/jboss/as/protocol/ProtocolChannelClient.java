@@ -28,12 +28,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.callback.Callback;
@@ -48,7 +46,6 @@ import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.IoFuture;
-import org.xnio.IoFuture.Status;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -67,20 +64,17 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
     private final ProtocolChannelFactory<T> channelFactory;
     private volatile Connection connection;
     private final Set<T> channels = new HashSet<T>();
-    private final long connectTimeout;
 
     private ProtocolChannelClient(final boolean startedEndpoint,
             final Endpoint endpoint,
             final Registration providerRegistration,
             final URI uri,
-            final ProtocolChannelFactory<T> channelFactory,
-            final long connectTimeout) {
+            final ProtocolChannelFactory<T> channelFactory) {
         this.startedEndpoint = startedEndpoint;
         this.endpoint = endpoint;
         this.providerRegistration = providerRegistration;
         this.uri = uri;
         this.channelFactory = channelFactory;
-        this.connectTimeout = connectTimeout;
     }
 
     public static <T extends ProtocolChannel> ProtocolChannelClient<T> create(final Configuration<T> configuration) throws IOException, URISyntaxException {
@@ -92,11 +86,11 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         final Endpoint endpoint;
         if (configuration.getEndpoint() != null) {
             endpoint = configuration.getEndpoint();
-            return new ProtocolChannelClient<T>(false, endpoint, null, configuration.getUri(), configuration.getChannelFactory(), configuration.getConnectTimeout());
+            return new ProtocolChannelClient<T>(false, endpoint, null, configuration.getUri(), configuration.getChannelFactory());
         } else {
             endpoint = Remoting.createEndpoint(configuration.getEndpointName(), configuration.getOptionMap());
             Registration providerRegistration = endpoint.addConnectionProvider(configuration.getUri().getScheme(), new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
-            return new ProtocolChannelClient<T>(true, endpoint, providerRegistration, configuration.getUri(), configuration.getChannelFactory(), configuration.getConnectTimeout());
+            return new ProtocolChannelClient<T>(true, endpoint, providerRegistration, configuration.getUri(), configuration.getChannelFactory());
         }
     }
 
@@ -108,43 +102,17 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
         // TODO - do we need better way to decide this?
         OptionMap map = OptionMap.create(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
-        IoFuture<Connection> future;
         CallbackHandler actualHandler = handler != null ? handler : new AnonymousCallbackHandler();
         WrapperCallbackHandler wrapperHandler = new WrapperCallbackHandler(actualHandler);
-        future = endpoint.connect(uri, map, wrapperHandler);
-
-        Status status = future.await(connectTimeout, TimeUnit.MILLISECONDS);
-        while (status == Status.WAITING) {
-            boolean cancel = false;
-            if (wrapperHandler.isInCall()) {
-                // Here we know we are blocked waiting for user input so block again for the same time.
-                status = future.await(connectTimeout, TimeUnit.MILLISECONDS);
-            } else if (wrapperHandler.getCallFinished() > -1) {
-                // Here make the timeout apply since the call to the handler last completed.
-                // We could have been blocked in the await call for some of that so work out how much time is left.
-                long timeSinceFinished = System.currentTimeMillis() - wrapperHandler.getCallFinished();
-                // There is a small possibility a second call could have passed through the handler while we were
-                // checking - synchronization would be overkill so if we get a value we don't understand assume
-                // the call literally just completed which will cause a wait of the full timeout.
-                if (timeSinceFinished < 0) {
-                    timeSinceFinished = 0;
-                }
-                if (timeSinceFinished < connectTimeout) {
-                    status = future.await(connectTimeout - timeSinceFinished, TimeUnit.MILLISECONDS);
-                } else {
-                    cancel = true;
-                }
-            } else {
-                cancel = true;
-            }
-
-            if (cancel == true) {
-                future.cancel();
-                throw MESSAGES.couldNotConnect(connectTimeout);
-            }
+        IoFuture<Connection> future = endpoint.connect(uri, map, wrapperHandler);
+        try {
+            this.connection = future.get();
+        } catch (CancellationException e) {
+            throw MESSAGES.connectWasCancelled();
+        } catch (IOException e) {
+            throw MESSAGES.couldNotConnect(uri, e);
         }
 
-        this.connection = future.get();
         return connection;
     }
 
@@ -191,8 +159,11 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
         private String uriScheme;
         private URI uri;
         private ProtocolChannelFactory<T> channelFactory;
-        private long connectTimeout = -1;
-        private String connectTimeoutProperty;
+
+        //Flags to avoid spamming logs with warnings every time someone tries to set these
+        private static volatile boolean warnedExecutor;
+        private static volatile boolean warnedConnectTimeout;
+        private static volatile boolean warnedConnectTimeoutProperty;
 
         public Configuration() {
         }
@@ -231,24 +202,6 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             if (channelFactory == null) {
                 throw MESSAGES.nullVar("channelFactory");
             }
-            if (connectTimeout != -1 && connectTimeoutProperty != null) {
-                throw MESSAGES.cannotSpecifyMultipleTimeouts();
-            }
-            if (connectTimeoutProperty != null) {
-                connectTimeout = AccessController.doPrivileged(new PrivilegedAction<Long>() {
-                    @Override
-                    public Long run() {
-                        try {
-                            return Long.valueOf(System.getProperty(connectTimeoutProperty, "-1"));
-                        } catch (NumberFormatException e) {
-                            return Long.valueOf("-1");
-                        }
-                    }
-                });
-            }
-            if (connectTimeout < 0) {
-                connectTimeout = DEFAULT_CONNECT_TIMEOUT;
-            }
         }
 
         public Endpoint getEndpoint() {
@@ -267,20 +220,20 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
             this.group = group;
         }
 
-        public long getConnectTimeout() {
-            return connectTimeout;
-        }
-
-        public String getConnectTimeoutProperty() {
-            return connectTimeoutProperty;
-        }
-
         public void setConnectTimeoutProperty(String connectTimeoutProperty) {
-            this.connectTimeoutProperty = connectTimeoutProperty;
+            boolean warned = warnedConnectTimeoutProperty;
+            if (!warned) {
+                warnedConnectTimeoutProperty = true;
+                ProtocolLogger.CLIENT_LOGGER.connectTimeoutPropertyNotNeeded();
+            }
         }
 
         public void setConnectTimeout(long connectTimeout) {
-            this.connectTimeout = connectTimeout;
+            boolean warned = warnedConnectTimeout;
+            if (!warned) {
+                warnedConnectTimeout = true;
+                ProtocolLogger.CLIENT_LOGGER.connectTimeoutNotNeeded();
+            }
         }
 
         public String getEndpointName() {
@@ -323,7 +276,11 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
          */
         @Deprecated
         public void setExecutor(final Executor readExecutor) {
-           ProtocolLogger.CLIENT_LOGGER.executorNotNeeded();
+           boolean warned = warnedExecutor;
+           if (!warned) {
+               warnedExecutor = true;
+               ProtocolLogger.CLIENT_LOGGER.executorNotNeeded();
+           }
         }
 
         public ProtocolChannelFactory<T> getChannelFactory() {

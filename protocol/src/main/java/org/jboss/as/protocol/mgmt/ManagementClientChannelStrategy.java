@@ -21,7 +21,6 @@
 */
 package org.jboss.as.protocol.mgmt;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
@@ -30,22 +29,13 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Security;
-import java.util.concurrent.ExecutorService;
 
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.ProtocolChannelClient.Configuration;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Remoting;
-import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.sasl.JBossSaslProvider;
 import org.xnio.IoUtils;
-import org.xnio.OptionMap;
-import org.xnio.Options;
-import org.xnio.Xnio;
-
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * Strategy {@link ManagementChannel} clients can use for controlling the lifecycle of the channel.
@@ -87,7 +77,6 @@ public abstract class ManagementClientChannelStrategy {
 
     private static class Establishing extends ManagementClientChannelStrategy {
 
-        private static final String CONNECT_TIME_OUT_PROPERTY = "org.jboss.as.client.connect.timeout";
         private static final Provider saslProvider = new JBossSaslProvider();
         private final Endpoint endpoint;
         private final String hostName;
@@ -123,7 +112,6 @@ public abstract class ManagementClientChannelStrategy {
                 configuration.setEndpoint(endpoint);
                 configuration.setUri(new URI("remote://" + hostName +  ":" + port));
                 configuration.setChannelFactory(new ManagementChannelFactory());
-                configuration.setConnectTimeoutProperty(CONNECT_TIME_OUT_PROPERTY);
                 client = ProtocolChannelClient.create(configuration);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -134,7 +122,7 @@ public abstract class ManagementClientChannelStrategy {
                 try {
                     client.connect(callbackHandler);
                 } catch (ConnectException e) {
-                    throw MESSAGES.couldNotConnect(configuration.getUri(), configuration.getConnectTimeout(), CONNECT_TIME_OUT_PROPERTY);
+                    throw e;
                 }
                 channel = client.openChannel("management");
                 channel.setOperationHandler(handler);
