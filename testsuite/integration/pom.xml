@@ -181,7 +181,12 @@
                         <goals>
                             <goal>test</goal>
                         </goals>
-                        <phase>none</phase>
+                        <phase>test</phase>
+                        <configuration>
+                            <excludes>
+                                <exclude>**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
