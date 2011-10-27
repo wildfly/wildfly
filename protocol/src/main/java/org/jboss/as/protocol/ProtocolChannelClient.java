@@ -32,6 +32,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -315,6 +316,14 @@ public class ProtocolChannelClient<T extends ProtocolChannel> implements Closeab
 
         public void setUri(final URI uri) {
             this.uri = uri;
+        }
+
+        /**
+         * @deprecated The executor is no longer needed. Here for backwards compatibility
+         */
+        @Deprecated
+        public void setExecutor(final Executor readExecutor) {
+           ProtocolLogger.CLIENT_LOGGER.executorNotNeeded();
         }
 
         public ProtocolChannelFactory<T> getChannelFactory() {
