@@ -70,8 +70,13 @@ public class TransactionalModelControllerOperationHandler extends AbstractModelC
             return new ExecuteRequestHandler();
         } else if (id == ModelControllerProtocol.COMPLETE_TX_REQUEST) {
             return new CompleteTxOperationHandler();
+        } else if (id == ModelControllerProtocol.LEGACY_MASTER_HC_PING_REQUEST){
+            return new LegacyMasterHcPingRequestHandler();
         }
         return null;
+    }
+
+    private static class LegacyMasterHcPingRequestHandler extends ManagementRequestHandler {
     }
 
     /**
