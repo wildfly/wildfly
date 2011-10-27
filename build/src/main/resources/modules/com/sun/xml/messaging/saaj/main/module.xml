@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="com.sun.xml.messaging.saaj">
+<module xmlns="urn:jboss:module:1.1" name="com.sun.xml.messaging.saaj">
 
     <resources>
         <!-- Insert resources here -->
@@ -31,12 +31,10 @@
     <dependencies>
         <module name="javax.api" />
         <module name="javax.xml.soap.api" />
-        <module name="system" export="false">
-            <exports>
-                <include-set>
-                    <path name="com/sun/org/apache/xerces/internal"/>
-                </include-set>
-            </exports>
-        </module>
+        <system>
+            <paths>
+                <path name="com/sun/org/apache/xerces/internal"/>
+            </paths>
+        </system>
     </dependencies>
 </module>

@@ -72,7 +72,7 @@ public class BundleStateTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(BundleStateMBean.class);
-                builder.addImportPackages(StartLevel.class, MBeanServer.class, MBeanProxy.class);
+                builder.addImportPackages(StartLevel.class, MBeanServer.class, MBeanProxy.class, TabularData.class);
                 return builder.openStream();
             }
         });

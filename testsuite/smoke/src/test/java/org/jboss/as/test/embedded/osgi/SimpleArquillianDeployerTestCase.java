@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.smoke.osgi;
+package org.jboss.as.test.embedded.osgi;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -26,8 +26,8 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
-import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
+import org.jboss.as.test.embedded.osgi.bundle.SimpleActivator;
+import org.jboss.as.test.embedded.osgi.bundle.SimpleService;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -47,7 +47,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
-public class SimpleArchiveDeployerTestCase {
+public class SimpleArquillianDeployerTestCase {
 
     private static final String DEPLOYMENT_NAME = "arquillian-deployer-test-bundle";
 

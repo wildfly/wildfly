@@ -143,7 +143,7 @@ while true; do
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
-         -jaxpmodule javax.xml.jaxp-provider \
+         -jaxpmodule "javax.xml.jaxp-provider" \
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@"
@@ -156,7 +156,7 @@ while true; do
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${MODULEPATH}\" \
          -logmodule "org.jboss.logmanager" \
-         -jaxpmodule javax.xml.jaxp-provider \
+         -jaxpmodule "javax.xml.jaxp-provider" \
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          "$@" "&"

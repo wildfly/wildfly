@@ -22,18 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.modules">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.modules">
     <dependencies>
-        <module name="system" export="false">
-            <exports>
-                <include-set>
-                    <path name="org/jboss/modules"/>
-                    <path name="org/jboss/modules/log"/>
-                    <path name="org/jboss/modules/filter"/>
-                    <path name="org/jboss/modules/ref"/>
-                    <path name="org/jboss/modules/management"/>
-                </include-set>
-            </exports>
-        </module>
+        <system export="true">
+            <paths>
+                <path name="org/jboss/modules"/>
+                <path name="org/jboss/modules/log"/>
+                <path name="org/jboss/modules/filter"/>
+                <path name="org/jboss/modules/ref"/>
+                <path name="org/jboss/modules/management"/>
+            </paths>
+        </system>
     </dependencies>
 </module>
