@@ -456,7 +456,7 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/integration/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/**/*TestCase*.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
