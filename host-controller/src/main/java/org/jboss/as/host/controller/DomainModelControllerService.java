@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.IOException;
 import java.security.AccessController;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -136,7 +137,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
         final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
-        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
+        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo,
+                Collections.unmodifiableMap(hostProxies), Collections.unmodifiableMap(serverProxies));
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
                 hostControllerInfo, new HostControllerConfigurationPersister(environment, hostControllerInfo),
                 hostProxies, serverProxies, prepareStepHandler);
