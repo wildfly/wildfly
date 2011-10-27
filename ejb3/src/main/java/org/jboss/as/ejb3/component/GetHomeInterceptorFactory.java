@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.entity.interceptors;
+package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.invocation.Interceptor;
@@ -33,7 +33,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Stuart Douglas
  */
-public class EntityBeanGetHomeInterceptorFactory implements InterceptorFactory {
+public class GetHomeInterceptorFactory implements InterceptorFactory {
 
 
     private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();

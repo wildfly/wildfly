@@ -21,6 +21,23 @@
  */
 package org.jboss.as.ejb3.component;
 
+import java.lang.reflect.Method;
+import java.rmi.Remote;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -34,8 +51,8 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.stateful.NoSuchObjectExceptionTransformingInterceptorFactory;
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
@@ -51,22 +68,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import java.lang.reflect.Method;
-import java.rmi.Remote;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -299,14 +300,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     public void addEjbLocalObjectView(final String viewClassName) {
-        final EJBViewDescription view = registerView(viewClassName, MethodIntf.LOCAL);
-        view.setEjb2xView(true);
+        final EJBViewDescription view = registerView(viewClassName, MethodIntf.LOCAL, true);
         this.ejbLocalView = view;
     }
 
     public void addEjbObjectView(final String viewClassName) {
-        final EJBViewDescription view = registerView(viewClassName, MethodIntf.REMOTE);
-        view.setEjb2xView(true);
+        final EJBViewDescription view = registerView(viewClassName, MethodIntf.REMOTE, true);
         this.ejbRemoteView = view;
     }
 
@@ -746,8 +745,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     protected EJBViewDescription registerView(final String viewClassName, final MethodIntf viewType) {
+        return registerView(viewClassName, viewType, false);
+    }
+
+    protected EJBViewDescription registerView(final String viewClassName, final MethodIntf viewType, final boolean ejb2xView) {
         // setup the ViewDescription
-        final EJBViewDescription viewDescription = new EJBViewDescription(this, viewClassName, viewType);
+        final EJBViewDescription viewDescription = new EJBViewDescription(this, viewClassName, viewType, ejb2xView);
         getViews().add(viewDescription);
         // setup server side view interceptors
         setupViewInterceptors(viewDescription);

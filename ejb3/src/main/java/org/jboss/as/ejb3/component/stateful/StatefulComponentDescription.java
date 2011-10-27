@@ -248,6 +248,11 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         }
     }
 
+    @Override
+    protected ViewConfigurator getSessionBeanObjectViewConfigurator() {
+        return StatefulSessionBeanObjectViewConfigurator.INSTANCE;
+    }
+
     private void addViewSerializationInterceptor(final ViewDescription view) {
         view.setSerializable(true);
         view.setUseWriteReplace(true);
@@ -327,7 +332,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                     final MethodIdentifier viewMethodIdentifier = MethodIdentifier.getIdentifierForMethod(viewMethod);
                     for (final StatefulRemoveMethod removeMethod : removeMethods) {
                         if (removeMethod.methodIdentifier.equals(viewMethodIdentifier)) {
-                            configuration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(removeMethod.retainIfException)), InterceptorOrder.View.SFSB_REMOVE_INTERCEPTOR);
+                            configuration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(removeMethod.retainIfException)), InterceptorOrder.View.SESSION_REMOVE_INTERCEPTOR);
                             break;
                         }
                     }

@@ -19,20 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.home.remotehome;
+package org.jboss.as.ejb3.component.stateless;
 
-import java.rmi.RemoteException;
-
-import javax.ejb.EJBHome;
+import org.jboss.as.ejb3.component.session.SessionBeanObjectViewConfigurator;
+import org.jboss.invocation.InterceptorFactory;
 
 /**
- *
  * @author Stuart Douglas
  */
-public interface SimpleStatefulHome extends EJBHome {
+public class StatelessSessionBeanObjectViewConfigurator extends SessionBeanObjectViewConfigurator {
 
-    SimpleInterface createSimple(String message) throws RemoteException;
+    public static final StatelessSessionBeanObjectViewConfigurator INSTANCE = new StatelessSessionBeanObjectViewConfigurator();
 
-    SimpleInterface createComplex(String first, String second) throws RemoteException;
+
+    @Override
+    protected InterceptorFactory getEjbRemoveInterceptorFactory() {
+        //we jsut ignore calls to remove for a SLSB
+        return org.jboss.invocation.Interceptors.getTerminalInterceptorFactory();
+    }
 
 }

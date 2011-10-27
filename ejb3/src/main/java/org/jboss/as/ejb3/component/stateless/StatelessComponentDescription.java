@@ -168,6 +168,11 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
     }
 
     @Override
+    protected ViewConfigurator getSessionBeanObjectViewConfigurator() {
+        return StatelessSessionBeanObjectViewConfigurator.INSTANCE;
+    }
+
+    @Override
     public boolean isTimerServiceApplicable() {
         return true;
     }

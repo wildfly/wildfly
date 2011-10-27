@@ -35,6 +35,7 @@
                     <path name="com/sun/jndi/dns"/>
                     <path name="com/sun/jndi/ldap"/>
                     <path name="com/sun/security/auth"/>
+                    <path name="com/sun/security/auth/login"/>
                     <path name="com/sun/security/auth/module"/>
                     <path name="sun/misc"/>
                     <path name="sun/nio"/>

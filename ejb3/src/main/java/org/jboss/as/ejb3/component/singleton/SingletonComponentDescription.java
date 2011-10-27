@@ -204,6 +204,11 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
 
     }
 
+    @Override
+    protected ViewConfigurator getSessionBeanObjectViewConfigurator() {
+        throw new RuntimeException("Singleton beans cannot have EJB 2.x views");
+    }
+
     private void addConcurrencyManagementInterceptor() {
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override

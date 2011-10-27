@@ -97,7 +97,7 @@ public abstract class SessionBeanComponent extends EJBComponent {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
         }
         return createViewInstanceProxy(EJBObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbObjectView);
-   }
+    }
 
     /**
      * Return the {@link Executor} used for asynchronous invocations.

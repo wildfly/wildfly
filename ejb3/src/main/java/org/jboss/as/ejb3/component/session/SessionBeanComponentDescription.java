@@ -353,7 +353,13 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         // tx management interceptor(s)
         addTxManagementInterceptorForView(view);
 
+        if(view.isEjb2xView()) {
+            view.getConfigurators().add(getSessionBeanObjectViewConfigurator());
+        }
+
     }
+
+    protected abstract ViewConfigurator getSessionBeanObjectViewConfigurator();
 
     /**
      * Sets up the transaction management interceptor for all methods of the passed view.

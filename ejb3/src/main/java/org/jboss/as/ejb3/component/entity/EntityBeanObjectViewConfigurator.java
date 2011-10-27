@@ -32,9 +32,9 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.GetHomeInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanGetHomeInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanPrimaryKeyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanRemoveInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIdentityInterceptorFactory;
@@ -78,7 +78,7 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
                 configuration.addViewInterceptor(method, EntityBeanIsIdenticalInterceptorFactory.INSTANCE, InterceptorOrder.View.COMPONENT_DISPATCHER);
             } else if (method.getName().equals("getEJBLocalHome") && method.getParameterTypes().length == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-                final EntityBeanGetHomeInterceptorFactory factory = new EntityBeanGetHomeInterceptorFactory();
+                final GetHomeInterceptorFactory factory = new GetHomeInterceptorFactory();
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
                 final EntityBeanComponentDescription entityBeanComponentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -89,7 +89,7 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
                 });
             } else if (method.getName().equals("getEJBHome") && method.getParameterTypes().length == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-                final EntityBeanGetHomeInterceptorFactory factory = new EntityBeanGetHomeInterceptorFactory();
+                final GetHomeInterceptorFactory factory = new GetHomeInterceptorFactory();
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
                 final EntityBeanComponentDescription entityBeanComponentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
