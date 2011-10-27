@@ -218,6 +218,7 @@
                 </executions>
             </plugin>
 
+
         </plugins>
     </build>
 
@@ -453,43 +454,13 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                   <!-- Tests to execute. -->
-                                   <includes>
-                                       <include>org/jboss/as/test/integration/as835/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/as859/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/beanvalidation/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/common/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/datasourcedefinition/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/deployment/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ee/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/ejb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/injection/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/interceptors/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/jaxb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/jaxrs/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jmx/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/jpa/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/jsf/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/mdb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/messaging/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/osgi/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/pojo/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/rar/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/sar/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/security/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/transactionmanager/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/web/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/webejb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/websecurity/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/weld/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/weldejb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/ws/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/wsejb/**/*TestCase.java</include>
-                                       <include>org/jboss/as/test/integration/xerces/**/*TestCase.java</include>
-                                   </includes>
-                                   <excludes>
-                                       <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
-                                   </excludes>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                    </excludes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -525,7 +496,7 @@
                                 </configuration>
                             </execution>
 
-                         </executions>
+                        </executions>
 
                     </plugin>
 
@@ -545,30 +516,10 @@
                     <value>true</value>
                 </property>
             </activation>
+
             <properties>
             </properties>
 
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-webservices-tests-integration</artifactId>
-                    <version>${project.version}</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-demos-legacy</artifactId>
-                    <version>${project.version}</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-demos-internals</artifactId>
-                    <version>${project.version}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-            
             <!--
                 Server configuration executions.
                 Naming convention for executions (which we read in the log): for server config X, call it X.server
