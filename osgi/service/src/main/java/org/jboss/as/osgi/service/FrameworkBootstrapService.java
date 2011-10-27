@@ -22,25 +22,6 @@
 
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
-import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.MBeanServer;
-
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.osgi.parser.SubsystemState;
@@ -76,6 +57,23 @@ import org.jboss.osgi.framework.internal.FrameworkBuilder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+
+import javax.management.MBeanServer;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.jboss.as.osgi.OSGiLogger.ROOT_LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA;
+import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
+import static org.jboss.osgi.framework.Constants.JBOSGI_PREFIX;
 
 /**
  * Service responsible for creating and managing the life-cycle of the OSGi Framework.
@@ -182,6 +180,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
         if (sysmodules == null) {
             StringBuffer buffer = new StringBuffer();
+            buffer.append("javax.api,");
             buffer.append("javax.inject.api,");
             buffer.append("org.apache.commons.logging,");
             buffer.append("org.apache.log4j,");
@@ -273,13 +272,11 @@ public class FrameworkBootstrapService implements Service<Void> {
     private static final class FrameworkModuleIntegration implements FrameworkModuleProvider {
 
         private final Map<String, Object> props;
-        private final InjectedValue<SystemPathsProvider> injectedSystemPaths = new InjectedValue<SystemPathsProvider>();
         private Module frameworkModule;
 
         private static ServiceController<?> addService(final ServiceTarget target, Map<String, Object> props) {
             FrameworkModuleIntegration service = new FrameworkModuleIntegration(props);
             ServiceBuilder<?> builder = target.addService(Services.FRAMEWORK_MODULE_PROVIDER, service);
-            builder.addDependency(Services.SYSTEM_PATHS_PROVIDER, SystemPathsProvider.class, service.injectedSystemPaths);
             builder.setInitialMode(Mode.ON_DEMAND);
             return builder.install();
         }
@@ -317,11 +314,6 @@ public class FrameworkBootstrapService implements Service<Void> {
         private Module createFrameworkModule(final Bundle systemBundle) {
             // Setup the extended framework module spec
             ModuleSpec.Builder specBuilder = ModuleSpec.build(ModuleIdentifier.create(JBOSGI_PREFIX + ".framework"));
-            SystemPathsProvider provider = injectedSystemPaths.getValue();
-            Set<String> sysPaths = provider.getSystemPaths();
-            PathFilter sysImport = provider.getSystemFilter();
-            PathFilter acceptAll = PathFilters.acceptAll();
-            specBuilder.addDependency(DependencySpec.createSystemDependencySpec(sysImport, acceptAll, sysPaths));
 
             // Add the framework module dependencies
             String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
@@ -334,6 +326,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
             // Add a dependency on the default framework modules
             ModuleLoader bootLoader = Module.getBootModuleLoader();
+            PathFilter acceptAll = PathFilters.acceptAll();
             for (String modid : sysmodules.split(",")) {
                 modid = modid.trim();
                 if (modid.length() > 0) {
