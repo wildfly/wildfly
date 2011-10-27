@@ -22,17 +22,17 @@
 
 package org.jboss.as.protocol;
 
-import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
-import org.jboss.logging.Messages;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.net.ConnectException;
 import java.net.URI;
+
+import org.jboss.as.protocol.mgmt.ManagementOperationHandler;
+import org.jboss.logging.Cause;
+import org.jboss.logging.Message;
+import org.jboss.logging.MessageBundle;
+import org.jboss.logging.Messages;
 
 /**
  * Date: 21.07.2011
@@ -100,22 +100,6 @@ public interface ProtocolMessages {
      */
     @Message(value = "Could not connect to remote server at %1$s within %1$sms")
     ConnectException couldNotConnect(long connectionTimeout);
-
-    /**
-     * Creates an exception indicating the executor is needed when not endpoint is specified.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(value = "Need an executor when endpoint is not specified")
-    IllegalArgumentException executorNeeded();
-
-    /**
-     * Creates an exception indicating the executor is not needed when an endpoint is specified.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(value = "Don't need an executor when specified endpoint")
-    IllegalArgumentException executorUnneeded();
 
     /**
      * Creates an exception indicating a failure to create the server thread.

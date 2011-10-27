@@ -22,6 +22,11 @@
 
 package org.jboss.as.protocol;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import java.net.ServerSocket;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -30,11 +35,6 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
-
-import java.net.ServerSocket;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 21.07.2011
@@ -189,4 +189,8 @@ public interface ProtocolLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 12113, value = "Received end for wrong channel!")
     void receivedWrongChannel();
+
+    @LogMessage(level = WARN)
+    @Message(id = 12114, value = "Executor is not needed for client")
+    void executorNotNeeded();
 }
