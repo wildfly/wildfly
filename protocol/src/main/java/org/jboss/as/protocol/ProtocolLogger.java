@@ -193,4 +193,12 @@ public interface ProtocolLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 12114, value = "Executor is not needed for client")
     void executorNotNeeded();
+
+    @LogMessage(level = WARN)
+    @Message(id = 12115, value = "Connection timeout is no longer needed for client")
+    void connectTimeoutNotNeeded();
+
+    @LogMessage(level = WARN)
+    @Message(id = 12117, value = "Connection timeout property is no longer needed for client")
+    void connectTimeoutPropertyNotNeeded();
 }
