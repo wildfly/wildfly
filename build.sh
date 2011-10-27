@@ -161,11 +161,12 @@ main() {
     #  Add smoke integration test directives before calling maven.
     TESTS=$SMOKE_TESTS
     MVN_GOAL="";
+    ADDIT_PARAMS="";
     #  For each parameter, check for testsuite directives.
     for param in $@ ; do
         case $param in
             -DallTests)  TESTS=$ALL_TESTS ;;
-            -*) ;;
+            -*) ADDIT_PARAMS="$ADDIT_PARAMS $param";;
             clean) MVN_GOAL="$MVN_GOAL$param ";;
             test) MVN_GOAL="$MVN_GOAL$param ";;
             install) MVN_GOAL="$MVN_GOAL$param ";;
@@ -181,13 +182,13 @@ main() {
     #  Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
 
-    echo "$MVN $MVN_OPTIONS $MVN_GOAL"
+    echo "$MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS"
 
     #  Execute in debug mode, or simply execute.
     if [ "x$MVN_DEBUG" != "x" ]; then
-        /bin/sh -x $MVN $MVN_OPTIONS $MVN_GOAL
+        /bin/sh -x $MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS
     else
-        exec $MVN $MVN_OPTIONS $MVN_GOAL
+        exec $MVN $MVN_OPTIONS $MVN_GOAL $ADDIT_PARAMS
     fi
 }
 
