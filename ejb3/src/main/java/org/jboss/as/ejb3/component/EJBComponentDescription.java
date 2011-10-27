@@ -51,7 +51,6 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactory;
-import org.jboss.as.ejb3.component.stateful.NoSuchObjectExceptionTransformingInterceptorFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -741,6 +740,15 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
 
         return methods.get(method);
+    }
+
+    public Map<EJBMethodIdentifier, Set<String>> getRolesAllowed(final String viewClassName) {
+        final Map<EJBMethodIdentifier, Set<String>> methods = this.methodLevelRolesAllowed.get(viewClassName);
+        if (methods == null) {
+            return Collections.emptyMap();
+        }
+
+        return methods;
     }
 
     public Set<String> getRolesAllowedForClass(final String viewClassName, final String className) {
