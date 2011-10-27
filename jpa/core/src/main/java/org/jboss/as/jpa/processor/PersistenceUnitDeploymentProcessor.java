@@ -274,13 +274,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
                         if (jtaDataSource != null && jtaDataSource.length() > 0) {
-
-                            if (jtaDataSource.startsWith("java:comp")) {
+                            if (jtaDataSource.startsWith("java:")) {
                                 builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
-                                useDefaultDataSource = false;
-                            }
-                            else if (jtaDataSource.startsWith("java:")) {
-                                builder.addDependency(ContextNames.bindInfoFor(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                                 useDefaultDataSource = false;
                             } else {
                                 builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
@@ -288,12 +283,8 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                             }
                         }
                         if (nonJtaDataSource != null && nonJtaDataSource.length() > 0) {
-                            if (nonJtaDataSource.startsWith("java:comp")) {
+                            if (nonJtaDataSource.startsWith("java:")) {
                                 builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
-                                useDefaultDataSource = false;
-                            }
-                            else if (nonJtaDataSource.startsWith("java:")) {
-                                builder.addDependency(ContextNames.bindInfoFor(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                                 useDefaultDataSource = false;
                             } else {
                                 builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(), DataSource.class));
