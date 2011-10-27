@@ -166,12 +166,13 @@ main() {
     for param in $@ ; do
         case $param in
             -DallTests)  TESTS=$ALL_TESTS ;;
-            -*) ADDIT_PARAMS="$ADDIT_PARAMS $param";;
-            clean) MVN_GOAL="$MVN_GOAL$param ";;
-            test) MVN_GOAL="$MVN_GOAL$param ";;
+            -*)      ADDIT_PARAMS="$ADDIT_PARAMS $param";;
+            clean)   MVN_GOAL="$MVN_GOAL$param ";;
+            test)    MVN_GOAL="$MVN_GOAL$param ";;
             install) MVN_GOAL="$MVN_GOAL$param ";;
-            deploy) MVN_GOAL="$MVN_GOAL$param ";;
-            site) MVN_GOAL="$MVN_GOAL$param ";;
+            deploy)  MVN_GOAL="$MVN_GOAL$param ";;
+            site)    MVN_GOAL="$MVN_GOAL$param ";;
+            *)       ADDIT_PARAMS="$ADDIT_PARAMS $param";;
         esac
     done
     #  Default goal if none specified.
