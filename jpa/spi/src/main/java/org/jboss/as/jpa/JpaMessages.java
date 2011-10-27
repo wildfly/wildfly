@@ -504,16 +504,6 @@ public interface JpaMessages {
     String objectAlreadyDefined(Class<?> cls, Object previous);
 
     /**
-     * Creates an exception indicating only one persistence provider can be packaged with an application.
-     *
-     * @param providers the list of providers found.
-     *
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 11464, value = "Only one persistence provider can be packaged with an application: %s")
-    DeploymentUnitProcessingException onlyOnePersistenceProviderAllowed(Collection<?> providers);
-
-    /**
      * Creates an exception indicating the parameter must be a {@link org.jboss.as.jpa.container.AbstractEntityManager}
      * so that the metadata can be retrieved.
      *
