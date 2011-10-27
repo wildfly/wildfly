@@ -115,7 +115,6 @@
         <version.org.apache.ws.xmlschema>2.0</version.org.apache.ws.xmlschema>
         <version.org.apache.ws.security>1.6.1</version.org.apache.ws.security>
         <version.org.codehaus.jackson>1.6.3</version.org.codehaus.jackson>
-        <version.org.codehaus.mojo.javacc>2.5</version.org.codehaus.mojo.javacc>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.hibernate>4.0.0.CR2</version.org.hibernate>
@@ -230,6 +229,10 @@
         <version.sun.jaxb>2.2</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.2</version.sun.saaj-impl>
         <version.wsdl4j>1.6.2</version.wsdl4j>
+
+        <!-- Non-default plugin versions and configuration -->
+        <version.javacc.plugin>2.5</version.javacc.plugin>
+        <version.surefire.plugin>2.9</version.surefire.plugin>
 
         <!-- Surefire args -->
         <surefire.jpda.args/>

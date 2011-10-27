@@ -43,7 +43,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>javacc-maven-plugin</artifactId>
-                <version>${version.org.codehaus.mojo.javacc}</version>
                 <executions>
                     <execution>
                         <id>jjtree-jbossql</id>
