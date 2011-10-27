@@ -68,7 +68,7 @@
     <name>JBoss Application Server Test Suite: Aggregator</name>
 
     <modules>
-        <!-- module>integration</module -->
+        <module>integration</module>
     </modules>
 
     <packaging>pom</packaging>
