@@ -24,8 +24,8 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.component.AsyncInvocationTask;
-import org.jboss.as.ejb3.component.CancellationFlag;
+import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
+import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;

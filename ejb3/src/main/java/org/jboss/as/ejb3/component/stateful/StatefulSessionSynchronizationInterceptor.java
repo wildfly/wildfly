@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.tx.OwnableReentrantLock;
 import org.jboss.invocation.InterceptorContext;

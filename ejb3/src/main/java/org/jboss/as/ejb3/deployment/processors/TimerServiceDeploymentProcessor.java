@@ -36,7 +36,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.CurrentInvocationContextInterceptor;
+import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.timerservice.TimerServiceFactoryService;
 import org.jboss.as.ejb3.timerservice.TimerServiceService;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceFactory;

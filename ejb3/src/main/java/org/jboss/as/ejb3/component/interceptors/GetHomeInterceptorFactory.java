@@ -19,36 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component.stateful;
+package org.jboss.as.ejb3.component.interceptors;
 
-import java.rmi.NoSuchObjectException;
-
-import javax.ejb.NoSuchEJBException;
-
+import org.jboss.as.ee.component.ComponentView;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
+ * Interceptor that can return a home interface for an eJB
+ *
  * @author Stuart Douglas
  */
-public class NoSuchObjectExceptionTransformingInterceptorFactory implements InterceptorFactory {
+public class GetHomeInterceptorFactory implements InterceptorFactory {
 
-    public static final NoSuchObjectExceptionTransformingInterceptorFactory INSTANCE = new NoSuchObjectExceptionTransformingInterceptorFactory();
 
+    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
 
     @Override
     public Interceptor create(final InterceptorFactoryContext context) {
+
         return new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                try {
-                    return context.proceed();
-                } catch (NoSuchEJBException e) {
-                    throw new NoSuchObjectException(e.getMessage());
-                }
-            };
+                return viewToCreate.getValue().createInstance().getInstance();
+            }
         };
+    }
+
+
+    public InjectedValue<ComponentView> getViewToCreate() {
+        return viewToCreate;
     }
 }

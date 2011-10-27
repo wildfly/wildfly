@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component;
+package org.jboss.as.ejb3.component.interceptors;
 
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.InterceptorContext;
 
 import javax.ejb.ConcurrentAccessException;

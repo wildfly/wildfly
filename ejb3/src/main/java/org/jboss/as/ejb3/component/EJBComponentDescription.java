@@ -50,7 +50,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.EJBMethodIdentifier;
-import org.jboss.as.ejb3.component.stateful.NoSuchObjectExceptionTransformingInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -382,14 +382,24 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                     if (Remote.class.isAssignableFrom(configuration.getViewClass())) {
-                        configuration.addViewInterceptor(NoSuchObjectExceptionTransformingInterceptorFactory.INSTANCE, InterceptorOrder.View.NO_SUCH_OBJECT_TRANSFORMER);
+                        configuration.addViewInterceptor(EjbExceptionTransformingInterceptorFactory.INSTANCE, InterceptorOrder.View.REMOTE_EXCEPTION_TRANSFORMER);
                     }
                 }
             });
-
+            if (view.getMethodIntf() == MethodIntf.HOME) {
+                view.getConfigurators().add(new ViewConfigurator() {
+                    @Override
+                    public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                        if (Remote.class.isAssignableFrom(configuration.getViewClass())) {
+                            configuration.setViewInstanceFactory(new RemoteHomeViewInstanceFactory(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
+                        }
+                    }
+                });
+            }
             // add the remote tx propogating interceptor
             view.getConfigurators().add(new EJBRemoteTransactionsViewConfigurator());
         }
+
     }
 
     protected void setupClientViewInterceptors(ViewDescription view) {

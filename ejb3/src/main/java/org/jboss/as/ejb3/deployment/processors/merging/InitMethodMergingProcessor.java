@@ -21,6 +21,12 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+
+import javax.ejb.Init;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
@@ -35,11 +41,6 @@ import org.jboss.metadata.ejb.spec.InitMethodsMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-
-import javax.ejb.Init;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Merging processor that handles SFSB init methods.
@@ -74,15 +75,20 @@ public class InitMethodMergingProcessor extends AbstractMergingProcessor<Statefu
 
         //first look for old school ejbCreate methods
         //we are only looking on the bean class, not sure if that is correct or not
-        final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(componentClass);
-        for (Method method : index.getMethods()) {
-            if (method.getName().startsWith("ejbCreate")) {
-                //if there is additional metadata specified for this method
-                //it will be overriden below
-                if (!description.getInitMethods().containsKey(method)) {
-                    description.addInitMethod(method, null);
+        Class<?> clazz = componentClass;
+        while (clazz != Object.class && clazz != null) {
+            final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(clazz);
+
+            for (Method method : index.getMethods()) {
+                if (method.getName().startsWith("ejbCreate")) {
+                    //if there is additional metadata specified for this method
+                    //it will be overriden below
+                    if (!description.getInitMethods().containsKey(method)) {
+                        description.addInitMethod(method, null);
+                    }
                 }
             }
+            clazz = clazz.getSuperclass();
         }
 
 

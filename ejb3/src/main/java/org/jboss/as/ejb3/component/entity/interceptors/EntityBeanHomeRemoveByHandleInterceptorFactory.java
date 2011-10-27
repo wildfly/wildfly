@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.component.entity.interceptors;
 
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.EJBHandle;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;

@@ -30,7 +30,7 @@ import javax.xml.rpc.handler.MessageContext;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.DependencyInjectionCompleteMarker;
-import org.jboss.as.ejb3.component.CancellationFlag;
+import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.invocation.InterceptorContext;

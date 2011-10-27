@@ -19,9 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component;
+package org.jboss.as.ejb3.component.interceptors;
 
-import org.jboss.ejb.client.EJBClientContext;
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+
+import javax.ejb.EJBException;
+import javax.ejb.NoSuchEJBException;
+
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -30,32 +35,24 @@ import org.jboss.invocation.InterceptorFactoryContext;
 /**
  * @author Stuart Douglas
  */
-public class EjbClientContextInterceptorFactory implements InterceptorFactory {
+public class EjbExceptionTransformingInterceptorFactory implements InterceptorFactory {
 
-    private final EJBClientContext clientContext;
-    private final Interceptor interceptor;
+    public static final EjbExceptionTransformingInterceptorFactory INSTANCE = new EjbExceptionTransformingInterceptorFactory();
 
-    public EjbClientContextInterceptorFactory(final EJBClientContext context) {
-        this.clientContext = context;
-        interceptor = new Interceptor() {
-            @Override
-            public Object processInvocation(final InterceptorContext context) throws Exception {
-                final EJBClientContext oldContext = EJBClientContext.getAndSetCurrent(clientContext);
-                try {
-                    return context.proceed();
-                } finally {
-                    if (oldContext == null) {
-                        EJBClientContext.suspendCurrent();
-                    } else {
-                        EJBClientContext.getAndSetCurrent(oldContext);
-                    }
-                }
-            }
-        };
-    }
 
     @Override
     public Interceptor create(final InterceptorFactoryContext context) {
-        return interceptor;
+        return new Interceptor() {
+            @Override
+            public Object processInvocation(final InterceptorContext context) throws Exception {
+                try {
+                    return context.proceed();
+                } catch (NoSuchEJBException e) {
+                    throw new NoSuchObjectException(e.getMessage());
+                } catch (EJBException e) {
+                    throw new RemoteException("Invocation failed", e);
+                }
+            };
+        };
     }
 }

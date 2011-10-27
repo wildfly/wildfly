@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ejb.AccessTimeout;
+import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
 import javax.transaction.RollbackException;
@@ -37,6 +38,7 @@ import javax.transaction.Transaction;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.ExpiringCache;
@@ -119,11 +121,23 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         });
     }
 
+    protected SessionID getSessionIdOf(final InterceptorContext ctx) {
+        final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) ctx.getPrivateData(ComponentInstance.class);
+        return instance.getId();
+    }
+
     public <T> T getBusinessObject(Class<T> businessInterface, final InterceptorContext context) throws IllegalStateException {
         if (businessInterface == null) {
             throw new IllegalStateException("Business interface type cannot be null");
         }
         return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(context)));
+    }
+
+    public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
+        if (getEjbLocalObjectView() == null) {
+            throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBLocalObject");
+        }
+        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), getEjbLocalObjectView());
     }
 
     public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {

@@ -19,38 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.component;
+package org.jboss.as.ejb3.component.interceptors;
 
-import org.jboss.as.ee.component.ComponentView;
+import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
- * Interceptor that can return a home interface for an eJB
- *
  * @author Stuart Douglas
  */
-public class GetHomeInterceptorFactory implements InterceptorFactory {
+public class EjbClientContextInterceptorFactory implements InterceptorFactory {
 
+    private final EJBClientContext clientContext;
+    private final Interceptor interceptor;
 
-    private final InjectedValue<ComponentView> viewToCreate = new InjectedValue<ComponentView>();
-
-    @Override
-    public Interceptor create(final InterceptorFactoryContext context) {
-
-        return new Interceptor() {
+    public EjbClientContextInterceptorFactory(final EJBClientContext context) {
+        this.clientContext = context;
+        interceptor = new Interceptor() {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
-                return viewToCreate.getValue().createInstance().getInstance();
+                final EJBClientContext oldContext = EJBClientContext.getAndSetCurrent(clientContext);
+                try {
+                    return context.proceed();
+                } finally {
+                    if (oldContext == null) {
+                        EJBClientContext.suspendCurrent();
+                    } else {
+                        EJBClientContext.getAndSetCurrent(oldContext);
+                    }
+                }
             }
         };
     }
 
-
-    public InjectedValue<ComponentView> getViewToCreate() {
-        return viewToCreate;
+    @Override
+    public Interceptor create(final InterceptorFactoryContext context) {
+        return interceptor;
     }
 }

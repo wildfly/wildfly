@@ -33,11 +33,8 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TransactionAttributeType;
 
-import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
@@ -80,23 +77,18 @@ public abstract class SessionBeanComponent extends EJBComponent {
         return createViewInstanceProxy(businessInterface, emptyMap());
     }
 
-    protected SessionID getSessionIdOf(final InterceptorContext ctx) {
-        final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) ctx.getPrivateData(ComponentInstance.class);
-        return instance.getId();
-    }
-
     public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
         if (ejbLocalObjectView == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBLocalObject");
         }
-        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbLocalObjectView);
+        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>emptyMap(), ejbLocalObjectView);
     }
 
     public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
         if (ejbObjectView == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
         }
-        return createViewInstanceProxy(EJBObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), ejbObjectView);
+        return createViewInstanceProxy(EJBObject.class, Collections.<Object, Object>emptyMap(), ejbObjectView);
     }
 
     /**
