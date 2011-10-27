@@ -55,7 +55,7 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
 
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         logger.info("Activating EJB CMP Subsystem");
-        final boolean appclient = model.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
+        final boolean appclient = operation.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -74,6 +74,9 @@ public class CmpSubsystemAdd extends AbstractBoottimeAddStepHandler implements D
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        if (operation.hasDefined(APPCLIENT)) {
+            model.get(APPCLIENT).set(operation.get(APPCLIENT));
+        }
     }
 
     public ModelNode getModelDescription(final Locale locale) {

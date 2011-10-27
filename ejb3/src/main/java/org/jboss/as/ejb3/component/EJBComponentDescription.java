@@ -837,12 +837,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         @Override
         public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
             final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-            final ApplicationExceptions ejbJarConfiguration = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.APPLICATION_EXCEPTION_DETAILS);
-            if (ejbJarConfiguration == null) {
+            final ApplicationExceptions appExceptions = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.APPLICATION_EXCEPTION_DETAILS);
+            if (appExceptions == null) {
                 throw new DeploymentUnitProcessingException("EjbJarConfiguration not found as an attachment in deployment unit: " + deploymentUnit);
             }
             final EJBComponentCreateServiceFactory ejbComponentCreateServiceFactory = (EJBComponentCreateServiceFactory) configuration.getComponentCreateServiceFactory();
-            ejbComponentCreateServiceFactory.setEjbJarConfiguration(ejbJarConfiguration);
+            ejbComponentCreateServiceFactory.setEjbJarConfiguration(appExceptions);
         }
     }
 
