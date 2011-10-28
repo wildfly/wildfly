@@ -24,6 +24,7 @@ package org.jboss.as.jaxr.service;
 import org.apache.ws.scout.registry.ConnectionFactoryImpl;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
@@ -37,6 +38,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.CompositeName;
@@ -226,7 +228,9 @@ public final class JAXRBootstrapService extends AbstractService<Void> {
         try {
             String jndiName = config.getNamingContext();
             ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-            BinderService binderService = new BinderService(bindInfo.getBindName(), new ConnectionFactoryImpl());
+            BinderService binderService = new BinderService(bindInfo.getBindName());
+            ImmediateValue value = new ImmediateValue(new ConnectionFactoryImpl());
+            binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
             binderService.getNamingStoreInjector().inject((ServiceBasedNamingStore) injectedJavaContext.getValue());
             ServiceBuilder<?> builder = context.getChildTarget().addService(bindInfo.getBinderServiceName(), binderService);
             builder.install();

@@ -36,6 +36,9 @@ public class JAXRConfiguration {
 
     static final ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("jaxr", "as");
 
+    public static final String JAXR_DEFAULT_CONNECTION_FACTORY_BINDING = "java:/jaxr/ConnectionFactory";
+    public static final String JAXR_DEFAULT_DATASOURCE_BINDING = "java:jboss/datasources/ExampleDS";
+
     // Should all tables be created on Start
     private boolean createOnStart=true;
     // Should all tables be dropped on Stop
@@ -43,13 +46,19 @@ public class JAXRConfiguration {
     // Should all tables be dropped on Start
     private boolean dropOnStart=true;
     // Datasource to Database
-    private String dataSourceUrl="java:jboss/datasources/ExampleDS";
+    private String dataSourceUrl= JAXR_DEFAULT_DATASOURCE_BINDING;
     // Alias to the registry
     private String registryOperator="RegistryOperator";
     // Should I bind a Context to which JaxrConnectionFactory bound
     private boolean bindJaxr=true;
     // Context to which JAXR ConnectionFactory to bind to
-    private String namingContext ="java:/jaxr/ConnectionFactory";
+    private String namingContext = JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
+
+    public static JAXRConfiguration INSTANCE = new JAXRConfiguration();
+
+    // Hide ctor
+    private JAXRConfiguration() {
+    }
 
     boolean isDropOnStop() {
         return dropOnStop;
