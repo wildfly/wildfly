@@ -111,7 +111,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     public synchronized void store() {
         EntityBean instance = getInstance();
         try {
-            if(!removed) {
+            if (!removed) {
                 instance.ejbStore();
             }
         } catch (RemoteException e) {
@@ -121,13 +121,13 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
 
     /**
      * Prepares the instance for release by calling the ejbPassivate method.
-     *
+     * <p/>
      * This method does not actually release this instance into the pool
      */
     public synchronized void passivate() {
         EntityBean instance = getInstance();
         try {
-            if(!removed) {
+            if (!removed) {
                 instance.ejbPassivate();
             }
         } catch (RemoteException e) {
@@ -154,11 +154,19 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     }
 
     public EJBObject getEjbObject() {
-        return getComponent().getEJBObject(getPrimaryKey());
+        final Object pk = getPrimaryKey();
+        if (pk == null) {
+            throw new IllegalStateException("Cannot call getEjbObject before the object is associated with a primary key");
+        }
+        return getComponent().getEJBObject(pk);
     }
 
     public EJBLocalObject getEjbLocalObject() {
-        return getComponent().getEjbLocalObject(getPrimaryKey());
+        final Object pk = getPrimaryKey();
+        if (pk == null) {
+            throw new IllegalStateException("Cannot call getEjbLocalObject before the object is associated with a primary key");
+        }
+        return getComponent().getEjbLocalObject(pk);
     }
 
     public boolean isRemoved() {
