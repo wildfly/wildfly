@@ -25,6 +25,7 @@ package org.jboss.as.web;
 import static org.jboss.as.web.Constants.ACCESS_LOG;
 import static org.jboss.as.web.Constants.CHECK_INTERVAL;
 import static org.jboss.as.web.Constants.CONDITION;
+import static org.jboss.as.web.Constants.CONTAINER;
 import static org.jboss.as.web.Constants.CONTAINER_CONFIG;
 import static org.jboss.as.web.Constants.DEVELOPMENT;
 import static org.jboss.as.web.Constants.DIRECTORY;
@@ -88,9 +89,9 @@ class WebConfigurationHandlerUtils {
 
      */
 
-    static final PathElement JSP = PathElement.pathElement(CONTAINER_CONFIG, JSP_CONFIGURATION);
-    static final PathElement RESOURCE = PathElement.pathElement(CONTAINER_CONFIG, STATIC_RESOURCES);
-    static final PathElement CONTAINER = PathElement.pathElement(CONTAINER_CONFIG, Constants.CONTAINER);
+    static final PathElement JSPPATH = PathElement.pathElement(CONTAINER_CONFIG, JSP_CONFIGURATION);
+    static final PathElement RESOURCEPATH = PathElement.pathElement(CONTAINER_CONFIG, STATIC_RESOURCES);
+    static final PathElement CONTAINERPATH = PathElement.pathElement(CONTAINER_CONFIG, Constants.CONTAINER);
     static final PathElement SSLPATH = PathElement.pathElement(SSL, "configuration");
     static final PathElement SSOPATH = PathElement.pathElement(SSO, "configuration");
     static final PathElement REWRITEPATH = PathElement.pathElement(REWRITE, "configuration");
@@ -107,26 +108,51 @@ class WebConfigurationHandlerUtils {
 
     static void initializeConfiguration(final Resource resource, final ModelNode operation) {
         // Create the child resources
-        resource.registerChild(JSP, Resource.Factory.create());
-        resource.registerChild(RESOURCE, Resource.Factory.create());
-        resource.registerChild(CONTAINER, Resource.Factory.create());
+        resource.registerChild(JSPPATH, Resource.Factory.create());
+        resource.registerChild(RESOURCEPATH, Resource.Factory.create());
+        resource.registerChild(CONTAINERPATH, Resource.Factory.create());
 
-        final Resource jsp = resource.getChild(JSP);
-        final Resource resources = resource.getChild(RESOURCE);
-        final Resource container = resource.getChild(CONTAINER);
+        final Resource jsp = resource.getChild(JSPPATH);
+        final Resource resources = resource.getChild(RESOURCEPATH);
+        final Resource container = resource.getChild(CONTAINERPATH);
 
-        for(final String attribute :  operation.get(CONTAINER_CONFIG).keys()) {
-            if (attribute.equals(JSP_CONFIGURATION)) {
-                populateModel(jsp.getModel(), operation.get(CONTAINER_CONFIG, JSP_CONFIGURATION));
-            } else if (attribute.equals(STATIC_RESOURCES)) {
-                populateModel(resources.getModel(), operation.get(CONTAINER_CONFIG, STATIC_RESOURCES));
-            } else if (attribute.equals(MIME_MAPPING)) {
-                container.getModel().get(MIME_MAPPING).set(operation.get(CONTAINER_CONFIG, MIME_MAPPING));
-            }  else if (attribute.equals(WELCOME_FILE)){
-                for(final ModelNode file : operation.get(CONTAINER_CONFIG, WELCOME_FILE).asList()) {
-                    container.getModel().get(WELCOME_FILE).add(file.asString());
+        boolean hasJSP = false;
+        boolean hasStatic = false;
+        if (operation.hasDefined(CONTAINER_CONFIG)) {
+            for(final String attribute :  operation.get(CONTAINER_CONFIG).keys()) {
+                if (attribute.equals(JSP_CONFIGURATION) &&  operation.get(CONTAINER_CONFIG).hasDefined(JSP_CONFIGURATION)) {
+                    hasJSP = true;
+                    populateModel(jsp.getModel(), operation.get(CONTAINER_CONFIG, JSP_CONFIGURATION));
+                } else if (attribute.equals(STATIC_RESOURCES) &&  operation.get(CONTAINER_CONFIG).hasDefined(STATIC_RESOURCES)) {
+                    hasStatic = true;
+                    populateModel(resources.getModel(), operation.get(CONTAINER_CONFIG, STATIC_RESOURCES));
+                } else if (attribute.equals(MIME_MAPPING)) {
+                    container.getModel().get(MIME_MAPPING).set(operation.get(CONTAINER_CONFIG, MIME_MAPPING));
+                }  else if (attribute.equals(WELCOME_FILE)){
+                    for(final ModelNode file : operation.get(CONTAINER_CONFIG, WELCOME_FILE).asList()) {
+                        container.getModel().get(WELCOME_FILE).add(file.asString());
+                    }
+                } else if (attribute.equals(CONTAINER)) {
+                    // the configuration=container case.
+                    final ModelNode cont = operation.get(CONTAINER_CONFIG, Constants.CONTAINER);
+                    if (cont.hasDefined(MIME_MAPPING)) {
+                        container.getModel().get(MIME_MAPPING).set(cont.get(MIME_MAPPING));
+                    }
+                    if (cont.hasDefined(WELCOME_FILE)) {
+                        for(final ModelNode file : cont.get(WELCOME_FILE).asList()) {
+                            container.getModel().get(WELCOME_FILE).add(file.asString());
+                        }
+                    }
                 }
             }
+        }
+        if (!hasJSP) {
+            // we don't have JSP but we hack the default values here.
+            jsp.getModel().set(DefaultJspConfig.getDefaultStaticResource());
+        }
+        if (!hasStatic) {
+            // we don't have static-resources but we hack the default values here.
+            resources.getModel().set(DefaultStaticResources.getDefaultStaticResource());
         }
     }
 

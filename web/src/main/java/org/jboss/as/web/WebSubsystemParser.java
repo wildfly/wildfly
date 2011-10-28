@@ -155,13 +155,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 writeAttribute(writer, Attribute.MAX_CONNECTIONS.getLocalName(), config);
                 writeAttribute(writer, Attribute.REDIRECT_PORT.getLocalName(), config);
 
-                ModelNode sslConfig;
                 if (config.get(SSL).isDefined() && config.get(SSL).has("configuration")) {
-                    sslConfig = config.get(SSL).get("configuration");
-                } else {
-                    sslConfig = config.get(SSL);
-                }
-                if (sslConfig.isDefined() && !sslConfig.keys().isEmpty()) {
+                    ModelNode sslConfig = config.get(SSL).get("configuration");
                     writer.writeStartElement(Element.SSL.getLocalName());
                     writeAttribute(writer, Attribute.NAME.getLocalName(), sslConfig);
                     writeAttribute(writer, Attribute.KEY_ALIAS.getLocalName(), sslConfig);
