@@ -31,6 +31,11 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 /**
+ * A client socket binding represents the client end of a socket. It represents binding from a local "host"
+ * to a remote "host". In some special cases the remote host can itself be the same local host.
+ * Unlike the {@link SocketBinding} which represents a {@link java.net.ServerSocket} that opens a socket for "listening",
+ * the {@link ClientSocketBinding} represents a {@link Socket} which "connects" to a remote/local host
+ *
  * @author Jaikiran Pai
  */
 public class ClientSocketBinding {
@@ -45,6 +50,18 @@ public class ClientSocketBinding {
     private final InetAddress destinationAddress;
     private final int destinationPort;
 
+    /**
+     * Creates a client socket binding
+     *
+     * @param name                   Name of the client socket binding
+     * @param socketBindingManager   The socket binding manager
+     * @param destinationAddress     The destination address to which this socket will be "connected". Cannot be null.
+     * @param destinationPort        The destination port. Cannot be < 0.
+     * @param sourceNetworkInterface (Optional) source network interface which will be used as the "source" of the socket binding
+     * @param sourcePort             (Optional) source port. Cannot be null or < 0
+     * @param fixedSourcePort        True if the <code>sourcePort</code> has to be used as a fixed port number. False if the <code>sourcePort</code>
+     *                               will be added to the port offset while determining the absolute source port.
+     */
     public ClientSocketBinding(final String name, final SocketBindingManager socketBindingManager,
                                final InetAddress destinationAddress, final int destinationPort,
                                final NetworkInterfaceBinding sourceNetworkInterface, final Integer sourcePort,
@@ -71,6 +88,13 @@ public class ClientSocketBinding {
         this.fixedSourcePort = fixedSourcePort;
     }
 
+    /**
+     * Creates a {@link Socket} represented by this {@link ClientSocketBinding} and connects to the
+     * destination
+     *
+     * @return
+     * @throws IOException
+     */
     public Socket connect() throws IOException {
         final Socket socket = this.createSocket();
         final InetAddress destinationAddress = this.getDestinationAddress();
@@ -97,10 +121,24 @@ public class ClientSocketBinding {
         return this.sourceNetworkInterface == null ? null : this.sourceNetworkInterface.getAddress();
     }
 
+    /**
+     * The source port for this client socket binding. Note that this isn't the "absolute" port if the
+     * this client socket binding has a port offset. To get the absolute source port, use the {@link #getAbsoluteSourcePort()}
+     * method
+     *
+     * @return
+     */
     public Integer getSourcePort() {
         return this.sourcePort;
     }
 
+    /**
+     * The absolute source port for this client socket binding. The absolute source port is the same as {@link #getSourcePort()}
+     * if the client socket binding is marked for "fixed source port". Else, it is the sum of {@link #getSourcePort()}
+     * and the port offset configured on the {@link SocketBindingManager}
+     *
+     * @return
+     */
     Integer getAbsoluteSourcePort() {
         if (this.sourcePort == null) {
             return null;
@@ -112,6 +150,11 @@ public class ClientSocketBinding {
         return this.sourcePort + portOffset;
     }
 
+    /**
+     * Closes the client socket binding connection
+     *
+     * @throws IOException
+     */
     public void close() throws IOException {
         final ManagedBinding binding = this.socketBindingManager.getNamedRegistry().getManagedBinding(this.name);
         if (binding == null) {
@@ -120,12 +163,13 @@ public class ClientSocketBinding {
         binding.close();
     }
 
-    public boolean isBound() {
+    /**
+     * Returns true if a socket connection has been established by this client socket binding. Else returns false
+     *
+     * @return
+     */
+    public boolean isConnected() {
         return this.socketBindingManager.getNamedRegistry().getManagedBinding(this.name) != null;
-    }
-
-    void setFixedSourcePort(final boolean fixedSourcePort) {
-
     }
 
     // At this point, don't really expose this createSocket() method and let's just expose

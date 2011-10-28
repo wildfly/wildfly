@@ -39,6 +39,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
+ * A write attribute handler for handling updates to attributes of a client socket binding.
+ * <p/>
+ * Any updates to attributes of a client socket binding will trigger a context reload if the {@link ClientSocketBindingService}
+ * corresponding to the binding is already {@link ServiceController.State#UP}. If the service hasn't been started yet,
+ * this the updates will not trigger a context reload and instead the {@link ClientSocketBindingService} will be
+ * reinstalled into the service container with the updated values for the attributes
+ *
  * @author Jaikiran Pai
  */
 class ClientSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
@@ -47,7 +54,7 @@ class ClientSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttrib
     private final boolean remoteDestination;
 
     ClientSocketBindingWriteHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator,
-                                              final boolean remoteDestination) {
+                                    final boolean remoteDestination) {
         super(valueValidator);
         this.resolvedValueValidator = resolvedValueValidator;
         this.remoteDestination = remoteDestination;
@@ -86,7 +93,7 @@ class ClientSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttrib
                         final ModelNode bindingModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
                         final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(ClientSocketBinding.CLIENT_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
                         final ClientSocketBinding binding = controller.getState() == ServiceController.State.UP ? ClientSocketBinding.class.cast(controller.getValue()) : null;
-                        final boolean bound = binding != null && binding.isBound();
+                        final boolean bound = binding != null && binding.isConnected();
                         if (binding == null) {
                             // existing is not started, so can't "update" it. Instead reinstall the service
                             handleBindingReinstall(context, bindingName, bindingModel);

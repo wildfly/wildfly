@@ -35,6 +35,8 @@ import org.jboss.msc.value.InjectedValue;
 import java.net.InetAddress;
 
 /**
+ * Service that represents a client socket binding
+ *
  * @author Jaikiran Pai
  */
 public abstract class ClientSocketBindingService implements Service<ClientSocketBinding> {

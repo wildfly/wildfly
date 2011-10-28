@@ -50,6 +50,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_PORT;
 
 /**
+ * Handles "add" operation for remote-destination client-socket-binding
+ *
  * @author Jaikiran Pai
  */
 public class RemoteDestinationClientSocketBindingAddHandler extends AbstractAddStepHandler {

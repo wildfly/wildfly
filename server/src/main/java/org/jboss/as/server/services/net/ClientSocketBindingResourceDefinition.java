@@ -55,7 +55,7 @@ public abstract class ClientSocketBindingResourceDefinition extends SimpleResour
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    public static final SimpleAttributeDefinition FIXED_SOURCE_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.FIXED_PORT, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition FIXED_SOURCE_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.FIXED_SOURCE_PORT, ModelType.BOOLEAN, true)
             .setAllowExpression(true).setDefaultValue(new ModelNode().set(false)).build();
 
 

@@ -34,6 +34,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
+ * Resource definition for a remote-destination client socket binding
+ *
  * @author Jaikiran Pai
  */
 public class RemoteDestinationClientSocketBindingResourceDefinition extends ClientSocketBindingResourceDefinition {
