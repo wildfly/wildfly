@@ -41,7 +41,7 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // [TODO] AS7-2278 JAXR configuration through the domain model
-                JAXRConfiguration config = new JAXRConfiguration();
+                JAXRConfiguration config = JAXRConfiguration.INSTANCE;
                 ServiceTarget serviceTarget = context.getServiceTarget();
                 newControllers.add(JAXRBootstrapService.addService(serviceTarget, config));
                 newControllers.add(JUDDIContextService.addService(serviceTarget, config));

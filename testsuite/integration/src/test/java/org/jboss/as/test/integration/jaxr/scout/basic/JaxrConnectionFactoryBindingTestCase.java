@@ -22,9 +22,15 @@
 package org.jboss.as.test.integration.jaxr.scout.basic;
 
 import junit.framework.TestCase;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.jaxr.service.JAXRConfiguration;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -35,31 +41,24 @@ import java.util.Properties;
 /**
  * Tests the JAXR connection factory bound to JNDI
  *
- * @author Anil.Saldhana@jboss.com
  * @author Thomas.Diesler@jboss.com
  * @since 26-Oct-2011
  */
-public class JaxrJNDIConnectionTestCase
+@RunWith(Arquillian.class)
+public class JaxrConnectionFactoryBindingTestCase
 {
-    @Test
-    @Ignore
-    public void testJaxrJNDIConnection() throws Exception
-    {
-        String bindname = System.getProperty("jndi.bind.name");
-        InitialContext ctx = getClientContext();
-        ConnectionFactory factory = (ConnectionFactory) ctx.lookup(bindname);
-        Assert.assertNotNull("Connection Factory from JNDI:", factory);
+    @Deployment
+    public static JavaArchive deployment() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jaxr-connection-test");
+        return archive;
     }
 
-    private InitialContext getClientContext() throws NamingException
+    @Test
+    public void testJaxrJNDIConnection() throws Exception
     {
-        String hostnameForURL = System.getProperty("host.name.url", "localhost");
-        if (hostnameForURL == null)
-            throw new IllegalStateException("host.name.url system property not present");        
-        Properties env = new Properties();
-        env.setProperty(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces");
-        env.setProperty(Context.PROVIDER_URL, "jnp://" + hostnameForURL + ":1099");
-        return new InitialContext(env);
+        InitialContext context = new InitialContext();
+        String lookup = JAXRConfiguration.JAXR_DEFAULT_CONNECTION_FACTORY_BINDING;
+        ConnectionFactory factory = (ConnectionFactory) context.lookup(lookup);
+        Assert.assertNotNull("Connection Factory from JNDI:", factory);
     }
 }
