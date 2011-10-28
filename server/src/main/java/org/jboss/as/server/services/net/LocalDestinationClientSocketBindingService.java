@@ -30,6 +30,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 /**
+ * Service that represents a local-destination client socket binding
+ *
  * @author Jaikiran Pai
  */
 public class LocalDestinationClientSocketBindingService extends ClientSocketBindingService {

@@ -25,6 +25,8 @@ package org.jboss.as.server.services.net;
 import java.net.InetAddress;
 
 /**
+ * Service that represents a remote-destination client socket binding
+ *
  * @author Jaikiran Pai
  */
 public class RemoteDestinationClientSocketBindingService extends ClientSocketBindingService {

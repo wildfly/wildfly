@@ -926,6 +926,9 @@
     </xs:complexType>
 
     <xs:complexType name="client-socket-bindingType">
+        <xs:annotation>
+            <xs:documentation>Configuration information for a client socket.</xs:documentation>
+        </xs:annotation>
         <xs:choice>
             <xs:element name="remote-destination" type="remote-destinationType" maxOccurs="1"/>
             <xs:element name="local-destination" type="local-destinationType" maxOccurs="1"/>
