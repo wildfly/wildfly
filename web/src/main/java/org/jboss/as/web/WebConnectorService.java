@@ -232,6 +232,8 @@ class WebConnectorService implements Service<Connector> {
                 }
             }
             getWebServer().addConnector(connector);
+            connector.init();
+            connector.start();
             this.connector = connector;
         } catch (Exception e) {
             throw new StartException(e);
@@ -245,6 +247,14 @@ class WebConnectorService implements Service<Connector> {
         final SocketBinding binding = this.binding.getValue();
         binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
         final Connector connector = this.connector;
+        try {
+            connector.pause();
+        } catch (Exception e) {
+        }
+        try {
+            connector.stop();
+        } catch (Exception e) {
+        }
         getWebServer().removeConnector(connector);
         this.connector = null;
     }
