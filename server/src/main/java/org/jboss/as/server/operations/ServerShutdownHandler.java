@@ -58,7 +58,7 @@ public class ServerShutdownHandler implements OperationStepHandler, DescriptionP
                 // The intention is that this shutdown is graceful, and so the client gets a reply.
                 // At the time of writing we did not yet have graceful shutdown.
                 thread.setName("Management Triggered Shutdown");
-                thread.run();
+                thread.start();
                 context.completeStep();
             }
         }, OperationContext.Stage.RUNTIME);
