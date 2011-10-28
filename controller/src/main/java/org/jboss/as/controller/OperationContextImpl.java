@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -64,6 +66,8 @@ import org.jboss.msc.value.Value;
  */
 final class OperationContextImpl extends AbstractOperationContext {
 
+    private static final Object NULL = new Object();
+
     private final ModelControllerImpl modelController;
     private final EnumSet<ContextFlag> contextFlags;
     private final OperationMessageHandler messageHandler;
@@ -74,15 +78,15 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final boolean booting;
     private final OperationAttachments attachments;
     /** Tracks whether any steps have gotten write access to the model */
-    private final Set<PathAddress> affectsModel;
+    private final Map<PathAddress, Object> affectsModel;
     /** Tracks whether any steps have gotten write access to the management resource registration*/
-    private boolean affectsResourceRegistration;
+    private volatile boolean affectsResourceRegistration;
 
     private boolean respectInterruption = true;
 
-    private Resource model;
+    private volatile Resource model;
     /** Tracks whether any steps have gotten write access to the runtime */
-    private boolean affectsRuntime;
+    private volatile boolean affectsRuntime;
     /** The step that acquired the write lock */
     private Step lockStep;
     /** The step that acquired the container monitor  */
@@ -98,7 +102,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.modelController = modelController;
         this.messageHandler = messageHandler;
         this.attachments = attachments;
-        this.affectsModel = new HashSet<PathAddress>(1);
+        this.affectsModel = booting ? new ConcurrentHashMap<PathAddress, Object>(16 * 16) : new HashMap<PathAddress, Object>(1);
         this.contextFlags = contextFlags;
         this.serviceTarget = new ContextServiceTarget(modelController);
     }
@@ -137,7 +141,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     @Override
     ConfigurationPersister.PersistenceResource createPersistenceResource() throws ConfigurationPersistenceException {
-        return modelController.writeModel(model, affectsModel);
+        return modelController.writeModel(model, affectsModel.keySet());
     }
 
     public boolean isBooting() {
@@ -350,11 +354,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (affectsModel.size() == 0) {
+        if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
         }
-        affectsModel.add(address);
+        affectsModel.put(address, NULL);
         Resource model = this.model;
         final Iterator<PathElement> i = address.iterator();
         while (i.hasNext()) {
@@ -410,11 +414,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (affectsModel.size() == 0) {
+        if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
         }
-        affectsModel.add(address);
+        affectsModel.put(address, NULL);
         Resource resource = this.model;
         for (PathElement element : address) {
             if (element.isMultiTarget()) {
@@ -444,11 +448,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (absoluteAddress.size() == 0) {
             throw new IllegalStateException("Duplicate resource " + absoluteAddress);
         }
-        if (affectsModel.size() == 0) {
+        if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
         }
-        affectsModel.add(absoluteAddress);
+        affectsModel.put(absoluteAddress, NULL);
         Resource model = this.model;
         final Iterator<PathElement> i = absoluteAddress.iterator();
         while (i.hasNext()) {
@@ -496,11 +500,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw new IllegalStateException("Stage MODEL is already complete");
         }
-        if (affectsModel.size() == 0) {
+        if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
         }
-        affectsModel.add(address);
+        affectsModel.put(address, NULL);
         Resource model = this.model;
         final Iterator<PathElement> i = address.iterator();
         while (i.hasNext()) {
