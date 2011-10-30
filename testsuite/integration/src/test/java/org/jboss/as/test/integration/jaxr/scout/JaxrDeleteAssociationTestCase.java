@@ -19,13 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jaxr.scout.publish;
+package org.jboss.as.test.integration.jaxr.scout;
 
-import org.jboss.as.test.integration.jaxr.scout.JaxrBaseTestCase;
-import org.jboss.as.test.integration.jaxr.scout.util.ScoutUtil;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.xml.registry.BulkResponse;
 import javax.xml.registry.BusinessLifeCycleManager;
@@ -48,7 +48,8 @@ import java.util.Iterator;
  * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
  * @since Mar 9, 2005
  */
-public class JaxrDeleteAssociationTestCase extends JaxrBaseTestCase
+@RunWith(Arquillian.class)
+public class JaxrDeleteAssociationTestCase extends JaxrTestBase
 {
    private static Logger log = Logger.getLogger(JaxrDeleteAssociationTestCase.class);
    

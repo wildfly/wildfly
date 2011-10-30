@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jaxr.scout.publish.infomodel;
+package org.jboss.as.test.integration.jaxr.scout;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,9 +31,11 @@ import javax.xml.registry.infomodel.Concept;
 import javax.xml.registry.infomodel.ExternalLink;
 import javax.xml.registry.infomodel.Key;
 
-import org.jboss.as.test.integration.jaxr.scout.JaxrBaseTestCase;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.jaxr.scout.JaxrTestBase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test the storage of classifications on Concepts and Services
@@ -43,7 +45,8 @@ import org.junit.Test;
  * @version $Revision: 98115 $
  * @since Apr 11, 2006
  */
-public class JaxrClassficationTestCase extends JaxrBaseTestCase {
+@RunWith(Arquillian.class)
+public class JaxrClassficationTestCase extends JaxrTestBase {
     private static final String UUID_TYPE = "uuid:C1ACF26D-9672-4404-9D70-39B756E62AB4";
 
     @Test

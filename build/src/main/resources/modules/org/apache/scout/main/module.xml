@@ -29,7 +29,10 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.xml.bind.api"/>
         <module name="javax.xml.registry.api"/>
+        <module name="org.apache.commons.logging"/>
     </dependencies>
 
 </module>
