@@ -28,6 +28,8 @@ import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
 
+import java.util.EnumSet;
+
 /**
  * Date: 09.06.2011
  *
@@ -149,8 +151,8 @@ interface LoggingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11530, value = "Invalid value for target name")
-    String invalidTargetName();
+    @Message(id = 11530, value = "Invalid value for target name. Valid names include: %s")
+    String invalidTargetName(EnumSet<Target> targets);
 
     /**
      * Creates an exception indicating the class, represented by the {@code className} parameter, is not subclass of

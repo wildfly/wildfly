@@ -45,9 +45,9 @@ public class SizeRotatingHandlerWriteAttributeHandler extends LogHandlerWriteAtt
     @Override
     protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final SizeRotatingFileHandler handler) throws OperationFailedException {
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
-            handler.setMaxBackupIndex(MAX_BACKUP_INDEX.resolveModelAttribute(context, operation).asInt());
+            handler.setMaxBackupIndex(resolvedValue.asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {
-            handler.setRotateSize(LoggingSubsystemParser.parseSize(ROTATE_SIZE.resolveModelAttribute(context, operation).asString()));
+            handler.setRotateSize(LoggingSubsystemParser.parseSize(resolvedValue.asString()));
         }
         return false;
     }
@@ -55,9 +55,9 @@ public class SizeRotatingHandlerWriteAttributeHandler extends LogHandlerWriteAtt
     @Override
     protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final SizeRotatingFileHandler handler) throws OperationFailedException {
         if (MAX_BACKUP_INDEX.getName().equals(attributeName)) {
-            handler.setMaxBackupIndex(MAX_BACKUP_INDEX.resolveModelAttribute(context, valueToRestore).asInt());
+            handler.setMaxBackupIndex(valueToRestore.asInt());
         } else if (ROTATE_SIZE.getName().equals(attributeName)) {
-            handler.setRotateSize(LoggingSubsystemParser.parseSize(ROTATE_SIZE.resolveModelAttribute(context, valueToRestore).asString()));
+            handler.setRotateSize(LoggingSubsystemParser.parseSize(valueToRestore.asString()));
         }
     }
 }

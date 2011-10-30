@@ -45,9 +45,9 @@ public class PeriodicHandlerWriteAttributeHandler extends LogHandlerWriteAttribu
     @Override
     protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
         if (APPEND.getName().equals(attributeName)) {
-            handler.setAppend(APPEND.resolveModelAttribute(context, operation).asBoolean());
+            handler.setAppend(resolvedValue.asBoolean());
         } else if (SUFFIX.getName().equals(attributeName)) {
-            handler.setSuffix(SUFFIX.resolveModelAttribute(context, operation).asString());
+            handler.setSuffix(resolvedValue.asString());
         }
         return false;
     }
@@ -55,9 +55,9 @@ public class PeriodicHandlerWriteAttributeHandler extends LogHandlerWriteAttribu
     @Override
     protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
         if (APPEND.getName().equals(attributeName)) {
-            handler.setAppend(APPEND.resolveModelAttribute(context, valueToRestore).asBoolean());
+            handler.setAppend(valueToRestore.asBoolean());
         } else if (SUFFIX.getName().equals(attributeName)) {
-            handler.setSuffix(SUFFIX.resolveModelAttribute(context, valueToRestore).asString());
+            handler.setSuffix(valueToRestore.asString());
         }
     }
 }
