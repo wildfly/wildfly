@@ -47,7 +47,7 @@ public class ConsoleHandlerWriteAttributeHandler extends LogHandlerWriteAttribut
     @Override
     protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final ConsoleHandler handler) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(TARGET.resolveModelAttribute(context,operation).asString().toUpperCase(Locale.US))) {
+            switch (Target.fromString(TargetValidator.properCase(resolvedValue.asString()))) {
                 case SYSTEM_ERR: {
                     handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                     ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
@@ -59,7 +59,7 @@ public class ConsoleHandlerWriteAttributeHandler extends LogHandlerWriteAttribut
                 }
             }
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, operation).asBoolean());
+            handler.setAutoFlush(resolvedValue.asBoolean());
         }
         return false;
     }
@@ -67,7 +67,7 @@ public class ConsoleHandlerWriteAttributeHandler extends LogHandlerWriteAttribut
     @Override
     protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final ConsoleHandler handler) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(TARGET.resolveModelAttribute(context,valueToRestore).asString().toUpperCase(Locale.US))) {
+            switch (Target.fromString(TargetValidator.properCase(valueToRestore.asString()))) {
                 case SYSTEM_ERR: {
                     handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
                     ConsoleHandler.class.cast(handler).setTarget(ConsoleHandler.Target.SYSTEM_ERR);
@@ -79,7 +79,7 @@ public class ConsoleHandlerWriteAttributeHandler extends LogHandlerWriteAttribut
                 }
             }
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, valueToRestore).asBoolean());
+            handler.setAutoFlush(valueToRestore.asBoolean());
         }
     }
 }

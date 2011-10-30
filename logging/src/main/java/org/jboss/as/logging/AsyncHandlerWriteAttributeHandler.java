@@ -48,9 +48,9 @@ public class AsyncHandlerWriteAttributeHandler extends LogHandlerWriteAttributeH
     @Override
     protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final AsyncHandler handler) throws OperationFailedException {
         if (OVERFLOW_ACTION.getName().equals(attributeName)) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.resolveModelAttribute(context, operation).asString().toUpperCase(Locale.US)));
+            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(resolvedValue.asString().toUpperCase(Locale.US)));
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, operation).asBoolean());
+            handler.setAutoFlush(resolvedValue.asBoolean());
         }
         return false;
     }
@@ -58,9 +58,9 @@ public class AsyncHandlerWriteAttributeHandler extends LogHandlerWriteAttributeH
     @Override
     protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final AsyncHandler handler) throws OperationFailedException {
         if (OVERFLOW_ACTION.getName().equals(attributeName)) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(OVERFLOW_ACTION.resolveModelAttribute(context, valueToRestore).asString().toUpperCase(Locale.US)));
+            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(valueToRestore.asString().toUpperCase(Locale.US)));
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, valueToRestore).asBoolean());
+            handler.setAutoFlush(valueToRestore.asBoolean());
         }
     }
 }

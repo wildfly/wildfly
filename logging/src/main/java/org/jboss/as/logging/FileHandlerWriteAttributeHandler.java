@@ -45,7 +45,7 @@ public class FileHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHa
     @Override
     protected boolean doApplyUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final FileHandler handler) throws OperationFailedException {
         if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, operation).asBoolean());
+            handler.setAutoFlush(resolvedValue.asBoolean());
         }
         // TODO (jrp) consider implementing FILE as well
         return false;
@@ -54,7 +54,7 @@ public class FileHandlerWriteAttributeHandler extends LogHandlerWriteAttributeHa
     @Override
     protected void doRevertUpdateToRuntime(OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final FileHandler handler) throws OperationFailedException {
         if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(AUTOFLUSH.resolveModelAttribute(context, valueToRestore).asBoolean());
+            handler.setAutoFlush(valueToRestore.asBoolean());
         }
         // TODO (jrp) consider implementing FILE as well
     }

@@ -77,14 +77,14 @@ public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends
         // Attempt to cast handler
         final T handler = (T) controller.getValue();
         if (LEVEL.getName().equals(attributeName)) {
-            handler.setLevel(Level.parse(LEVEL.resolveModelAttribute(context, operation).asString()));
+            handler.setLevel(Level.parse(resolvedValue.asString()));
         } else if (FILTER.getName().equals(attributeName)) {
             // TODO (jrp) implement filter
         } else if (FORMATTER.getName().equals(attributeName)) {
-            AbstractFormatterSpec.fromModelNode(context, FORMATTER.resolveModelAttribute(context, operation)).apply(handler);
+            AbstractFormatterSpec.fromModelNode(resolvedValue).apply(handler);
         } else if (ENCODING.getName().equals(attributeName)) {
             try {
-                handler.setEncoding(ENCODING.resolveModelAttribute(context,operation).asString());
+                handler.setEncoding(resolvedValue.asString());
             } catch (UnsupportedEncodingException e) {
                 throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
             }
@@ -96,14 +96,14 @@ public abstract class LogHandlerWriteAttributeHandler<T extends Handler> extends
     protected final void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final T handler) throws OperationFailedException {
         if (handler != null) {
             if (LEVEL.getName().equals(attributeName)) {
-                handler.setLevel(Level.parse(LEVEL.resolveModelAttribute(context,valueToRestore).asString()));
+                handler.setLevel(Level.parse(valueToRestore.asString()));
             } else if (FILTER.getName().equals(attributeName)) {
                 // TODO (jrp) implement filter
             } else if (FORMATTER.getName().equals(attributeName)) {
-                AbstractFormatterSpec.fromModelNode(context, FORMATTER.resolveModelAttribute(context,valueToRestore)).apply(handler);
+                AbstractFormatterSpec.fromModelNode(valueToRestore).apply(handler);
             } else if (ENCODING.getName().equals(attributeName)) {
                 try {
-                    handler.setEncoding(ENCODING.resolveModelAttribute(context,valueToRestore).asString());
+                    handler.setEncoding(valueToRestore.asString());
                 } catch (UnsupportedEncodingException e) {
                     throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
                 }
