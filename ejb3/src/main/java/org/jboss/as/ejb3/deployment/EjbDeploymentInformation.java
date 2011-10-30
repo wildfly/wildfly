@@ -2,6 +2,7 @@ package org.jboss.as.ejb3.deployment;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.iiop.EjbIIOPService;
 import org.jboss.msc.value.InjectedValue;
 
 import java.util.Collection;
@@ -22,11 +23,14 @@ public class EjbDeploymentInformation {
 
     private final Map<String, InjectedValue<ComponentView>> componentViews;
 
-    public EjbDeploymentInformation(String ejbName, InjectedValue<EJBComponent> ejbComponent, Map<String, InjectedValue<ComponentView>> componentViews, final ClassLoader deploymentClassLoader) {
+    private final InjectedValue<EjbIIOPService> iorFactory;
+
+    public EjbDeploymentInformation(final String ejbName, final InjectedValue<EJBComponent> ejbComponent, final Map<String, InjectedValue<ComponentView>> componentViews, final ClassLoader deploymentClassLoader, final InjectedValue<EjbIIOPService> iorFactory) {
         this.ejbName = ejbName;
         this.ejbComponent = ejbComponent;
         this.componentViews = componentViews;
         this.deploymentClassLoader = deploymentClassLoader;
+        this.iorFactory = iorFactory;
     }
 
     public String getEjbName() {
@@ -51,5 +55,9 @@ public class EjbDeploymentInformation {
 
     public ClassLoader getDeploymentClassLoader() {
         return deploymentClassLoader;
+    }
+
+    public EjbIIOPService getIorFactory() {
+        return iorFactory.getOptionalValue();
     }
 }

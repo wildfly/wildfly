@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<project name="clustering-build scripts">
+
+    <!-- import shared ant targets -->
+    <import file="common-targets.xml" as="common"/>
+
+    <target name="build-iiop" description="Builds server configurations for IIOP tests">
+
+        <echo message="Building config iiop-client"/>
+
+        <build-server-config name="iiop-client"/>
+        <antcall target="changeDefaultDatabase">
+           <param name="server-config" value="iiop-client"/>
+           <propertyset refid="ds.properties"/>
+        </antcall>
+        <add-port-offset name="iiop-client" />
+
+        <echo message="Building config iiop-server"/>
+
+        <build-server-config name="iiop-server"/>
+        <antcall target="changeDefaultDatabase">
+           <param name="server-config" value="iiop-server"/>
+           <propertyset refid="ds.properties"/>
+        </antcall>
+        <add-port-offset name="iiop-server" offset="100" nativePort="19999" httpPort="19990"/>
+
+    </target>
+
+</project>

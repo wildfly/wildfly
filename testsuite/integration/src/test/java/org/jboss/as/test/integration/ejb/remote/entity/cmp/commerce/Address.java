@@ -21,28 +21,30 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.rmi.RemoteException;
+
 import javax.ejb.EJBObject;
 
 public interface Address extends EJBObject {
-    Long getId();
+    Long getId() throws RemoteException;
 
-    String getStreet();
+    String getStreet() throws RemoteException;
 
-    void setStreet(String street);
+    void setStreet(String street) throws RemoteException;
 
-    String getCity();
+    String getCity() throws RemoteException;
 
-    void setCity(String city);
+    void setCity(String city) throws RemoteException;
 
-    String getState();
+    String getState() throws RemoteException;
 
-    void setState(String state);
+    void setState(String state) throws RemoteException;
 
-    int getZip();
+    int getZip() throws RemoteException;
 
-    void setZip(int zip);
+    void setZip(int zip) throws RemoteException;
 
-    int getZipPlus4();
+    int getZipPlus4() throws RemoteException;
 
-    void setZipPlus4(int zipPlus4);
+    void setZipPlus4(int zipPlus4) throws RemoteException;
 }

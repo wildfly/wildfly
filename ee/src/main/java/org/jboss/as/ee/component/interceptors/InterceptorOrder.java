@@ -118,10 +118,10 @@ public class
         // should happen before the CMT/BMT interceptors
         public static final int REMOTE_TRANSACTION_PROPOGATION_INTERCEPTOR              = 0x450;
         public static final int CMT_TRANSACTION_INTERCEPTOR                             = 0x500;
-        public static final int ASSOCIATING_INTERCEPTOR                                 = 0x600;
-        public static final int JPA_SFSB_INTERCEPTOR                                    = 0x700;
-        public static final int SESSION_REMOVE_INTERCEPTOR                              = 0x800;
-        public static final int HOME_CREATE_INTERCEPTOR                                 = 0x900;
+        public static final int HOME_CREATE_INTERCEPTOR                                 = 0x600;
+        public static final int ASSOCIATING_INTERCEPTOR                                 = 0x700;
+        public static final int JPA_SFSB_INTERCEPTOR                                    = 0x800;
+        public static final int SESSION_REMOVE_INTERCEPTOR                              = 0x900;
         public static final int COMPONENT_DISPATCHER                                    = 0xA00;
 
 

@@ -21,23 +21,25 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.rmi.RemoteException;
 import java.util.Collection;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 import javax.ejb.FinderException;
 
 public interface AddressHome extends EJBHome {
-    Address create() throws CreateException;
+    Address create() throws CreateException, RemoteException;
 
-    Address create(Long id) throws CreateException;
+    Address create(Long id) throws CreateException, RemoteException;
 
-    Address findByPrimaryKey(Long id) throws FinderException;
+    Address findByPrimaryKey(Long id) throws FinderException, RemoteException;
 
-    Collection findAll() throws FinderException;
+    Collection findAll() throws FinderException, RemoteException;
 
-    Address findByOrdernumber(long orderNumber) throws FinderException;
+    Address findByOrdernumber(long orderNumber) throws FinderException, RemoteException;
 
-    Collection selectAddresses(String street) throws FinderException;
+    Collection selectAddresses(String street) throws FinderException, RemoteException;
 
-    void resetId();
+    void resetId() throws RemoteException;
 }

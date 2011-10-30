@@ -21,22 +21,24 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.rmi.RemoteException;
+
 import javax.ejb.EJBObject;
 
 public interface LineItem extends EJBObject {
-    Long getId();
+    Long getId() throws RemoteException;
 
-    void setId(Long id);
+    void setId(Long id) throws RemoteException;
 
-    int getQuantity();
+    int getQuantity() throws RemoteException;
 
-    void setQuantity(int q);
+    void setQuantity(int q) throws RemoteException;
 
-    boolean getShipped();
+    boolean getShipped() throws RemoteException;
 
-    void setShipped(boolean shipped);
+    void setShipped(boolean shipped) throws RemoteException;
 
-    void setOrderId(Long id);
+    void setOrderId(Long id) throws RemoteException;
 
-    Object getOrderNumber();
+    Object getOrderNumber() throws RemoteException;
 }

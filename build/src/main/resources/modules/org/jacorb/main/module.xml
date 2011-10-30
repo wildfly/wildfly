@@ -29,6 +29,7 @@
 
    <dependencies>
       <module name="org.slf4j"/>
+      <module name="javax.api"/>
       <module name="javax.rmi.api"/>
    </dependencies>
 </module>

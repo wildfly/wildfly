@@ -21,16 +21,17 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
-import java.util.Collection;
+import java.rmi.RemoteException;
+
 import javax.ejb.EJBObject;
 
 /**
  * @author <a href="mailto:alex@jboss.org">Alexey Loubyansky</a>
  */
 public interface ProductCategoryType extends EJBObject {
-    Long getId();
+    Long getId() throws RemoteException;
 
-    String getName();
+    String getName() throws RemoteException;
 
-    void setName(String name);
+    void setName(String name) throws RemoteException;
 }

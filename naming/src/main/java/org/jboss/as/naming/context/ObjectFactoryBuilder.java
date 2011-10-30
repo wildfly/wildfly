@@ -22,16 +22,17 @@
 
 package org.jboss.as.naming.context;
 
-import org.jboss.as.naming.ServiceAwareObjectFactory;
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.modules.Module;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
-import java.util.Hashtable;
+
+import org.jboss.as.naming.ServiceAwareObjectFactory;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.modules.Module;
 
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
@@ -98,7 +99,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
                 }
             }
         }
-        return null;
+        return ref;
     }
 
     private ObjectFactory factoryFromReference(final Reference reference, final Hashtable<?, ?> environment) throws Exception {

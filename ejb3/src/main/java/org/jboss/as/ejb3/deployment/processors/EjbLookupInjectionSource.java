@@ -21,16 +21,18 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.rmi.PortableRemoteObject;
+
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * Injection source for ejb: lookups
@@ -40,13 +42,36 @@ import javax.naming.NamingException;
 public class EjbLookupInjectionSource extends InjectionSource {
 
     private final String lookup;
+    private final String targetTypeName;
+    private final Class<?> targetType;
 
-    public EjbLookupInjectionSource(final String lookup) {
+    public EjbLookupInjectionSource(final String lookup, final String targetType) {
         this.lookup = lookup;
+        this.targetTypeName = targetType;
+        this.targetType = null;
     }
+
+    public EjbLookupInjectionSource(final String lookup, final Class<?> targetType) {
+        this.lookup = lookup;
+        this.targetType = targetType;
+        this.targetTypeName = null;
+    }
+
 
     @Override
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+        final Class<?> type;
+        if(targetType != null) {
+            type = targetType;
+        } else {
+            final DeploymentClassIndex index = phaseContext.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
+            try {
+                type = index.classIndex(targetTypeName).getModuleClass();
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Could not load EJB type " + targetTypeName,e);
+            }
+        }
+
         injector.inject(new ManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {
@@ -61,7 +86,7 @@ public class EjbLookupInjectionSource extends InjectionSource {
 
                         @Override
                         public Object getInstance() {
-                            return value;
+                            return PortableRemoteObject.narrow(value, type);
                         }
                     };
                 } catch (NamingException e) {

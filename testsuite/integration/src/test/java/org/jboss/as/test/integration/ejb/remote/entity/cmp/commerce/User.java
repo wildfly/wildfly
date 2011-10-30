@@ -41,5 +41,5 @@ public interface User extends EJBObject {
 
     void setSendSpam(boolean sendSpam) throws RemoteException;
 
-    Collection getUserIds() throws FinderException;
+    Collection getUserIds() throws FinderException, RemoteException;
 }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://www.jboss.org/arquillian-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.jboss.org/arquillian-1.0 http://jboss.org/schema/arquillian/arquillian-1.0.xsd">
+
+    <group qualifier="iiop">
+
+        <!-- The server that expsoses EJB's via IIOP -->
+        <container qualifier="iiop-client" default="true">
+            <configuration>
+                <property name="jbossHome">target/iiop-client</property>
+                <property name="javaVmArguments">${server.jvm.args}</property>
+                <property name="serverConfig">${server.config:standalone.xml}</property>
+            </configuration>
+        </container>
+
+        <!-- The server than invokes the exposed EJB's -->
+        <container qualifier="iiop-server" default="false">
+            <configuration>
+                <property name="jbossHome">target/iiop-server</property>
+                <property name="javaVmArguments">${server.jvm.args}</property>
+                <property name="serverConfig">${server.config:standalone.xml}</property>
+                <property name="managementPort">19999</property>
+            </configuration>
+        </container>
+    </group>
+
+</arquillian>

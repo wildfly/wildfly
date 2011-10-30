@@ -65,10 +65,8 @@
               useImplicitFileset="false">
             <fileset dir="${config.dir}">
                 <include name="standalone.xml"/>
-                <include name="standalone-preview.xml"/>
                 <include name="standalone-xts.xml"/>
                 <include name="standalone-ha.xml"/>
-                <include name="standalone-preview-ha.xml"/>
             </fileset>
             <param name="ds.jdbc.driver.jar" expression="${ds.jdbc.driver.jar}"/>
             <param name="ds.jdbc.url" expression="${ds.jdbc.url}"/>
@@ -143,8 +141,7 @@
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone.xml"/>
-                    <include name="**/standalone-preview.xml"/>
-                    <include name="**/standalone-xts.xml"/>
+                    <include name="**/standalone-ha.xml"/>
                 </fileset>
                 <param name="managementIPAddress" expression="@{node}"/>
                 <param name="publicIPAddress" expression="@{node}"/>
@@ -154,8 +151,7 @@
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone.xml.mod"/>
-                   <include name="**/standalone-preview.xml.mod"/>
-                   <include name="**/standalone-xts.xml.mod"/>
+                   <include name="**/standalone-ha.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>
@@ -186,7 +182,7 @@
                 <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
-                    <include name="**/standalone-preview-ha.xml"/>
+                    <include name="**/standalone.xml"/>
                 </fileset>
                 <param name="managementIPAddress" expression="@{node}"/>
                 <param name="publicIPAddress" expression="@{node}"/>
@@ -197,7 +193,7 @@
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
-                   <include name="**/standalone-preview-ha.xml.mod"/>
+                   <include name="**/standalone.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>
@@ -229,7 +225,7 @@
                 <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml"/>
-                    <include name="**/standalone-preview-ha.xml"/>
+                    <include name="**/standalone.xml"/>
                 </fileset>
                 <param name="portOffset" expression="@{offset}"/>
                 <param name="nativeInterfaceManagementPort" expression="@{nativePort}"/>
@@ -240,7 +236,7 @@
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                    <include name="**/standalone-ha.xml.mod"/>
-                   <include name="**/standalone-preview-ha.xml.mod"/>
+                   <include name="**/standalone.xml.mod"/>
                </fileset>
                <mapper type="glob" from="*.mod" to="*"/>
              </move>

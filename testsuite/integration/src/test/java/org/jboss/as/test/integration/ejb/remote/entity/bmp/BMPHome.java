@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.bmp;
 
+import java.rmi.RemoteException;
 import java.util.Collection;
 import javax.ejb.EJBHome;
 
@@ -31,16 +32,16 @@ import javax.ejb.EJBHome;
  */
 public interface BMPHome extends EJBHome {
 
-    BMPInterface createEmpty();
+    BMPInterface createEmpty() throws RemoteException;
 
-    BMPInterface createWithValue(String value);
+    BMPInterface createWithValue(String value) throws RemoteException;
 
-    BMPInterface findByPrimaryKey(Integer primaryKey);
+    BMPInterface findByPrimaryKey(Integer primaryKey) throws RemoteException;
 
-    BMPInterface findByValue(String value);
+    BMPInterface findByValue(String value) throws RemoteException;
 
-    Collection<BMPInterface> findCollection();
+    Collection<BMPInterface> findCollection() throws RemoteException;
 
-    int exampleHomeMethod();
+    int exampleHomeMethod() throws RemoteException;
 
 }

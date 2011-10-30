@@ -38,6 +38,7 @@ import org.jboss.modules.ModuleLoader;
 public class JacORBDependencyProcessor implements DeploymentUnitProcessor {
     public static ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
     public static ModuleIdentifier JAVAX_RMI_API_ID = ModuleIdentifier.create("javax.rmi.api");
+    public static ModuleIdentifier JACORB_ID = ModuleIdentifier.create("org.jacorb");
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -47,6 +48,8 @@ public class JacORBDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CORBA_ID, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_RMI_API_ID, false, false, false));
+        //we need to add jacorb, as the orb is initaled from the context class loader of the deployment
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JACORB_ID, false, false, false));
     }
 
     @Override

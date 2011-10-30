@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.home.remotehome.injection;
 
+import java.rmi.RemoteException;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
@@ -34,7 +36,11 @@ public class InjectingEjb {
     private InjectionHome home;
 
     public String getMessage() {
-        return home.create().message();
+        try {
+            return home.create().message();
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

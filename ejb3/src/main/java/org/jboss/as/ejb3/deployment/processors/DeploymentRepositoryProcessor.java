@@ -11,6 +11,7 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.iiop.EjbIIOPService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -34,7 +35,7 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
@@ -60,7 +61,12 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
                     views.put(view.getViewClassName(), componentViewInjectedValue);
                     injectedValues.put(view.getServiceName(), componentViewInjectedValue);
                 }
-                EjbDeploymentInformation info = new EjbDeploymentInformation(ejbComponentDescription.getEJBName(), componentInjectedValue, views, module.getClassLoader());
+                final InjectedValue<EjbIIOPService> iorFactory = new InjectedValue<EjbIIOPService>();
+                if(ejbComponentDescription.isExposedViaIiop()) {
+                    injectedValues.put(ejbComponentDescription.getServiceName().append(EjbIIOPService.SERVICE_NAME), iorFactory);
+                }
+
+                EjbDeploymentInformation info = new EjbDeploymentInformation(ejbComponentDescription.getEJBName(), componentInjectedValue, views, module.getClassLoader(), iorFactory);
                 deploymentInformationMap.put(ejbComponentDescription.getEJBName(), info);
             }
         }

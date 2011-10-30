@@ -914,6 +914,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.integration</groupId>
+            <artifactId>jboss-corba-ots-spi</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.invocation</groupId>
             <artifactId>jboss-invocation</artifactId>
         </dependency>

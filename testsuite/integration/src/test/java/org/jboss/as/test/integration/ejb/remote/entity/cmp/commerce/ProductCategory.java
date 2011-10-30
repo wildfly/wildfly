@@ -21,24 +21,25 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
-import java.util.Collection;
+import java.rmi.RemoteException;
+
 import javax.ejb.EJBObject;
 import javax.ejb.FinderException;
 
 public interface ProductCategory extends EJBObject {
-    long getId();
+    long getId() throws RemoteException;
 
-    long getSubId();
+    long getSubId() throws RemoteException;
 
-    String getName();
+    String getName() throws RemoteException;
 
-    void setName(String name);
+    void setName(String name) throws RemoteException;
 
-    CompositeId getPK();
+    CompositeId getPK() throws RemoteException;
 
-    void setParentId(CompositeId id) throws FinderException;
+    void setParentId(CompositeId id) throws FinderException, RemoteException;
 
-    void setTypeId(Long id) throws FinderException;
+    void setTypeId(Long id) throws FinderException, RemoteException;
 
-    void setTypeIdBatch(Long id) throws FinderException;
+    void setTypeIdBatch(Long id) throws FinderException, RemoteException;
 }

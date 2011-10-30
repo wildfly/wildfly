@@ -21,37 +21,38 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Set;
 import javax.ejb.EJBObject;
 import javax.ejb.FinderException;
 
 public interface Order extends EJBObject {
-    Long getOrdernumber();
+    Long getOrdernumber() throws RemoteException;
 
-    Card getCreditCard();
+    Card getCreditCard() throws RemoteException;
 
-    void setCreditCard(Card card);
+    void setCreditCard(Card card) throws RemoteException;
 
-    String getOrderStatus();
+    String getOrderStatus() throws RemoteException;
 
-    void setOrderStatus(String orderStatus);
+    void setOrderStatus(String orderStatus) throws RemoteException;
 
-    Set getOrdersShippedToCA() throws FinderException;
+    Set getOrdersShippedToCA() throws FinderException, RemoteException;
 
-    Set getOrdersShippedToCA2() throws FinderException;
+    Set getOrdersShippedToCA2() throws FinderException, RemoteException;
 
-    Collection getStatesShipedTo() throws FinderException;
+    Collection getStatesShipedTo() throws FinderException, RemoteException;
 
-    Collection getStatesShipedTo2() throws FinderException;
+    Collection getStatesShipedTo2() throws FinderException, RemoteException;
 
-    Set getAddressesInCA() throws FinderException;
+    Set getAddressesInCA() throws FinderException, RemoteException;
 
-    Set getAddressesInCA2() throws FinderException;
+    Set getAddressesInCA2() throws FinderException, RemoteException;
 
-    void setShippingAddressId(Long id);
+    void setShippingAddressId(Long id) throws RemoteException;
 
-    void setBillingAddressId(Long id);
+    void setBillingAddressId(Long id) throws RemoteException;
 
-    void addLineItemId(Long id);
+    void addLineItemId(Long id) throws RemoteException;
 }

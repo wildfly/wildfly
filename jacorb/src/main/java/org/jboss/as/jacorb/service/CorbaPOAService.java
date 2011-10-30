@@ -22,9 +22,6 @@
 
 package org.jboss.as.jacorb.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -45,6 +42,9 @@ import org.omg.PortableServer.RequestProcessingPolicyValue;
 import org.omg.PortableServer.ServantRetentionPolicyValue;
 import org.omg.PortableServer.ThreadPolicyValue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * <p>
  * This class implements a service that creates and activates {@code org.omg.PortableServer.POA} objects.
@@ -57,6 +57,9 @@ public class CorbaPOAService implements Service<POA> {
     private static final Logger log = Logger.getLogger("org.jboss.as.jacorb");
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "poa-service");
+
+    public static final ServiceName ROOT_SERVICE_NAME = SERVICE_NAME.append("rootpoa");
+    public static final ServiceName INTERFACE_REPOSITORY_SERVICE_NAME = SERVICE_NAME.append("irpoa");
 
     private volatile POA poa;
 

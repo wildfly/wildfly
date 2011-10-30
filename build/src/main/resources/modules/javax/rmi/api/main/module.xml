@@ -29,5 +29,16 @@
 
     <dependencies>
         <module name="org.omg.api"/>
+        <module name="javax.transaction.api"/>
+
+
+        <!-- These must be below the org.omg.api import-->
+        <system>
+            <paths>
+                <path name="sun/misc"/>
+                <path name="org/omg/SendingContext"/>
+                <path name="org/omg/CORBA"/>
+            </paths>
+        </system>
     </dependencies>
 </module>

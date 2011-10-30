@@ -147,8 +147,8 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         EjbInjectionSource ejbInjectionSource = null;
         //give preference to lookup
         if (!isEmpty(lookup)) {
-            if (lookup.startsWith("ejb:")) {
-                valueSource = new EjbLookupInjectionSource(lookup);
+            if (!lookup.startsWith("java:")) {
+                valueSource = new EjbLookupInjectionSource(lookup, targetDescription.getDeclaredValueClassName());
             } else {
                 valueSource = new LookupInjectionSource(lookup);
             }

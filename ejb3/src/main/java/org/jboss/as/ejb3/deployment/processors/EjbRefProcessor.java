@@ -108,8 +108,8 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                 EjbInjectionSource ejbInjectionSource = null;
 
                 if (!isEmpty(lookup)) {
-                    if (lookup.startsWith("ejb:")) {
-                        bindingConfiguration = new BindingConfiguration(name, new EjbLookupInjectionSource(lookup));
+                    if (!lookup.startsWith("java:")) {
+                        bindingConfiguration = new BindingConfiguration(name, new EjbLookupInjectionSource(lookup, remoteInterfaceType));
                     } else {
                         bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                     }
@@ -168,8 +168,8 @@ public class EjbRefProcessor extends AbstractDeploymentDescriptorBindingsProcess
                     EjbInjectionSource ejbInjectionSource = null;
 
                     if (!isEmpty(lookup)) {
-                        if (lookup.startsWith("ejb:")) {
-                            bindingConfiguration = new BindingConfiguration(name, new EjbLookupInjectionSource(lookup));
+                        if (!lookup.startsWith("java:")) {
+                            bindingConfiguration = new BindingConfiguration(name, new EjbLookupInjectionSource(lookup, localInterfaceType));
                         } else {
                             bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
                         }

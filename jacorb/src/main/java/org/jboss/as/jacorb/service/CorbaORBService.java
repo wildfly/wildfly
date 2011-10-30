@@ -22,12 +22,10 @@
 
 package org.jboss.as.jacorb.service;
 
-import java.net.InetSocketAddress;
-import java.util.Properties;
-
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.naming.JBossInitialContextFactory;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -38,6 +36,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.omg.CORBA.ORB;
+
+import java.net.InetSocketAddress;
+import java.util.Properties;
 
 /**
  * <p>
@@ -187,6 +188,10 @@ public class CorbaORBService implements Service<ORB> {
      */
     public static String getORBProperty(String key) {
         return properties.getProperty(key);
+    }
+
+    public static ORB getCurrent() {
+        return (ORB) CurrentServiceContainer.getServiceContainer().getRequiredService(SERVICE_NAME).getValue();
     }
 
     /**

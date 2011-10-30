@@ -21,9 +21,13 @@
  */
 package org.jboss.as.test.integration.ejb.injection.ejbref;
 
+import java.rmi.RemoteException;
+
+import javax.ejb.EJBHome;
+
 /**
  * @author Stuart Douglas
  */
-public interface HomeInterface {
-    RemoteInterface create();
+public interface HomeInterface extends EJBHome{
+    RemoteInterface create() throws RemoteException;
 }

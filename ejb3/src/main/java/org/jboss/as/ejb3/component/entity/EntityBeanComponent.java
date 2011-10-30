@@ -21,14 +21,6 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
@@ -39,6 +31,15 @@ import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Stuart Douglas
@@ -53,6 +54,7 @@ public class EntityBeanComponent extends EJBComponent {
     private final Class<EJBLocalHome> localHomeClass;
     private final Class<EJBLocalObject> localClass;
     private final Class<EJBObject> remoteClass;
+    private final Class<Object> primaryKeyClass;
 
     protected EntityBeanComponent(final EntityBeanComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
@@ -75,6 +77,7 @@ public class EntityBeanComponent extends EJBComponent {
         this.localHomeClass = ejbComponentCreateService.getLocalHomeClass();
         this.localClass = ejbComponentCreateService.getLocalClass();
         this.remoteClass = ejbComponentCreateService.getRemoteClass();
+        this.primaryKeyClass = ejbComponentCreateService.getPrimaryKeyClass();
     }
 
     @Override
@@ -122,4 +125,7 @@ public class EntityBeanComponent extends EJBComponent {
         return remoteClass;
     }
 
+    public Class<Object> getPrimaryKeyClass() {
+        return primaryKeyClass;
+    }
 }

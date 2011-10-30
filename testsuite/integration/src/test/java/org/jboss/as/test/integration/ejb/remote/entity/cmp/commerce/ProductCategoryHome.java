@@ -21,17 +21,18 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.rmi.RemoteException;
 import java.util.Collection;
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 import javax.ejb.FinderException;
 
 public interface ProductCategoryHome extends EJBHome {
-    ProductCategory create() throws CreateException;
+    ProductCategory create() throws CreateException, RemoteException;
 
-    ProductCategory findByPrimaryKey(CompositeId id) throws FinderException;
+    ProductCategory findByPrimaryKey(CompositeId id) throws FinderException, RemoteException;
 
-    Collection findAll() throws FinderException;
+    Collection findAll() throws FinderException, RemoteException;
 
-    void resetId();
+    void resetId()throws RemoteException;
 }

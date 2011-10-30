@@ -88,6 +88,7 @@
                     <path name="org/omg/SecurityLevel1"/>
                     <path name="org/omg/SecurityLevel2"/>
                     <path name="org/omg/SecurityReplaceable"/>
+                    <path name="org/omg/SendingContext"/>
                     <path name="org/omg/TimeBase"/>
                     <path name="org/omg/dds"/>
                 </include-set>

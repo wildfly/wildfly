@@ -21,10 +21,14 @@
  */
 package org.jboss.as.test.integration.ejb.injection.ejbref;
 
+import java.rmi.RemoteException;
+
+import javax.ejb.EJBObject;
+
 /**
  * @author Stuart Douglas
  */
-public interface RemoteInterface {
+public interface RemoteInterface extends EJBObject{
 
-    String hello();
+    String hello() throws RemoteException;
 }

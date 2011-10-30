@@ -21,39 +21,40 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
-import java.util.Collection;
+import java.rmi.RemoteException;
+
 import javax.ejb.EJBObject;
 
 public interface Product extends EJBObject {
-    Long getId();
+    Long getId() throws RemoteException;
 
-    void setId(Long id);
+    void setId(Long id) throws RemoteException;
 
-    String getName();
+    String getName() throws RemoteException;
 
-    void setName(String name);
+    void setName(String name) throws RemoteException;
 
-    String getType();
+    String getType() throws RemoteException;
 
-    void setType(String type);
+    void setType(String type) throws RemoteException;
 
-    String getUnit();
+    String getUnit() throws RemoteException;
 
-    void setUnit(String unit);
+    void setUnit(String unit) throws RemoteException;
 
-    double getCostPerUnit();
+    double getCostPerUnit() throws RemoteException;
 
-    void setCostPerUnit(double cost);
+    void setCostPerUnit(double cost) throws RemoteException;
 
-    double getWeight();
+    double getWeight() throws RemoteException;
 
-    void setWeight(double weight);
+    void setWeight(double weight) throws RemoteException;
 
-    double getLength();
+    double getLength() throws RemoteException;
 
-    void setLength(double length);
+    void setLength(double length) throws RemoteException;
 
-    double getGirth();
+    double getGirth() throws RemoteException;
 
-    void setGirth(double girth);
+    void setGirth(double girth) throws RemoteException;
 }

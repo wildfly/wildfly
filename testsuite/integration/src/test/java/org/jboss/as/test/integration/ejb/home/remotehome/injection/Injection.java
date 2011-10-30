@@ -21,11 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.home.remotehome.injection;
 
+import java.rmi.RemoteException;
+
+import javax.ejb.EJBObject;
+
 /**
  * @author Stuart Douglas
  */
-public interface Injection {
+public interface Injection extends EJBObject {
 
-    String message();
+    String message() throws RemoteException;
 
 }

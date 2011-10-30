@@ -21,12 +21,6 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-
-import javax.ejb.LocalHome;
-import javax.ejb.RemoteHome;
-
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -43,6 +37,11 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.Module;
+
+import javax.ejb.LocalHome;
+import javax.ejb.RemoteHome;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
  * Merging procesor for home and local home views
@@ -150,6 +149,9 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                                     }
                                     remote = method.getReturnType();
                                 }
+                            }
+                            if(remote == null) {
+                                throw new DeploymentUnitProcessingException("Could not determine remove interface type from home " + homeClass + " for bean " + description.getEJBName());
                             }
                             description.addEjbObjectView(remote.getName());
                         }

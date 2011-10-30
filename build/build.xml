@@ -697,6 +697,10 @@
             <maven-resource group="org.jboss.interceptor" artifact="jboss-interceptor-spi"/>
         </module-def>
 
+        <module-def name="org.jboss.integration.jboss-corba-ots-spi">
+            <maven-resource group="org.jboss.integration" artifact="jboss-corba-ots-spi"/>
+        </module-def>
+
         <module-def name="org.jboss.invocation">
             <maven-resource group="org.jboss.invocation" artifact="jboss-invocation"/>
         </module-def>

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Set;
 import javax.ejb.CreateException;
@@ -28,25 +29,25 @@ import javax.ejb.EJBHome;
 import javax.ejb.FinderException;
 
 public interface OrderHome extends EJBHome {
-    Order create() throws CreateException;
+    Order create() throws CreateException, RemoteException;
 
-    Order create(Long id) throws CreateException;
+    Order create(Long id) throws CreateException, RemoteException;
 
-    Order findByPrimaryKey(Long ordernumber) throws FinderException;
+    Order findByPrimaryKey(Long ordernumber) throws FinderException, RemoteException;
 
-    Collection findByStatus(String status) throws FinderException;
+    Collection findByStatus(String status) throws FinderException, RemoteException;
 
-    Collection findAll() throws FinderException;
+    Collection findAll() throws FinderException, RemoteException;
 
-    Collection findDoubleJoin(int a, int b) throws FinderException;
+    Collection findDoubleJoin(int a, int b) throws FinderException, RemoteException;
 
-    Collection findWithLimitOffset(int offset, int limit) throws FinderException;
+    Collection findWithLimitOffset(int offset, int limit) throws FinderException, RemoteException;
 
     Set getStuff(String jbossQl, Object[] arguments)
-            throws FinderException;
+            throws FinderException, RemoteException;
 
     Set selectLazy(String jbossQl, Object[] arguments)
-            throws FinderException;
+            throws FinderException, RemoteException;
 
-    void resetId();
+    void resetId() throws RemoteException;
 }

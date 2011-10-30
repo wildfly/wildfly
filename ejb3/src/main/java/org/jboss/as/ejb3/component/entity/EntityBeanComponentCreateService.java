@@ -21,10 +21,6 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -33,6 +29,11 @@ import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
 
 /**
  * @author Stuart Douglas
@@ -43,6 +44,7 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
     private final Class<EJBLocalHome> localHomeClass;
     private final Class<EJBObject> remoteClass;
     private final Class<EJBLocalObject> localClass;
+    private final Class<Object> primaryKeyClass;
 
     public EntityBeanComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
         super(componentConfiguration, ejbJarConfiguration);
@@ -55,6 +57,7 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
         localHomeClass = (Class<EJBLocalHome>) load(classLoader, beanMetaData.getLocalHome());
         localClass = (Class<EJBLocalObject>) load(classLoader, beanMetaData.getLocal());
         remoteClass = (Class<EJBObject>) load(classLoader, beanMetaData.getRemote());
+        primaryKeyClass = (Class<Object>) load(classLoader, beanMetaData.getPrimKeyClass());
     }
 
     private Class<?> load(ClassLoader classLoader, String ejbClass) {
@@ -94,5 +97,9 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
 
     public Class<EJBLocalObject> getLocalClass() {
         return localClass;
+    }
+
+    public Class<Object> getPrimaryKeyClass() {
+        return primaryKeyClass;
     }
 }
