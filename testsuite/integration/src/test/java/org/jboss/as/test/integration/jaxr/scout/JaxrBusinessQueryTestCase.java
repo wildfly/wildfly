@@ -19,109 +19,101 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jaxr.scout.publish;
+package org.jboss.as.test.integration.jaxr.scout;
 
 
-import org.jboss.as.test.integration.jaxr.scout.JaxrBaseTestCase;
-import org.jboss.logging.Logger;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.jaxr.scout.SaajTransport;
+import org.jboss.as.test.integration.jaxr.scout.JaxrTestBase;
+import org.jboss.osgi.testing.ManifestBuilder;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.xml.registry.BulkResponse;
 import javax.xml.registry.JAXRException;
 import javax.xml.registry.JAXRResponse;
 import javax.xml.registry.infomodel.Key;
 import javax.xml.registry.infomodel.Organization;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-/**
- * Tests Jaxr Save Organization
- *
- * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
- * @since Dec 29, 2004
+/** Tests Jaxr capability to do business queries
+ *  @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
+ *  @since Dec 29, 2004
  */
+@RunWith(Arquillian.class)
+public class JaxrBusinessQueryTestCase extends JaxrTestBase {
 
-public class JaxrSaveOrganizationTestCase extends JaxrBaseTestCase {
-
-    private static Logger log = Logger.getLogger(JaxrSaveOrganizationTestCase.class);
-
+    private String querystr = "JBOSS";
     private Key orgKey = null;
 
-    @After
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        if (this.orgKey != null)
-            this.deleteOrganization(orgKey);
+    @Deployment
+    public static JavaArchive deployment() {
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jaxr-business-query-test");
+        archive.addClasses(JaxrTestBase.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                ManifestBuilder builder = ManifestBuilder.newInstance();
+                builder.addManifestHeader("Dependencies", "org.apache.scout,org.jboss.as.jaxr");
+                return builder.openStream();
+            }
+        });
+        return archive;
     }
 
-    @Test
-    public void testSaveOrg() throws JAXRException {
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
         String keyid = "";
         login();
-        Organization org = null;
         try {
-            rs = connection.getRegistryService();
-
-            blm = rs.getBusinessLifeCycleManager();
+            getJAXREssentials();
             Collection orgs = new ArrayList();
-            org = createOrganization("JBOSS");
+            Organization org = createOrganization("JBOSS");
 
             orgs.add(org);
             BulkResponse br = blm.saveOrganizations(orgs);
             if (br.getStatus() == JAXRResponse.STATUS_SUCCESS) {
-                if ("true".equalsIgnoreCase(debugProp))
-                    System.out.println("Organization Saved");
                 Collection coll = br.getCollection();
                 Iterator iter = coll.iterator();
                 while (iter.hasNext()) {
                     Key key = (Key) iter.next();
                     keyid = key.getId();
-                    if ("true".equalsIgnoreCase(debugProp))
-                        System.out.println("Saved Key=" + key.getId());
                     Assert.assertNotNull(keyid);
+                    orgKey = key;
                 }//end while
             } else {
-                System.err.println("JAXRExceptions " +
-                        "occurred during save:");
                 Collection exceptions = br.getExceptions();
                 Iterator iter = exceptions.iterator();
                 while (iter.hasNext()) {
                     Exception e = (Exception) iter.next();
-                    System.err.println(e.toString());
                     Assert.fail(e.toString());
                 }
             }
-            checkBusinessExists("JBOSS");
         } catch (JAXRException e) {
-            log.error("Exception:", e);
+            e.printStackTrace();
             Assert.fail(e.getMessage());
-        } finally {
-            if (org != null) {
-                try {
-                    Key orgkey = org.getKey();
-                    if (orgkey != null)
-                        this.deleteOrganization(org.getKey());
-                } catch (Exception e) {
-                    log.error("Exception in finally:", e);
-                }
-            }
         }
     }
 
-    private void checkBusinessExists(String bizname) {
-        String request = "<find_business generic='2.0' xmlns='urn:uddi-org:api_v2'>" +
-                "<name xml:lang='en'>" + bizname + "</name></find_business>";
-        String response = null;
-        try {
-            response = rs.makeRegistrySpecificRequest(request);
-        } catch (Exception e) {
-            Assert.fail(e.getLocalizedMessage());
-        }
-        if (response == null || "".equals(response))
-            Assert.fail("Find Business failed");
+    @After
+    public void tearDown() throws Exception {
+        if (orgKey != null)
+            this.deleteOrganization(this.orgKey);
+        super.tearDown();
+    }
 
+    @Test
+    public void testBusinessQuery() throws JAXRException {
+        searchBusiness(querystr);
     }
 }

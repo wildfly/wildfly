@@ -19,18 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.jaxr.scout.query;
+package org.jboss.as.test.integration.jaxr.scout;
 
-/** Tests Jaxr capability to do business queries
- *  @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
- *  @since Dec 29, 2004
- */
-
-import org.jboss.as.test.integration.jaxr.scout.JaxrBaseTestCase;
-import org.junit.After;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.xml.registry.BulkResponse;
 import javax.xml.registry.JAXRException;
@@ -41,55 +36,87 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class JaxrBusinessQueryTestCase extends JaxrBaseTestCase {
-    protected String querystr = "JBOSS";
+/**
+ * Checks Deletion of Organization
+ *
+ * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
+ * @since Jan 3, 2005
+ */
+@RunWith(Arquillian.class)
+public class JaxrDeleteOrganizationTestCase extends JaxrTestBase
+{
+   private static Logger log = Logger.getLogger(JaxrDeleteAssociationTestCase.class);
 
-    private Key orgKey = null;
+    @Test
+    public void testDeleteOrgs() throws Exception
+    {
+        String keyid = this.saveOrg("DELETEORG");
+        Assert.assertNotNull(keyid);
+        Key key = blm.createKey(keyid);
+        this.deleteOrganization(key);
+    }
 
-    @Before
-    protected void setUp() throws Exception {
-        super.setUp();
+    private String saveOrg(String orgname)
+    {
         String keyid = "";
         login();
-        try {
+        Organization org = null;
+        try
+        {
             getJAXREssentials();
             Collection orgs = new ArrayList();
-            Organization org = createOrganization("JBOSS");
+            org = createOrganization("JBOSS");
 
             orgs.add(org);
             BulkResponse br = blm.saveOrganizations(orgs);
-            if (br.getStatus() == JAXRResponse.STATUS_SUCCESS) {
+            if (br.getStatus() == JAXRResponse.STATUS_SUCCESS)
+            {
+                if ("true".equalsIgnoreCase(debugProp))
+                    System.out.println("Organization Saved");
                 Collection coll = br.getCollection();
                 Iterator iter = coll.iterator();
-                while (iter.hasNext()) {
+                while (iter.hasNext())
+                {
                     Key key = (Key) iter.next();
                     keyid = key.getId();
+                    if ("true".equalsIgnoreCase(debugProp))
+                        System.out.println("Saved Key=" + key.getId());
                     Assert.assertNotNull(keyid);
-                    orgKey = key;
                 }//end while
-            } else {
+            } else
+            {
+                System.err.println("JAXRExceptions " +
+                        "occurred during save:");
                 Collection exceptions = br.getExceptions();
                 Iterator iter = exceptions.iterator();
-                while (iter.hasNext()) {
+                while (iter.hasNext())
+                {
                     Exception e = (Exception) iter.next();
+                    log.error("Exception:",e);
                     Assert.fail(e.toString());
                 }
             }
-        } catch (JAXRException e) {
-            e.printStackTrace();
+        } catch (JAXRException e)
+        {
+            log.error("Exception:",e);
             Assert.fail(e.getMessage());
         }
-    }
-
-    @After
-    protected void tearDown() throws Exception {
-        if (orgKey != null)
-            this.deleteOrganization(this.orgKey);
-        super.tearDown();
-    }
-
-    @Test
-    public void testBusinessQuery() throws JAXRException {
-        searchBusiness(querystr);
+        finally
+        {
+           if(org != null)
+           {
+              try
+              {
+                 Key orgkey = org.getKey();
+                 if(orgkey != null)
+                   this.deleteOrganization(org.getKey()); 
+              }
+              catch(Exception e)
+              {
+                 log.error("Cleanup failed:",e); 
+              }  
+           }
+        }
+        return keyid;
     }
 }
