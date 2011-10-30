@@ -22,6 +22,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <module xmlns="urn:jboss:module:1.1" name="sun.jdk">
+    <resources>
+        <!-- currently jboss modules has not way of importing services from
+        classes.jar so we duplicate them here -->
+        <resource-root path="service-loader-resources"/>
+    </resources>
     <dependencies>
         <system export="true">
             <paths>
