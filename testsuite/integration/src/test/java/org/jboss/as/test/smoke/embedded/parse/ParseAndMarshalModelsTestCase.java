@@ -243,22 +243,22 @@ public class ParseAndMarshalModelsTestCase {
     // <timeout></timeout> element. So reparse doesn't add the element.
     // Solution is to remove the empty element.
     private void fixupDs(ModelNode node) {
-        if (node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
-            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").remove("set-tx-query-timeout");
-            //marshall/unmarshall without real server startup leave enabled to false
-            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
-        }
+//        if (node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
+//            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").remove("set-tx-query-timeout");
+//            //marshall/unmarshall without real server startup leave enabled to false
+//            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
+//        }
     }
 
      private void fixupDsDomain(ModelNode node) {
-        if (node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
-            //marshall/unmarshall without real server startup leave enabled to false
-            node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
-        }
-        if (node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
-            //marshall/unmarshall without real server startup leave enabled to false
-            node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
-        }
+//        if (node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
+//            //marshall/unmarshall without real server startup leave enabled to false
+//            node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
+//        }
+//        if (node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
+//            //marshall/unmarshall without real server startup leave enabled to false
+//            node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
+//        }
     }
 
     private void fixupOSGiStandalone(ModelNode node1, ModelNode node2) {
@@ -334,7 +334,7 @@ public class ParseAndMarshalModelsTestCase {
 
         } else {
             try {
-                Assert.assertEquals("\n\"" + node1.asString() + "\"\n\"" + node2.asString() + "\"\n-----", node2.asString().trim(), node1.asString().trim());
+                Assert.assertEquals("\n\"" + node1.asString() + "\"\n\"" + node2.asString() + "\"\n-----", node1.asString().trim(), node2.asString().trim());
             } catch (AssertionFailedError error) {
                 throw error;
             }

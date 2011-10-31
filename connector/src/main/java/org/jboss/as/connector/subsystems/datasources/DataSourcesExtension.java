@@ -326,7 +326,7 @@ public class DataSourcesExtension implements Extension {
                             : DataSources.Tag.DATASOURCE.getLocalName());
                     JNDINAME.marshallAsAttribute(dataSourceNode, false, writer);
                     POOLNAME.marshallAsAttribute(dataSourceNode, false, writer);
-                    ENABLED.marshallAsAttribute(dataSourceNode, false, writer);
+                    ENABLED.marshallAsAttribute(dataSourceNode, writer);
                     JTA.marshallAsAttribute(dataSourceNode, false, writer);
                     USE_JAVA_CONTEXT.marshallAsAttribute(dataSourceNode, false, writer);
                     SPY.marshallAsAttribute(dataSourceNode, false, writer);
