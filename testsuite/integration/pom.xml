@@ -354,9 +354,6 @@
                                     </additionalClasspathElements>
 
                                     <reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>
-                                    <excludes>
-                                        <exclude>**/*SecondTestCase.java</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
 
