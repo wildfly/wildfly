@@ -31,12 +31,6 @@
     <dependencies>
         <module name="javax.api" />
         <module name="javax.xml.soap.api" />
-        <system>
-            <paths>
-                <path name="com/sun/org/apache/xerces/internal"/>
-                <path name="com/sun/org/apache/xerces/internal/dom"/>
-                <path name="com/sun/org/apache/xerces/internal/jaxp"/>
-            </paths>
-        </system>
+        <module name="org.apache.xerces" services="import" />
     </dependencies>
 </module>

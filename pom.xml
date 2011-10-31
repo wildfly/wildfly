@@ -228,7 +228,7 @@
         <version.org.w3c.css.sac>1.3</version.org.w3c.css.sac>
         <version.osgi>4.2.0</version.osgi>
         <version.sun.jaxb>2.2</version.sun.jaxb>
-        <version.sun.saaj-impl>1.3.2</version.sun.saaj-impl>
+        <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.wsdl4j>1.6.2</version.wsdl4j>
 
         <!-- Non-default plugin versions and configuration -->
