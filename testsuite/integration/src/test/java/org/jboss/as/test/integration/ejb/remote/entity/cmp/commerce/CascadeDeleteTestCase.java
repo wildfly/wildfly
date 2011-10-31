@@ -21,101 +21,132 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.net.URI;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import javax.ejb.EJBHome;
 import javax.ejb.ObjectNotFoundException;
-
-import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.ejb.client.remoting.IoFutureHelper;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
+import org.junit.AfterClass;
 import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
+import org.xnio.Options;
 
-@RunWith(CmpTestRunner.class)
-public class CascadeDeleteTestCase extends AbstractCmpTest {
+@RunWith(Arquillian.class)
+@RunAsClient
+public class CascadeDeleteTestCase {
+
+    private static final String APP_NAME = "cmp-commerce";
+    private static final String MODULE_NAME = "ejb";
+
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static Connection connection;
+    private EJBClientContext ejbClientContext;
+
     @Deployment
     public static Archive<?> deploy() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(CascadeDeleteTestCase.class.getPackage());
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
-        AbstractCmpTest.addDeploymentAssets(jar);
-        return jar;
+        ear.addAsModule(jar);
+        return ear;
+    }
+
+    /**
+     * Create and setup the remoting connection
+     *
+     * @throws Exception
+     */
+    @BeforeClass
+    public static void beforeTestClass() throws Exception {
+        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+        endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+
+        // open a connection
+        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+        connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
+    }
+
+    @AfterClass
+    public static void afterTestClass() throws Exception {
+        executor.shutdown();
+    }
+
+    /**
+     * Create and setup the EJB client context backed by the remoting receiver
+     *
+     * @throws Exception
+     */
+    @Before
+    public void beforeTest() throws Exception {
+        this.ejbClientContext = EJBClientContext.create();
+        this.ejbClientContext.registerConnection(connection);
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (this.ejbClientContext != null) {
+            EJBClientContext.suspendCurrent();
+        }
     }
 
     private OrderHome getOrderHome() {
-        try {
-            return (OrderHome) iniCtx.lookup("java:module/OrderEJB!" + OrderHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getOrderHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(OrderHome.class, "OrderEJB");
     }
 
     private ProductCategoryHome getProductCategoryHome() {
-        try {
-            return (ProductCategoryHome) iniCtx.lookup("java:module/ProductCategoryEJB!" + ProductCategoryHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getProductCategoryHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(ProductCategoryHome.class, "ProductCategoryEJB");
     }
 
     private ProductCategoryHome getProductCategoryBatchDeleteHome() {
-        try {
-            return (ProductCategoryHome) iniCtx.lookup("java:module/ProductCategoryBatchDeleteEJB!" + ProductCategoryHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getProductCategoryBatchDeleteHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(ProductCategoryHome.class, "ProductCategoryBatchDeleteEJB");
     }
 
     private ProductCategoryTypeHome getProductCategoryTypeHome() {
-        try {
-            return (ProductCategoryTypeHome) iniCtx.lookup("java:module/ProductCategoryTypeEJB!" + ProductCategoryTypeHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getProductCategoryTypeHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(ProductCategoryTypeHome.class, "ProductCategoryTypeEJB");
     }
 
     private ProductCategoryTypeHome getProductCategoryTypeBatchDeleteHome() {
-        try {
-            return (ProductCategoryTypeHome) iniCtx.lookup("java:module/ProductCategoryTypeBatchDeleteEJB!" + ProductCategoryTypeHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getProductCategoryTypeBatchDeleteHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(ProductCategoryTypeHome.class, "ProductCategoryTypeBatchDeleteEJB");
     }
 
     private LineItemHome getLineItemHome() {
-        try {
-            return (LineItemHome) iniCtx.lookup("java:module/LineItemEJB!" + LineItemHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getLineItemHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(LineItemHome.class, "LineItemEJB");
     }
 
     private AddressHome getAddressHome() {
-        try {
-            return (AddressHome) new InitialContext().lookup("java:module/AddressEJB!" + AddressHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getAddressHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(AddressHome.class, "AddressEJB");
+    }
+
+    private <T extends EJBHome> T getHome(final Class<T> homeClass, final String beanName) {
+        final EJBHomeLocator<T> locator = new EJBHomeLocator<T>(homeClass, APP_NAME, MODULE_NAME, beanName, "");
+        return EJBClient.createProxy(locator);
     }
 
     @Test
@@ -172,6 +203,8 @@ public class CascadeDeleteTestCase extends AbstractCmpTest {
         } catch (ObjectNotFoundException e) {
             // expected
         }
+
+        tearDownEjb();
     }
 
     @Test
@@ -224,6 +257,7 @@ public class CascadeDeleteTestCase extends AbstractCmpTest {
         } catch (ObjectNotFoundException e) {
             // expected
         }
+        tearDownEjb();
     }
 
     @Test
@@ -278,6 +312,7 @@ public class CascadeDeleteTestCase extends AbstractCmpTest {
         } catch (ObjectNotFoundException e) {
             // expected
         }
+        tearDownEjb();
     }
 
     public void tearDownEjb() throws Exception {

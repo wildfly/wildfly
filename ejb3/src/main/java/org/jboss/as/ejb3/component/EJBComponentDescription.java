@@ -45,6 +45,7 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.NamespaceConfigurator;
+import org.jboss.as.ee.component.NamespaceViewConfigurator;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
@@ -374,6 +375,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.addCurrentInvocationContextFactory(view);
         this.setupSecurityInterceptors(view);
         this.setupRemoteViewInterceptors(view);
+        view.getConfigurators().addFirst(new NamespaceViewConfigurator());
     }
 
     private void setupRemoteViewInterceptors(final EJBViewDescription view) {

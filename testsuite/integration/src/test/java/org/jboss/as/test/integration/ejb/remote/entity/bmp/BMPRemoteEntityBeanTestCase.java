@@ -22,71 +22,140 @@
 
 package org.jboss.as.test.integration.ejb.remote.entity.bmp;
 
+import java.net.URI;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.ejb.EJBMetaData;
 import javax.ejb.Handle;
 import javax.ejb.HomeHandle;
-import javax.ejb.NoSuchEJBException;
 import javax.ejb.RemoveException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.ejb.client.EntityEJBLocator;
+import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.ejb.client.remoting.IoFutureHelper;
+import org.jboss.logging.Logger;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
+import org.xnio.Options;
 
 /**
  * Tests bean managed persistence
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class BMPRemoteEntityBeanTestCase {
 
-    private static final String ARCHIVE_NAME = "SimpleLocalHomeTest.war";
+    private static final Logger logger = Logger.getLogger(BMPRemoteEntityBeanTestCase.class);
 
-    @ArquillianResource
-    private InitialContext iniCtx;
+    private static final String APP_NAME = "ejb-remote-test";
+    private static final String MODULE_NAME = "ejb";
+
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static Connection connection;
+    private EJBClientContext ejbClientContext;
 
     @Deployment
     public static Archive<?> deploy() {
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
+        jar.addPackage(BMPRemoteEntityBeanTestCase.class.getPackage());
+        jar.addAsManifestResource("ejb/remote/entity/bmp/ejb-jar.xml", "ejb-jar.xml");
+        ear.addAsModule(jar);
+        return ear;
+    }
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME);
-        war.addPackage(BMPRemoteEntityBeanTestCase.class.getPackage());
-        war.addAsWebInfResource("ejb/remote/entity/bmp/ejb-jar.xml", "ejb-jar.xml");
-        return war;
+    /**
+     * Create and setup the remoting connection
+     *
+     * @throws Exception
+     */
+    @BeforeClass
+    public static void beforeTestClass() throws Exception {
+        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+        endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+
+        // open a connection
+        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+        connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
+    }
+
+    @AfterClass
+    public static void afterTestClass() throws Exception {
+        executor.shutdown();
+    }
+
+    /**
+     * Create and setup the EJB client context backed by the remoting receiver
+     *
+     * @throws Exception
+     */
+    @Before
+    public void beforeTest() throws Exception {
+        this.ejbClientContext = EJBClientContext.create();
+        this.ejbClientContext.registerConnection(connection);
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (this.ejbClientContext != null) {
+            EJBClientContext.suspendCurrent();
+        }
     }
 
     @Test
     public void testSimpleCreate() throws Exception {
-        DataStore.DATA.clear();
+        final DataStore dataStore = getDataStore();
+        dataStore.clear();
         final BMPHome home = getHome();
         final BMPInterface ejbInstance = home.createWithValue("Hello");
+        logger.info(((EntityEJBLocator)EJBClient.getLocatorFor(ejbInstance)).getPrimaryKey());
         final Integer pk = (Integer) ejbInstance.getPrimaryKey();
-        Assert.assertEquals("Hello", DataStore.DATA.get(pk));
+        Assert.assertEquals("Hello", dataStore.get(pk));
     }
 
     @Test
     public void testFindByPrimaryKey() throws Exception {
-        DataStore.DATA.clear();
+        final DataStore dataStore = getDataStore();
+        dataStore.clear();
         final BMPHome home = getHome();
-        DataStore.DATA.put(1099, "VALUE1099");
+        dataStore.put(1099, "VALUE1099");
         BMPInterface result = home.findByPrimaryKey(1099);
         Assert.assertEquals("VALUE1099", result.getMyField());
     }
 
     @Test
     public void testSingleResultFinderMethod() throws Exception {
-        DataStore.DATA.clear();
+        final DataStore dataStore = getDataStore();
+        dataStore.clear();
         final BMPHome home = getHome();
-        DataStore.DATA.put(888, "VALUE888");
+        dataStore.put(888, "VALUE888");
         BMPInterface result = home.findByValue("VALUE888");
         Assert.assertEquals("VALUE888", result.getMyField());
         Assert.assertEquals(888, result.getPrimaryKey());
@@ -95,10 +164,11 @@ public class BMPRemoteEntityBeanTestCase {
 
     @Test
     public void testCollectionFinderMethod() throws Exception {
-        DataStore.DATA.clear();
+        final DataStore dataStore = getDataStore();
+        dataStore.clear();
         final BMPHome home = getHome();
-        DataStore.DATA.put(1000, "Collection");
-        DataStore.DATA.put(1001, "Collection");
+        dataStore.put(1000, "Collection");
+        dataStore.put(1001, "Collection");
         Collection<BMPInterface> col = home.findCollection();
         for (BMPInterface result : col) {
             Assert.assertEquals("Collection", result.getMyField());
@@ -107,13 +177,14 @@ public class BMPRemoteEntityBeanTestCase {
 
     @Test
     public void testRemoveEntityBean() throws Exception {
-        DataStore.DATA.clear();
+        final DataStore dataStore = getDataStore();
+        dataStore.clear();
         final BMPHome home = getHome();
-        DataStore.DATA.put(56, "Remove");
+        dataStore.put(56, "Remove");
         BMPInterface result = home.findByPrimaryKey(56);
         Assert.assertEquals("Remove", result.getMyField());
         result.remove();
-        Assert.assertFalse(DataStore.DATA.containsKey(56));
+        Assert.assertFalse(dataStore.containsKey(56));
         try {
             result.getMyField();
             fail("Expected invocation on removed instance to fail");
@@ -124,10 +195,11 @@ public class BMPRemoteEntityBeanTestCase {
 
     @Test
     public void testIsIdentical() throws Exception {
-        DataStore.DATA.clear();
+        final DataStore dataStore = getDataStore();
+        dataStore.clear();
         final BMPHome home = getHome();
-        DataStore.DATA.put(40, "1");
-        DataStore.DATA.put(41, "2");
+        dataStore.put(40, "1");
+        dataStore.put(41, "2");
         BMPInterface bean1 = home.findByPrimaryKey(40);
         BMPInterface bean1_2 = home.findByPrimaryKey(40);
         BMPInterface bean2 = home.findByPrimaryKey(41);
@@ -143,9 +215,10 @@ public class BMPRemoteEntityBeanTestCase {
 
     @Test
     public void testGetEJBLocalHome() throws Exception {
-        DataStore.DATA.clear();
+        final DataStore dataStore = getDataStore();
+        dataStore.clear();
         final BMPHome home = getHome();
-        DataStore.DATA.put(23, "23");
+        dataStore.put(23, "23");
         BMPInterface result = home.findByPrimaryKey(23);
         final BMPHome home2 = (BMPHome) result.getEJBHome();
         Assert.assertEquals(SimpleBMPBean.HOME_METHOD_RETURN, home2.exampleHomeMethod());
@@ -183,11 +256,11 @@ public class BMPRemoteEntityBeanTestCase {
             }
 
             public void remove(Handle handle) throws RemoteException, RemoveException {
-              
+
             }
 
             public void remove(Object primaryKey) throws RemoteException, RemoveException {
-              
+
             }
 
             public EJBMetaData getEJBMetaData() throws RemoteException {
@@ -200,7 +273,13 @@ public class BMPRemoteEntityBeanTestCase {
         });
     }
 
-    private BMPHome getHome() throws NamingException {
-        return (BMPHome) iniCtx.lookup("java:global/SimpleLocalHomeTest/SimpleBMP!" + BMPHome.class.getName());
+    private BMPHome getHome() {
+        final EJBHomeLocator<BMPHome> locator = new EJBHomeLocator<BMPHome>(BMPHome.class, APP_NAME, MODULE_NAME, "SimpleBMP", "");
+        return EJBClient.createProxy(locator);
+    }
+
+    private DataStore getDataStore() {
+        final StatelessEJBLocator<DataStore> locator = new StatelessEJBLocator<DataStore>(DataStore.class, APP_NAME, MODULE_NAME, DataStoreBean.class.getSimpleName(), "");
+        return EJBClient.createProxy(locator);
     }
 }

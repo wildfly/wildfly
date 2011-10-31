@@ -47,14 +47,14 @@ public class SimpleBMPBean implements EntityBean {
 
     public Integer ejbCreateEmpty() {
         int primaryKey = ID.incrementAndGet();
-        DataStore.DATA.put(primaryKey, myField);
+        DataStoreBean.DATA.put(primaryKey, myField);
         return primaryKey;
     }
 
     public Integer ejbCreateWithValue(String value) {
         int primaryKey = ID.incrementAndGet();
         myField = value;
-        DataStore.DATA.put(primaryKey, myField);
+        DataStoreBean.DATA.put(primaryKey, myField);
         return primaryKey;
     }
 
@@ -71,7 +71,7 @@ public class SimpleBMPBean implements EntityBean {
     }
 
     public Integer ejbFindByValue(String value) {
-        for(Map.Entry<Integer, String> entry : DataStore.DATA.entrySet()) {
+        for(Map.Entry<Integer, String> entry : DataStoreBean.DATA.entrySet()) {
             if(entry.getValue().equals(value)) {
                 return entry.getKey();
             }
@@ -80,7 +80,7 @@ public class SimpleBMPBean implements EntityBean {
     }
 
     public Integer ejbFindByPrimaryKey(Integer primaryKey) {
-        return DataStore.DATA.containsKey(primaryKey) ?  primaryKey : null;
+        return DataStoreBean.DATA.containsKey(primaryKey) ?  primaryKey : null;
     }
 
     public Collection<Integer> ejbFindCollection() {
@@ -103,7 +103,7 @@ public class SimpleBMPBean implements EntityBean {
 
     @Override
     public void ejbRemove() throws RemoveException, EJBException, RemoteException {
-        DataStore.DATA.remove(entityContext.getPrimaryKey());
+        DataStoreBean.DATA.remove(entityContext.getPrimaryKey());
     }
 
 
@@ -120,15 +120,15 @@ public class SimpleBMPBean implements EntityBean {
 
     @Override
     public void ejbLoad() throws EJBException, RemoteException {
-        if(!DataStore.DATA.containsKey(entityContext.getPrimaryKey())) {
+        if(!DataStoreBean.DATA.containsKey(entityContext.getPrimaryKey())) {
             throw new NoSuchEJBException("no EJB with id: " + entityContext.getPrimaryKey());
         }
-        this.myField = DataStore.DATA.get(entityContext.getPrimaryKey());
+        this.myField = DataStoreBean.DATA.get(entityContext.getPrimaryKey());
     }
 
     @Override
     public void ejbStore() throws EJBException, RemoteException {
-        DataStore.DATA.put((Integer) entityContext.getPrimaryKey(), myField);
+        DataStoreBean.DATA.put((Integer) entityContext.getPrimaryKey(), myField);
     }
 
     public String getMyField() {

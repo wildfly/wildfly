@@ -27,6 +27,7 @@ import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
 import javax.naming.InitialContext;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import static org.junit.Assert.fail;
 
 
@@ -42,6 +43,7 @@ public abstract class LineItemBean implements EntityBean {
 
     public void ejbPostCreate() throws CreateException {
         try {
+            System.out.println("Current: " + NamespaceContextSelector.getCurrentSelector());
             ProductLocalHome ph = (ProductLocalHome) new InitialContext().lookup("java:module/ProductEJB!" + ProductLocalHome.class.getName());
             ProductLocal p = ph.create();
         } catch (CreateException e) {

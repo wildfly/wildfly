@@ -21,74 +21,124 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import javax.ejb.EJBHome;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
+import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.ejb.client.remoting.IoFutureHelper;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
+import org.xnio.Options;
 
 @RunWith(Arquillian.class)
-public class CommerceTestCase extends AbstractCmpTest {
+@RunAsClient
+public class CommerceTestCase {
+
+    private static final String APP_NAME = "cmp-commerce";
+    private static final String MODULE_NAME = "ejb";
+
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static Connection connection;
+    private EJBClientContext ejbClientContext;
+
     @Deployment
     public static Archive<?> deploy() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(CommerceTestCase.class.getPackage());
+        jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/MANIFEST.MF", "MANIFEST.MF");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
-        AbstractCmpTest.addDeploymentAssets(jar);
-        return jar;
+        ear.addAsModule(jar);
+        return ear;
+    }
+
+    /**
+     * Create and setup the remoting connection
+     *
+     * @throws Exception
+     */
+    @BeforeClass
+    public static void beforeTestClass() throws Exception {
+        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+        endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+
+        // open a connection
+        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+        connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
+    }
+
+    @AfterClass
+    public static void afterTestClass() throws Exception {
+        executor.shutdown();
+    }
+
+    /**
+     * Create and setup the EJB client context backed by the remoting receiver
+     *
+     * @throws Exception
+     */
+    @Before
+    public void beforeTest() throws Exception {
+        this.ejbClientContext = EJBClientContext.create();
+        this.ejbClientContext.registerConnection(connection);
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (this.ejbClientContext != null) {
+            EJBClientContext.suspendCurrent();
+        }
     }
 
     private OrderHome getOrderHome() {
-        try {
-            return (OrderHome) iniCtx.lookup("java:module/OrderEJB!" + OrderHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getOrderHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(OrderHome.class, "OrderEJB");
     }
 
     private LineItemHome getLineItemHome() {
-        try {
-            return (LineItemHome) iniCtx.lookup("java:module/LineItemEJB!" + LineItemHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getLineItemHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(LineItemHome.class, "LineItemEJB");
     }
 
+
     private ProductHome getProductHome() {
-        try {
-            return (ProductHome) iniCtx.lookup("java:module/ProductEJB!" + ProductHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getProductHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(ProductHome.class, "ProductEJB");
     }
 
     private AddressHome getAddressHome() {
-        try {
-            return (AddressHome) iniCtx.lookup("java:module/AddressEJB!" + AddressHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getAddressHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(AddressHome.class, "AddressEJB");
+    }
+
+    private <T extends EJBHome> T getHome(final Class<T> homeClass, final String beanName) {
+        final EJBHomeLocator<T> locator = new EJBHomeLocator<T>(homeClass, APP_NAME, MODULE_NAME, beanName, "");
+        return EJBClient.createProxy(locator);
     }
 
     @Test
@@ -102,6 +152,7 @@ public class CommerceTestCase extends AbstractCmpTest {
         Order o = oh.create();
         l = lh.createWithOrderId(o.getOrdernumber());
         assertEquals(l.getOrderNumber(), o.getOrdernumber());
+        tearDownEjb();
     }
 
     @Test
@@ -124,6 +175,7 @@ public class CommerceTestCase extends AbstractCmpTest {
         order = null;
         order = orderHome.findByPrimaryKey(ordernumber);
         assertEquals(order.getCreditCard(), creditCard);
+        tearDownEjb();
     }
 
     @Test
@@ -159,6 +211,7 @@ public class CommerceTestCase extends AbstractCmpTest {
         assertTrue(s.contains(orderCA2));
         assertTrue(!s.contains(orderMN));
         assertTrue(s.size() == 2);
+        tearDownEjb();
     }
 
     @Test
@@ -193,6 +246,7 @@ public class CommerceTestCase extends AbstractCmpTest {
         assertTrue(c.contains("CA"));
         assertTrue(c.contains("MN"));
         assertTrue(c.size() == 3);
+        tearDownEjb();
     }
 
     @Test
@@ -232,6 +286,7 @@ public class CommerceTestCase extends AbstractCmpTest {
         assertTrue(c.contains(shipCA2));
         assertTrue(c.contains(billCA1));
         assertTrue(c.size() == 3);
+        tearDownEjb();
     }
 
 
@@ -258,6 +313,7 @@ public class CommerceTestCase extends AbstractCmpTest {
         assertTrue(c.contains(order1));
         assertTrue(!c.contains(order2));
         assertTrue(c.size() == 1);
+        tearDownEjb();
     }
 
     @Test
@@ -270,6 +326,7 @@ public class CommerceTestCase extends AbstractCmpTest {
 
         assertTrue("order.isIdentical(order)", order.isIdentical(order));
         assertTrue("!order.isIdentical(lineItem)", !order.isIdentical(lineItem));
+        tearDownEjb();
     }
 
     @Test
@@ -277,7 +334,6 @@ public class CommerceTestCase extends AbstractCmpTest {
         getAddressHome().selectAddresses("");
     }
 
-    @After
     public void tearDownEjb() throws Exception {
         deleteAllOrders(getOrderHome());
         deleteAllLineItems(getLineItemHome());

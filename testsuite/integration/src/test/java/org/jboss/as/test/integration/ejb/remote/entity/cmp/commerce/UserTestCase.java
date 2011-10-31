@@ -21,44 +21,108 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.ejb.client.remoting.IoFutureHelper;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
+import org.xnio.Options;
 
-@RunWith(CmpTestRunner.class)
-public class UserTestCase extends AbstractCmpTest {
+@RunWith(Arquillian.class)
+@RunAsClient
+public class UserTestCase {
+    private static final String APP_NAME = "cmp-commerce";
+    private static final String MODULE_NAME = "ejb";
+
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static Connection connection;
+    private EJBClientContext ejbClientContext;
+
     @Deployment
     public static Archive<?> deploy() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
-        jar.addPackage(UserTestCase.class.getPackage());
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
+        jar.addPackage(CommerceTestCase.class.getPackage());
+        jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/MANIFEST.MF", "MANIFEST.MF");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
-        AbstractCmpTest.addDeploymentAssets(jar);
-        return jar;
+        ear.addAsModule(jar);
+        return ear;
+    }
+
+    /**
+     * Create and setup the remoting connection
+     *
+     * @throws Exception
+     */
+    @BeforeClass
+    public static void beforeTestClass() throws Exception {
+        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+        endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+
+        // open a connection
+        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+        connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
+    }
+
+    @AfterClass
+    public static void afterTestClass() throws Exception {
+        executor.shutdown();
+    }
+
+    /**
+     * Create and setup the EJB client context backed by the remoting receiver
+     *
+     * @throws Exception
+     */
+    @Before
+    public void beforeTest() throws Exception {
+        this.ejbClientContext = EJBClientContext.create();
+        this.ejbClientContext.registerConnection(connection);
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (this.ejbClientContext != null) {
+            EJBClientContext.suspendCurrent();
+        }
     }
 
     private UserHome getUserHome() {
-        try {
-            return (UserHome) iniCtx.lookup("java:global/cmp-commerce/UserEJB!" + UserHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getUserLocalHome: " + e.getMessage());
-        }
-        return null;
+        final EJBHomeLocator<UserHome> locator = new EJBHomeLocator<UserHome>(UserHome.class, APP_NAME, MODULE_NAME, "UserEJB", "");
+        return EJBClient.createProxy(locator);
     }
 
     @Test
-    public void testDeclaredSql() {
+    public void testDeclaredSql() throws Exception {
         UserHome userHome = getUserHome();
 
         try {
@@ -82,15 +146,10 @@ public class UserTestCase extends AbstractCmpTest {
             e.printStackTrace();
             fail("Error in testDeclaredSql");
         }
+
+        deleteAllUsers(userHome);
     }
 
-
-    public void setUpEjb() throws Exception {
-        deleteAllUsers(getUserHome());
-    }
-
-    public void tearDownEjb() throws Exception {
-    }
 
     public void deleteAllUsers(UserHome userHome) throws Exception {
         Iterator currentUsers = userHome.findAll().iterator();
