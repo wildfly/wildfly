@@ -129,6 +129,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
@@ -760,6 +761,13 @@ public class DataSourcesExtension implements Extension {
 
                     addOperation.get(DATASOURCE_DRIVER.getName()).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER.getName()));
                     result.add(addOperation);
+                    if (dataSource.hasDefined(ENABLED.getName()) && dataSource.get(ENABLED.getName()).asBoolean()) {
+                        final ModelNode enableOperation = new ModelNode();
+                        enableOperation.get(OP).set(ENABLE);
+                        enableOperation.get(OP_ADDR).set(address);
+                        enableOperation.get(PERSISTENT).set(dataSource.get(PERSISTENT));
+                        result.add(enableOperation);
+                    }
                 }
             }
 
@@ -774,6 +782,14 @@ public class DataSourcesExtension implements Extension {
 
                     addOperation.get(DATASOURCE_DRIVER.getName()).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER.getName()));
                     result.add(addOperation);
+
+                    if (dataSource.hasDefined(ENABLED.getName()) && dataSource.get(ENABLED.getName()).asBoolean()) {
+                        final ModelNode enableOperation = new ModelNode();
+                        enableOperation.get(OP).set(ENABLE);
+                        enableOperation.get(OP_ADDR).set(address);
+                        enableOperation.get(PERSISTENT).set(dataSource.get(PERSISTENT));
+                        result.add(enableOperation);
+                    }
                 }
             }
 
