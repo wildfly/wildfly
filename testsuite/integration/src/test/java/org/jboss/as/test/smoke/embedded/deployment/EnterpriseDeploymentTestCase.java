@@ -93,6 +93,7 @@ public class EnterpriseDeploymentTestCase {
         assertEquals("ServerDeploymentManager target", target.getDescription());
     }
 
+    @Ignore("AS7-2439")
     @Test
     public void testDistributeWebApp() throws Exception {
         ProgressObject progress = jsr88Deploy(getWebArchive());
