@@ -99,6 +99,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -310,14 +311,19 @@ public class DsParser extends AbstractParser {
         String jndiName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        boolean enabled = false;
+        boolean enabled = ENABLED.getDefaultValue().asBoolean();
+        // Don't persist the enabled flag unless the user set it
+        boolean persistEnabled = false;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
-                    final Location location = reader.getLocation();
-                    String value = rawAttributeText(reader, ENABLED.getXmlName());
-                    enabled = Boolean.parseBoolean(value);
+                    //final Location location = reader.getLocation();
                     //ENABLED.parseAndSetParameter(value, operation, location);
+                    String value = rawAttributeText(reader, ENABLED.getXmlName());
+                    if (value != null) {
+                        enabled = Boolean.parseBoolean(value);
+                        persistEnabled = true;
+                    }
                     break;
                 }
                 case JNDI_NAME: {
@@ -380,6 +386,7 @@ public class DsParser extends AbstractParser {
                             final ModelNode enableOperation = new ModelNode();
                             enableOperation.get(OP).set(ENABLE);
                             enableOperation.get(OP_ADDR).set(dsAddress);
+                            enableOperation.get(PERSISTENT).set(persistEnabled);
                             list.add(enableOperation);
                         }
                         return;
@@ -538,15 +545,19 @@ public class DsParser extends AbstractParser {
         String jndiName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        boolean enabled = false;
-
+        boolean enabled = ENABLED.getDefaultValue().asBoolean();
+        // Don't persist the enabled flag unless the user set it
+        boolean persistEnabled = false;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
-                    final Location location = reader.getLocation();
-                    String value = rawAttributeText(reader, ENABLED.getXmlName());
-                    enabled = Boolean.parseBoolean(value);
+                    //final Location location = reader.getLocation();
                     //ENABLED.parseAndSetParameter(value, operation, location);
+                    String value = rawAttributeText(reader, ENABLED.getXmlName());
+                    if (value != null) {
+                        enabled = Boolean.parseBoolean(value);
+                        persistEnabled = true;
+                    }
                     break;
                 }
                 case JNDI_NAME: {
@@ -610,6 +621,7 @@ public class DsParser extends AbstractParser {
                             final ModelNode enableOperation = new ModelNode();
                             enableOperation.get(OP).set(ENABLE);
                             enableOperation.get(OP_ADDR).set(dsAddress);
+                            enableOperation.get(PERSISTENT).set(persistEnabled);
                             list.add(enableOperation);
                         }
                         return;
