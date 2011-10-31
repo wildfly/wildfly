@@ -44,7 +44,7 @@ import javax.ejb.TransactionAttributeType;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */
@@ -66,7 +66,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                 EJBViewDescription ejbView = (EJBViewDescription) view;
                 processTransactionAttributeAnnotation(applicationClasses, deploymentReflectionIndex, viewClass, ejbView.getMethodIntf(), componentConfiguration);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Could not load EJB view class ", e);
+                throw MESSAGES.failToLoadEjbViewClass(e);
             }
 
         }

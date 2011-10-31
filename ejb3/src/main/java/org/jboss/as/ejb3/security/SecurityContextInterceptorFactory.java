@@ -29,30 +29,30 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class SecurityContextInterceptorFactory extends ComponentInterceptorFactory {
 
-    private static final Logger logger = Logger.getLogger(SecurityContextInterceptorFactory.class);
 
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
         if (component instanceof EJBComponent == false) {
-            throw new IllegalStateException("Unexpected component type: " + component.getClass() + " expected: " + EJBComponent.class);
+            throw MESSAGES.unexpectedComponent(component, EJBComponent.class);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
         final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
         final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
         final String securityDomain = securityMetaData.getSecurityDomain();
         if (securityDomain == null) {
-            throw new IllegalStateException("EJB " + ejbComponent.getComponentName() + " is enabled for security but doesn't have a security domain set");
+            throw MESSAGES.invalidSecurityForDomainSet(ejbComponent.getComponentName());
         }
-        if (logger.isTraceEnabled()) {
-            logger.trace("Using security domain: " + securityDomain + " for EJB " + ejbComponent.getComponentName());
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.trace("Using security domain: " + securityDomain + " for EJB " + ejbComponent.getComponentName());
         }
         final String runAs = securityMetaData.getRunAs();
         // TODO - We should do something with DeclaredRoles although it never has much meaning in JBoss AS

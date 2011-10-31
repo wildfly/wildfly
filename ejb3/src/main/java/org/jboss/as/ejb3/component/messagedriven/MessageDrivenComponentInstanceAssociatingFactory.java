@@ -28,6 +28,7 @@ import org.jboss.as.ejb3.component.interceptors.NonPooledEJBComponentInstanceAss
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -47,7 +48,7 @@ public class MessageDrivenComponentInstanceAssociatingFactory extends ComponentI
     @Override
     protected Interceptor create(Component component, InterceptorFactoryContext context) {
         if (component instanceof MessageDrivenComponent == false) {
-            throw new IllegalStateException("Unexpected component type: " + component.getClass() + " expected: " + MessageDrivenComponent.class);
+            throw MESSAGES.unexpectedComponent(component,MessageDrivenComponent.class);
         }
         final MessageDrivenComponent mdbComponent = (MessageDrivenComponent) component;
         if (mdbComponent.getPool() != null) {

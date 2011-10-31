@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.component.pool;
 
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * User: jpai
  */
@@ -34,7 +34,7 @@ public abstract class PoolConfig {
 
     public PoolConfig(final String poolName) {
         if (poolName == null || poolName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Pool name cannot be null or empty");
+            throw MESSAGES.poolConfigIsEmpty();
         }
         this.poolName = poolName;
     }

@@ -33,16 +33,15 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.ejb3.annotation.SecurityDomain;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * @author Stuart Douglas
  */
 public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
-    private static final Logger logger = Logger.getLogger(SecurityDomainMergingProcessor.class);
 
     public SecurityDomainMergingProcessor() {
         super(EJBComponentDescription.class);
@@ -60,8 +59,8 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
             return;
         }
         if (!securityDomain.getClassLevelAnnotations().isEmpty()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("EJB " + description.getEJBName() + " is part of security domain " + securityDomain.getClassLevelAnnotations().get(0));
+            if (ROOT_LOGGER.isDebugEnabled()) {
+                ROOT_LOGGER.debug("EJB " + description.getEJBName() + " is part of security domain " + securityDomain.getClassLevelAnnotations().get(0));
             }
             description.setSecurityDomain(securityDomain.getClassLevelAnnotations().get(0));
         }

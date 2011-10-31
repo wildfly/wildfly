@@ -53,6 +53,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.msc.service.ServiceBuilder;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Processor that hooks up home interfaces for session beans
@@ -97,7 +98,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                     if (method.getName().startsWith("create")) {
                         //we have a create method
                         if (ejbObjectView == null) {
-                            throw new RuntimeException(componentDescription.getComponentName() + " does not have a EJB 2.x local interface");
+                            throw MESSAGES.invalidEjbLocalInterface(componentDescription.getComponentName());
                         }
                         final ViewDescription createdView = ejbObjectView;
 
@@ -155,7 +156,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
         } else if (description instanceof StatefulComponentDescription) {
             return resolveStatefulInitMethod((StatefulComponentDescription) description, method);
         } else {
-            throw new DeploymentUnitProcessingException("Local Home not allowed for " + description);
+            throw MESSAGES.localHomeNotAllow(description);
         }
     }
 
@@ -190,7 +191,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
             }
         }
         if (initMethod == null) {
-            throw new DeploymentUnitProcessingException("Could not resolve corresponding ejbCreate or @Init method for home interface method " + method + " on EJB " + description.getEJBClassName());
+            throw MESSAGES.failToCallEjbCreateForHomeInterface(method,description.getEJBClassName());
         }
         return initMethod;
     }

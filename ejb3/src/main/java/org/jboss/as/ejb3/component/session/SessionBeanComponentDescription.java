@@ -59,14 +59,12 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceName;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Jaikiran Pai
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class SessionBeanComponentDescription extends EJBComponentDescription {
-
-    private static final Logger logger = Logger.getLogger(SessionBeanComponentDescription.class);
 
     /**
      * Flag marking the presence/absence of a no-interface view on the session bean
@@ -190,8 +188,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         for (final ViewDescription view : getViews()) {
             ejbView = (EJBViewDescription) view;
             if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.REMOTE) {
-                throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
-                        + " as local view since it's already marked as remote view for bean: " + getEJBName());
+                throw MESSAGES.failToAddClassToLocalView(viewClassName,getEJBName());
             }
         }
     }
@@ -201,8 +198,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         for (final ViewDescription view : getViews()) {
             ejbView = (EJBViewDescription) view;
             if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.LOCAL) {
-                throw new IllegalStateException("[EJB 3.1 spec, section 4.9.7] - Can't add view class: " + viewClassName
-                        + " as remote view since it's already marked as local view for bean: " + getEJBName());
+                throw MESSAGES.failToAddClassToLocalView(viewClassName,getEJBName());
             }
         }
     }

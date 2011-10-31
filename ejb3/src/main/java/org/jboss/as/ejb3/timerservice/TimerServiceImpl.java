@@ -1,6 +1,6 @@
 /*
-c * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -75,7 +75,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * MK2 implementation of EJB3.1 {@link TimerService}
@@ -161,7 +162,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.transactionManager = component.getTransactionManager();
         final TimedObjectInvoker invoker = component.getTimedObjectInvoker();
         if (invoker == null) {
-            throw new StartException("No timed object invoke for " + component);
+            throw MESSAGES.invokerIsNull();
         }
         final List<ScheduleTimer> timers = new ArrayList<ScheduleTimer>();
 
@@ -217,13 +218,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             throws IllegalArgumentException, IllegalStateException, EJBException {
         handleLifecycleCallback();
         if (initialExpiration == null) {
-            throw new IllegalArgumentException("initialExpiration cannot be null while creating a timer");
+            throw MESSAGES.initialExpirationIsNullCreatingTimer();
         }
         if (initialExpiration.getTime() < 0) {
-            throw new IllegalArgumentException("initialExpiration.getTime() cannot be negative while creating a timer");
+            throw MESSAGES.invalidInitialExpiration("initialExpiration.getTime()");
         }
         if (intervalDuration < 0) {
-            throw new IllegalArgumentException("intervalDuration cannot be negative while creating a timer");
+            throw MESSAGES.invalidInitialExpiration("intervalDuration");
         }
         return this.createTimer(initialExpiration, intervalDuration, timerConfig.getInfo(), timerConfig.isPersistent());
     }
@@ -236,10 +237,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             throws IllegalArgumentException, IllegalStateException, EJBException {
         handleLifecycleCallback();
         if (initialDuration < 0) {
-            throw new IllegalArgumentException("initialDuration cannot be negative while creating interval timer");
+            throw MESSAGES.invalidInitialExpiration("intervalDuration");
         }
         if (intervalDuration < 0) {
-            throw new IllegalArgumentException("intervalDuration cannot be negative while creating interval timer");
+            throw MESSAGES.invalidInitialExpiration("intervalDuration");
         }
 
         return this.createIntervalTimer(new Date(System.currentTimeMillis() + initialDuration), intervalDuration, timerConfig);
@@ -253,11 +254,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             IllegalStateException, EJBException {
         handleLifecycleCallback();
         if (expiration == null) {
-            throw new IllegalArgumentException("expiration cannot be null while creating a single action timer");
+            throw MESSAGES.expirationIsNull();
         }
         if (expiration.getTime() < 0) {
-            throw new IllegalArgumentException(
-                    "expiration.getTime() cannot be negative while creating a single action timer");
+            throw MESSAGES.invalidExpirationActionTimer();
         }
         return this.createTimer(expiration, 0, timerConfig.getInfo(), timerConfig.isPersistent());
     }
@@ -270,7 +270,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             IllegalStateException, EJBException {
         handleLifecycleCallback();
         if (duration < 0)
-            throw new IllegalArgumentException("duration cannot be negative while creating single action timer");
+            throw MESSAGES.invalidDurationActionTimer();
 
         return createTimer(new Date(System.currentTimeMillis() + duration), 0, timerConfig.getInfo(), timerConfig
                 .isPersistent());
@@ -284,8 +284,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             EJBException {
         handleLifecycleCallback();
         if (duration < 0)
-            throw new IllegalArgumentException("Duration cannot negative while creating the timer");
-
+            throw MESSAGES.invalidDurationTimer();
         return createTimer(new Date(System.currentTimeMillis() + duration), 0, info, true);
     }
 
@@ -297,10 +296,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             EJBException {
         handleLifecycleCallback();
         if (expiration == null) {
-            throw new IllegalArgumentException("Expiration date cannot be null while creating a timer");
+            throw MESSAGES.expirationDateIsNull();
         }
         if (expiration.getTime() < 0) {
-            throw new IllegalArgumentException("expiration.getTime() cannot be negative while creating a timer");
+            throw MESSAGES.invalidExpirationTimer();
         }
         return this.createTimer(expiration, 0, info, true);
     }
@@ -313,10 +312,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             throws IllegalArgumentException, IllegalStateException, EJBException {
         handleLifecycleCallback();
         if (initialDuration < 0) {
-            throw new IllegalArgumentException("Initial duration cannot be negative while creating timer");
+            throw MESSAGES.invalidInitialDurationTimer();
         }
         if (intervalDuration < 0) {
-            throw new IllegalArgumentException("Interval cannot be negative while creating timer");
+            throw MESSAGES.invalidIntervalTimer();
         }
         return this.createTimer(new Date(System.currentTimeMillis() + initialDuration), intervalDuration, info, true);
 
@@ -330,13 +329,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             throws IllegalArgumentException, IllegalStateException, EJBException {
         handleLifecycleCallback();
         if (initialExpiration == null) {
-            throw new IllegalArgumentException("intial expiration date cannot be null while creating a timer");
+            throw MESSAGES.initialExpirationDateIsNull();
         }
         if (initialExpiration.getTime() < 0) {
-            throw new IllegalArgumentException("expiration.getTime() cannot be negative while creating a timer");
+            throw MESSAGES.invalidExpirationTimer();
         }
         if (intervalDuration < 0) {
-            throw new IllegalArgumentException("interval duration cannot be negative while creating timer");
+            throw MESSAGES.invalidIntervalDurationTimer();
         }
         return this.createTimer(initialExpiration, intervalDuration, info, true);
     }
@@ -397,13 +396,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent) {
         if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
-            throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of non-singleton EJBs");
+            throw MESSAGES.failToCreateTimerDoLifecycle();
         }
         if (initialExpiration == null) {
-            throw new IllegalArgumentException("initial expiration is null");
+            throw MESSAGES.initialExpirationIsNull();
         }
         if (intervalDuration < 0) {
-            throw new IllegalArgumentException("interval duration is negative");
+            throw MESSAGES.invalidIntervalDuration();
         }
 
         // create an id for the new timer instance
@@ -437,10 +436,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private TimerImpl createCalendarTimer(ScheduleExpression schedule,
                                           Serializable info, boolean persistent, Method timeoutMethod) {
         if (this.isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
-            throw new IllegalStateException("Creation of timers is not allowed during lifecycle callback of non-singleton EJBs");
+            throw MESSAGES.failToCreateTimerDoLifecycle();
         }
         if (schedule == null) {
-            throw new IllegalArgumentException("schedule is null");
+            throw MESSAGES.scheduleIsNull();
         }
         // parse the passed schedule and create the calendar based timeout
         CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
@@ -555,7 +554,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 persistentWaitingOnTxCompletionTimers.remove(timer.handle);
                 //if timer persistence is disabled
                 if (timerPersistence == null) {
-                    logger.warn("Timer persistence is not enabled, persistent timers will not survive JVM restarts");
+                    ROOT_LOGGER.timerPersistenceNotEnable();
                     return;
                 }
                 if (timerEntity.getTimerState() == TimerState.EXPIRED ||
@@ -616,7 +615,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         //timers are removed from the list as they are loaded
         final List<ScheduleTimer> newAutoTimers = new LinkedList<ScheduleTimer>(autoTimers);
 
-        logger.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: "
+        ROOT_LOGGER.debug("Found " + restorableTimers.size() + " active timers for timedObjectId: "
                 + this.ejbComponentInjectedValue.getValue().getTimedObjectInvoker().getTimedObjectId());
         // now "start" each of the restorable timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
@@ -647,7 +646,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 }
                 if (found) {
                     startTimer(activeTimer);
-                    logger.debug("Started timer: " + activeTimer);
+                    ROOT_LOGGER.debug("Started timer: " + activeTimer);
                     // save any changes to the state (that will have happened on call to startTimer)
                     this.persistTimer(activeTimer);
                 } else {
@@ -657,7 +656,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             }
             //TODO: we need to make sure that these only fire one event after being restored
             this.startTimer(activeTimer);
-            logger.debug("Started timer: " + activeTimer);
+            ROOT_LOGGER.debug("Started timer: " + activeTimer);
         }
 
         for (ScheduleTimer timer : newAutoTimers) {
@@ -783,7 +782,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     protected void scheduleTimeout(TimerImpl timer) {
         Date nextExpiration = timer.getNextExpiration();
         if (nextExpiration == null) {
-            logger.info("Next expiration is null. No tasks will be scheduled for timer " + timer);
+            ROOT_LOGGER.nextExpirationIsNull(timer);
             return;
         }
         // create the timer task
@@ -796,7 +795,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
         long intervalDuration = timer.getInterval();
         if (intervalDuration > 0) {
-            logger.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
+            ROOT_LOGGER.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
                     + " milli seconds from now with repeated interval=" + intervalDuration);
             // schedule the task
             final Task task = new Task(timerTask);
@@ -804,7 +803,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             // maintain it in timerservice for future use (like cancellation)
             this.scheduledTimerFutures.put(timer.getTimerHandle(), task);
         } else {
-            logger.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
+            ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
             // schedule the task
             this.timerInjectedValue.getValue().schedule(new Task(timerTask), delay);
             // maintain it in timerservice for future use (like cancellation)
@@ -994,9 +993,9 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 tx.setRollbackOnly();
             }
         } catch (IllegalStateException ise) {
-            logger.error("Ignoring exception during setRollbackOnly: ", ise);
+            ROOT_LOGGER.ignoringException(ise);
         } catch (SystemException se) {
-            logger.error("Ignoring exception during setRollbackOnly: ", se);
+            ROOT_LOGGER.ignoringException(se);
         }
     }
 
@@ -1004,7 +1003,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         try {
             this.transactionManager.begin();
         } catch (Throwable t) {
-            throw new RuntimeException("Could not start transaction", t);
+            throw MESSAGES.failToStartTransaction(t);
         }
     }
 
@@ -1012,7 +1011,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         try {
             Transaction tx = this.transactionManager.getTransaction();
             if (tx == null) {
-                throw new IllegalStateException("Transaction cannot be ended since no transaction is in progress");
+                throw MESSAGES.noTransactionInProgress();
             }
             if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
                 this.transactionManager.rollback();
@@ -1021,14 +1020,14 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 this.transactionManager.commit();
             }
         } catch (Exception e) {
-            throw new RuntimeException("Could not end transaction", e);
+            throw MESSAGES.failToEndTransaction(e);
         }
     }
 
 
     private void handleLifecycleCallback() {
         if (isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
-            throw new IllegalStateException("Cannot invoke timer service methods in lifecycle callback of non-singleton beans");
+            throw MESSAGES.failToInvokeTimerServiceDoLifecycle();
         }
     }
 
@@ -1064,7 +1063,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
         public TimerCreationTransactionSynchronization(TimerImpl timer) {
             if (timer == null) {
-                throw new IllegalStateException("Timer cannot be null");
+                throw MESSAGES.timerIsNull();
             }
             this.timer = timer;
         }
@@ -1080,7 +1079,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 }
             }
             if (status == Status.STATUS_COMMITTED) {
-                logger.debug("commit timer creation: " + this.timer);
+                ROOT_LOGGER.debug("commit timer creation: " + this.timer);
 
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
@@ -1091,7 +1090,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         break;
                 }
             } else if (status == Status.STATUS_ROLLEDBACK) {
-                logger.debug("Rolling back timer creation: " + this.timer);
+                ROOT_LOGGER.debug("Rolling back timer creation: " + this.timer);
 
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {

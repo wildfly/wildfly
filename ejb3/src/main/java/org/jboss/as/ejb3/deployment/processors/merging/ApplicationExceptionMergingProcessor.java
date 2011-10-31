@@ -42,12 +42,12 @@ import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */
 public class ApplicationExceptionMergingProcessor implements DeploymentUnitProcessor {
-
-    private final Logger logger = Logger.getLogger(ApplicationExceptionMergingProcessor.class);
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -68,7 +68,7 @@ public class ApplicationExceptionMergingProcessor implements DeploymentUnitProce
                         final ClassIndex index = classIndex.classIndex(exception.getKey());
                         applicationExceptions.addApplicationException(index.getModuleClass(), exception.getValue());
                     } catch (ClassNotFoundException e) {
-                        logger.debug("Could not load application exception class", e);
+                        ROOT_LOGGER.debug("Could not load application exception class", e);
                     }
                 }
             }
@@ -93,7 +93,7 @@ public class ApplicationExceptionMergingProcessor implements DeploymentUnitProce
                             // add the application exception to the ejb jar description
                             applicationExceptions.addApplicationException(index.getModuleClass(), new ApplicationExceptionDetails(exceptionClassName, inherited, rollback));
                         } catch (ClassNotFoundException e) {
-                            throw new DeploymentUnitProcessingException("Could not load application exception class " + exceptionClassName + " in ejb-jar.xml ", e);
+                            throw MESSAGES.failToLoadAppExceptionClassInEjbJarXml(exceptionClassName,e);
                         }
                     }
                 }

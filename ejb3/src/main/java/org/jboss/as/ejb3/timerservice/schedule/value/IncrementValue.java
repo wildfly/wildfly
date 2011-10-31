@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.timerservice.schedule.value;
 
 import java.util.StringTokenizer;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Represents a value for a {@link ScheduleExpression} which is expressed as an increment type. An
@@ -71,7 +72,7 @@ public class IncrementValue implements ScheduleValue {
         StringTokenizer tokenizer = new StringTokenizer(value, INCREMENT_SEPARATOR);
         int numberOfTokens = tokenizer.countTokens();
         if (numberOfTokens != 2) {
-            throw new IllegalArgumentException("Invalid increment value: " + value);
+            throw MESSAGES.invalidIncrementValue(value);
         }
 
         this.start = tokenizer.nextToken().trim();

@@ -39,7 +39,7 @@ import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ResourceAdapter;
 import java.util.Collection;
 import java.util.Properties;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */
@@ -128,7 +128,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     ServiceName getResourceAdapterServiceName() {
         final Collection<ServiceName> serviceNames = ConnectorServices.getResourceAdapterServiceNames(this.resourceAdapterName);
         if (serviceNames == null || serviceNames.isEmpty()) {
-            throw new IllegalStateException("Cannot find any resource adapter service for resource adapter " + this.resourceAdapterName);
+            throw MESSAGES.failToFindResourceAdapter(this.resourceAdapterName);
         }
         return serviceNames.iterator().next();
     }

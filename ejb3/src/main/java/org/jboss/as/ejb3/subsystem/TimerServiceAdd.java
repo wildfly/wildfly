@@ -55,7 +55,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * Adds the timer service
  *
@@ -63,7 +63,6 @@ import org.jboss.msc.service.StopContext;
  */
 public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
 
-    private static final Logger logger = Logger.getLogger(TimerServiceAdd.class);
 
     public static final TimerServiceAdd INSTANCE = new TimerServiceAdd();
 
@@ -97,7 +96,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                logger.debug("Configuring timers");
+                ROOT_LOGGER.debug("Configuring timers");
 
                 //install the ejb timer service data store path service
                 if (path != null) {

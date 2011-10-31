@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * Handles the {@link javax.annotation.security.RolesAllowed} {@link DenyAll} {@link javax.annotation.security.PermitAll} annotations
@@ -166,7 +167,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                     final Collection<Method> denyAllApplicableMethods = ClassReflectionIndexUtil.findAllMethodsByName(deploymentReflectionIndex, classReflectionIndex, methodName);
                     // just log a WARN message and proceed, in case there was no method by that name
                     if (denyAllApplicableMethods.isEmpty()) {
-                        logger.warn("No method named: " + methodName + " found on EJB: " + description.getEJBName() + " while processing exclude-list element in ejb-jar.xml");
+                        ROOT_LOGGER.noMethodFoundOnEjbExcludeList(methodName,description.getEJBName());
                         continue;
                     }
                     // apply the @DenyAll/exclude-list
@@ -188,7 +189,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                     final Collection<Method> denyAllApplicableMethods = ClassReflectionIndexUtil.findMethods(deploymentReflectionIndex, classReflectionIndex, methodName, paramTypes);
                     // just log a WARN message and proceed, in case there was no method by that name and param types
                     if (denyAllApplicableMethods.isEmpty()) {
-                        logger.warn("No method named: " + methodName + " with param types: " + Arrays.toString(paramTypes) + " found on EJB: " + description.getEJBName() + " while processing exclude-list element in ejb-jar.xml");
+                        ROOT_LOGGER.noMethodFoundOnEjbWithParamExcludeList(methodName, Arrays.toString(paramTypes), description.getEJBName());
                         continue;
                     }
                     // apply the @DenyAll/exclude-list
@@ -245,7 +246,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                         final Collection<Method> applicableMethods = ClassReflectionIndexUtil.findAllMethodsByName(deploymentReflectionIndex, classReflectionIndex, methodName);
                         // just log a WARN message and proceed, in case there was no method by that name
                         if (applicableMethods.isEmpty()) {
-                            logger.warn("No method named: " + methodName + " found on EJB: " + description.getEJBName() + " while processing method-permission element in ejb-jar.xml");
+                            ROOT_LOGGER.noMethodFoundOnEjbPermission(methodName, description.getEJBName());
                             continue;
                         }
                         // apply the @RolesAllowed/method-permission
@@ -267,7 +268,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                         final Collection<Method> applicableMethods = ClassReflectionIndexUtil.findMethods(deploymentReflectionIndex, classReflectionIndex, methodName, paramTypes);
                         // just log a WARN message and proceed, in case there was no method by that name and param types
                         if (applicableMethods.isEmpty()) {
-                            logger.warn("No method named: " + methodName + " with param types: " + Arrays.toString(paramTypes) + " found on EJB: " + description.getEJBName() + " while processing method-permission element in ejb-jar.xml");
+                            ROOT_LOGGER.noMethodFoundWithParamOnEjbMethodPermission(methodName, Arrays.toString(paramTypes), description.getEJBName());
                             continue;
                         }
                         // apply the @RolesAllowed/method-permission

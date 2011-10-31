@@ -36,7 +36,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * {@link org.jboss.invocation.Interceptor} which manages {@link javax.transaction.Synchronization} semantics on an entity bean.
@@ -49,7 +49,6 @@ import org.jboss.logging.Logger;
  * @author Stuart Douglas
  */
 public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor {
-    private static final Logger log = Logger.getLogger(EntityBeanSynchronizationInterceptor.class);
 
     private final Object threadLock = new Object();
     private final OwnableReentrantLock lock = new OwnableReentrantLock();
@@ -65,8 +64,8 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         }
 
         final TransactionSynchronizationRegistry transactionSynchronizationRegistry = component.getTransactionSynchronizationRegistry();
-        if (log.isTraceEnabled()) {
-            log.trace("Trying to acquire lock: " + lock + " for entity bean " + instance + " during invocation: " + context);
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.trace("Trying to acquire lock: " + lock + " for entity bean " + instance + " during invocation: " + context);
         }
         // we obtain a lock in this synchronization interceptor because the lock needs to be tied to the synchronization
         // so that it can released on the tx synchronization callbacks
@@ -75,8 +74,8 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         try {
             lock.lock();
             synchronized (lock) {
-                if (log.isTraceEnabled()) {
-                    log.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.trace("Acquired lock: " + lock + " for entity bean instance: " + instance + " during invocation: " + context);
                 }
 
                 Object currentTransactionKey = null;
@@ -92,9 +91,9 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                             // register a tx synchronization for this entity instance
                             final Synchronization entitySynchronization = new EntityBeanSynchronization(instance, lockOwner);
                             transactionSynchronizationRegistry.registerInterposedSynchronization(entitySynchronization);
-                            if (log.isTraceEnabled()) {
-                                log.trace("Registered tx synchronization: " + entitySynchronization + " for tx: " + currentTransactionKey +
-                                        " associated with entity component instance: " + instance);
+                            if (ROOT_LOGGER.isTraceEnabled()) {
+                                ROOT_LOGGER.trace("Registered tx synchronization: " + entitySynchronization + " for tx: " + currentTransactionKey +
+                                    " associated with stateful component instance: " + instance);
                             }
                         }
                         instance.setSynchronizationRegistered(true);
@@ -139,8 +138,8 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
      */
     private void releaseLock() {
         lock.unlock();
-        if (log.isTraceEnabled()) {
-            log.trace("Released lock: " + lock);
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.trace("Released lock: " + lock);
         }
     }
 
@@ -196,7 +195,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
          * @return
          */
         private Error handleThrowableInTxSync(final EntityBeanComponentInstance instance, final Throwable t) {
-            log.error("Discarding entity component instance: " + instance + " due to exception", t);
+            ROOT_LOGGER.discardingEntityComponent(instance,t);
             try {
                 // discard the Entity instance
                 instance.discard();

@@ -27,7 +27,8 @@ import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.logging.Logger;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -48,11 +49,6 @@ import org.jboss.logging.Logger;
 public class TimerTask<T extends TimerImpl> implements Runnable {
 
     /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(TimerTask.class);
-
-    /**
      * The timer to which this {@link TimerTask} belongs
      */
     protected T timer;
@@ -70,7 +66,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
      */
     public TimerTask(T timer) {
         if (timer == null) {
-            throw new IllegalArgumentException("Timer cannot be null");
+            throw MESSAGES.timerIsNull();
         }
 
         this.timer = timer;
@@ -92,17 +88,17 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     @Override
     public void run() {
         Date now = new Date();
-        logger.debug("Timer task invoked at: " + now + " for timer " + this.timer);
+        ROOT_LOGGER.debug("Timer task invoked at: " + now + " for timer " + this.timer);
 
         // If a retry thread is in progress, we don't want to allow another
         // interval to execute until the retry is complete. See JIRA-1926.
         if (this.timer.isInRetry()) {
-            logger.debug("Timer in retry mode, skipping this scheduled execution at: " + now);
+            ROOT_LOGGER.debug("Timer in retry mode, skipping this scheduled execution at: " + now);
             return;
         }
 
         if (this.timer.isActive() == false) {
-            logger.debug("Timer is not active, skipping this scheduled execution at: " + now);
+            ROOT_LOGGER.debug("Timer is not active, skipping this scheduled execution at: " + now);
         }
         // set the current date as the "previous run" of the timer.
         this.timer.setPreviousRun(new Date());
@@ -118,14 +114,14 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             // invoke timeout
             this.callTimeout();
         } catch (Exception e) {
-            logger.error("Error invoking timeout for timer: " + this.timer, e);
+            ROOT_LOGGER.errorInvokeTimeout(this.timer, e);
             try {
-                logger.info("Timer: " + this.timer + " will be retried");
+                ROOT_LOGGER.timerRetried(this.timer);
                 retryTimeout();
             } catch (Exception retryException) {
                 // that's it, we can't do anything more. Let's just log the exception
                 // and return
-                logger.error("Error during retyring timeout for timer: " + timer, e);
+                ROOT_LOGGER.errorDuringRetryTimeout(timer,e);
             }
         } finally {
             this.postTimeoutProcessing();
@@ -156,13 +152,13 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
 
     protected void retryTimeout() throws Exception {
         if (this.timer.isActive()) {
-            logger.info("Retrying timeout for timer: " + this.timer);
+            ROOT_LOGGER.retryingTimeout(this.timer);
             this.timer.setTimerState(TimerState.RETRY_TIMEOUT);
             this.timerService.persistTimer(this.timer);
 
             this.callTimeout();
         } else {
-            logger.info("Timer is not active, skipping retry of timer: " + this.timer);
+            ROOT_LOGGER.timerNotActive(this.timer);
         }
     }
 

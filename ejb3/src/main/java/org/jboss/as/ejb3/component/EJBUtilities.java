@@ -30,7 +30,6 @@ import org.jboss.jca.core.spi.rar.Activation;
 import org.jboss.jca.core.spi.rar.MessageListener;
 import org.jboss.jca.core.spi.rar.NotFoundException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
-import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -53,6 +52,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * The gas, water & energy for the EJB subsystem.
  *
@@ -61,7 +62,6 @@ import java.util.Set;
  */
 public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
-    private static final Logger logger = Logger.getLogger("org.jboss.ejb3");
 
     private static final Map<String, String> knownRar = new HashMap<String, String>(1);
 
@@ -103,16 +103,16 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
                                     packageName = "";
                                 }
                                 raFound = true;
-                                logger.debug("Found resource adapter class: " + className + " for resource-adapter-name: " + resourceAdapterName);
+                                EJB3_LOGGER.debug("Found resource adapter class: " + className + " for resource-adapter-name: " + resourceAdapterName);
                             }
                         } else {
-                            throw new IllegalStateException("found more than one RA registered as " + resourceAdapterName);
+                            throw MESSAGES.multipleResourceAdapterRegistered(resourceAdapterName);
                         }
                     }
                 }
             }
             if (!raFound) {
-                throw new IllegalStateException("No resource adapter registered with resource adapter name " + resourceAdapterName);
+                throw MESSAGES.failToRegisteredResourceAdapter(resourceAdapterName);
             }
             Set<String> ids = getResourceAdapterRepository().getResourceAdapters(messageListenerInterface);
             List<MessageListener> listeners = null;
@@ -123,7 +123,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
                         listeners = getResourceAdapterRepository().getMessageListeners(id);
                         found = true;
                     } else {
-                        throw new IllegalStateException("found more than one RA registered " + resourceAdapterName);
+                        throw MESSAGES.multipleResourceAdapterRegistered(resourceAdapterName);
                     }
                 }
             }
@@ -175,7 +175,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
     public SimpleSecurityManager getSecurityManager() {
         final SimpleSecurityManager securityManager = securityManagerValue.getOptionalValue();
         if (securityManager == null)
-            throw new UnsupportedOperationException("Security is not enabled");
+            throw MESSAGES.securityNotEnabled();
         return securityManager;
     }
 
@@ -248,8 +248,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
             if (raActivationConfigProps.containsKey(propName) == false && raRequiredConfigProps.contains(propName) == false) {
                 // not a valid activation config property, so log a WARN and filter it out from the valid activation config properties
                 validActivationConfigProps.remove(propName);
-                logger.warn("ActivationConfigProperty \"" + propName + "\" will be ignored since it is not allowed by " +
-                        "resource adapter: " + resourceAdapterName);
+                EJB3_LOGGER.activationConfigPropertyIgnored(propName,resourceAdapterName);
             }
         }
         return validActivationConfigProps;

@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.component;
 
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * User: jpai
  */
@@ -34,7 +34,7 @@ public abstract class EJBComponentCreateServiceFactory implements ComponentCreat
 
     public void setEjbJarConfiguration(ApplicationExceptions ejbJarConfiguration) {
         if (ejbJarConfiguration == null) {
-            throw new IllegalArgumentException("EjbJarConfiguration cannot be null");
+            throw MESSAGES.EjbJarConfigurationIsNull();
         }
         this.ejbJarConfiguration = ejbJarConfiguration;
     }

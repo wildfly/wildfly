@@ -27,6 +27,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -43,7 +44,7 @@ public class PoolConfigService implements Service<PoolConfig> {
 
     public PoolConfigService(final PoolConfig poolConfig) {
         if (poolConfig == null) {
-            throw new IllegalArgumentException("PoolConfig cannot be null");
+            throw MESSAGES.poolConfigIsNull();
         }
         this.poolConfig = poolConfig;
     }

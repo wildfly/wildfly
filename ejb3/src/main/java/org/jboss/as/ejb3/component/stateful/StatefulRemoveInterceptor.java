@@ -30,6 +30,7 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * An interceptor which handles a invocation on a {@link javax.ejb.Remove} method of a stateful session bean. This interceptor
@@ -52,8 +53,7 @@ public class StatefulRemoveInterceptor implements Interceptor {
         final Component component = context.getPrivateData(Component.class);
         // just log a WARN and throw back the original exception
         if (component instanceof StatefulSessionComponent == false) {
-            throw new RuntimeException("Unexpected component: " + component + " in interceptor context: " + context +
-                    " Expected an instance of " + StatefulSessionComponent.class);
+            throw MESSAGES.unexpectedComponent(component,StatefulSessionComponent.class);
         }
         final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
         Object invocationResult = null;

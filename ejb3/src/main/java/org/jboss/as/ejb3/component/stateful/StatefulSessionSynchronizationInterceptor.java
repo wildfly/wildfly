@@ -31,8 +31,8 @@ import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.tx.OwnableReentrantLock;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
-
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
 
 /**
@@ -42,7 +42,6 @@ import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInte
  * @author Jaikiran Pai
  */
 public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterceptor {
-    private static final Logger log = Logger.getLogger(StatefulSessionSynchronizationInterceptor.class);
 
     private final Object threadLock = new Object();
     private final OwnableReentrantLock lock = new OwnableReentrantLock();
@@ -61,7 +60,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
      * @return
      */
     private Error handleThrowableInTxSync(final StatefulSessionComponentInstance statefulSessionComponentInstance, final Throwable t) {
-        log.error("Discarding stateful component instance: " + statefulSessionComponentInstance + " due to exception", t);
+        ROOT_LOGGER.discardingStatefulComponent(statefulSessionComponentInstance, t);
         try {
             // discard the SFSB instance
             statefulSessionComponentInstance.discard();
@@ -78,7 +77,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
     }
 
     @Override
-    public Object processInvocation(InterceptorContext context) throws Exception {
+    public Object processInvocation(final InterceptorContext context) throws Exception {
         final StatefulSessionComponent component = getComponent(context, StatefulSessionComponent.class);
         final StatefulSessionComponentInstance instance = getComponentInstance(context);
 
@@ -87,19 +86,18 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         lock.pushOwner(lockOwner);
         try {
             final AccessTimeoutDetails timeout = component.getAccessTimeout(context.getMethod());
-            if (log.isTraceEnabled()) {
-                log.trace("Trying to acquire lock: " + lock + " for stateful component instance: " + instance + " during invocation: " + context);
+            if (ROOT_LOGGER.isTraceEnabled()) {
+                ROOT_LOGGER.trace("Trying to acquire lock: " + lock + " for stateful component instance: " + instance + " during invocation: " + context);
             }
             // we obtain a lock in this synchronization interceptor because the lock needs to be tied to the synchronization
             // so that it can released on the tx synchronization callbacks
             boolean acquired = lock.tryLock(timeout.getValue(), timeout.getTimeUnit());
             if (!acquired) {
-                throw new ConcurrentAccessTimeoutException("EJB 3.1 FR 4.3.14.1 concurrent access timeout on " + context
-                        + " - could not obtain lock within " + timeout.getValue() + timeout.getTimeUnit());
+                throw MESSAGES.failToObtainLock(context,timeout.getValue(),timeout.getTimeUnit());
             }
             synchronized (threadLock) {
-                if (log.isTraceEnabled()) {
-                    log.trace("Acquired lock: " + lock + " for stateful component instance: " + instance + " during invocation: " + context);
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.trace("Acquired lock: " + lock + " for stateful component instance: " + instance + " during invocation: " + context);
                 }
 
                 Object currentTransactionKey = null;
@@ -116,8 +114,8 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                             final Synchronization statefulSessionSync = new StatefulSessionSynchronization(instance, lockOwner);
                             transactionSynchronizationRegistry.registerInterposedSynchronization(statefulSessionSync);
                             wasTxSyncRegistered = true;
-                            if (log.isTraceEnabled()) {
-                                log.trace("Registered tx synchronization: " + statefulSessionSync + " for tx: " + currentTransactionKey +
+                            if (ROOT_LOGGER.isTraceEnabled()) {
+                                ROOT_LOGGER.trace("Registered tx synchronization: " + statefulSessionSync + " for tx: " + currentTransactionKey +
                                         " associated with stateful component instance: " + instance);
                             }
                             // invoke the afterBegin callback on the SFSB
@@ -176,10 +174,11 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
      */
     private void releaseLock() {
         lock.unlock();
-        if (log.isTraceEnabled()) {
-            log.trace("Released lock: " + lock);
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.trace("Released lock: " + lock);
         }
     }
+
 
     private class StatefulSessionSynchronization implements Synchronization {
 
@@ -194,8 +193,8 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         @Override
         public void beforeCompletion() {
             try {
-                if (log.isTraceEnabled()) {
-                    log.trace("Before completion callback invoked on Transaction synchronization: " + this +
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.trace("Before completion callback invoked on Transaction synchronization: " + this +
                             " of stateful component instance: " + statefulSessionComponentInstance);
                 }
                 statefulSessionComponentInstance.beforeCompletion();
@@ -207,12 +206,11 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         @Override
         public void afterCompletion(int status) {
             try {
-                if (log.isTraceEnabled()) {
-                    log.trace("After completion callback invoked on Transaction synchronization: " + this +
+                 if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.trace("After completion callback invoked on Transaction synchronization: " + this +
                             " of stateful component instance: " + statefulSessionComponentInstance);
-                }
+                 }
                 statefulSessionComponentInstance.afterCompletion(status == Status.STATUS_COMMITTED);
-
             } catch (Throwable t) {
                 throw handleThrowableInTxSync(statefulSessionComponentInstance, t);
             }

@@ -31,7 +31,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * User: jpai
  */
@@ -69,7 +69,7 @@ public class StatefulComponentSessionIdGeneratingInterceptorFactory implements I
         public Object processInvocation(InterceptorContext context) throws Exception {
             final Component component = context.getPrivateData(Component.class);
             if (component instanceof StatefulSessionComponent == false) {
-                throw new IllegalStateException("Unexpected component: " + component + " Expected " + StatefulSessionComponent.class);
+                throw MESSAGES.unexpectedComponent(component,StatefulSessionComponent.class);
             }
             StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
             StatefulSessionComponentInstance statefulSessionComponentInstance = statefulComponent.getCache().create();

@@ -29,6 +29,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Holds the EJB component level security metadata.
  * <p/>
@@ -72,7 +73,7 @@ public class EJBSecurityMetaData {
      */
     public EJBSecurityMetaData(final ComponentConfiguration componentConfiguration) {
         if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
-            throw new IllegalArgumentException(componentConfiguration.getComponentName() + " is not an EJB component");
+            throw MESSAGES.invalidComponentConfiguration(componentConfiguration.getComponentName());
         }
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         this.ejbClassName = ejbComponentDescription.getEJBClassName();

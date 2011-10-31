@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.timerservice.schedule.value;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Represents a value for a {@link javax.ejb.ScheduleExpression} which is expressed as a range type. An
  * {@link RangeValue} comprises of a start and an end value for the range, separated by a "-"
@@ -86,7 +86,7 @@ public class RangeValue implements ScheduleValue {
     public RangeValue(String range) {
         String[] values = getRangeValues(range);
         if (values == null || values.length != 2) {
-            throw new IllegalArgumentException("Invalid range value: " + range);
+            throw MESSAGES.invalidRange(range);
         }
 
         this.rangeStart = values[0].trim();

@@ -44,7 +44,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Class that can merge {@link javax.ejb.Lock} and {@link javax.ejb.AccessTimeout} metadata
  *
@@ -127,7 +127,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
 
     private Method resolveMethod(final DeploymentReflectionIndex index, final Class<?> componentClass, final NamedMethodMetaData methodData) throws DeploymentUnitProcessingException {
         if (componentClass == null) {
-            throw new DeploymentUnitProcessingException("Could not find method" + methodData.getMethodName() + "with parameter types" + methodData.getMethodParams() + " referenced in ejb-jar.xml");
+            throw MESSAGES.failToFindMethodWithParameterTypes(componentClass.getName(), methodData.getMethodName(), methodData.getMethodParams());
         }
         final ClassReflectionIndex<?> classIndex = index.getClassIndex(componentClass);
 
@@ -136,7 +136,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
             if (methods.isEmpty()) {
                 return resolveMethod(index, componentClass.getSuperclass(), methodData);
             } else if (methods.size() > 1) {
-                throw new DeploymentUnitProcessingException("More than one method " + methodData.getMethodName() + "found on class" + componentClass.getName() + " referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity");
+                throw MESSAGES.multipleMethodReferencedInEjbJarXml( methodData.getMethodName(),componentClass.getName());
             }
             return methods.iterator().next();
         } else {

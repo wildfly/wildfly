@@ -43,7 +43,7 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Base class for {@link ResourceDefinition}s describing runtime {@link EJBComponent}s.
  *
@@ -84,7 +84,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
 
         @Override
         public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-            throw new UnsupportedOperationException(String.format("Runtime attribute %s is not marshallable", getName()));
+            throw MESSAGES.runtimeAttributeNotMarshallable(getName());
         }
     };
 

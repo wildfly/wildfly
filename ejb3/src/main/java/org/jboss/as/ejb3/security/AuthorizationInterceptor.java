@@ -25,16 +25,13 @@ package org.jboss.as.ejb3.security;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import javax.ejb.EJBAccessException;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * EJB authorization interceptor responsible for handling invocation on EJB methods and doing the necessary authorization
  * checks on the invoked method.
@@ -42,11 +39,6 @@ import org.jboss.logging.Logger;
  * User: Jaikiran Pai
  */
 public class AuthorizationInterceptor implements Interceptor {
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(AuthorizationInterceptor.class);
 
     /**
      * EJB method security metadata
@@ -65,13 +57,13 @@ public class AuthorizationInterceptor implements Interceptor {
 
     public AuthorizationInterceptor(final EJBMethodSecurityMetaData ejbMethodSecurityMetaData, final String viewClassName, final Method viewMethod) {
         if (ejbMethodSecurityMetaData == null) {
-            throw new IllegalArgumentException("EJB method security metadata cannot be null");
+            throw MESSAGES.ejbMethodSecurityMetaDataIsNull();
         }
         if (viewClassName == null || viewClassName.trim().isEmpty()) {
-            throw new IllegalArgumentException("View classname cannot be null or empty");
+            throw MESSAGES.viewClassNameIsNull();
         }
         if (viewMethod == null) {
-            throw new IllegalArgumentException("View method cannot be null");
+            throw MESSAGES.viewMethodIsNull();
         }
         this.ejbMethodSecurityMetaData = ejbMethodSecurityMetaData;
         this.viewClassName = viewClassName;
@@ -82,22 +74,19 @@ public class AuthorizationInterceptor implements Interceptor {
     public Object processInvocation(InterceptorContext context) throws Exception {
         final Component component = context.getPrivateData(Component.class);
         if (component instanceof EJBComponent == false) {
-            throw new IllegalStateException("Unexpected component type: " + component.getClass() + " expected: " + EJBComponent.class);
+            throw MESSAGES.unexpectedComponent(component,EJBComponent.class);
         }
         final Method invokedMethod = context.getMethod();
         final ComponentView componentView = context.getPrivateData(ComponentView.class);
         final String viewClassOfInvokedMethod = componentView.getViewClass().getName();
         // shouldn't really happen if the interceptor was setup correctly. But let's be safe and do a check
         if (!this.viewClassName.equals(viewClassOfInvokedMethod) || !this.viewMethod.equals(invokedMethod)) {
-            throw new IllegalStateException(this.getClass().getName() + " cannot handle method "
-                    + invokedMethod + " of view class " + viewClassOfInvokedMethod + ".Expected view " +
-                    "method to be " + viewMethod + " on view class " + viewClassName);
+            throw MESSAGES.failProcessInvocation(this.getClass().getName(), invokedMethod,viewClassOfInvokedMethod, viewMethod, viewClassName);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
         // check @DenyAll/exclude-list
         if (ejbMethodSecurityMetaData.isAccessDenied()) {
-            throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " + ejbComponent.getComponentName()
-                    + " is not allowed");
+            throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
         }
         // If @PermitAll isn't applicable for the method then check the allowed roles
         if (!ejbMethodSecurityMetaData.isPermitAll()) {
@@ -107,8 +96,7 @@ public class AuthorizationInterceptor implements Interceptor {
                 // call the security API to do authorization check
                 final SimpleSecurityManager securityManager = ejbComponent.getSecurityManager();
                 if (!securityManager.isCallerInRole(ejbComponent.getSecurityMetaData().getSecurityRoles(), allowedRoles.toArray(new String[allowedRoles.size()]))) {
-                    throw new EJBAccessException("Invocation on method: " + invokedMethod + " of bean: " +
-                            ejbComponent.getComponentName() + " is not allowed");
+                    throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
                 }
             }
         }

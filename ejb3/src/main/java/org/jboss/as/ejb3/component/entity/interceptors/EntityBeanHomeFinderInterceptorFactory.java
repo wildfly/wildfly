@@ -42,6 +42,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Interceptor that hooks up finder methods for BMP entity beans
@@ -134,7 +135,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
             }
             default: {
                 if (result == null) {
-                    throw new ObjectNotFoundException("Could not find entity from " + finderMethod + " with params " + Arrays.toString(context.getParameters()));
+                    throw MESSAGES.couldNotFindEntity(finderMethod,Arrays.toString(context.getParameters()));
                 }
                 return getLocalObject(result);
             }

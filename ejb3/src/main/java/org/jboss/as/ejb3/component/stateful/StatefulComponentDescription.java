@@ -61,7 +61,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * User: jpai
  */
@@ -89,7 +89,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
         StatefulRemoveMethod(final MethodIdentifier method, final boolean retainIfException) {
             if (method == null) {
-                throw new IllegalArgumentException("@Remove method cannot be null");
+                throw MESSAGES.removeMethodIsNull();
             }
             this.methodIdentifier = method;
             this.retainIfException = retainIfException;
@@ -177,8 +177,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                         @Override
                         protected Interceptor create(Component component, InterceptorFactoryContext context) {
                             if (!(component instanceof StatefulSessionComponent)) {
-                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
-                                        " isn't a stateful component");
+                                throw MESSAGES.componentNotInstanceOfSessionComponent(component, component.getComponentClass(),"stateful");
                             }
                             return new StatefulBMTInterceptor((StatefulSessionComponent) component);
                         }
@@ -272,7 +271,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     public void addRemoveMethod(final MethodIdentifier removeMethod, final boolean retainIfException) {
         if (removeMethod == null) {
-            throw new IllegalArgumentException("@Remove method identifier cannot be null");
+            throw MESSAGES.removeMethodIsNull();
         }
         this.removeMethods.put(removeMethod, new StatefulRemoveMethod(removeMethod, retainIfException));
     }

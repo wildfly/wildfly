@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import java.util.Set;
 
 import javax.ejb.DependsOn;
+import javax.persistence.criteria.Root;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -40,16 +41,13 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * @author Stuart Douglas
  * @author James R. Perkins Jr. (jrp)
  */
 public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<SingletonComponentDescription> {
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(EjbDependsOnMergingProcessor.class);
 
     public EjbDependsOnMergingProcessor() {
         super(SingletonComponentDescription.class);
@@ -96,18 +94,17 @@ public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<Singl
 
             final Set<ComponentDescription> components = applicationDescription.getComponents(annotationValue, deploymentRoot.getRoot());
             if (components.isEmpty()) {
-                throw new DeploymentUnitProcessingException("Could not find EJB " + annotationValue + " referenced by @DependsOn annotation in " + description.getComponentClassName());
+                throw MESSAGES.failToFindEjbRefByDependsOn(annotationValue,description.getComponentClassName());
             } else if (components.size() != 1) {
-                throw new DeploymentUnitProcessingException("More than one EJB called" + annotationValue + " referenced by @DependsOn annotation in " + description.getComponentClassName() + " Components: " + components);
+                throw MESSAGES.failToCallEjbRefByDependsOn(annotationValue,description.getComponentClassName(),components);
             }
             final ComponentDescription component = components.iterator().next();
 
             description.addDependency(component.getStartServiceName(), DependencyType.REQUIRED);
             description.getDependsOn().add(component.getStartServiceName());
-            if (logger.isDebugEnabled()) {
-                logger.debugf(description.getEJBName() + " bean is dependent on " + component.getComponentName());
+            if (ROOT_LOGGER.isDebugEnabled()) {
+                ROOT_LOGGER.debugf(description.getEJBName() + " bean is dependent on " + component.getComponentName());
             }
         }
     }
-
 }

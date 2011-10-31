@@ -26,6 +26,7 @@ import java.rmi.RemoteException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;

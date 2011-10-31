@@ -56,7 +56,7 @@ import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Component description for a singleton bean
  *
@@ -117,8 +117,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                         @Override
                         protected Interceptor create(Component component, InterceptorFactoryContext context) {
                             if (component instanceof SingletonComponent == false) {
-                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
-                                        " isn't a singleton component");
+                                throw MESSAGES.componentNotSingleton(component,component.getComponentClass());
                             }
                             return new StatelessBMTInterceptor((SingletonComponent) component);
                         }

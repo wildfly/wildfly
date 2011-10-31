@@ -33,7 +33,7 @@ import org.jboss.as.ejb3.context.EJBContextImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */
@@ -57,7 +57,7 @@ public abstract class EjbComponentInstance extends BasicComponentInstance {
     public void invokeTimeoutMethod(final Method method, final Timer timer) {
         final Interceptor interceptor = timeoutInterceptors.get(method);
         if (interceptor == null) {
-            throw new RuntimeException("Unknown timeout method " + method);
+            throw MESSAGES.failToCallTimeOutMethod(method);
         }
         try {
             InterceptorContext context = prepareInterceptorContext();
@@ -82,7 +82,7 @@ public abstract class EjbComponentInstance extends BasicComponentInstance {
         final EJBComponent component = (EJBComponent) getComponent();
         final Method method = component.getTimeoutMethod();
         if (method == null) {
-            throw new IllegalArgumentException("Component " + component.getComponentName() + " does not have a timeout method");
+            throw MESSAGES.componentTimeoutMethodNotSet(component.getComponentName());
         }
         invokeTimeoutMethod(method, timer);
     }

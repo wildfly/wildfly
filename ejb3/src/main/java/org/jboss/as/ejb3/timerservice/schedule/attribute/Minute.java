@@ -25,7 +25,7 @@ import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 import java.util.Calendar;
 import java.util.SortedSet;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Represents the value of a minute constructed out of a {@link javax.ejb.ScheduleExpression#getMinute()}
  * <p/>
@@ -80,7 +80,7 @@ public class Minute extends IntegerBasedExpression {
         }
         SortedSet<Integer> eligibleMinutes = this.getEligibleMinutes();
         if (eligibleMinutes.isEmpty()) {
-            throw new IllegalStateException("There are no valid minutes for expression: " + this.origValue);
+            throw MESSAGES.invalidExpressionMinutes(this.origValue);
         }
         return eligibleMinutes.first();
     }

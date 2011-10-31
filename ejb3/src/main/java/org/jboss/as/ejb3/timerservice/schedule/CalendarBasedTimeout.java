@@ -28,7 +28,6 @@ import org.jboss.as.ejb3.timerservice.schedule.attribute.Minute;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Month;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Second;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Year;
-import org.jboss.logging.Logger;
 
 import javax.ejb.ScheduleExpression;
 import java.util.Arrays;
@@ -36,7 +35,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * CalendarBasedTimeout
  *
@@ -45,10 +45,6 @@ import java.util.TimeZone;
  */
 public class CalendarBasedTimeout {
 
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(CalendarBasedTimeout.class);
 
     /**
      * The {@link javax.ejb.ScheduleExpression} from which this {@link CalendarBasedTimeout}
@@ -113,8 +109,7 @@ public class CalendarBasedTimeout {
      */
     public CalendarBasedTimeout(ScheduleExpression schedule) {
         if (schedule == null) {
-            throw new IllegalArgumentException("Cannot create " + this.getClass().getName()
-                    + " from a null schedule expression");
+            throw MESSAGES.invalidScheduleExpression(this.getClass().getName());
         }
         // make sure that the schedule doesn't have null values for its various attributes
         this.nullCheckScheduleAttributes(schedule);
@@ -145,10 +140,7 @@ public class CalendarBasedTimeout {
             if (availableTimeZoneIDs != null && Arrays.asList(availableTimeZoneIDs).contains(timezoneId)) {
                 this.timezone = TimeZone.getTimeZone(timezoneId);
             } else {
-                logger.warn("Unknown timezone id: " + timezoneId
-                        + " found in schedule expression. Ignoring it and using server's timezone: "
-                        + TimeZone.getDefault().getID());
-
+                ROOT_LOGGER.unknownTimezoneId(timezoneId, TimeZone.getDefault().getID());
                 // use server's timezone
                 this.timezone = TimeZone.getDefault();
             }
@@ -764,25 +756,25 @@ public class CalendarBasedTimeout {
 
     private void nullCheckScheduleAttributes(ScheduleExpression schedule) {
         if (schedule.getSecond() == null) {
-            throw new IllegalArgumentException("Second cannot be null in schedule expression " + schedule);
+            throw MESSAGES.invalidScheduleExpressionSecond(schedule);
         }
         if (schedule.getMinute() == null) {
-            throw new IllegalArgumentException("Minute cannot be null in schedule expression " + schedule);
+            throw MESSAGES.invalidScheduleExpressionMinute(schedule);
         }
         if (schedule.getHour() == null) {
-            throw new IllegalArgumentException("Hour cannot be null in schedule expression " + schedule);
+            throw MESSAGES.invalidScheduleExpressionHour(schedule);
         }
         if (schedule.getDayOfMonth() == null) {
-            throw new IllegalArgumentException("day-of-month cannot be null in schedule expression " + schedule);
+            throw MESSAGES.invalidScheduleExpressionDayOfMonth(schedule);
         }
         if (schedule.getDayOfWeek() == null) {
-            throw new IllegalArgumentException("day-of-week cannot be null in schedule expression " + schedule);
+            throw MESSAGES.invalidScheduleExpressionDayOfWeek(schedule);
         }
         if (schedule.getMonth() == null) {
-            throw new IllegalArgumentException("Month cannot be null in schedule expression " + schedule);
+            throw MESSAGES.invalidScheduleExpressionMonth(schedule);
         }
         if (schedule.getYear() == null) {
-            throw new IllegalArgumentException("Year cannot be null in schedule expression " + schedule);
+            throw MESSAGES.invalidScheduleExpressionYear(schedule);
         }
     }
 

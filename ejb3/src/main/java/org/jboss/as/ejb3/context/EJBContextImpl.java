@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright (c) 2010, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -34,7 +34,7 @@ import javax.transaction.UserTransaction;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.invocation.InterceptorContext;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -47,7 +47,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext {
 
     @SuppressWarnings({"deprecation"})
     public Identity getCallerIdentity() {
-        throw new UnsupportedOperationException("getCallerIdentity is deprecated");
+        throw MESSAGES.isDeprecated("getCallerIdentity");
     }
 
     public Principal getCallerPrincipal() {
@@ -69,7 +69,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext {
     }
 
     public Properties getEnvironment() {
-        throw new UnsupportedOperationException("getCallerIdentity is deprecated");
+        throw MESSAGES.isDeprecated("getCallerIdentity");
     }
 
     public EJBComponent getComponent() {
@@ -80,7 +80,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext {
         // to allow override per invocation
         final InterceptorContext context = CurrentInvocationContext.get();
         if (context.getMethod() == null) {
-            throw new IllegalStateException("getRollbackOnly not allowed in lifecycle methods");
+            throw MESSAGES.lifecycleMethodNotAllowed("getRollbackOnly");
         }
         return instance.getComponent().getRollbackOnly();
     }
@@ -100,7 +100,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext {
 
     @SuppressWarnings({"deprecation"})
     public boolean isCallerInRole(Identity role) {
-        throw new IllegalStateException("deprecated");
+        throw MESSAGES.isDeprecatedIllegalState("isCallerInRole");
     }
 
     public boolean isCallerInRole(String roleName) {
@@ -115,7 +115,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext {
         // to allow override per invocation
         final InterceptorContext context = CurrentInvocationContext.get();
         if (context.getMethod() == null) {
-            throw new IllegalStateException("getRollbackOnly not allowed in lifecycle methods");
+            throw MESSAGES.lifecycleMethodNotAllowed("getRollbackOnly");
         }
         instance.getComponent().setRollbackOnly();
     }

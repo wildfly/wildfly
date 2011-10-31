@@ -21,9 +21,11 @@
  */
 package org.jboss.as.ejb3.pool.strictmax;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.as.ejb3.pool.AbstractPool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import org.jboss.logging.Logger;
 
 import javax.ejb.EJBException;
 import java.util.LinkedList;
@@ -37,7 +39,6 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:kabir.khan@jboss.org">Kabir Khan</a>
  */
 public class StrictMaxPool<T> extends AbstractPool<T> {
-    private static final Logger log = Logger.getLogger(StrictMaxPool.class);
 
     /**
      * A FIFO semaphore that is set when the strict max size behavior is in effect.
@@ -71,9 +72,8 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
     }
 
     public void discard(T ctx) {
-        if (log.isTraceEnabled()) {
-            String msg = "Discard instance:" + this + "#" + ctx;
-            log.trace(msg);
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.tracef("Discard instance %s#%s", this, ctx);
         }
 
         // If we block when maxSize instances are in use, invoke release on strictMaxSize
@@ -97,7 +97,7 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
     }
 
     public void setMaxSize(int maxSize) {
-        throw new RuntimeException("Not implemented");
+        throw MESSAGES.methodNotImplemented();
     }
 
     /**
@@ -110,9 +110,9 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
         try {
             boolean acquired = semaphore.tryAcquire(timeout, timeUnit);
             if (!acquired)
-                throw new EJBException("Failed to acquire a permit within " + timeout + " " + timeUnit);
+                throw MESSAGES.failedToAcquirePermit(timeout, timeUnit);
         } catch (InterruptedException e) {
-            throw new EJBException("Acquire semaphore was interrupted");
+            throw MESSAGES.acquireSemaphoreInterrupted();
         }
 
         synchronized (pool) {
@@ -145,9 +145,8 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
      * @param obj
      */
     public void release(T obj) {
-        if (log.isTraceEnabled()) {
-            String msg = pool.size() + "/" + maxSize + " Free instance:" + this;
-            log.trace(msg);
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.tracef("%s/%s Free instance: %s", pool.size(), maxSize, this);
         }
 
         boolean destroyIt = false;
@@ -167,9 +166,8 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
 
     @Override
     public void remove(T ctx) {
-        if (log.isTraceEnabled()) {
-            String msg = "Removing instance:" + this + "#" + ctx;
-            log.trace(msg);
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.tracef("Removing instance: %s#%s", this, ctx);
         }
 
         semaphore.release();

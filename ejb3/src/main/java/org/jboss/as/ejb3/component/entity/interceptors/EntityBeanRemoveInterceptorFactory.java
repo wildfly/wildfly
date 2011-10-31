@@ -33,8 +33,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Interceptor that calls the EJB remove method for BMP entity beans
  *
@@ -42,7 +41,6 @@ import org.jboss.logging.Logger;
  */
 public class EntityBeanRemoveInterceptorFactory implements InterceptorFactory {
 
-    private final Logger log = Logger.getLogger(EntityBeanAssociatingInterceptorFactory.class);
 
     private final Method ejbRemove;
 
@@ -60,7 +58,7 @@ public class EntityBeanRemoveInterceptorFactory implements InterceptorFactory {
 
                 final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
                 if (primaryKey == null) {
-                    throw new NoSuchEJBException("Invocation was not associated with an instance, primary key was null, instance may have been removed");
+                    throw MESSAGES.invocationNotAssociated();
                 }
 
 

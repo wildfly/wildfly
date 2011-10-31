@@ -55,7 +55,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * User: jpai
  */
@@ -94,8 +94,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                         @Override
                         protected Interceptor create(Component component, InterceptorFactoryContext context) {
                             if (!(component instanceof StatelessSessionComponent)) {
-                                throw new IllegalArgumentException("Component " + component + " with component class: " + component.getComponentClass() +
-                                        " isn't a stateless component");
+                                throw MESSAGES.componentNotInstanceOfSessionComponent(component, component.getComponentClass(), "stateless");
                             }
                             return new StatelessBMTInterceptor((StatelessSessionComponent) component);
                         }

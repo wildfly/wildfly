@@ -40,10 +40,9 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * A {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
  * remote service, in the EJB subsystem
@@ -55,8 +54,6 @@ import org.jboss.msc.service.ServiceName;
 public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
     static final EJB3AsyncServiceAdd INSTANCE = new EJB3AsyncServiceAdd();
 
-
-    private static final Logger logger = Logger.getLogger(EJB3AsyncServiceAdd.class);
 
     private EJB3AsyncServiceAdd() {
     }
@@ -83,7 +80,7 @@ public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
         final ServiceName threadPoolServiceName = EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName);
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                logger.debug("Adding EJB @Asynchronous support");
+                ROOT_LOGGER.debug("Adding EJB @Asynchronous support");
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ASYNCHRONOUS_MERGE, new AsynchronousMergingProcessor(threadPoolServiceName));
             }
         }, OperationContext.Stage.RUNTIME);

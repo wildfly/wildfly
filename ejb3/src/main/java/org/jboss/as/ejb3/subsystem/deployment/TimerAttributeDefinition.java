@@ -46,21 +46,18 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * Attribute definition for the list of timers associated with an EJB.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class TimerAttributeDefinition extends ListAttributeDefinition {
-
-    private static final Logger log = Logger.getLogger(TimerAttributeDefinition.class);
 
     public static final TimerAttributeDefinition INSTANCE = new TimerAttributeDefinition();
 
@@ -86,7 +83,7 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
 
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-        throw new UnsupportedOperationException(String.format("ResourceBundle based descriptions of %s are not supported", getName()));
+        throw MESSAGES.resourceBundleDescriptionsNotSupported(getName());
     }
 
     @Override
@@ -101,7 +98,7 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
 
     @Override
     public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-        throw new UnsupportedOperationException(String.format("Runtime attribute %s is not marshallable", getName()));
+        throw MESSAGES.runtimeAttributeNotMarshallable(getName());
     }
 
     private void addValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
@@ -249,6 +246,6 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
     }
 
     private static void logTimerFailure(final String componentName, final EJBException e) {
-        log.warnf(e, String.format("Could not read timer information for EJB component %s", componentName));
+        ROOT_LOGGER.failToReadTimerInformation(componentName);
     }
 }

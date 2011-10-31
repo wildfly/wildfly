@@ -54,12 +54,13 @@ import org.jboss.msc.service.StopContext;
 import static java.util.Collections.emptyMap;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
 import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class MessageDrivenComponent extends EJBComponent implements PooledComponent<MessageDrivenComponentInstance> {
-    private static final Logger logger = Logger.getLogger(MessageDrivenComponent.class);
 
     private final Pool<MessageDrivenComponentInstance> pool;
 
@@ -90,10 +91,10 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         };
         final PoolConfig poolConfig = ejbComponentCreateService.getPoolConfig();
         if (poolConfig == null) {
-            logger.debug("Pooling is disabled for MDB " + ejbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debug("Pooling is disabled for MDB " + ejbComponentCreateService.getComponentName());
             this.pool = null;
         } else {
-            logger.debug("Using pool config " + poolConfig + " to create pool for MDB " + ejbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for MDB " + ejbComponentCreateService.getComponentName());
             this.pool = poolConfig.createPool(factory);
         }
 
@@ -164,7 +165,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public void start() {
         if (resourceAdapter == null)
-            throw new IllegalStateException("No resource-adapter has been specified for " + this);
+            throw MESSAGES.resourceAdapterNotSpecified(this);
 
         super.start();
 

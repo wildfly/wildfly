@@ -33,7 +33,6 @@ import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
-import sun.management.ThreadInfoCompositeData;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

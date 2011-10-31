@@ -40,7 +40,7 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans
@@ -49,8 +49,6 @@ import org.jboss.logging.Logger;
  * Author : Jaikiran Pai
  */
 public class StatelessSessionComponent extends SessionBeanComponent implements PooledComponent<StatelessSessionComponentInstance> {
-
-    private static final Logger logger = Logger.getLogger(StatelessSessionComponent.class);
 
     private final Pool<StatelessSessionComponentInstance> pool;
     private final Method timeoutMethod;
@@ -77,10 +75,10 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
         };
         final PoolConfig poolConfig = slsbComponentCreateService.getPoolConfig();
         if (poolConfig == null) {
-            logger.debug("Pooling is disabled for Stateless EJB " + slsbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debug("Pooling is disabled for Stateless EJB " + slsbComponentCreateService.getComponentName());
             this.pool = null;
         } else {
-            logger.debug("Using pool config " + poolConfig + " to create pool for Stateless EJB " + slsbComponentCreateService.getComponentName());
+            ROOT_LOGGER.debug("Using pool config " + poolConfig + " to create pool for Stateless EJB " + slsbComponentCreateService.getComponentName());
             this.pool = poolConfig.createPool(factory);
         }
 

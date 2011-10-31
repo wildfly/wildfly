@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Holds security metadata of a method corresponding to a EJB's view.
@@ -63,7 +64,7 @@ public class EJBMethodSecurityMetaData {
      */
     public EJBMethodSecurityMetaData(final ComponentConfiguration componentConfiguration, final String viewClassName, final Method viewMethod) {
         if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
-            throw new IllegalArgumentException(componentConfiguration.getComponentName() + " is not an EJB component");
+            throw MESSAGES.invalidComponentIsNotEjbComponent(componentConfiguration.getComponentName());
         }
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
 
@@ -118,13 +119,11 @@ public class EJBMethodSecurityMetaData {
         if (methodMarkedForDenyAll) {
             // make sure the method isn't marked for @PermitAll
             if (methodMarkedForPermitAll) {
-                throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
-                        "marked for both @PemitAll and @DenyAll at the same time");
+               throw MESSAGES.invalidSecurityAnnotation(componentMethod,viewClassName,"@PemitAll","@DenyAll");
             }
             // make sure @RolesAllowed isn't applied to the method explicitly
             if (!rolesAllowed.isEmpty()) {
-                throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
-                        "marked for both @RolesAllowed and @DenyAll at the same time");
+                throw MESSAGES.invalidSecurityAnnotation(componentMethod,viewClassName,"@RolesAllowed","@DenyAll");
             }
             // only @DenyAll is applied on the method, so return true
             return true;
@@ -155,13 +154,11 @@ public class EJBMethodSecurityMetaData {
         if (methodMarkedForPermitAll) {
             // make sure the method isn't marked for @DenyAll
             if (methodMarkedForDenyAll) {
-                throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
-                        "marked for both @PemitAll and @DenyAll at the same time");
+                throw MESSAGES.invalidSecurityAnnotation(componentMethod,viewClassName,"@PemitAll","@DenyAll");
             }
             // make sure @RolesAllowed isn't applied to the method explicitly
             if (!rolesAllowed.isEmpty()) {
-                throw new IllegalStateException("Method " + componentMethod + " for view " + viewClassName + " shouldn't be " +
-                        "marked for both @RolesAllowed and @PermitAll at the same time");
+                 throw MESSAGES.invalidSecurityAnnotation(componentMethod,viewClassName,"@RolesAllowed","@PermitAll");
             }
             // only @PermitAll is applied on the method, so return true
             return true;
@@ -223,8 +220,7 @@ public class EJBMethodSecurityMetaData {
         try {
             return componentClass.getMethod(viewMethod.getName(), viewMethod.getParameterTypes());
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Method named " + viewMethod.getName() + " with params " + Arrays.toString(viewMethod.getParameterTypes())
-                    + " not found on component class " + componentClass);
+            throw MESSAGES.failToFindComponentMethod(viewMethod.getName(),Arrays.toString(viewMethod.getParameterTypes()),componentClass);
         }
 
     }

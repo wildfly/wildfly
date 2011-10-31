@@ -42,7 +42,7 @@ import javax.ejb.LocalHome;
 import javax.ejb.RemoteHome;
 import java.lang.reflect.Method;
 import java.util.Collection;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Merging procesor for home and local home views
  *
@@ -77,7 +77,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                 try {
                     processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
                 } catch (Exception e) {
-                    throw new DeploymentUnitProcessingException("Could not merge data for " + componentConfiguration.getComponentName(), e);
+                    throw MESSAGES.failToMergeData(componentConfiguration.getComponentName(),e);
                 }
             }
         }
@@ -87,7 +87,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                     try {
                         processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentDescription);
                     } catch (Exception e) {
-                        throw new DeploymentUnitProcessingException("Could not merge data for " + componentDescription.getComponentName(), e);
+                        throw MESSAGES.failToMergeData(componentDescription.getComponentName(),e);
                     }
                 }
             }
@@ -119,8 +119,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                             for (final Method method : index.getMethods()) {
                                 if (method.getName().startsWith("create")) {
                                     if (localClass != null && localClass != method.getReturnType()) {
-                                        throw new DeploymentUnitProcessingException("Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)" +
-                                                " due to multiple create* methods with different return types on home " + localHomeClass);
+                                        throw MESSAGES.multipleCreateMethod(localHomeClass);
                                     }
                                     localClass = method.getReturnType();
                                 }
@@ -144,8 +143,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                             for (final Method method : index.getMethods()) {
                                 if (method.getName().startsWith("create")) {
                                     if (remote != null && remote != method.getReturnType()) {
-                                        throw new DeploymentUnitProcessingException("Could not determine type of corresponding implied EJB 2.x remote interface (see EJB 3.1 21.4.5)" +
-                                                " due to multiple create* methods with different return types on home " + homeClass);
+                                        throw MESSAGES.multipleCreateMethod(homeClass);
                                     }
                                     remote = method.getReturnType();
                                 }

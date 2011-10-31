@@ -50,14 +50,14 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StopContext;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
 /**
  * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
  *
  * @author Jaikiran Pai
  */
 public class SingletonComponent extends SessionBeanComponent implements LockableComponent {
-
-    private static final Logger logger = Logger.getLogger(SingletonComponent.class);
 
     private volatile SingletonComponentInstance singletonComponentInstance;
 
@@ -147,7 +147,7 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         if (this.initOnStartup) {
             // Do not call createInstance() because we can't ever assume that the singleton instance
             // hasn't already been created.
-            logger.debug(this.getComponentName() + " bean is a @Startup (a.k.a init-on-startup) bean, creating/getting the singleton instance");
+            ROOT_LOGGER.debug(this.getComponentName() + " bean is a @Startup (a.k.a init-on-startup) bean, creating/getting the singleton instance");
             this.getComponentInstance();
         }
     }
