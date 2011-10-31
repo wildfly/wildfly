@@ -33,20 +33,19 @@ import static org.junit.Assert.*;
  */
 @RunWith(Arquillian.class)
 public class HelpTestCase extends AbstractCliTestBase {
-    
+
     private static final String[] COMMANDS = {
-        "connect", "deploy", "undeploy", "add-jms-queue", "remove-jms-queue",
-        "add-jms-topic", "remove-jms-topic", "add-jms-cf", "remove-jms-cf",
-        "data-source", "xa-data-source", "cn"
+        "connect", "deploy", "undeploy", "jms-queue", "jms-topic",
+        "connection-factory", "data-source", "xa-data-source", "cn"
     };
-    
+
     @Test
     public void testHelpCommand() throws Exception {
         cli.sendLine("help");
         String help = cli.readAllUnformated(WAIT_TIMEOUT);
         for (String cmd : COMMANDS) assertTrue("Command '" + cmd + "' missing in help.", help.contains(cmd));
     }
-    
+
     @Test
     public void testConnectHelp() throws Exception {
         testCmdHelp("connect");
@@ -63,32 +62,47 @@ public class HelpTestCase extends AbstractCliTestBase {
     }
 
     @Test
-    public void testAddJmsQueueHelp() throws Exception {
+    public void testJmsQueueHelp() throws Exception {
+        testCmdHelp("jms-queue");
+    }
+
+    @Test
+    public void testJmsTopicHelp() throws Exception {
+        testCmdHelp("jms-topic");
+    }
+
+    @Test
+    public void testJmsConnectionFactoryHelp() throws Exception {
+        testCmdHelp("connection-factory");
+    }
+
+    @Test
+    public void testDeprecatedAddJmsQueueHelp() throws Exception {
         testCmdHelp("add-jms-queue");
     }
 
     @Test
-    public void testRemoveJmsQueueHelp() throws Exception {
+    public void testDeprecatedRemoveJmsQueueHelp() throws Exception {
         testCmdHelp("remove-jms-queue");
     }
 
     @Test
-    public void testAddJmsTopicHelp() throws Exception {
+    public void testDeprecatedAddJmsTopicHelp() throws Exception {
         testCmdHelp("add-jms-topic");
     }
 
     @Test
-    public void testRemoveJmsTopicHelp() throws Exception {
+    public void testDeprecatedRemoveJmsTopicHelp() throws Exception {
         testCmdHelp("remove-jms-topic");
     }
 
     @Test
-    public void testAddJmsCfHelp() throws Exception {
+    public void testDeprecatedAddJmsCfHelp() throws Exception {
         testCmdHelp("add-jms-cf");
     }
 
     @Test
-    public void testRemoveJmsCfHelp() throws Exception {
+    public void testDeprecatedRemoveJmsCfHelp() throws Exception {
         testCmdHelp("remove-jms-cf");
     }
 
@@ -108,14 +122,14 @@ public class HelpTestCase extends AbstractCliTestBase {
     public void testCnHelp() throws Exception {
         testCmdHelp("cn");
     }
-    
+
     private void testCmdHelp(String cmd) throws Exception {
         cli.sendLine(cmd + " --help");
         String help = cli.readAllUnformated(WAIT_TIMEOUT);
         assertTrue("Command " + cmd + " help does not have synopsis section.", help.contains("Synopsis:"));
         assertTrue("Command " + cmd + " help does not have description section.", help.contains("Description:"));
         assertTrue("Command " + cmd + " help does not have arguments section.", help.contains("Arguments:"));
-        
+
     }
-    
+
 }
