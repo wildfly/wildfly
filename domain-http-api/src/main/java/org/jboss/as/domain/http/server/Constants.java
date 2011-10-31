@@ -34,18 +34,27 @@ public interface Constants {
      */
 
     String GET = "GET";
+    String OPTIONS = "OPTIONS";
     String POST = "POST";
+
+    /*
+     * Protocols
+     */
+
+    String HTTP = "http";
+    String HTTPS = "https";
 
     /*
      * Headers
      */
 
     String ACCEPT = "Accept";
-    String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
     String AUTHORIZATION_HEADER = "Authorization";
     String CONTENT_DISPOSITION = "Content-Disposition";
     String CONTENT_TYPE = "Content-Type";
+    String HOST = "Host";
     String LOCATION = "Location";
+    String ORIGIN = "Origin";
     String VIA = "Via";
     String WWW_AUTHENTICATE_HEADER = "WWW-Authenticate";
 

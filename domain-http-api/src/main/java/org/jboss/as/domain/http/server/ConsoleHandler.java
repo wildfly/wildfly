@@ -60,7 +60,6 @@ public class ConsoleHandler implements ManagementHttpHandler {
     private static final String EXPIRES_HEADER = "Expires";
     private static final String LAST_MODIFIED_HEADER = "Last-Modified";
     private static final String NOCACHE_JS = ".nocache.js";
-    private static final String WILDCARD = "*";
     private static final String GMT = "GMT";
     private static final String CACHE_CONTROL_HEADER = "Cache-Control";
     private static final String CONTENT_LENGTH_HEADER = "Content-Length";
@@ -135,8 +134,6 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
             final Headers responseHeaders = http.getResponseHeaders();
             responseHeaders.add(CONTENT_TYPE, resolveContentType(path));
-            responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, WILDCARD);
-
 
             boolean skipcache = resource.endsWith(NOCACHE_JS);
 
@@ -267,7 +264,6 @@ public class ConsoleHandler implements ManagementHttpHandler {
 
         final Headers responseHeaders = http.getResponseHeaders();
         responseHeaders.add(CONTENT_TYPE, TEXT_HTML);
-        responseHeaders.add(ACCESS_CONTROL_ALLOW_ORIGIN, WILDCARD);
         http.sendResponseHeaders(NOT_FOUND, 0);
         OutputStream out = http.getResponseBody();
         out.flush();
