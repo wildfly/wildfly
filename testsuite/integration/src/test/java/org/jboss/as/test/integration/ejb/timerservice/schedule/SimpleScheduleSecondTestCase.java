@@ -26,6 +26,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,6 +39,7 @@ import javax.naming.NamingException;
  * User: Jaikiran Pai
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-2441")
 public class SimpleScheduleSecondTestCase {
 
     @Deployment

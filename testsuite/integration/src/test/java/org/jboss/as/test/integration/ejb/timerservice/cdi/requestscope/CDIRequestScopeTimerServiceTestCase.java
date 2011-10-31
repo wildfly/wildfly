@@ -28,6 +28,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,6 +41,7 @@ import javax.naming.NamingException;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-2441")
 public class CDIRequestScopeTimerServiceTestCase {
 
     @Deployment
