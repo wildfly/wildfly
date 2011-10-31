@@ -136,11 +136,13 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             long startupTimeout = getContainerConfiguration().getStartupTimeoutInSeconds();
             long timeout = startupTimeout * 1000;
             boolean serverAvailable = false;
+            long sleep = 1000;
             while (timeout > 0 && serverAvailable == false) {
                 serverAvailable = getManagementClient().isServerInRunningState();
                 if (!serverAvailable) {
-                    Thread.sleep(100);
-                    timeout -= 100;
+                    Thread.sleep(sleep);
+                    timeout -= sleep;
+                    sleep = Math.max(sleep/2, 100);
                 }
             }
             if (!serverAvailable) {
