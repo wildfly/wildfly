@@ -35,8 +35,7 @@ import static org.junit.Assert.*;
 public class HelpTestCase extends AbstractCliTestBase {
 
     private static final String[] COMMANDS = {
-        "connect", "deploy", "undeploy", "jms-queue", "jms-topic",
-        "connection-factory", "data-source", "xa-data-source", "cn"
+        "connect", "deploy", "undeploy", "cn" // TODO AS7-2438, "jms-queue", "jms-topic", "connection-factory", "data-source", "xa-data-source"
     };
 
     @Test
@@ -61,16 +60,19 @@ public class HelpTestCase extends AbstractCliTestBase {
         testCmdHelp("deploy");
     }
 
+    @Ignore("AS7-2438")
     @Test
     public void testJmsQueueHelp() throws Exception {
         testCmdHelp("jms-queue");
     }
 
+    @Ignore("AS7-2438")
     @Test
     public void testJmsTopicHelp() throws Exception {
         testCmdHelp("jms-topic");
     }
 
+    @Ignore("AS7-2438")
     @Test
     public void testJmsConnectionFactoryHelp() throws Exception {
         testCmdHelp("connection-factory");
@@ -106,13 +108,13 @@ public class HelpTestCase extends AbstractCliTestBase {
         testCmdHelp("remove-jms-cf");
     }
 
-    @Ignore
+    @Ignore("AS7-2438")
     @Test
     public void testDataSourceHelp() throws Exception {
         testCmdHelp("data-source");
     }
 
-    @Ignore
+    @Ignore("AS7-2438")
     @Test
     public void testXaDataSourceHelp() throws Exception {
         testCmdHelp("xa-data-source");
