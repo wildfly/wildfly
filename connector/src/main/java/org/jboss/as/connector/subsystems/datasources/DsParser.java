@@ -317,11 +317,11 @@ public class DsParser extends AbstractParser {
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
-                    //final Location location = reader.getLocation();
-                    //ENABLED.parseAndSetParameter(value, operation, location);
+                    final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
                     if (value != null) {
                         enabled = Boolean.parseBoolean(value);
+                        ENABLED.parseAndSetParameter(value, operation, location);
                         persistEnabled = true;
                     }
                     break;
@@ -551,11 +551,11 @@ public class DsParser extends AbstractParser {
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
-                    //final Location location = reader.getLocation();
-                    //ENABLED.parseAndSetParameter(value, operation, location);
+                    final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
                     if (value != null) {
                         enabled = Boolean.parseBoolean(value);
+                        ENABLED.parseAndSetParameter(value, operation, location);
                         persistEnabled = true;
                     }
                     break;
