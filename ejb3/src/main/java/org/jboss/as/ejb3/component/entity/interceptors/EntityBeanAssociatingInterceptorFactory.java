@@ -36,15 +36,14 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
-
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Interceptor factory for entity beans that associates an invocation with a primary key
  *
  * @author Stuart Douglas
  */
 public class EntityBeanAssociatingInterceptorFactory implements InterceptorFactory {
-
-    private final Logger log = Logger.getLogger(EntityBeanAssociatingInterceptorFactory.class);
 
     public static final EntityBeanAssociatingInterceptorFactory INSTANCE = new EntityBeanAssociatingInterceptorFactory();
 
@@ -61,13 +60,13 @@ public class EntityBeanAssociatingInterceptorFactory implements InterceptorFacto
 
                 final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
                 if (primaryKey == null) {
-                    throw new NoSuchEJBException("Invocation was not associated with an instance, primary key was null, instance may have been removed");
+                    throw MESSAGES.primaryKeyIsNull();
                 }
 
                 final EntityBeanComponentInstance instance = component.getCache().get(primaryKey);
 
                 if(instance.isRemoved()) {
-                    throw new NoSuchEJBException("Instance of " + component.getComponentName() + " with primary key " + primaryKey + " has been removed");
+                    throw MESSAGES.instaceWasRemoved(component.getComponentName(),primaryKey);
                 }
 
                 try {
@@ -83,19 +82,19 @@ public class EntityBeanAssociatingInterceptorFactory implements InterceptorFacto
                         throw ex;
                     }
                     if (ex instanceof RuntimeException || ex instanceof RemoteException) {
-                        if (log.isTraceEnabled())
-                            log.trace("Discarding bean " + primaryKey + " because of exception", ex);
+                        if (ROOT_LOGGER.isTraceEnabled())
+                            ROOT_LOGGER.trace("Discarding bean " + primaryKey + " because of exception", ex);
                         component.getCache().discard(instance);
                     }
                     throw ex;
                 } catch (final Error e) {
-                    if (log.isTraceEnabled())
-                        log.trace("Discarding bean " + primaryKey + " because of error", e);
+                    if (ROOT_LOGGER.isTraceEnabled())
+                        ROOT_LOGGER.trace("Discarding bean " + primaryKey + " because of error", e);
                     component.getCache().discard(instance);
                     throw e;
                 } catch (final Throwable t) {
-                    if (log.isTraceEnabled())
-                        log.trace("Discarding bean " + primaryKey + " because of Throwable", t);
+                    if (ROOT_LOGGER.isTraceEnabled())
+                        ROOT_LOGGER.trace("Discarding bean " + primaryKey + " because of Throwable", t);
                     component.getCache().discard(instance);
                     throw new RuntimeException(t);
                 } finally {

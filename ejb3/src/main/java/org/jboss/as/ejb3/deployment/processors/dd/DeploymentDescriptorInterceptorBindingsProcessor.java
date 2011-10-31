@@ -42,13 +42,13 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.modules.Module;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * Processor that handles interceptor bindings that are defined in the deployment descriptor.
  *
@@ -57,7 +57,6 @@ import org.jboss.modules.Module;
 public class DeploymentDescriptorInterceptorBindingsProcessor implements DeploymentUnitProcessor {
 
 
-    private static final Logger log = Logger.getLogger(DeploymentDescriptorInterceptorBindingsProcessor.class);
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -94,7 +93,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
         for (final InterceptorBindingMetaData binding : metaData.getAssemblyDescriptor().getInterceptorBindings()) {
             if (binding.getEjbName().equals("*")) {
                 if (binding.getMethod() != null) {
-                    throw new DeploymentUnitProcessingException("Default interceptors cannot specify a method to bind to in ejb-jar.xml");
+                    throw MESSAGES.defaultInterceptorsNotBindToMethod();
                 }
                 defaultInterceptorBindings.add(binding);
             } else {
@@ -116,7 +115,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                     if (interceptorClasses.contains(clazz)) {
                         defaultInterceptors.add(new InterceptorDescription(clazz));
                     } else {
-                        log.warnf("Default interceptor class %s is not listed in the <interceptors> section of ejb-jar.xml and will not be applied", clazz);
+                        ROOT_LOGGER.defaultInterceptorClassNotListed(clazz);
                     }
                 }
             }
@@ -130,7 +129,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             try {
                 componentClass = module.getClassLoader().loadClass(componentDescription.getComponentClassName());
             } catch (ClassNotFoundException e) {
-                throw new DeploymentUnitProcessingException("Could not load component class " + componentDescription.getComponentClassName());
+                throw MESSAGES.failToLoadComponentClass(componentDescription.getComponentClassName());
             }
 
             final List<InterceptorBindingMetaData> bindings = bindingsPerComponent.get(componentDescription.getComponentName());
@@ -158,7 +157,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                         }
                         if (binding.isTotalOrdering()) {
                             if (classLevelAbsoluteOrder) {
-                                throw new DeploymentUnitProcessingException("Two ejb-jar.xml bindings for " + componentClass + " specify an absolute order");
+                                throw MESSAGES.twoEjbBindingsSpecifyAbsoluteOrder(componentClass.toString());
                             } else {
                                 classLevelAbsoluteOrder = true;
                             }
@@ -173,9 +172,9 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                         if (methodData.getMethodParams() == null) {
                             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());
                             if (methods.isEmpty()) {
-                                throw new DeploymentUnitProcessingException("Could not find method" + componentClass.getName() + "." + methodData.getMethodName() + " referenced in ejb-jar.xml");
+                                throw MESSAGES.failToFindMethodInEjbJarXml(componentClass.getName(),methodData.getMethodName());
                             } else if (methods.size() > 1) {
-                                throw new DeploymentUnitProcessingException("More than one method " + methodData.getMethodName() + "found on class" + componentClass.getName() + " referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity");
+                                throw MESSAGES.multipleMethodReferencedInEjbJarXml(methodData.getMethodName(),componentClass.getName());
                             }
                             resolvedMethod = methods.iterator().next();
                         } else {
@@ -194,7 +193,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                                 }
                             }
                             if (resolvedMethod == null) {
-                                throw new DeploymentUnitProcessingException("Could not find method" + componentClass.getName() + "." + methodData.getMethodName() + "with parameter types" + methodData.getMethodParams() + " referenced in ejb-jar.xml");
+                                throw MESSAGES.failToFindMethodWithParameterTypes(componentClass.getName(), methodData.getMethodName(), methodData.getMethodParams());
                             }
                         }
                         List<InterceptorBindingMetaData> list = methodInterceptors.get(resolvedMethod);
@@ -215,7 +214,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
 
                         if (binding.isTotalOrdering()) {
                             if (methodLevelAbsoluteOrder.containsKey(resolvedMethod)) {
-                                throw new DeploymentUnitProcessingException("Two ejb-jar.xml bindings for " + resolvedMethod + " specify an absolute order");
+                                throw MESSAGES.twoEjbBindingsSpecifyAbsoluteOrder(resolvedMethod.toString());
                             } else {
                                 methodLevelAbsoluteOrder.put(resolvedMethod, true);
                             }

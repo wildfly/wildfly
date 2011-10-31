@@ -28,7 +28,7 @@ import org.jboss.jandex.AnnotationValue;
 
 import javax.ejb.Schedule;
 import javax.ejb.Schedules;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * {@link org.jboss.as.ee.metadata.ClassAnnotationInformation} for Schedule annotation
  *
@@ -140,11 +140,11 @@ public class ScheduleAnnotationInformationFactory extends ClassAnnotationInforma
         }
 
         protected void setString(final AutoTimer expression, final String value) {
-            throw new IllegalStateException("Should be overridden");
+            throw MESSAGES.shouldBeOverridden();
         }
 
         protected void setBoolean(final AutoTimer expression, final boolean value) {
-            throw new IllegalStateException("Should be overridden");
+            throw MESSAGES.shouldBeOverridden();
         }
     }
 }

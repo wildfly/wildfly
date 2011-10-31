@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,6 +29,7 @@ import javax.ejb.TimerHandle;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceName;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -68,13 +69,13 @@ public class TimerHandleImpl implements TimerHandle {
      */
     public TimerHandleImpl(final String id, final String timedObjectId, final TimerServiceImpl service) throws IllegalArgumentException {
         if (id == null) {
-            throw new IllegalArgumentException("Id cannot be null");
+            throw MESSAGES.idIsNull();
         }
         if (timedObjectId == null) {
-            throw new IllegalArgumentException("Timed objectid cannot be null");
+            throw MESSAGES.timedObjectNull();
         }
         if (service == null) {
-            throw new IllegalArgumentException("Timer service cannot be null");
+            throw MESSAGES.timerServiceIsNull();
         }
 
         this.timedObjectId = timedObjectId;
@@ -93,12 +94,12 @@ public class TimerHandleImpl implements TimerHandle {
             // get hold of the timer service through the use of timed object id
             service = (TimerServiceImpl) CurrentServiceContainer.getServiceContainer().getRequiredService(ServiceName.parse(serviceName)).getValue();
             if (service == null) {
-                throw new EJBException("Timerservice with timedObjectId: " + timedObjectId + " is not registered");
+                throw MESSAGES.timerServiceWithIdNotRegistered(timedObjectId);
             }
         }
         TimerImpl timer = this.service.getTimer(this);
         if (timer != null && timer.isActive() == false) {
-            throw new NoSuchObjectLocalException("Timer for handle: " + this + " is not active");
+            throw MESSAGES.timerHandleIsNotActive(this);
         }
         return timer;
     }

@@ -67,7 +67,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INS
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Jaikiran Pai
  */
@@ -279,6 +279,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
 
         final String value = reader.getElementText();
         if (value == null || value.trim().isEmpty()) {
+            MESSAGES.invalidValueForElement(value,element,reader.getLocation());
             throw new XMLStreamException("Invalid value: " + value + " for '" + element + "' element", reader.getLocation());
         }
         return value.trim();

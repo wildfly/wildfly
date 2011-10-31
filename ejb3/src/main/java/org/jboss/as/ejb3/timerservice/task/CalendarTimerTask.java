@@ -29,7 +29,8 @@ import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.MultiTimeoutMethodTimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.jboss.logging.Logger;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * CalendarTimerTask
@@ -38,11 +39,6 @@ import org.jboss.logging.Logger;
  * @version $Revision: $
  */
 public class CalendarTimerTask extends TimerTask<CalendarTimer> {
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(CalendarTimerTask.class);
 
     /**
      * @param calendarTimer
@@ -66,8 +62,8 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
             if (!(invoker instanceof MultiTimeoutMethodTimedObjectInvoker)) {
                 final String msg = "Cannot invoke timeout method because timer: " + calendarTimer
                         + " is an auto timer, but invoker is not of type" + MultiTimeoutMethodTimedObjectInvoker.class;
-                logger.error(msg);
-                throw new RuntimeException(msg);
+                ROOT_LOGGER.failToInvokeTimeout(calendarTimer, MultiTimeoutMethodTimedObjectInvoker.class);
+                throw MESSAGES.failToInvokeTimeout(calendarTimer, MultiTimeoutMethodTimedObjectInvoker.class);
             }
             // call the timeout method
             ((MultiTimeoutMethodTimedObjectInvoker) invoker).callTimeout(calendarTimer, calendarTimer.getTimeoutMethod());

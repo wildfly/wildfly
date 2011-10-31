@@ -28,10 +28,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.RollbackException;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import org.jboss.ejb.client.SessionID;
 import org.jboss.tm.TxUtils;
+
 /**
  * Cache that handles EJB expiration. This cache can be wrapped around an existing cache to
  * provide expiration functionality.
@@ -48,8 +56,6 @@ public class ExpiringCache<T extends Identifiable> implements Cache<T> {
 
     private volatile StatefulObjectFactory<T> factory;
     private volatile ExpirationTask expiryThread;
-
-    private static final Logger logger = Logger.getLogger(ExpiringCache.class);
 
     private class ExpirationTask extends Thread {
 

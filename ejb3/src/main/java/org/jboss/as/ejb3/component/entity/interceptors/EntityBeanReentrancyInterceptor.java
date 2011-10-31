@@ -28,7 +28,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import javax.ejb.EJBException;
 
 /**
@@ -43,7 +43,7 @@ public class EntityBeanReentrancyInterceptor implements Interceptor{
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         if(invocationInProgress) {
-             throw new EJBException("Could not re-acquire lock for non-reentrant instance " + context.getPrivateData(ComponentInstance.class));
+            throw MESSAGES.failToReacquireLockForNonReentrant(context.getPrivateData(ComponentInstance.class));
         }
         invocationInProgress = true;
         try {

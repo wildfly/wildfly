@@ -71,6 +71,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -342,7 +343,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     public void setTransactionAttribute(MethodIntf methodIntf, String className, TransactionAttributeType transactionAttribute) {
         if (methodIntf != null && className != null)
-            throw new IllegalArgumentException("both methodIntf and className are set on " + getComponentName());
+            throw MESSAGES.bothMethodIntAndClassNameSet(getComponentName());
         if (methodIntf == null) {
             txStyle1.put(className, transactionAttribute);
         } else
@@ -545,7 +546,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setDeclaredRoles(Collection<String> roles) {
         if (roles == null) {
-            throw new IllegalArgumentException("Cannot set security roles to null");
+            throw MESSAGES.SecurityRolesIsNull();
         }
         this.declaredRoles.clear();
         this.declaredRoles.addAll(roles);
@@ -589,7 +590,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void applyDenyAllOnAllViewsForClass(final String className) {
         if (className == null || className.trim().isEmpty()) {
-            throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+            throw MESSAGES.classnameIsNull(className);
         }
         for (final ViewDescription view : this.getViews()) {
             Collection<String> denyAllClasses = this.classLevelDenyAll.get(view.getViewClassName());
@@ -678,10 +679,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setRolesAllowedOnAllViewsForClass(final String className, final Set<String> roles) {
         if (className == null || className.trim().isEmpty()) {
-            throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+            MESSAGES.classnameIsNull(className);
         }
         if (roles == null) {
-            throw new IllegalArgumentException("Cannot set null roles for class " + className);
+            throw MESSAGES.setRolesForClassIsNull(className);
         }
         for (final ViewDescription view : this.getViews()) {
             Map<String, Set<String>> perViewRoles = this.classLevelRolesAllowed.get(view.getViewClassName());
@@ -701,10 +702,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setRolesAllowedOnAllViewsForMethod(final EJBMethodIdentifier ejbMethodIdentifier, final Set<String> roles) {
         if (ejbMethodIdentifier == null) {
-            throw new IllegalArgumentException("EJB method identifier cannot be null while setting roles on method");
+            throw MESSAGES.ejbMethodIsNull();
         }
         if (roles == null) {
-            throw new IllegalArgumentException("Roles cannot be null while setting roles on method: " + ejbMethodIdentifier);
+            throw MESSAGES.rolesIsNull(ejbMethodIdentifier);
         }
         for (final ViewDescription view : this.getViews()) {
             Map<EJBMethodIdentifier, Set<String>> perViewMethodRoles = this.methodLevelRolesAllowed.get(view.getViewClassName());
@@ -719,7 +720,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setRolesAllowedForAllMethodsOnViewType(final MethodIntf viewType, final Set<String> roles) {
         if (roles == null) {
-            throw new IllegalArgumentException("Roles cannot be null while setting roles on view type: " + viewType);
+            throw MESSAGES.rolesIsNullOnViewType(viewType);
         }
         // find the right view(s) to apply the @RolesAllowed
         for (final ViewDescription view : this.getViews()) {
@@ -746,10 +747,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setRolesAllowedForMethodOnViewType(final MethodIntf viewType, final EJBMethodIdentifier ejbMethodIdentifier, final Set<String> roles) {
         if (ejbMethodIdentifier == null) {
-            throw new IllegalArgumentException("EJB method identifier cannot be null while setting roles on view type: " + viewType);
+            throw MESSAGES.ejbMethodIsNullForViewType(viewType);
         }
         if (roles == null) {
-            throw new IllegalArgumentException("Roles cannot be null while setting roles on view type: " + viewType + " and method: " + ejbMethodIdentifier);
+            throw MESSAGES.rolesIsNullOnViewTypeAndMethod(viewType,ejbMethodIdentifier);
         }
 
         // find the right view(s) to apply the @RolesAllowed
@@ -802,10 +803,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void linkSecurityRoles(final String fromRole, final String toRole) {
         if (fromRole == null || fromRole.trim().isEmpty()) {
-            throw new IllegalArgumentException("Cannot link from a null or empty security role: " + fromRole);
+            throw MESSAGES.failToLinkFromEmptySecurityRole(fromRole);
         }
         if (toRole == null || toRole.trim().isEmpty()) {
-            throw new IllegalArgumentException("Cannot link to a null or empty security role: " + toRole);
+            throw MESSAGES.failToLinkToEmptySecurityRole(toRole);
         }
 
         Collection<String> roleLinks = this.securityRoleLinks.get(fromRole);
@@ -838,7 +839,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void applyPermitAllOnAllViewsForClass(final String className) {
         if (className == null || className.trim().isEmpty()) {
-            throw new IllegalArgumentException("Classname cannot be null or empty: " + className);
+            throw MESSAGES.classnameIsNull(className);
         }
         for (final ViewDescription view : this.getViews()) {
             Collection<String> permitAllClasses = this.classLevelPermitAll.get(view.getViewClassName());
@@ -901,7 +902,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
             final ApplicationExceptions appExceptions = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.APPLICATION_EXCEPTION_DETAILS);
             if (appExceptions == null) {
-                throw new DeploymentUnitProcessingException("EjbJarConfiguration not found as an attachment in deployment unit: " + deploymentUnit);
+                 throw MESSAGES.ejbJarConfigNotFound(deploymentUnit);
             }
             final EJBComponentCreateServiceFactory ejbComponentCreateServiceFactory = (EJBComponentCreateServiceFactory) configuration.getComponentCreateServiceFactory();
             ejbComponentCreateServiceFactory.setEjbJarConfiguration(appExceptions);
@@ -927,7 +928,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         public Object processInvocation(InterceptorContext context) throws Exception {
             final ComponentView componentView = context.getPrivateData(ComponentView.class);
             if (componentView == null) {
-                throw new IllegalStateException("ComponentViewInstance not available in interceptor context: " + context);
+                throw MESSAGES.componentViewNotAvailableInContext(context);
             }
             return "Proxy for view class: " + componentView.getViewClass().getName() + " of EJB: " + name;
         }

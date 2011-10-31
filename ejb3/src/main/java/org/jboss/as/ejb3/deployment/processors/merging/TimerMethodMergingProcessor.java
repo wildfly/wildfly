@@ -46,7 +46,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Deployment unit processor that merges the annotation information with the information in the deployment descriptor
  *
@@ -65,7 +65,7 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBCom
         final Set<Method> timerAnnotationData = MethodAnnotationAggregator.runtimeAnnotationPresent(componentClass, applicationClasses, deploymentReflectionIndex, Timeout.class);
         final Method timeoutMethod;
         if (timerAnnotationData.size() > 1) {
-            throw new DeploymentUnitProcessingException("Component class " + componentClass + " has multiple @Timeout annotations");
+            throw MESSAGES.componentClassHasMultipleTimeoutAnnotations(componentClass);
         } else if (timerAnnotationData.size() == 1) {
             timeoutMethod = timerAnnotationData.iterator().next();
         } else {
@@ -110,8 +110,7 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBCom
                     final Method otherMethod = description.getTimeoutMethod();
                     if (otherMethod != null) {
                         if (!otherMethod.equals(method)) {
-                            throw new DeploymentUnitProcessingException("EJB 3.1 18.2.5.3 entity bean " + componentClass + " implemented TimedObject, " +
-                                    "but has a different timeout method specified either via annotations or via the deployment descriptor");
+                            throw MESSAGES.invalidEjbEntityTimeout("3.1 18.2.5.3",componentClass);
                         }
                     }
                     description.setTimeoutMethod(method);

@@ -46,6 +46,7 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Deployment descriptor that resolves interceptor methods definined in ejb-jar.xml that could not be resolved at
@@ -71,7 +72,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                             handleStatelessSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
                         }
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException("Could not load component class", e);
+                        throw MESSAGES.failToLoadComponentClass(e);
                     }
                 }
             }

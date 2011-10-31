@@ -54,7 +54,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceBuilder;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * View configurator for the home interface of an entity bean
  *
@@ -175,7 +175,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             }
             clazz = clazz.getSuperclass();
         }
-        throw new DeploymentUnitProcessingException("Could not resolve corresponding " + ejbMethodName + " for home interface method " + method + " on EJB " + ejbName);
+        throw MESSAGES.failToResolveMethodForHomeInterface(ejbMethodName,method,ejbName);
     }
 
     protected Method resolveEjbFinderMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final Method method, final String ejbName, final PersistenceType persistenceType) throws DeploymentUnitProcessingException {
@@ -190,7 +190,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             clazz = clazz.getSuperclass();
         }
         if (PersistenceType.Bean == persistenceType) {
-            throw new DeploymentUnitProcessingException("Could not resolve corresponding ejbFind method for home interface method " + method + " on EJB " + ejbName);
+            throw MESSAGES.failToResolveMethodForHomeInterface("ejbFind",method,ejbName);
         }
         return method;
     }
@@ -206,7 +206,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             }
             clazz = clazz.getSuperclass();
         }
-        throw new DeploymentUnitProcessingException("Could not resolve corresponding ejbHome method for home interface method " + method + " on EJB " + ejbName);
+        throw MESSAGES.failToResolveMethodForHomeInterface("ejbHome",method,ejbName);
     }
 
     private Method resolveRemoveMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final String ejbName) throws DeploymentUnitProcessingException {

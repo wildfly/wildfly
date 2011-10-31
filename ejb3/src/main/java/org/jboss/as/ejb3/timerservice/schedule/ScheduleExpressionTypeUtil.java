@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.timerservice.schedule;
 
 import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 
 /**
@@ -40,7 +41,7 @@ public class ScheduleExpressionTypeUtil {
      */
     public static ScheduleExpressionType getType(String value) {
         if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
+            throw MESSAGES.valueIsNull();
         }
         // Order of check is important.
         // TODO: Explain why this order is important

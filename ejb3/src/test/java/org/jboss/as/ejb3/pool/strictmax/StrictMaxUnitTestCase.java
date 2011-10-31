@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.pool.strictmax;
 
 import junit.framework.TestCase;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.ejb3.pool.common.MockBean;
@@ -131,7 +132,7 @@ public class StrictMaxUnitTestCase extends TestCase {
             pool.get();
             fail("should have thrown an exception");
         } catch (Exception e) {
-            assertEquals("Failed to acquire a permit within 1 SECONDS", e.getMessage());
+            assertEquals(EjbMessages.MESSAGES.failedToAcquirePermit(1, TimeUnit.SECONDS).getMessage(), e.getMessage());
         }
 
         for (int i = 0; i < beans.length; i++) {

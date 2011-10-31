@@ -34,7 +34,8 @@ import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
-
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Sets up the {@link EJBComponentDescription} with the &lt;security-role-ref&gt;s declared for a EJB
  *
@@ -56,7 +57,7 @@ public class SecurityRoleRefDDProcessor extends AbstractEjbXmlDescriptorProcesso
             securityRoleRefs = beanMetaData.getSecurityRoleRefs();
         } else if (beanMetaData instanceof MessageDrivenBeanMetaData) {
             // TODO: Why doesn't MessageDrivenBeanMetaData have security role refs metadata
-            logger.warn("security-role-ref for message driven beans isn't yet implemented");
+            ROOT_LOGGER.securityRoleForMdbNotImplemented();
         }
         if (securityRoleRefs == null) {
             return;
@@ -68,8 +69,7 @@ public class SecurityRoleRefDDProcessor extends AbstractEjbXmlDescriptorProcesso
             final String fromRole = securityRoleRef.getRoleName();
             String toRole = securityRoleRef.getRoleLink();
             if (fromRole == null || fromRole.trim().isEmpty()) {
-                throw new DeploymentUnitProcessingException("<role-name> cannot be null or empty in <security-role-ref> " +
-                        "for bean: " + ejbComponentDescription.getEJBName());
+                throw MESSAGES.roleNamesIsNull(ejbComponentDescription.getEJBName());
             }
             // if role-link hasn't been specified, then it links to the same role name as the one specified
             // in the role-name

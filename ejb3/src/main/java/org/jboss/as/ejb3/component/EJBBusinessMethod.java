@@ -25,6 +25,8 @@ package org.jboss.as.ejb3.component;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 
 /**
  * @author Jaikiran Pai
@@ -50,7 +52,7 @@ public class EJBBusinessMethod implements Serializable {
 
     public EJBBusinessMethod(MethodIntf view, String methodName, Class<?>... paramTypes) {
         if (methodName == null) {
-            throw new IllegalArgumentException("Method name cannot be null");
+            throw MESSAGES.methodeNameIsNull();
         }
         this.methodName = methodName;
         this.methodParamTypes = paramTypes == null ? new Class<?>[0] : paramTypes;

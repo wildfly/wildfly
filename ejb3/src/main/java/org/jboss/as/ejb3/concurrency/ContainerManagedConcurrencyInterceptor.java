@@ -33,7 +33,8 @@ import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * @author Jaikiran Pai
  */
@@ -53,7 +54,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
 
     public ContainerManagedConcurrencyInterceptor(LockableComponent component) {
         if (component == null) {
-            throw new IllegalArgumentException(LockableComponent.class.getName() + " cannot be null");
+            throw MESSAGES.componentIsNull(LockableComponent.class.getName());
         }
         this.lockableComponent = component;
     }
@@ -69,7 +70,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         // get the invoked method
         Method invokedMethod = invocationContext.getMethod();
         if (invokedMethod == null) {
-            throw new IllegalArgumentException("Invocation context: " + invocationContext + " cannot be processed because it's not applicable for a method invocation");
+            throw MESSAGES.invocationNotApplicableForMethodInvocation(invocationContext);
         }
         // get the Lock applicable for this method
         Lock lock = getLock(lockableComponent, invokedMethod);
@@ -84,7 +85,8 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
             if (accessTimeoutOnMethod.getValue() < 0) {
                 // for any negative value of timeout, we just default to max timeout val and max timeout unit.
                 // violation of spec! But we don't want to wait indefinitely.
-                logger.debug("Ignoring a negative @AccessTimeout value: " + accessTimeoutOnMethod.getValue() + " and timeout unit: "
+
+                ROOT_LOGGER.debug("Ignoring a negative @AccessTimeout value: " + accessTimeoutOnMethod.getValue() + " and timeout unit: "
                         + accessTimeoutOnMethod.getTimeUnit().name() + ". Will default to timeout value: " + defaultAccessTimeout.getValue()
                         + " and timeout unit: " + defaultAccessTimeout.getTimeUnit().name());
             } else {
@@ -96,8 +98,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         // try getting the lock
         boolean success = lock.tryLock(time, unit);
         if (!success) {
-            throw new ConcurrentAccessTimeoutException("EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on " + invocationContext
-                    + " - could not obtain lock within " + time + unit.name());
+            throw MESSAGES.concurrentAccessTimeoutException(invocationContext,time + unit.name());
         }
         try {
             // lock obtained. now proceed!
@@ -115,7 +116,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
             case WRITE:
                 return readWriteLock.writeLock();
         }
-        throw new IllegalStateException("Illegal lock type " + lockType + " on " + method + " for component " + lockableComponent);
+        throw MESSAGES.failToObtainLockIllegalType(lockType,method,lockableComponent);
     }
 
 }

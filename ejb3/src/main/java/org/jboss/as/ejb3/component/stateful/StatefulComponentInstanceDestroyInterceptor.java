@@ -27,7 +27,8 @@ import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * Destroys a SFSB instance
  *
@@ -48,9 +49,9 @@ public class StatefulComponentInstanceDestroyInterceptor extends AbstractEJBInte
         // TODO: this is a contract with the client interceptor
         SessionID sessionId = this.sessionIdReference.get();
         if (sessionId == null) {
-            throw new IllegalStateException("Session id hasn't been set for stateful component: " + component.getComponentName());
+            throw MESSAGES.statefulSessionIdIsNull(component.getComponentName());
         }
-        log.debug("Looking for stateful component instance with session id: " + sessionId);
+        ROOT_LOGGER.debug("Looking for stateful component instance with session id: " + sessionId);
 
         final StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         if (instance == null) {

@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Represents the value of a day in a month, constructed out of a {@link javax.ejb.ScheduleExpression#getDayOfMonth()}
  * <p/>
@@ -75,11 +75,6 @@ import java.util.regex.Pattern;
  * @version $Revision: $
  */
 public class DayOfMonth extends IntegerBasedExpression {
-
-    /**
-     * Logger
-     */
-    private static Logger logger = Logger.getLogger(DayOfMonth.class);
 
     /**
      * The maximum allowed value for the {@link DayOfMonth}
@@ -189,7 +184,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value != null && value == 0) {
-            throw new IllegalArgumentException("Invalid value for day-of-month: " + value);
+            throw MESSAGES.invalidValueDayOfMonth(value);
         }
         super.assertValid(value);
     }
@@ -265,7 +260,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
     private int getAbsoluteDayOfMonth(Calendar cal, String relativeDayOfMonth) {
         if (relativeDayOfMonth == null || relativeDayOfMonth.trim().isEmpty()) {
-            throw new IllegalArgumentException("Relative day-of-month cannot be null or empty");
+            throw MESSAGES.relativeDayOfMonthIsNull();
         }
         String trimmedRelativeDayOfMonth = relativeDayOfMonth.trim();
         if (trimmedRelativeDayOfMonth.equalsIgnoreCase("last")) {
@@ -302,7 +297,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
             return date;
         }
-        throw new IllegalArgumentException(relativeDayOfMonth + " is not a relative value");
+        throw MESSAGES.invalidRelativeValue(relativeDayOfMonth);
     }
 
     private boolean isValidNegativeDayOfMonth(String dayOfMonth) {
@@ -348,7 +343,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     public boolean isRelativeValue(String value) {
         if (value == null) {
-            throw new IllegalArgumentException("Value is null, cannot determine if it's relative");
+            throw MESSAGES.relativeValueIsNull();
         }
         if (value.equalsIgnoreCase("last")) {
             return true;

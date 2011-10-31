@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.timerservice.schedule.value;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Represents a value for a {@link javax.ejb.ScheduleExpression} which is expressed as an list type. An
  * {@link ListValue} comprises of values separated by a ",".
@@ -65,7 +65,7 @@ public class ListValue implements ScheduleValue {
      */
     public ListValue(String list) {
         if (list == null || list.isEmpty()) {
-            throw new IllegalArgumentException("Invalid list expression: " + list);
+            throw MESSAGES.invalidListExpression(list);
         }
         StringTokenizer tokenizer = new StringTokenizer(list, LIST_SEPARATOR);
         while (tokenizer.hasMoreTokens()) {
@@ -75,7 +75,7 @@ public class ListValue implements ScheduleValue {
         // a list MUST minimally contain 2 elements
         // Ex: "," "1," ", 2" are all invalid
         if (this.values.size() < 2) {
-            throw new IllegalArgumentException("Invalid list expression: " + list);
+            throw MESSAGES.invalidListExpression(list);
         }
     }
 

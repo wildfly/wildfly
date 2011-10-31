@@ -39,7 +39,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.pool.Pool;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Enumeration of types of manageable EJB components.
  *
@@ -118,10 +118,10 @@ public enum EJBComponentType {
                 return StatelessSessionComponent.class.cast(component).getPool();
             case SINGLETON:
             case STATEFUL:
-                throw new IllegalStateException(String.format("EJB component type %s does not support pools", this.getComponentClass().getSimpleName()));
+                throw MESSAGES.invalidComponentType(this.getComponentClass().getSimpleName());
             default:
                 // Bug
-                throw new IllegalStateException(String.format("Unknown EJBComponent type %s", this));
+                throw MESSAGES.unknownComponentType(this);
         }
     }
 
@@ -139,7 +139,7 @@ public enum EJBComponentType {
                 return StatefulSessionBeanRuntimeHandler.INSTANCE;
             default:
                 // Bug
-                throw new IllegalStateException(String.format("Unknown EJBComponent type %s", this));
+                throw MESSAGES.unknownComponentType(this);
         }
     }
 
@@ -155,7 +155,7 @@ public enum EJBComponentType {
                 return entry.getValue();
             }
         }
-        throw new IllegalArgumentException(String.format("Unknown EJB Component description type %s", description.getClass()));
+        throw MESSAGES.unknownComponentDescriptionType(description.getClass());
     }
 
 }

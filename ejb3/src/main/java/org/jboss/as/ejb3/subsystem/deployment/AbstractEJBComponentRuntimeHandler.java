@@ -53,6 +53,7 @@ import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourc
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.RUN_AS_ROLE;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.SECURITY_DOMAIN;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Base class for operation handlers that provide runtime management for {@link EJBComponent}s.
  *
@@ -161,7 +162,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
             }
         } else {
             // Bug; we were registered for an attribute but there is no code for handling it
-            throw new IllegalStateException(String.format("Unknown attribute %s", attributeName));
+            throw MESSAGES.unknownAttribute(attributeName);
         }
     }
 
@@ -174,7 +175,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
     }
 
     private static IllegalStateException unknownOperation(String opName) {
-        throw new IllegalStateException((String.format("Unknown operation %s", opName)));
+        throw MESSAGES.unknownOperations(opName);
     }
 
     private boolean isForWrite(String opName) {
@@ -201,7 +202,8 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         final PathAddress pa = PathAddress.pathAddress(relativeAddress);
         final ServiceName config = componentConfigs.get(pa);
         if (config == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("No EJB component registered for address %s", operationAddress)));
+            String exceptionMessage = MESSAGES.noComponentRegisteredForAddress(operationAddress);
+            throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
 
         return config;
@@ -213,12 +215,13 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         ServiceRegistry registry = context.getServiceRegistry(forWrite);
         ServiceController<?> controller = registry.getService(serviceName);
         if (controller == null) {
-            throw new OperationFailedException(new ModelNode().set(String.format("No EJB component is available for address %s", operationAddress)));
+            String exceptionMessage = MESSAGES.noComponentAvailableForAddress(operationAddress);
+            throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
         ServiceController.State controllerState = controller.getState();
         if (controllerState != ServiceController.State.UP) {
-            throw new OperationFailedException(new ModelNode().set(String.format("EJB component for address %s is in " +
-                    "state %s, must be in state %s", operationAddress, controllerState, ServiceController.State.UP)));
+            String exceptionMessage = MESSAGES.invalidComponentState(operationAddress,controllerState,ServiceController.State.UP);
+            throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
         return componentClass.cast(controller.getValue());
     }

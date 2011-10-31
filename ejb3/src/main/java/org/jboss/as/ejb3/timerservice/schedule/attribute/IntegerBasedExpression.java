@@ -33,7 +33,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Represents a {@link Integer} type value in a {@link javax.ejb.ScheduleExpression}.
  * <p/>
@@ -66,7 +66,7 @@ public abstract class IntegerBasedExpression {
         // check the type of value
         this.scheduleExpressionType = ScheduleExpressionTypeUtil.getType(value);
         if (this.accepts(scheduleExpressionType) == false) {
-            throw new IllegalArgumentException("Invalid value: " + value + " since " + this.getClass().getName() + " doesn't support values of types " + this.scheduleExpressionType.toString());
+            throw MESSAGES.invalidScheduleExpressionType(value,this.getClass().getName(),this.scheduleExpressionType.toString());
         }
         switch (this.scheduleExpressionType) {
             case RANGE:
@@ -124,8 +124,7 @@ public abstract class IntegerBasedExpression {
                 this.processRangeValue(range);
                 return;
             default:
-                throw new IllegalArgumentException(
-                        "A list value can only contain either a range or an individual value. Invalid value: " + listItem);
+                throw MESSAGES.invalidListValue(listItem);
         }
     }
 
@@ -202,13 +201,12 @@ public abstract class IntegerBasedExpression {
 
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value == null) {
-            throw new IllegalArgumentException("Could not parse: " + this.origValue + " in schedule expression");
+            throw MESSAGES.couldNotParseScheduleExpression(this.origValue);
         }
         int max = this.getMaxValue();
         int min = this.getMinValue();
         if (value > max || value < min) {
-            throw new IllegalArgumentException("Invalid value: " + value + " Valid values are between " + min + " and "
-                    + max);
+            throw MESSAGES.invalidValuesRange(value,min,max);
         }
     }
 

@@ -33,7 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * An {@link InjectionSource} which returns a {@link ManagedReference reference} to a {@link javax.ejb.TimerService}
  * <p/>
@@ -77,7 +77,7 @@ public class TimerServiceBindingSource extends InjectionSource {
             final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
             final EJBComponent ejbComponent = (EJBComponent) currentInvocationContext.getPrivateData(Component.class);
             if (ejbComponent == null) {
-                throw new IllegalStateException("EJBComponent has not been set in the current invocation context " + currentInvocationContext);
+                throw MESSAGES.failToGetEjbComponent(currentInvocationContext);
             }
             return ejbComponent.getTimerService();
         }

@@ -28,7 +28,7 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */

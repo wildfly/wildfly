@@ -45,7 +45,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
@@ -57,8 +57,6 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
     public static final ServiceName TIMER_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "timer");
 
     public static final ServiceName PATH_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "timerService", "dataPath");
-
-    private static final Logger logger = Logger.getLogger(TimerServiceDeploymentProcessor.class);
 
     private final ServiceName timerServiceThreadPool;
 
@@ -75,7 +73,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
         for (final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
 
             if (component.isTimerServiceApplicable()) {
-                logger.debug("Installing timer service for component " + component.getComponentName());
+                ROOT_LOGGER.debug("Installing timer service for component " + component.getComponentName());
 
                 component.getConfigurators().add(new ComponentConfigurator() {
                     @Override

@@ -58,7 +58,7 @@ import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Merging processor that handles EJB asyn methods, and adds a configurator to configure any that are found.
  *
@@ -160,7 +160,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
         } else if (method.getReturnType().equals(Future.class)) {
             configuration.addClientInterceptor(method, AsyncFutureInterceptorFactory.INSTANCE, InterceptorOrder.Client.LOCAL_ASYNC_INVOCATION);
         } else {
-            throw new DeploymentUnitProcessingException("Async method " + method + " does not return void or Future");
+            throw MESSAGES.wrongReturnTypeForAsyncMethod(method);
         }
     }
 }

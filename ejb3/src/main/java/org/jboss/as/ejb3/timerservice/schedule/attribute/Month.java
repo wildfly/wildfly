@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Month
  *
@@ -143,7 +143,7 @@ public class Month extends IntegerBasedExpression {
             return Calendar.JANUARY;
         }
         if (this.offsetAdjustedMonths.isEmpty()) {
-            throw new IllegalStateException("There are no valid seconds for expression: " + this.origValue);
+            throw MESSAGES.invalidExpressionSeconds(this.origValue);
         }
         return this.offsetAdjustedMonths.first();
     }

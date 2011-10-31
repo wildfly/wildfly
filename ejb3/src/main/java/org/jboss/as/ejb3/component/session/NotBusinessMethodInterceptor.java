@@ -26,7 +26,7 @@ import org.jboss.invocation.InterceptorContext;
 
 import javax.ejb.EJBException;
 import java.lang.reflect.Method;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Stuart Douglas
  */
@@ -40,6 +40,6 @@ public class NotBusinessMethodInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        throw new EJBException("Not a business method " + method + ". Do not call non-public methods on EJB's");
+        throw MESSAGES.failToCallBusinessOnNonePublicMethod(method);
     }
 }

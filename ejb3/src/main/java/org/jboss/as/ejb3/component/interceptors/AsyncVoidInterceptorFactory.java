@@ -28,7 +28,8 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.logging.Logger;
+
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * An asynchronous execution interceptor for methods returning {@code void}.  Because asynchronous invocations
@@ -42,8 +43,6 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class AsyncVoidInterceptorFactory implements InterceptorFactory {
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.ejb3.component.async");
 
     public static final InterceptorFactory INSTANCE = new AsyncVoidInterceptorFactory();
 
@@ -72,7 +71,7 @@ public final class AsyncVoidInterceptorFactory implements InterceptorFactory {
             try {
                 context.proceed();
             } catch (Exception e) {
-                log.error("Asynchronous invocation failed", e);
+                ROOT_LOGGER.asyncInvocationFailed(e);
             }
             return;
         }

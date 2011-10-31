@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.timerservice.schedule.attribute;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 import java.util.Calendar;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Represents the value of a second constructed out of a {@link javax.ejb.ScheduleExpression#getSecond()}
  * <p/>
@@ -98,7 +98,7 @@ public class Second extends IntegerBasedExpression {
             return 0;
         }
         if (this.absoluteValues.isEmpty()) {
-            throw new IllegalStateException("There are no valid seconds for expression: " + this.origValue);
+            throw MESSAGES.invalidExpressionSeconds(this.origValue);
         }
         return this.absoluteValues.first();
     }

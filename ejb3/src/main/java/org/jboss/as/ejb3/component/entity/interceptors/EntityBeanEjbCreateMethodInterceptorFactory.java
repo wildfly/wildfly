@@ -33,7 +33,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Interceptor factory for entity beans that class the corresponding ejbCreate method.
  * <p/>
@@ -70,7 +70,7 @@ public class EntityBeanEjbCreateMethodInterceptorFactory implements InterceptorF
 
                 final Component component = context.getPrivateData(Component.class);
                 if (!(component instanceof EntityBeanComponent)) {
-                    throw new IllegalStateException("Unexpected component: " + component + " Expected " + EntityBeanComponent.class);
+                    throw MESSAGES.unexpectedComponent(component,EntityBeanComponent.class);
                 }
                 final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
                 //grab an unasociated entity bean from the pool

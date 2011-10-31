@@ -38,7 +38,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.modules.Module;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Superclass for the EJB metadata merging processors
  *
@@ -72,7 +72,7 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
                 try {
                     processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (T) componentConfiguration);
                 } catch (Exception e) {
-                    throw new DeploymentUnitProcessingException("Could not merge data for " + componentConfiguration.getComponentName(), e);
+                    throw MESSAGES.failToMergeData(componentConfiguration.getComponentName(),e);
                 }
             }
         }
@@ -84,7 +84,7 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
         try {
             componentClass = module.getClassLoader().loadClass(description.getEJBClassName());
         } catch (ClassNotFoundException e) {
-            throw new DeploymentUnitProcessingException("Could not load EJB class " + description.getEJBClassName(), e);
+            throw MESSAGES.failToLoadEjbClass(description.getEJBClassName(),e);
         }
 
         if (!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {

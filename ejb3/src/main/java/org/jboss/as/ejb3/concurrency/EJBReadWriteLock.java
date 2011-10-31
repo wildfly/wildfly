@@ -28,7 +28,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * An implementation of {@link java.util.concurrent.locks.ReadWriteLock} which throws an {@link javax.ejb.IllegalLoopbackException}
  * when a thread holding a read lock tries to obtain a write lock.
@@ -228,7 +228,7 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
         Integer current = readLockCount.get();
         if (current != null) {
             assert current.intValue() > 0 : "readLockCount is set, but to 0";
-            throw new IllegalLoopbackException("EJB 3.1 PFD2 4.8.5.1.1 upgrading from read to write lock is not allowed");
+            throw MESSAGES.failToUpgradeToWriteLock();
         }
     }
 

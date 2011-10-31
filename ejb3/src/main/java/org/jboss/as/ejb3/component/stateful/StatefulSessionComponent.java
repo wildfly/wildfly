@@ -56,7 +56,8 @@ import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StopContext;
-
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 
 /**
  * Stateful Session Bean
@@ -124,7 +125,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     public <T> T getBusinessObject(Class<T> businessInterface, final InterceptorContext context) throws IllegalStateException {
         if (businessInterface == null) {
-            throw new IllegalStateException("Business interface type cannot be null");
+            throw MESSAGES.businessInterfaceIsNull();
         }
         return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(context)));
     }
@@ -138,7 +139,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbObjectView() == null) {
-            throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
+            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(),"EJBObject");
         }
         final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(getEjbObjectView());
         final ComponentView view = (ComponentView) serviceController.getValue();
@@ -148,7 +149,7 @@ public class StatefulSessionComponent extends SessionBeanComponent {
 
     @Override
     public TimerService getTimerService() throws IllegalStateException {
-        throw new IllegalStateException("TimerService is not supported for Stateful session bean " + this.getComponentName());
+        throw MESSAGES.timerServiceNotSupportedForSFSB(this.getComponentName());
     }
 
     /**

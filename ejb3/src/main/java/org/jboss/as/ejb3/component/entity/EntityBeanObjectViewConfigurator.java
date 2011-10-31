@@ -50,6 +50,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * configurator that sets up interceptors for an EJB's object view
@@ -150,6 +151,6 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
             }
             clazz = clazz.getSuperclass();
         }
-        throw new DeploymentUnitProcessingException("Could not resolve ejbRemove method for interface method on EJB " + ejbName);
+        throw MESSAGES.failToResolveEjbRemoveForInterface(ejbName);
     }
 }
