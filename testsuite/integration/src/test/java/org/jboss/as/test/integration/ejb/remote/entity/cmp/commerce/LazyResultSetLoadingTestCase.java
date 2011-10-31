@@ -21,61 +21,122 @@
  */
 package org.jboss.as.test.integration.ejb.remote.entity.cmp.commerce;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import javax.ejb.EJBHome;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.ejb.client.remoting.IoFutureHelper;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.Endpoint;
+import org.jboss.remoting3.Remoting;
+import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoFuture;
+import org.xnio.OptionMap;
+import org.xnio.Options;
 
 /**
  * @author <a href="mailto:alex@jboss.org">Alexey Loubyansky</a>
  * @version <tt>$Revision: 81036 $</tt>
  */
-@RunWith(CmpTestRunner.class)
-public class LazyResultSetLoadingTestCase extends AbstractCmpTest {
+@RunWith(Arquillian.class)
+@RunAsClient
+public class LazyResultSetLoadingTestCase {
+
+    private static final String APP_NAME = "cmp-commerce";
+    private static final String MODULE_NAME = "ejb";
+
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static Connection connection;
+    private EJBClientContext ejbClientContext;
+
     @Deployment
     public static Archive<?> deploy() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
-        jar.addPackage(LazyResultSetLoadingTestCase.class.getPackage());
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
+        jar.addPackage(CommerceTestCase.class.getPackage());
+        jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/MANIFEST.MF", "MANIFEST.MF");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jboss.xml", "jboss.xml");
         jar.addAsManifestResource("ejb/remote/entity/cmp/commerce/jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
-        AbstractCmpTest.addDeploymentAssets(jar);
-        return jar;
+        ear.addAsModule(jar);
+        return ear;
+    }
+
+    /**
+     * Create and setup the remoting connection
+     *
+     * @throws Exception
+     */
+    @BeforeClass
+    public static void beforeTestClass() throws Exception {
+        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+        endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
+
+        // open a connection
+        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+        connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
+    }
+
+    @AfterClass
+    public static void afterTestClass() throws Exception {
+        executor.shutdown();
+    }
+
+    /**
+     * Create and setup the EJB client context backed by the remoting receiver
+     *
+     * @throws Exception
+     */
+    @Before
+    public void beforeTest() throws Exception {
+        this.ejbClientContext = EJBClientContext.create();
+        this.ejbClientContext.registerConnection(connection);
+    }
+
+    @After
+    public void afterTest() throws Exception {
+        if (this.ejbClientContext != null) {
+            EJBClientContext.suspendCurrent();
+        }
     }
 
     private OrderHome getOrderHome() {
-        try {
-            return (OrderHome) iniCtx.lookup("java:module/OrderEJB!" + OrderHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getOrderHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(OrderHome.class, "OrderEJB");
     }
 
     private LineItemHome getLineItemHome() {
-        try {
-            return (LineItemHome) iniCtx.lookup("java:module/LineItemEJB!" + LineItemHome.class.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception in getLineItemHome: " + e.getMessage());
-        }
-        return null;
+        return getHome(LineItemHome.class, "LineItemEJB");
     }
 
-    public void setUpEjb() throws Exception {
+    private <T extends EJBHome> T getHome(final Class<T> homeClass, final String beanName) {
+        final EJBHomeLocator<T> locator = new EJBHomeLocator<T>(homeClass, APP_NAME, MODULE_NAME, beanName, "");
+        return EJBClient.createProxy(locator);
+    }
+
+    @Test
+    public void testLazyResultSetLoading() throws Exception {
         OrderHome oh = getOrderHome();
         Order o = oh.create(new Long(1));
 
@@ -88,15 +149,6 @@ public class LazyResultSetLoadingTestCase extends AbstractCmpTest {
 
         li = lih.create(new Long(33));
         o.addLineItemId(li.getId());
-    }
-
-    public void tearDownEjb() throws Exception {
-        getOrderHome().remove(new Long(1));
-    }
-
-    @Test
-    public void testLazyResultSetLoading() throws Exception {
-        final OrderHome oh = getOrderHome();
 
         // empty result
         Collection col = oh.selectLazy("select object(o) from Address o where o.state='CA'", null);
@@ -119,7 +171,7 @@ public class LazyResultSetLoadingTestCase extends AbstractCmpTest {
         Collection secondPassCol = new ArrayList(3);
         i = col.iterator();
         while (i.hasNext()) {
-            final LineItem li = (LineItem) i.next();
+            li = (LineItem) i.next();
             assertTrue(firstPassCol.contains(li));
             secondPassCol.add(li);
         }
@@ -136,5 +188,6 @@ public class LazyResultSetLoadingTestCase extends AbstractCmpTest {
             ++count;
         }
         assertTrue("Expected 2 but got " + count, count == 2);
+        oh.remove(new Long(1));
     }
 }

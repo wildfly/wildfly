@@ -20,14 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.remote.entity.bmp;
+package org.jboss.as.ee.component;
+
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
 /**
  * @author John Bailey
  */
-public interface DataStore {
-    void clear();
-    String get(int id);
-    void put(int id, String value);
-    boolean containsKey(int id);
+public class NamespaceViewConfigurator implements ViewConfigurator {
+    public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+        configuration.addViewInterceptor(componentConfiguration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
+    }
 }
