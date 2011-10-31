@@ -27,9 +27,9 @@ for GROUP in $(echo $IN | tr ";" "\n"); do
 done
 
 ## Create a JUnitDiff report.
-JUNITDIFF=$DIRNAME/../junitdiff/JUnitDiff.jar
+JUNITDIFF=${JUNITDIFF:-$DIRNAME/../junitdiff/JUnitDiff.jar}	
 if [ -f $JUNITDIFF ] ; then
-  java -jar $JUNITDIFF -o $RES_DIR/AS7-TS-GroupsComparison.html `ls -c $RES_DIR`
+  java -jar $JUNITDIFF -o $RES_DIR/AS7-TS-GroupsComparison.html `ls -1 -c $RES_DIR`
 fi
 
 
