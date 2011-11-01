@@ -22,80 +22,64 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
-
-import java.util.Collection;
-import java.util.logging.Level;
-
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+
+import static org.jboss.as.logging.CommonAttributes.HANDLERS;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  */
-class RootLoggerAdd implements OperationStepHandler {
+class RootLoggerAdd extends AbstractAddStepHandler {
 
     static final RootLoggerAdd INSTANCE = new RootLoggerAdd();
 
     static final String OPERATION_NAME = "set-root-logger";
 
-    public void execute(OperationContext context, ModelNode operation) {
-        final String level = operation.require(LEVEL.getName()).asString();
-        final ModelNode handlers = operation.get(HANDLERS.getName());
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        LEVEL.validateAndSet(operation, model);
+        HANDLERS.validateAndSet(operation, model);
+    }
 
-        final ModelNode subModel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        subModel.get(ROOT_LOGGER, LEVEL.getName()).set(level);
-        subModel.get(ROOT_LOGGER, HANDLERS.getName()).set(handlers);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(LoggingExtension.rootLoggerPath);
+        final String name = address.getLastElement().getValue();
+        final ModelNode level = LEVEL.validateResolvedOperation(model);
+        final ModelNode handlers = HANDLERS.validateResolvedOperation(model);
+        final ServiceTarget target = context.getServiceTarget();
+        try {
 
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ServiceTarget target = context.getServiceTarget();
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    try {
-
-                        final RootLoggerService service = new RootLoggerService();
-                        service.setLevel(Level.parse(LEVEL.resolveModelAttribute(context, operation).asString()));
-                        target.addService(LogServices.ROOT_LOGGER, service)
-                                .addListener(verificationHandler)
-                                .setInitialMode(ServiceController.Mode.ACTIVE)
-                                .install();
+            final RootLoggerService service = new RootLoggerService();
+            if (level.isDefined()) service.setLevel(Level.parse(level.asString()));
+            newControllers.add(target.addService(LogServices.loggerName(name), service)
+                    .addListener(verificationHandler)
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install());
 
 
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-                    Collection<ServiceController<?>> loggerControllers = null;
-                    try {
-                        // install logger handler services
-                        if (handlers.isDefined()) {
-                            loggerControllers = LogServices.installLoggerHandlers(target, "", handlers, verificationHandler);
-                        }
-                    } catch (Throwable t) {
-                        throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
-                    }
-
-                    context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        context.removeService(LogServices.ROOT_LOGGER);
-                        if (loggerControllers != null) for (ServiceController<?> loggerController : loggerControllers) {
-                            context.removeService(loggerController.getName());
-                        }
-                    }
-                }
-            }, OperationContext.Stage.RUNTIME);
+        } catch (Throwable t) {
+            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
         }
-        context.completeStep();
+        try {
+            // install logger handler services
+            if (handlers.isDefined()) {
+                newControllers.addAll(LogServices.installLoggerHandlers(target, name, handlers, verificationHandler));
+            }
+        } catch (Throwable t) {
+            throw new OperationFailedException(new ModelNode().set(t.getLocalizedMessage()));
+        }
     }
 }

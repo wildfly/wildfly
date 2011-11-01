@@ -25,12 +25,11 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -44,8 +43,7 @@ class RootLoggerRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) {
-        final ModelNode address = operation.get(OP_ADDR);
-        context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(ROOT_LOGGER).clear();
+        context.removeService(LogServices.ROOT_LOGGER);
     }
 
     @Override
@@ -54,7 +52,7 @@ class RootLoggerRemove extends AbstractRemoveStepHandler {
         final ModelNode rootLogger = operation.get(ROOT_LOGGER);
         final ModelNode handlers = HANDLERS.validateOperation(rootLogger);
         if (handlers.isDefined()) {
-            LogServices.uninstallLoggerHandlers(context, "", handlers);
+            LogServices.uninstallLoggerHandlers(context, ROOT_LOGGER_NAME, handlers);
         }
     }
 }

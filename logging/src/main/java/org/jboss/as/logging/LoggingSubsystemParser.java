@@ -78,6 +78,7 @@ import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
@@ -318,7 +319,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
         final ModelNode node = new ModelNode();
         node.get(OP).set(RootLoggerAdd.OPERATION_NAME);
-        node.get(OP_ADDR).set(address);
+        node.get(OP_ADDR).set(address).add(ROOT_LOGGER, ROOT_LOGGER_NAME);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Location location = reader.getLocation();
@@ -1009,7 +1010,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (node.hasDefined(ROOT_LOGGER)) {
-            writeRootLogger(writer, node.get(ROOT_LOGGER));
+            writeRootLogger(writer, node.get(ROOT_LOGGER, ROOT_LOGGER_NAME));
         }
         writer.writeEndElement();
     }

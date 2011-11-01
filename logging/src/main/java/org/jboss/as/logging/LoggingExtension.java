@@ -48,6 +48,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 public class LoggingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "logging";
+    public static final PathElement rootLoggerPath = PathElement.pathElement(CommonAttributes.ROOT_LOGGER, CommonAttributes.ROOT_LOGGER_NAME);
     private static final PathElement loggersPath = PathElement.pathElement(CommonAttributes.LOGGER);
     private static final PathElement asyncHandlersPath = PathElement.pathElement(CommonAttributes.ASYNC_HANDLER);
     private static final PathElement consoleHandlersPath = PathElement.pathElement(CommonAttributes.CONSOLE_HANDLER);
@@ -66,13 +67,17 @@ public class LoggingExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingSubsystemProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, NewLoggingSubsystemAdd.ADD_INSTANCE, LoggingSubsystemProviders.SUBSYSTEM_ADD, false);
         registration.registerOperationHandler(DESCRIBE, LoggingDescribeHandler.INSTANCE, LoggingDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        registration.registerOperationHandler(RootLoggerAdd.OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.SET_ROOT_LOGGER, false);
-        registration.registerOperationHandler(RootLoggerRemove.OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false);
-        registration.registerOperationHandler(RootLoggerLevelChange.OPERATION_NAME, RootLoggerLevelChange.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_CHANGE_LEVEL, false);
-        registration.registerOperationHandler(RootLoggerAssignHandler.OPERATION_NAME, RootLoggerAssignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_ASSIGN_HANDLER, false);
-        registration.registerOperationHandler(RootLoggerUnassignHandler.OPERATION_NAME, RootLoggerUnassignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_UNASSIGN_HANDLER, false);
 
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
+
+        // Root logger
+        final ManagementResourceRegistration rootLogger = registration.registerSubModel(rootLoggerPath, LoggingSubsystemProviders.ROOT_LOGGER);
+        rootLogger.registerOperationHandler(RootLoggerAdd.OPERATION_NAME, RootLoggerAdd.INSTANCE, LoggingSubsystemProviders.SET_ROOT_LOGGER, false);
+        rootLogger.registerOperationHandler(RootLoggerRemove.OPERATION_NAME, RootLoggerRemove.INSTANCE, LoggingSubsystemProviders.REMOVE_ROOT_LOGGER, false);
+        rootLogger.registerOperationHandler(RootLoggerLevelChange.OPERATION_NAME, RootLoggerLevelChange.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_CHANGE_LEVEL, false);
+        rootLogger.registerOperationHandler(RootLoggerAssignHandler.OPERATION_NAME, RootLoggerAssignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_ASSIGN_HANDLER, false);
+        rootLogger.registerOperationHandler(RootLoggerUnassignHandler.OPERATION_NAME, RootLoggerUnassignHandler.INSTANCE, LoggingSubsystemProviders.ROOT_LOGGER_UNASSIGN_HANDLER, false);
+
         // loggers
         final ManagementResourceRegistration loggers = registration.registerSubModel(loggersPath, LoggingSubsystemProviders.LOGGER);
         loggers.registerOperationHandler(ADD, LoggerAdd.INSTANCE, LoggingSubsystemProviders.LOGGER_ADD, false);

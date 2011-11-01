@@ -44,7 +44,7 @@ public final class LogServices {
 
     public static final ServiceName LOGGER = JBOSS_LOGGING.append("logger");
 
-    public static final ServiceName ROOT_LOGGER = JBOSS_LOGGING.append("root-logger");
+    public static final ServiceName ROOT_LOGGER = JBOSS_LOGGING.append("root-logger", CommonAttributes.ROOT_LOGGER_NAME);
 
     public static final ServiceName LOGGER_HANDLER = JBOSS_LOGGING.append("logger-handler");
 
@@ -58,7 +58,7 @@ public final class LogServices {
     }
 
     public static ServiceName loggerName(final String name) {
-        return "".equals(name) ? ROOT_LOGGER : LOGGER.append(name);
+        return CommonAttributes.ROOT_LOGGER_NAME.equals(name) ? ROOT_LOGGER : LOGGER.append(name);
     }
 
     public static ServiceName loggerHandlerName(final String loggerName, final String handlerName) {
