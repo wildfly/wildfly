@@ -19,28 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.operation;
+package org.jboss.as.cli.parsing.operation.header;
 
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
-import org.jboss.as.cli.parsing.OutputTargetState;
+import org.jboss.as.cli.parsing.ParsingContext;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public final class OperationNameState extends DefaultParsingState {
+public class InSeriesState extends DefaultParsingState {
 
-    public static final String ID = "OP_NAME";
-    public static final OperationNameState INSTANCE = new OperationNameState();
+    public static final InSeriesState INSTANCE = new InSeriesState();
+    public static final String ID = "IN_SERIES";
 
-    public OperationNameState() {
+    InSeriesState() {
         super(ID);
-        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        putHandler('(', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler('{', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        setDefaultHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(Character.isWhitespace(ctx.getCharacter())) {
+                    ctx.leaveState();
+                } else {
+                    ctx.getCallbackHandler().character(ctx);
+                }
+            }});
     }
 }
