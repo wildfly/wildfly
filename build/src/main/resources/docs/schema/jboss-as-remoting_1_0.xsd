@@ -100,8 +100,8 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="include-mechanisms" type="name-list" minOccurs="0"/>
-            <xs:element name="qop" type="qop" minOccurs="0"/>
+            <xs:element name="include-mechanisms" type="name-listType" minOccurs="0"/>
+            <xs:element name="qop" type="qop-listType" minOccurs="0"/>
             <xs:element name="strength" type="strength" minOccurs="0"/>
             <xs:element name="reuse-session" type="boolean-element" minOccurs="0"/>
             <xs:element name="server-auth" type="boolean-element" minOccurs="0"/>
@@ -158,6 +158,17 @@
         <xs:attribute name="value" type="xs:boolean" use="required"/>
     </xs:complexType>
 
+    <xs:simpleType name="name-listType">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                An element specifying a string list.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="value" type="name-list" use="required"/>
+    </xs:simpleType>   
+
     <xs:simpleType name="name-list">
         <xs:annotation>
             <xs:documentation>
@@ -169,7 +180,18 @@
         <xs:list itemType="xs:string"/>
     </xs:simpleType>
 
-    <xs:simpleType name="qop">
+    <xs:complexType name="qop-listType">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                An element specifying a qop list.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="value" type="qop-list" use="required"/>
+    </xs:complexType>
+
+    <xs:simpleType name="qop-list">
         <xs:annotation>
             <xs:documentation>
             <![CDATA[

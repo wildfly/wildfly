@@ -47,14 +47,6 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.server.DeployerChainAddHandler;
-import org.w3c.dom.Document;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSParser;
-import org.w3c.dom.ls.LSSerializer;
-
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
@@ -91,6 +83,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.repository.impl.ContentRepositoryImpl;
@@ -112,6 +105,12 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
 import org.junit.Before;
+import org.w3c.dom.Document;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSParser;
+import org.w3c.dom.ls.LSSerializer;
 
 /**
  * The base class for parsing tests which does the work of setting up the environment for parsing
@@ -187,7 +186,7 @@ public abstract class AbstractSubsystemTest {
     protected String readResource(final String name) throws IOException {
 
         URL configURL = getClass().getResource(name);
-        org.junit.Assert.assertNotNull(name + " url is not null", configURL);
+        org.junit.Assert.assertNotNull(name + " url is null", configURL);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
         StringWriter writer = new StringWriter();
@@ -480,7 +479,6 @@ public abstract class AbstractSubsystemTest {
                 builder.append("\n");
 
             }
-            System.out.println(builder.toString());
             if (arbitraryDescriptors != null) {
                 Assert.fail("Failed due to validation errors in the model. Please fix :-) " + builder.toString());
             }
