@@ -174,7 +174,9 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
                 continue;
             }
             if(!definedProps.contains(prop)) {
-                throw new CommandFormatException("'" + prop + "' is not found among the supported properties: " + definedProps);
+                if(!Util.OPERATION_HEADERS.equals(prop)) {
+                    throw new CommandFormatException("'" + prop + "' is not found among the supported properties: " + definedProps);
+                }
             }
         }
     }
