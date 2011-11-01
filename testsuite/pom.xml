@@ -320,6 +320,45 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+            
+            <!-- ***  Reporting  *** -->
+            
+            <!-- Disable default site run. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.0</version>
+                <executions><execution><id>default-site</id><phase>none</phase></execution></executions>
+            </plugin>
+                
+            <!-- Run the reporting tool. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions combine.self="override">
+                    <execution>
+                        <id>reporting</id>
+                        <phase>site</phase>
+                        <goals><goal>run</goal></goals>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <target>
+                                <ant dir="${basedir}" antfile="${basedir}/tools/reporting/buildReports.xml">
+                                    <target name="reports"/>
+                                </ant>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <!-- Todo: Move to <pluginManagement>. -->
+                    <dependency>
+                        <groupId>ant</groupId>
+                        <artifactId>ant-junit</artifactId>
+                        <version>1.6.5</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
 
         </plugins>
     </build>
