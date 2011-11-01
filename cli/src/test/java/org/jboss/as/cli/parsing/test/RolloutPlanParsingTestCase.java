@@ -108,26 +108,62 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertEquals(1, headers.size());
         final OperationRequestHeader header = headers.get(0);
 
+        assertEquals("name", header.getName());
         final ModelNode node = new ModelNode();
         node.get("name").set("value");
-        assertEquals(node, header.toModelNode());
+
+        final ModelNode headersNode = new ModelNode();
+        header.addTo(headersNode);
+        assertEquals(node, headersNode);
     }
 
     @Test
-    public void testRolloutWrongInSeries() throws Exception {
+    public void testTwoHeaders() throws Exception {
 
-        try {
-            parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout value");
-            fail("shouldn't have passed past 'value'");
-        } catch(CommandFormatException e) {
-            // expected
-        }
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ name1 = value1 ; name2=value2 }");
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.endsOnSeparator());
+        assertFalse(handler.endsOnHeaderListStart());
+        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.hasHeaders());
+
+        final List<OperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(2, headers.size());
+
+
+        OperationRequestHeader header = headers.get(0);
+        assertEquals("name1", header.getName());
+        ModelNode node = new ModelNode();
+        node.get("name1").set("value1");
+
+        ModelNode headersNode = new ModelNode();
+        header.addTo(headersNode);
+        assertEquals(node, headersNode);
+
+        header = headers.get(1);
+        assertEquals("name2", header.getName());
+        node = new ModelNode();
+        node.get("name2").set("value2");
+
+        headersNode = new ModelNode();
+        header.addTo(headersNode);
+        assertEquals(node, headersNode);
     }
 
-    @Test
-    public void testRolloutCorrectInSeries() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series");
+    @Test
+    public void testRolloutWithAProp() throws Exception {
+
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout prop=value");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -142,12 +178,47 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
         assertFalse(handler.isRequestComplete());
         assertTrue(handler.hasHeaders());
+
+        final List<OperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final OperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof RolloutPlanHeader);
+        final RolloutPlanHeader rollout = (RolloutPlanHeader) header;
+        assertEquals("value", rollout.getProperty("prop"));
+    }
+
+    @Test
+    public void testRolloutWithTwoProps() throws Exception {
+
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout prop1=value1 prop2 = value2");
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertFalse(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertTrue(handler.endsOnSeparator());
+        assertTrue(handler.endsOnHeaderListStart()); // TODO this is kind of strange but ok...
+        assertFalse(handler.isRequestComplete());
+        assertTrue(handler.hasHeaders());
+
+        final List<OperationRequestHeader> headers = handler.getHeaders();
+        assertEquals(1, headers.size());
+        final OperationRequestHeader header = headers.get(0);
+        assertTrue(header instanceof RolloutPlanHeader);
+        final RolloutPlanHeader rollout = (RolloutPlanHeader) header;
+        assertEquals("value1", rollout.getProperty("prop1"));
+        assertEquals("value2", rollout.getProperty("prop2"));
     }
 
     @Test
     public void testRolloutSingleGroupName() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series groupA}");
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = groupA}");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -170,18 +241,19 @@ public class RolloutPlanParsingTestCase extends TestCase {
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
-        final ModelNode sg = new ModelNode();
         final ModelNode groupA = new ModelNode();
         groupA.get("groupA");
-        sg.get(Util.SERVER_GROUP).set(groupA);
-        inSeries.add().set(sg);
-        assertEquals(node, header.toModelNode());
+        inSeries.add().get(Util.SERVER_GROUP).set(groupA);
+
+        final ModelNode headersNode = new ModelNode();
+        header.addTo(headersNode);
+        assertEquals(node, headersNode);
     }
 
     @Test
     public void testRolloutSingleGroupWithProps() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series groupA(rolling-to-servers=true,max-failure-percentage=20)");
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=groupA(rolling-to-servers=true,max-failure-percentage=20)");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -205,20 +277,21 @@ public class RolloutPlanParsingTestCase extends TestCase {
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
-        final ModelNode sg = new ModelNode();
         final ModelNode groupA = new ModelNode();
         final ModelNode groupProps = groupA.get("groupA");
         groupProps.get("rolling-to-servers").set("true");
         groupProps.get("max-failure-percentage").set("20");
-        sg.get(Util.SERVER_GROUP).set(groupA);
-        inSeries.add().set(sg);
-        assertEquals(node, header.toModelNode());
+        inSeries.add().get(Util.SERVER_GROUP).set(groupA);
+
+        final ModelNode headersNode = new ModelNode();
+        header.addTo(headersNode);
+        assertEquals(node, headersNode);
     }
 
     @Test
     public void testNonConcurrentGroups() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series " +
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=" +
         		"groupA(rolling-to-servers=true,max-failure-percentage=20), groupB");
 
         assertTrue(handler.hasAddress());
@@ -243,27 +316,25 @@ public class RolloutPlanParsingTestCase extends TestCase {
 
         final ModelNode node = new ModelNode();
         final ModelNode inSeries = node.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
-        ModelNode sg = new ModelNode();
         ModelNode group = new ModelNode();
         final ModelNode groupProps = group.get("groupA");
         groupProps.get("rolling-to-servers").set("true");
         groupProps.get("max-failure-percentage").set("20");
-        sg.get(Util.SERVER_GROUP).set(group);
-        inSeries.add().set(sg);
+        inSeries.add().get(Util.SERVER_GROUP).set(group);
 
-        sg = new ModelNode();
         group = new ModelNode();
         group.get("groupB");
-        sg.get(Util.SERVER_GROUP).set(group);
-        inSeries.add().set(sg);
+        inSeries.add().get(Util.SERVER_GROUP).set(group);
 
-        assertEquals(node, header.toModelNode());
+        final ModelNode headersNode = new ModelNode();
+        header.addTo(headersNode);
+        assertEquals(node, headersNode);
     }
 
     @Test
     public void testTwoConcurrentGroups() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series " +
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=" +
                 "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB");
 
         assertTrue(handler.hasAddress());
@@ -292,29 +363,23 @@ public class RolloutPlanParsingTestCase extends TestCase {
         final ModelNode concurrent = new ModelNode();
         final ModelNode cg = concurrent.get(Util.CONCURRENT_GROUPS);
 
-        ModelNode sg = new ModelNode();
-        ModelNode group = new ModelNode();
-        final ModelNode groupProps = group.get("groupA");
-        groupProps.get("rolling-to-servers").set("true");
-        groupProps.get("max-failure-percentage").set("20");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        ModelNode group = cg.get("groupA");
+        group.get("rolling-to-servers").set("true");
+        group.get("max-failure-percentage").set("20");
 
-        sg = new ModelNode();
-        group = new ModelNode();
-        group.get("groupB");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        group = cg.get("groupB");
 
         inSeries.add().set(concurrent);
 
-        assertEquals(node, header.toModelNode());
+        final ModelNode headersNode = new ModelNode();
+        header.addTo(headersNode);
+        assertEquals(node, headersNode);
     }
 
     @Test
     public void testMix() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series " +
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series=" +
                 "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB, groupC," +
                 "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE");
 
@@ -344,57 +409,41 @@ public class RolloutPlanParsingTestCase extends TestCase {
         ModelNode concurrent = new ModelNode();
         ModelNode cg = concurrent.get(Util.CONCURRENT_GROUPS);
 
-        ModelNode sg = new ModelNode();
-        ModelNode group = new ModelNode();
-        ModelNode groupProps = group.get("groupA");
-        groupProps.get("rolling-to-servers").set("true");
-        groupProps.get("max-failure-percentage").set("20");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        ModelNode group = cg.get("groupA");
+        group.get("rolling-to-servers").set("true");
+        group.get("max-failure-percentage").set("20");
 
-        sg = new ModelNode();
-        group = new ModelNode();
-        group.get("groupB");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        group = cg.get("groupB");
 
         inSeries.add().set(concurrent);
 
-        sg = new ModelNode();
-        group = new ModelNode();
+        ModelNode sg = new ModelNode();
+        group = sg.get(Util.SERVER_GROUP);
         group.get("groupC");
-        sg.get(Util.SERVER_GROUP).set(group);
         inSeries.add().set(sg);
 
         concurrent = new ModelNode();
         cg = concurrent.get(Util.CONCURRENT_GROUPS);
 
-        sg = new ModelNode();
-        group = new ModelNode();
-        groupProps = group.get("groupD");
-        groupProps.get("rolling-to-servers").set("true");
-        groupProps.get("max-failed-servers").set("1");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        group = cg.get("groupD");
+        group.get("rolling-to-servers").set("true");
+        group.get("max-failed-servers").set("1");
 
-        sg = new ModelNode();
-        group = new ModelNode();
-        group.get("groupE");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        group = cg.get("groupE");
 
         inSeries.add().set(concurrent);
 
-        assertEquals(node, header.toModelNode());
-
+        final ModelNode headersNode = new ModelNode();
+        header.addTo(headersNode);
+        assertEquals(node, headersNode);
     }
 
     @Test
     public void testMixAgainstWholeRequest() throws Exception {
 
-        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series " +
+        parse("/profile=default/subsystem=threads/thread-factory=mytf:do{ rollout in-series = " +
                 "groupA(rolling-to-servers=true,max-failure-percentage=20) ^ groupB, groupC," +
-                "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE; rollback-across-groups = true}");
+                "groupD(rolling-to-servers=true,max-failed-servers=1) ^ groupE rollback-across-groups = true}");
 
         assertTrue(handler.hasAddress());
         assertTrue(handler.hasOperationName());
@@ -412,67 +461,46 @@ public class RolloutPlanParsingTestCase extends TestCase {
         assertTrue(handler.hasHeaders());
 
         final List<OperationRequestHeader> headers = handler.getHeaders();
-        assertEquals(2, headers.size());
+        assertEquals(1, headers.size());
 
         final ModelNode op = handler.toOperationRequest();
         assertTrue(op.hasDefined(Util.OPERATION_HEADERS));
         final ModelNode headersNode = op.get(Util.OPERATION_HEADERS);
 
-        final ModelNode rolloutPlan = new ModelNode();
-        final ModelNode inSeries = rolloutPlan.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
+        final ModelNode expectedHeaders = new ModelNode();
+        final ModelNode rolloutPlan = expectedHeaders.get(Util.ROLLOUT_PLAN);
+        final ModelNode inSeries = rolloutPlan.get(Util.IN_SERIES);
 
         ModelNode concurrent = new ModelNode();
         ModelNode cg = concurrent.get(Util.CONCURRENT_GROUPS);
 
-        ModelNode sg = new ModelNode();
-        ModelNode group = new ModelNode();
-        ModelNode groupProps = group.get("groupA");
-        groupProps.get("rolling-to-servers").set("true");
-        groupProps.get("max-failure-percentage").set("20");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        ModelNode group = cg.get("groupA");
+        group.get("rolling-to-servers").set("true");
+        group.get("max-failure-percentage").set("20");
 
-        sg = new ModelNode();
-        group = new ModelNode();
-        group.get("groupB");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        group = cg.get("groupB");
 
         inSeries.add().set(concurrent);
 
-        sg = new ModelNode();
-        group = new ModelNode();
+        ModelNode sg = new ModelNode();
+        group = sg.get(Util.SERVER_GROUP);
         group.get("groupC");
-        sg.get(Util.SERVER_GROUP).set(group);
         inSeries.add().set(sg);
 
         concurrent = new ModelNode();
         cg = concurrent.get(Util.CONCURRENT_GROUPS);
 
-        sg = new ModelNode();
-        group = new ModelNode();
-        groupProps = group.get("groupD");
-        groupProps.get("rolling-to-servers").set("true");
-        groupProps.get("max-failed-servers").set("1");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        group = cg.get("groupD");
+        group.get("rolling-to-servers").set("true");
+        group.get("max-failed-servers").set("1");
 
-        sg = new ModelNode();
-        group = new ModelNode();
-        group.get("groupE");
-        sg.get(Util.SERVER_GROUP).set(group);
-        cg.add().set(sg);
+        cg.get("groupE");
 
         inSeries.add().set(concurrent);
 
-        final ModelNode rollbackAcross = new ModelNode();
-        rollbackAcross.get("rollback-across-groups").set("true");
+        rolloutPlan.get("rollback-across-groups").set("true");
 
-        final ModelNode expectedList = new ModelNode();
-        expectedList.add().set(rolloutPlan);
-        expectedList.add().set(rollbackAcross);
-
-        assertEquals(expectedList, headersNode);
+        assertEquals(expectedHeaders, headersNode);
     }
 
     protected void parse(String opReq) throws CommandFormatException {

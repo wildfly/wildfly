@@ -31,5 +31,7 @@ import org.jboss.dmr.ModelNode;
  */
 public interface RolloutPlanGroup {
 
+    void addTo(ModelNode inSeries) throws CommandFormatException;
+
     ModelNode toModelNode() throws CommandFormatException;
 }

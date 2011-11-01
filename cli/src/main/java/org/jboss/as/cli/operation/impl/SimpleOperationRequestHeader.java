@@ -61,15 +61,13 @@ public class SimpleOperationRequestHeader implements OperationRequestHeader {
      * @see org.jboss.as.cli.operation.OperationRequestHeader#toModelNode()
      */
     @Override
-    public ModelNode toModelNode() throws CommandFormatException {
+    public void addTo(ModelNode headers) throws CommandFormatException {
         if(name == null) {
             throw new CommandFormatException("Header name is null.");
         }
         if(value == null) {
             throw new CommandFormatException("Value for header '" + name + "' is null.");
         }
-        final ModelNode result = new ModelNode();
-        result.get(name).set(value);
-        return result;
+        headers.get(name).set(value);
     }
 }

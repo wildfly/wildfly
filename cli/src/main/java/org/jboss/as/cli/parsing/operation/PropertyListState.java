@@ -42,17 +42,35 @@ public class PropertyListState extends DefaultParsingState {
         this(PropertyState.INSTANCE);
     }
 
-    PropertyListState(PropertyState paramState) {
+    PropertyListState(PropertyState propState) {
+        this('(', ',', propState, ')');
+    }
+
+    public PropertyListState(char listStart, char propSeparator, char... listEnd) {
+        this(listStart, propSeparator, new PropertyState(propSeparator, listEnd), listEnd);
+    }
+
+    PropertyListState(final char listStart, char propSeparator, final PropertyState propState, final char... listEnd) {
         super(ID);
-        putHandler(')', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        setDefaultHandler(new EnterStateCharacterHandler(paramState));
+        for(int i = 0; i < listEnd.length; ++i) {
+            putHandler(listEnd[i], GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        }
+        setEnterHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.getCharacter() != listStart) {
+                    ctx.enterState(propState);
+                }
+            }});
+        setDefaultHandler(new EnterStateCharacterHandler(propState));
+        putHandler(propSeparator, GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER);
         setReturnHandler(new CharacterHandler(){
             @Override
-            public void handle(ParsingContext ctx)
-                    throws CommandFormatException {
-                if(ctx.getCharacter() == ')') {
-                    GlobalCharacterHandlers.LEAVE_STATE_HANDLER.handle(ctx);
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(ctx.isEndOfContent()) {
+                    return;
                 }
+                getHandler(ctx.getCharacter()).handle(ctx);
             }});
         //this.setEndContentHandler(new ErrorCharacterHandler("')' is missing"));
         setIgnoreWhitespaces(true);

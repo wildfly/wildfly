@@ -43,5 +43,6 @@ public class ServerGroupNameState extends DefaultParsingState {
         putHandler('^', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler(' ', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
 }

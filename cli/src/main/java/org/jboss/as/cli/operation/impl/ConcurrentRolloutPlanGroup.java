@@ -34,13 +34,16 @@ import org.jboss.dmr.ModelNode;
  */
 public class ConcurrentRolloutPlanGroup implements RolloutPlanGroup {
 
-    private final List<RolloutPlanGroup> groups = new ArrayList<RolloutPlanGroup>();
+    private final List<SingleRolloutPlanGroup> groups = new ArrayList<SingleRolloutPlanGroup>();
 
     public void addGroup(RolloutPlanGroup group) {
         if(group == null) {
             throw new IllegalArgumentException("group is null");
         }
-        groups.add(group);
+        if(!(group instanceof SingleRolloutPlanGroup)) {
+            throw new IllegalArgumentException("Expected a single group but got " + group);
+        }
+        groups.add((SingleRolloutPlanGroup) group);
     }
 
     /* (non-Javadoc)
@@ -48,12 +51,17 @@ public class ConcurrentRolloutPlanGroup implements RolloutPlanGroup {
      */
     @Override
     public ModelNode toModelNode() throws CommandFormatException {
-        final ModelNode result = new ModelNode();
-        ModelNode node = result.get(Util.CONCURRENT_GROUPS);
-        for(RolloutPlanGroup group : groups) {
-            node.add().set(group.toModelNode());
+        ModelNode node = new ModelNode();
+        ModelNode groupsNode = node.get(Util.CONCURRENT_GROUPS);
+        for(SingleRolloutPlanGroup group : groups) {
+            groupsNode.get(group.getGroupName()).set(group.toModelNode());
         }
-        return result;
+        return node;
+    }
+
+    @Override
+    public void addTo(ModelNode inSeries) throws CommandFormatException {
+        inSeries.add().set(toModelNode());
     }
 
 /*    public static void main(String[] args) throws Exception {
