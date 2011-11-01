@@ -24,7 +24,10 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecovery;
+import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecoveryRegistry;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -38,6 +41,24 @@ public class XaDataSourceService extends AbstractDataSourceService {
 
     public XaDataSourceService(final String jndiName) {
         super(jndiName);
+    }
+
+    @Override
+    public synchronized void stop(StopContext stopContext) {
+        if (deploymentMD != null) {
+            if (deploymentMD.getRecovery() != null &&
+                transactionIntegrationValue.getValue() != null &&
+                transactionIntegrationValue.getValue().getRecoveryRegistry() != null) {
+
+                XAResourceRecoveryRegistry rr = transactionIntegrationValue.getValue().getRecoveryRegistry();
+
+                for (XAResourceRecovery recovery : deploymentMD.getRecovery()) {
+                    rr.removeXAResourceRecovery(recovery);
+                }
+            }
+        }
+
+        super.stop(stopContext);
     }
 
     @Override

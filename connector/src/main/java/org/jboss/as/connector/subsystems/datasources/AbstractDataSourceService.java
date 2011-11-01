@@ -89,7 +89,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source");
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
-    private final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
+    protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
     private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
     private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
@@ -97,7 +97,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     private final String jndiName;
 
-    private CommonDeployment deploymentMD;
+    protected CommonDeployment deploymentMD;
     private javax.sql.DataSource sqlDataSource;
 
     protected AbstractDataSourceService(final String jndiName) {
@@ -122,9 +122,18 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     protected abstract AS7DataSourceDeployer getDeployer() throws ValidateException ;
 
     public synchronized void stop(StopContext stopContext) {
-        if (deploymentMD != null && deploymentMD.getConnectionManagers() != null) {
-            for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
-                cm.shutdown();
+        if (deploymentMD != null) {
+
+            if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
+                for (org.jboss.jca.core.api.management.DataSource mgtDs : deploymentMD.getDataSources()) {
+                    managementRepositoryValue.getValue().getDataSources().remove(mgtDs);
+                }
+            }
+
+            if (deploymentMD.getConnectionManagers() != null) {
+                for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+                    cm.shutdown();
+                }
             }
         }
 
