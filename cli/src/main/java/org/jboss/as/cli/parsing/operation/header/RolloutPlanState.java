@@ -19,13 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.operation;
+package org.jboss.as.cli.parsing.operation.header;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
-import org.jboss.as.cli.parsing.OutputTargetState;
 import org.jboss.as.cli.parsing.ParsingContext;
 
 
@@ -33,35 +32,30 @@ import org.jboss.as.cli.parsing.ParsingContext;
  *
  * @author Alexey Loubyansky
  */
-public class OperationRequestState extends DefaultParsingState {
+public class RolloutPlanState extends DefaultParsingState {
 
-    public static final String ID = "OP_REQ";
-    public static final OperationRequestState INSTANCE = new OperationRequestState();
+    public static final RolloutPlanState INSTANCE = new RolloutPlanState();
+    public static final String ID = "ROLLOUT_PLAN_HEADER";
 
-    public OperationRequestState() {
-        this(NodeState.INSTANCE, AddressOperationSeparatorState.INSTANCE, PropertyListState.INSTANCE, HeaderListState.INSTANCE, OutputTargetState.INSTANCE);
+    RolloutPlanState() {
+        this(InSeriesState.INSTANCE, ServerGroupListState.INSTANCE);
     }
 
-    public OperationRequestState(final NodeState nodeState, final AddressOperationSeparatorState addrOpSep, final PropertyListState propList,
-            final HeaderListState headerList, final OutputTargetState outRedirect) {
+    RolloutPlanState(InSeriesState inSeries, final ServerGroupListState serverGroups) {
         super(ID);
-        setDefaultHandler(new EnterStateCharacterHandler(nodeState));
-        enterState(':', addrOpSep);
-        enterState('(', propList);
-        enterState('{', headerList);
-        enterState(OutputTargetState.OUTPUT_REDIRECT_CHAR, outRedirect);
+        this.setIgnoreWhitespaces(true);
+        setEnterHandler(new EnterStateCharacterHandler(inSeries));
         setReturnHandler(new CharacterHandler(){
             @Override
-            public void handle(ParsingContext ctx)
-                    throws CommandFormatException {
+            public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                CharacterHandler handler = enterStateHandlers.getHandler(ctx.getCharacter());
-                if(handler != null) {
-                    handler.handle(ctx);
+                if(ctx.getCharacter() == '}' || ctx.getCharacter() == ';') {
+                    ctx.leaveState();
+                } else {
+                    ctx.enterState(serverGroups);
                 }
             }});
-        setIgnoreWhitespaces(true);
     }
 }

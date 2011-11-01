@@ -69,6 +69,8 @@ public interface ParsedCommandLine {
 
     List<String> getOtherProperties();
 
+    boolean endsOnHeaderListStart();
+
     int getLastSeparatorIndex();
 
     int getLastChunkIndex();
@@ -78,6 +80,10 @@ public interface ParsedCommandLine {
     String getLastParsedPropertyValue();
 
     String getOutputTarget();
+
+    boolean hasHeaders();
+
+    List<OperationRequestHeader> getHeaders();
 
     CommandLineFormat getFormat();
 }

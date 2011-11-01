@@ -21,26 +21,37 @@
  */
 package org.jboss.as.cli.parsing.operation;
 
+import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
-import org.jboss.as.cli.parsing.OutputTargetState;
+import org.jboss.as.cli.parsing.ParsingContext;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public final class OperationNameState extends DefaultParsingState {
+public final class HeaderNameState extends DefaultParsingState {
 
-    public static final String ID = "OP_NAME";
-    public static final OperationNameState INSTANCE = new OperationNameState();
+    public static final String ID = "HEADER_NAME";
+    public static final HeaderNameState INSTANCE = new HeaderNameState();
 
-    public OperationNameState() {
+    public HeaderNameState() {
         super(ID);
+        //setIgnoreWhitespaces(true);
         setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        putHandler('(', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler('{', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(OutputTargetState.OUTPUT_REDIRECT_CHAR, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        setDefaultHandler(new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx) throws CommandFormatException {
+                if(Character.isWhitespace(ctx.getCharacter())) {
+                    ctx.leaveState();
+                } else {
+                    ctx.getCallbackHandler().character(ctx);
+                }
+            }});
+        putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler('=', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
 }

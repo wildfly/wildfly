@@ -56,6 +56,7 @@ public class GlobalCharacterHandlers {
         public void handle(ParsingContext ctx)
                 throws OperationFormatException {
         }
+        public String toString() {return "NOOPHANDLER";}
     };
 
     public static final CharacterHandler CONTENT_CHARACTER_HANDLER = new CharacterHandler() {

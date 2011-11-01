@@ -23,6 +23,7 @@ package org.jboss.as.cli.operation;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineFormat;
+import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
 
 
 /**
@@ -67,6 +68,14 @@ public interface CommandLineParser {
 
         // TODO this is not good
         void nodeTypeOrName(int index, String typeOrName) throws OperationFormatException;
+
+        void headerListStart(int index);
+
+        ParsingStateCallbackHandler headerName(int index, String name) throws CommandFormatException;
+
+        void header(String name, String value, int nameValueSeparator) throws CommandFormatException;
+
+        void headerListEnd(int index);
 
         void outputTarget(int index, String outputTarget) throws CommandFormatException;
 
