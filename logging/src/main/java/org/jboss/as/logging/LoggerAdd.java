@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.CATEGORY;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
+import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -52,18 +53,21 @@ class LoggerAdd extends AbstractAddStepHandler {
         LEVEL.validateAndSet(operation, model);
         CATEGORY.validateAndSet(operation, model);
         HANDLERS.validateAndSet(operation, model);
+        USE_PARENT_HANDLERS.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
+        final ModelNode useParentHandlers = USE_PARENT_HANDLERS.resolveModelAttribute(context, model);
 
         final ServiceTarget target = context.getServiceTarget();
         try {
             // Install logger service
             final LoggerService service = new LoggerService(name);
             if (level.isDefined()) service.setLevel(Level.parse(level.asString()));
+            if (useParentHandlers.isDefined()) service.setUseParentHandlers(useParentHandlers.asBoolean());
             newControllers.add(target.addService(LogServices.loggerName(name), service)
                     .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)

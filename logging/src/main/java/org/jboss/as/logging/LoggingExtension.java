@@ -80,8 +80,7 @@ public class LoggingExtension implements Extension {
         loggers.registerOperationHandler(LoggerLevelChange.OPERATION_NAME, LoggerLevelChange.INSTANCE, LoggingSubsystemProviders.LOGGER_CHANGE_LEVEL, false);
         loggers.registerOperationHandler(LoggerAssignHandler.OPERATION_NAME, LoggerAssignHandler.INSTANCE, LoggingSubsystemProviders.LOGGER_ASSIGN_HANDLER, false);
         loggers.registerOperationHandler(LoggerUnassignHandler.OPERATION_NAME, LoggerUnassignHandler.INSTANCE, LoggingSubsystemProviders.LOGGER_UNASSIGN_HANDLER, false);
-        // TODO should create a WriteAttributeHandler
-        loggers.registerReadWriteAttribute(CommonAttributes.LEVEL, null, LoggerLevelChange.INSTANCE);
+        addWriteAttributes(loggers, LoggerWriteAttributeHandler.INSTANCE);
 
         //  Async handlers
         final ManagementResourceRegistration asyncHandler = registration.registerSubModel(asyncHandlersPath, LoggingSubsystemProviders.ASYNC_HANDLER);
@@ -156,6 +155,12 @@ public class LoggingExtension implements Extension {
     }
 
     private void addWriteAttributes(final ManagementResourceRegistration handler, final LogHandlerWriteAttributeHandler<?> stepHandler) {
+        for (AttributeDefinition attr : stepHandler.getAttributes()) {
+            handler.registerReadWriteAttribute(attr, null, stepHandler);
+        }
+    }
+
+    private void addWriteAttributes(final ManagementResourceRegistration handler, final LoggerWriteAttributeHandler stepHandler) {
         for (AttributeDefinition attr : stepHandler.getAttributes()) {
             handler.registerReadWriteAttribute(attr, null, stepHandler);
         }

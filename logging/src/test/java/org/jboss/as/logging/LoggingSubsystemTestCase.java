@@ -21,25 +21,16 @@
 */
 package org.jboss.as.logging;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
-import org.jboss.logging.Logger;
-import org.junit.Ignore;
+
+import java.io.IOException;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
-    // Only here to initialize jboss-logmanager log levels
-    private static Logger LOGGER = Logger.getLogger("org.jboss.as.test");
 
     public LoggingSubsystemTestCase() {
         super(LoggingExtension.SUBSYSTEM_NAME, new LoggingExtension());
@@ -57,7 +48,7 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization(){
+        return new AdditionalInitialization() {
             @Override
             protected OperationContext.Type getType() {
                 return OperationContext.Type.MANAGEMENT;
