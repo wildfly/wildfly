@@ -39,14 +39,20 @@ public class PropertyValueState extends DefaultParsingState {
     public static final String ID = "PROP_VALUE";
 
     PropertyValueState() {
+        this(',', ')');
+    }
+
+    PropertyValueState(char propSeparator, char... listEnd) {
         super(ID);
         this.setEnterHandler(new CharacterHandler() {
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 getHandler(ctx.getCharacter()).handle(ctx);
             }});
-        putHandler(',', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(')', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        putHandler(propSeparator, GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        for(int i = 0; i < listEnd.length; ++i) {
+            putHandler(listEnd[i], GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        }
         enterState('"', QuotesState.QUOTES_INCLUDED);
         enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', true, true, enterStateHandlers));
         enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', true, true, enterStateHandlers));

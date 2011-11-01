@@ -56,9 +56,10 @@ public class ServerGroupListState extends DefaultParsingState {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                final CharacterHandler handler = getHandler(ctx.getCharacter());
-                if(handler != null) {
-                    handler.handle(ctx);
+                if(Character.isWhitespace(ctx.getCharacter())) {
+                    ctx.leaveState();
+                } else {
+                    getHandler(ctx.getCharacter()).handle(ctx);
                 }
             }});
     }

@@ -33,5 +33,5 @@ public interface OperationRequestHeader {
 
     String getName();
 
-    ModelNode toModelNode() throws CommandFormatException;
+    void addTo(ModelNode headers) throws CommandFormatException;
 }

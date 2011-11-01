@@ -40,11 +40,19 @@ public class PropertyState extends DefaultParsingState {
     }
 
     PropertyState(PropertyValueState valueState) {
+        this(',', valueState, ')');
+    }
+
+    PropertyState(char propSeparator, char... listEnd) {
+        this(propSeparator, new PropertyValueState(propSeparator, listEnd), listEnd);
+    }
+
+    PropertyState(char propSeparator, PropertyValueState valueState, char...listEnd) {
         super(ID);
         setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-        putHandler(',', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        putHandler(')', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
-        //putHandler('=', new EnterStateCharacterHandler(valueState));
+        for(int i = 0; i < listEnd.length; ++i) {
+            putHandler(listEnd[i], GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        }
         enterState('=', new NameValueSeparatorState(valueState));
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
@@ -55,6 +63,7 @@ public class PropertyState extends DefaultParsingState {
             super("NAME_VALUE_SEPARATOR");
             setDefaultHandler(new EnterStateCharacterHandler(valueState));
             setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+            setIgnoreWhitespaces(true);
         }
     };
 }

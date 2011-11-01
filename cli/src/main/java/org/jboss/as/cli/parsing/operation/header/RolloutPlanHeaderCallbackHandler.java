@@ -31,7 +31,7 @@ import org.jboss.as.cli.operation.impl.SingleRolloutPlanGroup;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
 import org.jboss.as.cli.parsing.operation.HeaderValueState;
-import org.jboss.as.cli.parsing.operation.PropertyState;
+import org.jboss.as.cli.parsing.operation.PropertyValueState;
 
 /**
  *
@@ -55,7 +55,7 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
     @Override
     public void enteredState(ParsingContext ctx) throws CommandFormatException {
         final String id = ctx.getState().getId();
-        //System.out.println("rollout.enetered " + id);
+        //System.out.println("rollout.enetered " + id + " '" + ctx.getCharacter() + "'");
 
         if(HeaderValueState.ID.equals(id)) {
             ctx.enterState(RolloutPlanState.INSTANCE);
@@ -68,6 +68,10 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
             if(name == null || name.isEmpty()) {
                 throw new CommandFormatException("Property is missing name at index " + ctx.getLocation());
             }
+
+            if(name.equals(Util.IN_SERIES)) {
+                ctx.enterState(ServerGroupListState.INSTANCE);
+            }
         }
         buffer.setLength(0);
     }
@@ -75,26 +79,27 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
     @Override
     public void leavingState(ParsingContext ctx) throws CommandFormatException {
         final String id = ctx.getState().getId();
-        //System.out.println("rollout.leaving " + id);
+        //System.out.println("rollout.leaving " + id + " '" + ctx.getCharacter() + "'");
         if(id.equals(HeaderValueState.ID)) {
             handler.header(header);
-        } else if(id.equals(InSeriesState.ID)) {
-            final String value = buffer.toString().trim();
-            if(!value.equals(Util.IN_SERIES)) {
-                throw new CommandFormatException("Expected '" + Util.IN_SERIES + "' but got '" + value  + "' at index " + ctx.getLocation());
+        } else if(PropertyValueState.ID.equals(id)) {
+            final String value = buffer.length() == 0 ? null : buffer.toString().trim();
+            if(value == null || value.isEmpty()) {
+                throw new CommandFormatException("Property '" + name + "' is missing value at index " + ctx.getLocation());
             }
+
+            if(group != null) {
+                ((SingleRolloutPlanGroup)group).addProperty(name, value);
+            } else {
+                header.addProperty(name, value);
+            }
+            name = null;
         } else if(ServerGroupNameState.ID.equals(id)) {
             final String groupName = buffer.toString().trim();
             if(groupName.isEmpty()) {
                 throw new CommandFormatException("Empty group name at index " + ctx.getLocation());
             }
             ((SingleRolloutPlanGroup)group).setGroupName(groupName);
-        } else if(PropertyState.ID.equals(id)) {
-            final String value = buffer.length() == 0 ? null : buffer.toString().trim();
-            if(value == null || value.isEmpty()) {
-                throw new CommandFormatException("Property '" + name + "' is missing value at index " + ctx.getLocation());
-            }
-            ((SingleRolloutPlanGroup)group).addProperty(name, value);
         } else if(ServerGroupState.ID.equals(id)) {
             if(concurrent) {
                 header.addConcurrentGroup(group);
@@ -102,6 +107,7 @@ public class RolloutPlanHeaderCallbackHandler implements ParsingStateCallbackHan
             } else {
                 header.addGroup(group);
             }
+            group = null;
         }
     }
 

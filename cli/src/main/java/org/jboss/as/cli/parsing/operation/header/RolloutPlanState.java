@@ -26,6 +26,7 @@ import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
 import org.jboss.as.cli.parsing.ParsingContext;
+import org.jboss.as.cli.parsing.operation.PropertyListState;
 
 
 /**
@@ -38,24 +39,20 @@ public class RolloutPlanState extends DefaultParsingState {
     public static final String ID = "ROLLOUT_PLAN_HEADER";
 
     RolloutPlanState() {
-        this(InSeriesState.INSTANCE, ServerGroupListState.INSTANCE);
+        this(new PropertyListState(' ', ' ', ';', '}'));
     }
 
-    RolloutPlanState(InSeriesState inSeries, final ServerGroupListState serverGroups) {
+    RolloutPlanState(PropertyListState props) {
         super(ID);
         this.setIgnoreWhitespaces(true);
-        setEnterHandler(new EnterStateCharacterHandler(inSeries));
+        setEnterHandler(new EnterStateCharacterHandler(props));
         setReturnHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                if(ctx.getCharacter() == '}' || ctx.getCharacter() == ';') {
-                    ctx.leaveState();
-                } else {
-                    ctx.enterState(serverGroups);
-                }
+                ctx.leaveState();
             }});
     }
 }

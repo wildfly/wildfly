@@ -544,7 +544,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         if(headers != null) {
             final ModelNode headersNode = request.get(Util.OPERATION_HEADERS);
             for(OperationRequestHeader header : headers) {
-                headersNode.add().set(header.toModelNode());
+                header.addTo(headersNode);
             }
         }
 

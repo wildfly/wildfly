@@ -58,7 +58,11 @@ public class ServerGroupState extends DefaultParsingState {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                getHandler(ctx.getCharacter()).handle(ctx);
+                if(Character.isWhitespace(ctx.getCharacter())) {
+                    ctx.leaveState();
+                } else {
+                    getHandler(ctx.getCharacter()).handle(ctx);
+                }
             }});
     }
 }

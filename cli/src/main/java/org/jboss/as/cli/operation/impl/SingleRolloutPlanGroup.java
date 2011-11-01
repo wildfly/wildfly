@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,6 +45,10 @@ public class SingleRolloutPlanGroup implements RolloutPlanGroup {
             throw new IllegalArgumentException("Invalid group name: " + groupName);
         }
         this.groupName = groupName;
+    }
+
+    public String getGroupName() {
+        return groupName;
     }
 
     public void setGroupName(String groupName) {
@@ -69,16 +74,18 @@ public class SingleRolloutPlanGroup implements RolloutPlanGroup {
      */
     @Override
     public ModelNode toModelNode() throws CommandFormatException {
-
-        final ModelNode result = new ModelNode();
-        ModelNode node = result.get("server-group");
-        node = node.get(groupName);
+        ModelNode node = new ModelNode();
         if(props != null) {
             for(String propName : props.keySet()) {
                 node.get(propName).set(props.get(propName));
             }
         }
-        return result;
+        return node;
+    }
+
+    @Override
+    public void addTo(ModelNode inSeries) throws CommandFormatException {
+        inSeries.add().get(Util.SERVER_GROUP).get(this.groupName).set(toModelNode());
     }
 
 /*    public static void main(String[] args) throws Exception {

@@ -22,7 +22,9 @@
 package org.jboss.as.cli.operation.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
@@ -38,7 +40,7 @@ public class RolloutPlanHeader implements OperationRequestHeader {
     private static final String HEADER_NAME = "rollout-plan";
 
     private final List<RolloutPlanGroup> groups = new ArrayList<RolloutPlanGroup>();
-//    private Map<String,String> props;
+    private Map<String,String> props;
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationRequestHeader#getName()
@@ -74,7 +76,7 @@ public class RolloutPlanHeader implements OperationRequestHeader {
         }
     }
 
-/*    // TODO perhaps add a list of allowed properties and their values
+    // TODO perhaps add a list of allowed properties and their values
     public void addProperty(String name, String value) {
         if(name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid property name: " + name);
@@ -87,28 +89,31 @@ public class RolloutPlanHeader implements OperationRequestHeader {
         }
         props.put(name, value);
     }
-*/
+
+    public String getProperty(String name) {
+        return props == null ? null : props.get(name);
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.operation.OperationRequestHeader#toModelNode()
      */
     @Override
-    public ModelNode toModelNode() throws CommandFormatException {
+    public void addTo(ModelNode headers) throws CommandFormatException {
 
-        final ModelNode result = new ModelNode();
-        final ModelNode series = result.get(Util.ROLLOUT_PLAN).get(Util.IN_SERIES);
+        ModelNode header = headers.get(HEADER_NAME);
+        final ModelNode series = header.get(Util.IN_SERIES);
         for(RolloutPlanGroup group : groups) {
-            series.add().set(group.toModelNode());
+            group.addTo(series);
         }
-/*
+
         if(props != null) {
             for(String propName : props.keySet()) {
-                plan.get(propName).set(props.get(propName));
+                header.get(propName).set(props.get(propName));
             }
         }
-*/        return result;
     }
 
-    public static void main(String[] args) throws Exception {
+/*    public static void main(String[] args) throws Exception {
         RolloutPlanHeader header = new RolloutPlanHeader();
 
         ConcurrentRolloutPlanGroup concurrent = new ConcurrentRolloutPlanGroup();
@@ -131,6 +136,5 @@ public class RolloutPlanHeader implements OperationRequestHeader {
 
 //        header.addProperty("rollback-across-groups", "true");
 
-        System.out.println(header.toModelNode());
     }
-}
+*/}
