@@ -33,12 +33,9 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 
 // implements ModelQueryOperationHandler, DescriptionProvider
 public class MimeMappingRemove implements OperationStepHandler, DescriptionProvider{
-
-    private static final Logger log = Logger.getLogger("org.jboss.as.web");
 
     static final MimeMappingRemove INSTANCE = new MimeMappingRemove();
 
@@ -50,18 +47,12 @@ public class MimeMappingRemove implements OperationStepHandler, DescriptionProvi
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.getType() == OperationContext.Type.SERVER) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
-                    if (operation.hasDefined("name")) {
-                        mimetypes.remove(operation.get("name").asString());
-                    } else
-                        throw new OperationFailedException(new ModelNode().set("name is needed for remove-mime"));
-                    context.completeStep();
-                }
-            }, OperationContext.Stage.MODEL);
+        if (context.getType() == OperationContext.Type.SERVER || context.getType() == OperationContext.Type.HOST) {
+            final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
+            if (operation.hasDefined("name")) {
+                mimetypes.remove(operation.get("name").asString());
+            } else
+                throw new OperationFailedException(new ModelNode().set("name is needed for remove-mime"));
         }
 
         context.completeStep();
