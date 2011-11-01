@@ -344,6 +344,11 @@
                         <configuration>
                             <target>
                                 <ant dir="${basedir}" antfile="${basedir}/tools/reporting/buildReports.xml">
+                                    <!-- Defaults.   
+                                    <property name="reporting.dir" value="${basedir}/tools/reporting"/>
+                                    <property name="reports.dest.dir" value="${basedir}/target/reports"/>
+                                    <property name="reports.src.mask" value="**/target/surefire-reports/TEST-*.xml"/>
+                                    -->
                                     <target name="reports"/>
                                 </ant>
                             </target>
