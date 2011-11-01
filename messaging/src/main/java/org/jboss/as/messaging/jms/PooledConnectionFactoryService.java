@@ -231,7 +231,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     PooledConnectionFactoryService.class.getClassLoader(), name);
 
             serviceTarget
-                    .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE, activator)
+                    .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class,
                             activator.getMdrInjector())
                     .addDependency(ConnectorServices.RA_REPOSISTORY_SERVICE, ResourceAdapterRepository.class,
