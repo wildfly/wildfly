@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-import static org.jboss.dmr.ModelType.EXPRESSION;
 
 /**
  * Checks the value to see if it's a valid {@link Level}.
@@ -44,6 +43,22 @@ import static org.jboss.dmr.ModelType.EXPRESSION;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 final class LogLevelValidator extends ModelTypeValidator implements AllowedValuesValidator {
+    private static final Level[] LEVELS = {
+            org.jboss.logmanager.Level.ALL,
+            org.jboss.logmanager.Level.CONFIG,
+            org.jboss.logmanager.Level.DEBUG,
+            org.jboss.logmanager.Level.ERROR,
+            org.jboss.logmanager.Level.FATAL,
+            org.jboss.logmanager.Level.FINE,
+            org.jboss.logmanager.Level.FINER,
+            org.jboss.logmanager.Level.FINEST,
+            org.jboss.logmanager.Level.INFO,
+            org.jboss.logmanager.Level.OFF,
+            org.jboss.logmanager.Level.TRACE,
+            org.jboss.logmanager.Level.WARN,
+            org.jboss.logmanager.Level.WARNING
+    };
+
     private final List<Level> allowedValues;
 
     public LogLevelValidator(final boolean nullable) {
@@ -55,7 +70,7 @@ final class LogLevelValidator extends ModelTypeValidator implements AllowedValue
     }
 
     public LogLevelValidator(final boolean nullable, final boolean allowExpressions) {
-        this(nullable, allowExpressions, Level.ALL, Level.CONFIG, Level.FINE, Level.FINER, Level.FINEST, Level.INFO, Level.OFF, Level.SEVERE, Level.WARNING);
+        this(nullable, allowExpressions, LEVELS);
     }
 
     public LogLevelValidator(final boolean nullable, final boolean allowExpressions, final Level... levels) {
