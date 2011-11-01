@@ -19,10 +19,10 @@ if "x%DOMAIN_CONF%" == "x" (
    set "DOMAIN_CONF=%DIRNAME%domain.conf.bat"
 )
 if exist "%DOMAIN_CONF%" (
-   echo Calling %DOMAIN_CONF%
+   echo Calling "%DOMAIN_CONF%"
    call "%DOMAIN_CONF%" %*
 ) else (
-   echo Config file not found %DOMAIN_CONF%
+   echo Config file not found "%DOMAIN_CONF%"
 )
 
 pushd %DIRNAME%..

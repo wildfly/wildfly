@@ -19,10 +19,10 @@ if "x%STANDALONE_CONF%" == "x" (
    set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
 )
 if exist "%STANDALONE_CONF%" (
-   echo Calling %STANDALONE_CONF%
+   echo Calling "%STANDALONE_CONF%"
    call "%STANDALONE_CONF%" %*
 ) else (
-   echo Config file not found %STANDALONE_CONF%
+   echo Config file not found "%STANDALONE_CONF%"
 )
 
 pushd %DIRNAME%..
