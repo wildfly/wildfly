@@ -30,27 +30,28 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
-import org.jboss.wsf.spi.metadata.webservices.WebservicesFactory;
-import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesFactory;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 
 /**
- * DUP for parsing webservices.xml (JSR-109)
+ * DUP for parsing jboss-webservices.xml
  *
- * @author alessio.soldano@jboss.com
- * @since 12-Jan-2011
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WSDescriptorDeploymentProcessor implements DeploymentUnitProcessor {
+public final class JBossWebservicesDescriptorDeploymentProcessor implements DeploymentUnitProcessor {
 
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        UnifiedVirtualFile uvf = new VirtualFileAdaptor(deploymentRoot.getRoot());
-        WebservicesMetaData wsmd = WebservicesFactory.loadFromVFSRoot(uvf);
-        if (wsmd != null) {
-            deploymentUnit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, wsmd);
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final UnifiedVirtualFile virtualFile = new VirtualFileAdaptor(deploymentRoot.getRoot());
+        final JBossWebservicesMetaData jbossWebservicesMD = JBossWebservicesFactory.loadFromVFSRoot(virtualFile);
+        if (jbossWebservicesMD != null) {
+            unit.putAttachment(WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY, jbossWebservicesMD);
         }
     }
 
-    public void undeploy(final DeploymentUnit context) {
+    public void undeploy(final DeploymentUnit unit) {
+        // does nothing
     }
+
 }

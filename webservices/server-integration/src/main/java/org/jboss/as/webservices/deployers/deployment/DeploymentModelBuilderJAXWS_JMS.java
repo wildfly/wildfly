@@ -21,14 +21,12 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
@@ -56,9 +54,6 @@ final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuild
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
         // propagate
-        final JBossWebMetaData webMetaData = getJBossWebMetaData(unit);
-        dep.addAttachment(JBossWebMetaData.class, webMetaData);
-        // propagate
         final JMSEndpointsMetaData jmsEndpointsMD = getOptionalAttachment(unit, JMS_ENDPOINT_METADATA_KEY);
         dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
 
@@ -70,7 +65,6 @@ final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuild
             log.debug("JMS class: " + jmsEndpointClassName);
             final String jmsEndpointAddress = jmsEndpoint.getSoapAddress();
             log.debug("JMS address: " + jmsEndpointAddress);
-
             newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
         }
     }

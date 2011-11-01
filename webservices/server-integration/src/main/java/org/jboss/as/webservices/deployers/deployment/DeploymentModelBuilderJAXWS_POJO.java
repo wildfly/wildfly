@@ -21,14 +21,12 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 
 /**
@@ -53,17 +51,12 @@ final class DeploymentModelBuilderJAXWS_POJO extends AbstractDeploymentModelBuil
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        // propagate
-        final JBossWebMetaData webMetaData = getJBossWebMetaData(unit);
-        dep.addAttachment(JBossWebMetaData.class, webMetaData);
-
         log.debug("Creating JAXWS POJO endpoints meta data model");
         for (final POJOEndpoint pojoEndpoint : getJaxwsPojos(unit)) {
             final String pojoEndpointName = pojoEndpoint.getName();
             log.debug("POJO name: " + pojoEndpointName);
             final String pojoEndpointClassName = pojoEndpoint.getClassName();
             log.debug("POJO" + pojoEndpointClassName);
-
             newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
         }
     }

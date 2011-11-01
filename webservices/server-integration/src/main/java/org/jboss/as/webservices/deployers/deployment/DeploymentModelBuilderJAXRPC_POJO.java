@@ -22,10 +22,8 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import static org.jboss.as.webservices.util.ASHelper.getEndpointClassName;
-import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
-import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.ASHelper.getServletForName;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
+import static org.jboss.ws.common.integration.WSHelper.getRequiredAttachment;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_JSE;
 
@@ -59,19 +57,16 @@ final class DeploymentModelBuilderJAXRPC_POJO extends AbstractDeploymentModelBui
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        // propagate
-        final JBossWebMetaData webMetaData = getJBossWebMetaData(unit);
-        dep.addAttachment(JBossWebMetaData.class, webMetaData);
-        // propagate
-        final WebservicesMetaData wsMetaData = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
-        dep.addAttachment(WebservicesMetaData.class, wsMetaData);
+        // TODO: introduce deployment with jaxrpc POJOs
+        final JBossWebMetaData webMD = getRequiredAttachment(dep, JBossWebMetaData.class);
+        final WebservicesMetaData webservicesMD = getRequiredAttachment(dep, WebservicesMetaData.class);
 
         log.debug("Creating JAXRPC POJO endpoints meta data model");
-        for (final WebserviceDescriptionMetaData wsDescriptionMD : wsMetaData.getWebserviceDescriptions()) {
+        for (final WebserviceDescriptionMetaData wsDescriptionMD : webservicesMD.getWebserviceDescriptions()) {
             for (final PortComponentMetaData portCompomentMD : wsDescriptionMD.getPortComponents()) {
                 final String pojoEndpointName = portCompomentMD.getServletLink();
                 log.debug("POJO name: " + pojoEndpointName);
-                final ServletMetaData servletMD = getServletForName(webMetaData, pojoEndpointName);
+                final ServletMetaData servletMD = getServletForName(webMD, pojoEndpointName);
                 final String pojoEndpointClassName = getEndpointClassName(servletMD);
                 log.debug("POJO class: " + pojoEndpointClassName);
 
