@@ -143,6 +143,13 @@
                     </documentation>
                 </annotation>
             </xsd:element>
+            <xsd:element name="local-last" type="localLast" minOccurs="0" maxOccurs="1">
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        If this is true then local resources will have the lowest priorty in the dependency list.
+                    </documentation>
+                </annotation>
+            </xsd:element>
         </xsd:all>
     </xsd:complexType>
 
@@ -573,6 +580,20 @@
                 <documentation>
                     The class name of the transformer
                 </documentation>
+            </annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="localLast">
+        <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+            <documentation>
+                If set to true the modules local content will have the lowest priority in the
+                dependency list.
+            </documentation>
+        </annotation>
+        <xsd:attribute name="value" type="xsd:boolean" use="required">
+           <annotation xmlns="http://www.w3.org/2001/XMLSchema">
             </annotation>
         </xsd:attribute>
     </xsd:complexType>
