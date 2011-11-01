@@ -33,4 +33,5 @@
         <module name="javax.xml.soap.api" />
         <module name="org.apache.xerces" services="import" />
     </dependencies>
+
 </module>
