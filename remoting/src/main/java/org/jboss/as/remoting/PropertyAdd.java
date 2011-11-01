@@ -22,33 +22,29 @@
 
 package org.jboss.as.remoting;
 
-/**
- * @author Emanuel Muckenhuber
- */
-interface CommonAttributes {
+import java.util.List;
 
-    String AUTHENTICATION_PROVIDER = "authentication-provider";
-    String CONNECTOR = "connector";
-    String FORWARD_SECRECY = "forward-secrecy";
-    String INCLUDE_MECHANISMS = "include-mechanisms";
-    String NO_ACTIVE = "no-active";
-    String NO_ANONYMOUS = "no-anonymous";
-    String NO_DICTIONARY = "no-dictionary";
-    String NO_PLAIN_TEXT = "no-plain-text";
-    String PASS_CREDENTIALS = "pass-credentials";
-    String POLICY = "policy";
-    String PROPERTIES = "properties";
-    String PROPERTY = "property";
-    String QOP = "qop";
-    String REUSE_SESSION= "reuse-session";
-    String SASL = "sasl";
-    String SASL_POLICY = "sasl-policy";
-    String SECURITY = "security";
-    String SERVER_AUTH = "server-auth";
-    String SOCKET_BINDING = "socket-binding";
-    String STRENGTH = "strength";
-    String SUBSYSTEM = "subsystem";
-    String THREAD_POOL = "thread-pool";
-    String VALUE = "value";
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+
+/**
+ * Add a connector to a remoting container.
+ *
+ * @author Kabir Khan
+ */
+public class PropertyAdd extends AbstractAddStepHandler {
+
+    static final PropertyAdd INSTANCE = new PropertyAdd();
+
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException{
+        PropertyResource.VALUE_ATTRIBUTE.validateAndSet(operation, model);
+    }
+
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    }
 
 }
