@@ -85,11 +85,11 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
+            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
             final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceEnvRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceEnvRef.getLookupName()));
             } else {
-                classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
                 if (classType == null) {
                     throw new DeploymentUnitProcessingException("Could not determine type for resource-env-ref " + name);
                 }
@@ -137,14 +137,13 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-
+            classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
             final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
             } else if (!isEmpty(resourceRef.getResUrl())) {
                 bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(resourceRef.getResUrl()));
             } else {
-                classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
                 if (classType == null) {
                     throw new DeploymentUnitProcessingException("Could not determine type for resource-ref " + name);
                 }
