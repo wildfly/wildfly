@@ -239,8 +239,10 @@ final class ManagedProcess {
                 log.stoppingProcess(processName);
                 stopRequested = true;
                 StreamUtils.safeClose(stdin);
+                state = State.STOPPING;
+            } else {
+                processController.removeProcess(processName);
             }
-            state = State.STOPPING;
         }
     }
 
