@@ -33,8 +33,11 @@ import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.EJBSecurityMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.SLSBMetaData;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
+import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -70,9 +73,10 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
 
         final JAXWSDeployment ejb3Deployment = WSHelper.getRequiredAttachment(dep, JAXWSDeployment.class);
         final List<EJBMetaData> wsEjbsMD = new LinkedList<EJBMetaData>();
+        final JBossWebservicesMetaData jbossWebservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
 
         for (final EJBEndpoint jbossEjbMD : ejb3Deployment.getEjbEndpoints()) {
-            this.buildEnterpriseBeanMetaData(wsEjbsMD, jbossEjbMD);
+            this.buildEnterpriseBeanMetaData(wsEjbsMD, jbossEjbMD, jbossWebservicesMD);
         }
 
         ejbArchiveMD.setEnterpriseBeans(wsEjbsMD);
@@ -86,87 +90,31 @@ final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
      * @param jbossEjbMD
      *            jboss specific EJB meta data
      */
-    private void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint jbossEjbMD) {
-        final EJBMetaData wsEjbMD = this.newEjbMetaData(jbossEjbMD);
+    private void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint jbossEjbMD, final JBossWebservicesMetaData jbossWebservicesMD) {
+        final EJBMetaData wsEjbMD = new SLSBMetaData();
 
         if (wsEjbMD != null) {
             // set EJB name and class
             wsEjbMD.setEjbName(jbossEjbMD.getName());
             wsEjbMD.setEjbClass(jbossEjbMD.getClassName());
 
-            /*
-             * TODO: implement final PortComponentSpec portComponentAnnotation =
-             * jbossEjbMD.getAnnotation(PortComponentSpec.class); if
-             * (portComponentAnnotation != null) { // set port component meta
-             * data wsEjbMD.setPortComponentName(portComponentAnnotation.
-             * portComponentName());
-             * wsEjbMD.setPortComponentURI(portComponentAnnotation
-             * .portComponentURI());
-             *
-             * // set security meta data final EJBSecurityMetaData
-             * wsEjbSecurityMD = new EJBSecurityMetaData();
-             * wsEjbSecurityMD.setAuthMethod
-             * (portComponentAnnotation.authMethod());
-             * wsEjbSecurityMD.setTransportGuarantee
-             * (portComponentAnnotation.transportGuarantee());
-             * wsEjbSecurityMD.setSecureWSDLAccess
-             * (portComponentAnnotation.secureWSDLAccess());
-             * wsEjbMD.setSecurityMetaData(wsEjbSecurityMD); }
-             */
+            final PortComponentMetaData portComponentMD = getPortComponent(jbossEjbMD.getName(), jbossWebservicesMD);
+            if (portComponentMD != null) {
+               // set port component meta data
+               wsEjbMD.setPortComponentName(portComponentMD.getPortComponentName());
+               wsEjbMD.setPortComponentURI(portComponentMD.getPortComponentURI());
+
+               // set security meta data
+               final EJBSecurityMetaData smd = new EJBSecurityMetaData();
+               smd.setAuthMethod(portComponentMD.getAuthMethod());
+               smd.setTransportGuarantee(portComponentMD.getTransportGuarantee());
+               smd.setSecureWSDLAccess(portComponentMD.getSecureWSDLAccess());
+               wsEjbMD.setSecurityMetaData(smd);
+            }
 
             wsEjbsMD.add(wsEjbMD);
         }
 
     }
 
-    /**
-     * Creates new JBoss agnostic EJB bean meta data model.
-     *
-     * @param jbossEjbMD
-     *            jboss EJB meta data
-     * @return webservices EJB meta data
-     */
-    private EJBMetaData newEjbMetaData(final EJBEndpoint jbossEjbMD) {
-        return new SLSBMetaData();
-        /*
-         * TODO: implement final MessageDriven mdbAnnotation =
-         * jbossEjbMD.getAnnotation(MessageDriven.class);
-         *
-         * if (mdbAnnotation == null) { this.log.debug(
-         * "Creating JBoss agnostic EJB3 meta data for session bean: " +
-         * jbossEjbMD.getComponentClassName()); return new SLSBMetaData(); }
-         * else { this.log.debug(
-         * "Creating JBoss agnostic EJB3 meta data for message driven bean: " +
-         * jbossEjbMD.getComponentClassName()); final MDBMetaData mdbMD = new
-         * MDBMetaData();
-         *
-         * final String destinationName =
-         * this.getActivationProperty("destination",
-         * mdbAnnotation.activationConfig());
-         * mdbMD.setDestinationJndiName(destinationName);
-         *
-         * return mdbMD; }
-         */
-    }
-
-    /**
-     * Returns activation config property value or null if not found.
-     *
-     * @param name
-     *            activation property name
-     * @param activationConfigProperties
-     *            activation config properties
-     * @return activation config property value
-     */
-    /*
-     * private String getActivationProperty(final String name, final
-     * ActivationConfigProperty[] activationConfigProperties) { if
-     * (activationConfigProperties != null) { for (final
-     * ActivationConfigProperty activationConfigProperty :
-     * activationConfigProperties) { if
-     * (activationConfigProperty.propertyName().equals(name)) { return
-     * activationConfigProperty.propertyValue(); } } }
-     *
-     * return null; }
-     */
 }

@@ -21,8 +21,13 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
+import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.CLASSLOADER_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -35,9 +40,11 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.ws.common.ResourceLoaderAdapter;
@@ -50,6 +57,8 @@ import org.jboss.wsf.spi.deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
+import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
  * Base class for all deployment model builders.
@@ -101,6 +110,18 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             }
             dep.addAttachment(DeploymentUnit.class, unit);
             unit.putAttachment(DEPLOYMENT_KEY, dep);
+            // propagate
+            final JBossWebMetaData webMD = getJBossWebMetaData(unit);
+            dep.addAttachment(JBossWebMetaData.class, webMD);
+            // propagate
+            final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
+            dep.addAttachment(WebservicesMetaData.class, webservicesMD);
+            // propagate
+            final JBossWebservicesMetaData jbossWebservicesMD = getOptionalAttachment(unit, JBOSS_WEBSERVICES_METADATA_KEY);
+            dep.addAttachment(JBossWebservicesMetaData.class, jbossWebservicesMD);
+            // propagate
+            final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, JAXWS_ENDPOINTS_KEY);
+            dep.addAttachment(JAXWSDeployment.class, jaxwsDeployment);
         }
 
         this.build(dep, unit);

@@ -29,6 +29,7 @@ import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
@@ -44,6 +45,7 @@ public final class WSAttachmentKeys {
     public static final AttachmentKey<JMSEndpointsMetaData> JMS_ENDPOINT_METADATA_KEY = AttachmentKey.create(JMSEndpointsMetaData.class);
     public static final AttachmentKey<JAXWSDeployment> JAXWS_ENDPOINTS_KEY = AttachmentKey.create(JAXWSDeployment.class);
     public static final AttachmentKey<WebservicesMetaData> WEBSERVICES_METADATA_KEY = AttachmentKey.create(WebservicesMetaData.class);
+    public static final AttachmentKey<JBossWebservicesMetaData> JBOSS_WEBSERVICES_METADATA_KEY = AttachmentKey.create(JBossWebservicesMetaData.class);
     public static final AttachmentKey<JBossWebMetaData> JBOSSWEB_METADATA_KEY = AttachmentKey.create(JBossWebMetaData.class);
     public static final AttachmentKey<ClassLoader> CLASSLOADER_KEY = AttachmentKey.create(ClassLoader.class);
     public static final AttachmentKey<WSReferences> WS_REFERENCES = AttachmentKey.create(WSReferences.class);

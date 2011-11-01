@@ -33,8 +33,6 @@ import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.common.jboss.WebserviceDescriptionMetaData;
-import org.jboss.metadata.common.jboss.WebserviceDescriptionsMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -50,6 +48,7 @@ import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData.JSEResourceCollection;
 import org.jboss.wsf.spi.metadata.j2ee.PublishLocationAdapter;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 
 /**
  * Builds container independent meta data from WEB container meta data.
@@ -98,15 +97,18 @@ final class MetaDataBuilderJSE {
         jseArchiveMD.setSecurityDomain(securityDomain);
 
         // set wsdl location resolver
-        final PublishLocationAdapter resolver = new PublishLocationAdapterImpl(jbossWebMD.getWebserviceDescriptions());
-        jseArchiveMD.setPublishLocationAdapter(resolver);
+        final JBossWebservicesMetaData jbossWebservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
+        if (jbossWebservicesMD != null) {
+            final PublishLocationAdapter resolver = new PublishLocationAdapterImpl(jbossWebservicesMD.getWebserviceDescriptions());
+            jseArchiveMD.setPublishLocationAdapter(resolver);
+        }
 
         // set security meta data
         final List<JSESecurityMetaData> jseSecurityMDs = this.getSecurityMetaData(jbossWebMD.getSecurityConstraints());
         jseArchiveMD.setSecurityMetaData(jseSecurityMDs);
 
         // set config name and file
-        this.setConfigNameAndFile(jseArchiveMD, jbossWebMD);
+        this.setConfigNameAndFile(jseArchiveMD, jbossWebMD, jbossWebservicesMD);
 
         return jseArchiveMD;
     }
@@ -117,18 +119,17 @@ final class MetaDataBuilderJSE {
      * @param jseArchiveMD universal JSE meta data model
      * @param jbossWebMD jboss web meta data
      */
-    private void setConfigNameAndFile(final JSEArchiveMetaData jseArchiveMD, final JBossWebMetaData jbossWebMD) {
-        final WebserviceDescriptionsMetaData wsDescriptionsMD = jbossWebMD.getWebserviceDescriptions();
-        final WebserviceDescriptionMetaData wsDescriptionMD = ASHelper.getWebserviceDescriptionMetaData(wsDescriptionsMD);
-        if (wsDescriptionMD != null) {
-            if (wsDescriptionMD.getConfigName() != null) {
-                jseArchiveMD.setConfigName(wsDescriptionMD.getConfigName());
-                jseArchiveMD.setConfigFile(wsDescriptionMD.getConfigFile());
+    private void setConfigNameAndFile(final JSEArchiveMetaData jseArchiveMD, final JBossWebMetaData jbossWebMD, final JBossWebservicesMetaData jbossWebservicesMD) {
+        if (jbossWebservicesMD != null) {
+           if (jbossWebservicesMD.getConfigName() != null) {
+              jseArchiveMD.setConfigName(jbossWebservicesMD.getConfigName());
+              jseArchiveMD.setConfigFile(jbossWebservicesMD.getConfigFile());
 
-                // ensure higher priority against web.xml context parameters
-                return;
-            }
+              // ensure higher priority against web.xml context parameters
+              return;
+           }
         }
+
 
         final List<ParamValueMetaData> contextParams = jbossWebMD.getContextParams();
         if (contextParams != null) {
