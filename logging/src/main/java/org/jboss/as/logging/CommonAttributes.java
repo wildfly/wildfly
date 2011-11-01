@@ -157,6 +157,8 @@ interface CommonAttributes {
 
     String ROOT_LOGGER = "root-logger";
 
+    String ROOT_LOGGER_NAME = "ROOT";
+
     SimpleAttributeDefinition ROTATE_SIZE = new SimpleAttributeDefinitionBuilder("rotate-size", ModelType.LONG).
             setDefaultValue(new ModelNode().set((2L * 1024L * 1024L))).
             setValidator(new LongRangeValidator(1L)).

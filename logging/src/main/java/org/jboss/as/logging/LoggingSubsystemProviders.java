@@ -122,6 +122,20 @@ class LoggingSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider ROOT_LOGGER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode node = new ModelNode();
+            node.get(DESCRIPTION).set(bundle.getString("root.logger"));
+
+            addCommonLoggerAttributes(node, bundle);
+
+            return node;
+        }
+    };
+
     static final DescriptionProvider SET_ROOT_LOGGER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
