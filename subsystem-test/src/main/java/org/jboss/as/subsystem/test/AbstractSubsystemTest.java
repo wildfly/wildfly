@@ -476,6 +476,8 @@ public abstract class AbstractSubsystemTest {
             final StringBuilder builder = new StringBuilder("VALIDATION ERRORS IN MODEL:");
             for (ValidationFailure failure :validationMessages) {
                 builder.append(failure);
+                builder.append("\n");
+
             }
             System.out.println(builder.toString());
             if (arbitraryDescriptors != null) {
