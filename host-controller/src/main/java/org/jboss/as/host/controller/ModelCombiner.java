@@ -18,39 +18,6 @@
  */
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.ExtensionAddHandler;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.PathAddHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
-import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.FileRepository;
-import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
-import org.jboss.as.process.DefaultJvmUtils;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.services.net.BindingGroupAddHandler;
-import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
-import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -81,6 +48,39 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.ExtensionAddHandler;
+import org.jboss.as.controller.operations.common.InterfaceAddHandler;
+import org.jboss.as.controller.operations.common.NamespaceAddHandler;
+import org.jboss.as.controller.operations.common.PathAddHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
+import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
+import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.FileRepository;
+import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
+import org.jboss.as.process.DefaultJvmUtils;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.services.net.BindingGroupAddHandler;
+import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
+import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Combines the relevant parts of the domain-level and host-level models to
