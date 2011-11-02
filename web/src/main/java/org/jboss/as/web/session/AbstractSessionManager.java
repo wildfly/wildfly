@@ -40,6 +40,7 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.util.LifecycleSupport;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.SessionConfigMetaData;
 
 /**
  * @author Paul Ferraro
@@ -82,6 +83,11 @@ public abstract class AbstractSessionManager extends ManagerBase implements Sess
         Integer maxActiveSessions = metaData.getMaxActiveSessions();
         if (maxActiveSessions != null) {
             this.setMaxActiveAllowed(maxActiveSessions.intValue());
+        }
+        SessionConfigMetaData config = metaData.getSessionConfig();
+        if (config != null) {
+            // Convert session timeout (minutes) to max inactive interval (seconds)
+            this.setMaxInactiveInterval(config.getSessionTimeout() * 60);
         }
     }
 

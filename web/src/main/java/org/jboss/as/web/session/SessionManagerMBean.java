@@ -115,7 +115,7 @@ public interface SessionManagerMBean {
      *
      * @param interval The new maximum interval
      */
-    void setMaxInactiveInterval(int minutes);
+    void setMaxInactiveInterval(int seconds);
 
     /**
      * Gets whether this manager's sessions are distributable.
