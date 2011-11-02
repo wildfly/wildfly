@@ -740,6 +740,11 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-jdr</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-jmx</artifactId>
         </dependency>
 
@@ -811,6 +816,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-sos</artifactId>
         </dependency>
 
         <dependency>
@@ -1532,6 +1542,11 @@
         <dependency>
             <groupId>org.scannotation</groupId>
             <artifactId>scannotation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.python</groupId>
+            <artifactId>jython-standalone</artifactId>
         </dependency>
 
         <dependency>

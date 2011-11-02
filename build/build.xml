@@ -545,6 +545,11 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-jaxrs"/>
         </module-def>
 
+        <module-def name="org.jboss.as.jdr">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jdr"/>
+            <maven-resource group="org.jboss.as" artifact="jboss-as-sos"/>
+        </module-def>
+
         <module-def name="org.jboss.as.jmx">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jmx"/>
         </module-def>
@@ -1001,6 +1006,10 @@
             <maven-resource group="org.picketlink" artifact="picketlink-bindings"/>
             <maven-resource group="org.picketlink" artifact="picketlink-bindings-jboss"/>
             <maven-resource group="org.picketlink" artifact="picketlink-trust-jbossws"/>
+        </module-def>
+
+        <module-def name="org.python.jython.standalone">
+            <maven-resource group="org.python" artifact="jython-standalone"/>
         </module-def>
 
         <module-def name="org.slf4j.jcl-over-slf4j">
