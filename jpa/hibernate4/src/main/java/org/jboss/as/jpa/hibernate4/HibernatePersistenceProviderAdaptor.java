@@ -22,6 +22,9 @@
 
 package org.jboss.as.jpa.hibernate4;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.jboss.as.jpa.hibernate4.management.HibernateManagementAdaptor;
@@ -32,9 +35,6 @@ import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
-
-import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * Implements the PersistenceProviderAdaptor for Hibernate
@@ -54,10 +54,10 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     @Override
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
-        properties.put(Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
-        properties.put(org.hibernate.ejb.AvailableSettings.SCANNER, "org.jboss.as.jpa.hibernate4.HibernateAnnotationScanner");
+        putPropertyIfAbsent(properties, Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
+        putPropertyIfAbsent(properties, org.hibernate.ejb.AvailableSettings.SCANNER, "org.jboss.as.jpa.hibernate4.HibernateAnnotationScanner");
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
-        properties.put(AvailableSettings.JTA_PLATFORM, appServerJtaPlatform);
+        putPropertyIfAbsent(properties, AvailableSettings.JTA_PLATFORM, appServerJtaPlatform);
         properties.remove(AvailableSettings.TRANSACTION_MANAGER_STRATEGY);  // remove legacy way of specifying TX manager (conflicts with JTA_PLATFORM)
     }
 
@@ -86,6 +86,12 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
             return result;
         }
         return null;
+    }
+
+    private void putPropertyIfAbsent(Map properties, String property, Object value) {
+        if (!properties.containsKey(property)) {
+            properties.put(property, value);
+        }
     }
 
     private ServiceName adjustJndiName(String jndiName) {
