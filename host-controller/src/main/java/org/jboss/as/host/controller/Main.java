@@ -43,6 +43,7 @@ import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
+import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -77,6 +78,12 @@ public final class Main {
             System.err.printf("Failed to read authentication key: %s", e);
             System.exit(1);
             return;
+        }
+
+        // Make sure our original stdio is properly captured.
+        try {
+            Class.forName(ConsoleHandler.class.getName(), true, ConsoleHandler.class.getClassLoader());
+        } catch (Throwable ignored) {
         }
 
         // Install JBoss Stdio to avoid any nasty crosstalk.
