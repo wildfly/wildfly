@@ -31,11 +31,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
@@ -77,29 +79,35 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
         final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
         final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
         configuration.setServerEnvironment(providedEnvironment);
-        configuration.setConfigurationPersister(new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader())) {
-
-            private final PersistenceResource pr = new PersistenceResource() {
-
-                @Override
-                public void commit() {
-                }
-
-                @Override
-                public void rollback() {
-                }
-            };
-
+        final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = new Bootstrap.ConfigurationPersisterFactory() {
             @Override
-            public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
-                return pr;
-            }
+            public ExtensibleConfigurationPersister createConfigurationPersister(ServerEnvironment serverEnvironment, ExecutorService executorService) {
+                return new AbstractConfigurationPersister(new StandaloneXml(configuration.getModuleLoader(), executorService)) {
 
-            @Override
-            public List<ModelNode> load() throws ConfigurationPersistenceException {
-                return updates;
+                    private final PersistenceResource pr = new PersistenceResource() {
+
+                        @Override
+                        public void commit() {
+                        }
+
+                        @Override
+                        public void rollback() {
+                        }
+                    };
+
+                    @Override
+                    public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) throws ConfigurationPersistenceException {
+                        return pr;
+                    }
+
+                    @Override
+                    public List<ModelNode> load() throws ConfigurationPersistenceException {
+                        return updates;
+                    }
+                };
             }
-        });
+        };
+        configuration.setConfigurationPersisterFactory(configurationPersisterFactory);
         return bootstrap.bootstrap(configuration, startServices);
     }
 

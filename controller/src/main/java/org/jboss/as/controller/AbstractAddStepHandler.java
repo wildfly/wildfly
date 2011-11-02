@@ -39,7 +39,7 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
     /** {@inheritDoc */
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        populateModel(operation, resource);
+        populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
 
         if (requiresRuntime(context)) {
@@ -63,6 +63,22 @@ public abstract class AbstractAddStepHandler implements OperationStepHandler {
             }, OperationContext.Stage.RUNTIME);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    /**
+     * Populate the given resource in the persistent configuration model based on the values in the given operation.
+     * <p>
+     * This default implementation simply calls {@link #populateModel(ModelNode, Resource)}.
+     * </p>
+     *
+     * @param context the operation context
+     * @param operation the operation
+     * @param resource the resource that corresponds to the address of {@code operation}
+     *
+     * @throws OperationFailedException if {@code operation} is invalid or populating the model otherwise fails
+     */
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+        populateModel(operation, resource);
     }
 
     /**

@@ -31,6 +31,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.InitialContextFactoryService;
@@ -56,7 +57,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Emanuel Muckenhuber
  * @author John Bailey
  */
-public class NamingSubsystemAdd extends AbstractAddStepHandler {
+public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static final CompositeName EMPTY_NAME = new CompositeName();
 
     static final NamingSubsystemAdd INSTANCE = new NamingSubsystemAdd();
@@ -65,7 +66,7 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
         ROOT_LOGGER.activatingSubsystem();
 
@@ -122,14 +123,12 @@ public class NamingSubsystemAdd extends AbstractAddStepHandler {
 
         newControllers.add(target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install());
 
-        if (context.isBooting()) {
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
-                    processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
+            }
+        }, OperationContext.Stage.RUNTIME);
 
     }
 }

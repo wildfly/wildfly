@@ -343,7 +343,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private ModelNode loadServerModel(File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
-        final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader());
+        final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         final List<ModelNode> ops = persister.load();
 
@@ -368,7 +368,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private ModelNode loadHostModel(final File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
-        final HostXml parser = new HostXml(Module.getBootModuleLoader());
+        final HostXml parser = new HostXml(Module.getBootModuleLoader(), null);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         final List<ModelNode> ops = persister.load();
 
@@ -482,7 +482,7 @@ public class ParseAndMarshalModelsTestCase {
 
     private ModelNode loadDomainModel(File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
-        final DomainXml parser = new DomainXml(Module.getBootModuleLoader());
+        final DomainXml parser = new DomainXml(Module.getBootModuleLoader(), null);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         final List<ModelNode> ops = persister.load();
 

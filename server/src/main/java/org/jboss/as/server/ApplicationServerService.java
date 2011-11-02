@@ -73,6 +73,9 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
+
+        processState.setStarting();
+
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
 

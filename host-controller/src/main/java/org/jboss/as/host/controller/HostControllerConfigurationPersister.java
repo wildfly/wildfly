@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.persistence.ConfigurationFile;
@@ -49,14 +50,16 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     private ExtensibleConfigurationPersister domainPersister;
     private final ExtensibleConfigurationPersister hostPersister;
     private final LocalHostControllerInfo hostControllerInfo;
+    private final ExecutorService executorService;
     private Boolean slave;
 
-    public HostControllerConfigurationPersister(final HostControllerEnvironment environment, LocalHostControllerInfo localHostControllerInfo) {
+    public HostControllerConfigurationPersister(final HostControllerEnvironment environment, LocalHostControllerInfo localHostControllerInfo, ExecutorService executorService) {
         this.environment = environment;
         this.hostControllerInfo = localHostControllerInfo;
+        this.executorService = executorService;
         final File configDir = environment.getDomainConfigurationDir();
         final ConfigurationFile configurationFile = environment.getHostConfigurationFile();
-        this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir, configurationFile);
+        this.hostPersister = ConfigurationPersisterFactory.createHostXmlConfigurationPersister(configDir, configurationFile, executorService);
     }
 
     public void initializeDomainConfigurationPersister(boolean slave) {
@@ -67,13 +70,13 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
         final File configDir = environment.getDomainConfigurationDir();
         if (slave) {
             if (environment.isBackupDomainFiles() || environment.isUseCachedDc()) {
-                domainPersister = ConfigurationPersisterFactory.createCachedRemoteDomainXmlConfigurationPersister(configDir);
+                domainPersister = ConfigurationPersisterFactory.createCachedRemoteDomainXmlConfigurationPersister(configDir, executorService);
             } else {
-                domainPersister = ConfigurationPersisterFactory.createTransientDomainXmlConfigurationPersister();
+                domainPersister = ConfigurationPersisterFactory.createTransientDomainXmlConfigurationPersister(executorService);
             }
         } else {
             final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
-            domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir, configurationFile);
+            domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configDir, configurationFile, executorService);
         }
 
         this.slave = Boolean.valueOf(slave);

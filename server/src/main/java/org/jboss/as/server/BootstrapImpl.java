@@ -61,15 +61,15 @@ final class BootstrapImpl implements Bootstrap {
             throw new IllegalArgumentException("serverEnvironment is null");
         }
         final String name = serverEnvironment.getServerName();
-        final ConfigurationPersister configurationPersister = configuration.getConfigurationPersister();
+        final Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = configuration.getConfigurationPersisterFactory();
         if (moduleLoader == null) {
             throw new IllegalArgumentException("moduleLoader is null");
         }
         if (name == null) {
             throw new IllegalArgumentException("name is null");
         }
-        if (configurationPersister == null) {
-            throw new IllegalArgumentException("configurationPersister is null");
+        if (configurationPersisterFactory == null) {
+            throw new IllegalArgumentException("configurationPersisterFactory is null");
         }
         try {
             Module.registerURLStreamHandlerFactoryModule(moduleLoader.loadModule(ModuleIdentifier.create("org.jboss.vfs")));
