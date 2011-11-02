@@ -761,11 +761,11 @@ public class DataSourcesExtension implements Extension {
 
                     addOperation.get(DATASOURCE_DRIVER.getName()).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER.getName()));
                     result.add(addOperation);
-                    if (dataSource.hasDefined(ENABLED.getName()) && dataSource.get(ENABLED.getName()).asBoolean()) {
+                    if (! dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
                         final ModelNode enableOperation = new ModelNode();
                         enableOperation.get(OP).set(ENABLE);
                         enableOperation.get(OP_ADDR).set(address);
-                        enableOperation.get(PERSISTENT).set(dataSource.get(PERSISTENT));
+                        enableOperation.get(PERSISTENT).set(dataSource.hasDefined(ENABLED.getName()));
                         result.add(enableOperation);
                     }
                 }
@@ -783,11 +783,11 @@ public class DataSourcesExtension implements Extension {
                     addOperation.get(DATASOURCE_DRIVER.getName()).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER.getName()));
                     result.add(addOperation);
 
-                    if (dataSource.hasDefined(ENABLED.getName()) && dataSource.get(ENABLED.getName()).asBoolean()) {
+                    if (! dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
                         final ModelNode enableOperation = new ModelNode();
                         enableOperation.get(OP).set(ENABLE);
                         enableOperation.get(OP_ADDR).set(address);
-                        enableOperation.get(PERSISTENT).set(dataSource.get(PERSISTENT));
+                        enableOperation.get(PERSISTENT).set(dataSource.hasDefined(ENABLED.getName()));
                         result.add(enableOperation);
                     }
                 }
