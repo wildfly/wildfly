@@ -21,10 +21,14 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.Locator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
@@ -73,7 +77,11 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
             }
             ejbLocator = new StatefulEJBLocator(viewClass, appName, moduleName, beanName, distinctName, sessionID);
         } else {
-            ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);
+            if(EJBHome.class.isAssignableFrom(viewClass) || EJBLocalHome.class.isAssignableFrom(viewClass)) {
+                ejbLocator = new EJBHomeLocator(viewClass, appName, moduleName, beanName, distinctName);
+            } else {
+                ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);
+            }
         }
         final Object proxy = EJBClient.createProxy(ejbLocator);
 

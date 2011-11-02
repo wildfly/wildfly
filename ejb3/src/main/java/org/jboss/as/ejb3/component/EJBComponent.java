@@ -52,7 +52,7 @@ import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -63,7 +63,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponent extends BasicComponent{
+public abstract class EJBComponent extends BasicComponent {
     private static final Logger log = Logger.getLogger(EJBComponent.class);
 
     private static final ApplicationExceptionDetails APPLICATION_EXCEPTION = new ApplicationExceptionDetails("java.lang.Exception", true, false);
@@ -205,7 +205,7 @@ public abstract class EJBComponent extends BasicComponent{
         }
         final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getRequiredService(ejbHome);
         final ComponentView view = (ComponentView) serviceController.getValue();
-        return EJBClient.createProxy(new StatelessEJBLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), applicationName, moduleName, getComponentName(), distinctName));
+        return EJBClient.createProxy(new EJBHomeLocator<EJBHome>((Class<EJBHome>) view.getViewClass(), applicationName, moduleName, getComponentName(), distinctName));
     }
 
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
