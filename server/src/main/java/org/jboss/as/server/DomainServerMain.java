@@ -41,6 +41,7 @@ import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.mgmt.domain.HostControllerServerClient;
 import org.jboss.logmanager.Level;
+import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.MarshallerFactory;
@@ -85,6 +86,12 @@ public final class DomainServerMain {
 
         final InputStream initialInput = System.in;
         final PrintStream initialError = System.err;
+
+        // Make sure our original stdio is properly captured.
+        try {
+            Class.forName(ConsoleHandler.class.getName(), true, ConsoleHandler.class.getClassLoader());
+        } catch (Throwable ignored) {
+        }
 
         // Install JBoss Stdio to avoid any nasty crosstalk.
         StdioContext.install();

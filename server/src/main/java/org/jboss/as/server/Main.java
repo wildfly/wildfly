@@ -35,6 +35,7 @@ import java.util.Properties;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.logmanager.Level;
 import org.jboss.logmanager.Logger;
+import org.jboss.logmanager.handlers.ConsoleHandler;
 import org.jboss.logmanager.log4j.BridgeRepositorySelector;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -87,6 +88,12 @@ public final class Main {
     public static void main(String[] args) {
         SecurityActions.setSystemProperty("log4j.defaultInitOverride", "true");
         new BridgeRepositorySelector().start();
+
+        // Make sure our original stdio is properly captured.
+        try {
+            Class.forName(ConsoleHandler.class.getName(), true, ConsoleHandler.class.getClassLoader());
+        } catch (Throwable ignored) {
+        }
 
         // Install JBoss Stdio to avoid any nasty crosstalk.
         StdioContext.install();
