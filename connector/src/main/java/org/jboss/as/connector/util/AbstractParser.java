@@ -129,9 +129,11 @@ public abstract class AbstractParser {
                     switch (Extension.Tag.forName(reader.getLocalName())) {
                         case CONFIG_PROPERTY: {
                             final Location location = reader.getLocation();
+                            requireSingleAttribute(reader, "name");
+                            final String name = reader.getAttributeValue(0);
                             String value = rawElementText(reader);
                             ModelNode node = extensionProperties.parse(value, location);
-                            operation.get(extensionProperties.getName(), readStringAttributeElement(reader, "name")).set(node);
+                            operation.get(extensionProperties.getName(), name).set(node);
                             break;
                         }
                         default:
