@@ -236,11 +236,12 @@ public enum Phase {
     public static final int PARSE_WEBSERVICES_XML                       = 0x2050;
     public static final int PARSE_JBOSS_WEBSERVICES_XML                 = 0x2051;
     public static final int PARSE_JAXWS_EJB_INTEGRATION                 = 0x2052;
-    public static final int PARSE_JAXRPC_EJB_INTEGRATION                = 0x2053;
-    public static final int PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION        = 0x2054;
-    public static final int PARSE_WS_JMS_INTEGRATION                    = 0x2055;
-    public static final int PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS = 0x2056;
-    public static final int PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS = 0x2057;
+    public static final int PARSE_JAXRPC_POJO_INTEGRATION                = 0x2053;
+    public static final int PARSE_JAXRPC_EJB_INTEGRATION                = 0x2054;
+    public static final int PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION        = 0x2055;
+    public static final int PARSE_WS_JMS_INTEGRATION                    = 0x2056;
+    public static final int PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS = 0x2057;
+    public static final int PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS = 0x2058;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x2100;
     public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x2200;
     public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x2300;

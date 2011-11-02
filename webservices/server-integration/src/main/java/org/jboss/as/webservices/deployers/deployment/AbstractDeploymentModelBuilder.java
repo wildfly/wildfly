@@ -112,29 +112,33 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             } catch (DeploymentUnitProcessingException e) {
                 throw new RuntimeException(e);
             }
-            dep.addAttachment(DeploymentUnit.class, unit);
-            unit.putAttachment(DEPLOYMENT_KEY, dep);
-            // propagate
-            final JBossWebMetaData webMD = getJBossWebMetaData(unit);
-            dep.addAttachment(JBossWebMetaData.class, webMD);
-            // propagate
-            final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
-            dep.addAttachment(WebservicesMetaData.class, webservicesMD);
-            // propagate
-            final JBossWebservicesMetaData jbossWebservicesMD = getOptionalAttachment(unit, JBOSS_WEBSERVICES_METADATA_KEY);
-            dep.addAttachment(JBossWebservicesMetaData.class, jbossWebservicesMD);
-            // propagate
-            final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, JAXWS_ENDPOINTS_KEY);
-            dep.addAttachment(JAXWSDeployment.class, jaxwsDeployment);
-            // propagate
-            final JAXRPCDeployment jaxrpcDeployment = getOptionalAttachment(unit, JAXRPC_ENDPOINTS_KEY);
-            dep.addAttachment(JAXRPCDeployment.class, jaxrpcDeployment);
-            // propagate
-            final EjbJarMetaData ejbJarMD = getOptionalAttachment(unit, EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-            dep.addAttachment(EjbJarMetaData.class, ejbJarMD);
+            propagateAttachments(unit, dep);
         }
 
         this.build(dep, unit);
+    }
+
+    private void propagateAttachments(final DeploymentUnit unit, final ArchiveDeployment dep) {
+        dep.addAttachment(DeploymentUnit.class, unit);
+        unit.putAttachment(DEPLOYMENT_KEY, dep);
+
+        final JBossWebMetaData webMD = getJBossWebMetaData(unit);
+        dep.addAttachment(JBossWebMetaData.class, webMD);
+
+        final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
+        dep.addAttachment(WebservicesMetaData.class, webservicesMD);
+
+        final JBossWebservicesMetaData jbossWebservicesMD = getOptionalAttachment(unit, JBOSS_WEBSERVICES_METADATA_KEY);
+        dep.addAttachment(JBossWebservicesMetaData.class, jbossWebservicesMD);
+
+        final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, JAXWS_ENDPOINTS_KEY);
+        dep.addAttachment(JAXWSDeployment.class, jaxwsDeployment);
+
+        final JAXRPCDeployment jaxrpcDeployment = getOptionalAttachment(unit, JAXRPC_ENDPOINTS_KEY);
+        dep.addAttachment(JAXRPCDeployment.class, jaxrpcDeployment);
+
+        final EjbJarMetaData ejbJarMD = getOptionalAttachment(unit, EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        dep.addAttachment(EjbJarMetaData.class, ejbJarMD);
     }
 
     /**

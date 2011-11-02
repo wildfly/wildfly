@@ -32,48 +32,39 @@ import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
  * An aspect that builds container independent meta data.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
- * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
  */
 public final class ContainerMetaDataDeploymentAspect extends AbstractDeploymentAspect {
 
-    /** JSE meta data builder. */
-    private final MetaDataBuilderJSE metaDataBuilderJSE = new MetaDataBuilderJSE();
+    private final MetaDataBuilderJAXWS_POJO jaxwsPojoMDBuilder = new MetaDataBuilderJAXWS_POJO();
 
-    /** EJB3 meta data builder. */
-    private final MetaDataBuilderEJB3 metaDataBuilderEJB3 = new MetaDataBuilderEJB3();
+    private final MetaDataBuilderJAXWS_EJB jaxwsEjbMDBuilder = new MetaDataBuilderJAXWS_EJB();
 
-    /** EJB21 meta data builder. */
-    private final MetaDataBuilderEJB21 metaDataBuilderEJB21 = new MetaDataBuilderEJB21();
+    private final MetaDataBuilderJAXRPC_POJO jaxrpcPojoMDBuilder = new MetaDataBuilderJAXRPC_POJO();
 
-    /**
-     * Constructor.
-     */
-    public ContainerMetaDataDeploymentAspect() {
-        super();
-    }
+    private final MetaDataBuilderJAXRPC_EJB jaxrpcEjbMDBuilder = new MetaDataBuilderJAXRPC_EJB();
 
-    /**
-     * Build container independent meta data.
-     *
-     * @param dep webservice deployment
-     */
     @Override
     public void start(final Deployment dep) {
-        if (WSHelper.isJseDeployment(dep)) {
+        if (WSHelper.isJaxwsJseDeployment(dep)) {
             if (WSHelper.hasAttachment(dep, JBossWebMetaData.class)) {
-                this.log.debug("Creating JBoss agnostic JSE meta data for deployment: " + dep.getSimpleName());
-                final JSEArchiveMetaData jseMetaData = this.metaDataBuilderJSE.create(dep);
+                log.debug("Creating JBoss agnostic JAXWS POJO meta data for deployment: " + dep.getSimpleName());
+                final JSEArchiveMetaData jseMetaData = jaxwsPojoMDBuilder.create(dep);
                 dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
             }
         }
         if (WSHelper.isJaxwsEjbDeployment(dep)) {
-            this.log.debug("Creating JBoss agnostic EJB3 meta data for deployment: " + dep.getSimpleName());
-            final EJBArchiveMetaData ejbMetaData = this.metaDataBuilderEJB3.create(dep);
+            log.debug("Creating JBoss agnostic JAXWS EJB meta data for deployment: " + dep.getSimpleName());
+            final EJBArchiveMetaData ejbMetaData = jaxwsEjbMDBuilder.create(dep);
             dep.addAttachment(EJBArchiveMetaData.class, ejbMetaData);
         }
+        else if (WSHelper.isJaxrpcJseDeployment(dep)) {
+            log.debug("Creating JBoss agnostic JAXRPC POJO meta data for deployment: " + dep.getSimpleName());
+            final JSEArchiveMetaData jseMetaData = jaxrpcPojoMDBuilder.create(dep);
+            dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
+        }
         else if (WSHelper.isJaxrpcEjbDeployment(dep)) {
-            this.log.debug("Creating JBoss agnostic EJB21 meta data for deployment: " + dep.getSimpleName());
-            final EJBArchiveMetaData ejbMetaData = this.metaDataBuilderEJB21.create(dep);
+            log.debug("Creating JBoss agnostic JAXRPC EJB meta data for deployment: " + dep.getSimpleName());
+            final EJBArchiveMetaData ejbMetaData = jaxrpcEjbMDBuilder.create(dep);
             dep.addAttachment(EJBArchiveMetaData.class, ejbMetaData);
         }
     }

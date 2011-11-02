@@ -79,9 +79,9 @@ public final class ASHelper {
      * @return list of JAXWS EJBs meta data
      */
     public static List<EJBEndpoint> getJaxwsEjbs(final DeploymentUnit unit) {
-        final JAXWSDeployment wsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
-        final boolean hasEjb3Endpoints = wsDeployment != null ? wsDeployment.getEjbEndpoints().size() > 0 : false;
-        return hasEjb3Endpoints ? wsDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
+        final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
+        final boolean hasEjbEndpoints = jaxwsDeployment != null ? jaxwsDeployment.getEjbEndpoints().size() > 0 : false;
+        return hasEjbEndpoints ? jaxwsDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
     }
 
     /**
@@ -91,9 +91,9 @@ public final class ASHelper {
      * @return list of JAXRPC EJBs meta data
      */
     public static List<EJBEndpoint> getJaxrpcEjbs(final DeploymentUnit unit) {
-        final JAXRPCDeployment wsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY);
-        final boolean hasEjb3Endpoints = wsDeployment != null ? wsDeployment.getEjbEndpoints().size() > 0 : false;
-        return hasEjb3Endpoints ? wsDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
+        final JAXRPCDeployment jaxrpcDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY);
+        final boolean hasEjbEndpoints = jaxrpcDeployment != null ? jaxrpcDeployment.getEjbEndpoints().size() > 0 : false;
+        return hasEjbEndpoints ? jaxrpcDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
     }
 
     /**
@@ -103,9 +103,21 @@ public final class ASHelper {
      * @return list of JAXWS POJOs meta data
      */
     public static List<POJOEndpoint> getJaxwsPojos(final DeploymentUnit unit) {
-        final JAXWSDeployment wsDeployment = unit.getAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
-        final boolean hasPojoEndpoints = wsDeployment != null ? wsDeployment.getPojoEndpoints().size() > 0 : false;
-        return hasPojoEndpoints ? wsDeployment.getPojoEndpoints() : Collections.<POJOEndpoint>emptyList();
+        final JAXWSDeployment jaxwsDeployment = unit.getAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
+        final boolean hasPojoEndpoints = jaxwsDeployment != null ? jaxwsDeployment.getPojoEndpoints().size() > 0 : false;
+        return hasPojoEndpoints ? jaxwsDeployment.getPojoEndpoints() : Collections.<POJOEndpoint>emptyList();
+    }
+
+    /**
+     * Gets list of JAXRPC POJOs meta data.
+     *
+     * @param unit deployment unit
+     * @return list of JAXRPC POJOs meta data
+     */
+    public static List<POJOEndpoint> getJaxrpcPojos(final DeploymentUnit unit) {
+        final JAXRPCDeployment jaxrpcDeployment = unit.getAttachment(WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY);
+        final boolean hasPojoEndpoints = jaxrpcDeployment != null ? jaxrpcDeployment.getPojoEndpoints().size() > 0 : false;
+        return hasPojoEndpoints ? jaxrpcDeployment.getPojoEndpoints() : Collections.<POJOEndpoint>emptyList();
     }
 
     /**

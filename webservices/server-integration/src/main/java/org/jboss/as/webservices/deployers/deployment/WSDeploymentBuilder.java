@@ -21,14 +21,13 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
+import static org.jboss.as.webservices.util.ASHelper.getJaxrpcEjbs;
+import static org.jboss.as.webservices.util.ASHelper.getJaxrpcPojos;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
-import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
@@ -43,10 +42,10 @@ public final class WSDeploymentBuilder {
     private static final Logger log = Logger.getLogger(WSDeploymentBuilder.class);
     private static final WSDeploymentBuilder SINGLETON = new WSDeploymentBuilder();
     private static final DeploymentModelBuilder JAXWS_JSE = new DeploymentModelBuilderJAXWS_POJO();
-    private static final DeploymentModelBuilder JAXWS_EJB = new DeploymentModelBuilderJAXWS_EJB3();
+    private static final DeploymentModelBuilder JAXWS_EJB = new DeploymentModelBuilderJAXWS_EJB();
     private static final DeploymentModelBuilder JAXWS_JMS = new DeploymentModelBuilderJAXWS_JMS();
     private static final DeploymentModelBuilder JAXRPC_JSE = new DeploymentModelBuilderJAXRPC_POJO();
-    private static final DeploymentModelBuilder JAXRPC_EJB = new DeploymentModelBuilderJAXRPC_EJB21();
+    private static final DeploymentModelBuilder JAXRPC_EJB = new DeploymentModelBuilderJAXRPC_EJB();
 
     /**
      * Constructor.
@@ -69,7 +68,7 @@ public final class WSDeploymentBuilder {
      */
     public void build(final DeploymentUnit unit) {
         boolean isJaxwsDeployment = false;
-        if (isJaxwsJseDeployment(unit)) {
+        if (isJaxwsPojoDeployment(unit)) {
             log.debug("Detected JAXWS JSE deployment");
             JAXWS_JSE.newDeploymentModel(unit);
             isJaxwsDeployment = true;
@@ -84,7 +83,7 @@ public final class WSDeploymentBuilder {
             JAXWS_EJB.newDeploymentModel(unit);
             isJaxwsDeployment = true;
         }
-        if (!isJaxwsDeployment && isJaxrpcJseDeployment(unit)) {
+        if (!isJaxwsDeployment && isJaxrpcPojoDeployment(unit)) {
             log.debug("Detected JAXRPC JSE deployment");
             JAXRPC_JSE.newDeploymentModel(unit);
         }
@@ -94,8 +93,20 @@ public final class WSDeploymentBuilder {
         }
     }
 
-    private static boolean isJaxwsJseDeployment(final DeploymentUnit unit) {
+    private static boolean isJaxwsPojoDeployment(final DeploymentUnit unit) {
         return getJaxwsPojos(unit).size() > 0;
+    }
+
+    private static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
+        return getJaxwsEjbs(unit).size() > 0;
+    }
+
+    private static boolean isJaxrpcPojoDeployment(final DeploymentUnit unit) {
+        return getJaxrpcPojos(unit).size() > 0;
+    }
+
+    private static boolean isJaxrpcEjbDeployment(final DeploymentUnit unit) {
+        return getJaxrpcEjbs(unit).size() > 0;
     }
 
     private static boolean isJaxwsJmsDeployment(final DeploymentUnit unit) {
@@ -104,22 +115,6 @@ public final class WSDeploymentBuilder {
             return jmsEndpointsMD.getEndpointsMetaData().size() > 0;
         }
         return false;
-    }
-
-    private static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        return getJaxwsEjbs(unit).size() > 0;
-    }
-
-    private static boolean isJaxrpcJseDeployment(final DeploymentUnit unit) {
-        final boolean hasWebservicesMD = unit.hasAttachment(WEBSERVICES_METADATA_KEY);
-        final boolean hasJBossWebMD = getJBossWebMetaData(unit) != null;
-        return hasWebservicesMD && hasJBossWebMD;
-    }
-
-    private static boolean isJaxrpcEjbDeployment(final DeploymentUnit unit) {
-        final boolean hasWebservicesMD = unit.hasAttachment(WEBSERVICES_METADATA_KEY);
-        final boolean hasEjbJarMD = unit.hasAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-        return hasWebservicesMD && hasEjbJarMD;
     }
 
 }
