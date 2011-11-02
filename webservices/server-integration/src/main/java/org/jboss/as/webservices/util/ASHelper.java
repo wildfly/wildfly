@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.util;
 
 import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
 import java.util.Collections;
@@ -33,6 +34,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.JAXRPCDeployment;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.webserviceref.WSReferences;
@@ -78,6 +80,18 @@ public final class ASHelper {
      */
     public static List<EJBEndpoint> getJaxwsEjbs(final DeploymentUnit unit) {
         final JAXWSDeployment wsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
+        final boolean hasEjb3Endpoints = wsDeployment != null ? wsDeployment.getEjbEndpoints().size() > 0 : false;
+        return hasEjb3Endpoints ? wsDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
+    }
+
+    /**
+     * Gets list of JAXRPC EJBs meta data.
+     *
+     * @param unit deployment unit
+     * @return list of JAXRPC EJBs meta data
+     */
+    public static List<EJBEndpoint> getJaxrpcEjbs(final DeploymentUnit unit) {
+        final JAXRPCDeployment wsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY);
         final boolean hasEjb3Endpoints = wsDeployment != null ? wsDeployment.getEjbEndpoints().size() > 0 : false;
         return hasEjb3Endpoints ? wsDeployment.getEjbEndpoints() : Collections.<EJBEndpoint>emptyList();
     }
@@ -240,6 +254,15 @@ public final class ASHelper {
         if (wsDeployment == null) {
             wsDeployment = new JAXWSDeployment();
             unit.putAttachment(JAXWS_ENDPOINTS_KEY, wsDeployment);
+        }
+        return wsDeployment;
+    }
+
+    public static JAXRPCDeployment getJaxrpcDeployment(final DeploymentUnit unit) {
+        JAXRPCDeployment wsDeployment = unit.getAttachment(JAXRPC_ENDPOINTS_KEY);
+        if (wsDeployment == null) {
+            wsDeployment = new JAXRPCDeployment();
+            unit.putAttachment(JAXRPC_ENDPOINTS_KEY, wsDeployment);
         }
         return wsDeployment;
     }

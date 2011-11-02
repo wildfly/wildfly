@@ -21,11 +21,17 @@
  */
 package org.jboss.as.webservices.metadata;
 
+import java.util.List;
+
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.EJBSecurityMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.PublishLocationAdapter;
+import org.jboss.wsf.spi.metadata.j2ee.SLSBMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
@@ -114,6 +120,38 @@ abstract class AbstractMetaDataBuilderEJB {
         }
 
         return null;
+    }
+
+    /**
+     * Builds JBoss agnostic EJB meta data.
+     *
+     * @param wsEjbsMD
+     *            jboss agnostic EJBs meta data
+     * @param jbossEjbMD
+     *            jboss specific EJB meta data
+     */
+    protected void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint jbossEjbMD, final JBossWebservicesMetaData jbossWebservicesMD) {
+        final EJBMetaData wsEjbMD = new SLSBMetaData();
+
+        // set EJB name and class
+        wsEjbMD.setEjbName(jbossEjbMD.getName());
+        wsEjbMD.setEjbClass(jbossEjbMD.getClassName());
+
+        final PortComponentMetaData portComponentMD = getPortComponent(jbossEjbMD.getName(), jbossWebservicesMD);
+        if (portComponentMD != null) {
+            // set port component meta data
+            wsEjbMD.setPortComponentName(portComponentMD.getPortComponentName());
+            wsEjbMD.setPortComponentURI(portComponentMD.getPortComponentURI());
+
+            // set security meta data
+            final EJBSecurityMetaData smd = new EJBSecurityMetaData();
+            smd.setAuthMethod(portComponentMD.getAuthMethod());
+            smd.setTransportGuarantee(portComponentMD.getTransportGuarantee());
+            smd.setSecureWSDLAccess(portComponentMD.getSecureWSDLAccess());
+            wsEjbMD.setSecurityMetaData(smd);
+        }
+
+        wsEjbsMD.add(wsEjbMD);
     }
 
 }

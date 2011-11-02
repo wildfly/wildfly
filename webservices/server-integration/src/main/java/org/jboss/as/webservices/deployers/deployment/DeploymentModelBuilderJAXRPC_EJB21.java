@@ -21,11 +21,15 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
+import static org.jboss.as.webservices.util.ASHelper.getJaxrpcEjbs;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_EJB21;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Endpoint;
 
 /**
  * Creates new JAXRPC EJB21 deployment.
@@ -49,21 +53,15 @@ final class DeploymentModelBuilderJAXRPC_EJB21 extends AbstractDeploymentModelBu
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-//        final JBossMetaData jbmd = this.getAndPropagateAttachment(JBossMetaData.class, unit, dep);
-//        final WebservicesMetaData wsMetaData = this.getAndPropagateAttachment(WebservicesMetaData.class, unit, dep);
-//        this.getAndPropagateAttachment(WebServiceDeployment.class, unit, dep);
-//
-//        this.log.debug("Creating JAXRPC EJB21 endpoints meta data model");
-//        for (final WebserviceDescriptionMetaData webserviceDescriptionMD : wsMetaData.getWebserviceDescriptions()) {
-//            for (final PortComponentMetaData portComponentMD : webserviceDescriptionMD.getPortComponents()) {
-//                final String ejbName = portComponentMD.getEjbLink();
-//                this.log.debug("EJB21 name: " + ejbName);
-//                final JBossEnterpriseBeanMetaData beanMetaData = jbmd.getEnterpriseBean(ejbName);
-//                final String ejbClass = beanMetaData.getEjbClass();
-//                this.log.debug("EJB21 class: " + ejbClass);
-//
-//                this.newHttpEndpoint(ejbClass, ejbName, dep);
-//            }
-//        }
+        log.debug("Creating JAXRPC EJB21 endpoints meta data model");
+        for (final EJBEndpoint ejbEndpoint : getJaxrpcEjbs(unit)) {
+            final String ejbName = ejbEndpoint.getName();
+            log.debug("EJB3 name: " + ejbName);
+            final String ejbClass = ejbEndpoint.getClassName();
+            log.debug("EJB3 class: " + ejbClass);
+            final Endpoint ep = newHttpEndpoint(ejbClass, ejbName, dep);
+            ep.setProperty(EJB_COMPONENT_VIEW_NAME, ejbEndpoint.getComponentViewName());
+        }
     }
+
 }

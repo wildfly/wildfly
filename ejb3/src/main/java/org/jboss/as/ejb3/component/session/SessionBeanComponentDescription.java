@@ -174,6 +174,10 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         return registerView(getEJBClassName(), MethodIntf.SERVICE_ENDPOINT);
     }
 
+    public EJBViewDescription addWebserviceEndpointView(final String wsEndpointViewName) {
+        return registerView(wsEndpointViewName, MethodIntf.SERVICE_ENDPOINT);
+    }
+
     public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {
         for (final String viewClassName : classNames) {
             assertNoLocalView(viewClassName);

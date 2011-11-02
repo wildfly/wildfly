@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,9 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices.metadata.model;
+package org.jboss.as.webservices.invocation;
 
 /**
- * @author <a href="ropalka@redhat.com">Richard Opalka</a>
+ * Handles invocations on EJB21 endpoints.
+ *
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class JAXWSDeployment extends AbstractDeployment {}
+final class InvocationHandlerEJB21 extends AbstractInvocationHandlerEJB {}
