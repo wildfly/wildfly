@@ -28,7 +28,7 @@
       <licenses>
         <license>
           <name>MIT License</name>
-          <url>http://www.opensource.org/licenses/mit-license.php</url>
+          <url>http://repository.jboss.org/licenses/mit.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -971,7 +971,7 @@
       <licenses>
         <license>
           <name>The BSD License</name>
-          <url>http://www.opensource.org/licenses/bsd-license.php</url>
+          <url>http://repository.jboss.org/licenses/bsd.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1004,7 +1004,7 @@
       <licenses>
         <license>
           <name>BSD style</name>
-          <url>http://www.opensource.org/licenses/bsd-license.php</url>
+          <url>http://repository.jboss.org/licenses/bsd.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -2995,7 +2995,7 @@
       <licenses>
         <license>
           <name>GNU Lesser General Public License 2.1</name>
-          <url>http://www.opensource.org/licenses/lgpl-2.1.php</url>
+          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
         </license>
       </licenses>
     </dependency>
@@ -3073,7 +3073,7 @@
       <licenses>
         <license>
           <name>MIT License</name>
-          <url>http://www.opensource.org/licenses/mit-license.php</url>
+          <url>http://repository.jboss.org/licenses/mit.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3084,7 +3084,7 @@
       <licenses>
         <license>
           <name>MIT License</name>
-          <url>http://www.opensource.org/licenses/mit-license.php</url>
+          <url>http://repository.jboss.org/licenses/mit.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3095,7 +3095,7 @@
       <licenses>
         <license>
           <name>MIT License</name>
-          <url>http://www.opensource.org/licenses/mit-license.php</url>
+          <url>http://repository.jboss.org/licenses/mit.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
