@@ -195,7 +195,7 @@ public class StandaloneXml extends CommonXml {
         }
         // Single socket binding group
         if (element == Element.SOCKET_BINDING_GROUP) {
-            parseSocketBindingGroup(reader, interfaceNames, address, DOMAIN_1_0, list);
+            parseSocketBindingGroup_1_0(reader, interfaceNames, address, DOMAIN_1_0, list);
             element = nextElement(reader, DOMAIN_1_0);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -301,7 +301,7 @@ public class StandaloneXml extends CommonXml {
         }
         // Single socket binding group
         if (element == Element.SOCKET_BINDING_GROUP) {
-            parseSocketBindingGroup(reader, interfaceNames, address, DOMAIN_1_1, list);
+            parseSocketBindingGroup_1_1(reader, interfaceNames, address, DOMAIN_1_1, list);
             element = nextElement(reader, DOMAIN_1_1);
         }
         if (element == Element.DEPLOYMENTS) {
@@ -334,7 +334,75 @@ public class StandaloneXml extends CommonXml {
         // }
         // }
 
-    private void parseSocketBindingGroup(final XMLExtendedStreamReader reader, final Set<String> interfaces,
+    private void parseSocketBindingGroup_1_0(final XMLExtendedStreamReader reader, final Set<String> interfaces,
+            final ModelNode address, final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
+
+        // unique names for both socket-binding and client-socket-binding(s)
+        final Set<String> uniqueBindingNames = new HashSet<String>();
+
+        ModelNode op = Util.getEmptyOperation(ADD, null);
+        // Handle attributes
+        String socketBindingGroupName = null;
+
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.DEFAULT_INTERFACE);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    socketBindingGroupName = value;
+                    required.remove(attribute);
+                    break;
+                }
+                case DEFAULT_INTERFACE: {
+                    SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(value, op, reader.getLocation());
+                    required.remove(attribute);
+                    break;
+                }
+                case PORT_OFFSET: {
+                    SocketBindingGroupResourceDefinition.PORT_OFFSET.parseAndSetParameter(value, op, reader.getLocation());
+                    break;
+                }
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+        }
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+
+        ModelNode groupAddress = address.clone().add(SOCKET_BINDING_GROUP, socketBindingGroupName);
+        op.get(OP_ADDR).set(groupAddress);
+
+        updates.add(op);
+
+        // Handle elements
+        while (reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SOCKET_BINDING: {
+                    // FIXME JBAS-8825
+                    final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
+                    if (!uniqueBindingNames.add(bindingName)) {
+                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " " + bindingName +
+                                " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
+                    }
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseSocketBindingGroup_1_1(final XMLExtendedStreamReader reader, final Set<String> interfaces,
             final ModelNode address, final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
 
         // unique names for both socket-binding and client-socket-binding(s)

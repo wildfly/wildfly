@@ -454,12 +454,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 if(! binding.isDefined()) {
                     continue;
                 }
-                // if an explicit source-interface has been defined, then use it.
-                // Else use the "default-interface" that's defined at the socket-binding-group level,
-                // as the source interface
-                if(!binding.get(SOURCE_INTERFACE).isDefined()) {
-                    binding.get(SOURCE_INTERFACE).set(defaultInterface);
-                }
                 // add the local destination client socket binding add operation
                 updates.add(LocalDestinationClientSocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
                         PathElement.pathElement(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING, clientSocketBindingName)), binding));
@@ -472,12 +466,6 @@ class ModelCombiner implements ManagedServerBootConfiguration {
                 final ModelNode binding = remoteDestinationClientSocketBindings.getValue();
                 if(! binding.isDefined()) {
                     continue;
-                }
-                // if an explicit source-interface has been defined, then use it.
-                // Else use the "default-interface" that's defined at the socket-binding-group level,
-                // as the source interface
-                if(!binding.get(SOURCE_INTERFACE).isDefined()) {
-                    binding.get(SOURCE_INTERFACE).set(defaultInterface);
                 }
                 // add the local destination client socket binding add operation
                 updates.add(RemoteDestinationClientSocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
