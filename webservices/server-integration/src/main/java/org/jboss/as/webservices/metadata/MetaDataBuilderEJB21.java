@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices.metadata;
 
-import static org.jboss.as.webservices.util.ASHelper.getContextRoot;
+package org.jboss.as.webservices.metadata;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
-import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.as.webservices.metadata.model.JAXRPCDeployment;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
-import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 
 /**
@@ -41,32 +38,25 @@ import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
+final class MetaDataBuilderEJB21 extends AbstractMetaDataBuilderEJB {
 
-    MetaDataBuilderEJB3() {
+    MetaDataBuilderEJB21() {
         super();
     }
 
     @Override
     protected void buildEnterpriseBeansMetaData(final Deployment dep, final EJBArchiveMetaData ejbArchiveMD) {
-        if (!WSHelper.isJaxwsJseDeployment(dep)) { // [AS7-1605] support
-            final JBossWebMetaData jbossWebMD = WSHelper.getOptionalAttachment(dep, JBossWebMetaData.class);
-            final String contextRoot = getContextRoot(dep, jbossWebMD);
-            if (contextRoot != null) {
-                final JSEArchiveMetaData jseArchiveMD = new JSEArchiveMetaData();
-                jseArchiveMD.setContextRoot(contextRoot);
-                dep.addAttachment(JSEArchiveMetaData.class, jseArchiveMD);
-            }
-        }
-
-        final JAXWSDeployment jaxwsDeployment = WSHelper.getRequiredAttachment(dep, JAXWSDeployment.class);
         final List<EJBMetaData> wsEjbsMD = new LinkedList<EJBMetaData>();
         final JBossWebservicesMetaData jbossWebservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
+        final JAXRPCDeployment jaxrpcDeployment = WSHelper.getRequiredAttachment(dep, JAXRPCDeployment.class);
 
-        for (final EJBEndpoint jbossEjbMD : jaxwsDeployment.getEjbEndpoints()) {
+        for (final EJBEndpoint jbossEjbMD : jaxrpcDeployment.getEjbEndpoints()) {
             this.buildEnterpriseBeanMetaData(wsEjbsMD, jbossEjbMD, jbossWebservicesMD);
         }
-
+        // TODO: security domain support
+        // final String securityDomain = jbossMetaData.getSecurityDomain();
+        // log.debug("Setting security domain: " + securityDomain);
+        // ejbArchiveMD.setSecurityDomain(securityDomain);
         ejbArchiveMD.setEnterpriseBeans(wsEjbsMD);
     }
 

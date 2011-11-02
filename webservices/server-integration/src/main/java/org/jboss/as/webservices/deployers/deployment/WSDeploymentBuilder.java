@@ -28,6 +28,7 @@ import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
+import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
@@ -116,8 +117,9 @@ public final class WSDeploymentBuilder {
     }
 
     private static boolean isJaxrpcEjbDeployment(final DeploymentUnit unit) {
-        // TODO: implement
-        return false;
+        final boolean hasWebservicesMD = unit.hasAttachment(WEBSERVICES_METADATA_KEY);
+        final boolean hasEjbJarMD = unit.hasAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        return hasWebservicesMD && hasEjbJarMD;
     }
 
 }

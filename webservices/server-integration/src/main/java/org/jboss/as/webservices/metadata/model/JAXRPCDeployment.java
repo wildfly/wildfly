@@ -24,4 +24,4 @@ package org.jboss.as.webservices.metadata.model;
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
-public final class JAXWSDeployment extends AbstractDeployment {}
+public final class JAXRPCDeployment extends AbstractDeployment {}
