@@ -40,6 +40,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.txn.TransactionManagerService;
 import org.jboss.as.txn.UserTransactionService;
@@ -100,18 +101,18 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final EJBRemoteConnectorService service = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river", "java-serial"});
-        final ServiceBuilder<EJBRemoteConnectorService> target = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service)
-                // TODO: inject the right connector
-                //TODO: we should not be piggy backing on management
-                .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.getEndpointInjector())
-                .addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
+        final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, service);
+        // add dependency on the Remoting subsytem endpoint
+        ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, service.getEndpointInjector());
+        // add rest of the dependencies
+        ejbRemoteConnectorServiceBuilder.addDependency(EJB3ThreadPoolAdd.BASE_SERVICE_NAME.append(threadPoolName), ExecutorService.class, service.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, service.getDeploymentRepositoryInjector())
                 .addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, service.getEJBRemoteTransactionsRepositoryInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         if (verificationHandler != null) {
-            target.addListener(verificationHandler);
+            ejbRemoteConnectorServiceBuilder.addListener(verificationHandler);
         }
-        return target.install();
+        return ejbRemoteConnectorServiceBuilder.install();
     }
 
     @Override

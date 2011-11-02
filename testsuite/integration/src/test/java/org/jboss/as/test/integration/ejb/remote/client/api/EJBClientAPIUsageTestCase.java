@@ -35,6 +35,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ejb.remote.common.AnonymousCallbackHandler;
+import org.jboss.as.test.integration.ejb.remote.common.EJBRemoteManagementUtil;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.SessionID;
@@ -69,7 +70,6 @@ import org.xnio.Options;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-2187")
 public class EJBClientAPIUsageTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientAPIUsageTestCase.class);
@@ -110,12 +110,13 @@ public class EJBClientAPIUsageTestCase {
      */
     @BeforeClass
     public static void beforeTestClass() throws Exception {
-        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+        final Endpoint endpoint = Remoting.createEndpoint("ejb-remote-client-endpoint", OptionMap.EMPTY);
         endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
 
         // open a connection
-        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:9999"), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
+        final int ejbRemotingPort = EJBRemoteManagementUtil.getEJBRemoteConnectorPort("localhost", 9999);
+        final IoFuture<Connection> futureConnection = endpoint.connect(new URI("remote://localhost:" + ejbRemotingPort), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
         connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
     }
 
