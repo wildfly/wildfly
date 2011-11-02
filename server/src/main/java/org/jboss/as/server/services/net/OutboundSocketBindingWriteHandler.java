@@ -29,7 +29,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.network.ClientSocketBinding;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -41,20 +41,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 /**
  * A write attribute handler for handling updates to attributes of a client socket binding.
  * <p/>
- * Any updates to attributes of a client socket binding will trigger a context reload if the {@link ClientSocketBindingService}
+ * Any updates to attributes of a client socket binding will trigger a context reload if the {@link OutboundSocketBindingService}
  * corresponding to the binding is already {@link ServiceController.State#UP}. If the service hasn't been started yet,
- * this the updates will not trigger a context reload and instead the {@link ClientSocketBindingService} will be
+ * this the updates will not trigger a context reload and instead the {@link OutboundSocketBindingService} will be
  * reinstalled into the service container with the updated values for the attributes
  *
  * @author Jaikiran Pai
  */
-class ClientSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
+class OutboundSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
 
     private final ParameterValidator resolvedValueValidator;
     private final boolean remoteDestination;
 
-    ClientSocketBindingWriteHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator,
-                                    final boolean remoteDestination) {
+    OutboundSocketBindingWriteHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator,
+                                      final boolean remoteDestination) {
         super(valueValidator);
         this.resolvedValueValidator = resolvedValueValidator;
         this.remoteDestination = remoteDestination;
@@ -91,15 +91,15 @@ class ClientSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttrib
                         final PathElement element = address.getLastElement();
                         final String bindingName = element.getValue();
                         final ModelNode bindingModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(ClientSocketBinding.CLIENT_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
-                        final ClientSocketBinding binding = controller.getState() == ServiceController.State.UP ? ClientSocketBinding.class.cast(controller.getValue()) : null;
+                        final ServiceController<?> controller = context.getServiceRegistry(true).getRequiredService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
+                        final OutboundSocketBinding binding = controller.getState() == ServiceController.State.UP ? OutboundSocketBinding.class.cast(controller.getValue()) : null;
                         final boolean bound = binding != null && binding.isConnected();
                         if (binding == null) {
                             // existing is not started, so can't "update" it. Instead reinstall the service
                             handleBindingReinstall(context, bindingName, bindingModel);
                         } else {
-                            // We don't allow runtime changes without a context reload for client socket bindings
-                            // since any services which might have already injected/depended on the client
+                            // We don't allow runtime changes without a context reload for outbound socket bindings
+                            // since any services which might have already injected/depended on the outbound
                             // socket binding service would have use the (now stale) attributes.
                             context.reloadRequired();
                         }
@@ -121,12 +121,12 @@ class ClientSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttrib
     }
 
     private void handleBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {
-        context.removeService(ClientSocketBinding.CLIENT_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
+        context.removeService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
         try {
             if (remoteDestination) {
-                RemoteDestinationClientSocketBindingAddHandler.installClientSocketBindingService(context, bindingModel, bindingName);
+                RemoteDestinationOutboundSocketBindingAddHandler.installOutboundSocketBindingService(context, bindingModel, bindingName);
             } else {
-                LocalDestinationClientSocketBindingAddHandler.installClientSocketBindingService(context, bindingModel, bindingName);
+                LocalDestinationOutboundSocketBindingAddHandler.installOutboundSocketBindingService(context, bindingModel, bindingName);
             }
         } catch (UnknownHostException e) {
             throw new OperationFailedException(new ModelNode().set(e.getLocalizedMessage()));
@@ -136,14 +136,14 @@ class ClientSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttrib
     private void revertBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel,
                                         String attributeName, ModelNode previousValue) {
 
-        context.removeService(ClientSocketBinding.CLIENT_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
+        context.removeService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(bindingName));
         final ModelNode unresolvedConfig = bindingModel.clone();
         unresolvedConfig.get(attributeName).set(previousValue);
         try {
             if (remoteDestination) {
-                RemoteDestinationClientSocketBindingAddHandler.installClientSocketBindingService(context, unresolvedConfig, bindingName);
+                RemoteDestinationOutboundSocketBindingAddHandler.installOutboundSocketBindingService(context, unresolvedConfig, bindingName);
             } else {
-                LocalDestinationClientSocketBindingAddHandler.installClientSocketBindingService(context, unresolvedConfig, bindingName);
+                LocalDestinationOutboundSocketBindingAddHandler.installOutboundSocketBindingService(context, unresolvedConfig, bindingName);
             }
         } catch (Exception e) {
             // Bizarro, as we installed the service before

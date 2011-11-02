@@ -824,7 +824,7 @@
         <xs:sequence>
             <xs:element name="include" type="socket-binding-group-includeType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
-            <xs:element name="client-socket-binding" type="client-socket-bindingType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="outbound-socket-binding" type="outbound-socket-bindingType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="default-interface" type="xs:string" use="required">
@@ -925,9 +925,9 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="client-socket-bindingType">
+    <xs:complexType name="outbound-socket-bindingType">
         <xs:annotation>
-            <xs:documentation>Configuration information for a client socket.</xs:documentation>
+            <xs:documentation>Configuration information for a outbound socket.</xs:documentation>
         </xs:annotation>
         <xs:choice>
             <xs:element name="remote-destination" type="remote-destinationType" maxOccurs="1"/>
@@ -937,7 +937,7 @@
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    The name of the client socket binding
+                    The name of the outbound socket binding
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -945,7 +945,7 @@
             <xs:annotation>
                 <xs:documentation>
                     The name of the interface that should be used for setting up the source address of the
-                    socket. This should be one of the declared interfaces.
+                    outbound socket. This should be one of the declared interfaces.
                 </xs:documentation>
             </xs:annotation>
 
@@ -953,7 +953,7 @@
         <xs:attribute name="source-port" type="xs:positiveInteger" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                    The port number that will be used for setting the source addresss of the socket. If the
+                    The port number that will be used for setting the source addresss of the outbound socket. If the
                     source-interface attribute has been specified and the source-port attribute is absent,
                     then the system uses a ephemeral port while binding the socket to a source address.
                 </xs:documentation>
@@ -973,7 +973,7 @@
         <xs:attribute name="host" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    The remote server address to which the client socket has to be connect.
+                    The remote server address to which the outbound socket has to be connect.
                     The address can be either a IP address of the host server of the hostname of the server
                 </xs:documentation>
             </xs:annotation>
@@ -981,7 +981,7 @@
         <xs:attribute name="port" type="xs:positiveInteger" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    The remote port to which the client socket has to connect.
+                    The remote port to which the outbound socket has to connect.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -991,7 +991,7 @@
         <xs:attribute name="socket-binding-ref" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    The reference to a socket binding that has to be used as the destination for the client
+                    The reference to a socket binding that has to be used as the destination for the outbound
                     socket binding. This socket binding name should belong to the same socket binding group
                     to which this local destination client socket belongs.
                 </xs:documentation>

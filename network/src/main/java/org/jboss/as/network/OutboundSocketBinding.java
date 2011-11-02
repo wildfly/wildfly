@@ -31,16 +31,16 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 /**
- * A client socket binding represents the client end of a socket. It represents binding from a local "host"
+ * A outbound socket binding represents the client end of a socket. It represents binding from a local "host"
  * to a remote "host". In some special cases the remote host can itself be the same local host.
  * Unlike the {@link SocketBinding} which represents a {@link java.net.ServerSocket} that opens a socket for "listening",
- * the {@link ClientSocketBinding} represents a {@link Socket} which "connects" to a remote/local host
+ * the {@link OutboundSocketBinding} represents a {@link Socket} which "connects" to a remote/local host
  *
  * @author Jaikiran Pai
  */
-public class ClientSocketBinding {
+public class OutboundSocketBinding {
 
-    public static final ServiceName CLIENT_SOCKET_BINDING_BASE_SERVICE_NAME = ServiceName.JBOSS.append("client-socket-binding");
+    public static final ServiceName OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME = ServiceName.JBOSS.append("outbound-socket-binding");
 
     private final String name;
     private final SocketBindingManager socketBindingManager;
@@ -51,9 +51,9 @@ public class ClientSocketBinding {
     private final int destinationPort;
 
     /**
-     * Creates a client socket binding
+     * Creates a outbound socket binding
      *
-     * @param name                   Name of the client socket binding
+     * @param name                   Name of the outbound socket binding
      * @param socketBindingManager   The socket binding manager
      * @param destinationAddress     The destination address to which this socket will be "connected". Cannot be null.
      * @param destinationPort        The destination port. Cannot be < 0.
@@ -62,22 +62,22 @@ public class ClientSocketBinding {
      * @param fixedSourcePort        True if the <code>sourcePort</code> has to be used as a fixed port number. False if the <code>sourcePort</code>
      *                               will be added to the port offset while determining the absolute source port.
      */
-    public ClientSocketBinding(final String name, final SocketBindingManager socketBindingManager,
-                               final InetAddress destinationAddress, final int destinationPort,
-                               final NetworkInterfaceBinding sourceNetworkInterface, final Integer sourcePort,
-                               final boolean fixedSourcePort) {
+    public OutboundSocketBinding(final String name, final SocketBindingManager socketBindingManager,
+                                 final InetAddress destinationAddress, final int destinationPort,
+                                 final NetworkInterfaceBinding sourceNetworkInterface, final Integer sourcePort,
+                                 final boolean fixedSourcePort) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Socket name cannot be null or an empty string");
         }
         if (socketBindingManager == null) {
-            throw new IllegalArgumentException("SocketBindingManager cannot be null for client socket binding " + name);
+            throw new IllegalArgumentException("SocketBindingManager cannot be null for outbound socket binding " + name);
         }
         if (destinationAddress == null) {
-            throw new IllegalArgumentException("Destination address cannot be null for client socket binding " + name);
+            throw new IllegalArgumentException("Destination address cannot be null for outbound socket binding " + name);
         }
         if (destinationPort < 0) {
             throw new IllegalArgumentException("Destination port cannot be a negative value: " + destinationPort
-                    + " for client socket binding " + name);
+                    + " for outbound socket binding " + name);
         }
         this.name = name;
         this.socketBindingManager = socketBindingManager;
@@ -89,7 +89,7 @@ public class ClientSocketBinding {
     }
 
     /**
-     * Creates a {@link Socket} represented by this {@link ClientSocketBinding} and connects to the
+     * Creates a {@link Socket} represented by this {@link OutboundSocketBinding} and connects to the
      * destination
      *
      * @return
@@ -118,7 +118,7 @@ public class ClientSocketBinding {
     }
 
     /**
-     * Returns the source address of this client socket binding. If no explicit source address is specified
+     * Returns the source address of this outbound socket binding. If no explicit source address is specified
      * for this binding, then this method returns the address of the default interface that's configured
      * for the socket binding group
      *
@@ -129,8 +129,8 @@ public class ClientSocketBinding {
     }
 
     /**
-     * The source port for this client socket binding. Note that this isn't the "absolute" port if the
-     * this client socket binding has a port offset. To get the absolute source port, use the {@link #getAbsoluteSourcePort()}
+     * The source port for this outbound socket binding. Note that this isn't the "absolute" port if the
+     * this outbound socket binding has a port offset. To get the absolute source port, use the {@link #getAbsoluteSourcePort()}
      * method
      *
      * @return
@@ -140,8 +140,8 @@ public class ClientSocketBinding {
     }
 
     /**
-     * The absolute source port for this client socket binding. The absolute source port is the same as {@link #getSourcePort()}
-     * if the client socket binding is marked for "fixed source port". Else, it is the sum of {@link #getSourcePort()}
+     * The absolute source port for this outbound socket binding. The absolute source port is the same as {@link #getSourcePort()}
+     * if the outbound socket binding is marked for "fixed source port". Else, it is the sum of {@link #getSourcePort()}
      * and the port offset configured on the {@link SocketBindingManager}
      *
      * @return
@@ -158,7 +158,7 @@ public class ClientSocketBinding {
     }
 
     /**
-     * Closes the client socket binding connection
+     * Closes the outbound socket binding connection
      *
      * @throws IOException
      */
@@ -171,7 +171,7 @@ public class ClientSocketBinding {
     }
 
     /**
-     * Returns true if a socket connection has been established by this client socket binding. Else returns false
+     * Returns true if a socket connection has been established by this outbound socket binding. Else returns false
      *
      * @return
      */
@@ -185,7 +185,7 @@ public class ClientSocketBinding {
     private Socket createSocket() throws IOException {
         final ManagedSocketFactory socketFactory = this.socketBindingManager.getSocketFactory();
         final Socket socket = socketFactory.createSocket(this.name);
-        // if the client binding specifies the source to use, then bind this socket to the
+        // if the outbound binding specifies the source to use, then bind this socket to the
         // appropriate source
         final SocketAddress sourceSocketAddress = this.getOptionalSourceSocketAddress();
         if (sourceSocketAddress != null) {

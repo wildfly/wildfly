@@ -38,11 +38,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Represents a {@link org.jboss.as.controller.ResourceDefinition} for a client-socket-binding
+ * Represents a {@link org.jboss.as.controller.ResourceDefinition} for a outbound-socket-binding
  *
  * @author Jaikiran Pai
  */
-public abstract class ClientSocketBindingResourceDefinition extends SimpleResourceDefinition {
+public abstract class OutboundSocketBindingResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1)).build();
@@ -61,8 +61,8 @@ public abstract class ClientSocketBindingResourceDefinition extends SimpleResour
 
     private final boolean remoteDestination;
 
-    protected ClientSocketBindingResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
-                                                    final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean remoteDestination) {
+    protected OutboundSocketBindingResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
+                                                      final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean remoteDestination) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
         this.remoteDestination = remoteDestination;
     }
@@ -71,11 +71,11 @@ public abstract class ClientSocketBindingResourceDefinition extends SimpleResour
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
 
         resourceRegistration.registerReadOnlyAttribute(NAME, null);
-        resourceRegistration.registerReadWriteAttribute(SOURCE_PORT, null, new ClientSocketBindingWriteHandler(SOURCE_PORT.getValidator(),
+        resourceRegistration.registerReadWriteAttribute(SOURCE_PORT, null, new OutboundSocketBindingWriteHandler(SOURCE_PORT.getValidator(),
                 new IntRangeValidator(0, 65535, true, false), remoteDestination));
-        resourceRegistration.registerReadWriteAttribute(SOURCE_INTERFACE, null, new ClientSocketBindingWriteHandler(SOURCE_INTERFACE.getValidator(),
+        resourceRegistration.registerReadWriteAttribute(SOURCE_INTERFACE, null, new OutboundSocketBindingWriteHandler(SOURCE_INTERFACE.getValidator(),
                 new StringLengthValidator(1, Integer.MAX_VALUE, true, false), remoteDestination));
-        resourceRegistration.registerReadWriteAttribute(FIXED_SOURCE_PORT, null, new ClientSocketBindingWriteHandler(new ModelTypeValidator(ModelType.BOOLEAN, true, true),
+        resourceRegistration.registerReadWriteAttribute(FIXED_SOURCE_PORT, null, new OutboundSocketBindingWriteHandler(new ModelTypeValidator(ModelType.BOOLEAN, true, true),
                 new ModelTypeValidator(ModelType.BOOLEAN, true, false), remoteDestination));
     }
 }

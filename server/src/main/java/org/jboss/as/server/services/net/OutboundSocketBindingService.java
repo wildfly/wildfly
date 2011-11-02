@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.network.ClientSocketBinding;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.msc.inject.Injector;
@@ -35,22 +35,22 @@ import org.jboss.msc.value.InjectedValue;
 import java.net.InetAddress;
 
 /**
- * Service that represents a client socket binding
+ * Service that represents a outbound socket binding
  *
  * @author Jaikiran Pai
  */
-public abstract class ClientSocketBindingService implements Service<ClientSocketBinding> {
+public abstract class OutboundSocketBindingService implements Service<OutboundSocketBinding> {
 
-    protected final String clientSocketName;
+    protected final String outboundSocketName;
     private final Integer sourcePort;
     private final InjectedValue<SocketBindingManager> socketBindingManagerInjectedValue = new InjectedValue<SocketBindingManager>();
     private final InjectedValue<NetworkInterfaceBinding> sourceInterfaceInjectedValue = new InjectedValue<NetworkInterfaceBinding>();
     private final boolean fixedSourcePort;
 
-    private volatile ClientSocketBinding clientSocketBinding;
+    private volatile OutboundSocketBinding outboundSocketBinding;
 
-    public ClientSocketBindingService(final String name, final Integer sourcePort, final boolean fixedSourcePort) {
-        this.clientSocketName = name;
+    public OutboundSocketBindingService(final String name, final Integer sourcePort, final boolean fixedSourcePort) {
+        this.outboundSocketName = name;
         this.sourcePort = sourcePort;
         this.fixedSourcePort = fixedSourcePort;
     }
@@ -59,24 +59,24 @@ public abstract class ClientSocketBindingService implements Service<ClientSocket
     public synchronized void start(final StartContext context) throws StartException {
         final InetAddress destinationHost = this.getDestinationAddress();
         if (destinationHost == null) {
-            throw new IllegalStateException("Destination host cannot be null for client socket binding: " + this.clientSocketName);
+            throw new IllegalStateException("Destination host cannot be null for outbound socket binding: " + this.outboundSocketName);
         }
         final int destinationPort = this.getDestinationPort();
         if (destinationPort < 0) {
-            throw new IllegalStateException("Destination port " + destinationPort + " cannot be negative for client socket binding: " + this.clientSocketName);
+            throw new IllegalStateException("Destination port " + destinationPort + " cannot be negative for outbound socket binding: " + this.outboundSocketName);
         }
-        this.clientSocketBinding = new ClientSocketBinding(this.clientSocketName, this.socketBindingManagerInjectedValue.getValue(),
+        this.outboundSocketBinding = new OutboundSocketBinding(this.outboundSocketName, this.socketBindingManagerInjectedValue.getValue(),
                 destinationHost, destinationPort, this.sourceInterfaceInjectedValue.getOptionalValue(), this.sourcePort, this.fixedSourcePort);
     }
 
     @Override
     public synchronized void stop(StopContext context) {
-        this.clientSocketBinding = null;
+        this.outboundSocketBinding = null;
     }
 
     @Override
-    public synchronized ClientSocketBinding getValue() throws IllegalStateException, IllegalArgumentException {
-        return this.clientSocketBinding;
+    public synchronized OutboundSocketBinding getValue() throws IllegalStateException, IllegalArgumentException {
+        return this.outboundSocketBinding;
     }
 
     protected Injector<SocketBindingManager> getSocketBindingManagerInjector() {

@@ -28,8 +28,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.network.ClientSocketBinding;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.dmr.ModelNode;
@@ -49,31 +49,31 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_PORT;
 
 /**
- * Handles "add" operation for a local-destination client-socket-binding
+ * Handles "add" operation for a local-destination outbound-socket-binding
  *
  * @author Jaikiran Pai
  */
-public class LocalDestinationClientSocketBindingAddHandler extends AbstractAddStepHandler {
+public class LocalDestinationOutboundSocketBindingAddHandler extends AbstractAddStepHandler {
 
-    static final LocalDestinationClientSocketBindingAddHandler INSTANCE = new LocalDestinationClientSocketBindingAddHandler();
+    static final LocalDestinationOutboundSocketBindingAddHandler INSTANCE = new LocalDestinationOutboundSocketBindingAddHandler();
 
-    public static ModelNode getOperation(final ModelNode address, final ModelNode localDestinationClientSocketBinding) {
+    public static ModelNode getOperation(final ModelNode address, final ModelNode localDestinationOutboundSocketBinding) {
         final ModelNode addOperation = new ModelNode();
         addOperation.get(OP).set(ADD);
         addOperation.get(OP_ADDR).set(address);
         // socket binding reference
-        addOperation.get(SOCKET_BINDING_REF).set(localDestinationClientSocketBinding.get(SOCKET_BINDING_REF));
+        addOperation.get(SOCKET_BINDING_REF).set(localDestinationOutboundSocketBinding.get(SOCKET_BINDING_REF));
 
         // (optional) source interface
-        if (localDestinationClientSocketBinding.get(SOURCE_INTERFACE).isDefined()) {
-            addOperation.get(SOURCE_INTERFACE).set(localDestinationClientSocketBinding.get(SOURCE_INTERFACE));
+        if (localDestinationOutboundSocketBinding.get(SOURCE_INTERFACE).isDefined()) {
+            addOperation.get(SOURCE_INTERFACE).set(localDestinationOutboundSocketBinding.get(SOURCE_INTERFACE));
         }
         // (optional) source port
-        if (localDestinationClientSocketBinding.get(SOURCE_PORT).isDefined()) {
-            addOperation.get(SOURCE_PORT).set(localDestinationClientSocketBinding.get(SOURCE_PORT));
+        if (localDestinationOutboundSocketBinding.get(SOURCE_PORT).isDefined()) {
+            addOperation.get(SOURCE_PORT).set(localDestinationOutboundSocketBinding.get(SOURCE_PORT));
         }
-        if (localDestinationClientSocketBinding.get(FIXED_SOURCE_PORT).isDefined()) {
-            addOperation.get(FIXED_SOURCE_PORT).set(localDestinationClientSocketBinding.get(FIXED_SOURCE_PORT));
+        if (localDestinationOutboundSocketBinding.get(FIXED_SOURCE_PORT).isDefined()) {
+            addOperation.get(FIXED_SOURCE_PORT).set(localDestinationOutboundSocketBinding.get(FIXED_SOURCE_PORT));
         }
         return addOperation;
     }
@@ -82,8 +82,8 @@ public class LocalDestinationClientSocketBindingAddHandler extends AbstractAddSt
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String clientSocketBindingName = address.getLastElement().getValue();
-        model.get(ModelDescriptionConstants.NAME).set(clientSocketBindingName);
+        final String outboundSocketBindingName = address.getLastElement().getValue();
+        model.get(ModelDescriptionConstants.NAME).set(outboundSocketBindingName);
         model.get(ModelDescriptionConstants.SOCKET_BINDING_REF).set(operation.get(ModelDescriptionConstants.SOCKET_BINDING_REF));
         if (operation.hasDefined(ModelDescriptionConstants.SOURCE_INTERFACE)) {
             model.get(ModelDescriptionConstants.SOURCE_INTERFACE).set(operation.get(ModelDescriptionConstants.SOURCE_INTERFACE));
@@ -101,42 +101,42 @@ public class LocalDestinationClientSocketBindingAddHandler extends AbstractAddSt
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
-        final String clientSocketName = model.get(ModelDescriptionConstants.NAME).asString();
-        final ServiceController<ClientSocketBinding> clientSocketBindingServiceController;
+        final String outboundSocketName = model.get(ModelDescriptionConstants.NAME).asString();
+        final ServiceController<OutboundSocketBinding> outboundSocketBindingServiceController;
         try {
-            clientSocketBindingServiceController = this.installClientSocketBindingService(context, model, clientSocketName);
+            outboundSocketBindingServiceController = this.installOutboundSocketBindingService(context, model, outboundSocketName);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        serviceControllers.add(clientSocketBindingServiceController);
+        serviceControllers.add(outboundSocketBindingServiceController);
     }
 
-    public static ServiceController<ClientSocketBinding> installClientSocketBindingService(final OperationContext context, final ModelNode model,
-                                                                                           final String clientSocketName) throws OperationFailedException, UnknownHostException {
+    public static ServiceController<OutboundSocketBinding> installOutboundSocketBindingService(final OperationContext context, final ModelNode model,
+                                                                                               final String outboundSocketName) throws OperationFailedException, UnknownHostException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final String socketBindingRef = LocalDestinationSocketBindingResourceDefinition.SOCKET_BINDING_REF.validateResolvedOperation(model).asString();
+        final String socketBindingRef = LocalDestinationOutboundSocketBindingResourceDefinition.SOCKET_BINDING_REF.validateResolvedOperation(model).asString();
         // (optional) source interface
-        final ModelNode sourceInterfaceModelNode = ClientSocketBindingResourceDefinition.SOURCE_INTERFACE.validateResolvedOperation(model);
+        final ModelNode sourceInterfaceModelNode = OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.validateResolvedOperation(model);
         final String sourceInterfaceName = sourceInterfaceModelNode.isDefined() ? sourceInterfaceModelNode.asString() : null;
         // (optional) source port
-        final ModelNode sourcePortModelNode = ClientSocketBindingResourceDefinition.SOURCE_PORT.validateResolvedOperation(model);
+        final ModelNode sourcePortModelNode = OutboundSocketBindingResourceDefinition.SOURCE_PORT.validateResolvedOperation(model);
         final Integer sourcePort = sourcePortModelNode.isDefined() ? sourcePortModelNode.asInt() : null;
         // (optional) fixedSourcePort
-        final ModelNode fixedSourcePortModelNode = ClientSocketBindingResourceDefinition.FIXED_SOURCE_PORT.validateResolvedOperation(model);
+        final ModelNode fixedSourcePortModelNode = OutboundSocketBindingResourceDefinition.FIXED_SOURCE_PORT.validateResolvedOperation(model);
         final boolean fixedSourcePort = fixedSourcePortModelNode.isDefined() ? fixedSourcePortModelNode.asBoolean() : false;
 
         // create the service
-        final LocalDestinationClientSocketBindingService clientSocketBindingService = new LocalDestinationClientSocketBindingService(clientSocketName, sourcePort, fixedSourcePort);
-        final ServiceBuilder<ClientSocketBinding> serviceBuilder = serviceTarget.addService(ClientSocketBinding.CLIENT_SOCKET_BINDING_BASE_SERVICE_NAME.append(clientSocketName), clientSocketBindingService);
+        final LocalDestinationOutboundSocketBindingService outboundSocketBindingService = new LocalDestinationOutboundSocketBindingService(outboundSocketName, sourcePort, fixedSourcePort);
+        final ServiceBuilder<OutboundSocketBinding> serviceBuilder = serviceTarget.addService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketName), outboundSocketBindingService);
         // add dependency on the SocketBinding service corresponding to the socket binding ref
-        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingRef), SocketBinding.class, clientSocketBindingService.getLocalDestinationSocketBindingInjector());
+        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingRef), SocketBinding.class, outboundSocketBindingService.getLocalDestinationSocketBindingInjector());
         // if a source interface has been specified then add a dependency on it
         if (sourceInterfaceName != null) {
-            serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(sourceInterfaceName), NetworkInterfaceBinding.class, clientSocketBindingService.getSourceNetworkInterfaceBindingInjector());
+            serviceBuilder.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(sourceInterfaceName), NetworkInterfaceBinding.class, outboundSocketBindingService.getSourceNetworkInterfaceBindingInjector());
         }
         // add a dependency on the socket binding manager
-        serviceBuilder.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, clientSocketBindingService.getSocketBindingManagerInjector());
+        serviceBuilder.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, outboundSocketBindingService.getSocketBindingManagerInjector());
         // install the service
         return serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }

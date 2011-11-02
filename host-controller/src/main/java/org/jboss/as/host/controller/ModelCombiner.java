@@ -35,8 +35,8 @@ import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
-import org.jboss.as.server.services.net.LocalDestinationClientSocketBindingAddHandler;
-import org.jboss.as.server.services.net.RemoteDestinationClientSocketBindingAddHandler;
+import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
+import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -63,7 +63,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_CLIENT_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
@@ -71,7 +71,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_CLIENT_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
@@ -79,7 +79,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -446,30 +445,30 @@ class ModelCombiner implements ManagedServerBootConfiguration {
             updates.add(SocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
                     PathElement.pathElement(SOCKET_BINDING, name)), binding));
         }
-        // client-socket-binding (for local destination)
-        if (group.hasDefined(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING)) {
-            for(final Property localDestinationClientSocketBindings : group.get(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING).asPropertyList()) {
-                final String clientSocketBindingName = localDestinationClientSocketBindings.getName();
-                final ModelNode binding = localDestinationClientSocketBindings.getValue();
+        // outbound-socket-binding (for local destination)
+        if (group.hasDefined(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING)) {
+            for(final Property localDestinationOutboundSocketBindings : group.get(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING).asPropertyList()) {
+                final String outboundSocketBindingName = localDestinationOutboundSocketBindings.getName();
+                final ModelNode binding = localDestinationOutboundSocketBindings.getValue();
                 if(! binding.isDefined()) {
                     continue;
                 }
-                // add the local destination client socket binding add operation
-                updates.add(LocalDestinationClientSocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
-                        PathElement.pathElement(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING, clientSocketBindingName)), binding));
+                // add the local destination outbound socket binding add operation
+                updates.add(LocalDestinationOutboundSocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
+                        PathElement.pathElement(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName)), binding));
             }
         }
-        // client-socket-binding (for remote destination)
-        if (group.hasDefined(REMOTE_DESTINATION_CLIENT_SOCKET_BINDING)) {
-            for(final Property remoteDestinationClientSocketBindings : group.get(REMOTE_DESTINATION_CLIENT_SOCKET_BINDING).asPropertyList()) {
-                final String clientSocketBindingName = remoteDestinationClientSocketBindings.getName();
-                final ModelNode binding = remoteDestinationClientSocketBindings.getValue();
+        // outbound-socket-binding (for remote destination)
+        if (group.hasDefined(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING)) {
+            for(final Property remoteDestinationOutboundSocketBindings : group.get(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING).asPropertyList()) {
+                final String outboundSocketBindingName = remoteDestinationOutboundSocketBindings.getName();
+                final ModelNode binding = remoteDestinationOutboundSocketBindings.getValue();
                 if(! binding.isDefined()) {
                     continue;
                 }
-                // add the local destination client socket binding add operation
-                updates.add(RemoteDestinationClientSocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
-                        PathElement.pathElement(ModelDescriptionConstants.REMOTE_DESTINATION_CLIENT_SOCKET_BINDING, clientSocketBindingName)), binding));
+                // add the local destination outbound socket binding add operation
+                updates.add(RemoteDestinationOutboundSocketBindingAddHandler.getOperation(pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, groupName),
+                        PathElement.pathElement(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName)), binding));
             }
         }
     }

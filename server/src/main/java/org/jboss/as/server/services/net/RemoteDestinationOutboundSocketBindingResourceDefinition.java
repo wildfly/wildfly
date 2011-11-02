@@ -34,13 +34,13 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource definition for a remote-destination client socket binding
+ * Resource definition for a remote-destination outbound socket binding
  *
  * @author Jaikiran Pai
  */
-public class RemoteDestinationClientSocketBindingResourceDefinition extends ClientSocketBindingResourceDefinition {
+public class RemoteDestinationOutboundSocketBindingResourceDefinition extends OutboundSocketBindingResourceDefinition {
 
-    public static final RemoteDestinationClientSocketBindingResourceDefinition INSTANCE = new RemoteDestinationClientSocketBindingResourceDefinition();
+    public static final RemoteDestinationOutboundSocketBindingResourceDefinition INSTANCE = new RemoteDestinationOutboundSocketBindingResourceDefinition();
 
     public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING, false)
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
@@ -51,18 +51,18 @@ public class RemoteDestinationClientSocketBindingResourceDefinition extends Clie
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
 
-    private RemoteDestinationClientSocketBindingResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.REMOTE_DESTINATION_CLIENT_SOCKET_BINDING), CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.REMOTE_DESTINATION_CLIENT_SOCKET_BINDING),
-                RemoteDestinationClientSocketBindingAddHandler.INSTANCE, ClientSocketBindingRemoveHandler.INSTANCE, true);
+    private RemoteDestinationOutboundSocketBindingResourceDefinition() {
+        super(PathElement.pathElement(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING), CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING),
+                RemoteDestinationOutboundSocketBindingAddHandler.INSTANCE, OutboundSocketBindingRemoveHandler.INSTANCE, true);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
 
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(HOST, null, new ClientSocketBindingWriteHandler(HOST.getValidator(),
+        resourceRegistration.registerReadWriteAttribute(HOST, null, new OutboundSocketBindingWriteHandler(HOST.getValidator(),
                 new StringLengthValidator(1, Integer.MAX_VALUE, false, true), true));
-        resourceRegistration.registerReadWriteAttribute(PORT, null, new ClientSocketBindingWriteHandler(PORT.getValidator(),
+        resourceRegistration.registerReadWriteAttribute(PORT, null, new OutboundSocketBindingWriteHandler(PORT.getValidator(),
                 new IntRangeValidator(0, 65535, false, false), true));
     }
 }

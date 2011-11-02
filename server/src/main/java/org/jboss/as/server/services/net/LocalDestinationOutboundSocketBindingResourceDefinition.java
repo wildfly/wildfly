@@ -33,27 +33,27 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource definition for a local-destination client socket binding
+ * Resource definition for a local-destination outbound socket binding
  *
  * @author Jaikiran Pai
  */
-public class LocalDestinationSocketBindingResourceDefinition extends ClientSocketBindingResourceDefinition {
+public class LocalDestinationOutboundSocketBindingResourceDefinition extends OutboundSocketBindingResourceDefinition {
 
-    public static final LocalDestinationSocketBindingResourceDefinition INSTANCE = new LocalDestinationSocketBindingResourceDefinition();
+    public static final LocalDestinationOutboundSocketBindingResourceDefinition INSTANCE = new LocalDestinationOutboundSocketBindingResourceDefinition();
 
     public static final SimpleAttributeDefinition SOCKET_BINDING_REF = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SOCKET_BINDING_REF, ModelType.STRING, false)
             .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-    private LocalDestinationSocketBindingResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.LOCAL_DESTINATION_CLIENT_SOCKET_BINDING), CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.LOCAL_DESTINATION_CLIENT_SOCKET_BINDING),
-                LocalDestinationClientSocketBindingAddHandler.INSTANCE, ClientSocketBindingRemoveHandler.INSTANCE, false);
+    private LocalDestinationOutboundSocketBindingResourceDefinition() {
+        super(PathElement.pathElement(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING), CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING),
+                LocalDestinationOutboundSocketBindingAddHandler.INSTANCE, OutboundSocketBindingRemoveHandler.INSTANCE, false);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING_REF, null, new ClientSocketBindingWriteHandler(SOCKET_BINDING_REF.getValidator(),
+        resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING_REF, null, new OutboundSocketBindingWriteHandler(SOCKET_BINDING_REF.getValidator(),
                 new StringLengthValidator(1, Integer.MAX_VALUE, false, false), false));
     }
 }
