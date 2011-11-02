@@ -279,7 +279,7 @@ public class DomainXml extends CommonXml {
     void parseSocketBindingGroup_1_0(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
                                  final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
-        // both client-socket-bindings and socket-binding names
+        // unique socket-binding names
         final Set<String> uniqueBindingNames = new HashSet<String>();
 
         // Handle attributes
@@ -330,7 +330,7 @@ public class DomainXml extends CommonXml {
     void parseSocketBindingGroup_1_1(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
                                  final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
-        // both client-socket-bindings and socket-binding names
+        // both outbound-socket-bindings and socket-binding names
         final Set<String> uniqueBindingNames = new HashSet<String>();
 
         // Handle attributes
@@ -367,15 +367,15 @@ public class DomainXml extends CommonXml {
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.CLIENT_SOCKET_BINDING.getLocalName()
+                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.OUTBOUND_SOCKET_BINDING.getLocalName()
                                 + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
-                case CLIENT_SOCKET_BINDING: {
-                    final String bindingName = parseClientSocketBinding(reader, interfaces, socketBindingGroupName, groupAddress, updates);
+                case OUTBOUND_SOCKET_BINDING: {
+                    final String bindingName = parseOutboundSocketBinding(reader, interfaces, socketBindingGroupName, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.CLIENT_SOCKET_BINDING.getLocalName()
+                        throw new XMLStreamException("A " + Element.SOCKET_BINDING.getLocalName() + " or a " + Element.OUTBOUND_SOCKET_BINDING.getLocalName()
                                 + " " + bindingName + " has already been declared in " + Element.SOCKET_BINDING_GROUP + socketBindingGroupName, reader.getLocation());
                     }
                     break;

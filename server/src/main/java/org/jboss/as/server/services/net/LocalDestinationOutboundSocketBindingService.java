@@ -30,16 +30,16 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 /**
- * Service that represents a local-destination client socket binding
+ * Service that represents a local-destination outbound socket binding
  *
  * @author Jaikiran Pai
  */
-public class LocalDestinationClientSocketBindingService extends ClientSocketBindingService {
+public class LocalDestinationOutboundSocketBindingService extends OutboundSocketBindingService {
 
 
     private final InjectedValue<SocketBinding> localDestinationSocketBindingInjectedValue = new InjectedValue<SocketBinding>();
 
-    public LocalDestinationClientSocketBindingService(final String name, final Integer sourcePort, final boolean fixedSourcePort) {
+    public LocalDestinationOutboundSocketBindingService(final String name, final Integer sourcePort, final boolean fixedSourcePort) {
         super(name, sourcePort, fixedSourcePort);
     }
 

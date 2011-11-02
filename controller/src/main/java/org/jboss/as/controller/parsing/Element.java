@@ -44,7 +44,6 @@ public enum Element {
     ANY_IPV6_ADDRESS("any-ipv6-address"),
     AUTHENTICATION("authentication"),
 
-    CLIENT_SOCKET_BINDING("client-socket-binding"),
     CONTENT("content"),
 
     DOMAIN("domain"),
@@ -98,6 +97,8 @@ public enum Element {
 
     OPTION("option"),
     OUTBOUND_CONNECTIONS("outbound-connections"),
+    OUTBOUND_SOCKET_BINDING("outbound-socket-binding"),
+
 
     PASSWORD("password"),
     PATH("path"),

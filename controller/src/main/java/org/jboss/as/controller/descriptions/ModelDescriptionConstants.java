@@ -111,7 +111,7 @@ public class ModelDescriptionConstants {
     public static final String KEYSTORE = "keystore";
     public static final String LDAP = "ldap";
     public static final String LOCAL = "local";
-    public static final String LOCAL_DESTINATION_CLIENT_SOCKET_BINDING = "local-destination-client-socket-binding";
+    public static final String LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING = "local-destination-outbound-socket-binding";
     public static final String LOCALE = "locale";
     public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MANAGEMENT = "management";
@@ -180,7 +180,7 @@ public class ModelDescriptionConstants {
     public static final String RELATIVE_TO = "relative-to";
     public static final String REMOVE = "remove";
     public static final String REMOTE = "remote";
-    public static final String REMOTE_DESTINATION_CLIENT_SOCKET_BINDING = "remote-destination-client-socket-binding";
+    public static final String REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING = "remote-destination-outbound-socket-binding";
     public static final String REPLACE_DEPLOYMENT = "replace-deployment";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";

@@ -25,24 +25,24 @@ package org.jboss.as.server.services.net;
 import java.net.InetAddress;
 
 /**
- * Service that represents a remote-destination client socket binding
+ * Service that represents a remote-destination outbound socket binding
  *
  * @author Jaikiran Pai
  */
-public class RemoteDestinationClientSocketBindingService extends ClientSocketBindingService {
+public class RemoteDestinationOutboundSocketBindingService extends OutboundSocketBindingService {
 
     private final InetAddress destinationHost;
     private final int destinationPort;
 
-    public RemoteDestinationClientSocketBindingService(final String name, final InetAddress destinationHost, final int destinationPort,
-                                                       final Integer sourcePort, final boolean fixedSourcePort) {
+    public RemoteDestinationOutboundSocketBindingService(final String name, final InetAddress destinationHost, final int destinationPort,
+                                                         final Integer sourcePort, final boolean fixedSourcePort) {
 
         super(name, sourcePort, fixedSourcePort);
         if (destinationHost == null) {
-            throw new IllegalArgumentException("Destination host cannot be null for client socket binding " + name);
+            throw new IllegalArgumentException("Destination host cannot be null for outbound socket binding " + name);
         }
         if (destinationPort < 0) {
-            throw new IllegalArgumentException("Destination port cannot be a negative value for client socket binding " + name);
+            throw new IllegalArgumentException("Destination port cannot be a negative value for outbound socket binding " + name);
         }
         this.destinationHost = destinationHost;
         this.destinationPort = destinationPort;

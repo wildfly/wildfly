@@ -26,19 +26,19 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.network.ClientSocketBinding;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Jaikiran Pai
  */
-class ClientSocketBindingRemoveHandler extends AbstractRemoveStepHandler {
+class OutboundSocketBindingRemoveHandler extends AbstractRemoveStepHandler {
 
-    static final ClientSocketBindingRemoveHandler INSTANCE = new ClientSocketBindingRemoveHandler();
+    static final OutboundSocketBindingRemoveHandler INSTANCE = new OutboundSocketBindingRemoveHandler();
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String clientSocketName = model.get(ModelDescriptionConstants.NAME).asString();
-        context.removeService(ClientSocketBinding.CLIENT_SOCKET_BINDING_BASE_SERVICE_NAME.append(clientSocketName));
+        final String outboundSocketName = model.get(ModelDescriptionConstants.NAME).asString();
+        context.removeService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketName));
     }
 }

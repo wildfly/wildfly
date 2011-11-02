@@ -82,7 +82,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_CLIENT_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
@@ -104,7 +104,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_CLIENT_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
@@ -2220,14 +2220,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         return name;
     }
 
-    protected String parseClientSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
-                                            final String socketBindingGroupName, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+    protected String parseOutboundSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
+                                                final String socketBindingGroupName, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
-        String clientSocketBindingName = null;
+        String outboundSocketBindingName = null;
 
-        final ModelNode clientSocketBindingAddOperation = new ModelNode();
-        clientSocketBindingAddOperation.get(OP).set(ADD); // address for this ADD operation will be set later, once the local-destination or remote-destination is parsed
+        final ModelNode outboundSocketBindingAddOperation = new ModelNode();
+        outboundSocketBindingAddOperation.get(OP).set(ADD); // address for this ADD operation will be set later, once the local-destination or remote-destination is parsed
 
         // Handle attributes
         final int count = reader.getAttributeCount();
@@ -2240,7 +2240,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 required.remove(attribute);
                 switch (attribute) {
                     case NAME: {
-                        clientSocketBindingName = value;
+                        outboundSocketBindingName = value;
                         break;
                     }
                     case SOURCE_INTERFACE: {
@@ -2248,15 +2248,15 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             throw new XMLStreamException("Unknown " + Attribute.SOURCE_INTERFACE.getLocalName() + " " + value + " " + Element.INTERFACE.getLocalName()
                                     + " must be declared in element " + Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
-                        clientSocketBindingAddOperation.get(SOURCE_INTERFACE).set(value);
+                        outboundSocketBindingAddOperation.get(SOURCE_INTERFACE).set(value);
                         break;
                     }
                     case SOURCE_PORT: {
-                        clientSocketBindingAddOperation.get(SOURCE_PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
+                        outboundSocketBindingAddOperation.get(SOURCE_PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
                         break;
                     }
                     case FIXED_SOURCE_PORT: {
-                        clientSocketBindingAddOperation.get(FIXED_SOURCE_PORT).set(parsePossibleExpression(value));
+                        outboundSocketBindingAddOperation.get(FIXED_SOURCE_PORT).set(parsePossibleExpression(value));
                         break;
                     }
                     default:
@@ -2274,31 +2274,31 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             switch (Element.forName(reader.getLocalName())) {
                 case LOCAL_DESTINATION: {
                     if (mutuallyExclusiveElementAlreadyFound) {
-                        throw new XMLStreamException("A client socket binding: " + clientSocketBindingName + " cannot have both " + Element.LOCAL_DESTINATION.getLocalName()
+                        throw new XMLStreamException("A outbound socket binding: " + outboundSocketBindingName + " cannot have both " + Element.LOCAL_DESTINATION.getLocalName()
                                 + " as well as a " + Element.REMOTE_DESTINATION.getLocalName() + " at the same time", reader.getLocation());
                     } else {
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
-                    // parse the local destination client socket binding
-                    this.parseLocalDestinationClientSocketBinding(reader, clientSocketBindingName, clientSocketBindingAddOperation);
+                    // parse the local destination outbound socket binding
+                    this.parseLocalDestinationOutboundSocketBinding(reader, outboundSocketBindingName, outboundSocketBindingAddOperation);
                     // set the address of the add operation
-                    // /socket-binding-group=<groupname>/local-destination-client-socket-binding=<clientSocketBindingName>
-                    final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName), PathElement.pathElement(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING, clientSocketBindingName));
-                    clientSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
+                    // /socket-binding-group=<groupname>/local-destination-outbound-socket-binding=<outboundSocketBindingName>
+                    final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName), PathElement.pathElement(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName));
+                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
                     break;
                 }
                 case REMOTE_DESTINATION: {
                     if (mutuallyExclusiveElementAlreadyFound) {
-                        throw new XMLStreamException("A client socket binding: " + clientSocketBindingName + " cannot have both " + Element.LOCAL_DESTINATION.getLocalName()
+                        throw new XMLStreamException("A outbound socket binding: " + outboundSocketBindingName + " cannot have both " + Element.LOCAL_DESTINATION.getLocalName()
                                 + " as well as a " + Element.REMOTE_DESTINATION.getLocalName() + " at the same time", reader.getLocation());
                     } else {
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
-                    // parse the remote destination client socket binding
-                    this.parseRemoteDestinationClientSocketBinding(reader, clientSocketBindingName, clientSocketBindingAddOperation);
-                    // /socket-binding-group=<groupname>/remote-destination-client-socket-binding=<clientSocketBindingName>
-                    final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName), PathElement.pathElement(REMOTE_DESTINATION_CLIENT_SOCKET_BINDING, clientSocketBindingName));
-                    clientSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
+                    // parse the remote destination outbound socket binding
+                    this.parseRemoteDestinationOutboundSocketBinding(reader, outboundSocketBindingName, outboundSocketBindingAddOperation);
+                    // /socket-binding-group=<groupname>/remote-destination-outbound-socket-binding=<outboundSocketBindingName>
+                    final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName), PathElement.pathElement(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName));
+                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
                     break;
                 }
                 default: {
@@ -2308,12 +2308,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
 
         // add the "add" operations to the updates
-        updates.add(clientSocketBindingAddOperation);
-        return clientSocketBindingName;
+        updates.add(outboundSocketBindingAddOperation);
+        return outboundSocketBindingName;
     }
 
-    private void parseLocalDestinationClientSocketBinding(final XMLExtendedStreamReader reader, final String clientSocketBindingName,
-                                                          final ModelNode clientSocketBindingAddOperation) throws XMLStreamException {
+    private void parseLocalDestinationOutboundSocketBinding(final XMLExtendedStreamReader reader, final String outboundSocketBindingName,
+                                                            final ModelNode outboundSocketBindingAddOperation) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.SOCKET_BINDING_REF);
 
@@ -2328,7 +2328,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 required.remove(attribute);
                 switch (attribute) {
                     case SOCKET_BINDING_REF: {
-                        clientSocketBindingAddOperation.get(SOCKET_BINDING_REF).set(value);
+                        outboundSocketBindingAddOperation.get(SOCKET_BINDING_REF).set(value);
                         break;
                     }
                     default:
@@ -2344,8 +2344,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoContent(reader);
     }
 
-    private void parseRemoteDestinationClientSocketBinding(final XMLExtendedStreamReader reader, final String clientSocketBindingName,
-                                                          final ModelNode clientSocketBindingAddOperation) throws XMLStreamException {
+    private void parseRemoteDestinationOutboundSocketBinding(final XMLExtendedStreamReader reader, final String outboundSocketBindingName,
+                                                             final ModelNode outboundSocketBindingAddOperation) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.HOST, Attribute.PORT);
 
@@ -2360,11 +2360,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 required.remove(attribute);
                 switch (attribute) {
                     case HOST: {
-                        clientSocketBindingAddOperation.get(HOST).set(value);
+                        outboundSocketBindingAddOperation.get(HOST).set(value);
                         break;
                     }
                     case PORT: {
-                        clientSocketBindingAddOperation.get(PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
+                        outboundSocketBindingAddOperation.get(PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
                         break;
                     }
                     default:
@@ -2709,77 +2709,77 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writer.writeEndElement();
             }
         }
-        // client-socket-binding (for local destination)
-        if (bindingGroup.hasDefined(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING)) {
-            final ModelNode localDestinationClientSocketBindings = bindingGroup.get(LOCAL_DESTINATION_CLIENT_SOCKET_BINDING);
-            for (final String clientSocketBindingName : localDestinationClientSocketBindings.keys()) {
-                final ModelNode clientSocketBinding = localDestinationClientSocketBindings.get(clientSocketBindingName);
-                // <client-socket-binding>
-                writer.writeStartElement(Element.CLIENT_SOCKET_BINDING.getLocalName());
-                // name of the client socket binding
-                writeAttribute(writer, Attribute.NAME, clientSocketBindingName);
+        // outbound-socket-binding (for local destination)
+        if (bindingGroup.hasDefined(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING)) {
+            final ModelNode localDestinationOutboundSocketBindings = bindingGroup.get(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING);
+            for (final String outboundSocketBindingName : localDestinationOutboundSocketBindings.keys()) {
+                final ModelNode outboundSocketBinding = localDestinationOutboundSocketBindings.get(outboundSocketBindingName);
+                // <outbound-socket-binding>
+                writer.writeStartElement(Element.OUTBOUND_SOCKET_BINDING.getLocalName());
+                // name of the outbound socket binding
+                writeAttribute(writer, Attribute.NAME, outboundSocketBindingName);
                 // (optional) source port
-                if (clientSocketBinding.hasDefined(SOURCE_PORT)) {
-                    final String sourcePort = clientSocketBinding.get(SOURCE_PORT).asString();
+                if (outboundSocketBinding.hasDefined(SOURCE_PORT)) {
+                    final String sourcePort = outboundSocketBinding.get(SOURCE_PORT).asString();
                     writeAttribute(writer, Attribute.SOURCE_PORT, sourcePort);
                 }
                 // (optional) source interface
-                if (clientSocketBinding.hasDefined(SOURCE_INTERFACE)) {
-                    final String sourceInterface = clientSocketBinding.get(SOURCE_INTERFACE).asString();
+                if (outboundSocketBinding.hasDefined(SOURCE_INTERFACE)) {
+                    final String sourceInterface = outboundSocketBinding.get(SOURCE_INTERFACE).asString();
                     writeAttribute(writer, Attribute.SOURCE_INTERFACE, sourceInterface);
                 }
                 // (optional) fixedSourcePort
-                if (clientSocketBinding.hasDefined(FIXED_SOURCE_PORT)) {
-                    final String fixedSourcePort = clientSocketBinding.get(FIXED_SOURCE_PORT).asString();
+                if (outboundSocketBinding.hasDefined(FIXED_SOURCE_PORT)) {
+                    final String fixedSourcePort = outboundSocketBinding.get(FIXED_SOURCE_PORT).asString();
                     writeAttribute(writer, Attribute.FIXED_SOURCE_PORT, fixedSourcePort);
                 }
                 // write the <local-destination> element
                 writer.writeStartElement(Element.LOCAL_DESTINATION.getLocalName());
                 // socket-binding-ref
-                final ModelNode socketBindingRef = clientSocketBinding.get(SOCKET_BINDING_REF);
+                final ModelNode socketBindingRef = outboundSocketBinding.get(SOCKET_BINDING_REF);
                 // write the socket-binding-ref attribute for the local-destination element
                 writeAttribute(writer, Attribute.SOCKET_BINDING_REF, socketBindingRef.asString());
                 // </local-destination>
                 writer.writeEndElement();
-                // </client-socket-binding>
+                // </outbound-socket-binding>
                 writer.writeEndElement();
             }
         }
-        // client-socket-binding (for remote destination)
-        if (bindingGroup.hasDefined(REMOTE_DESTINATION_CLIENT_SOCKET_BINDING)) {
-            final ModelNode remoteDestinationClientSocketBindings = bindingGroup.get(REMOTE_DESTINATION_CLIENT_SOCKET_BINDING);
-            for (final String clientSocketBindingName : remoteDestinationClientSocketBindings.keys()) {
-                final ModelNode clientSocketBinding = remoteDestinationClientSocketBindings.get(clientSocketBindingName);
-                // <client-socket-binding>
-                writer.writeStartElement(Element.CLIENT_SOCKET_BINDING.getLocalName());
-                // name of the client socket binding
-                writeAttribute(writer, Attribute.NAME, clientSocketBindingName);
+        // outbound-socket-binding (for remote destination)
+        if (bindingGroup.hasDefined(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING)) {
+            final ModelNode remoteDestinationOutboundSocketBindings = bindingGroup.get(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING);
+            for (final String outboundSocketBindingName : remoteDestinationOutboundSocketBindings.keys()) {
+                final ModelNode outboundSocketBinding = remoteDestinationOutboundSocketBindings.get(outboundSocketBindingName);
+                // <outbound-socket-binding>
+                writer.writeStartElement(Element.OUTBOUND_SOCKET_BINDING.getLocalName());
+                // name of the outbound socket binding
+                writeAttribute(writer, Attribute.NAME, outboundSocketBindingName);
                 // (optional) source port
-                if (clientSocketBinding.hasDefined(SOURCE_PORT)) {
-                    final String sourcePort = clientSocketBinding.get(SOURCE_PORT).asString();
+                if (outboundSocketBinding.hasDefined(SOURCE_PORT)) {
+                    final String sourcePort = outboundSocketBinding.get(SOURCE_PORT).asString();
                     writeAttribute(writer, Attribute.SOURCE_PORT, sourcePort);
                 }
                 // (optional) source interface
-                if (clientSocketBinding.hasDefined(SOURCE_INTERFACE)) {
-                    final String sourceInterface = clientSocketBinding.get(SOURCE_INTERFACE).asString();
+                if (outboundSocketBinding.hasDefined(SOURCE_INTERFACE)) {
+                    final String sourceInterface = outboundSocketBinding.get(SOURCE_INTERFACE).asString();
                     writeAttribute(writer, Attribute.SOURCE_INTERFACE, sourceInterface);
                 }
                 // (optional) fixedSourcePort
-                if (clientSocketBinding.hasDefined(FIXED_SOURCE_PORT)) {
-                    final String fixedSourcePort = clientSocketBinding.get(FIXED_SOURCE_PORT).asString();
+                if (outboundSocketBinding.hasDefined(FIXED_SOURCE_PORT)) {
+                    final String fixedSourcePort = outboundSocketBinding.get(FIXED_SOURCE_PORT).asString();
                     writeAttribute(writer, Attribute.FIXED_SOURCE_PORT, fixedSourcePort);
                 }
                 // write the <remote-destination> element
                 writer.writeStartElement(Element.REMOTE_DESTINATION.getLocalName());
                 // destination host
-                final ModelNode host = clientSocketBinding.get(HOST);
+                final ModelNode host = outboundSocketBinding.get(HOST);
                 writeAttribute(writer, Attribute.HOST, host.asString());
                 // destination port
-                final ModelNode destPort = clientSocketBinding.get(PORT);
+                final ModelNode destPort = outboundSocketBinding.get(PORT);
                 writeAttribute(writer, Attribute.PORT, destPort.asString());
                 // </remote-destination>
                 writer.writeEndElement();
-                // </client-socket-binding>
+                // </outbound-socket-binding>
                 writer.writeEndElement();
             }
         }
