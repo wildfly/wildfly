@@ -117,8 +117,15 @@ public class ClientSocketBinding {
         return this.fixedSourcePort;
     }
 
+    /**
+     * Returns the source address of this client socket binding. If no explicit source address is specified
+     * for this binding, then this method returns the address of the default interface that's configured
+     * for the socket binding group
+     *
+     * @return
+     */
     public InetAddress getSourceAddresss() {
-        return this.sourceNetworkInterface == null ? null : this.sourceNetworkInterface.getAddress();
+        return this.sourceNetworkInterface != null ? this.sourceNetworkInterface.getAddress() : this.socketBindingManager.getDefaultInterfaceAddress();
     }
 
     /**

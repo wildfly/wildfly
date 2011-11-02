@@ -824,7 +824,7 @@
         <xs:sequence>
             <xs:element name="include" type="socket-binding-group-includeType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="socket-binding" type="socket-bindingType" maxOccurs="unbounded"/>
-            <xs:element name="client-socket-binding" type="client-socket-bindingType" maxOccurs="unbounded"/>
+            <xs:element name="client-socket-binding" type="client-socket-bindingType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="default-interface" type="xs:string" use="required">
