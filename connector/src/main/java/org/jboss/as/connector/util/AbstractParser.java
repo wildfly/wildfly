@@ -24,6 +24,7 @@ package org.jboss.as.connector.util;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -100,7 +101,8 @@ public abstract class AbstractParser {
             switch (attribute) {
                 case CLASS_NAME: {
                     final Location location = reader.getLocation();
-                    String value = readStringAttributeElement(reader, extensionclassname.getXmlName());
+                    requireSingleAttribute(reader, attribute.getLocalName());
+                    final String value = reader.getAttributeValue(0);
                     extensionclassname.parseAndSetParameter(value, operation, location);
                     break;
 
