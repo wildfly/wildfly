@@ -21,35 +21,38 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
-import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.context.base.BaseEntityContext;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.invocation.Interceptor;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.EntityBean;
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ejb3.component.EjbComponentInstance;
+import org.jboss.as.ejb3.context.EntityContextImpl;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
 
 /**
  * @author Stuart Douglas
  */
-public class EntityBeanComponentInstance extends BasicComponentInstance {
+public class EntityBeanComponentInstance extends EjbComponentInstance {
 
     /**
      * The primary key of this instance, is it is associated with an object identity
      */
     private volatile Object primaryKey;
     private volatile boolean isDiscarded;
-    private volatile BaseEntityContext entityContext;
+    private volatile EntityContextImpl entityContext;
     private volatile boolean removed = false;
+    private volatile boolean synchronizeRegistered;
 
     protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+        super(component, instanceReference, preDestroyInterceptor, methodInterceptors, Collections.<Method, Interceptor>emptyMap());
     }
 
     @Override
@@ -67,10 +70,11 @@ public class EntityBeanComponentInstance extends BasicComponentInstance {
     }
 
 
-    protected void discard() {
+    public void discard() {
         if (!isDiscarded) {
             isDiscarded = true;
             getComponent().getCache().discard(this);
+            this.primaryKey = null;
         }
     }
 
@@ -107,7 +111,7 @@ public class EntityBeanComponentInstance extends BasicComponentInstance {
     public synchronized void store() {
         EntityBean instance = getInstance();
         try {
-            if(!removed) {
+            if (!removed) {
                 instance.ejbStore();
             }
         } catch (RemoteException e) {
@@ -117,40 +121,52 @@ public class EntityBeanComponentInstance extends BasicComponentInstance {
 
     /**
      * Prepares the instance for release by calling the ejbPassivate method.
-     *
+     * <p/>
      * This method does not actually release this instance into the pool
      */
     public synchronized void passivate() {
         EntityBean instance = getInstance();
         try {
-            if(!removed) {
+            if (!removed) {
                 instance.ejbPassivate();
             }
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
         }
-        this.primaryKey = null;
     }
 
     public void setupContext() {
         try {
-            this.entityContext = new BaseEntityContext(this);
+            final EntityContextImpl entityContext = new EntityContextImpl(this);
+            setEjbContext(entityContext);
             getInstance().setEntityContext(entityContext);
         } catch (RemoteException e) {
             throw new WrappedRemoteException(e);
         }
     }
 
-    public BaseEntityContext getEntityContext() {
+    public EntityContextImpl getEjbContext() {
         return entityContext;
     }
 
+    protected void setEjbContext(EntityContextImpl entityContext) {
+        this.entityContext = entityContext;
+    }
+
     public EJBObject getEjbObject() {
-        throw new IllegalStateException("Not implemented yet");
+        final Object pk = getPrimaryKey();
+        if (pk == null) {
+            throw new IllegalStateException("Cannot call getEjbObject before the object is associated with a primary key");
+        }
+        return getComponent().getEJBObject(pk);
     }
 
     public EJBLocalObject getEjbLocalObject() {
-        throw new IllegalStateException("Not implemented yet");
+        final Object pk = getPrimaryKey();
+        if (pk == null) {
+            throw new IllegalStateException("Cannot call getEjbLocalObject before the object is associated with a primary key");
+        }
+        return getComponent().getEjbLocalObject(pk);
     }
 
     public boolean isRemoved() {
@@ -159,5 +175,13 @@ public class EntityBeanComponentInstance extends BasicComponentInstance {
 
     public void setRemoved(final boolean removed) {
         this.removed = removed;
+    }
+
+    public synchronized void setSynchronizationRegistered(final boolean synchronizeRegistered) {
+        this.synchronizeRegistered = synchronizeRegistered;
+    }
+
+    public synchronized boolean isSynchronizeRegistered() {
+        return synchronizeRegistered;
     }
 }

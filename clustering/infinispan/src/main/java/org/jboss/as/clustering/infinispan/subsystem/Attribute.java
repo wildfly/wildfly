@@ -54,6 +54,7 @@ public enum Attribute {
     LIFESPAN(ModelKeys.LIFESPAN),
     LISTENER_EXECUTOR(ModelKeys.LISTENER_EXECUTOR),
     LOCK_TIMEOUT(ModelKeys.LOCK_TIMEOUT),
+    LOCKING(ModelKeys.LOCKING),
     MACHINE(ModelKeys.MACHINE),
     MAX_ENTRIES(ModelKeys.MAX_ENTRIES),
     MAX_IDLE(ModelKeys.MAX_IDLE),

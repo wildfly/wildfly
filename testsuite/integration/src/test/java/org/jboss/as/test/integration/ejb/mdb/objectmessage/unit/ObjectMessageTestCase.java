@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.mdb.objectmessage.unit;
 
+import java.util.Arrays;
+
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
@@ -40,13 +48,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import java.util.Arrays;
 
 /**
  * Tests that a MDB can get hold of the underlying Object from a {@link ObjectMessage} without any classloading issues.
@@ -76,6 +77,9 @@ public class ObjectMessageTestCase {
 
     @Resource(mappedName = ObjectMessageTestCase.OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME)
     private Queue objectMessageReplyQueue;
+
+
+    private static JMSAdminOperations jmsAdminOperations;
 
     /**
      * .ear
@@ -113,7 +117,7 @@ public class ObjectMessageTestCase {
 
     @BeforeClass
     public static void createJmsDestinations() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-queue", MDBAcceptingObjectMessage.QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-replyQueue", OBJECT_MESSAGE_REPLY_QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("mdbtest/objectmessage-array-queue", MDBAcceptingObjectMessageOfArrayType.QUEUE_JNDI_NAME);
@@ -123,11 +127,11 @@ public class ObjectMessageTestCase {
 
     @AfterClass
     public static void afterTestClass() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-queue");
         jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-replyQueue");
         jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-array-queue");
         jmsAdminOperations.removeJmsQueue("mdbtest/objectmessage-array-replyQueue");
+        jmsAdminOperations.close();
     }
 
     /**

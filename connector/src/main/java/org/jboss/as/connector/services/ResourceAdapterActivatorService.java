@@ -22,6 +22,9 @@
 
 package org.jboss.as.connector.services;
 
+import static org.jboss.as.connector.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
+
 import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
@@ -43,15 +46,12 @@ import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.connector.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -81,10 +81,9 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
         String pathname = "file://RaActivator" + deploymentName;
 
-        final ServiceContainer container = context.getController().getServiceContainer();
         CommonDeployment deploymentMD;
         try {
-            ResourceAdapterActivator activator = new ResourceAdapterActivator(container, new URL(pathname), deploymentName,
+            ResourceAdapterActivator activator = new ResourceAdapterActivator(context.getChildTarget(), new URL(pathname), deploymentName,
                     new File(pathname), cl, cmd, ijmd);
             activator.setConfiguration(getConfig().getValue());
             // FIXME!!, this should probably be done by IJ and not the service
@@ -126,9 +125,9 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
         private final IronJacamar ijmd;
 
-        public ResourceAdapterActivator(ServiceContainer serviceContainer, URL url, String deploymentName, File root,
+        public ResourceAdapterActivator(ServiceTarget serviceTarget, URL url, String deploymentName, File root,
                 ClassLoader cl, Connector cmd, IronJacamar ijmd) {
-            super(serviceContainer, url, deploymentName, root, cl, cmd);
+            super(serviceTarget, url, deploymentName, root, cl, cmd);
             this.ijmd = ijmd;
         }
 

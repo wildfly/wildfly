@@ -1,22 +1,22 @@
-Synopsis:	ls [node_path] [-l]
+Synopsis:    ls [node_path] [-l]
 
-Description:	lists the contents of a node path.
+Description: lists the contents of a node path.
 
 Arguments:
 
-	node-path	- optional, the node path the contents of which should be printed.
-				If not specified, the contents of the current node path (indicated in the prompt) will be printed.
-				The node path can end on either node type (in this case the contents will be the child node names)
-				or the node name (in this case the contents will be the child node types).
-				If the node path has no contents, nothing will be printed.
-				
-				If specified, the node-path is expected to follow the following format:
-				[node-type [=node-name (,node-type[=node-name])*]].
-				
-	-l			- by default the result is printed in columns using the whole width of the terminal,
-				the -l switch will make it printed one name per line.  
+ node-path    - optional, the node path the contents of which should be printed.
+                If not specified, the contents of the current node path (indicated in the prompt) will be printed.
+                The node path can end on either node type (in this case the contents will be the child node names)
+                or the node name (in this case the contents will be the child node types).
+                If the node path has no contents, nothing will be printed.
+
+                If specified, the node-path is expected to follow the following format:
+                [node-type [=node-name (,node-type[=node-name])*]].
+
+ -l           - by default the result is printed in columns using the whole width of the terminal,
+                the -l switch will make it printed one name per line.  
 				
 The following navigation signs are supported in the node-path:
-	/		- the root node (e.g. 'cd /' or 'cd /some=thing');
-	..		- parent node (e.g. 'cd ..');
-	.type	- node type of the current node (e.g. 'cd .type').
+ /      - the root node (e.g. 'cd /' or 'cd /some=thing');
+ ..     - parent node (e.g. 'cd ..');
+ .type  - node type of the current node (e.g. 'cd .type').

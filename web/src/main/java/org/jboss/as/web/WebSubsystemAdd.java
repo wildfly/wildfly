@@ -101,12 +101,19 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler implements Descript
             // overwrite with new values
             ourContainerConfig.get(Constants.JSP_CONFIGURATION).set(ourJspConfig);
         }
-        if (opConfig.hasDefined(Constants.MIME_MAPPING)) {
-            ourContainerConfig.get(Constants.MIME_MAPPING).set(opConfig.get(Constants.MIME_MAPPING));
+
+        ModelNode container;
+        if (opConfig.hasDefined(Constants.CONTAINER))
+            container = opConfig.get(Constants.CONTAINER);
+        else
+            container = opConfig;
+        if (container.hasDefined(Constants.MIME_MAPPING)) {
+            ourContainerConfig.get(Constants.MIME_MAPPING).set(container.get(Constants.MIME_MAPPING));
         }
-        if (opConfig.hasDefined(Constants.WELCOME_FILE)) {
-            ourContainerConfig.get(Constants.WELCOME_FILE).set(opConfig.get(Constants.WELCOME_FILE));
+        if (container.hasDefined(Constants.WELCOME_FILE)) {
+            ourContainerConfig.get(Constants.WELCOME_FILE).set(container.get(Constants.WELCOME_FILE));
         }
+
         if(operation.hasDefined(Constants.DEFAULT_VIRTUAL_SERVER)) {
             model.get(Constants.DEFAULT_VIRTUAL_SERVER).set(operation.get(Constants.DEFAULT_VIRTUAL_SERVER));
         }

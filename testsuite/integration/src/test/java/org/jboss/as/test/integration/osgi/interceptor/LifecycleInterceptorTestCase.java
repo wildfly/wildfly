@@ -68,7 +68,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 23-Oct-2009
  */
 @RunWith(Arquillian.class)
-public class LifecycleInterceptorTestCase extends OSGiTestSupport {
+public class LifecycleInterceptorTestCase {
 
     static final String PROCESSOR_NAME = "interceptor-processor";
     static final String ENDPOINT_NAME = "interceptor-endpoint";
@@ -99,7 +99,7 @@ public class LifecycleInterceptorTestCase extends OSGiTestSupport {
     @Test
     public void testServletAccess() throws Exception {
 
-        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         deployer.deploy(PROCESSOR_NAME);
         try {

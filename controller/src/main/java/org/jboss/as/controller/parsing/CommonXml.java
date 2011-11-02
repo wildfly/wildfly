@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -61,6 +60,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTBOUND_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
@@ -772,7 +772,14 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     break;
                 }
                 case PROPERTIES: {
-                    parsePropertiesAuthentication(reader, authentication);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                            parsePropertiesAuthentication_1_0(reader, authentication);
+                            break;
+                        default:
+                            parsePropertiesAuthentication_1_1(reader, authentication);
+                            break;
+                    }
                     break;
                 }
                 case USERS: {
@@ -954,7 +961,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parsePropertiesAuthentication(final XMLExtendedStreamReader reader, final ModelNode authentication)
+    protected void parsePropertiesAuthentication_1_0(final XMLExtendedStreamReader reader, final ModelNode authentication)
             throws XMLStreamException {
         ModelNode properties = authentication.get(PROPERTIES);
 
@@ -991,6 +998,57 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         properties.get(PATH).set(path);
         if (relativeTo != null) {
             properties.get(RELATIVE_TO).set(relativeTo);
+        }
+        // This property was not supported in version 1.0 of the schema, however it is set to true here to ensure
+        // the default behaviour is a document based on 1.0 of the schema is parsed, 1.1 now defaults this to false.
+        properties.get(PLAIN_TEXT).set(true);
+    }
+
+    protected void parsePropertiesAuthentication_1_1(final XMLExtendedStreamReader reader, final ModelNode authentication)
+            throws XMLStreamException {
+        ModelNode properties = authentication.get(PROPERTIES);
+
+        String path = null;
+        String relativeTo = null;
+        Boolean plainText = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PATH:
+                        path = value;
+                        break;
+                    case RELATIVE_TO: {
+                        relativeTo = value;
+                        break;
+                    }
+                    case PLAIN_TEXT: {
+                        plainText = Boolean.valueOf(value);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (path == null)
+            throw missingRequired(reader, Collections.singleton(Attribute.PATH));
+
+        requireNoContent(reader);
+
+        properties.get(PATH).set(path);
+        if (relativeTo != null) {
+            properties.get(RELATIVE_TO).set(relativeTo);
+        }
+        if (plainText != null) {
+            properties.get(PLAIN_TEXT).set(plainText);
         }
     }
 
@@ -1799,7 +1857,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseInterfaceCriteria(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode criteria)
+    protected void parseInterfaceCriteria(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode interfaceModel)
             throws XMLStreamException {
         // all subsequent elements are criteria elements
         if (reader.nextTag() == END_ELEMENT) {
@@ -1811,7 +1869,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             case ANY_ADDRESS:
             case ANY_IPV4_ADDRESS:
             case ANY_IPV6_ADDRESS: {
-                criteria.set(element.getLocalName());
+                interfaceModel.get(element.getLocalName()).set(true);
                 requireNoContent(reader); // consume this element
                 requireNoContent(reader); // consume rest of criteria (no further content allowed)
                 return;
@@ -1822,27 +1880,27 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ANY:
-                    parseCompoundInterfaceCriterion(reader, expectedNs, criteria.add().set(ANY, new ModelNode()).get(ANY));
+                    parseCompoundInterfaceCriterion(reader, expectedNs, interfaceModel.get(ANY).setEmptyObject());
                     break;
                 case NOT:
-                    parseCompoundInterfaceCriterion(reader, expectedNs, criteria.add().set(NOT, new ModelNode()).get(NOT));
+                    parseCompoundInterfaceCriterion(reader, expectedNs, interfaceModel.get(NOT).setEmptyObject());
                     break;
                 default: {
                     // parseSimpleInterfaceCriterion(reader, criteria.add().set(element.getLocalName(), new
                     // ModelNode()).get(element.getLocalName()));
-                    parseSimpleInterfaceCriterion(reader, criteria.add());
+                    parseSimpleInterfaceCriterion(reader, interfaceModel, false);
                     break;
                 }
             }
         } while (reader.nextTag() != END_ELEMENT);
     }
 
-    protected void parseCompoundInterfaceCriterion(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode criterion)
+    protected void parseCompoundInterfaceCriterion(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode subModel)
             throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
-            parseSimpleInterfaceCriterion(reader, criterion.add());
+            parseSimpleInterfaceCriterion(reader, subModel, true);
         }
     }
 
@@ -1878,11 +1936,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
      * Note! changes/additions made here will likely need to be added to the corresponding write method that handles the write
      * of the element. Failure to do so will result in a configuration that can be read, but not written out.
      *
-     * @see {@link #writeInterfaceCriteria(org.jboss.staxmapper.XMLExtendedStreamWriter, java.util.List)}
-     * @see {@link #writePropertyInterfaceCriteria(org.jboss.staxmapper.XMLExtendedStreamWriter, org.jboss.dmr.ModelNode)}
+     * @see {@link #writeInterfaceCriteria(org.jboss.staxmapper.XMLExtendedStreamWriter, org.jboss.dmr.ModelNode, boolean)}
      * @throws javax.xml.stream.XMLStreamException if an error occurs
      */
-    protected void parseSimpleInterfaceCriterion(final XMLExtendedStreamReader reader, final ModelNode criteria)
+    protected void parseSimpleInterfaceCriterion(final XMLExtendedStreamReader reader, final ModelNode subModel, boolean nested)
             throws XMLStreamException {
         final Element element = Element.forName(reader.getLocalName());
         final String localName = element.getLocalName();
@@ -1893,7 +1950,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 ModelNode valueNode = parsePossibleExpression(value);
                 requireNoContent(reader);
                 // todo: validate IP address
-                criteria.set(localName, valueNode);
+                if(nested) {
+                    subModel.get(localName).add(valueNode);
+                } else {
+                    subModel.get(localName).set(valueNode);
+                }
                 break;
             }
             case LOOPBACK_ADDRESS: {
@@ -1901,7 +1962,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate IP address
-                criteria.set(localName, value);
+                if(nested) {
+                    subModel.get(localName).add(value);
+                } else {
+                    subModel.get(localName).set(value);
+                }
                 break;
             }
             case LINK_LOCAL_ADDRESS:
@@ -1914,7 +1979,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             case VIRTUAL: {
                 requireNoAttributes(reader);
                 requireNoContent(reader);
-                criteria.set(localName);
+                subModel.get(localName).set(true);
                 break;
             }
             case NIC: {
@@ -1922,7 +1987,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate NIC name
-                criteria.set(localName, value);
+                if(nested) {
+                    subModel.get(localName).add(value);
+                } else {
+                    subModel.get(localName).set(value);
+                }
                 break;
             }
             case NIC_MATCH: {
@@ -1930,7 +1999,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
                 // todo: validate pattern
-                criteria.set(localName, value);
+                if(nested) {
+                    subModel.get(localName).add(value);
+                } else {
+                    subModel.get(localName).set(value);
+                }
                 break;
             }
             case SUBNET_MATCH: {
@@ -1949,7 +2022,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     // Validate both parts of the split
                     addr.getAddress();
                     Integer.parseInt(split[1]);
-                    criteria.set(localName, value);
+                    if(nested) {
+                        subModel.get(localName).add(value);
+                    } else {
+                        subModel.get(localName).set(value);
+                    }
                     break;
                 } catch (final NumberFormatException e) {
                     throw new XMLStreamException("Invalid mask " + split[1] + " (" + e.getLocalizedMessage() + ")",
@@ -1985,8 +2062,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             interfaceAdd.get(OP_ADDR).set(address).add(ModelDescriptionConstants.INTERFACE, name);
             interfaceAdd.get(OP).set(ADD);
 
-            final ModelNode criteriaNode = interfaceAdd.get(CRITERIA);
-            parseInterfaceCriteria(reader, expectedNs, criteriaNode);
+            final ModelNode criteriaNode = interfaceAdd;
+            parseInterfaceCriteria(reader, expectedNs, interfaceAdd);
 
             if (checkSpecified && criteriaNode.getType() != ModelType.STRING && criteriaNode.getType() != ModelType.EXPRESSION
                     && criteriaNode.asInt() == 0) {
@@ -2304,88 +2381,122 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoContent(reader);
     }
 
+    /**
+     * Write the interfaces including the criteria elements.
+     *
+     * @param writer the xml stream writer
+     * @param modelNode the model
+     * @throws XMLStreamException
+     */
     protected void writeInterfaces(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
         writer.writeStartElement(Element.INTERFACES.getLocalName());
-        Set<String> interfaces = modelNode.keys();
+        final Set<String> interfaces = modelNode.keys();
         for (String ifaceName : interfaces) {
-            ModelNode iface = modelNode.get(ifaceName);
+            final ModelNode iface = modelNode.get(ifaceName);
             writer.writeStartElement(Element.INTERFACE.getLocalName());
             writeAttribute(writer, Attribute.NAME, ifaceName);
-
-            ModelNode criteria = iface.get(CRITERIA);
-            if (criteria.getType() == ModelType.STRING) {
-                String value = criteria.asString();
-                if (value.equals(Element.ANY_ADDRESS.getLocalName())) {
-                    writer.writeEmptyElement(Element.ANY_ADDRESS.getLocalName());
-                } else if (value.equals(Element.ANY_IPV4_ADDRESS.getLocalName())) {
-                    writer.writeEmptyElement(Element.ANY_IPV4_ADDRESS.getLocalName());
-                } else if (value.equals(Element.ANY_IPV6_ADDRESS.getLocalName())) {
-                    writer.writeEmptyElement(Element.ANY_IPV6_ADDRESS.getLocalName());
-                } else {
-                    // we should never get here
-                    throw new RuntimeException("Unkown criteria type: " + value);
-                }
-            } else if (criteria.getType() == ModelType.LIST) {
-                List<ModelNode> values = criteria.asList();
-                writeInterfaceCriteria(writer, values);
-
-            } else if (criteria.getType() != ModelType.UNDEFINED) {
-                throw new RuntimeException("Unkown type for criteria node " + criteria);
+            // <any-* /> is just handled at the root
+            if(iface.get(Element.ANY_ADDRESS.getLocalName()).asBoolean(false)) {
+                writer.writeEmptyElement(Element.ANY_ADDRESS.getLocalName());
+            } else if(iface.get(Element.ANY_IPV4_ADDRESS.getLocalName()).asBoolean(false)) {
+                writer.writeEmptyElement(Element.ANY_IPV4_ADDRESS.getLocalName());
+            } else if(iface.get(Element.ANY_IPV6_ADDRESS.getLocalName()).asBoolean(false)) {
+                writer.writeEmptyElement(Element.ANY_IPV6_ADDRESS.getLocalName());
+            } else {
+                // Write the other criteria elements
+                writeInterfaceCriteria(writer, iface, false);
             }
             writer.writeEndElement();
         }
         writer.writeEndElement();
     }
 
-    private void writeInterfaceCriteria(final XMLExtendedStreamWriter writer, final List<ModelNode> criteria)
-            throws XMLStreamException {
-        for (ModelNode value : criteria) {
-            // any and not elements are represented by properties
-            if (value.getType() == ModelType.PROPERTY) {
-                writePropertyInterfaceCriteria(writer, value);
-            } else if (value.getType() == ModelType.LIST) {
-                writeInterfaceCriteria(writer, value.asList());
-            } else {
-                writeSimpleInterfaceCriteria(writer, value);
+    /**
+     * Write the criteria elements, extracting the information of the sub-model.
+     *
+     * @param writer the xml stream writer
+     * @param subModel the interface model
+     * @param nested whether it the criteria elements are nested as part of <not /> or <any />
+     * @throws XMLStreamException
+     */
+    private void writeInterfaceCriteria(final XMLExtendedStreamWriter writer, final ModelNode subModel, final boolean nested) throws XMLStreamException {
+        for(final Property property : subModel.asPropertyList()) {
+            if(property.getValue().isDefined()) {
+                writeInterfaceCriteria(writer, property, nested);
             }
         }
     }
 
-    private void writePropertyInterfaceCriteria(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-        Property property = node.asProperty();
-        Element element = Element.forName(property.getName());
-        writer.writeStartElement(element.getLocalName());
+    private void writeInterfaceCriteria(final XMLExtendedStreamWriter writer, final Property property, final boolean nested) throws XMLStreamException {
+        final Element element = Element.forName(property.getName());
         switch (element) {
-            case ANY:
-                writeInterfaceCriteria(writer, property.getValue().asList());
-                break;
-            case NOT:
-                writeInterfaceCriteria(writer, property.getValue().asList());
-                break;
             case INET_ADDRESS:
-                writeAttribute(writer, Attribute.VALUE, property.getValue().asString());
+                writeInterfaceCriteria(writer, element, Attribute.VALUE, property.getValue(), nested);
                 break;
             case LOOPBACK_ADDRESS:
-                writeAttribute(writer, Attribute.VALUE, property.getValue().asString());
+                writeInterfaceCriteria(writer, element, Attribute.VALUE, property.getValue(), nested);
                 break;
+            case LINK_LOCAL_ADDRESS:
+            case LOOPBACK:
+            case MULTICAST:
+            case POINT_TO_POINT:
+            case PUBLIC_ADDRESS:
+            case SITE_LOCAL_ADDRESS:
+            case UP:
+            case VIRTUAL: {
+                if(property.getValue().asBoolean(false)) {
+                    writer.writeEmptyElement(element.getLocalName());
+                }
+                break;
+            }
             case NIC:
-                writeAttribute(writer, Attribute.NAME, property.getValue().asString());
+                writeInterfaceCriteria(writer, element, Attribute.NAME, property.getValue(), nested);
                 break;
             case NIC_MATCH:
-                writeAttribute(writer, Attribute.PATTERN, property.getValue().asString());
+                writeInterfaceCriteria(writer, element, Attribute.PATTERN, property.getValue(), nested);
                 break;
             case SUBNET_MATCH:
-                writeAttribute(writer, Attribute.VALUE, property.getValue().asString());
+                writeInterfaceCriteria(writer, element, Attribute.VALUE, property.getValue(), nested);
                 break;
-            default:
+            case ANY :
+            case NOT:
+                if(nested) {
+                    break;
+                }
+                writer.writeStartElement(element.getLocalName());
+                writeInterfaceCriteria(writer, property.getValue(), true);
+                writer.writeEndElement();
+                break;
+            case NAME:
+                // not a criteria element; ignore
+                break;
+            default: {
+                // TODO we perhaps should just log a warning.
                 throw new RuntimeException("Unknown property in interface criteria list: " + property.getName());
+            }
         }
-        writer.writeEndElement();
     }
 
-    private void writeSimpleInterfaceCriteria(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-        Element element = Element.forName(node.asString());
+    private static void writeInterfaceCriteria(final XMLExtendedStreamWriter writer, final Element element, final Attribute attribute, final ModelNode subModel, boolean nested) throws XMLStreamException {
+        if(nested) {
+            // Nested criteria elements are represented as list in the model
+            writeListAsMultipleElements(writer, element, attribute, subModel);
+        } else {
+            writeSingleElement(writer, element, attribute, subModel);
+        }
+    }
+
+    private static void writeSingleElement(final XMLExtendedStreamWriter writer, final Element element, final Attribute attribute, final ModelNode subModel) throws XMLStreamException {
         writer.writeEmptyElement(element.getLocalName());
+        writeAttribute(writer, attribute, subModel.asString());
+    }
+
+    private static void writeListAsMultipleElements(final XMLExtendedStreamWriter writer, final Element element, Attribute attribute, final ModelNode subModel) throws XMLStreamException {
+        final List<ModelNode> list = subModel.asList();
+        for(final ModelNode node : list) {
+            writer.writeEmptyElement(element.getLocalName());
+            writeAttribute(writer, attribute, node.asString());
+        }
     }
 
     protected void writeSocketBindingGroup(XMLExtendedStreamWriter writer, ModelNode bindingGroup, boolean fromServer)
@@ -2645,6 +2756,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         if (properties.hasDefined(RELATIVE_TO)) {
                             writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), properties.require(RELATIVE_TO)
                                     .asString());
+                        }
+                        if (properties.hasDefined(PLAIN_TEXT)) {
+                            writer.writeAttribute(Attribute.PLAIN_TEXT.getLocalName(), properties.require(PLAIN_TEXT).asString());
                         }
 
                         writer.writeEndElement();

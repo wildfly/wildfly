@@ -38,8 +38,10 @@ public interface ModelControllerProtocol {
     byte GET_INPUTSTREAM_REQUEST = 0x4C;
     byte CANCEL_ASYNC_REQUEST = 0x4D;
     byte COMPLETE_TX_REQUEST = 0x4E;
-    //TODO this can go once REM3-121 is available
-    byte TEMP_PING_REQUEST = 0x4F;
+    /** This must be handled by all later versions. Versions < 7.1.0.Beta1 used this to determine if a slave
+     * was still alive due to https://issues.jboss.org/browse/REM3-123 and https://issues.jboss.org/browse/REM3-121
+     */
+    byte LEGACY_MASTER_HC_PING_REQUEST = 0x4F;
 
 
     byte PARAM_END = 0x60;

@@ -91,7 +91,7 @@ public class LogHandlerListAttributeDefinition extends ListAttributeDefinition {
 
     @Override
     protected void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        final ModelNode valueTypeDesc = getValueTypeDescription(false);
+        final ModelNode valueTypeDesc = getValueTypeDescription(true);
         valueTypeDesc.get(DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, valueType.getName()));
         node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
     }

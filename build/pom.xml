@@ -653,6 +653,11 @@
         </dependency>
 
         <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-cmp</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-console</artifactId>
             <classifier>resources</classifier>
@@ -766,6 +771,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-network</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-platform-mbean</artifactId>
         </dependency>
 
         <dependency>

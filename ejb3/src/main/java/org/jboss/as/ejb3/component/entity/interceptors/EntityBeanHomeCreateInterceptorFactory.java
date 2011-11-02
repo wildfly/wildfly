@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.component.entity.interceptors;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import javax.ejb.CreateException;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
@@ -34,9 +36,9 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * Interceptor that hooks up create methods for Entity beans.
- *
+ * <p/>
  * This is a view level interceptor that should be attached to create methods on the home interface.
- *
+ * <p/>
  * It simply creates an instance of the object view, passing in the creation parameters. The object view post create
  * interceptors are responsible for getting an instance and associating it with the identity.
  *
@@ -70,8 +72,17 @@ public class EntityBeanHomeCreateInterceptorFactory implements InterceptorFactor
                 ctx.put(EJB_CREATE_METHOD_KEY, ejbCreate);
                 ctx.put(EJB_POST_CREATE_METHOD_KEY, ejbPostCreate);
                 ctx.put(PARAMETERS_KEY, context.getParameters());
-                final ManagedReference instance = view.createInstance(ctx);
-                return instance.getInstance();
+                try {
+                    final ManagedReference instance = view.createInstance(ctx);
+                    return instance.getInstance();
+                } catch (RuntimeException e) {
+                    //throw the correct exception type
+                    Throwable cause = e.getCause();
+                    if (cause instanceof CreateException) {
+                        throw (CreateException) cause;
+                    }
+                    throw e;
+                }
             }
         };
     }

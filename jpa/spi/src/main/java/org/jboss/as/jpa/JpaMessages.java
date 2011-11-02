@@ -414,15 +414,6 @@ public interface JpaMessages {
     RuntimeException invalidUrlConnection(String integrationName, URLConnection connection);
 
     /**
-     * Creates an exception indicating the {@code persistence-unit-ref} without a {@code lookup} or
-     * {@code persistence-unit-name} is not yet supported (implemented).
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
-    @Message(id = 11454, value = "Support for persistence-unit-ref without a lookup or persistence-unit-name, isn't yet implemented")
-    RuntimeException lookupOrPersistenceUnitNameRequired();
-
-    /**
      * Creates an exception indicating the persistence unit metadata likely because thread local was not set.
      *
      * @return a {@link RuntimeException} for the error.
@@ -511,16 +502,6 @@ public interface JpaMessages {
      */
     @Message(id = 11463, value = "Previous object for class %s is %s instead of null")
     String objectAlreadyDefined(Class<?> cls, Object previous);
-
-    /**
-     * Creates an exception indicating only one persistence provider can be packaged with an application.
-     *
-     * @param providers the list of providers found.
-     *
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 11464, value = "Only one persistence provider can be packaged with an application: %s")
-    DeploymentUnitProcessingException onlyOnePersistenceProviderAllowed(Collection<?> providers);
 
     /**
      * Creates an exception indicating the parameter must be a {@link org.jboss.as.jpa.container.AbstractEntityManager}

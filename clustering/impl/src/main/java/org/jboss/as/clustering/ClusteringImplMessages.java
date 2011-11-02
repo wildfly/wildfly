@@ -116,14 +116,6 @@ public interface ClusteringImplMessages extends ClusteringMessages {
     String nodeSuspected(Address suspectedMember);
 
     /**
-     * Creates an exception indicating that only partial state transfers with a state id are supported.
-     *
-     * @return an {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 10287, value = "Only partial state transfer (with a state_id) is supported")
-    UnsupportedOperationException onlyPartialStateTransferSupported();
-
-    /**
      * Creates an exception indicating the state transfer for the {@code serviceName} parameter will return an input
      * stream is already pending.
      *
@@ -134,18 +126,6 @@ public interface ClusteringImplMessages extends ClusteringMessages {
      */
     @Message(id = 10288, value = "State transfer task for %s that will return an %s is already pending")
     IllegalStateException stateTransferAlreadyPending(String serviceName, String returnType);
-
-    /**
-     * Creates an exception indicating the state id, represented by the {@code stateId} parameter, is unknown and must
-     * start with the prefix represented by the {@code prefix} parameter.
-     *
-     * @param stateId the state id.
-     * @param prefix  the valid prefix.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 10289, value = "Unknown state_id %s -- must start with %s")
-    IllegalArgumentException unknownStateIdPrefix(String stateId, String prefix);
 
     /**
      * A message indicating a new view was created.

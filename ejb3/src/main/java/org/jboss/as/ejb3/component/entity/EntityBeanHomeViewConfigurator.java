@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.entity;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
+import javax.ejb.Handle;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.ComponentView;
@@ -32,16 +33,23 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.component.ComponentTypeIdentityInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
+import org.jboss.as.ejb3.component.EJBViewDescription;
+import org.jboss.as.ejb3.component.EjbHomeViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeCreateInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeFinderInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeMethodInterceptorFactory;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeRemoveByHandleInterceptorFactory;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeRemoveInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
@@ -51,6 +59,7 @@ import org.jboss.msc.service.ServiceBuilder;
  */
 public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
 
+
     @Override
     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
@@ -59,8 +68,10 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
         configuration.addClientPostConstructInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
         configuration.addClientPreDestroyInterceptor(org.jboss.invocation.Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
 
+        final boolean localHome = EjbHomeViewDescription.class.cast(description).getMethodIntf() == MethodIntf.LOCAL_HOME;
 
         final EntityBeanComponentDescription componentDescription = (EntityBeanComponentDescription) componentConfiguration.getComponentDescription();
+        final EJBViewDescription createdView = localHome ? componentDescription.getEjbLocalView() : componentDescription.getEjbRemoteView();
 
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
@@ -78,9 +89,6 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                 final Method ejbCreate = resolveEjbMethod("create", "ejbCreate", componentDescription.getPrimaryKeyType(), componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName());
                 final Method ejbPostCreate = resolveEjbMethod("create", "ejbPostCreate", void.class.getName(), componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName());
 
-                //we have a create method
-                final ViewDescription createdView = componentDescription.getEjbLocalView();
-
                 final EntityBeanHomeCreateInterceptorFactory factory = new EntityBeanHomeCreateInterceptorFactory(ejbCreate, ejbPostCreate);
                 //add a dependency on the view to create
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -93,11 +101,9 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_CREATE_INTERCEPTOR);
 
             } else if (method.getName().startsWith("find")) {
-                final Method ejbFind = resolveEjbFinderMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName());
+                final Method ejbFind = resolveEjbFinderMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName(), componentDescription.getPersistenceType());
 
-                final ViewDescription createdView = componentDescription.getEjbLocalView();
-
-                final EntityBeanHomeFinderInterceptorFactory interceptorFactory = new EntityBeanHomeFinderInterceptorFactory(ejbFind);
+                final EntityBeanHomeFinderInterceptorFactory interceptorFactory = createHomeFindInterceptorFactory(ejbFind, localHome);
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
@@ -108,7 +114,14 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                 configuration.addViewInterceptor(method, interceptorFactory, InterceptorOrder.View.COMPONENT_DISPATCHER);
 
             } else if (method.getName().equals("remove") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Object.class) {
-                //TODO: remove by pk
+                final Method remove = resolveRemoveMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, componentConfiguration.getComponentName());
+                configuration.addViewInterceptor(method, createHomeRemoveInterceptorFactory(remove), InterceptorOrder.View.COMPONENT_DISPATCHER);
+            } else if (method.getName().equals("remove") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Handle.class) {
+                configuration.addViewInterceptor(method, EntityBeanHomeRemoveByHandleInterceptorFactory.INSTANCE, InterceptorOrder.View.COMPONENT_DISPATCHER);
+            } else if (method.getName().equals("getEJBMetaData") && method.getParameterTypes().length == 0) {
+                // TODO: impl
+            } else if (method.getName().equals("getHomeHandle") && method.getParameterTypes().length == 0) {
+                // TODO: impl
             } else {
                 //we have a home business method
                 Method home = resolveEjbHomeBusinessMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName());
@@ -117,6 +130,13 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
         }
     }
 
+    protected InterceptorFactory createHomeRemoveInterceptorFactory(final Method remove) {
+        return new EntityBeanHomeRemoveInterceptorFactory(remove);
+    }
+
+    protected EntityBeanHomeFinderInterceptorFactory createHomeFindInterceptorFactory(final Method ejbFind, final boolean localHome) {
+        return new EntityBeanHomeFinderInterceptorFactory(ejbFind);
+    }
 
     private Method resolveEjbMethod(final String userName, final String ejbMethodName, final String returnType, final Class<?> componentClass, final DeploymentReflectionIndex index, final Method method, final String ejbName) throws DeploymentUnitProcessingException {
 
@@ -133,8 +153,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
         throw new DeploymentUnitProcessingException("Could not resolve corresponding " + ejbMethodName + " for home interface method " + method + " on EJB " + ejbName);
     }
 
-    private Method resolveEjbFinderMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final Method method, final String ejbName) throws DeploymentUnitProcessingException {
-
+    protected Method resolveEjbFinderMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final Method method, final String ejbName, final PersistenceType persistenceType) throws DeploymentUnitProcessingException {
         final String name = method.getName().replaceFirst("find", "ejbFind");
         Class<?> clazz = componentClass;
         while (clazz != Object.class) {
@@ -145,11 +164,13 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             }
             clazz = clazz.getSuperclass();
         }
-        throw new DeploymentUnitProcessingException("Could not resolve corresponding ejbFind method for home interface method " + method + " on EJB " + ejbName);
+        if (PersistenceType.Bean == persistenceType) {
+            throw new DeploymentUnitProcessingException("Could not resolve corresponding ejbFind method for home interface method " + method + " on EJB " + ejbName);
+        }
+        return method;
     }
 
-    private Method resolveEjbHomeBusinessMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final Method method, final String ejbName) throws DeploymentUnitProcessingException {
-
+    protected Method resolveEjbHomeBusinessMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final Method method, final String ejbName) throws DeploymentUnitProcessingException {
         final String name = "ejbHome" + Character.toUpperCase(method.getName().charAt(0)) + method.getName().substring(1);
         Class<?> clazz = componentClass;
         while (clazz != Object.class) {
@@ -161,6 +182,19 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             clazz = clazz.getSuperclass();
         }
         throw new DeploymentUnitProcessingException("Could not resolve corresponding ejbHome method for home interface method " + method + " on EJB " + ejbName);
+    }
+
+    private Method resolveRemoveMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final String ejbName) throws DeploymentUnitProcessingException {
+        Class<?> clazz = componentClass;
+        while (clazz != Object.class) {
+            final ClassReflectionIndex<?> classIndex = index.getClassIndex(clazz);
+            Method ret = classIndex.getMethod(Void.TYPE, "ejbRemove");
+            if (ret != null) {
+                return ret;
+            }
+            clazz = clazz.getSuperclass();
+        }
+        throw new DeploymentUnitProcessingException("Could not resolve ejbRemove method for interface method on EJB " + ejbName);
     }
 
     private static String[] namesOf(final Class<?>[] types) {

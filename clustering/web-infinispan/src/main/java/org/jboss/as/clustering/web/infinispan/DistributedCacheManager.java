@@ -36,6 +36,8 @@ import org.infinispan.config.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DataLocality;
 import org.infinispan.distribution.DistributionManager;
+import org.infinispan.loaders.CacheLoaderConfig;
+import org.infinispan.loaders.CacheStoreConfig;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
@@ -47,6 +49,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.web.BatchingManager;
@@ -93,7 +96,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
     private final LocalDistributableSessionManager manager;
     private final SharedLocalYieldingClusterLockManager lockManager;
     private final Cache<K, Map<Object, Object>> sessionCache;
-    private final CacheInvoker invoker;
+    private final ForceSynchronousCacheInvoker invoker;
     private final BatchingManager batchingManager;
     private final boolean passivationEnabled;
     private final boolean requiresPurge;
@@ -110,17 +113,14 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
         this.attributeStorage = attributeStorage;
         this.batchingManager = batchingManager;
         this.keyFactory = keyFactory;
-        this.invoker = invoker;
+        this.invoker = new ForceSynchronousCacheInvoker(invoker);
 
         Configuration configuration = this.sessionCache.getConfiguration();
 
         this.passivationEnabled = configuration.isCacheLoaderPassivation() && !configuration.isCacheLoaderShared();
-//        List<CacheLoaderConfig> loaders = configuration.getCacheLoaders();
-//        CacheLoaderConfig loaderConfig = !loaders.isEmpty() ? loaders.get(0) : null;
-        // ISPN-1161 workaround
-//        @SuppressWarnings("deprecation")
-//        CacheLoaderConfig loader = configuration.getCacheLoaderManagerConfig().getFirstCacheLoaderConfig();
-        this.requiresPurge = false; // (loader != null) && (loader instanceof CacheStoreConfig) ? ((CacheStoreConfig) loader).isPurgeOnStartup() : false;
+        List<CacheLoaderConfig> loaders = configuration.getCacheLoaders();
+        CacheLoaderConfig loader = !loaders.isEmpty() ? loaders.get(0) : null;
+        this.requiresPurge = (loader != null) && (loader instanceof CacheStoreConfig) ? ((CacheStoreConfig) loader).isPurgeOnStartup() : false;
 
         this.jvmRouteHandler = configuration.getCacheMode().isDistributed() ? new JvmRouteHandler(registry, jvmRouteCacheSource, this.manager) : null;
     }
@@ -169,7 +169,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
                 public Void invoke(Cache<K, Map<Object, Object>> cache) {
                     for (K key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).keySet()) {
                         if (DistributedCacheManager.this.keyFactory.ours(key)) {
-                            cache.remove(key);
+                            cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).remove(key);
                         }
                     }
                     return null;
@@ -326,11 +326,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
         Operation<Map<Object, Object>> operation = new Operation<Map<Object, Object>>() {
             @Override
             public Map<Object, Object> invoke(Cache<K, Map<Object, Object>> cache) {
-                if (local) {
-                    cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL);
-                }
-
-                return cache.remove(key);
+                return cache.getAdvancedCache().withFlags(local ? Flag.CACHE_MODE_LOCAL : Flag.SKIP_REMOTE_LOOKUP).remove(key);
             }
         };
 
@@ -498,7 +494,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
 
                         // We need to force synchronous invocations to guarantee
                         // session replicates before subsequent request.
-                        cache.withFlags(Flag.FORCE_SYNCHRONOUS);
+                        this.invoker.forceThreadSynchronous();
                         return jvmRoute;
                     }
                 }
@@ -570,20 +566,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
     }
 
     private <R> R batch(Operation<R> operation) {
-        boolean started = this.sessionCache.startBatch();
-        boolean success = false;
-
-        try {
-            R result = this.invoker.invoke(this.sessionCache, operation);
-
-            success = true;
-
-            return result;
-        } finally {
-            if (started) {
-                this.sessionCache.endBatch(success);
-            }
-        }
+        return this.invoker.invoke(this.sessionCache, new BatchOperation<K, Map<Object, Object>, R>(operation));
     }
 
     @Listener(sync = false)
@@ -665,5 +648,34 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData,
 
     // Simplified CacheInvoker.Operation using assigned key/value types
     abstract class Operation<R> implements CacheInvoker.Operation<K, Map<Object, Object>, R> {
+    }
+
+    static class ForceSynchronousCacheInvoker implements CacheInvoker {
+        private static final ThreadLocal<Boolean> forceThreadSynchronous = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return Boolean.FALSE;
+            }
+        };
+
+        private final CacheInvoker invoker;
+        private volatile boolean forceSynchronous = false;
+
+        ForceSynchronousCacheInvoker(CacheInvoker invoker) {
+            this.invoker = invoker;
+        }
+
+        void setForceSynchronous(boolean forceSynchronous) {
+            this.forceSynchronous = forceSynchronous;
+        }
+
+        void forceThreadSynchronous() {
+            forceThreadSynchronous.set(Boolean.TRUE);
+        }
+
+        @Override
+        public <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation) {
+            return this.invoker.invoke(this.forceSynchronous || forceThreadSynchronous.get().booleanValue() ? cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS) : cache, operation);
+        }
     }
 }

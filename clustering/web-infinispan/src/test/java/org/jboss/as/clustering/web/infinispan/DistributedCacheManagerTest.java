@@ -114,11 +114,10 @@ public class DistributedCacheManagerTest {
         Cache<Address, String> jvmRouteCache = mock(Cache.class);
         ArgumentCaptor<DistributedCacheManager.JvmRouteHandler> capturedJvmRouteHandler = ArgumentCaptor.forClass(DistributedCacheManager.JvmRouteHandler.class);
         String jvmRoute = "node0";
-
+        
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
         when(this.sessionCache.getStatus()).thenReturn(status);
         when(this.sessionCache.getCacheManager()).thenReturn(container);
-
-        doNothing().when(container).addListener(capturedJvmRouteHandler.capture());
 
         when(this.sessionManager.getJvmRoute()).thenReturn(jvmRoute);
         when(container.getAddress()).thenReturn(address);
@@ -127,6 +126,7 @@ public class DistributedCacheManagerTest {
 
         this.manager.start();
 
+        verify(container).addListener(capturedJvmRouteHandler.capture());
         verify(this.sessionCache).addListener(same(this.manager));
 
         reset(this.sessionCache);
@@ -160,25 +160,26 @@ public class DistributedCacheManagerTest {
         SessionKey key = mock(SessionKey.class);
         Map<Object, Object> map = mock(Map.class);
         @SuppressWarnings("rawtypes")
-        ArgumentCaptor<DistributedCacheManager.Operation> capturedOperation = ArgumentCaptor.forClass(DistributedCacheManager.Operation.class);
+        ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
         String sessionId = "abc";
 
         when(data.getRealId()).thenReturn(sessionId);
         when(this.keyFactory.createKey(sessionId)).thenReturn(key);
-        when(this.sessionCache.startBatch()).thenReturn(true);
+//        when(this.sessionCache.startBatch()).thenReturn(true);
         when(this.invoker.invoke(same(this.sessionCache), capturedOperation.capture())).thenReturn(null);
 
         this.manager.storeSessionData(data);
 
-        verify(this.sessionCache).endBatch(true);
+//        verify(this.sessionCache).endBatch(true);
 
-        DistributedCacheManager<OutgoingDistributableSessionData, SessionKey>.Operation<Void> operation = capturedOperation.getValue();
+        CacheInvoker.Operation<SessionKey, Map<Object, Object>, Void> operation = capturedOperation.getValue();
 
         int version = 10;
         long timestamp = System.currentTimeMillis();
         DistributableSessionMetadata metadata = new DistributableSessionMetadata();
 
+//        when(this.sessionCache.startBatch()).thenReturn(true);
         when(data.getVersion()).thenReturn(version);
         when(map.put(Byte.valueOf((byte) SessionMapEntry.VERSION.ordinal()), version)).thenReturn(null);
         when(data.getTimestamp()).thenReturn(timestamp);
@@ -191,6 +192,7 @@ public class DistributedCacheManagerTest {
         operation.invoke(this.sessionCache);
 
         verify(this.storage).store(same(map), same(data));
+//        verify(this.sessionCache).endBatch(true);
     }
 
     @Test
@@ -319,6 +321,8 @@ public class DistributedCacheManagerTest {
         DistributedCacheManager<OutgoingDistributableSessionData, SessionKey>.Operation<Map<Object, Object>> operation = capturedOperation.getValue();
         Map<Object, Object> expectedMap = mock(Map.class);
 
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.withFlags(Flag.SKIP_REMOTE_LOOKUP)).thenReturn(this.sessionCache);
         when(this.sessionCache.remove(key)).thenReturn(expectedMap);
 
         Map<Object, Object> resultMap = operation.invoke(this.sessionCache);
@@ -401,9 +405,9 @@ public class DistributedCacheManagerTest {
 
         DistributedCacheManager<OutgoingDistributableSessionData, SessionKey>.Operation<Void> operation = capturedOperation.getValue();
 
-        this.sessionCache.evict(key);
-
         Void result = operation.invoke(this.sessionCache);
+
+        verify(this.sessionCache).evict(key);
 
         assertNull(result);
     }
@@ -424,9 +428,9 @@ public class DistributedCacheManagerTest {
 
         DistributedCacheManager<OutgoingDistributableSessionData, SessionKey>.Operation<Void> operation = capturedOperation.getValue();
 
-        this.sessionCache.evict(key);
-
         Void result = operation.invoke(this.sessionCache);
+
+        verify(this.sessionCache).evict(key);
 
         assertNull(result);
     }
@@ -463,10 +467,23 @@ public class DistributedCacheManagerTest {
         this.setForceSynchronous(false);
     }
 
+    @SuppressWarnings("unchecked")
     private void setForceSynchronous(boolean forceSynchronous) {
         this.manager.setForceSynchronous(forceSynchronous);
+        
+        AdvancedCache<SessionKey, Map<Object, Object>> syncCache = mock(AdvancedCache.class);
+        SessionKey key = mock(SessionKey.class);
+        String sessionId = "abc";
 
-        verify(this.invoker).setForceSynchronous(forceSynchronous);
+        @SuppressWarnings("rawtypes")
+        ArgumentCaptor<DistributedCacheManager.Operation> capturedOperation = ArgumentCaptor.forClass(DistributedCacheManager.Operation.class);
+
+        when(this.keyFactory.createKey(sessionId)).thenReturn(key);
+        when(this.sessionCache.getAdvancedCache()).thenReturn(this.sessionCache);
+        when(this.sessionCache.withFlags(Flag.FORCE_SYNCHRONOUS)).thenReturn(syncCache);
+        when(this.invoker.invoke(same(forceSynchronous ? syncCache : this.sessionCache), capturedOperation.capture())).thenReturn(null);
+
+        this.manager.removeSession(sessionId);
     }
 
     @Test

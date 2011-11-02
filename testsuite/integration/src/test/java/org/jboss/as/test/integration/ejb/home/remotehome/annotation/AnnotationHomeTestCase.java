@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.home.remotehome.annotation;
 
+import static org.junit.Assert.fail;
+
+import java.rmi.NoSuchObjectException;
+
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
 
@@ -67,10 +71,9 @@ public class AnnotationHomeTestCase {
     }
 
     @Test
-    public void testGetEjbLocalHome() throws Exception {
+    public void testGetEjbHome() throws Exception {
         final SimpleHome home = (SimpleHome) iniCtx.lookup("java:module/SimpleStatelessBean!" + SimpleHome.class.getName());
-        final SimpleInterface ejbInstance = home.createSimple();
-        Assert.assertEquals("Hello World", ejbInstance.otherMethod());
+        Assert.assertTrue( home.createSimple().getEJBHome() instanceof SimpleHome);
     }
 
     @Test
@@ -81,6 +84,13 @@ public class AnnotationHomeTestCase {
         Assert.assertEquals(message, ejbInstance.sayHello());
         ejbInstance = home.createComplex("hello", "world");
         Assert.assertEquals("hello world", ejbInstance.sayHello());
+        ejbInstance.remove();
+        try {
+            ejbInstance.sayHello();
+            fail("Expected bean to be removed");
+        } catch (NoSuchObjectException expected) {
+
+        }
     }
 
     @Test

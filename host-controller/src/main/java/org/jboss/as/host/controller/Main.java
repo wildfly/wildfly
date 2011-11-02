@@ -234,10 +234,18 @@ public final class Main {
                     cachedDc = true;
                 } else if(CommandLineConstants.DEFAULT_JVM.equals(arg) || CommandLineConstants.OLD_DEFAULT_JVM.equals(arg)) {
                     defaultJVM = args[++i];
-                } else if (CommandLineConstants.DOMAIN_CONFIG.equals(arg) || CommandLineConstants.OLD_DOMAIN_CONFIG.equals(arg)) {
+                } else if (CommandLineConstants.DOMAIN_CONFIG.equals(arg)
+                        || CommandLineConstants.SHORT_DOMAIN_CONFIG.equals(arg)
+                        || CommandLineConstants.OLD_DOMAIN_CONFIG.equals(arg)) {
                     domainConfig = args[++i];
                 } else if (arg.startsWith(CommandLineConstants.DOMAIN_CONFIG)) {
                     String val = parseValue(arg, CommandLineConstants.DOMAIN_CONFIG);
+                    if (val == null) {
+                        return null;
+                    }
+                    domainConfig = val;
+                } else if (arg.startsWith(CommandLineConstants.SHORT_DOMAIN_CONFIG)) {
+                    String val = parseValue(arg, CommandLineConstants.SHORT_DOMAIN_CONFIG);
                     if (val == null) {
                         return null;
                     }
@@ -300,6 +308,18 @@ public final class Main {
                     }
                     hostSystemProperties.put(propertyName, value);
                     SecurityActions.setSystemProperty(propertyName, value);
+                } else if (arg.startsWith(CommandLineConstants.DEFAULT_MULTICAST_ADDRESS)) {
+
+                    int idx = arg.indexOf('=');
+                    if (idx == arg.length() - 1) {
+                        System.err.printf("Argument expected for option %s\n", arg);
+                        usage();
+                        return null;
+                    }
+                    String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
+
+                    hostSystemProperties.put(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
+                    SecurityActions.setSystemProperty(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else {
                     System.err.printf("Invalid option '%s'\n", arg);
                     usage();

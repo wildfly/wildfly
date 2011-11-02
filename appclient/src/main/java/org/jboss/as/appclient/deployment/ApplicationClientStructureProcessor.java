@@ -42,6 +42,8 @@ import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+
 /**
  * Processor that marks a sub-deployment as an application client based on the parameters passed on the command line
  *
@@ -81,7 +83,7 @@ public class ApplicationClientStructureProcessor implements DeploymentUnitProces
                 }
 
             } else {
-                throw new DeploymentUnitProcessingException("Could not find app client " + deployment);
+                throw MESSAGES.cannotFindAppClient(deployment);
             }
         } else if (deploymentUnit.getParent() != null && deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
             final ResourceRoot parentRoot = deploymentUnit.getParent().getAttachment(Attachments.DEPLOYMENT_ROOT);

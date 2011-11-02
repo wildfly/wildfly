@@ -26,10 +26,6 @@ import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_EJB21;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.as.webservices.metadata.WebServiceDeployment;
-import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
-import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
-import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
  * Creates new JAXRPC EJB21 deployment.

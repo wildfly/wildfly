@@ -24,13 +24,7 @@ package org.jboss.as.remoting;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
-import java.security.AccessController;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -40,16 +34,12 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.logging.Logger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
-import org.jboss.threads.JBossExecutors;
-import org.jboss.threads.JBossThreadFactory;
-import org.jboss.threads.QueueExecutor;
 import org.xnio.OptionMap;
 
 /**
@@ -69,19 +59,6 @@ public class RemotingServices {
 
     /** The base name of the stream server services */
     private static final ServiceName SERVER_BASE = REMOTING_BASE.append("server");
-
-    private static final long EXECUTOR_KEEP_ALIVE_TIME = 60000;
-    private static final int EXECUTOR_MAX_THREADS = 20;
-
-    public static ExecutorService createExecutor() {
-        ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Remoting"), Boolean.FALSE, null,
-                "Remoting %f thread %t", null, null, AccessController.getContext());
-
-        QueueExecutor executor = new QueueExecutor(EXECUTOR_MAX_THREADS / 4 + 1, EXECUTOR_MAX_THREADS, EXECUTOR_KEEP_ALIVE_TIME,
-                TimeUnit.MILLISECONDS, 500, threadFactory, true, null);
-
-        return JBossExecutors.protectedExecutorService(executor);
-    }
 
     /**
      * Create the service name for a connector
@@ -147,9 +124,6 @@ public class RemotingServices {
             final List<ServiceController<?>> newControllers) {
         EndpointService endpointService = new EndpointService(hostName, type);
         endpointService.setOptionMap(OptionMap.EMPTY);
-        final Injector<Executor> executorInjector = endpointService.getExecutorInjector();
-        // TODO inject this from somewhere?
-        executorInjector.inject(Executors.newCachedThreadPool());
         addController(newControllers, verificationHandler, serviceTarget.addService(endpointName, endpointService)
                 .setInitialMode(ACTIVE));
     }

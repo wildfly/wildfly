@@ -56,7 +56,7 @@ class OSGiSubsystemProviders {
             subsystem.get(DESCRIPTION).set(resbundle.getString("subsystem"));
             subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
             subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(Namespace.OSGI_1_0.getUriString());
+            subsystem.get(NAMESPACE).set(Namespace.CURRENT.getUriString());
 
             subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("subsystem.activation"));
             subsystem.get(ATTRIBUTES, ModelConstants.ACTIVATION, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
@@ -89,12 +89,12 @@ class OSGiSubsystemProviders {
             node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
             node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
             node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
-            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_ALL_SERVICES.toString());
+            node.get(ATTRIBUTES, ModelConstants.ENTRIES, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_NONE.toString());
             return node;
         }
     };
 
-    static final DescriptionProvider FRAMEWORK_PROPERTY_DESCRIPTION = new DescriptionProvider() {
+    static final DescriptionProvider PROPERTY_DESCRIPTION = new DescriptionProvider() {
         public ModelNode getModelDescription(Locale locale) {
             final ModelNode node = new ModelNode();
             ResourceBundle resbundle = getResourceBundle(locale);
@@ -103,7 +103,7 @@ class OSGiSubsystemProviders {
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
             node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
-            node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_ALL_SERVICES.toString());
+            node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.RESTART_REQUIRED).set("all-services");
             return node;
         }
     };
@@ -118,7 +118,7 @@ class OSGiSubsystemProviders {
             node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
             node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
             node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.ACCESS_TYPE).set(AccessType.READ_WRITE.toString());
-            node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.RESTART_REQUIRED).set(Flag.RESTART_ALL_SERVICES.toString());
+            node.get(ATTRIBUTES, ModelConstants.STARTLEVEL, ModelDescriptionConstants.RESTART_REQUIRED).set("all-services");
             return node;
         }
     };

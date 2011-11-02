@@ -21,14 +21,16 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
+import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
+import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
+import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.metadata.WebServiceDeclaration;
-import org.jboss.as.webservices.metadata.WebServiceDeployment;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -39,6 +41,7 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuilder {
+
     /**
      * Constructor.
      */
@@ -54,22 +57,23 @@ final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuil
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        this.getAndPropagateAttachment(WSAttachmentKeys.WEBSERVICE_DEPLOYMENT_KEY, WebServiceDeployment.class, unit, dep);
-        //this.getAndPropagateAttachment(JBossMetaData.class, unit, dep); // TODO: propagate?
-        final JBossWebMetaData webMetaData = ASHelper.getJBossWebMetaData(unit);
-        if (webMetaData != null) {
-            dep.addAttachment(JBossWebMetaData.class, webMetaData);
-        }
+        // propagate
+        final JAXWSDeployment jaxwsDeployment = unit.getAttachment(JAXWS_ENDPOINTS_KEY);
+        dep.addAttachment(JAXWSDeployment.class, jaxwsDeployment);
+        // propagate
+        final JBossWebMetaData webMetaData = getJBossWebMetaData(unit);
+        dep.addAttachment(JBossWebMetaData.class, webMetaData);
 
-        this.log.debug("Creating JAXWS EJB3 endpoints meta data model");
-        for (final WebServiceDeclaration container : ASHelper.getJaxwsEjbs(unit)) {
-            final String ejbName = container.getComponentName();
-            this.log.debug("EJB3 name: " + ejbName);
-            final String ejbClass = container.getComponentClassName();
-            this.log.debug("EJB3 class: " + ejbClass);
+        log.debug("Creating JAXWS EJB3 endpoints meta data model");
+        for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
+            final String ejbName = ejbEndpoint.getName();
+            log.debug("EJB3 name: " + ejbName);
+            final String ejbClass = ejbEndpoint.getClassName();
+            log.debug("EJB3 class: " + ejbClass);
 
-            final Endpoint ep = this.newHttpEndpoint(ejbClass, ejbName, dep);
-            ep.setProperty(ASHelper.CONTAINER_NAME, container.getContainerName());
+            final Endpoint ep = newHttpEndpoint(ejbClass, ejbName, dep);
+            ep.setProperty(EJB_COMPONENT_VIEW_NAME, ejbEndpoint.getComponentViewName());
         }
     }
+
 }

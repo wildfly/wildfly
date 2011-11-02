@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ejb.AccessTimeout;
+import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
 import javax.transaction.RollbackException;
@@ -37,6 +38,7 @@ import javax.transaction.Transaction;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.ExpiringCache;
@@ -45,13 +47,13 @@ import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
-import org.jboss.as.ejb3.context.spi.SessionContext;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
@@ -75,8 +77,11 @@ public class StatefulSessionComponent extends SessionBeanComponent {
     private final Cache<StatefulSessionComponentInstance> cache;
 
     private final InterceptorFactory afterBegin;
+    private final Method afterBeginMethod;
     private final InterceptorFactory afterCompletion;
+    private final Method afterCompletionMethod;
     private final InterceptorFactory beforeCompletion;
+    private final Method beforeCompletionMethod;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
 
@@ -89,8 +94,11 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         super(ejbComponentCreateService);
 
         this.afterBegin = ejbComponentCreateService.getAfterBegin();
+        this.afterBeginMethod = ejbComponentCreateService.getAfterBeginMethod();
         this.afterCompletion = ejbComponentCreateService.getAfterCompletion();
+        this.afterCompletionMethod = ejbComponentCreateService.getAfterCompletionMethod();
         this.beforeCompletion = ejbComponentCreateService.getBeforeCompletion();
+        this.beforeCompletionMethod = ejbComponentCreateService.getBeforeCompletionMethod();
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutService();
 
@@ -113,16 +121,26 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         });
     }
 
-    @Override
-    public <T> T getBusinessObject(SessionContext ctx, Class<T> businessInterface) throws IllegalStateException {
+    protected SessionID getSessionIdOf(final InterceptorContext ctx) {
+        final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) ctx.getPrivateData(ComponentInstance.class);
+        return instance.getId();
+    }
+
+    public <T> T getBusinessObject(Class<T> businessInterface, final InterceptorContext context) throws IllegalStateException {
         if (businessInterface == null) {
             throw new IllegalStateException("Business interface type cannot be null");
         }
-        return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)));
+        return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(context)));
     }
 
-        @Override
-    public EJBObject getEJBObject(SessionContext ctx) throws IllegalStateException {
+    public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
+        if (getEjbLocalObjectView() == null) {
+            throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBLocalObject");
+        }
+        return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.SESSION_ID_KEY, getSessionIdOf(ctx)), getEjbLocalObjectView());
+    }
+
+    public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbObjectView() == null) {
             throw new IllegalStateException("Bean " + getComponentName() + " does not have an EJBObject");
         }
@@ -217,45 +235,57 @@ public class StatefulSessionComponent extends SessionBeanComponent {
         return beforeCompletion;
     }
 
+    public Method getAfterBeginMethod() {
+        return afterBeginMethod;
+    }
+
+    public Method getAfterCompletionMethod() {
+        return afterCompletionMethod;
+    }
+
+    public Method getBeforeCompletionMethod() {
+        return beforeCompletionMethod;
+    }
+
     /**
- * A {@link javax.transaction.Synchronization} which removes a stateful session in it's {@link javax.transaction.Synchronization#afterCompletion(int)}
- * callback.
- */
-private static class RemoveSynchronization implements Synchronization {
-    private final StatefulSessionComponent statefulComponent;
-    private final SessionID sessionId;
+     * A {@link javax.transaction.Synchronization} which removes a stateful session in it's {@link javax.transaction.Synchronization#afterCompletion(int)}
+     * callback.
+     */
+    private static class RemoveSynchronization implements Synchronization {
+        private final StatefulSessionComponent statefulComponent;
+        private final SessionID sessionId;
 
-    public RemoveSynchronization(final StatefulSessionComponent component, final SessionID sessionId) {
-        if (sessionId == null) {
-            throw new IllegalArgumentException("Session id cannot be null");
+        public RemoveSynchronization(final StatefulSessionComponent component, final SessionID sessionId) {
+            if (sessionId == null) {
+                throw new IllegalArgumentException("Session id cannot be null");
+            }
+            if (component == null) {
+                throw new IllegalArgumentException("Stateful component cannot be null");
+            }
+            this.sessionId = sessionId;
+            this.statefulComponent = component;
+
         }
-        if (component == null) {
-            throw new IllegalArgumentException("Stateful component cannot be null");
+
+        public void beforeCompletion() {
         }
-        this.sessionId = sessionId;
-        this.statefulComponent = component;
+
+        public void afterCompletion(int status) {
+            try {
+                // remove the session
+                this.statefulComponent.getCache().remove(this.sessionId);
+            } catch (Throwable t) {
+                // An exception thrown from afterCompletion is gobbled up
+                logger.error("Failed to remove bean: " + this.statefulComponent.getComponentName() + " with session id " + this.sessionId, t);
+                if (t instanceof Error)
+                    throw (Error) t;
+                if (t instanceof RuntimeException)
+                    throw (RuntimeException) t;
+                throw new RuntimeException(t);
+            }
+        }
 
     }
-
-    public void beforeCompletion() {
-    }
-
-    public void afterCompletion(int status) {
-        try {
-            // remove the session
-            this.statefulComponent.getCache().remove(this.sessionId);
-        } catch (Throwable t) {
-            // An exception thrown from afterCompletion is gobbled up
-            logger.error("Failed to remove bean: " + this.statefulComponent.getComponentName() + " with session id " + this.sessionId, t);
-            if (t instanceof Error)
-                throw (Error) t;
-            if (t instanceof RuntimeException)
-                throw (RuntimeException) t;
-            throw new RuntimeException(t);
-        }
-    }
-
-}
 
     @Override
     public void start() {

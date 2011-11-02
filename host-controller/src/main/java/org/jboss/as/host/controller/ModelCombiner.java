@@ -21,7 +21,6 @@ package org.jboss.as.host.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -376,7 +375,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         addInterfaces(interfaces, hostModel.get(INTERFACE));
 
         for (Entry<String, ModelNode> entry : interfaces.entrySet()) {
-            updates.add(InterfaceAddHandler.getAddInterfaceOperation(pathAddress(PathElement.pathElement(INTERFACE, entry.getKey())), entry.getValue().get(CRITERIA)));
+            updates.add(InterfaceAddHandler.getAddInterfaceOperation(pathAddress(PathElement.pathElement(INTERFACE, entry.getKey())), entry.getValue()));
         }
     }
 
@@ -452,7 +451,7 @@ class ModelCombiner implements ManagedServerBootConfiguration {
         if (serverGroup.hasDefined(DEPLOYMENT)) {
 
             FileRepository remoteRepository = null;
-            if (domainController.getLocalHostInfo().isMasterDomainController()) {
+            if (! domainController.getLocalHostInfo().isMasterDomainController()) {
                 remoteRepository = domainController.getRemoteFileRepository();
             }
 

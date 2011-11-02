@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.service;
 
+import javax.management.MBeanServer;
+
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -38,8 +40,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.ws.common.management.DefaultEndpointRegistry;
 import org.jboss.ws.common.management.ManagedEndpointRegistry;
 import org.jboss.wsf.spi.management.EndpointRegistry;
-
-import javax.management.MBeanServer;
 
 /**
  * The service for the endpoint registry

@@ -22,9 +22,12 @@
 
 package org.jboss.as.jpa.config;
 
-import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.spi.PersistenceProvider;
+
+import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 
 /**
  * holds the deployed persistence provider + adaptor
@@ -34,11 +37,11 @@ import javax.persistence.spi.PersistenceProvider;
 public class PersistenceProviderDeploymentHolder {
 
 
-    private final PersistenceProvider provider;
+    private final List<PersistenceProvider> providerList = new ArrayList<PersistenceProvider>();
     private final PersistenceProviderAdaptor adapter;
 
-    public PersistenceProviderDeploymentHolder(final PersistenceProvider provider, final PersistenceProviderAdaptor adapter) {
-        this.provider = provider;
+    public PersistenceProviderDeploymentHolder(final List<PersistenceProvider> providerList, final PersistenceProviderAdaptor adapter) {
+        this.providerList.addAll(providerList);
         this.adapter = adapter;
     }
 
@@ -47,11 +50,11 @@ public class PersistenceProviderDeploymentHolder {
     }
 
     /**
-     * returns the persistence provider that is deployed with an application.
+     * returns the persistence providers that are deployed with an application.
      * returns null if no provider is deployed with the application.
-     * @return the deployed persistence provider
+     * @return the deployed persistence provider list
      */
-    public PersistenceProvider getProvider() {
-        return provider;
+    public List<PersistenceProvider> getProvider() {
+        return providerList;
     }
 }

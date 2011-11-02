@@ -34,6 +34,7 @@ import org.jboss.threads.QueuelessExecutor;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for creating, starting and stopping a thread pool executor with no queue.
@@ -143,5 +144,9 @@ public class QueuelessThreadPoolService implements Service<ManagedQueuelessExecu
             throw new IllegalStateException("The exector service hasn't been initialized.");
         }
         return executor.getRejectedCount();
+    }
+
+    TimeUnit getKeepAliveUnit() {
+        return keepAlive == null ? TimeSpec.DEFAULT_KEEPALIVE.getUnit() : keepAlive.getUnit();
     }
 }

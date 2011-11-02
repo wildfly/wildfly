@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
@@ -32,11 +33,14 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MIN
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -81,7 +85,7 @@ class DataSourcesSubsystemProviders {
             Constants.DATASOURCE_DRIVER,
             Constants.NEW_CONNECTION_SQL, Constants.POOLNAME, Constants.URL_DELIMITER,
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, Constants.USE_JAVA_CONTEXT,
-            Constants.ENABLED, Constants.JTA, org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE,
+            Constants.JTA, org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE,
             org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.pool.Constants.POOL_PREFILL, org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN,
             Constants.USERNAME, Constants.PASSWORD, Constants.SECURITY_DOMAIN,
             Constants.REAUTHPLUGIN_CLASSNAME, Constants.REAUTHPLUGIN_PROPERTIES,
@@ -98,13 +102,13 @@ class DataSourcesSubsystemProviders {
             org.jboss.as.connector.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.pool.Constants.USE_FAST_FAIL,
             Constants.VALIDATEONMATCH, Constants.SPY,
-            Constants.USE_CCM };
+            Constants.USE_CCM, Constants.ENABLED };
 
     static final SimpleAttributeDefinition[] XA_DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[] {
             Constants.XADATASOURCECLASS, Constants.JNDINAME, Constants.DATASOURCE_DRIVER,
             Constants.NEW_CONNECTION_SQL, Constants.POOLNAME, Constants.URL_DELIMITER,
             Constants.URL_SELECTOR_STRATEGY_CLASS_NAME, Constants.USE_JAVA_CONTEXT,
-            Constants.ENABLED, org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE,
+            org.jboss.as.connector.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.pool.Constants.MIN_POOL_SIZE,
             org.jboss.as.connector.pool.Constants.POOL_PREFILL, org.jboss.as.connector.pool.Constants.POOL_USE_STRICT_MIN, Constants.INTERLEAVING,
             Constants.NOTXSEPARATEPOOL, Constants.PAD_XID, Constants.SAME_RM_OVERRIDE,
             Constants.WRAP_XA_RESOURCE, Constants.USERNAME, Constants.PASSWORD,
@@ -127,7 +131,7 @@ class DataSourcesSubsystemProviders {
             Constants.RECOVERY_USERNAME, Constants.RECOVERY_PASSWORD,
             Constants.RECOVERY_SECURITY_DOMAIN, Constants.RECOVERLUGIN_CLASSNAME,
             Constants.RECOVERLUGIN_PROPERTIES, Constants.NO_RECOVERY,
-            Constants.XADATASOURCE_PROPERTIES };
+            Constants.XADATASOURCE_PROPERTIES, Constants.ENABLED };
 
     static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -204,13 +208,10 @@ class DataSourcesSubsystemProviders {
             subsystem.get(OPERATIONS);
 
             subsystem.get(CHILDREN, JDBC_DRIVER_NAME, DESCRIPTION).set(bundle.getString("jdbc-driver"));
-            subsystem.get(CHILDREN, JDBC_DRIVER_NAME, REQUIRED).set(false);
 
             subsystem.get(CHILDREN, DATA_SOURCE, DESCRIPTION).set(bundle.getString("data-source"));
-            subsystem.get(CHILDREN, DATA_SOURCE, REQUIRED).set(false);
 
             subsystem.get(CHILDREN, XA_DATASOURCE, DESCRIPTION).set(bundle.getString("xa-data-source"));
-            subsystem.get(CHILDREN, XA_DATASOURCE, REQUIRED).set(false);
 
             return subsystem;
         }
@@ -231,6 +232,24 @@ class DataSourcesSubsystemProviders {
             CONNECTION_PROPERTY_VALUE.addResourceAttributeDescription(bundle, "connection-properties", configPropertiesNode);
 
             return configPropertiesNode;
+        }
+    };
+
+    static DescriptionProvider XADATASOURCE_PROPERTIES_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode xaDatasourcePropertiesNode = new ModelNode();
+            xaDatasourcePropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            xaDatasourcePropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            xaDatasourcePropertiesNode.get(DESCRIPTION).set(XADATASOURCE_PROPERTY_VALUE.getName());
+
+
+            XADATASOURCE_PROPERTY_VALUE.addResourceAttributeDescription(bundle, "xa-datasource-properties", xaDatasourcePropertiesNode);
+
+            return xaDatasourcePropertiesNode;
         }
     };
 
@@ -268,6 +287,24 @@ class DataSourcesSubsystemProviders {
         }
     };
 
+     static DescriptionProvider ADD_XADATASOURCE_PROPERTIES_DESC = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode op = new ModelNode();
+
+            op.get(DESCRIPTION).set(bundle.getString("xa-datasource-properties.add"));
+            op.get(OPERATION_NAME).set(ADD);
+
+
+            XADATASOURCE_PROPERTY_VALUE.addOperationParameterDescription(bundle, "xa-datasource-properties", op);
+
+            return op;
+        }
+    };
+
     static DescriptionProvider REMOVE_CONNECTION_PROPERTIES_DESC = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
@@ -279,6 +316,18 @@ class DataSourcesSubsystemProviders {
         }
     };
 
+    static DescriptionProvider REMOVE_XADATASOURCE_PROPERTIES_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+            final ModelNode operation = new ModelNode();
+            operation.get(OPERATION_NAME).set(REMOVE);
+            operation.get(DESCRIPTION).set(bundle.getString("xa-datasource-properties.remove"));
+            return operation;
+        }
+    };
+
+
 
     static final DescriptionProvider INSTALLED_DRIVERS_LIST_DESC = new DescriptionProvider() {
 
@@ -287,28 +336,49 @@ class DataSourcesSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
 
-            operation.get(OPERATION_NAME).set("installed-driver-list");
-            operation.get(DESCRIPTION).set(bundle.getString("datasources.add"));
+            operation.get(OPERATION_NAME).set("installed-drivers-list");
+            operation.get(DESCRIPTION).set(bundle.getString("installed-drivers-list"));
             operation.get(REQUEST_PROPERTIES).setEmptyObject();
-            ModelNode reply = operation.get(REPLY_PROPERTIES);
 
-            reply.get(ATTRIBUTES, DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
-            reply.get(ATTRIBUTES, DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, DEPLOYMENT_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.deployment-name"));
-            reply.get(ATTRIBUTES, DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, DRIVER_MODULE_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
-            reply.get(ATTRIBUTES, DRIVER_MODULE_NAME.getName(), TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
-            reply.get(ATTRIBUTES, MODULE_SLOT, TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, DRIVER_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
-            reply.get(ATTRIBUTES, DRIVER_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, DRIVER_MAJOR_VERSION.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.major-version"));
-            reply.get(ATTRIBUTES, DRIVER_MAJOR_VERSION.getName(), TYPE).set(ModelType.INT);
-            reply.get(ATTRIBUTES, DRIVER_MINOR_VERSION.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.minor-version"));
-            reply.get(ATTRIBUTES, DRIVER_MINOR_VERSION.getName(), TYPE).set(ModelType.INT);
-            reply.get(ATTRIBUTES, JDBC_COMPLIANT, DESCRIPTION).set(bundle.getString("installed-drivers.jdbc-compliant"));
-            reply.get(ATTRIBUTES, JDBC_COMPLIANT, TYPE).set(ModelType.BOOLEAN);
+            final ModelNode reply = operation.get(REPLY_PROPERTIES);
+            reply.get(DESCRIPTION).set(bundle.getString("driver"));
+            reply.get(TYPE).set(ModelType.LIST);
+            reply.get(NILLABLE).set(false);
+            ModelNode valueNode = reply.get(VALUE_TYPE);
 
+            valueNode.get(DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
+            valueNode.get(DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
+            valueNode.get(DEPLOYMENT_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.deployment-name"));
+            valueNode.get(DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
+            valueNode.get(DEPLOYMENT_NAME, NILLABLE).set(true);
+            valueNode.get(DRIVER_MODULE_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
+            valueNode.get(DRIVER_MODULE_NAME.getName(), TYPE).set(ModelType.STRING);
+            valueNode.get(DRIVER_MODULE_NAME.getName(), NILLABLE).set(true);
+
+            valueNode.get(MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
+            valueNode.get(MODULE_SLOT, TYPE).set(ModelType.STRING);
+            valueNode.get(MODULE_SLOT, NILLABLE).set(true);
+
+            valueNode.get(DRIVER_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
+            valueNode.get(DRIVER_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
+            valueNode.get(DRIVER_CLASS_NAME.getName(), NILLABLE).set(true);
+
+            valueNode.get(XADATASOURCECLASS.getName(), DESCRIPTION).set(
+                    bundle.getString("installed-drivers.xa-datasource-class-name"));
+            valueNode.get(XADATASOURCECLASS.getName(), TYPE).set(ModelType.STRING);
+            valueNode.get(XADATASOURCECLASS.getName(), NILLABLE).set(true);
+
+            valueNode.get(DRIVER_MAJOR_VERSION.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.major-version"));
+            valueNode.get(DRIVER_MAJOR_VERSION.getName(), TYPE).set(ModelType.INT);
+            valueNode.get(DRIVER_MAJOR_VERSION.getName(), NILLABLE).set(true);
+
+            valueNode.get(DRIVER_MINOR_VERSION.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.minor-version"));
+            valueNode.get(DRIVER_MINOR_VERSION.getName(), TYPE).set(ModelType.INT);
+            valueNode.get(DRIVER_MINOR_VERSION.getName(), NILLABLE).set(true);
+
+            valueNode.get(JDBC_COMPLIANT, DESCRIPTION).set(bundle.getString("installed-drivers.jdbc-compliant"));
+            valueNode.get(JDBC_COMPLIANT, TYPE).set(ModelType.BOOLEAN);
+            valueNode.get(JDBC_COMPLIANT, NILLABLE).set(true);
             return operation;
         }
     };
@@ -320,32 +390,51 @@ class DataSourcesSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
 
-            operation.get(OPERATION_NAME).set("installed-driver-list");
-            operation.get(DESCRIPTION).set(bundle.getString("datasources.add"));
-            ModelNode request = operation.get(REQUEST_PROPERTIES);
-            request.get(ATTRIBUTES, DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
-            request.get(ATTRIBUTES, DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
-            request.get(ATTRIBUTES, DRIVER_NAME.getName(), REQUIRED).set(true);
+            operation.get(OPERATION_NAME).set("get-installed-driver");
+            operation.get(DESCRIPTION).set(bundle.getString("get-installed-driver"));
 
-            ModelNode reply = operation.get(REPLY_PROPERTIES);
+            operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
+            operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
 
-            reply.get(ATTRIBUTES, DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
-            reply.get(ATTRIBUTES, DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, DEPLOYMENT_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.deployment-name"));
-            reply.get(ATTRIBUTES, DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, DRIVER_MODULE_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
-            reply.get(ATTRIBUTES, DRIVER_MODULE_NAME.getName(), TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
-            reply.get(ATTRIBUTES, MODULE_SLOT, TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, DRIVER_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
-            reply.get(ATTRIBUTES, DRIVER_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
-            reply.get(ATTRIBUTES, DRIVER_MAJOR_VERSION.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.major-version"));
-            reply.get(ATTRIBUTES, DRIVER_MAJOR_VERSION.getName(), TYPE).set(ModelType.INT);
-            reply.get(ATTRIBUTES, DRIVER_MINOR_VERSION.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.minor-version"));
-            reply.get(ATTRIBUTES, DRIVER_MINOR_VERSION.getName(), TYPE).set(ModelType.INT);
-            reply.get(ATTRIBUTES, JDBC_COMPLIANT, DESCRIPTION).set(bundle.getString("installed-drivers.jdbc-compliant"));
-            reply.get(ATTRIBUTES, JDBC_COMPLIANT, TYPE).set(ModelType.BOOLEAN);
+            final ModelNode reply = operation.get(REPLY_PROPERTIES);
+            reply.get(DESCRIPTION).set(bundle.getString("driver"));
+            reply.get(TYPE).set(ModelType.OBJECT);
+            reply.get(NILLABLE).set(false);
+            ModelNode valueNode = reply.get(VALUE_TYPE);
 
+            valueNode.get(DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
+            valueNode.get(DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
+            valueNode.get(DEPLOYMENT_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.deployment-name"));
+            valueNode.get(DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
+            valueNode.get(DEPLOYMENT_NAME, NILLABLE).set(true);
+            valueNode.get(DRIVER_MODULE_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
+            valueNode.get(DRIVER_MODULE_NAME.getName(), TYPE).set(ModelType.STRING);
+            valueNode.get(DRIVER_MODULE_NAME.getName(), NILLABLE).set(true);
+
+            valueNode.get(MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
+            valueNode.get(MODULE_SLOT, TYPE).set(ModelType.STRING);
+            valueNode.get(MODULE_SLOT, NILLABLE).set(true);
+
+            valueNode.get(DRIVER_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
+            valueNode.get(DRIVER_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
+            valueNode.get(DRIVER_CLASS_NAME.getName(), NILLABLE).set(true);
+
+            valueNode.get(XADATASOURCECLASS.getName(), DESCRIPTION).set(
+                    bundle.getString("installed-drivers.xa-datasource-class-name"));
+            valueNode.get(XADATASOURCECLASS.getName(), TYPE).set(ModelType.STRING);
+            valueNode.get(XADATASOURCECLASS.getName(), NILLABLE).set(true);
+
+            valueNode.get(DRIVER_MAJOR_VERSION.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.major-version"));
+            valueNode.get(DRIVER_MAJOR_VERSION.getName(), TYPE).set(ModelType.INT);
+            valueNode.get(DRIVER_MAJOR_VERSION.getName(), NILLABLE).set(true);
+
+            valueNode.get(DRIVER_MINOR_VERSION.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.minor-version"));
+            valueNode.get(DRIVER_MINOR_VERSION.getName(), TYPE).set(ModelType.INT);
+            valueNode.get(DRIVER_MINOR_VERSION.getName(), NILLABLE).set(true);
+
+            valueNode.get(JDBC_COMPLIANT, DESCRIPTION).set(bundle.getString("installed-drivers.jdbc-compliant"));
+            valueNode.get(JDBC_COMPLIANT, TYPE).set(ModelType.BOOLEAN);
+            valueNode.get(JDBC_COMPLIANT, NILLABLE).set(true);
             return operation;
         }
     };
@@ -417,26 +506,35 @@ class DataSourcesSubsystemProviders {
             operation.get(OPERATION_NAME).set(ADD);
             operation.get(DESCRIPTION).set(bundle.getString("jdbc-driver.add"));
 
-            operation.get(ATTRIBUTES, DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
-            operation.get(ATTRIBUTES, DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
-            operation.get(ATTRIBUTES, DRIVER_NAME.getName(), REQUIRED).set(true);
-            operation.get(ATTRIBUTES, DEPLOYMENT_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.deployment-name"));
-            operation.get(ATTRIBUTES, DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
-            operation.get(ATTRIBUTES, DRIVER_MODULE_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
-            operation.get(ATTRIBUTES, DRIVER_MODULE_NAME.getName(), TYPE).set(ModelType.STRING);
-            operation.get(ATTRIBUTES, DRIVER_MODULE_NAME.getName(), REQUIRED).set(true);
-            operation.get(ATTRIBUTES, MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
-            operation.get(ATTRIBUTES, MODULE_SLOT, TYPE).set(ModelType.STRING);
-            operation.get(ATTRIBUTES, DRIVER_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
-            operation.get(ATTRIBUTES, DRIVER_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
-            operation.get(ATTRIBUTES, DRIVER_MAJOR_VERSION.getName(), DESCRIPTION).set(
+            operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-name"));
+            operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, DRIVER_NAME.getName(), REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, DEPLOYMENT_NAME, DESCRIPTION).set(bundle.getString("installed-drivers.deployment-name"));
+            operation.get(REQUEST_PROPERTIES, DEPLOYMENT_NAME, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, DEPLOYMENT_NAME, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, DRIVER_MODULE_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.module-name"));
+            operation.get(REQUEST_PROPERTIES, DRIVER_MODULE_NAME.getName(), TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, DRIVER_MODULE_NAME.getName(), REQUIRED).set(true);
+            operation.get(REQUEST_PROPERTIES, MODULE_SLOT, DESCRIPTION).set(bundle.getString("installed-drivers.module-slot"));
+            operation.get(REQUEST_PROPERTIES, MODULE_SLOT, TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, MODULE_SLOT, REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, DRIVER_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, DRIVER_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
+            operation.get(REQUEST_PROPERTIES, DRIVER_CLASS_NAME.getName(), REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, DRIVER_XA_DATASOURCE_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, DRIVER_XA_DATASOURCE_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-xa-datasource-class-name"));
+            operation.get(REQUEST_PROPERTIES, DRIVER_CLASS_NAME.getName(), REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, DRIVER_MAJOR_VERSION.getName(), DESCRIPTION).set(
                     bundle.getString("installed-drivers.major-version"));
-            operation.get(ATTRIBUTES, DRIVER_MAJOR_VERSION.getName(), TYPE).set(ModelType.INT);
-            operation.get(ATTRIBUTES, DRIVER_MINOR_VERSION.getName(), DESCRIPTION).set(
+            operation.get(REQUEST_PROPERTIES, DRIVER_MAJOR_VERSION.getName(), TYPE).set(ModelType.INT);
+            operation.get(REQUEST_PROPERTIES, DRIVER_MAJOR_VERSION.getName(), REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, DRIVER_MINOR_VERSION.getName(), DESCRIPTION).set(
                     bundle.getString("installed-drivers.minor-version"));
-            operation.get(ATTRIBUTES, DRIVER_MINOR_VERSION.getName(), TYPE).set(ModelType.INT);
-            operation.get(ATTRIBUTES, JDBC_COMPLIANT, DESCRIPTION).set(bundle.getString("installed-drivers.jdbc-compliant"));
-            operation.get(ATTRIBUTES, JDBC_COMPLIANT, TYPE).set(ModelType.BOOLEAN);
+            operation.get(REQUEST_PROPERTIES, DRIVER_MINOR_VERSION.getName(), TYPE).set(ModelType.INT);
+            operation.get(REQUEST_PROPERTIES, DRIVER_MINOR_VERSION.getName(), REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, JDBC_COMPLIANT, DESCRIPTION).set(bundle.getString("installed-drivers.jdbc-compliant"));
+            operation.get(REQUEST_PROPERTIES, JDBC_COMPLIANT, TYPE).set(ModelType.BOOLEAN);
+            operation.get(REQUEST_PROPERTIES, JDBC_COMPLIANT, REQUIRED).set(false);
 
             return operation;
         }
@@ -499,6 +597,9 @@ class DataSourcesSubsystemProviders {
                 node.get(ATTRIBUTES, name, REQUIRED).set(false);
             }
 
+            node.get(CHILDREN, CONNECTION_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(CONNECTION_PROPERTIES.getName()));
+
+
             return node;
         }
     };
@@ -516,7 +617,7 @@ class DataSourcesSubsystemProviders {
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), DESCRIPTION).set(
                         bundle.getString(propertyType.getName()));
                 operation.get(REQUEST_PROPERTIES, propertyType.getName(), TYPE).set(propertyType.getType());
-                operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(! propertyType.isAllowNull());
+                operation.get(REQUEST_PROPERTIES, propertyType.getName(), REQUIRED).set(!propertyType.isAllowNull());
                 if (propertyType.getDefaultValue() != null)
                     operation.get(REQUEST_PROPERTIES, propertyType.getName(), DEFAULT).set(propertyType.getDefaultValue().toString());
             }
@@ -632,6 +733,7 @@ class DataSourcesSubsystemProviders {
                 node.get(ATTRIBUTES, name, TYPE).set(modelType);
                 node.get(ATTRIBUTES, name, REQUIRED).set(false);
             }
+            node.get(CHILDREN, XADATASOURCE_PROPERTIES.getName(), DESCRIPTION).set(bundle.getString(XADATASOURCE_PROPERTIES.getName()));
 
             return node;
         }

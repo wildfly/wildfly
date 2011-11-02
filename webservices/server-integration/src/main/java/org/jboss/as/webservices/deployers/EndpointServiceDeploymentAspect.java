@@ -23,8 +23,6 @@ package org.jboss.as.webservices.deployers;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.service.EndpointService;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.EndpointLifecycleDeploymentAspect;
 import org.jboss.ws.common.integration.WSHelper;

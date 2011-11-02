@@ -34,7 +34,6 @@ import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-import org.xnio.Xnio;
 
 /**
  * {@link ModelControllerClient} based on a Remoting {@link Endpoint}.
@@ -75,9 +74,8 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
             throw new IllegalStateException(String.format("%s is closed", ModelControllerClient.class.getSimpleName()));
         }
         if (strategy == null) {
-            this.endpoint = Remoting.createEndpoint("management-client", executor, OptionMap.EMPTY);
-            Xnio xnio = Xnio.getInstance();
-            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+            endpoint = Remoting.createEndpoint("management-client", OptionMap.EMPTY);
+            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
             strategy = ManagementClientChannelStrategy.create(hostName, port, endpoint, this, callbackHandler);
         }
         return strategy;

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,7 +35,7 @@ import org.jboss.as.cli.CommandLineCompleter;
 public class DefaultCompleter implements CommandLineCompleter {
 
     public interface CandidatesProvider {
-        List<String> getAllCandidates(CommandContext ctx);
+        Collection<String> getAllCandidates(CommandContext ctx);
     }
 
     private final CandidatesProvider candidatesProvider;
@@ -60,7 +61,7 @@ public class DefaultCompleter implements CommandLineCompleter {
             ++nextCharIndex;
         }
 
-        List<String> all = candidatesProvider.getAllCandidates(ctx);
+        final Collection<String> all = candidatesProvider.getAllCandidates(ctx);
         if (all.isEmpty()) {
             return -1;
         }

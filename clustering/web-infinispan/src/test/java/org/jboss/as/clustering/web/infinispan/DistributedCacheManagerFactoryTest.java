@@ -112,15 +112,15 @@ public class DistributedCacheManagerFactoryTest {
 
     @Test
     public void addDependencies() {
-        this.verifyDependencies(null, CacheService.getServiceName(DistributedCacheManagerFactory.DEFAULT_CACHE_CONTAINER, null), EmbeddedCacheManagerService.getServiceName(null));
-        this.verifyDependencies("web", CacheService.getServiceName("web", null), EmbeddedCacheManagerService.getServiceName(null));
-        this.verifyDependencies("web.dist", CacheService.getServiceName("web", "dist"), EmbeddedCacheManagerService.getServiceName(null));
-        this.verifyDependencies("alias", CacheService.getServiceName("alias", null), EmbeddedCacheManagerService.getServiceName(null));
-        this.verifyDependencies("alias.dist", CacheService.getServiceName("alias", "dist"), EmbeddedCacheManagerService.getServiceName(null));
-        this.verifyDependencies("jboss.infinispan.web", CacheService.getServiceName("web", null), EmbeddedCacheManagerService.getServiceName(null));
-        this.verifyDependencies("jboss.infinispan.web.dist", CacheService.getServiceName("web", "dist"), EmbeddedCacheManagerService.getServiceName(null));
-        this.verifyDependencies("jboss.infinispan.alias", CacheService.getServiceName("alias", null), EmbeddedCacheManagerService.getServiceName(null));
-        this.verifyDependencies("jboss.infinispan.alias.dist", CacheService.getServiceName("alias", "dist"), EmbeddedCacheManagerService.getServiceName(null));
+        this.verifyDependencies(null, CacheService.getServiceName(DistributedCacheManagerFactory.DEFAULT_CACHE_CONTAINER, null), EmbeddedCacheManagerService.getServiceName(DistributedCacheManagerFactory.DEFAULT_CACHE_CONTAINER));
+        this.verifyDependencies("web", CacheService.getServiceName("web", null), EmbeddedCacheManagerService.getServiceName("web"));
+        this.verifyDependencies("web.dist", CacheService.getServiceName("web", "dist"), EmbeddedCacheManagerService.getServiceName("web"));
+        this.verifyDependencies("alias", CacheService.getServiceName("alias", null), EmbeddedCacheManagerService.getServiceName("alias"));
+        this.verifyDependencies("alias.dist", CacheService.getServiceName("alias", "dist"), EmbeddedCacheManagerService.getServiceName("alias"));
+        this.verifyDependencies("jboss.infinispan.web", CacheService.getServiceName("web", null), EmbeddedCacheManagerService.getServiceName("web"));
+        this.verifyDependencies("jboss.infinispan.web.dist", CacheService.getServiceName("web", "dist"), EmbeddedCacheManagerService.getServiceName("web"));
+        this.verifyDependencies("jboss.infinispan.alias", CacheService.getServiceName("alias", null), EmbeddedCacheManagerService.getServiceName("alias"));
+        this.verifyDependencies("jboss.infinispan.alias.dist", CacheService.getServiceName("alias", "dist"), EmbeddedCacheManagerService.getServiceName("alias"));
     }
 
     private void verifyDependencies(String cacheName, ServiceName sessionCacheServiceName, ServiceName jvmRouteCacheServiceName) {

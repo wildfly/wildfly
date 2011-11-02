@@ -21,23 +21,27 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
-import org.jboss.as.ee.component.EEApplicationClasses;
-import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
-import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
-import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
-import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
 import javax.ejb.AfterBegin;
 import javax.ejb.AfterCompletion;
 import javax.ejb.BeforeCompletion;
 import javax.ejb.SessionSynchronization;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
+
+import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
+import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.ejb3.deployment.processors.dd.MethodResolutionUtils;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
+import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
+import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
 /**
  * Merging processor that handles session synchronization callback methods
@@ -63,7 +67,7 @@ public class SessionSynchronizationMergingProcessor extends AbstractMergingProce
             throw new RuntimeException("Only one @AfterBegin method is allowed on bean " + description.getEJBClassName());
         } else if (!afterBegin.getMethodAnnotations().isEmpty()) {
             Map.Entry<Method, List<Boolean>> entry = afterBegin.getMethodAnnotations().entrySet().iterator().next();
-            description.setAfterBegin(entry.getKey().getDeclaringClass().getName(), entry.getKey().getName());
+            description.setAfterBegin(entry.getKey());
         }
 
         RuntimeAnnotationInformation<Boolean> afterComp = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, AfterCompletion.class);
@@ -71,7 +75,7 @@ public class SessionSynchronizationMergingProcessor extends AbstractMergingProce
             throw new RuntimeException("Only one @AfterCompletion method is allowed on bean " + description.getEJBClassName());
         } else if (!afterComp.getMethodAnnotations().isEmpty()) {
             Map.Entry<Method, List<Boolean>> entry = afterComp.getMethodAnnotations().entrySet().iterator().next();
-            description.setAfterCompletion(entry.getKey().getDeclaringClass().getName(), entry.getKey().getName());
+            description.setAfterCompletion(entry.getKey());
         }
 
         RuntimeAnnotationInformation<Boolean> beforeComp = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, BeforeCompletion.class);
@@ -79,18 +83,22 @@ public class SessionSynchronizationMergingProcessor extends AbstractMergingProce
             throw new RuntimeException("Only one @BeforeCompletion method is allowed on bean " + description.getEJBClassName());
         } else if (!beforeComp.getMethodAnnotations().isEmpty()) {
             Map.Entry<Method, List<Boolean>> entry = beforeComp.getMethodAnnotations().entrySet().iterator().next();
-            description.setBeforeCompletion(entry.getKey().getDeclaringClass().getName(), entry.getKey().getName());
+            description.setBeforeCompletion(entry.getKey());
         }
 
     }
 
     @Override
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final StatefulComponentDescription description) throws DeploymentUnitProcessingException {
+
+        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
+
         //if we implement SessionSynchronization we can ignore any DD information
         if (SessionSynchronization.class.isAssignableFrom(componentClass)) {
-            description.setAfterBegin(null, "afterBegin");
-            description.setAfterCompletion(null, "afterCompletion");
-            description.setBeforeCompletion(null, "beforeCompletion");
+            final ClassReflectionIndex<SessionSynchronization> classIndex = reflectionIndex.getClassIndex(SessionSynchronization.class);
+            description.setAfterBegin(classIndex.getMethod(void.class, "afterBegin"));
+            description.setAfterCompletion(classIndex.getMethod(void.class, "afterCompletion", boolean.class));
+            description.setBeforeCompletion(classIndex.getMethod(void.class,"beforeCompletion"));
             return;
         }
 
@@ -98,11 +106,11 @@ public class SessionSynchronizationMergingProcessor extends AbstractMergingProce
         if (data instanceof SessionBean31MetaData) {
             SessionBean31MetaData metaData = (SessionBean31MetaData) data;
             if (metaData.getAfterBeginMethod() != null)
-                description.setAfterBegin(null, metaData.getAfterBeginMethod().getMethodName());
+                description.setAfterBegin(MethodResolutionUtils.resolveMethod(metaData.getAfterBeginMethod(), componentClass,reflectionIndex));
             if (metaData.getAfterCompletionMethod() != null)
-                description.setAfterCompletion(null, metaData.getAfterCompletionMethod().getMethodName());
+                description.setAfterCompletion(MethodResolutionUtils.resolveMethod(metaData.getAfterCompletionMethod(), componentClass,reflectionIndex));
             if (metaData.getBeforeCompletionMethod() != null)
-                description.setBeforeCompletion(null, metaData.getBeforeCompletionMethod().getMethodName());
+                description.setBeforeCompletion(MethodResolutionUtils.resolveMethod(metaData.getBeforeCompletionMethod(), componentClass,reflectionIndex));
         }
     }
 }

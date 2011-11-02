@@ -39,6 +39,7 @@ import org.jboss.as.test.integration.osgi.OSGiTestSupport;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.osgi.testing.ManifestBuilder;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -59,7 +60,7 @@ import org.osgi.framework.ServiceReference;
  * @since 13-May-2011
  */
 @RunWith(Arquillian.class)
-public class ServletIntegrationTestCase extends OSGiTestSupport {
+public class ServletIntegrationTestCase {
 
     static final String WAR_DEPLOYMENT_NAME = "web-osgi-client.war";
 
@@ -79,7 +80,7 @@ public class ServletIntegrationTestCase extends OSGiTestSupport {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(TargetBundleActivator.class);
-                builder.addImportPackages(BundleActivator.class, Logger.class);
+                builder.addImportPackages(BundleActivator.class, Logger.class, Module.class);
                 return builder.openStream();
             }
         });
@@ -123,6 +124,6 @@ public class ServletIntegrationTestCase extends OSGiTestSupport {
 
     private String getHttpResponse(String message) throws IOException {
         String reqPath = "/web-osgi-client/servlet?msg=" + message;
-        return getHttpResponse("localhost", 8080, reqPath, 2000);
+        return OSGiTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
     }
 }

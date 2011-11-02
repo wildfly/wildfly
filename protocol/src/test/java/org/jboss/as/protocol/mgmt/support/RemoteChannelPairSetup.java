@@ -111,7 +111,6 @@ public class RemoteChannelPairSetup implements RemotingChannelPairSetup {
         configuration.setEndpointName(ENDPOINT_NAME);
         configuration.setUriScheme(URI_SCHEME);
         configuration.setUri(new URI("" + URI_SCHEME + "://127.0.0.1:" + PORT + ""));
-        configuration.setExecutor(executorService);
         configuration.setChannelFactory(new ManagementChannelFactory());
         configuration.setOptionMap(OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE));
 

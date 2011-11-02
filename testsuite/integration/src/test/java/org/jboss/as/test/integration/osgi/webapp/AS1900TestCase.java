@@ -54,7 +54,7 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class AS1900TestCase extends OSGiTestSupport {
+public class AS1900TestCase {
 
     @ArquillianResource
     public Deployer deployer;
@@ -102,6 +102,6 @@ public class AS1900TestCase extends OSGiTestSupport {
     }
 
     private String getHttpResponse(String reqPath, int timeout) throws IOException {
-        return getHttpResponse("localhost", 8080, reqPath, timeout);
+        return OSGiTestSupport.getHttpResponse("localhost", 8080, reqPath, timeout);
     }
 }

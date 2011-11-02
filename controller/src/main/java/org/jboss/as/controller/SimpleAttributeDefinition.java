@@ -103,8 +103,20 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
                 createParameterValidator(validator, type, allowNull, allowExpression), alternatives, requires, flags);
     }
 
+    public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
+            final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+            final ParameterCorrector corrector, final ParameterValidator validator,
+            String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                corrector, createParameterValidator(validator, type, allowNull, allowExpression), alternatives, requires, flags);
+    }
+
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final String[] alternatives) {
         this(name, name, defaultValue, type, allowNull, false, MeasurementUnit.NONE, null, alternatives, null);
+    }
+
+    public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, ParameterCorrector corrector, ParameterValidator validator) {
+        this(name, name, null, type, allowNull, false, MeasurementUnit.NONE, corrector, validator, null, null);
     }
 
     private static ParameterValidator createParameterValidator(final ParameterValidator existing, final ModelType type,final boolean allowNull, final boolean allowExpression) {
@@ -239,6 +251,5 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
             writer.writeEndElement();
         }
     }
-
 
 }

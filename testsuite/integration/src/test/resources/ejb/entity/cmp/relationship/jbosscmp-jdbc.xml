@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE jbosscmp-jdbc PUBLIC
+   "-//JBoss//DTD JBOSSCMP-JDBC 3.0//EN"
+   "http://www.jboss.org/j2ee/dtd/jbosscmp-jdbc_3_0.dtd">
+
+<jbosscmp-jdbc>
+
+   <defaults>
+      <create-table>true</create-table>
+      <remove-table>true</remove-table>
+      <pk-constraint>true</pk-constraint>
+      <read-ahead><strategy>on-find</strategy></read-ahead>
+   </defaults>
+
+   <relationships>
+      <ejb-relation>
+         <ejb-relation-name>AB_OneToOne_Bi_Table</ejb-relation-name>
+         <relation-table-mapping>
+            <table-name>AB_OneToOneBi</table-name>
+         </relation-table-mapping>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_OneToOne_Bi_FK</ejb-relation-name>
+         <foreign-key-mapping/>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_OneToOne_Uni_Table</ejb-relation-name>
+         <relation-table-mapping>
+            <table-name>AB_OneToOneUni</table-name>
+         </relation-table-mapping>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_OneToOne_Uni_FK</ejb-relation-name>
+         <foreign-key-mapping/>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_OneToMany_Bi_Table</ejb-relation-name>
+         <relation-table-mapping>
+            <table-name>AB_OneToManyBi</table-name>
+         </relation-table-mapping>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_OneToMany_Bi_FK</ejb-relation-name>
+         <foreign-key-mapping/>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_OneToMany_Uni_Table</ejb-relation-name>
+         <relation-table-mapping>
+            <table-name>AB_OneToManyUni</table-name>
+         </relation-table-mapping>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_OneToMany_Uni_FK</ejb-relation-name>
+         <foreign-key-mapping/>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_ManyToOne_Uni_Table</ejb-relation-name>
+         <relation-table-mapping>
+            <table-name>AB_ManyToOneUni</table-name>
+         </relation-table-mapping>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_ManyToOne_Uni_FK</ejb-relation-name>
+         <foreign-key-mapping/>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_ManyToMany_Bi</ejb-relation-name>
+         <relation-table-mapping>
+            <table-name>AB_ManyToManyBi</table-name>
+         </relation-table-mapping>
+      </ejb-relation>
+
+      <ejb-relation>
+         <ejb-relation-name>AB_ManyToMany_Uni</ejb-relation-name>
+         <relation-table-mapping>
+            <table-name>AB_ManyToManyUni</table-name>
+         </relation-table-mapping>
+      </ejb-relation>
+   </relationships>
+</jbosscmp-jdbc>

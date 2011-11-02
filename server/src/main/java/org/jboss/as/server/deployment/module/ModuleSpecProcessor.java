@@ -179,9 +179,9 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             return;
         }
         try {
-            ModuleSpecification specification = controller.getValue();
+            final ModuleSpecification specification = controller.getValue();
             final List<ModuleDependency> allDeps = specification.getAllDependencies();
-            for (ModuleDependency dependency : allDeps) {
+            for (final ModuleDependency dependency : allDeps) {
                 if (deps.contains(dependency.getIdentifier())) {
                     continue;
                 }
@@ -196,7 +196,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private ServiceName createModuleService(DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
+    private ServiceName createModuleService(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
                                             final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
                                             final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
@@ -205,19 +205,26 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         final List<ModuleDependency> userDependencies = moduleSpecification.getUserDependencies();
 
         // add aditional resource loaders first
-        for (ResourceLoaderSpec resourceLoaderSpec : moduleSpecification.getResourceLoaders()) {
+        for (final ResourceLoaderSpec resourceLoaderSpec : moduleSpecification.getResourceLoaders()) {
             specBuilder.addResourceRoot(resourceLoaderSpec);
         }
 
-        for (ResourceRoot resourceRoot : resourceRoots) {
+        for (final ResourceRoot resourceRoot : resourceRoots) {
             addResourceRoot(specBuilder, resourceRoot);
         }
 
         createDependencies(phaseContext, specBuilder, dependencies);
         createDependencies(phaseContext, specBuilder, userDependencies);
-        specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
-        createDependencies(phaseContext, specBuilder, localDependencies);
-        DelegatingClassFileTransformer delegatingClassFileTransformer = new DelegatingClassFileTransformer();
+
+        if (moduleSpecification.isLocalLast()) {
+            createDependencies(phaseContext, specBuilder, localDependencies);
+            specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
+        } else {
+            specBuilder.addDependency(DependencySpec.createLocalDependencySpec());
+            createDependencies(phaseContext, specBuilder, localDependencies);
+        }
+
+        final DelegatingClassFileTransformer delegatingClassFileTransformer = new DelegatingClassFileTransformer();
         specBuilder.setClassFileTransformer(delegatingClassFileTransformer);
         deploymentUnit.putAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY, delegatingClassFileTransformer);
         final ModuleSpec moduleSpec = specBuilder.create();
@@ -237,13 +244,13 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     private void createDependencies(final DeploymentPhaseContext phaseContext, final ModuleSpec.Builder specBuilder, final List<ModuleDependency> apiDependencies) {
         if (apiDependencies != null)
-            for (ModuleDependency dependency : apiDependencies) {
+            for (final ModuleDependency dependency : apiDependencies) {
                 final List<FilterSpecification> importFilters = dependency.getImportFilters();
                 final List<FilterSpecification> exportFilters = dependency.getExportFilters();
                 final PathFilter importFilter;
                 final PathFilter exportFilter;
                 final MultiplePathFilterBuilder importBuilder = PathFilters.multiplePathFilterBuilder(true);
-                for (FilterSpecification filter : importFilters) {
+                for (final FilterSpecification filter : importFilters) {
                     importBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
                 }
                 if (dependency.isImportServices()) {
@@ -261,12 +268,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                 } else {
                     final MultiplePathFilterBuilder exportBuilder = PathFilters
                             .multiplePathFilterBuilder(dependency.isExport());
-                    for (FilterSpecification filter : exportFilters) {
+                    for (final FilterSpecification filter : exportFilters) {
                         exportBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
                     }
                     exportFilter = exportBuilder.create();
                 }
-                DependencySpec depSpec = DependencySpec.createModuleDependencySpec(importFilter, exportFilter, dependency
+                final DependencySpec depSpec = DependencySpec.createModuleDependencySpec(importFilter, exportFilter, dependency
                         .getModuleLoader(), dependency.getIdentifier(), dependency.isOptional());
                 specBuilder.addDependency(depSpec);
 
@@ -286,7 +293,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
                         .getRootName(), resource.getRoot())));
             } else {
                 final MultiplePathFilterBuilder filterBuilder = PathFilters.multiplePathFilterBuilder(true);
-                for (FilterSpecification filter : resource.getExportFilters()) {
+                for (final FilterSpecification filter : resource.getExportFilters()) {
                     filterBuilder.addFilter(filter.getPathFilter(), filter.isInclude());
                 }
                 specBuilder.addResourceRoot(ResourceLoaderSpec.createResourceLoaderSpec(new VFSResourceLoader(resource

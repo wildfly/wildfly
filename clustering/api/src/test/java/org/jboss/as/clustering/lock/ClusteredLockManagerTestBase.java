@@ -87,7 +87,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         testee.start();
 
-        verify(rpcDispatcher).registerRPCHandler(eq("test"), any(RpcTarget.class));
+        verify(rpcDispatcher).registerRPCHandler(eq("test"), any(RpcTarget.class), same(rpcDispatcher.getClass().getClassLoader()));
         verify(notifier).registerGroupMembershipListener(testee);
 
         assertEquals("Current view is correct", 1, testee.getCurrentView().size());
@@ -182,9 +182,8 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
             rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
         }
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), LockParamsMatcher.eqLockParams(node1, 200000),
-                AdditionalMatchers.aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), LockParamsMatcher.eqLockParams(node1, 200000),
+                AdditionalMatchers.aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         assertTrue(testee.lock("test", 200000));
         
@@ -207,14 +206,12 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.REJECT, superior));
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         assertFalse(testee.lock("test", 50));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testRemoteRejectionFromInferiorCaller() throws Exception {
         TesteeSet<T> testeeSet = getTesteeSet(node1, 1, 3);
@@ -232,9 +229,8 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.REJECT, inferior));
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         when((List<Object>) rpcDispatcher.callMethodOnCluster(eq("test"), eq("releaseRemoteLock"), aryEq(new Object[] { "test", node1 }),
                 aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(new ArrayList<Object>());
@@ -244,9 +240,8 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         assertTrue(testee.lock("test", 50));
 
@@ -273,9 +268,8 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         // When caller 1 invokes, block before giving response
         CountDownLatch answerAwaitLatch = new CountDownLatch(1);
@@ -315,7 +309,6 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testRemoteLockingStateAllowsSuperiorRemoteCaller() throws Exception {
         TesteeSet<T> testeeSet = getTesteeSet(node1, 1, 3);
@@ -340,8 +333,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
         doAnswer(caller1Answer).when(rpcDispatcher).callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 200000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false));
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false));
 
         handler.lockFromCluster(eq("test"), eq(superiorCaller), anyLong());
 
@@ -383,7 +375,6 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testRemoteLockingStateRejectsInferiorRemoteCaller() throws Exception {
         TesteeSet<T> testeeSet = getTesteeSet(node1, 1, 3);
@@ -413,9 +404,8 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         rspList.add(new RemoteLockResponse(inferiorNode, RemoteLockResponse.Flag.OK));
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), LockParamsMatcher.eqLockParams(node1, 200000),
-                AdditionalMatchers.aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                eq(NULL_FILTER), anyInt(), eq(false))).thenAnswer(caller1Answer).thenReturn(rspList);
+        when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), LockParamsMatcher.eqLockParams(node1, 200000),
+                AdditionalMatchers.aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenAnswer(caller1Answer).thenReturn(rspList);
 
         when((List<Object>) rpcDispatcher.callMethodOnCluster(eq("test"), eq("releaseRemoteLock"), AdditionalMatchers.aryEq(new Object[] { "test", node1 }), AdditionalMatchers.aryEq(AbstractClusterLockSupport.RELEASE_REMOTE_LOCK_TYPES), eq(true))).thenReturn(new ArrayList<Object>());
 
@@ -471,9 +461,8 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
         rspList.add(new RemoteLockResponse(null, RemoteLockResponse.Flag.OK));
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), LockParamsMatcher.eqLockParams(node1, 200000),
-                AdditionalMatchers.aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), LockParamsMatcher.eqLockParams(node1, 200000),
+                AdditionalMatchers.aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         when(handler.getLockHolder("test")).thenReturn(node1);
 
@@ -504,7 +493,7 @@ public abstract class ClusteredLockManagerTestBase<T extends AbstractClusterLock
 
         testee.start();
         
-        verify(rpcDispatcher).registerRPCHandler(eq("test"), c.capture());
+        verify(rpcDispatcher).registerRPCHandler(eq("test"), c.capture(), same(rpcDispatcher.getClass().getClassLoader()));
         verify(notifier).registerGroupMembershipListener(same(testee));
         verify(handler).setLocalNode(same(node));
         

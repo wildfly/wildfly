@@ -169,7 +169,11 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
 
     @Override
     public void destroy(Context context) throws Exception {
-        Deployment deployment = context.getEndpoints().get(0).getService().getDeployment();
+        List<Endpoint> eps = context.getEndpoints();
+        if (eps == null || eps.isEmpty()) {
+            return;
+        }
+        Deployment deployment = eps.get(0).getService().getDeployment();
         List<DeploymentAspect> aspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
         try {
             stopWebApp(deployment.getAttachment(StandardContext.class));

@@ -69,6 +69,7 @@ import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.sasl.callback.DigestHashCallback;
 
 /**
  * An embedded web server that provides a JSON over HTTP API to the domain management model.
@@ -438,7 +439,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             DomainCallbackHandler callbackHandler = securityRealm.getCallbackHandler();
             Class[] supportedCallbacks = callbackHandler.getSupportedCallbacks();
             if (DigestAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
-                context.setAuthenticator(new DigestAuthenticator(callbackHandler, securityRealm.getName()));
+                context.setAuthenticator(new DigestAuthenticator(callbackHandler, securityRealm.getName(), contains(DigestHashCallback.class, supportedCallbacks)));
             } else if (BasicAuthenticator.requiredCallbacksSupported(supportedCallbacks)) {
                 context.setAuthenticator(new BasicAuthenticator(callbackHandler, securityRealm.getName()));
             }
@@ -448,6 +449,16 @@ class DomainApiHandler implements ManagementHttpHandler {
     public void stop(HttpServer httpServer) {
         httpServer.removeContext(DOMAIN_API_CONTEXT);
         modelController = null;
+    }
+
+    // TODO - This still needs cleaning up to use collections so we can remove the array iteration.
+    private static boolean contains(Class clazz, Class[] classes) {
+        for (Class current : classes) {
+            if (current.equals(clazz)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

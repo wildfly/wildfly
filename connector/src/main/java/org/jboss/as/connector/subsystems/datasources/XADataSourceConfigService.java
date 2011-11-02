@@ -35,13 +35,13 @@ import org.jboss.msc.service.StopContext;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class XADataSourceConfigService implements Service<XaDataSource> {
+public class XADataSourceConfigService implements Service<ModifiableXaDataSource> {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("xa-data-source-config");
 
-    private final XaDataSource dataSourceConfig;
+    private final ModifiableXaDataSource dataSourceConfig;
 
-    public XADataSourceConfigService(XaDataSource dataSourceConfig) {
+    public XADataSourceConfigService(ModifiableXaDataSource dataSourceConfig) {
         super();
         this.dataSourceConfig = dataSourceConfig;
     }
@@ -53,7 +53,7 @@ public class XADataSourceConfigService implements Service<XaDataSource> {
     }
 
     @Override
-    public XaDataSource getValue() throws IllegalStateException, IllegalArgumentException {
+    public ModifiableXaDataSource getValue() throws IllegalStateException, IllegalArgumentException {
         return dataSourceConfig;
     }
 

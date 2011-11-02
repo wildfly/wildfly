@@ -1,0 +1,5 @@
+        <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
+            <mod-cluster-config advertise-socket="modcluster">
+               <ssl password="toto" />
+            </mod-cluster-config>
+        </subsystem>

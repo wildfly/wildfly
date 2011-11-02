@@ -23,7 +23,11 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecovery;
+import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecoveryRegistry;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -33,19 +37,37 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class XaDataSourceService extends AbstractDataSourceService {
 
-    private final InjectedValue<XaDataSource> dataSourceConfig = new InjectedValue<XaDataSource>();
+    private final InjectedValue<ModifiableXaDataSource> dataSourceConfig = new InjectedValue<ModifiableXaDataSource>();
 
     public XaDataSourceService(final String jndiName) {
         super(jndiName);
     }
 
-    public AS7DataSourceDeployer getDeployer() {
-        // this.dataSourceConfig = dataSourceConfig;
-        return new AS7DataSourceDeployer(dataSourceConfig.getValue());
+    @Override
+    public synchronized void stop(StopContext stopContext) {
+        if (deploymentMD != null) {
+            if (deploymentMD.getRecovery() != null &&
+                transactionIntegrationValue.getValue() != null &&
+                transactionIntegrationValue.getValue().getRecoveryRegistry() != null) {
+
+                XAResourceRecoveryRegistry rr = transactionIntegrationValue.getValue().getRecoveryRegistry();
+
+                for (XAResourceRecovery recovery : deploymentMD.getRecovery()) {
+                    rr.removeXAResourceRecovery(recovery);
+                }
+            }
+        }
+
+        super.stop(stopContext);
+    }
+
+    @Override
+    public AS7DataSourceDeployer getDeployer() throws ValidateException {
+        return new AS7DataSourceDeployer(dataSourceConfig.getValue().getUnModifiableInstance());
 
     }
 
-    public Injector<XaDataSource> getDataSourceConfigInjector() {
+    public Injector<ModifiableXaDataSource> getDataSourceConfigInjector() {
         return dataSourceConfig;
     }
 }

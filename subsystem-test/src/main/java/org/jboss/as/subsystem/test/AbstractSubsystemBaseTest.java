@@ -25,6 +25,7 @@ package org.jboss.as.subsystem.test;
 import java.io.IOException;
 import java.util.List;
 
+import junit.framework.Assert;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -100,15 +101,19 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         // Parse the subsystem xml and install into the first controller
         final String subsystemXml = configId == null ? getSubsystemXml() : getSubsystemXml(configId);
         final KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
+        Assert.assertNotNull(servicesA);
         //Get the model and the persisted xml from the first controller
         final ModelNode modelA = servicesA.readWholeModel();
+        Assert.assertNotNull(modelA);
 
         // Test marshaling
         final String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
+
         // validate the the normalized xmls
-        validateXml(normalizeXML(subsystemXml), normalizeXML(marshalled));
+        String normalizedSubsystem = normalizeXML(subsystemXml);
+        validateXml(normalizedSubsystem, normalizeXML(marshalled));
 
         //Install the persisted xml from the first controller into a second controller
         final KernelServices servicesB = super.installInController(additionalInit, marshalled);
@@ -120,6 +125,8 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         // Test the describe operation
         final ModelNode operation = createDescribeOperation();
         final ModelNode result = servicesB.executeOperation(operation);
+        Assert.assertTrue("the subsystem describe operation has to generate a list of operations to recreate the subsystem",
+                result.hasDefined(ModelDescriptionConstants.RESULT));
         final List<ModelNode> operations = result.get(ModelDescriptionConstants.RESULT).asList();
         servicesB.shutdown();
 

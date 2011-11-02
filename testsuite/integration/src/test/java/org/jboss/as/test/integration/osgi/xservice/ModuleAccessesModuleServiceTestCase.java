@@ -35,6 +35,7 @@ import org.jboss.as.test.integration.osgi.xservice.module.ClientModuleOneActivat
 import org.jboss.as.test.integration.osgi.xservice.module.EchoService;
 import org.jboss.as.test.integration.osgi.xservice.module.TargetModuleActivator;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
@@ -69,7 +70,7 @@ public class ModuleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(Logger.class);
+                builder.addImportPackages(Logger.class, Module.class);
                 return builder.openStream();
             }
         });

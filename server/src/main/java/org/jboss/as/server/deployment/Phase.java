@@ -227,6 +227,7 @@ public enum Phase {
     public static final int PARSE_SESSION_BEAN_CREATE_COMPONENT_DESCRIPTIONS     = 0x1150;
     public static final int PARSE_MDB_CREATE_COMPONENT_DESCRIPTIONS     = 0x1151;
     public static final int PARSE_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1152;
+    public static final int PARSE_CMP_ENTITY_BEAN_CREATE_COMPONENT_DESCRIPTIONS = 0x1153;
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
@@ -234,8 +235,9 @@ public enum Phase {
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
     public static final int PARSE_WS_EJB_INTEGRATION                    = 0x2050;
     public static final int PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION        = 0x2051;
-    public static final int PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS = 0x2052;
-    public static final int PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS = 0x2053;
+    public static final int PARSE_WS_JMS_INTEGRATION                    = 0x2052;
+    public static final int PARSE_JAXWS_ENDPOINT_CREATE_COMPONENT_DESCRIPTIONS = 0x2053;
+    public static final int PARSE_JAXWS_HANDLER_CREATE_COMPONENT_DESCRIPTIONS = 0x2054;
     public static final int PARSE_RA_DEPLOYMENT                         = 0x2100;
     public static final int PARSE_SERVICE_LOADER_DEPLOYMENT             = 0x2200;
     public static final int PARSE_SERVICE_DEPLOYMENT                    = 0x2300;
@@ -279,15 +281,17 @@ public enum Phase {
     public static final int DEPENDENCIES_WS                             = 0x0C00;
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
-    public static final int DEPENDENCIES_JPA = 0x1000;
+    public static final int DEPENDENCIES_JPA                            = 0x1000;
     public static final int DEPENDENCIES_GLOBAL_MODULES                 = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x1400;
+    public static final int DEPENDENCIES_CMP                            = 0x1500;
     //these must be last
-    public static final int DEPENDENCIES_MODULE_INFO_SERVICE            = 0x1500;
-    public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x1600;
-    public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x1700;
+    public static final int DEPENDENCIES_MODULE_INFO_SERVICE            = 0x1600;
+    public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x1700;
+    public static final int DEPENDENCIES_EE_CLASS_DESCRIPTIONS          = 0x1800;
+
 
     // CONFIGURE_MODULE
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0100;
@@ -336,7 +340,6 @@ public enum Phase {
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
     public static final int POST_MODULE_WS_REF_DESCRIPTOR               = 0x1800;
     public static final int POST_MODULE_WS_REF_ANNOTATION               = 0x1801;
-    public static final int POST_MODULE_WS_JMS_INTEGRATION              = 0x1802;
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
@@ -346,6 +349,9 @@ public enum Phase {
     public static final int POST_MODULE_APP_CLIENT_METHOD_RESOLUTION    = 0x2020;
     public static final int POST_MODULE_EJB_ORB_BIND                    = 0x2100;
     public static final int POST_MODULE_EJB_CLIENT_CONTEXT_SETUP        = 0x2200;
+    public static final int POST_MODULE_CMP_PARSE                       = 0x2300;
+    public static final int POST_MODULE_CMP_ENTITY_METADATA             = 0x2400;
+    public static final int POST_MODULE_CMP_STORE_MANAGER               = 0x2500;
 
     // INSTALL
     public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
@@ -361,7 +367,8 @@ public enum Phase {
     public static final int INSTALL_WS_DEPLOYMENT_ASPECTS               = 0x0710;
     // IMPORTANT: WS integration installs deployment aspects dynamically
     // so consider INSTALL 0x0710 - 0x07FF reserved for WS subsystem!
-    public static final int INSTALL_RA_DEPLOYMENT                       = 0x0800;
+    public static final int INSTALL_RA_NATIVE                           = 0x0800;
+    public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
     public static final int INSTALL_POJO_DEPLOYMENT                     = 0x0A00;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;

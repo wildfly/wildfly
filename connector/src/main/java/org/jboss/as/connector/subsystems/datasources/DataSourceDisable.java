@@ -29,6 +29,7 @@ import org.jboss.as.controller.PathAddress;
 
 import static org.jboss.as.connector.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
@@ -53,29 +54,30 @@ public class DataSourceDisable implements OperationStepHandler {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    final String jndiName = Util.getJndiName(model);
+                    final ModelNode address = operation.require(OP_ADDR);
+                    final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
 
                     final ServiceRegistry registry = context.getServiceRegistry(true);
 
-                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(dsName);
                     final ServiceController<?> dataSourceController = registry.getService(dataSourceServiceName);
                     if (dataSourceController != null) {
                         if (ServiceController.State.UP.equals(dataSourceController.getState())) {
                             dataSourceController.setMode(ServiceController.Mode.NEVER);
                         } else {
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotEnabled("Data-source", jndiName)));
+                            throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotEnabled("Data-source", dsName)));
                         }
                     } else {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source", jndiName)));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source", dsName)));
                     }
 
-                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(jndiName);
+                    final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(dsName);
                     final ServiceController<?> referenceController = registry.getService(referenceServiceName);
                     if (referenceController != null && ServiceController.State.UP.equals(referenceController.getState())) {
                         referenceController.setMode(ServiceController.Mode.NEVER);
                     }
 
-                    final ServiceName binderServiceName = ContextNames.bindInfoFor(jndiName).getBinderServiceName();
+                    final ServiceName binderServiceName = ContextNames.bindInfoFor(dsName).getBinderServiceName();
                     final ServiceController<?> binderController = registry.getService(binderServiceName);
                     if (binderController != null && ServiceController.State.UP.equals(binderController.getState())) {
                         binderController.setMode(ServiceController.Mode.NEVER);

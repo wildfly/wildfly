@@ -21,30 +21,34 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.0" name="sun.jdk">
+<module xmlns="urn:jboss:module:1.1" name="sun.jdk">
     <resources>
         <!-- currently jboss modules has not way of importing services from
         classes.jar so we duplicate them here -->
         <resource-root path="service-loader-resources"/>
     </resources>
     <dependencies>
-        <module name="system" export="false" services="import">
+        <system export="true">
+            <paths>
+                <path name="com/sun/script/javascript"/>
+                <path name="com/sun/jndi/dns"/>
+                <path name="com/sun/jndi/ldap"/>
+                <path name="com/sun/security/auth"/>
+                <path name="com/sun/security/auth/login"/>
+                <path name="com/sun/security/auth/module"/>
+                <path name="sun/misc"/>
+                <path name="sun/nio"/>
+                <path name="sun/nio/ch"/>
+                <path name="sun/util"/>
+                <path name="sun/util/calendar"/>
+                <path name="sun/security/provider"/>
+                <path name="META-INF/services"/>
+            </paths>
             <exports>
                 <include-set>
-                    <path name="com/sun/script/javascript"/>
-                    <path name="com/sun/jndi/dns"/>
-                    <path name="com/sun/jndi/ldap"/>
-                    <path name="com/sun/security/auth"/>
-                    <path name="com/sun/security/auth/module"/>
-                    <path name="sun/misc"/>
-                    <path name="sun/nio"/>
-                    <path name="sun/nio/ch"/>
-                    <path name="sun/util"/>
-                    <path name="sun/util/calendar"/>
-                    <path name="sun/security/provider"/>
                     <path name="META-INF/services"/>
                 </include-set>
             </exports>
-        </module>
+        </system>
     </dependencies>
 </module>

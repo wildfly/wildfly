@@ -21,6 +21,7 @@
  */
 package org.jboss.as.appclient.subsystem;
 
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
 import static org.jboss.as.process.Main.getVersionString;
 
 import java.io.File;
@@ -33,6 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.xml.namespace.QName;
+
+import org.jboss.as.appclient.subsystem.parsing.AppClientXml;
+import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.ServerEnvironment;
@@ -53,22 +58,7 @@ public final class Main {
 
 
     public static void usage() {
-        System.out.println("Usage: ./appclient.sh [args...] myear.ear#appClient.jar [client args...]\n");
-        System.out.println("where args include:");
-        System.out.println("    -H <url>                           Set the url of the AS7 instance to connect to");
-        System.out.println("    -H=<url>                           Set the url of the AS7 instance to connect to");
-        System.out.println("    --host=<url>                       Set the url of the AS7 instance to connect to");
-        System.out.println("    -D<name>[=<value>]                 Set a system property");
-        System.out.println("    -global-modules                    Specify additional modules in a comma separated list to be made available to the application");
-        System.out.println("    -h                                 Display this message and exit");
-        System.out.println("    --help                             Display this message and exit");
-        System.out.println("    -P=<url>                           Load system properties from the given url");
-        System.out.println("    -P <url>                           Load system properties from the given url");
-        System.out.println("    --properties=<url>                 Load system properties from the given url");
-        System.out.println("    -V                                 Print version and exit");
-        System.out.println("    -v                                 Print version and exit");
-        System.out.println("    --version                          Print version and exit");
-        System.out.println();
+        CommandLineArgument.printUsage(System.out);
     }
 
     private Main() {
@@ -95,11 +85,12 @@ public final class Main {
             final List<String> clientArgs = options.clientArguments;
 
             if (clientArgs.isEmpty()) {
-                System.err.println("You must specify the application client to execute");
+                System.err.println(MESSAGES.appClientNotSpecified());
                 usage();
                 abort(null);
             } else {
 
+                QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
                 final String file = clientArgs.get(0);
                 final List<String> params = clientArgs.subList(1, clientArgs.size());
                 final String deploymentName;
@@ -117,14 +108,15 @@ public final class Main {
                 File realFile = new File(earPath);
 
                 if (!realFile.exists()) {
-                    throw new RuntimeException("Could not locate app client deployment " + realFile.getAbsolutePath());
+                    throw MESSAGES.cannotFindAppClient(realFile.getAbsoluteFile());
                 }
 
+                final AppClientXml parser = new AppClientXml(Module.getBootModuleLoader());
                 final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
                 final Bootstrap.Configuration configuration = new Bootstrap.Configuration();
                 configuration.setServerEnvironment(serverEnvironment);
                 configuration.setModuleLoader(Module.getBootModuleLoader());
-                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName, options.globalModules, options.hostUrl, params));
+                configuration.setConfigurationPersister(new ApplicationClientConfigurationPersister(earPath, deploymentName,  options.hostUrl, params, serverEnvironment.getServerConfigurationFile().getBootFile(), rootElement, parser));
                 bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
             }
         } catch (Throwable t) {
@@ -147,7 +139,7 @@ public final class Main {
         ParsedOptions ret = new ParsedOptions();
         ret.clientArguments = clientArguments;
         final int argsLength = args.length;
-        String serverConfig = null;
+        String appClientConfig = "appclient.xml";
         boolean clientArgs = false;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -202,21 +194,26 @@ public final class Main {
                     }
                     systemProperties.setProperty(name, value);
                     SecurityActions.setSystemProperty(name, value);
-                } else if (arg.startsWith(CommandLineConstants.GLOBAL_MODULES)) {
-                    ret.globalModules = parseValue(arg, CommandLineConstants.GLOBAL_MODULES);
+                } else if (arg.startsWith(CommandLineConstants.APPCLIENT_CONFIG)) {
+                    appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
                 } else {
+                    if(arg.startsWith("-")) {
+                        System.out.println(MESSAGES.unknownOption(arg));
+                        usage();
+
+                        return null;
+                    }
                     clientArgs = true;
                     clientArguments.add(arg);
                 }
-            } catch (IndexOutOfBoundsException
-                    e) {
-                System.err.printf("Argument expected for option %s\n", arg);
+            } catch (IndexOutOfBoundsException e) {
+                System.err.println(MESSAGES.argumentExpected(arg));
                 usage();
                 return null;
             }
         }
 
-        ret.environment = new ServerEnvironment(systemProperties, systemEnvironment, serverConfig, launchType);
+        ret.environment = new ServerEnvironment(systemProperties, systemEnvironment, appClientConfig, launchType);
         return ret;
     }
 
@@ -239,11 +236,11 @@ public final class Main {
             props.load(url.openConnection().getInputStream());
             return true;
         } catch (MalformedURLException e) {
-            System.err.printf("Malformed URL provided for option %s\n", arg);
+            System.err.println(MESSAGES.malformedUrl(arg));
             usage();
             return false;
         } catch (IOException e) {
-            System.err.printf("Unable to load properties from URL %s\n", url);
+            System.err.println(MESSAGES.cannotLoadProperties(url));
             usage();
             return false;
         }
@@ -277,7 +274,6 @@ public final class Main {
     private static final class ParsedOptions {
         ServerEnvironment environment;
         List<String> clientArguments;
-        String globalModules = "";
         String hostUrl = "remote://localhost:9999";
     }
 }

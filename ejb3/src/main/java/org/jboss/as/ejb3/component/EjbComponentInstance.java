@@ -21,22 +21,23 @@
  */
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.component.singleton.SingletonComponent;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorContext;
-
-import javax.ejb.Timer;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.ejb.Timer;
+
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.ejb3.context.EJBContextImpl;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
+
 /**
  * @author Stuart Douglas
  */
-public class EjbComponentInstance extends BasicComponentInstance {
+public abstract class EjbComponentInstance extends BasicComponentInstance {
 
 
     private final Map<Method, Interceptor> timeoutInterceptors;
@@ -85,4 +86,11 @@ public class EjbComponentInstance extends BasicComponentInstance {
         }
         invokeTimeoutMethod(method, timer);
     }
+
+    @Override
+    public EJBComponent getComponent() {
+        return (EJBComponent) super.getComponent();
+    }
+
+    public abstract EJBContextImpl getEjbContext();
 }

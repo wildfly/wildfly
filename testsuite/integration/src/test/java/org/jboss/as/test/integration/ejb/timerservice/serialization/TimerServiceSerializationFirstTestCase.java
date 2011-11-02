@@ -29,6 +29,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,6 +43,7 @@ import javax.naming.NamingException;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-2441")
 public class TimerServiceSerializationFirstTestCase {
 
     /**

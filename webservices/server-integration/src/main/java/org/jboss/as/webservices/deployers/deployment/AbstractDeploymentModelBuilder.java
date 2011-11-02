@@ -21,8 +21,8 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_KEY;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.CLASSLOADER_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.DEPLOYMENT_KEY;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -45,8 +45,8 @@ import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
+import org.jboss.wsf.spi.deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
@@ -77,8 +77,6 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
      * Constructor.
      */
     protected AbstractDeploymentModelBuilder(final DeploymentType deploymentType, final EndpointType endpointType) {
-        super();
-
         // deployment factory
         final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
         this.deploymentModelFactory = spiProvider.getSPI(DeploymentModelFactory.class);

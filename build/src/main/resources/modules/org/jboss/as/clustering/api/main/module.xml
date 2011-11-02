@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.clustering.api">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.api">
 
     <resources>
         <!-- Insert resources here -->
@@ -30,7 +30,6 @@
 
     <dependencies>
         <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>

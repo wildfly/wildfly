@@ -29,9 +29,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
@@ -68,6 +74,9 @@ public class ManagementClient {
     // cache static RootNode
     private ModelNode rootNode = null;
 
+    private MBeanServerConnection connection;
+    private JMXConnector connector;
+
     public ManagementClient(ModelControllerClient client, final String mgmtAddress) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
@@ -87,7 +96,7 @@ public class ManagementClient {
 
     public URI getSubSystemURI(String subsystem) {
         URI subsystemURI = subsystemURICache.get(subsystem);
-        if(subsystemURI != null) {
+        if (subsystemURI != null) {
             return subsystemURI;
         }
         subsystemURI = extractSubSystemURI(subsystem);
@@ -97,10 +106,9 @@ public class ManagementClient {
 
     public ProtocolMetaData getDeploymentMetaData(String deploymentName) {
         URI webURI = getSubSystemURI(WEB);
-        URI jmxURI = getSubSystemURI(JMX);
 
         ProtocolMetaData metaData = new ProtocolMetaData();
-        metaData.addContext(new JMXContext(jmxURI.getHost(), jmxURI.getPort()));
+        metaData.addContext(new JMXContext(getConnection()));
         HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
         metaData.addContext(context);
         try {
@@ -127,9 +135,24 @@ public class ManagementClient {
             return SUCCESS.equals(rsp.get(OUTCOME).asString())
                     && !ControlledProcessState.State.STARTING.toString().equals(rsp.get(RESULT).asString())
                     && !ControlledProcessState.State.STOPPING.toString().equals(rsp.get(RESULT).asString());
-        }
-        catch (Exception ignored) {
+        } catch (Exception ignored) {
             return false;
+        }
+    }
+
+    public void close() {
+        try {
+            getControllerClient().close();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not close connection", e);
+        } finally {
+            if (connector != null) {
+                try {
+                    connector.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("Could not close JMX connection", e);
+                }
+            }
         }
     }
 
@@ -139,18 +162,17 @@ public class ManagementClient {
 
     private URI extractSubSystemURI(String subsystem) {
         try {
-            if(rootNode == null) {
+            if (rootNode == null) {
                 readRootNode();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        if("web".equals(subsystem)) {
+        if ("web".equals(subsystem)) {
             String socketBinding = rootNode.get("subsystem").get("web").get("connector").get("http").get("socket-binding").asString();
             return getBinding(socketBinding);
-        }
-        else if("jmx".equals(subsystem)) {
+        } else if ("jmx".equals(subsystem)) {
             String socketBinding = rootNode.get("subsystem").get("jmx").get("registry-binding").asString();
             return getBinding(socketBinding);
         }
@@ -173,10 +195,9 @@ public class ManagementClient {
         String ip = null;
         Integer port = null;
 
-        if(socket.hasDefined("interface")) {
+        if (socket.hasDefined("interface")) {
             ip = getInterface(socket.get("interface").asString());
-        }
-        else {
+        } else {
             ip = getInterface(defaultInterface);
         }
 
@@ -196,7 +217,7 @@ public class ManagementClient {
         try {
             // Poke the runtime handler to give us the resolved address
             final String ip = executeForResult(operation).asString();
-            if("0.0.0.0".equals(ip) || "0:0:0:0:0:0:0:0".equals(ip)) {
+            if ("0.0.0.0".equals(ip) || "0:0:0:0:0:0:0:0".equals(ip)) {
                 return mgmtAddress;
             }
             return ip;
@@ -295,7 +316,7 @@ public class ManagementClient {
     }
 
     private void checkSuccessful(final ModelNode result,
-            final ModelNode operation) throws UnSuccessfulOperationException {
+                                 final ModelNode operation) throws UnSuccessfulOperationException {
         if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
             throw new UnSuccessfulOperationException(result.get(
                     FAILURE_DESCRIPTION).toString());
@@ -309,4 +330,27 @@ public class ManagementClient {
             super(message);
         }
     }
+
+    private MBeanServerConnection getConnection() {
+        if (connection == null) {
+            try {
+                connector = JMXConnectorFactory.connect(getRemoteJMXURL(), null);
+                connection = connector.getMBeanServerConnection();
+            } catch (IOException e) {
+                throw new RuntimeException("Could not create JMX connection", e);
+            }
+        }
+        return connection;
+    }
+
+
+    private JMXServiceURL getRemoteJMXURL() {
+        URI jmxURI = getSubSystemURI(JMX);
+        try {
+            return new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + jmxURI.getHost() + ":" + jmxURI.getPort() + "/jmxrmi");
+        } catch (Exception e) {
+            throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
+        }
+    }
+
 }

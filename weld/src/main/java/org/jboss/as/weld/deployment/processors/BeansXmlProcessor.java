@@ -21,6 +21,10 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import java.net.MalformedURLException;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.AttachmentList;
@@ -39,15 +43,11 @@ import org.jboss.as.weld.deployment.WeldDeploymentMetadata;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeansXml;
-import java.net.MalformedURLException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Deployment processor that finds <literal>beans.xml</literal> files and attaches the information to the deployment
  *
  * @author Stuart Douglas
- *
  */
 public class BeansXmlProcessor implements DeploymentUnitProcessor {
 
@@ -95,13 +95,21 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
             final VirtualFile rootBeansXml = deploymentRoot.getRoot().getChild(WEB_INF_BEANS_XML);
             if (rootBeansXml.exists() && rootBeansXml.isFile()) {
                 log.debugf("Found beans.xml: %s", rootBeansXml);
-                beanArchiveMetadata.add(new BeanArchiveMetadata(rootBeansXml, classesRoot, parseBeansXml(rootBeansXml, parser),true));
+                beanArchiveMetadata.add(new BeanArchiveMetadata(rootBeansXml, classesRoot, parseBeansXml(rootBeansXml, parser), true));
+            } else if (classesRoot != null) {
+
+                //look for beans.xml files in the wrong location
+                VirtualFile beansXml = classesRoot.getRoot().getChild(META_INF_BEANS_XML);
+                if (beansXml.exists() && beansXml.isFile()) {
+                    log.warnf("Found beans.xml file in non-standard location: %s, war deployments should place beans.xml files into WEB-INF/beans.xml", beansXml.toString());
+                    beanArchiveMetadata.add(new BeanArchiveMetadata(beansXml, classesRoot, parseBeansXml(beansXml, parser), true));
+                }
             }
         } else if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             final VirtualFile rootBeansXml = deploymentRoot.getRoot().getChild(META_INF_BEANS_XML);
             if (rootBeansXml.exists() && rootBeansXml.isFile()) {
                 log.debugf("Found beans.xml: %s", rootBeansXml.toString());
-                beanArchiveMetadata.add(new BeanArchiveMetadata(rootBeansXml, deploymentRoot,parseBeansXml(rootBeansXml, parser), true));
+                beanArchiveMetadata.add(new BeanArchiveMetadata(rootBeansXml, deploymentRoot, parseBeansXml(rootBeansXml, parser), true));
             }
         }
 

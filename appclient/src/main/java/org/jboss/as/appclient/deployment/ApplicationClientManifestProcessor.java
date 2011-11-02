@@ -37,6 +37,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.Module;
 
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+
 /**
  * DUP that processes the manifest to get the main class
  *
@@ -68,7 +70,7 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
                         moduleDescription.addComponent(description);
                         deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_COMPONENT, description);
                     } catch (ClassNotFoundException e) {
-                        throw new RuntimeException("Could not load application client main class", e);
+                        throw MESSAGES.cannotLoadAppClientMainClass(e);
                     }
 
                 }

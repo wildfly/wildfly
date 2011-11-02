@@ -45,11 +45,9 @@ public class ActivationWriteHandlerTestCase {
         Mockito.when(resource.getModel()).thenReturn(targetNode);
         Mockito.when(context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS)).thenReturn(resource);
 
-        ActivationAttributeHandler handler = new ActivationAttributeHandler();
-
         ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.VALUE).set(Activation.LAZY.toString().toLowerCase());
-        handler.execute(context, operation);
+        ActivationAttributeHandler.INSTANCE.execute(context, operation);
 
         Mockito.verify(context).completeStep();
 

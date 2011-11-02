@@ -54,13 +54,13 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * A test that uses a SAX parser to read an XML document.
  *
- * @see http://www.osgi.org/javadoc/r4v41/org/osgi/util/xml/XMLParserActivator.html
+ * http://www.osgi.org/javadoc/r4v41/org/osgi/util/xml/XMLParserActivator.html
  *
  * @author thomas.diesler@jboss.com
  * @since 21-Jul-2009
  */
 @RunWith(Arquillian.class)
-public class SAXParserTestCase extends OSGiTestSupport {
+public class SAXParserTestCase {
 
     @Inject
     public BundleContext context;
@@ -79,7 +79,7 @@ public class SAXParserTestCase extends OSGiTestSupport {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(StartLevel.class);
+                builder.addImportPackages(StartLevel.class, SAXParser.class, SAXException.class, DefaultHandler.class);
                 return builder.openStream();
             }
         });
@@ -89,7 +89,7 @@ public class SAXParserTestCase extends OSGiTestSupport {
     @Test
     public void testSAXParser() throws Exception {
 
-        changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 4, 10, TimeUnit.SECONDS);
 
         bundle.start();
 

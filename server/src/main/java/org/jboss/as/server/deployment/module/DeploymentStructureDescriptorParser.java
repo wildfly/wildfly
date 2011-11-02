@@ -73,7 +73,6 @@ import java.util.Set;
  *
  * @author Stuart Douglas
  * @author Marius Bogoevici
- *
  */
 public class DeploymentStructureDescriptorParser implements DeploymentUnitProcessor {
 
@@ -85,6 +84,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         private final List<FilterSpecification> exportFilters = new ArrayList<FilterSpecification>();
         private final List<ModuleIdentifier> exclusions = new ArrayList<ModuleIdentifier>();
         private final List<String> classFileTransformers = new ArrayList<String>();
+        private boolean localLast = false;
 
         public ModuleIdentifier getModuleIdentifier() {
             return moduleIdentifier;
@@ -130,6 +130,13 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             return classFileTransformers;
         }
 
+        public boolean isLocalLast() {
+            return localLast;
+        }
+
+        public void setLocalLast(final boolean localLast) {
+            this.localLast = localLast;
+        }
     }
 
     private static class ParseResult {
@@ -169,6 +176,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         TRANSFORMERS,
         TRANSFORMER,
         EXCLUSIONS,
+        LOCAL_LAST,
 
         // default unknown element
         UNKNOWN;
@@ -196,6 +204,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             elementsMap.put(new QName(NAMESPACE, "filter"), Element.FILTER);
             elementsMap.put(new QName(NAMESPACE, "transformers"), Element.TRANSFORMERS);
             elementsMap.put(new QName(NAMESPACE, "transformer"), Element.TRANSFORMER);
+            elementsMap.put(new QName(NAMESPACE, "local-last"), Element.LOCAL_LAST);
             elements = elementsMap;
         }
 
@@ -212,7 +221,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     }
 
     enum Attribute {
-        NAME, SLOT, EXPORT, SERVICES, PATH, OPTIONAL, CLASS,
+        NAME, SLOT, EXPORT, SERVICES, PATH, OPTIONAL, CLASS, VALUE,
 
         // default unknown attribute
         UNKNOWN;
@@ -228,6 +237,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             attributesMap.put(new QName("path"), PATH);
             attributesMap.put(new QName("optional"), OPTIONAL);
             attributesMap.put(new QName("class"), CLASS);
+            attributesMap.put(new QName("value"), VALUE);
             attributes = attributesMap;
         }
 
@@ -286,9 +296,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         }
 
         try {
-            ParseResult result = parse(deploymentFile.getPhysicalFile(), deploymentUnit, moduleLoader);
+            final ParseResult result = parse(deploymentFile.getPhysicalFile(), deploymentUnit, moduleLoader);
 
-            ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+            final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
             if (result.earSubDeploymentsIsolated != null) {
                 // set the ear subdeployment isolation value overridden via the jboss-deployment-structure.xml
                 moduleSpec.setSubDeploymentModulesIsolated(result.earSubDeploymentsIsolated);
@@ -297,10 +307,10 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             if (result.rootDeploymentSpecification != null) {
                 moduleSpec.addUserDependencies(result.rootDeploymentSpecification.getModuleDependencies());
                 moduleSpec.addExclusions(result.rootDeploymentSpecification.getExclusions());
-                for (ResourceRoot additionalResourceRoot : result.rootDeploymentSpecification.getResourceRoots()) {
+                for (final ResourceRoot additionalResourceRoot : result.rootDeploymentSpecification.getResourceRoots()) {
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
                 }
-                for (String classFileTransformer : result.rootDeploymentSpecification.getClassFileTransformers()) {
+                for (final String classFileTransformer : result.rootDeploymentSpecification.getClassFileTransformers()) {
                     moduleSpec.addClassFileTransformer(classFileTransformer);
                 }
             }
@@ -313,23 +323,24 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 subDeploymentMap.put(path, subDeployment);
             }
 
-            for (Entry<String, ModuleStructureSpec> subDeploymentResult : result.subDeploymentSpecifications.entrySet()) {
+            for (final Entry<String, ModuleStructureSpec> subDeploymentResult : result.subDeploymentSpecifications.entrySet()) {
                 final String path = subDeploymentResult.getKey();
                 final ModuleStructureSpec spec = subDeploymentResult.getValue();
                 if (!subDeploymentMap.containsKey(path)) {
                     throw subDeploymentNotFound(path, subDeploymentMap.keySet());
                 }
                 final DeploymentUnit subDeployment = subDeploymentMap.get(path);
-                ModuleSpecification subModuleSpec = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
+                final ModuleSpecification subModuleSpec = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
 
                 subModuleSpec.addUserDependencies(spec.getModuleDependencies());
                 subModuleSpec.addExclusions(spec.getExclusions());
-                for (ResourceRoot additionalResourceRoot : spec.getResourceRoots()) {
+                for (final ResourceRoot additionalResourceRoot : spec.getResourceRoots()) {
                     subDeployment.addToAttachmentList(Attachments.RESOURCE_ROOTS, additionalResourceRoot);
                 }
-                for (String classFileTransformer : spec.getClassFileTransformers()) {
+                for (final String classFileTransformer : spec.getClassFileTransformers()) {
                     subModuleSpec.addClassFileTransformer(classFileTransformer);
                 }
+                subModuleSpec.setLocalLast(spec.isLocalLast());
             }
 
             // handle additional modules
@@ -660,8 +671,8 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         parseModuleStructureSpec(deploymentUnit, reader, moduleSpecification, moduleLoader);
     }
 
-    private static void parseModuleStructureSpec(DeploymentUnit deploymentUnit, XMLStreamReader reader,
-                                                 ModuleStructureSpec moduleSpec, ModuleLoader moduleLoader) throws XMLStreamException {
+    private static void parseModuleStructureSpec(final DeploymentUnit deploymentUnit, final XMLStreamReader reader,
+                                                 final ModuleStructureSpec moduleSpec, final ModuleLoader moduleLoader) throws XMLStreamException {
         // xsd:all
         Set<Element> visited = EnumSet.noneOf(Element.class);
         while (reader.hasNext()) {
@@ -690,6 +701,9 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                             break;
                         case EXCLUSIONS:
                             parseExclusions(reader, moduleSpec);
+                            break;
+                        case LOCAL_LAST:
+                            parseLocalLast(reader, moduleSpec);
                             break;
                         default:
                             throw unexpectedContent(reader);
@@ -1075,6 +1089,27 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         parseNoContent(reader);
     }
 
+    private static void parseLocalLast(final XMLStreamReader reader, final ModuleStructureSpec moduleSpec) throws XMLStreamException {
+        final Set<Attribute> required = EnumSet.of(Attribute.VALUE);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final Attribute attribute = Attribute.of(reader.getAttributeName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case VALUE:
+                    final String value = reader.getAttributeValue(i);
+                    moduleSpec.setLocalLast(Boolean.parseBoolean(value));
+                    break;
+                default:
+                    throw unexpectedContent(reader);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingAttributes(reader.getLocation(), required);
+        }
+        // consume remainder of element
+        parseNoContent(reader);
+    }
 
     private static void parseNoContent(final XMLStreamReader reader) throws XMLStreamException {
         while (reader.hasNext()) {

@@ -50,9 +50,9 @@
 
     <management>
         <security-realms>
-            <security-realm name="PropertiesMgmtSecurityRealm">
+            <security-realm name="ManagementRealm">
                 <authentication>
-                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" plain-text="true"/>
                 </authentication>
             </security-realm>
         </security-realms>
@@ -177,11 +177,9 @@
             <cache-container name="web" default-cache="repl">
                 <alias>standard-session-cache</alias>
                 <replicated-cache name="repl" mode="ASYNC" batching="true">
-                    <locking isolation="REPEATABLE_READ"/>
                     <file-store/>
                 </replicated-cache>
                 <distributed-cache name="dist" mode="ASYNC" batching="true">
-                    <locking isolation="REPEATABLE_READ"/>
                     <file-store/>
                 </distributed-cache>
             </cache-container>
@@ -189,21 +187,23 @@
                 <alias>sfsb-cache</alias>
                 <alias>jboss.cache:service=EJB3SFSBClusteredCache</alias>
                 <replicated-cache name="repl" mode="ASYNC" batching="true">
-                    <locking isolation="REPEATABLE_READ"/>
                     <eviction strategy="LRU" max-entries="10000"/>
                     <file-store/>
                 </replicated-cache>
             </cache-container>
             <cache-container name="hibernate" default-cache="local-query">
                 <invalidation-cache name="entity" mode="SYNC">
+                    <transaction mode="NON_XA"/>
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </invalidation-cache>
                 <local-cache name="local-query">
+                    <transaction mode="NON_XA"/>
                     <eviction strategy="LRU" max-entries="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <replicated-cache name="timestamps" mode="ASYNC">
+                    <transaction mode="NON_XA"/>
                     <eviction strategy="NONE"/>
                 </replicated-cache>
             </cache-container>
@@ -247,14 +247,13 @@
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="BARRIER"/>
                 <protocol type="pbcast.NAKACK"/>
-                <protocol type="UNICAST"/>
+                <protocol type="UNICAST2"/>
                 <protocol type="pbcast.STABLE"/>
-                <protocol type="VIEW_SYNC"/>
                 <protocol type="pbcast.GMS"/>
                 <protocol type="UFC"/>
                 <protocol type="MFC"/>
                 <protocol type="FRAG2"/>
-                <protocol type="pbcast.STREAMING_STATE_TRANSFER"/>
+                <protocol type="pbcast.STATE_TRANSFER"/>
                 <protocol type="pbcast.FLUSH"/>
             </stack>
             <stack name="tcp">
@@ -266,14 +265,13 @@
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="BARRIER"/>
                 <protocol type="pbcast.NAKACK"/>
-                <protocol type="UNICAST"/>
+                <protocol type="UNICAST2"/>
                 <protocol type="pbcast.STABLE"/>
-                <protocol type="VIEW_SYNC"/>
                 <protocol type="pbcast.GMS"/>
                 <protocol type="UFC"/>
                 <protocol type="MFC"/>
                 <protocol type="FRAG2"/>
-                <protocol type="pbcast.STREAMING_STATE_TRANSFER"/>
+                <protocol type="pbcast.STATE_TRANSFER"/>
                 <protocol type="pbcast.FLUSH"/>
             </stack>
         </subsystem>
@@ -444,7 +442,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.0">
             <modify-wsdl-address>true</modify-wsdl-address>
-            <wsdl-host>localhost</wsdl-host>
+            <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
             <!--
             <wsdl-port>8080</wsdl-port>
             <wsdl-secure-port>8443</wsdl-secure-port>
@@ -482,12 +480,12 @@
         <socket-binding name="https" port="8443"/>
         <socket-binding name="jacorb" port="3528"/>
         <socket-binding name="jacorb-ssl" port="3529"/>
-        <socket-binding name="jgroups-udp" port="55200" multicast-address="230.0.0.4" multicast-port="45688"/>
+        <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
         <socket-binding name="jgroups-udp-fd" port="54200"/>
         <socket-binding name="jgroups-diagnostics" port="0" multicast-address="224.0.75.75" multicast-port="7500"/>
         <socket-binding name="jgroups-tcp" port="7600"/>
         <socket-binding name="jgroups-tcp-fd" port="57600"/>
-        <socket-binding name="jgroups-mping" port="0" multicast-address="230.0.0.4" multicast-port="45700"/>
+        <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
         <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
         <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
         <socket-binding name="jndi" port="1099"/>

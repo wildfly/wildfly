@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.deployers;
 
+import javax.xml.ws.WebServiceContext;
+
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
@@ -31,8 +33,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.webservices.injection.WebServiceContextInjectionSource;
 import org.jboss.logging.Logger;
-
-import javax.xml.ws.WebServiceContext;
 
 /**
  * Processes {@link javax.annotation.Resource @Resource} and {@link javax.annotation.Resources @Resources} annotations

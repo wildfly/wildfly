@@ -63,7 +63,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
-public class ConfigurationAdminTestCase extends OSGiTestSupport {
+public class ConfigurationAdminTestCase {
 
     @Inject
     public BundleContext context;
@@ -91,7 +91,7 @@ public class ConfigurationAdminTestCase extends OSGiTestSupport {
     @Test
     public void testManagedService() throws Exception {
 
-        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         // Start the test bundle
         bundle.start();

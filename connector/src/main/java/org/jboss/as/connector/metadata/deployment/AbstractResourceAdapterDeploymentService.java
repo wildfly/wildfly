@@ -44,6 +44,8 @@ import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecovery;
+import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecoveryRegistry;
 import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
@@ -107,6 +109,11 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 registry.getValue().unregisterResourceAdapterDeployment(value);
             }
 
+            if (managementRepository != null && managementRepository.getValue() != null &&
+                value.getDeployment() != null && value.getDeployment().getConnector() != null) {
+                managementRepository.getValue().getConnectors().remove(value.getDeployment().getConnector());
+            }
+
             if (mdr != null && mdr.getValue() != null) {
                 try {
                     mdr.getValue().unregisterResourceAdapter(value.getDeployment().getDeploymentName());
@@ -143,9 +150,28 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }
             }
 
+            if (value.getDeployment() != null && value.getDeployment().getRecovery() != null && txInt.getValue() != null) {
+                XAResourceRecoveryRegistry rr = txInt.getValue().getRecoveryRegistry();
+
+                if (rr != null) {
+                    for (XAResourceRecovery recovery : value.getDeployment().getRecovery()) {
+                        rr.removeXAResourceRecovery(recovery);
+                    }
+                }
+            }
+
             if (value.getDeployment() != null && value.getDeployment().getConnectionManagers() != null) {
                 for (ConnectionManager cm : value.getDeployment().getConnectionManagers()) {
                     cm.shutdown();
+                }
+            }
+
+            if (value.getDeployment() != null && value.getDeployment().getResourceAdapterKey() != null &&
+                raRepository != null && raRepository.getValue() != null) {
+                try {
+                    raRepository.getValue().unregisterResourceAdapter(value.getDeployment().getResourceAdapterKey());
+                } catch (Throwable t) {
+                    // Ignore
                 }
             }
 

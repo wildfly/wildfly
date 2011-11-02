@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.web.infinispan;
 
-import java.security.AccessController;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,7 +34,6 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.CoreGroupCommunicationService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
-import org.jboss.util.loading.ContextClassLoaderSwitcher;
 import org.jgroups.Channel;
 
 import static org.jboss.as.clustering.web.infinispan.InfinispanWebLogger.ROOT_LOGGER;
@@ -55,11 +53,6 @@ public class DefaultLockManagerSource implements LockManagerSource {
     // Store LockManagers in static map so they can be shared across DCMs
     static final Map<String, LockManagerEntry> lockManagers = new HashMap<String, LockManagerEntry>();
 
-    // Need to cast since ContextClassLoaderSwitcher.NewInstance does not generically implement
-    // PrivilegedAction<ContextClassLoaderSwitcher>
-    @SuppressWarnings("unchecked")
-    private final ContextClassLoaderSwitcher switcher = (ContextClassLoaderSwitcher) AccessController.doPrivileged(ContextClassLoaderSwitcher.INSTANTIATOR);
-
     /**
      * {@inheritDoc}
      *
@@ -67,8 +60,7 @@ public class DefaultLockManagerSource implements LockManagerSource {
      */
     @Override
     public SharedLocalYieldingClusterLockManager getLockManager(Cache<?, ?> cache) {
-        if (!cache.getConfiguration().getCacheMode().isClustered())
-            return null;
+        if (!cache.getConfiguration().getCacheMode().isClustered()) return null;
 
         EmbeddedCacheManager container = (EmbeddedCacheManager) cache.getCacheManager();
         String containerName = container.getGlobalConfiguration().getCacheManagerName();
@@ -79,13 +71,7 @@ public class DefaultLockManagerSource implements LockManagerSource {
             if (entry == null) {
                 JGroupsTransport transport = (JGroupsTransport) cache.getAdvancedCache().getRpcManager().getTransport();
 
-                ContextClassLoaderSwitcher.SwitchContext context = this.switcher.getSwitchContext(this.getClass().getClassLoader());
-
-                try {
-                    entry = new LockManagerEntry(transport.getChannel());
-                } finally {
-                    context.reset();
-                }
+                entry = new LockManagerEntry(transport.getChannel());
 
                 debug("Started lock manager for \"%s\" container", containerName);
 
@@ -118,7 +104,7 @@ public class DefaultLockManagerSource implements LockManagerSource {
             try {
                 this.service.start();
             } catch (Exception e) {
-                throw MESSAGES.errorStartingGroupCommunications(channel.getClusterName());
+                throw MESSAGES.errorStartingGroupCommunications(e, channel.getClusterName());
             }
 
             this.lockManager = new SharedLocalYieldingClusterLockManager(SERVICE_NAME, this.service, this.service);
@@ -127,7 +113,7 @@ public class DefaultLockManagerSource implements LockManagerSource {
                 this.lockManager.start();
             } catch (Exception e) {
                 this.service.stop();
-                throw MESSAGES.errorStartingLockManager(channel.getClusterName());
+                throw MESSAGES.errorStartingLockManager(e, channel.getClusterName());
             }
         }
 

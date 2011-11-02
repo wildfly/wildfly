@@ -29,18 +29,21 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanReentrancyInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanSynchronizationInterceptor;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityInvocationContextInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.tx.CMTTxInterceptorFactory;
+import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceName;
 
@@ -76,7 +79,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
         view.getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addViewInterceptor(EntityInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
+                configuration.addViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
             }
         });
 
@@ -84,7 +87,7 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
 
 
     @Override
-    public ComponentConfiguration createConfiguration( final ClassIndex classIndex) {
+    public ComponentConfiguration createConfiguration(final ClassIndex classIndex) {
 
         final ComponentConfiguration configuration = new ComponentConfiguration(this, classIndex);
         // setup the component create service
@@ -105,33 +108,56 @@ public class EntityBeanComponentDescription extends EJBComponentDescription {
                 EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
                 // Add CMT interceptor factory
                 if (TransactionManagementType.CONTAINER.equals(ejbComponentDescription.getTransactionManagementType())) {
-                    configuration.addViewInterceptor(CMTTxInterceptorFactory.INSTANCE, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
+                    configuration.addViewInterceptor(CMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
                 }
             }
         });
 
         //now we need to figure out if this is a home or object view
         if (view instanceof EjbHomeViewDescription) {
-            view.getConfigurators().add(new EntityBeanHomeViewConfigurator());
+            view.getConfigurators().add(getHomeViewConfigurator());
         } else {
-            view.getConfigurators().add(new EntityBeanObjectViewConfigurator());
+            view.getConfigurators().add(getObjectViewConfigurator());
+        }
+
+        if (view.getMethodIntf() == MethodIntf.REMOTE) {
+            view.getConfigurators().add(new ViewConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                    configuration.setViewInstanceFactory(getRemoteViewInstanceFactory(componentConfiguration.getApplicationName(), componentConfiguration.getModuleName(), componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName(), componentConfiguration.getComponentName()));
+                }
+            });
         }
 
     }
 
+    protected EntityBeanObjectViewConfigurator getObjectViewConfigurator() {
+        return new EntityBeanObjectViewConfigurator();
+    }
 
-    private void addSynchronizationInterceptor() {
+    protected EntityBeanHomeViewConfigurator getHomeViewConfigurator() {
+        return new EntityBeanHomeViewConfigurator();
+    }
+
+    protected ViewInstanceFactory getRemoteViewInstanceFactory(final String applicationName, final String moduleName, final String distinctName, final String componentName) {
+        return new EntityBeanRemoteViewInstanceFactory(applicationName, moduleName, distinctName, componentName);
+    }
+
+    protected void addSynchronizationInterceptor() {
         // we must run before the DefaultFirstConfigurator
         getConfigurators().addFirst(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addComponentInterceptor(EntityBeanSynchronizationInterceptor.FACTORY, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
+                configuration.addComponentInterceptor(getSynchronizationInterceptorFactory(), InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR, false);
                 if (!reentrant) {
                     configuration.addComponentInterceptor(EntityBeanReentrancyInterceptor.FACTORY, InterceptorOrder.Component.REENTRANCY_INTERCEPTOR, false);
                 }
             }
         });
+    }
 
+    protected InterceptorFactory getSynchronizationInterceptorFactory() {
+        return EntityBeanSynchronizationInterceptor.FACTORY;
     }
 
     public String getPrimaryKeyType() {

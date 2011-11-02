@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.invocation;
 
+import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -30,7 +32,6 @@ import javax.xml.ws.WebServiceException;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.ws.common.injection.ThreadLocalAwareWebServiceContext;
 import org.jboss.ws.common.invocation.AbstractInvocationHandler;
@@ -53,7 +54,7 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
    private final IoCContainerProxy iocContainer;
 
    /** EJB3 container name. */
-   private String ejbName;
+   private String ejbComponentName;
 
    /** EJB3 container. */
    private volatile ComponentView ejbComponentView;
@@ -74,9 +75,9 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
     * @param endpoint web service endpoint
     */
    public void init(final Endpoint endpoint) {
-      ejbName = (String) endpoint.getProperty(ASHelper.CONTAINER_NAME);
+      ejbComponentName = (String) endpoint.getProperty(EJB_COMPONENT_VIEW_NAME);
 
-      if (ejbName == null) {
+      if (ejbComponentName == null) {
          throw new IllegalArgumentException("Container name cannot be null");
       }
    }
@@ -90,9 +91,9 @@ final class InvocationHandlerEJB3 extends AbstractInvocationHandler {
       if (ejbComponentView == null) {
          synchronized(this) {
             if (ejbComponentView == null) {
-               ejbComponentView= iocContainer.getBean(ejbName, ComponentView.class);
+               ejbComponentView= iocContainer.getBean(ejbComponentName, ComponentView.class);
                if (ejbComponentView == null) {
-                  throw new WebServiceException("Cannot find ejb: " + ejbName);
+                  throw new WebServiceException("Cannot find ejb: " + ejbComponentName);
                }
                reference = ejbComponentView.createInstance();
             }

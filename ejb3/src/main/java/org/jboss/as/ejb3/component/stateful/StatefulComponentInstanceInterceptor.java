@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;

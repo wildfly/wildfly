@@ -21,11 +21,14 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.as.ejb3.context.spi.InvocationContext;
+import javax.ejb.TransactionAttributeType;
+
+import org.jboss.as.ee.component.Component;
+import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import javax.ejb.TransactionAttributeType;
+import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -33,31 +36,47 @@ import javax.ejb.TransactionAttributeType;
 public class SingletonLifecycleCMTTxInterceptor extends CMTTxInterceptor implements Interceptor {
     private final TransactionAttributeType txAttr;
 
-    public SingletonLifecycleCMTTxInterceptor(final TransactionAttributeType txAttr) {
+    public SingletonLifecycleCMTTxInterceptor( final TransactionAttributeType txAttr) {
         this.txAttr = txAttr;
     }
 
     @Override
     public Object processInvocation(InterceptorContext invocation) throws Exception {
-        return processInvocation((TransactionalInvocationContext) invocation.getPrivateData(InvocationContext.class));
-    }
-
-    private Object processInvocation(TransactionalInvocationContext invocation) throws Exception {
+        final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
         switch (txAttr) {
             case MANDATORY:
-                return mandatory(invocation);
+                return mandatory(invocation, component);
             case NEVER:
-                return never(invocation);
+                return never(invocation, component);
             case NOT_SUPPORTED:
-                return notSupported(invocation);
+                return notSupported(invocation, component);
             //singleton beans lifecyle methods must treat REQUIRED as REQUIRES_NEW
             case REQUIRED:
             case REQUIRES_NEW:
-                return requiresNew(invocation);
+                return requiresNew(invocation, component);
             case SUPPORTS:
-                return supports(invocation);
+                return supports(invocation, component);
             default:
                 throw new IllegalStateException("Unexpected tx attribute " + txAttr + " on " + invocation);
         }
     }
+
+    /**
+     * @author Stuart Douglas
+     */
+    public static class Factory extends ComponentInterceptorFactory {
+
+        private final TransactionAttributeType txAttr;
+
+        public Factory(final TransactionAttributeType txAttr) {
+            this.txAttr = txAttr;
+        }
+
+        @Override
+        protected Interceptor create(Component component, InterceptorFactoryContext context) {
+            final SingletonLifecycleCMTTxInterceptor interceptor = new SingletonLifecycleCMTTxInterceptor(txAttr);
+            return interceptor;
+        }
+    }
+
 }

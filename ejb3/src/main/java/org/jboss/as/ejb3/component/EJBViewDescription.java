@@ -46,11 +46,12 @@ public class EJBViewDescription extends ViewDescription {
      * Should be set to true if this view corresponds to a EJB 2.x
      * local or remote view
      */
-    private boolean ejb2xView = false;
+    private final boolean ejb2xView;
 
-    public EJBViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf) {
+    public EJBViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf, final boolean ejb2xView) {
         super(componentDescription, viewClassName);
         this.methodIntf = methodIntf;
+        this.ejb2xView = ejb2xView;
         hasJNDIBindings = initHasJNDIBindings(methodIntf);
     }
 
@@ -127,9 +128,5 @@ public class EJBViewDescription extends ViewDescription {
 
     public boolean isEjb2xView() {
         return ejb2xView;
-    }
-
-    public void setEjb2xView(final boolean ejb2xView) {
-        this.ejb2xView = ejb2xView;
     }
 }

@@ -92,11 +92,14 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNE
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -308,13 +311,19 @@ public class DsParser extends AbstractParser {
         String jndiName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-
+        boolean enabled = ENABLED.getDefaultValue().asBoolean();
+        // Don't persist the enabled flag unless the user set it
+        boolean persistEnabled = false;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
-                    ENABLED.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        enabled = Boolean.parseBoolean(value);
+                        ENABLED.parseAndSetParameter(value, operation, location);
+                        persistEnabled = true;
+                    }
                     break;
                 }
                 case JNDI_NAME: {
@@ -363,6 +372,7 @@ public class DsParser extends AbstractParser {
         dsAddress.protect();
 
         operation.get(OP_ADDR).set(dsAddress);
+        List<ModelNode> xadatasourcePropertiesOperations = new ArrayList<ModelNode>(0);
 
         //elements reading
         while (reader.hasNext()) {
@@ -371,6 +381,14 @@ public class DsParser extends AbstractParser {
                     if (DataSources.Tag.forName(reader.getLocalName()) == DataSources.Tag.XA_DATASOURCE) {
 
                         list.add(operation);
+                        list.addAll(xadatasourcePropertiesOperations);
+                        if (enabled) {
+                            final ModelNode enableOperation = new ModelNode();
+                            enableOperation.get(OP).set(ENABLE);
+                            enableOperation.get(OP_ADDR).set(dsAddress);
+                            enableOperation.get(PERSISTENT).set(persistEnabled);
+                            list.add(enableOperation);
+                        }
                         return;
                     } else {
                         if (XaDataSource.Tag.forName(reader.getLocalName()) == XaDataSource.Tag.UNKNOWN) {
@@ -382,11 +400,21 @@ public class DsParser extends AbstractParser {
                 case START_ELEMENT: {
                     switch (XaDataSource.Tag.forName(reader.getLocalName())) {
                         case XA_DATASOURCE_PROPERTY: {
+
                             final Location location = reader.getLocation();
                             String name = rawAttributeText(reader, "name");
                             String value = rawElementText(reader);
-                            ModelNode node = XADATASOURCE_PROPERTIES.parse(value, location);
-                            operation.get(XADATASOURCE_PROPERTIES.getName(), name).set(node);
+
+                            final ModelNode configOperation = new ModelNode();
+                            configOperation.get(OP).set(ADD);
+
+                            final ModelNode configAddress = dsAddress.clone();
+                            configAddress.add(XADATASOURCE_PROPERTIES.getName(), name);
+                            configAddress.protect();
+
+                            configOperation.get(OP_ADDR).set(configAddress);
+                            XADATASOURCE_PROPERTY_VALUE.parseAndSetParameter(value, configOperation, location);
+                            xadatasourcePropertiesOperations.add(configOperation);
                             break;
                         }
                         case XA_DATASOURCE_CLASS: {
@@ -517,13 +545,19 @@ public class DsParser extends AbstractParser {
         String jndiName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-
+        boolean enabled = ENABLED.getDefaultValue().asBoolean();
+        // Don't persist the enabled flag unless the user set it
+        boolean persistEnabled = false;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
             switch (attribute) {
                 case ENABLED: {
                     final Location location = reader.getLocation();
                     String value = rawAttributeText(reader, ENABLED.getXmlName());
-                    ENABLED.parseAndSetParameter(value, operation, location);
+                    if (value != null) {
+                        enabled = Boolean.parseBoolean(value);
+                        ENABLED.parseAndSetParameter(value, operation, location);
+                        persistEnabled = true;
+                    }
                     break;
                 }
                 case JNDI_NAME: {
@@ -583,6 +617,13 @@ public class DsParser extends AbstractParser {
 
                         list.add(operation);
                         list.addAll(configPropertiesOperations);
+                        if (enabled) {
+                            final ModelNode enableOperation = new ModelNode();
+                            enableOperation.get(OP).set(ENABLE);
+                            enableOperation.get(OP_ADDR).set(dsAddress);
+                            enableOperation.get(PERSISTENT).set(persistEnabled);
+                            list.add(enableOperation);
+                        }
                         return;
                     } else {
                         if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.UNKNOWN) {

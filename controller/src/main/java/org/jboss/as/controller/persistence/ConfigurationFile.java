@@ -94,7 +94,7 @@ public class ConfigurationFile {
         this.mainFileName = mainFile.getName();
     }
 
-    File getBootFile() {
+    public File getBootFile() {
         //System.out.println("----- Boot file " + bootFile.getAbsolutePath());
         if (bootFile == null) {
             synchronized (this) {

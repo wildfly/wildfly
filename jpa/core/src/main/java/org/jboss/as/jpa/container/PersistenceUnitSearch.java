@@ -22,6 +22,11 @@
 
 package org.jboss.as.jpa.container;
 
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.List;
+
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.Attachments;
@@ -30,11 +35,6 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.List;
-
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Perform scoped search for persistence unit name
@@ -62,7 +62,7 @@ public class PersistenceUnitSearch {
         } else {
             PersistenceUnitMetadata name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
             if (traceEnabled) {
-                if(name != null) {
+                if (name != null) {
                     ROOT_LOGGER.tracef("pu search found %s", name);
                 }
             }
@@ -124,20 +124,22 @@ public class PersistenceUnitSearch {
      */
     private static PersistenceUnitMetadata findWithinDeployment(DeploymentUnit unit, String persistenceUnitName) {
 
-        final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        PersistenceUnitMetadataHolder holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
-        if (holder == null || holder.getPersistenceUnits() == null)
-            return null;
-
-        for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
-            if (traceEnabled) {
-                ROOT_LOGGER.tracef("findWithinDeployment check '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
+        for (ResourceRoot root : DeploymentUtils.allResourceRoots(unit)) {
+            PersistenceUnitMetadataHolder holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+            if (holder == null || holder.getPersistenceUnits() == null) {
+                continue;
             }
-            if (persistenceUnitName == null || persistenceUnitName.length() == 0 || persistenceUnit.getPersistenceUnitName().equals(persistenceUnitName)) {
+
+            for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
                 if (traceEnabled) {
-                    ROOT_LOGGER.tracef("findWithinDeployment matched '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
+                    ROOT_LOGGER.tracef("findWithinDeployment check '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
                 }
-                return persistenceUnit;
+                if (persistenceUnitName == null || persistenceUnitName.length() == 0 || persistenceUnit.getPersistenceUnitName().equals(persistenceUnitName)) {
+                    if (traceEnabled) {
+                        ROOT_LOGGER.tracef("findWithinDeployment matched '%s' against pu '%s'", persistenceUnitName, persistenceUnit.getPersistenceUnitName());
+                    }
+                    return persistenceUnit;
+                }
             }
         }
         return null;

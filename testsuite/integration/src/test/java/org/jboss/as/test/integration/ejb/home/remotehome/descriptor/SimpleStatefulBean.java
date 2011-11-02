@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.home.remotehome.descriptor;
 
+import java.rmi.RemoteException;
+
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 
@@ -48,7 +50,7 @@ public class SimpleStatefulBean {
         return message;
     }
 
-    public String otherMethod() {
+    public String otherMethod() throws RemoteException {
         return ((SimpleInterface)sessionContext.getEJBObject()).sayHello();
     }
 }

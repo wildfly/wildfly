@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.concurrent.Executor;
 
 import org.apache.catalina.connector.Connector;
+import org.apache.coyote.ajp.AjpAprProtocol;
 import org.apache.coyote.http11.Http11AprProtocol;
 import org.apache.coyote.http11.Http11Protocol;
 import org.jboss.as.network.ManagedBinding;
@@ -94,6 +95,11 @@ class WebConnectorService implements Service<Connector> {
             if(proxyPort != null) connector.setProxyPort(proxyPort);
             if(redirectPort != null) connector.setRedirectPort(redirectPort);
             if(secure != null) connector.setSecure(secure);
+            boolean nativeProtocolHandler = false;
+            if (connector.getProtocolHandler() instanceof Http11AprProtocol
+                    || connector.getProtocolHandler() instanceof AjpAprProtocol) {
+                nativeProtocolHandler = true;
+            }
             if (executor != null) {
                 Method m = connector.getProtocolHandler().getClass().getMethod("setExecutor", Executor.class);
                 m.invoke(connector.getProtocolHandler(), executor);
@@ -109,11 +115,16 @@ class WebConnectorService implements Service<Connector> {
                 } catch (NoSuchMethodException e) {
                  // Not all connectors will have this
                 }
-                try {
-                    Method m = connector.getProtocolHandler().getClass().getMethod("setSendfileSize", Integer.TYPE);
+                if (nativeProtocolHandler) {
+                    try {
+                        Method m = connector.getProtocolHandler().getClass().getMethod("setSendfileSize", Integer.TYPE);
+                        m.invoke(connector.getProtocolHandler(), maxConnections);
+                    } catch (NoSuchMethodException e) {
+                     // Not all connectors will have this
+                    }
+                } else {
+                    Method m = connector.getProtocolHandler().getClass().getMethod("setMaxThreads", Integer.TYPE);
                     m.invoke(connector.getProtocolHandler(), maxConnections);
-                } catch (NoSuchMethodException e) {
-                 // Not all connectors will have this
                 }
             }
             if (virtualServers != null) {
@@ -221,6 +232,8 @@ class WebConnectorService implements Service<Connector> {
                 }
             }
             getWebServer().addConnector(connector);
+            connector.init();
+            connector.start();
             this.connector = connector;
         } catch (Exception e) {
             throw new StartException(e);
@@ -234,6 +247,14 @@ class WebConnectorService implements Service<Connector> {
         final SocketBinding binding = this.binding.getValue();
         binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
         final Connector connector = this.connector;
+        try {
+            connector.pause();
+        } catch (Exception e) {
+        }
+        try {
+            connector.stop();
+        } catch (Exception e) {
+        }
         getWebServer().removeConnector(connector);
         this.connector = null;
     }

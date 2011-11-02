@@ -98,6 +98,38 @@ enum CommandLineArgument {
             return MESSAGES.argBackup();
         }
     },
+    SHORT_DOMAIN_CONFIG {
+        @Override
+        public String argument() {
+            return CommandLineConstants.SHORT_DOMAIN_CONFIG;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<config>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argDomainConfig();
+        }
+    },
+    LEGACY_SHORT_DOMAIN_CONFIG {
+        @Override
+        public String argument() {
+            return CommandLineConstants.SHORT_DOMAIN_CONFIG;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s <config>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argDomainConfig();
+        }
+    },
     CACHED_DC {
         @Override
         public String argument() {
@@ -304,6 +336,38 @@ enum CommandLineArgument {
         @Override
         public String instructions() {
             return MESSAGES.argPcPort();
+        }
+    },
+    DEFAULT_MULTICAST_ADDRESS {
+        @Override
+        public String argument() {
+            return CommandLineConstants.DEFAULT_MULTICAST_ADDRESS;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s=<value>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argDefaultMulticastAddress();
+        }
+    },
+    LEGACY_DEFAULT_MULTICAST_ADDRESS {
+        @Override
+        public String argument() {
+            return CommandLineConstants.DEFAULT_MULTICAST_ADDRESS;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s <value>", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argDefaultMulticastAddress();
         }
     },
     LEGACY_SHORT_VERSION {

@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.mdb.cdi;
 
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.jms.Message;
+import javax.jms.Queue;
+import javax.jms.TextMessage;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.common.JMSAdminOperations;
@@ -38,12 +44,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.TextMessage;
 
 /**
  * Tests that the CDI request scope is active in MDB invocations.
@@ -66,6 +66,8 @@ public class MDBCdiIntegrationTestCase {
     @Resource(mappedName = OverriddenResourceAdapterNameMDB.QUEUE_JNDI_NAME)
     private Queue queue;
 
+    private static JMSAdminOperations jmsAdminOperations;
+
     @Deployment
     public static Archive getDeployment() {
 
@@ -80,16 +82,17 @@ public class MDBCdiIntegrationTestCase {
 
     @BeforeClass
     public static void createJmsDestinations() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
+        jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.createJmsQueue("resource-adapter-name-test/queue", CdiIntegrationMDB.QUEUE_JNDI_NAME);
         jmsAdminOperations.createJmsQueue("resource-adapter-name-test/reply-queue", REPLY_QUEUE_JNDI_NAME);
     }
 
     @AfterClass
     public static void afterTestClass() {
-        final JMSAdminOperations jmsAdminOperations = new JMSAdminOperations();
         jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/queue");
         jmsAdminOperations.removeJmsQueue("resource-adapter-name-test/reply-queue");
+        jmsAdminOperations.close();
+        jmsAdminOperations = null;
     }
 
     @Test

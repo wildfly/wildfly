@@ -21,14 +21,15 @@
  */
 package org.jboss.as.ejb3.component.pool;
 
-import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
-import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.invocation.InterceptorContext;
+import java.rmi.RemoteException;
 
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
-import java.rmi.RemoteException;
+
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -42,7 +43,7 @@ public class PooledInstanceInterceptor extends AbstractEJBInterceptor {
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
-        PooledComponent<ComponentInstance> component = getComponent(context, PooledComponent.class);
+        PooledComponent<ComponentInstance> component = (PooledComponent<ComponentInstance>) getComponent(context, EJBComponent.class);
         ComponentInstance instance = component.getPool().get();
         context.putPrivateData(ComponentInstance.class, instance);
         boolean discarded = false;

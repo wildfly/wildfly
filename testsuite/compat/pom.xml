@@ -41,14 +41,16 @@
         <jboss.dist>${project.basedir}/../../build/target/jboss-as-${jboss.as.release.version}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
+        <!-- Used to provide an absolute location for the XSLT scripts. -->
+        <!-- This value is overridden in submodules with the correct relative path. -->
+        <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
 
         <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
     </properties>
-    <!--
-    Compile-time dependencies upon anything  in the AS7 runtime
-    are allowed in this section
-    -->
 
+    <!--
+    	Compile-time dependencies upon anything in the AS7 runtime are allowed in this section.
+    -->
     <dependencies>
         <dependency>
             <groupId>org.hibernate</groupId>

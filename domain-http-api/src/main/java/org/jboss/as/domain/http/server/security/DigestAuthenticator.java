@@ -45,6 +45,7 @@ import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 import org.jboss.logging.Logger;
+import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
 /**
@@ -61,6 +62,7 @@ public class DigestAuthenticator extends Authenticator {
     private final CallbackHandler callbackHandler;
 
     private final String realm;
+    private final boolean preDigested;
 
     private static final byte COLON = ':';
     private static final String CHALLENGE = "Digest";
@@ -71,9 +73,10 @@ public class DigestAuthenticator extends Authenticator {
     private static final String USERNAME = "username";
     private static final String URI = "uri";
 
-    public DigestAuthenticator(CallbackHandler callbackHandler, String realm) {
+    public DigestAuthenticator(CallbackHandler callbackHandler, String realm, boolean preDigested) {
         this.callbackHandler = callbackHandler;
         this.realm = realm;
+        this.preDigested = preDigested;
     }
 
     @Override
@@ -138,16 +141,11 @@ public class DigestAuthenticator extends Authenticator {
             return null;
         }
 
-
         // Step 1 - Create Callbacks
-        // TODO - Should we use SASL callbacks or add our own and have our handler support both?
-        /* TODO - Maybe also consider callbacks for returning some parts ready hashed e.g. HA1 - this
-           would mean password not even needed by JBoss installation, Hash would also only be applicable
-           this realm. */
         RealmCallback rcb = new RealmCallback("Realm", realm);
         NameCallback ncb = new NameCallback("Username", username);
-        PasswordCallback pcb = new PasswordCallback("Password", false);
-        Callback[] callbacks = new Callback[]{rcb, ncb, pcb};
+        Callback credentialCallback = preDigested ? new DigestHashCallback("Password Digest") : new PasswordCallback("Password", false);
+        Callback[] callbacks = new Callback[]{rcb, ncb, credentialCallback};
 
         // Step 2 - Call CallbackHandler
         try {
@@ -170,13 +168,21 @@ public class DigestAuthenticator extends Authenticator {
             // TODO - The remaining combinations from RFC-2617 need to be added.
             // TODO - Verify all required parameters were set.
             MessageDigest md = MessageDigest.getInstance(MD5);
-            md.update(challengeParameters.get(USERNAME).getBytes());
-            md.update(COLON);
-            md.update(challengeParameters.get(REALM).getBytes());
-            md.update(COLON);
-            md.update(new String(pcb.getPassword()).getBytes());
+            byte[] ha1;
+            if (preDigested) {
+                DigestHashCallback dhc = (DigestHashCallback) credentialCallback;
 
-            byte[] ha1 = HexConverter.convertToHexBytes(md.digest());
+                ha1 = dhc.getHexHash().getBytes();
+            } else {
+                md.update(challengeParameters.get(USERNAME).getBytes());
+                md.update(COLON);
+                md.update(challengeParameters.get(REALM).getBytes());
+                md.update(COLON);
+                PasswordCallback pcb = (PasswordCallback) credentialCallback;
+                md.update(new String(pcb.getPassword()).getBytes());
+
+                ha1 = HexConverter.convertToHexBytes(md.digest());
+            }
 
             md.update(httpExchange.getRequestMethod().getBytes());
             md.update(COLON);
@@ -364,7 +370,6 @@ public class DigestAuthenticator extends Authenticator {
 
     }
 
-
     private class DigestContext {
 
         private static final String KEY = "DIGEST_CONTEXT";
@@ -389,7 +394,9 @@ public class DigestAuthenticator extends Authenticator {
         if (contains(RealmCallback.class, callbacks) == false) {
             return false;
         }
-        if (contains(PasswordCallback.class, callbacks) == false) {
+
+        if (contains(PasswordCallback.class, callbacks) == false &&
+                contains(DigestHashCallback.class, callbacks) == false) {
             return false;
         }
 

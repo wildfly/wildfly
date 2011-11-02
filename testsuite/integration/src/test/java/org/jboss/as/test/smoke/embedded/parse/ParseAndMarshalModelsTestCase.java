@@ -25,7 +25,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CRITERIA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
@@ -232,6 +231,7 @@ public class ParseAndMarshalModelsTestCase {
         ModelNode originalModel = loadDomainModel(file);
         ModelNode reparsedModel = loadDomainModel(file);
 
+        fixupDsDomain(originalModel);
         fixupOSGiDomain(originalModel, reparsedModel);
         compare(originalModel, reparsedModel);
     }
@@ -243,9 +243,22 @@ public class ParseAndMarshalModelsTestCase {
     // <timeout></timeout> element. So reparse doesn't add the element.
     // Solution is to remove the empty element.
     private void fixupDs(ModelNode node) {
-        if (node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
-            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").remove("set-tx-query-timeout");
-        }
+//        if (node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
+//            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").remove("set-tx-query-timeout");
+//            //marshall/unmarshall without real server startup leave enabled to false
+//            node.get("subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
+//        }
+    }
+
+     private void fixupDsDomain(ModelNode node) {
+//        if (node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
+//            //marshall/unmarshall without real server startup leave enabled to false
+//            node.get("profile", "default","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
+//        }
+//        if (node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").isDefined()) {
+//            //marshall/unmarshall without real server startup leave enabled to false
+//            node.get("profile", "ha","subsystem", "datasources", "data-source", "java:jboss/datasources/ExampleDS").get("enabled").set(false);
+//        }
     }
 
     private void fixupOSGiStandalone(ModelNode node1, ModelNode node2) {
@@ -321,7 +334,7 @@ public class ParseAndMarshalModelsTestCase {
 
         } else {
             try {
-                Assert.assertEquals("\n\"" + node1.asString() + "\"\n\"" + node2.asString() + "\"\n-----", node2.asString().trim(), node1.asString().trim());
+                Assert.assertEquals("\n\"" + node1.asString() + "\"\n\"" + node2.asString() + "\"\n-----", node1.asString().trim(), node2.asString().trim());
             } catch (AssertionFailedError error) {
                 throw error;
             }
@@ -422,7 +435,7 @@ public class ParseAndMarshalModelsTestCase {
                 ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler(hostControllerInfo);
                 interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
-                interfaces.registerReadWriteAttribute(CRITERIA, null, InterfaceCriteriaWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+                InterfaceCriteriaWriteHandler.register(interfaces);
 
                 //server
                 ManagementResourceRegistration servers = hostRegistration.registerSubModel(PathElement.pathElement(SERVER_CONFIG), HostDescriptionProviders.SERVER_PROVIDER);
@@ -440,7 +453,7 @@ public class ParseAndMarshalModelsTestCase {
                 //server interfaces
                 ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
                 serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
-                serverInterfaces.registerReadWriteAttribute(CRITERIA, null, InterfaceCriteriaWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+                InterfaceCriteriaWriteHandler.register(serverInterfaces);
 
                 // Server system Properties
                 ManagementResourceRegistration serverSysProps = servers.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);

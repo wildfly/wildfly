@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.component.stateful;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.ejb3.component.AbstractEJBInterceptor;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;

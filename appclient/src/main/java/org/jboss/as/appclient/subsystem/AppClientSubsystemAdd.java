@@ -45,7 +45,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -56,8 +55,6 @@ import org.jboss.msc.service.ServiceController;
 class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler implements DescriptionProvider {
 
     static final AppClientSubsystemAdd INSTANCE = new AppClientSubsystemAdd();
-
-    private static final Logger logger = Logger.getLogger(AppClientSubsystemAdd.class);
 
     private final String[] EMPTY_STRING = new String[0];
 

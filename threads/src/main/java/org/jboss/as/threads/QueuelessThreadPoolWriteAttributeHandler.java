@@ -62,14 +62,15 @@ public class QueuelessThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
                 if (!value.hasDefined(TIME)) {
                     throw new IllegalArgumentException("Missing '" + TIME + "' for '" + KEEPALIVE_TIME + "'");
                 }
-                if (!value.hasDefined(UNIT)) {
-                    throw new IllegalArgumentException("Missing '" + UNIT + "' for '" + KEEPALIVE_TIME + "'");
-                }
                 final TimeUnit unit;
-                try {
-                unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
-                } catch(IllegalArgumentException e) {
-                    throw new OperationFailedException(new ModelNode().set("Failed to parse '" + UNIT + "', allowed values are: " + Arrays.asList(TimeUnit.values())));
+                if (!value.hasDefined(UNIT)) {
+                    unit = pool.getKeepAliveUnit();
+                } else {
+                    try {
+                    unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
+                    } catch(IllegalArgumentException e) {
+                        throw new OperationFailedException(new ModelNode().set("Failed to parse '" + UNIT + "', allowed values are: " + Arrays.asList(TimeUnit.values())));
+                    }
                 }
                 final TimeSpec spec = new TimeSpec(unit, value.get(TIME).asLong());
                 pool.setKeepAlive(spec);

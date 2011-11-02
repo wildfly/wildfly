@@ -241,18 +241,26 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     try {
                         final HashMap properties = new HashMap();
                         if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                            ValidatorFactory validatorFactory = SerializableValidatorFactory.getINSTANCE();
+                            ValidatorFactory validatorFactory = SerializableValidatorFactory.validatorFactory();
                             properties.put("javax.persistence.validation.factory", validatorFactory);
                         }
                         final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder);
 
 
-                        final PersistenceProvider provider;
+                        PersistenceProvider provider = null;
                         if (persistenceProviderDeploymentHolder != null &&
-                                persistenceProviderDeploymentHolder.getProvider() != null &&
-                                persistenceProviderDeploymentHolder.getProvider().getClass().getName().equals(pu.getPersistenceProviderClassName())) {
-                            provider = persistenceProviderDeploymentHolder.getProvider();
-                        } else {
+                            persistenceProviderDeploymentHolder.getProvider() != null) {
+
+                            List<PersistenceProvider> providerList = persistenceProviderDeploymentHolder.getProvider();
+                            for (PersistenceProvider persistenceProvider : providerList) {
+                                if (persistenceProvider.getClass().getName().equals(pu.getPersistenceProviderClassName())) {
+                                    provider = persistenceProvider;
+                                    break;
+                                }
+                            }
+                        }
+                        //  look provider up if we didn't use the providers packaged with the application
+                        if (provider == null) {
                             provider = lookupProvider(pu);
                         }
 
@@ -275,7 +283,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
                         if (jtaDataSource != null && jtaDataSource.length() > 0) {
                             if (jtaDataSource.startsWith("java:")) {
-                                builder.addDependency(ContextNames.bindInfoFor(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
+                                builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                                 useDefaultDataSource = false;
                             } else {
                                 builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
@@ -284,7 +292,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                         }
                         if (nonJtaDataSource != null && nonJtaDataSource.length() > 0) {
                             if (nonJtaDataSource.startsWith("java:")) {
-                                builder.addDependency(ContextNames.bindInfoFor(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
+                                builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                                 useDefaultDataSource = false;
                             } else {
                                 builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(), DataSource.class));

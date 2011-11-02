@@ -136,6 +136,8 @@ class Constants {
 
     private static final String XADATASOURCEPROPERTIES_NAME = "xa-datasource-properties";
 
+    private static final String XADATASOURCEPROPERTIES_VALUE_NAME = "value";
+
     private static final String XADATASOURCECLASS_NAME = "xa-datasource-class";
 
     private static final String INTERLEAVING_NAME = "interleaving";
@@ -181,9 +183,9 @@ class Constants {
 
     static SimpleAttributeDefinition CONNECTION_URL = new SimpleAttributeDefinition(CONNECTION_URL_NAME, DataSource.Tag.CONNECTION_URL.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition DRIVER_CLASS = new SimpleAttributeDefinition(DATASOURCE_DRIVER_CLASS_NAME, DataSource.Tag.DRIVER_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition DRIVER_CLASS = new SimpleAttributeDefinition(DATASOURCE_DRIVER_CLASS_NAME, DataSource.Tag.DRIVER_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition DATASOURCE_CLASS = new SimpleAttributeDefinition(DATASOURCE_CLASS_NAME, DataSource.Tag.DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition DATASOURCE_CLASS = new SimpleAttributeDefinition(DATASOURCE_CLASS_NAME, DataSource.Tag.DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition JNDINAME = new SimpleAttributeDefinition(JNDINAME_NAME, DataSource.Attribute.JNDI_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
@@ -236,7 +238,7 @@ class Constants {
 
     static SimpleAttributeDefinition EXCEPTIONSORTERCLASSNAME = new SimpleAttributeDefinition(EXCEPTIONSORTERCLASSNAME_NAME, Validation.Tag.EXCEPTION_SORTER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, Validation.Tag.EXCEPTION_SORTER.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, Validation.Tag.EXCEPTION_SORTER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition STALECONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(STALECONNECTIONCHECKERCLASSNAME_NAME, Validation.Tag.STALE_CONNECTION_CHECKER.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
@@ -284,6 +286,8 @@ class Constants {
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition XADATASOURCE_PROPERTIES = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+
+    static SimpleAttributeDefinition XADATASOURCE_PROPERTY_VALUE = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_VALUE_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
     static final SimpleAttributeDefinition DRIVER_NAME = new SimpleAttributeDefinition(DRIVER_NAME_NAME, Driver.Attribute.NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

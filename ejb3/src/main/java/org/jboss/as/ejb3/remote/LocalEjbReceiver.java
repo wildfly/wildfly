@@ -31,9 +31,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.utils.DescriptorUtils;
-import org.jboss.as.ejb3.component.AsyncInvocationTask;
-import org.jboss.as.ejb3.component.CancellationFlag;
+import org.jboss.as.ejb3.component.interceptors.AsyncInvocationTask;
+import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -45,6 +46,7 @@ import org.jboss.ejb.client.EJBClientInvocationContext;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverContext;
 import org.jboss.ejb.client.EJBReceiverInvocationContext;
+import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.Locator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
@@ -127,6 +129,9 @@ public class LocalEjbReceiver extends EJBReceiver<Void> implements Service<Local
         if (locator instanceof StatefulEJBLocator) {
             final SessionID sessionID = ((StatefulEJBLocator) locator).getSessionId();
             context.putPrivateData(SessionID.SESSION_ID_KEY, sessionID);
+        } else if (locator instanceof EntityEJBLocator) {
+            final Object primaryKey = ((EntityEJBLocator) locator).getPrimaryKey();
+            context.putPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
         }
 
         if (async) {

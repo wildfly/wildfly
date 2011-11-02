@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.service;
 
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.msc.inject.Injector;
@@ -31,8 +33,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
 /**
  * Service responsible for binding and unbinding a entry into a naming context.  This service can be used as a dependency for
@@ -92,7 +92,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
         ServiceController<?> controller = context.getController();
         this.controller = controller;
         namingStore.add(controller.getName());
-        ROOT_LOGGER.tracef("Bound resource %s into naming store %s", name, namingStore);
+        ROOT_LOGGER.tracef("Bound resource %s into naming store %s (service name %s)", name, namingStore, controller.getName());
     }
 
     /**

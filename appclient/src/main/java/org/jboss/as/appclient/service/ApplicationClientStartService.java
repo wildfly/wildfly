@@ -26,9 +26,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.callback.Callback;
@@ -42,7 +39,6 @@ import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.remoting.IoFutureHelper;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -51,13 +47,13 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.Registration;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-import org.xnio.Xnio;
+
+import static org.jboss.as.appclient.AppClientLogger.ROOT_LOGGER;
 
 
 /**
@@ -81,8 +77,6 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
 
     private Thread thread;
 
-    private final Logger logger = Logger.getLogger(ApplicationClientStartService.class);
-
     public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final String hostUrl, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
@@ -94,27 +88,12 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         try {
-            //TODO: this is a complete hack
-            //we need a real way of setting up the remote EJB
-            ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactory() {
-                @Override
-                public Thread newThread(final Runnable r) {
-                    Thread t = new Thread(r);
-                    t.setName("App Client Remoting Thread");
-                    t.setDaemon(true);
-                    return t;
-                }
-            });
-
-
-            final Endpoint endpoint = Remoting.createEndpoint("endpoint", executor, OptionMap.EMPTY);
-            final Xnio xnio = Xnio.getInstance();
-            final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
-
+            final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+            endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, Boolean.FALSE));
 
             // open a connection
             final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE), new AnonymousCallbackHandler());
-            final Connection connection = IoFutureHelper.get(futureConnection, 5, TimeUnit.SECONDS);
+            final Connection connection = IoFutureHelper.get(futureConnection, 5L, TimeUnit.SECONDS);
 
             thread = new Thread(new Runnable() {
                 @Override
@@ -138,11 +117,11 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                 NamespaceContextSelector.popCurrentSelector();
                             }
                         } catch (InvocationTargetException e) {
-                            logger.error(e.getTargetException(), e.getTargetException());
+                            ROOT_LOGGER.caughtException(e.getTargetException(), e.getTargetException());
                         } catch (IllegalAccessException e) {
-                            logger.error("IllegalAccessException running app client main", e);
+                            ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
                         } catch (InterruptedException e) {
-                            logger.error("InterruptedException running app client main", e);
+                            ROOT_LOGGER.exceptionRunningAppClient(e, e.getClass().getSimpleName());
                         } finally {
                             SecurityActions.setContextClassLoader(oldTccl);
                         }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.deployment.processors.entity;
 
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.processors.EJBComponentDescriptionFactory;
@@ -31,6 +32,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Stuart Douglas
@@ -38,6 +40,16 @@ import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 public class EntityBeanComponentDescriptionFactory extends EJBComponentDescriptionFactory {
 
     private static final Logger logger = Logger.getLogger(EntityBeanComponentDescriptionFactory.class);
+
+    /**
+     * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
+     * the deployment, but do not actuall install them
+     */
+    private final boolean appclient;
+
+    public EntityBeanComponentDescriptionFactory(final boolean appclient) {
+        this.appclient = appclient;
+    }
 
     @Override
     protected void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
@@ -58,9 +70,19 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         final String beanName = entity.getName();
         final String beanClassName = entity.getEjbClass();
 
-        final EntityBeanComponentDescription description = new EntityBeanComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+        if (!shouldProcess(entity)) {
+            return;
+        }
+
+        final EntityBeanComponentDescription description = createDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
+
         // add it to the ejb jar description
-        ejbJarDescription.getEEModuleDescription().addComponent(description);
+        if (appclient) {
+            deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS, description);
+        } else {
+            // Add this component description to module description
+            ejbJarDescription.getEEModuleDescription().addComponent(description);
+        }
         description.setDescriptorData(entity);
 
         description.setPersistenceType(entity.getPersistenceType());
@@ -78,8 +100,23 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
             description.addEjbLocalObjectView(local);
         }
 
+        final String home = entity.getHome();
+        if (home != null) {
+            description.addRemoteHome(home);
+        }
 
+        final String remote = entity.getRemote();
+        if (remote != null) {
+            description.addEjbObjectView(remote);
+        }
+    }
 
+    protected boolean shouldProcess(EntityBeanMetaData entity) {
+        return entity.isBMP();
+    }
+
+    protected EntityBeanComponentDescription createDescription(final String beanName, final String beanClassName, final EjbJarDescription ejbJarDescription, final ServiceName serviceName) {
+        return new EntityBeanComponentDescription(beanName, beanClassName, ejbJarDescription, serviceName);
     }
 
 }

@@ -36,7 +36,7 @@ public class EjbHomeViewDescription extends EJBViewDescription {
     private final Set<Method> createMethods = new HashSet<Method>();
 
     public EjbHomeViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf) {
-        super(componentDescription, viewClassName, methodIntf);
+        super(componentDescription, viewClassName, methodIntf, false);
     }
 
     public void addCreateMethod(Method method) {

@@ -44,6 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
@@ -106,6 +107,7 @@ public class ModelDescriptionValidator {
         paramAndAttributeKeys.put(TYPE, NullDescriptorValidator.INSTANCE);
         //Arbitrary
         paramAndAttributeKeys.put(ALTERNATIVES, StringListValidator.INSTANCE);
+        paramAndAttributeKeys.put(REQUIRES, StringListValidator.INSTANCE);
         paramAndAttributeKeys.put(MIN, NumericDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(MAX, NumericDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(MIN_LENGTH, LengthDescriptorValidator.INSTANCE);

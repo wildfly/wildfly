@@ -22,7 +22,6 @@
 package org.jboss.as.clustering.infinispan.invoker;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 
 /**
  * Encapsulates logic used to invoke an operation on a cache.
@@ -39,13 +38,6 @@ public interface CacheInvoker {
      * @return the result of the cache operation
      */
     <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation);
-
-    /**
-     * Indicates whether or not to set the {@link Flag#FORCE_SYNCHRONOUS} flag prior to invoking the cache operation
-     *
-     * @param forceSynchronous
-     */
-    void setForceSynchronous(boolean forceSynchronous);
 
     /**
      * Encapsulates a cache operation.

@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.IOException;
 import java.security.AccessController;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -136,7 +137,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final Map<String, ProxyController> hostProxies = new ConcurrentHashMap<String, ProxyController>();
         final Map<String, ProxyController> serverProxies = new ConcurrentHashMap<String, ProxyController>();
         final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(processState);
-        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, hostProxies, serverProxies);
+        final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo,
+                Collections.unmodifiableMap(hostProxies), Collections.unmodifiableMap(serverProxies));
         DomainModelControllerService service = new DomainModelControllerService(environment, processState,
                 hostControllerInfo, new HostControllerConfigurationPersister(environment, hostControllerInfo),
                 hostProxies, serverProxies, prepareStepHandler);
@@ -181,18 +183,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         ProxyController existingController = modelNodeRegistration.getProxyController(pa);
 
         if (existingController != null || hostControllerInfo.getLocalHostName().equals(pe.getValue())){
-            boolean unregistered = false;
-            //This horrible hack is there to make sure that the slave has not crashed since we don't get notifications due to REM3-121
-            if ((existingController instanceof RemoteProxyController)) {
-                if (((RemoteProxyController)existingController).ping(3000)) {
-                    throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
-                }
-                unregisterRemoteHost(pe.getValue());
-                unregistered = true;
-            }
-            if (!unregistered) {
-                throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
-            }
+            throw new IllegalArgumentException("There is already a registered host named '" + pe.getValue() + "'");
         }
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(pe.getValue(), hostControllerClient);
@@ -202,6 +193,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public void unregisterRemoteHost(String id) {
+        unregisteredHostChannels.remove(id);
         if (hostProxies.remove(id) != null) {
             Logger.getLogger("org.jboss.domain").info("Unregistered remote slave host " + id);
         }
@@ -445,11 +437,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
     public synchronized void registerChannel(final String hostName, final ManagementChannel channel, final ProxyCreatedCallback callback) {
         PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
 
-        /* Disable this as part of the REM3-121 workarounds
         if (modelNodeRegistration.getProxyController(addr) != null) {
             throw new IllegalArgumentException("There is already a registered slave named '" + hostName + "'");
         }
-        */
         if (unregisteredHostChannels.containsKey(hostName)) {
             throw new IllegalArgumentException("Already have a connection for host " + hostName);
         }
@@ -470,9 +460,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw new IllegalArgumentException("No channel for host " + hostName);
         }
         channel.addCloseHandler(new CloseHandler<Channel>() {
-            //This does not get called when slave terminates abruptly - see REM3-121
             public void handleClose(final Channel closed, final IOException exception) {
-                //TODO A bit strange doing it here before the proxy is actually registered
                 unregisterRemoteHost(hostName);
             }
         });

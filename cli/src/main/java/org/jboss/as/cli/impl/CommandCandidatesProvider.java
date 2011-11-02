@@ -22,6 +22,7 @@
 package org.jboss.as.cli.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,7 +72,7 @@ public class CommandCandidatesProvider implements OperationCandidatesProvider {
     }
 
     @Override
-    public List<CommandArgument> getProperties(CommandContext ctx, String operationName, OperationRequestAddress address) {
+    public Collection<CommandArgument> getProperties(CommandContext ctx, String operationName, OperationRequestAddress address) {
         CommandHandler handler = registry.getCommandHandler(operationName);
         if(handler == null) {
             return Collections.emptyList();

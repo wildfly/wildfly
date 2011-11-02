@@ -23,6 +23,7 @@ package org.jboss.as.cli.impl;
 
 import java.util.List;
 
+import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
@@ -35,17 +36,23 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
 public class ArgumentWithValue extends ArgumentWithoutValue {
 
     private final CommandLineCompleter valueCompleter;
+    private final ArgumentValueConverter valueConverter;
 
     public ArgumentWithValue(CommandHandlerWithArguments handler, String fullName) {
         this(handler, fullName, null);
     }
 
     public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter, String fullName) {
-        this(handler, valueCompleter, fullName, null);
+        this(handler, valueCompleter, ArgumentValueConverter.DEFAULT, fullName, null);
+    }
+
+    public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter,
+            ArgumentValueConverter valueConverter, String fullName) {
+        this(handler, valueCompleter, valueConverter, fullName, null);
     }
 
     public ArgumentWithValue(CommandHandlerWithArguments handler, String fullName, String shortName) {
-        this(handler, null, fullName, shortName);
+        this(handler, null, ArgumentValueConverter.DEFAULT, fullName, shortName);
     }
 
     public ArgumentWithValue(CommandHandlerWithArguments handler, int index, String fullName) {
@@ -55,11 +62,14 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
     public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter, int index, String fullName) {
         super(handler, index, fullName);
         this.valueCompleter = valueCompleter;
+        valueConverter = ArgumentValueConverter.DEFAULT;
     }
 
-    public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter, String fullName, String shortName) {
+    public ArgumentWithValue(CommandHandlerWithArguments handler, CommandLineCompleter valueCompleter,
+            ArgumentValueConverter valueConverter, String fullName, String shortName) {
         super(handler, fullName, shortName);
         this.valueCompleter = valueCompleter;
+        this.valueConverter = valueConverter;
     }
 
     public CommandLineCompleter getValueCompleter() {
@@ -121,5 +131,9 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
             return false;
         }
         return true;
+    }
+
+    public ArgumentValueConverter getValueConverter() {
+        return valueConverter;
     }
 }

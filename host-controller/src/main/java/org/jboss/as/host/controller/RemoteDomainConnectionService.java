@@ -65,7 +65,6 @@ import org.jboss.as.protocol.mgmt.ManagementChannelFactory;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementRequest;
 import org.jboss.as.protocol.mgmt.ManagementResponseHandler;
-import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -191,15 +190,15 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             }
         });
 
-        if (this.channelClient != null) {
-            try {
-                new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
-            } catch (Exception e) {
-            }
-
-            this.channelClient.close();
-            this.channelClient = null;
-        }
+//        if (this.channelClient != null) {
+//            try {
+//                new UnregisterModelControllerRequest().executeForResult(executor, ManagementClientChannelStrategy.create(channel));
+//            } catch (Exception e) {
+//            }
+//
+//            this.channelClient.close();
+//            this.channelClient = null;
+//        }
 
         txOperationHandler = new TransactionalModelControllerOperationHandler(executor, controller);
         ProtocolChannelClient<ManagementChannel> client;
@@ -207,7 +206,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         //Reusing the endpoint here after a disconnect does not seem to work once something has gone down, so try our own
         //configuration.setEndpoint(endpointInjector.getValue());
         configuration.setEndpointName("endpoint");
-        configuration.setExecutor(RemotingServices.createExecutor());
         configuration.setUriScheme("remote");
 
         try {

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.home.remotehome;
 
+import java.rmi.RemoteException;
+
 import javax.ejb.EJBObject;
 
 /**
@@ -28,7 +30,7 @@ import javax.ejb.EJBObject;
  */
 public interface SimpleInterface extends EJBObject {
 
-    public String sayHello();
+    public String sayHello() throws RemoteException;
 
-    public String otherMethod();
+    public String otherMethod() throws RemoteException;
 }

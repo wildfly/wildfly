@@ -22,13 +22,17 @@
 package org.jboss.as.ejb3.component.entity;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
-import org.jboss.as.ejb3.component.entity.entitycache.TransactionLocalEntityCache;
+import org.jboss.as.ejb3.component.entity.entitycache.ReferenceCountingEntityCache;
 import org.jboss.as.ejb3.pool.InfinitePool;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
@@ -45,6 +49,10 @@ public class EntityBeanComponent extends EJBComponent {
 
     private final Pool<EntityBeanComponentInstance> pool;
     private final ReadyEntityCache cache;
+    private final Class<EJBHome> homeClass;
+    private final Class<EJBLocalHome> localHomeClass;
+    private final Class<EJBLocalObject> localClass;
+    private final Class<EJBObject> remoteClass;
 
     protected EntityBeanComponent(final EntityBeanComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
@@ -61,15 +69,17 @@ public class EntityBeanComponent extends EJBComponent {
             }
         };
         pool = new InfinitePool<EntityBeanComponentInstance>(factory);
-        cache = new TransactionLocalEntityCache(this);
+        this.cache = createEntityCache(ejbComponentCreateService);
+
+        this.homeClass = ejbComponentCreateService.getHomeClass();
+        this.localHomeClass = ejbComponentCreateService.getLocalHomeClass();
+        this.localClass = ejbComponentCreateService.getLocalClass();
+        this.remoteClass = ejbComponentCreateService.getRemoteClass();
     }
-
-
 
     @Override
     protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        final EntityBeanComponentInstance instance =  new EntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
-        return instance;
+        return new EntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
     public ReadyEntityCache getCache() {
@@ -79,4 +89,37 @@ public class EntityBeanComponent extends EJBComponent {
     public Pool<EntityBeanComponentInstance> getPool() {
         return pool;
     }
+
+    protected ReadyEntityCache createEntityCache(EntityBeanComponentCreateService ejbComponentCreateService) {
+        return new ReferenceCountingEntityCache(this);
+    }
+
+    public EJBLocalObject getEjbLocalObject(final Object primaryKey) {
+        final HashMap<Object, Object> create = new HashMap<Object, Object>();
+        create.put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
+        return createViewInstanceProxy(getLocalClass(), create);
+    }
+
+    public EJBObject getEJBObject(final Object primaryKey) {
+        final HashMap<Object, Object> create = new HashMap<Object, Object>();
+        create.put(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY, primaryKey);
+        return createViewInstanceProxy(getRemoteClass(), create);
+    }
+
+    public Class<EJBHome> getHomeClass() {
+        return homeClass;
+    }
+
+    public Class<EJBLocalHome> getLocalHomeClass() {
+        return localHomeClass;
+    }
+
+    public Class<EJBLocalObject> getLocalClass() {
+        return localClass;
+    }
+
+    public Class<EJBObject> getRemoteClass() {
+        return remoteClass;
+    }
+
 }

@@ -37,6 +37,8 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 
+import static org.jboss.as.appclient.AppClientMessages.MESSAGES;
+
 /**
  * Processor that starts an application client deployment
  *
@@ -66,14 +68,14 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         }
         final Class<?> mainClass = deploymentUnit.getAttachment(AppClientAttachments.MAIN_CLASS);
         if (mainClass == null) {
-            throw new RuntimeException("Could not start app client " + deploymentUnit.getName() + " as no main class was found");
+            throw MESSAGES.cannotStartAppClient(deploymentUnit.getName());
         }
         final ApplicationClientComponentDescription component = deploymentUnit.getAttachment(AppClientAttachments.APPLICATION_CLIENT_COMPONENT);
 
         ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(mainClass);
         Method method = index.getMethod(void.class, "main", String[].class);
         if (method == null) {
-            throw new RuntimeException("Could not start app client " + deploymentUnit.getName() + " as no main main was found on main class " + mainClass);
+            throw MESSAGES.cannotStartAppClient(deploymentUnit.getName(), mainClass);
         }
         final ApplicationClientStartService startService = new ApplicationClientStartService(method, parameters, hostUrl, moduleDescription.getNamespaceContextSelector(), module.getClassLoader());
         phaseContext.getServiceTarget()

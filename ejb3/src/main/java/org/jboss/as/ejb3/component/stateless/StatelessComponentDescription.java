@@ -37,7 +37,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.component.ComponentTypeIdentityInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
@@ -45,7 +45,8 @@ import org.jboss.as.ejb3.component.pool.PoolConfigService;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.tx.TimerCMTTxInterceptorFactory;
+import org.jboss.as.ejb3.tx.StatelessBMTInterceptor;
+import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
@@ -108,7 +109,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             getConfigurators().add(new ComponentConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptorFactory.INSTANCE, InterceptorOrder.Component.TIMEOUT_CMT_INTERCEPTOR);
+                    configuration.addTimeoutInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.Component.TIMEOUT_CMT_INTERCEPTOR);
                 }
             });
         }
@@ -154,7 +155,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
 
         if (view instanceof EJBViewDescription) {
             EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
-            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
+            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE ) {
                 view.getConfigurators().add(new ViewConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -164,6 +165,11 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             }
         }
 
+    }
+
+    @Override
+    protected ViewConfigurator getSessionBeanObjectViewConfigurator() {
+        return StatelessSessionBeanObjectViewConfigurator.INSTANCE;
     }
 
     @Override

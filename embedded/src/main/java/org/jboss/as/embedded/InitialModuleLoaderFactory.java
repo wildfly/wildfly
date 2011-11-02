@@ -65,20 +65,6 @@ final class InitialModuleLoaderFactory {
 
             ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
-            // we don't want jboss-as-server to show up, but we do want jboss-as-embedded.
-            // So a sanity check that the SYSTEM module ClassLoader cannot see this class is obsolete.
-            /*
-            try {
-                ModuleClassLoader classLoader = moduleLoader.loadModule(ModuleIdentifier.SYSTEM).getClassLoader();
-                classLoader.loadClass(InitialModuleLoaderFactory.class.getName());
-                throw new IllegalStateException("Cannot initialize module system. There was probably a previous usage.");
-            } catch (ModuleLoadException e) {
-                // ignore
-            } catch (ClassNotFoundException ex) {
-                // expected
-            }
-            */
-
             return moduleLoader;
         } finally {
             SecurityActions.setSystemProperty("java.class.path", oldClassPath);

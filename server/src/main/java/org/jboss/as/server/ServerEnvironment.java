@@ -179,6 +179,11 @@ public class ServerEnvironment implements Serializable {
      */
     public static final String JBOSS_BIND_ADDRESS_PREFIX = JBOSS_BIND_ADDRESS + ".";
 
+    /**
+     * The default system property used to store bind address information from the command-line (-b).
+     */
+    public static final String JBOSS_DEFAULT_MULTICAST_ADDRESS = "jboss.default.multicast.address";
+
     private final LaunchType launchType;
     private final String qualifiedHostName;
     private final String hostName;

@@ -69,8 +69,7 @@ public class AnnotationLocalHomeTestCase {
     @Test
     public void testGetEjbLocalHome() throws Exception {
         final SimpleLocalHome home = (SimpleLocalHome) iniCtx.lookup("java:module/SimpleStatelessLocalBean!" + SimpleLocalHome.class.getName());
-        final SimpleLocalInterface ejbInstance = home.createSimple();
-        Assert.assertEquals("Hello World", ejbInstance.otherMethod());
+        Assert.assertTrue(home.createSimple().getEJBLocalHome() instanceof SimpleLocalHome);
     }
 
     @Test

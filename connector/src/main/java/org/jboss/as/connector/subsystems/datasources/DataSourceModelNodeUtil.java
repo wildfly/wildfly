@@ -138,7 +138,7 @@ class DataSourceModelNodeUtil {
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
-        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
+        final boolean enabled = false;//getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
         final boolean jta = getBooleanIfSetOrGetDefault(dataSourceNode, JTA, Defaults.JTA);
         final Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, Defaults.MAX_POOL_SIZE);
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, Defaults.MIN_POOL_SIZE);
@@ -199,17 +199,8 @@ class DataSourceModelNodeUtil {
                 poolName, enabled, jndiName, spy, useCcm, jta, pool);
     }
 
-    static XaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {
-        final Map<String, String> xaDataSourceProperty;
-        if (dataSourceNode.hasDefined(XADATASOURCE_PROPERTIES.getName())) {
-            List<Property> propertyList = dataSourceNode.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList();
-            xaDataSourceProperty = new HashMap<String, String>(propertyList.size());
-            for (Property property : propertyList) {
-                xaDataSourceProperty.put(property.getName(), property.getValue().asString());
-            }
-        } else {
-            xaDataSourceProperty = Collections.emptyMap();
-        }
+    static ModifiableXaDataSource xaFrom(final ModelNode dataSourceNode) throws ValidateException {
+        final Map<String, String> xaDataSourceProperty = new HashMap<String, String>(0);
 
         final String xaDataSourceClass = getStringIfSetOrGetDefault(dataSourceNode, XADATASOURCECLASS, null);
         final String jndiName = getStringIfSetOrGetDefault(dataSourceNode, JNDINAME, null);
@@ -220,7 +211,8 @@ class DataSourceModelNodeUtil {
         final String urlSelectorStrategyClassName = getStringIfSetOrGetDefault(dataSourceNode,
                 URL_SELECTOR_STRATEGY_CLASS_NAME, null);
         final boolean useJavaContext = getBooleanIfSetOrGetDefault(dataSourceNode, USE_JAVA_CONTEXT, Defaults.USE_JAVA_CONTEXT);
-        final boolean enabled = getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
+        final boolean enabled = false;
+                //getBooleanIfSetOrGetDefault(dataSourceNode, ENABLED, Defaults.ENABLED);
         final Integer maxPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MAX_POOL_SIZE, Defaults.MAX_POOL_SIZE);
         final Integer minPoolSize = getIntIfSetOrGetDefault(dataSourceNode, MIN_POOL_SIZE, Defaults.MIN_POOL_SIZE);
         final boolean prefill = getBooleanIfSetOrGetDefault(dataSourceNode, POOL_PREFILL, Defaults.PREFILL);
@@ -289,7 +281,7 @@ class DataSourceModelNodeUtil {
         final Extension recoverPlugin = extractExtension(dataSourceNode, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
         final boolean noRecovery = getBooleanIfSetOrGetDefault(dataSourceNode, NO_RECOVERY, false);
         Recovery recovery = new Recovery(credential, recoverPlugin, noRecovery);
-        return new XADataSourceImpl(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
+        return new ModifiableXaDataSource(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm, xaDataSourceProperty,
                 xaDataSourceClass, module, newConnectionSql, xaPool, recovery);
     }

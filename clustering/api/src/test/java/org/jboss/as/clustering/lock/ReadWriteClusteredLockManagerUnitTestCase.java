@@ -248,7 +248,6 @@ public class ReadWriteClusteredLockManagerUnitTestCase extends ClusteredLockMana
         basicClusterLockFailsAgainstLocalLockTest(2);
     }
 
-    @SuppressWarnings("unchecked")
     private void basicClusterLockFailsAgainstLocalLockTest(int viewSize) throws Exception {
         int viewPos = viewSize == 1 ? 0 : 1;
         TesteeSet<NonGloballyExclusiveClusterLockSupport> testeeSet = getTesteeSet(node1, viewPos, viewSize);
@@ -262,9 +261,8 @@ public class ReadWriteClusteredLockManagerUnitTestCase extends ClusteredLockMana
         }
 
         when(rpcDispatcher.getMethodCallTimeout()).thenReturn(60000l);
-        when(rpcDispatcher.callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 2000000),
-                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(RemoteLockResponse.class), eq(true),
-                        eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
+        when(rpcDispatcher.<RemoteLockResponse>callMethodOnCluster(eq("test"), eq("remoteLock"), eqLockParams(node1, 2000000),
+                        aryEq(AbstractClusterLockSupport.REMOTE_LOCK_TYPES), eq(true), eq(NULL_FILTER), anyInt(), eq(false))).thenReturn(rspList);
 
         doThrow(new TimeoutException(node1)).when(handler).lockFromCluster(eq("test"), eq(node1), anyLong());
 

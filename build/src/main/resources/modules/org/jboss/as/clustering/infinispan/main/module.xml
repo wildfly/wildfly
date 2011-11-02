@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="org.jboss.as.clustering.infinispan">
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.infinispan">
 
     <resources>
         <!-- Insert resources here -->
@@ -40,7 +40,6 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
-        <module name="org.jboss.common-core"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>

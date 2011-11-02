@@ -56,7 +56,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @since 15-Feb-2010
  */
 @RunWith(Arquillian.class)
-public class BundleStateTestCase extends OSGiTestSupport {
+public class BundleStateTestCase {
 
     @Inject
     public BundleContext context;
@@ -72,7 +72,7 @@ public class BundleStateTestCase extends OSGiTestSupport {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(BundleStateMBean.class);
-                builder.addImportPackages(StartLevel.class, MBeanServer.class, MBeanProxy.class);
+                builder.addImportPackages(StartLevel.class, MBeanServer.class, MBeanProxy.class, TabularData.class);
                 return builder.openStream();
             }
         });
@@ -82,7 +82,7 @@ public class BundleStateTestCase extends OSGiTestSupport {
     @Test
     public void testBundleStateMBean() throws Exception {
 
-        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
 
         ServiceReference sref = context.getServiceReference(MBeanServer.class.getName());
         MBeanServer server = (MBeanServer) context.getService(sref);

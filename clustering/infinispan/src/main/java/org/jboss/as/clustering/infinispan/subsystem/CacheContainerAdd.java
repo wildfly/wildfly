@@ -46,9 +46,11 @@ import org.infinispan.loaders.AbstractCacheStoreConfig;
 import org.infinispan.loaders.CacheStore;
 import org.infinispan.loaders.CacheStoreConfig;
 import org.infinispan.manager.CacheContainer;
+import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -61,7 +63,6 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.services.path.AbstractPathService;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.txn.TxnServices;
@@ -74,7 +75,9 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Value;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.jgroups.Channel;
 
 /**
  * @author Paul Ferraro
@@ -163,6 +166,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
         for (ModelNode cache : operation.require(ModelKeys.CACHE).asList()) {
             String cacheName = cache.require(ModelKeys.NAME).asString();
             Configuration configuration = new Configuration();
+            configuration.setClassLoader(this.getClass().getClassLoader());
             FluentConfiguration fluent = configuration.fluent();
             Configuration.CacheMode mode = CacheMode.valueOf(cache.require(ModelKeys.MODE).asString());
             requiresTransport |= mode.isClustered();
@@ -219,6 +223,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
             }
             FluentConfiguration.TransactionConfig fluentTx = fluent.transaction();
             TransactionMode txMode = TransactionMode.NON_XA;
+            LockingMode lockingMode = LockingMode.OPTIMISTIC;
             if (cache.hasDefined(ModelKeys.TRANSACTION)) {
                 ModelNode transaction = cache.get(ModelKeys.TRANSACTION);
                 if (transaction.hasDefined(ModelKeys.STOP_TIMEOUT)) {
@@ -227,11 +232,16 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                 if (transaction.hasDefined(ModelKeys.MODE)) {
                     txMode = TransactionMode.valueOf(transaction.get(ModelKeys.MODE).asString());
                 }
+                if (transaction.hasDefined(ModelKeys.LOCKING)) {
+                    lockingMode = LockingMode.valueOf(transaction.get(ModelKeys.LOCKING).asString());
+                }
                 if (transaction.hasDefined(ModelKeys.EAGER_LOCKING)) {
                     EagerLocking eager = EagerLocking.valueOf(transaction.get(ModelKeys.EAGER_LOCKING).asString());
-                    fluentTx.useEagerLocking(eager.isEnabled()).eagerLockSingleNode(eager.isSingleOwner());
+                    fluentTx.lockingMode(eager.isEnabled() ? LockingMode.PESSIMISTIC : LockingMode.OPTIMISTIC).eagerLockSingleNode(eager.isSingleOwner());
                 }
             }
+            fluentTx.transactionMode(txMode.getMode());
+            fluentTx.lockingMode(lockingMode);
             FluentConfiguration.RecoveryConfig recovery = fluentTx.useSynchronization(!txMode.isXAEnabled()).recovery();
             if (txMode.isRecoveryEnabled()) {
                 recovery.syncCommitPhase(true).syncRollbackPhase(true);
@@ -310,6 +320,15 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
             if (cacheName.equals(defaultCache)) {
                 cacheBuilder.addAliases(CacheService.getServiceName(name, null));
             }
+            if (configuration.isTransactionalCache()) {
+                cacheBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
+                if (configuration.isUseSynchronizationForTransactions()) {
+                    cacheBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
+                }
+                if (configuration.isTransactionRecoveryEnabled()) {
+                    cacheBuilder.addDependencies(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
+                }
+            }
             if (startMode.getMode() == ServiceController.Mode.ACTIVE) {
                 cacheBuilder.addListener(verificationHandler);
             }
@@ -341,9 +360,14 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
                     transportConfig.setMachine(transport.get(ModelKeys.MACHINE).asString());
                 }
             }
-            builder.addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
-            builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, transportConfig.getEnvironmentInjector());
+            builder.addDependency(ChannelService.getServiceName(name), Channel.class, transportConfig.getChannelInjector());
             config.setTransport(transportConfig);
+
+            InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
+            newControllers.add(target.addService(ChannelService.getServiceName(name), new ChannelService(name, channelFactory))
+                    .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .install());
         }
 
         addExecutorDependency(builder, operation, ModelKeys.LISTENER_EXECUTOR, config.getListenerExecutorInjector());
@@ -515,9 +539,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
     }
 
     static class Transport implements TransportConfiguration {
-        private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
+        private final InjectedValue<Channel> channel = new InjectedValue<Channel>();
         private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
-        private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
 
         private Long lockTimeout;
         private String site;
@@ -540,26 +563,17 @@ public class CacheContainerAdd extends AbstractAddStepHandler implements Descrip
             this.machine = machine;
         }
 
-        Injector<ChannelFactory> getChannelFactoryInjector() {
-            return this.channelFactory;
+        Injector<Channel> getChannelInjector() {
+            return this.channel;
         }
 
         Injector<Executor> getExecutorInjector() {
             return this.executor;
         }
 
-        Injector<ServerEnvironment> getEnvironmentInjector() {
-            return this.environment;
-        }
-
         @Override
-        public ServerEnvironment getEnvironment() {
-            return this.environment.getValue();
-        }
-
-        @Override
-        public ChannelFactory getChannelFactory() {
-            return this.channelFactory.getValue();
+        public Value<Channel> getChannel() {
+            return this.channel;
         }
 
         @Override

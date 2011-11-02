@@ -37,6 +37,8 @@ import javax.validation.ValidatorFactory;
 /**
  * Serializable validator factory
  *
+ * TODO:  clustering support is needed (readResolve should set delegate to already initialized validator factory)
+ *
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author Scott Marlow
  * @version $Revision: $
@@ -50,16 +52,10 @@ public class SerializableValidatorFactory implements ValidatorFactory, Serializa
     /**
      * The validator factory that all invocations are delegated to.
      */
-    private static volatile ValidatorFactory delegate;
+    private volatile ValidatorFactory delegate = new JPALazyValidatorFactory(null);
 
-    static {
-        delegate = new JPALazyValidatorFactory(null);
-    }
-
-    private static SerializableValidatorFactory INSTANCE = new SerializableValidatorFactory();
-
-    public static ValidatorFactory getINSTANCE() {
-        return INSTANCE;
+    public static ValidatorFactory validatorFactory() {
+        return new SerializableValidatorFactory();
     }
 
     /**

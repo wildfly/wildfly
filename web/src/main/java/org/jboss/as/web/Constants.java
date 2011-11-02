@@ -32,12 +32,14 @@ interface Constants {
     String CA_CERTIFICATE_FILE = "ca-certificate-file";
     String CA_REVOCATION_URL = "ca-revocation-url";
     String CACHE_CONTAINER = "cache-container";
+    String CACHE_NAME = "cache-name";
     String CERTIFICATE_FILE = "certificate-file";
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CHECK_INTERVAL = "check-interval";
     String CIPHER_SUITE = "cipher-suite";
     String CONDITION = "condition";
     String CONNECTOR = "connector";
+    String CONTAINER = "container";
     String CONTAINER_CONFIG = "configuration";
     String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     String DEFAULT_WEB_MODULE = "default-web-module";
@@ -120,5 +122,6 @@ interface Constants {
     String ERROR_COUNT = "errorCount";
     String MAX_TIME = "maxTime";
     String REQUEST_COUNT = "requestCount";
+
 
 }

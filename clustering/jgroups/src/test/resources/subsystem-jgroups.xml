@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <subsystem xmlns="urn:jboss:domain:jgroups:1.0" default-stack="minimal">
     <stack name="minimal">
         <transport type="UDP"/>
@@ -16,14 +15,13 @@
         <protocol type="VERIFY_SUSPECT"/>
         <protocol type="BARRIER"/>
         <protocol type="pbcast.NAKACK"/>
-        <protocol type="UNICAST"/>
+        <protocol type="UNICAST2"/>
         <protocol type="pbcast.STABLE"/>
-        <protocol type="VIEW_SYNC"/>
         <protocol type="pbcast.GMS"/>
         <protocol type="UFC"/>
         <protocol type="MFC"/>
         <protocol type="FRAG2"/>
-        <protocol type="pbcast.STREAMING_STATE_TRANSFER" socket-binding="jgroups-state-xfr"/>
+        <protocol type="pbcast.STATE_TRANSFER" socket-binding="jgroups-state-xfr"/>
         <protocol type="pbcast.FLUSH"/>
     </stack>
 </subsystem>

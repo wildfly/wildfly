@@ -65,7 +65,7 @@ final class ConnectionPropertiesService implements Service<String> {
 
         }
 
-        public Injector<ModifiableDataSource> getAOInjector() {
+        public Injector<ModifiableDataSource> getDSInjector() {
             return ds;
         }
 

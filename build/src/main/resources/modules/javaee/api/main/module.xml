@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="javaee.api">
+<module xmlns="urn:jboss:module:1.1" name="javaee.api">
     <resources>
         <!-- Insert resources here -->
     </resources>
@@ -41,6 +41,7 @@
         <module name="javax.mail.api" export="true"/>
         <module name="javax.persistence.api" export="true"/>
         <module name="javax.resource.api" export="true"/>
+        <module name="javax.rmi.api" export="true"/>
         <module name="javax.security.auth.message.api" export="true"/>
         <module name="javax.security.jacc.api" export="true"/>
         <module name="javax.servlet.api" export="true"/>

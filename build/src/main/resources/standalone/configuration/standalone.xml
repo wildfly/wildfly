@@ -24,6 +24,7 @@
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
+        <extension module="org.jboss.as.cmp"/>
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
@@ -49,9 +50,9 @@
 
     <management>
         <security-realms>
-            <security-realm name="PropertiesMgmtSecurityRealm">
+            <security-realm name="ManagementRealm">
                 <authentication>
-                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir" plain-text="true"/>
                 </authentication>
             </security-realm>
         </security-realms>
@@ -77,6 +78,7 @@
                 </formatter>
                 <file relative-to="jboss.server.log.dir" path="server.log"/>
                 <suffix value=".yyyy-MM-dd"/>
+                <append value="true"/>
             </periodic-rotating-file-handler>
 
             <logger category="com.arjuna">
@@ -166,6 +168,7 @@
                 <thread-pool name="default" max-threads="10" keepalive-time="100" />
             </thread-pools>
         </subsystem>
+        <subsystem xmlns="urn:jboss:domain:cmp:1.0"/>
         <subsystem xmlns="urn:jboss:domain:infinispan:1.0" default-cache-container="hibernate">
             <cache-container name="hibernate" default-cache="local-query">
                 <local-cache name="entity">
@@ -389,7 +392,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.0">
             <modify-wsdl-address>true</modify-wsdl-address>
-            <wsdl-host>localhost</wsdl-host>
+            <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
             <!--
             <wsdl-port>8080</wsdl-port>
             <wsdl-secure-port>8443</wsdl-secure-port>

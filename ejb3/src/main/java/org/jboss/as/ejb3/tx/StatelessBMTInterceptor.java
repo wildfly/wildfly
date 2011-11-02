@@ -21,12 +21,14 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import org.jboss.logging.Logger;
-
 import javax.ejb.EJBException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
+
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 /**
  * EJB 3 13.6.1:
@@ -36,13 +38,16 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  * @version $Revision: $
  */
-public abstract class StatelessBMTInterceptor extends BMTInterceptor {
+public class StatelessBMTInterceptor extends BMTInterceptor {
     private static final Logger log = Logger.getLogger(StatelessBMTInterceptor.class);
 
-    private void checkStatelessDone(TransactionalInvocationContext invocation, Exception ex) throws Exception {
+    public StatelessBMTInterceptor(final EJBComponent component) {
+        super(component);
+    }
+
+    private void checkStatelessDone(final EJBComponent component,final InterceptorContext invocation, final TransactionManager tm, Exception ex) throws Exception {
         int status = Status.STATUS_NO_TRANSACTION;
 
-        TransactionManager tm = this.getTransactionManager();
         try {
             status = tm.getStatus();
         } catch (SystemException sex) {
@@ -62,7 +67,7 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor {
                 }
                 // fall through...
             case Status.STATUS_PREPARED:
-                String msg = "EJB 3.1 FR 13.3.3: BMT bean " + getComponentName()
+                String msg = "EJB 3.1 FR 13.3.3: BMT bean " + component.getComponentName()
                         + " should complete transaction before returning.";
                 log.error(msg);
                 throw new EJBException(msg, ex);
@@ -72,9 +77,11 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor {
             throw this.handleException(invocation, ex);
     }
 
+
     @Override
-    public Object handleInvocation(TransactionalInvocationContext invocation) throws Exception {
-        TransactionManager tm = this.getTransactionManager();
+    protected Object handleInvocation(final InterceptorContext invocation) throws Exception {
+        final EJBComponent ejbComponent = getComponent();
+        TransactionManager tm = ejbComponent.getTransactionManager();
         assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
 
         boolean exceptionThrown = false;
@@ -82,15 +89,14 @@ public abstract class StatelessBMTInterceptor extends BMTInterceptor {
             return invocation.proceed();
         } catch (Exception ex) {
             exceptionThrown = true;
-            checkStatelessDone(invocation, ex);
+            checkStatelessDone(ejbComponent, invocation, tm, ex);
             throw ex;
         } finally {
             try {
-                if (!exceptionThrown) checkStatelessDone(invocation, null);
+                if (!exceptionThrown) checkStatelessDone(ejbComponent, invocation, tm, null);
             } finally {
                 tm.suspend();
             }
         }
     }
-
 }

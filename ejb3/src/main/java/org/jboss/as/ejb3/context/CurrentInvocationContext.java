@@ -21,32 +21,44 @@
  */
 package org.jboss.as.ejb3.context;
 
-import org.jboss.as.ejb3.context.spi.InvocationContext;
-import org.jboss.as.ejb3.context.util.ThreadLocalStack;
+import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.component.EjbComponentInstance;
+import org.jboss.as.ejb3.util.ThreadLocalStack;
+import org.jboss.invocation.InterceptorContext;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class CurrentInvocationContext {
-    private static final ThreadLocalStack<InvocationContext> stack = new ThreadLocalStack<InvocationContext>();
+    private static final ThreadLocalStack<InterceptorContext> stack = new ThreadLocalStack<InterceptorContext>();
 
-    public static InvocationContext get() {
-        InvocationContext current = stack.get();
+    public static InterceptorContext get() {
+        InterceptorContext current = stack.get();
         if (current == null)
             throw new IllegalStateException("No current invocation context available");
         return current;
     }
 
-    public static <T extends InvocationContext> T get(Class<T> expectedType) {
+    public static <T extends InterceptorContext> T get(Class<T> expectedType) {
         return expectedType.cast(get());
     }
 
-    public static InvocationContext pop() {
+    public static EJBContextImpl getEjbContext() {
+        final InterceptorContext context = get();
+        final ComponentInstance component = context.getPrivateData(ComponentInstance.class);
+        if(!(component instanceof EjbComponentInstance)) {
+            throw new IllegalStateException("Current component is not an EJB " + component);
+        }
+        return ((EjbComponentInstance)component).getEjbContext();
+    }
+
+    public static InterceptorContext pop() {
         return stack.pop();
     }
 
-    public static void push(InvocationContext invocation) {
+    public static void push(InterceptorContext invocation) {
         assert invocation != null : "invocation is null";
         stack.push(invocation);
     }
+
 }

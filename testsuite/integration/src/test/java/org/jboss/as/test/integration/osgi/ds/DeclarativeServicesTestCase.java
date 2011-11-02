@@ -52,7 +52,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * @since 06-Jul-2011
  */
 @RunWith(Arquillian.class)
-public class DeclarativeServicesTestCase extends OSGiTestSupport {
+public class DeclarativeServicesTestCase {
 
     @Inject
     public BundleContext context;
@@ -82,7 +82,7 @@ public class DeclarativeServicesTestCase extends OSGiTestSupport {
     @Test
     public void testImmediateService() throws Exception {
 
-        changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
+        OSGiTestSupport.changeStartLevel(context, 3, 10, TimeUnit.SECONDS);
         bundle.start();
 
         final CountDownLatch latch = new CountDownLatch(1);

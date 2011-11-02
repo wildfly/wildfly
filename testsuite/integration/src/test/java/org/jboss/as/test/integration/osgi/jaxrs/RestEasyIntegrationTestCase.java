@@ -22,17 +22,27 @@
 
 package org.jboss.as.test.integration.osgi.jaxrs;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.OSGiTestSupport;
+import org.jboss.as.test.integration.osgi.xservice.api.Echo;
+import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
+import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.testing.ManifestBuilder;
+import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarFile;
@@ -45,23 +55,44 @@ import static org.junit.Assert.assertEquals;
  * @author thomas.diesler@jboss.com
  * @since 08-Oct-2011
  */
-@RunAsClient
 @RunWith(Arquillian.class)
-public class RestEasyIntegrationTestCase extends OSGiTestSupport {
+public class RestEasyIntegrationTestCase {
 
-    static final String WAR_DEPLOYMENT_NAME = "resteasy-osgi-client.war";
+    static final String DEPLOYMENT_NAME = "resteasy-osgi-client.war";
+
+    @ArquillianResource
+    public Deployer deployer;
+
+    @Inject
+    public Bundle bundle;
 
     @Deployment
-    // [TODO] Dependency on compendium only works when the OSGi subsystem is up
-    public static WebArchive deployment() {
-        final WebArchive archive = ShrinkWrap.create(WebArchive.class, WAR_DEPLOYMENT_NAME);
+    public static JavaArchive createDeployment() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jaxrs-osgi-target");
+        archive.addClasses(OSGiTestSupport.class, Echo.class, TargetBundleActivator.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(TargetBundleActivator.class);
+                builder.addImportPackages(BundleActivator.class, ModuleIdentifier.class, Logger.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = DEPLOYMENT_NAME, managed = false, testable = false)
+    public static WebArchive endpointWar() {
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         archive.addClass(SimpleRestEndpoint.class);
         archive.setWebXML("osgi/jaxrs/web.xml");
         // [SHRINKWRAP-278] WebArchive.setManifest() results in WEB-INF/classes/META-INF/MANIFEST.MF
         archive.add(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework,deployment.osgi.cmpn:4.2.0.200908310645");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.jaxrs-osgi-target:0.0.0");
                 return builder.openStream();
             }
         }, JarFile.MANIFEST_NAME);
@@ -70,11 +101,21 @@ public class RestEasyIntegrationTestCase extends OSGiTestSupport {
 
     @Test
     public void testServiceAccess() throws Exception {
-        assertEquals("[\"org.apache.felix.webconsole.internal.servlet.OsgiManager\"]", getHttpResponse());
+
+        // [AS7-2178] Deployment cannot create dependency on unresolved OSGi bundle
+        bundle.start();
+
+        deployer.deploy(DEPLOYMENT_NAME);
+        try {
+            assertEquals("kermit", getHttpResponse("kermit"));
+        } finally {
+            deployer.undeploy(DEPLOYMENT_NAME);
+        }
     }
 
-    private String getHttpResponse() throws IOException {
-        String reqPath = "/resteasy-osgi-client/cm/pids";
-        return getHttpResponse("localhost", 8080, reqPath, 2000);
+    private String getHttpResponse(String message) throws IOException {
+        String reqPath = "/resteasy-osgi-client/rest/echo/" + message;
+        return OSGiTestSupport.getHttpResponse("localhost", 8080, reqPath, 2000);
     }
+
 }

@@ -24,6 +24,7 @@ package org.jboss.as.remoting;
 import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
+import static org.xnio.Options.SASL_PROPERTIES;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,9 +40,12 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
+import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.xnio.OptionMap;
+import org.xnio.OptionMap.Builder;
 import org.xnio.Options;
+import org.xnio.Property;
 import org.xnio.Sequence;
 
 /**
@@ -55,6 +59,9 @@ import org.xnio.Sequence;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class RealmAuthenticationProvider implements ServerAuthenticationProvider {
+
+    static final String REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
+    static final String PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
 
     static final String ANONYMOUS = "ANONYMOUS";
 
@@ -72,7 +79,19 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
 
     OptionMap getSaslOptionMap() {
         if (digestMd5Supported()) {
-            return OptionMap.create(SASL_MECHANISMS, Sequence.of(DIGEST_MD5));
+            Builder builder = OptionMap.builder();
+            builder.set(SASL_MECHANISMS, Sequence.of("DIGEST-MD5"));
+
+            Sequence<Property> properties;
+            if (contains(DigestHashCallback.class, realm.getCallbackHandler().getSupportedCallbacks())) {
+                properties = Sequence.of(Property.of(REALM_PROPERTY, realm.getName()), Property.of(PRE_DIGESTED_PROPERTY, Boolean.TRUE.toString()));
+            } else {
+                properties = Sequence.of(Property.of(REALM_PROPERTY, realm.getName()));
+            }
+
+            builder.set(SASL_PROPERTIES, properties);
+
+            return builder.getMap();
         }
 
         if (plainSupported()) {
@@ -105,34 +124,12 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         CallbackHandler realmCallbackHandler = null;
 
         // We must have a match in this block or throw an IllegalStateException.
-        if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported()) {
-            final CallbackHandler realHandler = realm.getCallbackHandler();
-            // TODO - Correct JBoss Remoting so that the realm can be specified independently of the endpoint name.
-            // TODO - AS7-1093 / XNIO-96
-            // In the meantime
-            final CallbackHandler realmNameFix = new CallbackHandler() {
-
-                public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-                    List<Callback> filteredCallbacks = new ArrayList<Callback>(callbacks.length - 1);
-                    for (Callback current : callbacks) {
-                        if (current instanceof RealmCallback == false) {
-                            filteredCallbacks.add(current);
-                        }
-                    }
-                    realHandler.handle(filteredCallbacks.toArray(new Callback[filteredCallbacks.size()]));
-
-                }
-
-            };
-
-            realmCallbackHandler = realmNameFix;
-        } else if (PLAIN.equals(mechanismName) && plainSupported()) {
-            // No fancy wrapping needed for this one ;-)
+        if (DIGEST_MD5.equals(mechanismName) && digestMd5Supported() ||
+                PLAIN.equals(mechanismName) && plainSupported()) {
             realmCallbackHandler = realm.getCallbackHandler();
         } else {
             throw new IllegalStateException("Unsupported Callback '" + mechanismName + "'");
         }
-
 
         // If there is not serverCallbackHandler then we don't need to wrap it so we can just return the realm
         // name fix handler which is already wrapping the real handler.
@@ -164,6 +161,8 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
                         return (password != null && password.length > 0);
                     } else if (current instanceof VerifyPasswordCallback) {
                         return ((VerifyPasswordCallback) current).isVerified();
+                    } else if (current instanceof DigestHashCallback) {
+                        return ((DigestHashCallback) current).getHash() != null;
                     }
                 }
                 return false;
@@ -183,7 +182,8 @@ public class RealmAuthenticationProvider implements ServerAuthenticationProvider
         if (contains(RealmCallback.class, callbacks) == false) {
             return false;
         }
-        if (contains(PasswordCallback.class, callbacks) == false) {
+        if (contains(PasswordCallback.class, callbacks) == false &&
+                contains(DigestHashCallback.class, callbacks) == false) {
             return false;
         }
         if (contains(AuthorizeCallback.class, callbacks) == false) {

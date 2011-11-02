@@ -21,6 +21,66 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
+
+<!--
+    1. The testsuite/integration module organizes tests and resources by package
+    - tests should be grouped logically into meaningful categories (e.g. clustering, security))
+    - put your test sources in src/test/java/org/jboss/as/test/X/test, where X is your logical test grouping
+    - put your test resources in src/test/resources/X, where  X is your logical test grouping.
+
+    2. For management of resources and server configurations
+    - create new server configs in target/<server name> (e.g. target/clustering-udp-0)
+    - store arquillian configurations in a named arquillian.xml file under resources (e.g. clustering-arquillian.xml)
+
+    3. This pom should be used to do the following:
+    - define server configuration build steps/recipes
+    - define surefire test executions
+    These elements should be defined in maven build profiles associated with each logical grouping of tests.
+
+    So, for example, for the clustering tests, we may have
+    <profiles>
+      <profile>
+        <id>clustering.integration.tests.profile</id>
+	    <activation>
+	      <property>
+	        <name>tests-clustering</name>
+	        <value>true</value>
+	      </property>
+	    </activation>
+	    <plugins>
+	      <plugin>
+	        // maven-antrun-plugin executions to build server configurations for clustering tests
+	        ...
+	        // maven-surefire-plugin executions to run test cases for clustering tests
+	        ...
+	      </plugin>
+	    </plugins>
+      </profile>
+    </profiles>
+
+    The tests can be executed by making sure the profile is active, by passing -Dclustering.integration.tests=true
+    on the command line.
+
+    4. naming conventions
+        Using consistent naming of plugin executions makes it much easier to read what is happening
+        from the console during testsuite execution
+
+       - test profiles:
+        test profiles are named group.module.tests.profile and are activated by -Dgroup.module.tests
+        where 'group' is the logical grouping of tests (e.g. activate the clustering integration tests
+        via -Dclustering.integration.tests)
+
+       - plugin executions:
+         - server build-related plugin executions (.server): server build-related execution ids have the suffix
+         .server to indicate that they are part of a server build
+         - test execution-related plugin executions (.surefire): these have the suffix .surefire to indicate
+         that they correspond to a surefire plugin execution executing test cases
+
+    5. We control which tests are executed and which system properties are passed via a build.sh file and system properties
+    passed to it.
+
+-->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -49,20 +109,20 @@
         <!-- used to provide an absolute location for the XSLT scripts -->
         <!-- this value is overridden in modules with the correct relative pathname -->
         <xslt.scripts.dir>${basedir}/src/test/xslt</xslt.scripts.dir>
+        
+        <!-- Enable smoke tests by default -->
+        <noSmoke>true</noSmoke>
     </properties>
 
-
     <dependencies>
+        <!-- define dependencies specific to the integration tests -->
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-webservices-tests-integration</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-managed</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-demos-legacy</artifactId>
@@ -85,58 +145,62 @@
             <testResource>
                 <directory>src/test/java</directory>
                 <excludes>
-                    <exclude>*.java</exclude>
+                    <exclude>**/*.java</exclude>
                 </excludes>
             </testResource>
         </testResources>
 
         <plugins>
-            <!-- general plugin configuration for all integration tests -->
+            <!-- General plugin configuration for all integration tests -->
 
-            <!-- general surefire configuration -->
+            <!-- General surefire configuration -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!-- prevent test and server output appearing in console -->
+                    <!-- Prevent test and server output appearing in console -->
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <enableAssertions>true</enableAssertions>
 
-                    <!-- forked process timeout -->
+                    <!-- Forked process timeout -->
                     <forkedProcessTimeoutInSeconds>${surefire.forked.process.timeout}</forkedProcessTimeoutInSeconds>
-                    <!-- system properties to forked surefire JVM which runs clients -->
+                    <!-- System properties to forked surefire JVM which runs clients -->
                     <argLine>${ip.client.stack}</argLine>
 
-                    <!-- system properties passed to test cases -->
+                    <!-- System properties passed to test cases -->
                     <systemPropertyVariables>
                         <node0>${node0}</node0>
                         <node1>${node1}</node1>
                         <udpGroup>${udpGroup}</udpGroup>
 
-                        <!-- used in arquillian.xml -->
-                        <server.jvm.args>-Xmx512m -XX:MaxPermSize=129m ${ip.server.stack}</server.jvm.args>
+                        <!-- Used in arquillian.xml -->
+                        <server.jvm.args>${surefire.system.args} ${ip.server.stack}</server.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
-                    <!-- disable default-test execution -->
+                    <!-- Disable default-test execution -->
                     <execution>
                         <id>default-test</id>
                         <goals>
                             <goal>test</goal>
                         </goals>
-                        <phase>none</phase>
+                        <phase>test</phase>
+                        <configuration>
+                            <excludes>
+                                <exclude>**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
 
+            <!-- Cleaning before test run. -->
             <plugin>
-                <!-- We need to clean the serialized timer info before each run -->
-                <!-- to make sure we have no serialized timers hanging around -->
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>2.4.1</version>
                 <executions>
-                    <execution >
-                        <id>clean-old-timers</id>
+                    <execution>
+                        <id>clean-before-test-run</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>clean</goal>
@@ -145,144 +209,58 @@
                             <excludeDefaultDirectories>true</excludeDefaultDirectories>
                             <filesets>
                                 <fileset>
+                                    <!-- We need to clean the serialized timer info before each run -->
+                                    <!-- to make sure we have no serialized timers hanging around.  -->
                                     <directory>target/jbossas/standalone/data/</directory>
+                                    <!-- HttpDeploymentUploadUnitTestCase would fail with dirty data. TODO -->
+                                    <directory>target/smoke</directory>
                                 </fileset>
                             </filesets>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+
         </plugins>
     </build>
 
+    <!--
+      Test profiles
+
+      - Here we define logical groupings of test cases to be executed.
+      - These should be used to define:
+        - maven-antrun-plugin executions for creating server configurations to be started and stopped.
+        - maven-surefire-plugin executions for executing sets of test cases against a server.
+
+      - Naming convention:
+          Test profiles are named group.module.tests.profile and are activated by -Dgroup.module.tests
+          where 'group' is the logical grouping of tests (e.g. activate the clustering integration tests
+          via -Dclustering.integration.tests)
+
+      Note that the profiles are executed in reversed order than they are defined here.
+    -->
+
     <profiles>
 
-        <profile>
-            <id>smoke-tests</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <property>
-                    <name>!allTests</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>smoke-tests</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <skipTests>false</skipTests>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <enableAssertions>true</enableAssertions>
-                                    <includes>
-                                        <include>org/jboss/as/test/smoke/**/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>none</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
 
-        <profile>
-            <id>integration-tests</id>
-            <activation>
-                <property>
-                    <name>allTests</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>integration</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <skipTests>false</skipTests>
-                                    <forkedProcessTimeoutInSeconds>900</forkedProcessTimeoutInSeconds>
-                                    <includes>
-                                        <include>org/jboss/as/test/smoke/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/**/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>**/*SecondTestCase.java</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-
-        <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
-        <profile>
-            <id>second-run</id>
-            <activation>
-                <property>
-                    <name>allTests</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>seconds-run-tests</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <skipTests>false</skipTests>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <enableAssertions>true</enableAssertions>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>none</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+        <!-- ********************************************************************************** -->
+        <!-- *********************************** Clustering *********************************** -->
+        <!-- ********************************************************************************** -->
 
         <profile>
             <id>clustering.integration.tests.profile</id>
             <activation>
                 <property>
-                    <name>allTests</name>
+                    <name>clustering.integration.tests</name>
+                    <value>true</value>
                 </property>
             </activation>
             <properties>
             </properties>
             <!--
-            Server configuration executions
-                naming convention for executions (which we read in the log): for server config X, call it X.server
+                Server configuration executions.
+                Naming convention for executions (which we read in the log): for server config X, call it X.server
             -->
             <build>
                 <plugins>
@@ -316,7 +294,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions combine.children="append">
 
-                            <!-- disable default-test execution -->
+                            <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
                                 <goals>
@@ -325,7 +303,7 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- single node clustering tests -->
+                            <!-- Single node clustering tests. -->
                             <execution>
                                 <id>tests-clustering-single-node.surefire</id>
                                 <phase>test</phase>
@@ -333,33 +311,27 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <skipTests>false</skipTests>
-                                    <!-- tests to execute -->
+                                    <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
                                     </includes>
 
-                                    <!-- parameters to test cases -->
+                                    <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- arquillian configuration -->
                                         <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-udp-single</arquillian.launch>
-                                        <!-- client side system properties -->
-                                        <!-- server side system properties -->
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
-                                    <!-- access to resources for clustering tests -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!-- XML report suffix -->
                                     <reportNameSuffix>tests-clustering-single-node</reportNameSuffix>
                                 </configuration>
                             </execution>
 
-                            <!-- multi node clustering tests -->
+                            <!-- Multi node clustering tests. -->
                             <execution>
                                 <id>tests-clustering-multi-node.surefire</id>
                                 <phase>test</phase>
@@ -367,28 +339,23 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <skipTests>false</skipTests>
-                                    <!-- tests to execute -->
+                                    <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
 
-                                    <!-- parameters to test cases -->
+                                    <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <!-- arquillian configuration -->
                                         <arquillian.xml>clustering-arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-udp-single</arquillian.launch>
-                                        <!-- client side system properties -->
-                                        <!-- use combin.children="append" to pick up parent properties automatically -->
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
-                                    <!-- access to resources for clustering tests -->
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/src/test/resources/clustering</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!-- XML report suffix -->
                                     <reportNameSuffix>tests-clustering-multi-node</reportNameSuffix>
                                 </configuration>
                             </execution>
@@ -399,6 +366,244 @@
             </build>
         </profile>
 
-    </profiles>
 
+        <!-- ********************************************************************************** -->
+        <!-- ******************************** Basic Integration ******************************* -->
+        <!-- ********************************************************************************** -->
+
+        <profile>
+            <id>basic.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>basic.integration.tests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+            </properties>
+
+            <dependencies>
+            </dependencies>
+
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+
+                    <!-- Build the target/jbossas server configuration. -->
+                    <!--
+                      NOTE: this execution is *disabled* (phase == none), as the target/jbossas server configuration
+                      is constrcuted by the parent pom in testsuite/pom.xml
+                    -->
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-basic-integration.server</id>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Build the UDP server configs in target. -->
+                                        <ant antfile="${basedir}/src/test/scripts/basic-integration-build.xml">
+                                            <target name="build-basic-integration"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <!-- Copy in some jars. -->
+                            <execution>
+                                <id>prepare-jars-basic-integration.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
+                                        <property name="tests.output.dir" value="${project.build.directory}"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+
+
+                            <execution>
+                                <id>basic-integration-default.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                    </excludes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>jboss</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-basic-integration-default</reportNameSuffix>
+                                </configuration>
+                            </execution>
+                            <!-- The second run tests rely on restoring timer services setup in the first run of tests. -->
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skipTests>false</skipTests>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <enableAssertions>true</enableAssertions>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>none</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+
+        <!-- ********************************************************************************** -->
+        <!-- ****     Smoke tests                                                     ********* -->
+        <!-- ********************************************************************************** -->
+        <profile>
+            <id>smoke.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!noSmoke</name>
+                </property>
+            </activation>
+
+            <properties>
+            </properties>
+
+            <!--
+                Server configuration executions.
+                Naming convention for executions (which we read in the log): for server config X, call it X.server
+            -->
+            <build>
+                <plugins>
+
+                    <!-- Build the target/smoke server configuration. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-smoke.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Build the UDP server configs in target. -->
+                                        <ant antfile="${basedir}/src/test/scripts/smoke-build.xml">
+                                            <target name="build-smoke"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Smoke tests. -->
+                            <execution>
+                                <id>smoke-default.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/smoke/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>smoke-arquillian.xml</arquillian.xml>
+                                        <arquillian.launch>jboss</arquillian.launch>
+
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
+                                    </systemPropertyVariables>
+
+                                    <!-- Access to resources for clustering tests. -->
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/src/test/resources/smoke</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <reportNameSuffix>tests-smoke-default</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
 </project>

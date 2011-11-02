@@ -71,7 +71,13 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     private ServiceNameProvider jvmRouteCacheServiceNameProvider = new ServiceNameProvider() {
         @Override
         public ServiceName getServiceName(ReplicationConfig config) {
-            return EmbeddedCacheManagerService.getServiceName(null);
+            ServiceName baseServiceName = EmbeddedCacheManagerService.getServiceName(null);
+            String cacheName = config.getCacheName();
+            ServiceName serviceName = ServiceName.parse((cacheName != null) ? cacheName : DEFAULT_CACHE_CONTAINER);
+            if (!baseServiceName.isParentOf(serviceName)) {
+                serviceName = baseServiceName.append(serviceName);
+            }
+            return (serviceName.length() < 4) ? serviceName : serviceName.getParent();
         }
     };
     private CacheSource jvmRouteCacheSource = new JvmRouteCacheSource(this.jvmRouteCacheServiceNameProvider);

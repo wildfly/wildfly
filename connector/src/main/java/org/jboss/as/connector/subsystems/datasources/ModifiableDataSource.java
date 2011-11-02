@@ -437,17 +437,14 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
         this.dataSourceClass = dataSourceClass;
     }
 
-    public final DataSource getUnModifiableInstance() {
-        try {
-            return new DataSourceImpl(connectionUrl, driverClass, dataSourceClass, driver,
-                    transactionIsolation, connectionProperties,
-                    timeOut,  security,  statement,  validation,
-                    urlDelimiter, urlSelectorStrategyClassName,  newConnectionSql,
-                    useJavaContext,  poolName,  enabled,  jndiName,
-                    spy,  useCcm,  jta,  pool) ;
-        } catch (ValidateException ve) {
-            return null;
-        }
+    public final DataSource getUnModifiableInstance() throws ValidateException {
+        return new DataSourceImpl(connectionUrl, driverClass, dataSourceClass, driver,
+                transactionIsolation, connectionProperties,
+                timeOut, security, statement, validation,
+                urlDelimiter, urlSelectorStrategyClassName, newConnectionSql,
+                useJavaContext, poolName, enabled, jndiName,
+                spy, useCcm, jta, pool);
+
     }
 }
 

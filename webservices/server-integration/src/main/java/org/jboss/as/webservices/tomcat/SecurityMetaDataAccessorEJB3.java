@@ -26,8 +26,8 @@ import static org.jboss.as.webservices.util.DotNames.SECURITY_DOMAIN_ANNOTATION;
 
 import java.util.Iterator;
 
-import org.jboss.as.webservices.metadata.WebServiceDeclaration;
-import org.jboss.as.webservices.metadata.WebServiceDeployment;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -58,12 +58,12 @@ final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccesso
      * @return security domain associated with EJB 3 deployment
      */
     public String getSecurityDomain(final Deployment dep) {
-        final WebServiceDeployment wsDeployment = WSHelper.getRequiredAttachment(dep, WebServiceDeployment.class);
+        final JAXWSDeployment wsDeployment = WSHelper.getRequiredAttachment(dep, JAXWSDeployment.class);
         String securityDomain = null;
-        final Iterator<WebServiceDeclaration> ejbContainers = wsDeployment.getServiceEndpoints().iterator();
+        final Iterator<EJBEndpoint> ejbContainers = wsDeployment.getEjbEndpoints().iterator();
 
         while (ejbContainers.hasNext()) {
-            final WebServiceDeclaration ejbContainer = ejbContainers.next();
+            final EJBEndpoint ejbContainer = ejbContainers.next();
             final AnnotationInstance nextSecurityDomain = ejbContainer.getAnnotation(SECURITY_DOMAIN_ANNOTATION);
 
             securityDomain = getDomain(securityDomain, nextSecurityDomain);
@@ -80,12 +80,12 @@ final class SecurityMetaDataAccessorEJB3 extends AbstractSecurityMetaDataAccesso
      * @return security roles associated with EJB 21 deployment
      */
     public SecurityRolesMetaData getSecurityRoles(final Deployment dep) {
-        final WebServiceDeployment wsDeployment = WSHelper.getRequiredAttachment(dep, WebServiceDeployment.class);
+        final JAXWSDeployment wsDeployment = WSHelper.getRequiredAttachment(dep, JAXWSDeployment.class);
         final SecurityRolesMetaData securityRolesMD = new SecurityRolesMetaData();
-        final Iterator<WebServiceDeclaration> ejbContainers = wsDeployment.getServiceEndpoints().iterator();
+        final Iterator<EJBEndpoint> ejbContainers = wsDeployment.getEjbEndpoints().iterator();
 
         while (ejbContainers.hasNext()) {
-            final WebServiceDeclaration ejbContainer = ejbContainers.next();
+            final EJBEndpoint ejbContainer = ejbContainers.next();
             final AnnotationInstance allowedRoles = ejbContainer.getAnnotation(ROLES_ALLOWED_ANNOTATION);
             final boolean hasAllowedRoles = allowedRoles != null;
 

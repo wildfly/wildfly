@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.home.remotehome;
 
+import java.rmi.RemoteException;
+
 import javax.ejb.EJBHome;
 
 /**
@@ -29,8 +31,8 @@ import javax.ejb.EJBHome;
  */
 public interface SimpleStatefulHome extends EJBHome {
 
-    SimpleInterface createSimple(String message);
+    SimpleInterface createSimple(String message) throws RemoteException;
 
-    SimpleInterface createComplex(String first, String second);
+    SimpleInterface createComplex(String first, String second) throws RemoteException;
 
 }

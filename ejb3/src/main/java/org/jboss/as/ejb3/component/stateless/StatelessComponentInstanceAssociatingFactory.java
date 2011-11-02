@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.component.stateless;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
-import org.jboss.as.ejb3.component.NonPooledEJBComponentInstanceAssociatingInterceptor;
+import org.jboss.as.ejb3.component.interceptors.NonPooledEJBComponentInstanceAssociatingInterceptor;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;

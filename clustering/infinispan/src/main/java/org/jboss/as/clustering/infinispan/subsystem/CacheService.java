@@ -23,7 +23,9 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
+import org.infinispan.config.Configuration;
 import org.infinispan.manager.CacheContainer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -39,6 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 public class CacheService<K, V> implements Service<Cache<K, V>> {
     private final InjectedValue<CacheContainer> container = new InjectedValue<CacheContainer>();
     private final String name;
+    private final String template;
     private volatile Cache<K, V> cache;
 
     public static ServiceName getServiceName(String container, String cache) {
@@ -52,7 +55,12 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
     }
 
     public CacheService(String name) {
+        this(name, null);
+    }
+
+    public CacheService(String name, String template) {
         this.name = name;
+        this.template = null;
     }
 
     /**
@@ -70,7 +78,11 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
      */
     @Override
     public void start(StartContext context) throws StartException {
-        this.cache = this.container.getValue().getCache(this.name);
+        CacheContainer container = this.container.getValue();
+        if (this.template != null) {
+            ((EmbeddedCacheManager) container).defineConfiguration(this.name, this.template, new Configuration());
+        }
+        this.cache = container.getCache(this.name);
     }
 
     /**

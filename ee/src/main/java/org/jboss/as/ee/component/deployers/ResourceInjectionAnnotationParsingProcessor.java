@@ -238,16 +238,12 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             // if the @Resource is a env-entry binding then the injection target will be optional since in the absence of
             // a env-entry-value, there won't be a binding and effectively no injection. This again is as expected by spec.
         } else if (!isResourceRefType) {
+            //otherwise we just try and handle it
+            //if we don't have a value source we will try and inject from a lookup
+            //and the user has to configure the value in a deployment descriptor
             final EEResourceReferenceProcessor resourceReferenceProcessor = EEResourceReferenceProcessorRegistry.getResourceReferenceProcessor(injectionType);
-            if (resourceReferenceProcessor == null) {
-                logger.warnf("Can't handle @Resource for ENC name: %s on class %s since it's missing a \"lookup\" (or \"mappedName\") value and isn't of any known type", localContextName, classDescription.getClassName());
-                return;
-            }
-            valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource(phaseContext, eeModuleDescription, classDescription, injectionType, localContextName, targetDescription);
-            if (valueSource == null) {
-                logger.warnf("Could not find binding source for @Resource, for ENC name: %s on class %s " +
-                        " of type: %s from resource reference processor: %s", localContextName, classDescription.getClassName(), injectionType, resourceReferenceProcessor);
-                return;
+            if (resourceReferenceProcessor != null) {
+                valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource(phaseContext, eeModuleDescription, classDescription, injectionType, localContextName, targetDescription);
             }
         } else {
             //handle resource reference types
