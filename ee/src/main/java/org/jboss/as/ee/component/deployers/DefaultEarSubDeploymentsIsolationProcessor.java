@@ -38,9 +38,9 @@ import org.jboss.logging.Logger;
  * Unless, the specific deployment unit overrides the isolation via jboss-deployment-structure.xml, this
  * default value will be used to setup isolation of the subdeployments within a .ear.
  * <p/>
- * <b>Note: This deployer must run before the {@link org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser}</b>
+ * <b>Note: This deployer must run before the {@link org.jboss.as.server.deployment.module.descriptor.DeploymentStructureDescriptorParser}</b>
  *
- * @see {@link org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser}
+ * @see {@link org.jboss.as.server.deployment.module.descriptor.DeploymentStructureDescriptorParser}
  * <p/>
  * User: Jaikiran Pai
  */

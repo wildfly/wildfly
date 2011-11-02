@@ -55,7 +55,7 @@ import org.jboss.as.server.deployment.module.AdditionalModuleProcessor;
 import org.jboss.as.server.deployment.module.ClassFileTransformerProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootExplodedMountProcessor;
 import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
-import org.jboss.as.server.deployment.module.DeploymentStructureDescriptorParser;
+import org.jboss.as.server.deployment.module.descriptor.DeploymentStructureDescriptorParser;
 import org.jboss.as.server.deployment.module.DeploymentVisibilityProcessor;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ManifestClassPathProcessor;

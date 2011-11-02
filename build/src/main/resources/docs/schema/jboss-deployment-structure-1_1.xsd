@@ -23,11 +23,11 @@
   -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:deployment-structure:1.0"
-            xmlns="urn:jboss:deployment-structure:1.0"
+            targetNamespace="urn:jboss:deployment-structure:1.1"
+            xmlns="urn:jboss:deployment-structure:1.1"
             elementFormDefault="unqualified"
             attributeFormDefault="unqualified"
-            version="1.0">
+            version="1.1">
 
     <!-- Root element -->
     <xsd:element name="jboss-deployment-structure" type="jbossStructureType">
@@ -140,6 +140,13 @@
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
                         Lists the class file transformers that should be applied for classes loaded by this module.
+                    </documentation>
+                </annotation>
+            </xsd:element>
+            <xsd:element name="local-last" type="localLast" minOccurs="0" maxOccurs="1">
+                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+                    <documentation>
+                        If this is true then local resources will have the lowest priorty in the dependency list.
                     </documentation>
                 </annotation>
             </xsd:element>
@@ -573,6 +580,20 @@
                 <documentation>
                     The class name of the transformer
                 </documentation>
+            </annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="localLast">
+        <annotation xmlns="http://www.w3.org/2001/XMLSchema">
+            <documentation>
+                If set to true the modules local content will have the lowest priority in the
+                dependency list.
+            </documentation>
+        </annotation>
+        <xsd:attribute name="value" type="xsd:boolean" use="required">
+           <annotation xmlns="http://www.w3.org/2001/XMLSchema">
             </annotation>
         </xsd:attribute>
     </xsd:complexType>
