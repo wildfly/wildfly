@@ -21,6 +21,12 @@
  */
 package org.jboss.as.jpa.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPCLIENT;
+
+import java.util.List;
+import java.util.Locale;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,11 +50,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.List;
-import java.util.Locale;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 
 /**
@@ -84,12 +85,16 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         modelValidator.validate(operation);
         final ModelNode defaultDSNode = operation.require(CommonAttributes.DEFAULT_DATASOURCE);
+        if (operation.hasDefined(APPCLIENT)) {
+            model.get(APPCLIENT).set(operation.get(APPCLIENT));
+        }
         model.get(CommonAttributes.DEFAULT_DATASOURCE).set(defaultDSNode);
     }
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         runtimeValidator.validate(operation.resolve());
+        final boolean appclient = model.hasDefined(APPCLIENT) && model.get(APPCLIENT).asBoolean();
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
@@ -110,7 +115,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler implements Descript
                 // handles deploying a persistence provider
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENCE_PROVIDER, new PersistenceProviderProcessor());
                 // handles pu deployment (starts pu service)
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor(persistenceUnitRegistry));
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_PERSISTENTUNIT, new PersistenceUnitDeploymentProcessor(persistenceUnitRegistry, appclient));
             }
         }, OperationContext.Stage.RUNTIME);
 
