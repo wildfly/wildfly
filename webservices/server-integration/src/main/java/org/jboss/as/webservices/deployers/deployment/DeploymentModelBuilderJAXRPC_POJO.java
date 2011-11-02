@@ -21,22 +21,16 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.util.ASHelper.getEndpointClassName;
-import static org.jboss.as.webservices.util.ASHelper.getServletForName;
-import static org.jboss.ws.common.integration.WSHelper.getRequiredAttachment;
+import static org.jboss.as.webservices.util.ASHelper.getJaxrpcPojos;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
-import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
-import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
- * Creates new JAXRPC JSE deployment.
+ * Creates new JAXRPC POJO deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
@@ -50,28 +44,20 @@ final class DeploymentModelBuilderJAXRPC_POJO extends AbstractDeploymentModelBui
     }
 
     /**
-     * Creates new JAXRPC JSE deployment and registers it with deployment unit.
+     * Creates new JAXRPC POJO deployment and registers it with deployment unit.
      *
      * @param dep webservice deployment
      * @param unit deployment unit
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        // TODO: introduce deployment with jaxrpc POJOs
-        final JBossWebMetaData webMD = getRequiredAttachment(dep, JBossWebMetaData.class);
-        final WebservicesMetaData webservicesMD = getRequiredAttachment(dep, WebservicesMetaData.class);
-
         log.debug("Creating JAXRPC POJO endpoints meta data model");
-        for (final WebserviceDescriptionMetaData wsDescriptionMD : webservicesMD.getWebserviceDescriptions()) {
-            for (final PortComponentMetaData portCompomentMD : wsDescriptionMD.getPortComponents()) {
-                final String pojoEndpointName = portCompomentMD.getServletLink();
-                log.debug("POJO name: " + pojoEndpointName);
-                final ServletMetaData servletMD = getServletForName(webMD, pojoEndpointName);
-                final String pojoEndpointClassName = getEndpointClassName(servletMD);
-                log.debug("POJO class: " + pojoEndpointClassName);
-
-                newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
-            }
+        for (final POJOEndpoint pojoEndpoint : getJaxrpcPojos(unit)) {
+            final String pojoEndpointName = pojoEndpoint.getName();
+            log.debug("POJO name: " + pojoEndpointName);
+            final String pojoEndpointClassName = pojoEndpoint.getClassName();
+            log.debug("POJO" + pojoEndpointClassName);
+            newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
         }
     }
 

@@ -22,9 +22,9 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
-import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
-import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
-import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
+import static org.jboss.as.webservices.util.ASHelper.getJaxrpcEjbs;
+import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
+import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_EJB21;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
@@ -32,29 +32,29 @@ import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
 /**
- * Creates new JAXWS EJB3 deployment.
+ * Creates new JAXRPC EJB21 deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class DeploymentModelBuilderJAXWS_EJB3 extends AbstractDeploymentModelBuilder {
+final class DeploymentModelBuilderJAXRPC_EJB extends AbstractDeploymentModelBuilder {
 
     /**
      * Constructor.
      */
-    DeploymentModelBuilderJAXWS_EJB3() {
-        super(JAXWS, JAXWS_EJB3);
+    DeploymentModelBuilderJAXRPC_EJB() {
+        super(JAXRPC, JAXRPC_EJB21);
     }
 
     /**
-     * Creates new JAXWS EJB3 deployment and registers it with deployment unit.
+     * Creates new JAXRPC EJB21 deployment and registers it with deployment unit.
      *
      * @param dep webservice deployment
      * @param unit deployment unit
      */
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        log.debug("Creating JAXWS EJB3 endpoints meta data model");
-        for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
+        log.debug("Creating JAXRPC EJB21 endpoints meta data model");
+        for (final EJBEndpoint ejbEndpoint : getJaxrpcEjbs(unit)) {
             final String ejbName = ejbEndpoint.getName();
             log.debug("EJB3 name: " + ejbName);
             final String ejbClass = ejbEndpoint.getClassName();

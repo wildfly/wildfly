@@ -30,7 +30,7 @@ import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.wsf.spi.deployment.Deployment;
 
 /**
- * Creates new JAXWS JSE deployment.
+ * Creates new JAXWS POJO deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
@@ -44,7 +44,7 @@ final class DeploymentModelBuilderJAXWS_POJO extends AbstractDeploymentModelBuil
     }
 
     /**
-     * Creates new JAXWS JSE deployment and registers it with deployment unit.
+     * Creates new JAXWS POJO deployment and registers it with deployment unit.
      *
      * @param dep webservice deployment
      * @param unit deployment unit

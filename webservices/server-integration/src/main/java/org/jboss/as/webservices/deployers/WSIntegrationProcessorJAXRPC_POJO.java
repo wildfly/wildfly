@@ -21,23 +21,22 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.webservices.util.ASHelper.getEndpointClassName;
+import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
 import static org.jboss.as.webservices.util.ASHelper.getJaxrpcDeployment;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
-import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
+import static org.jboss.as.webservices.util.ASHelper.getServletForName;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.JAXRPCDeployment;
-import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.as.webservices.metadata.model.POJOEndpoint;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
@@ -45,16 +44,15 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitProcessor {
+public final class WSIntegrationProcessorJAXRPC_POJO implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final EjbJarMetaData ejbJarMD = getOptionalAttachment(unit, EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
+        final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
         final WebservicesMetaData webservicesMD = getOptionalAttachment(unit, WEBSERVICES_METADATA_KEY);
-        if (ejbJarMD != null && webservicesMD != null) {
-            final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
-            createJaxrpcDeployment(unit, webservicesMD, moduleDescription);
+        if (jbossWebMD != null && webservicesMD != null) {
+            createJaxrpcDeployment(unit, webservicesMD, jbossWebMD);
         }
     }
 
@@ -63,25 +61,33 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
         // does nothing
     }
 
-    private static void createJaxrpcDeployment(final DeploymentUnit unit, final WebservicesMetaData webservicesMD, final EEModuleDescription moduleDescription) {
+    private static void createJaxrpcDeployment(final DeploymentUnit unit, final WebservicesMetaData webservicesMD, final JBossWebMetaData jbossWebMD) {
         final JAXRPCDeployment jaxrpcDeployment = getJaxrpcDeployment(unit);
 
         for (final WebserviceDescriptionMetaData wsDescriptionMD : webservicesMD.getWebserviceDescriptions()) {
             for (final PortComponentMetaData portComponentMD : wsDescriptionMD.getPortComponents()) {
-                final EJBEndpoint ejbEndpoint = newEjbEndpoint(portComponentMD, moduleDescription);
-                jaxrpcDeployment.addEndpoint(ejbEndpoint);
+                final POJOEndpoint pojoEndpoint = newPojoEndpoint(portComponentMD, jbossWebMD);
+                jaxrpcDeployment.addEndpoint(pojoEndpoint);
             }
         }
     }
 
-    private static EJBEndpoint newEjbEndpoint(final PortComponentMetaData portComponentMD, final EEModuleDescription moduleDescription) {
-        final String ejbName = portComponentMD.getEjbLink();
-        final SessionBeanComponentDescription sessionBean = (SessionBeanComponentDescription)moduleDescription.getComponentByName(ejbName);
-        final String seiIfaceClassName = portComponentMD.getServiceEndpointInterface();
-        final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView(seiIfaceClassName);
-        final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
+    private static POJOEndpoint newPojoEndpoint(final PortComponentMetaData portComponentMD, final JBossWebMetaData jbossWebMD) {
+        final String endpointName = portComponentMD.getServletLink();
+        final ServletMetaData servletMD = getServletForName(jbossWebMD, endpointName);
+        final String endpointClassName = getEndpointClassName(servletMD);
+        final String urlPattern = getUrlPattern(endpointName, jbossWebMD);
 
-        return new EJBEndpoint(sessionBean, null, ejbViewName);
+        return new POJOEndpoint(endpointName, endpointClassName, urlPattern);
+    }
+
+    private static String getUrlPattern(final String servletName, final JBossWebMetaData jbossWebMD) {
+        for (final ServletMappingMetaData servletMappingMD : jbossWebMD.getServletMappings()) {
+            if (servletName.equals(servletMappingMD.getServletName())) {
+                return servletMappingMD.getUrlPatterns().get(0);
+            }
+        }
+        throw new IllegalStateException();
     }
 
 }

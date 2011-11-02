@@ -33,25 +33,22 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class EJBEndpoint implements WSEndpoint {
+public final class EJBEndpoint extends AbstractEndpoint {
 
    public static final String EJB_COMPONENT_VIEW_NAME = EJBEndpoint.class.getPackage().getName() + "EjbComponentViewName";
    private final SessionBeanComponentDescription ejbMD;
-   private final ClassInfo webServiceClassInfo;
-   private final String containerName;
+   private final ClassInfo classInfo;
+   private final String viewName;
 
-   public EJBEndpoint(final SessionBeanComponentDescription ejbMD, final ClassInfo webServiceClassInfo, final String containerName) {
+   public EJBEndpoint(final SessionBeanComponentDescription ejbMD, final ClassInfo classInfo, final String viewName) {
+       super(ejbMD.getComponentName(), ejbMD.getComponentClassName());
        this.ejbMD = ejbMD;
-       this.webServiceClassInfo = webServiceClassInfo;
-       this.containerName = containerName;
+       this.classInfo = classInfo;
+       this.viewName = viewName;
    }
 
    public String getComponentViewName() {
-       return containerName;
-   }
-
-   public String getName() {
-       return ejbMD.getComponentName();
+       return viewName;
    }
 
    public ServiceName getContextServiceName() {
@@ -62,12 +59,9 @@ public final class EJBEndpoint implements WSEndpoint {
        return ejbMD.getDeploymentDescriptorEnvironment();
    }
 
-   public String getClassName() {
-       return ejbMD.getComponentClassName();
-   }
-
-   public AnnotationInstance getAnnotation(final DotName annotationType) {// DotName
-       List<AnnotationInstance> list = webServiceClassInfo.annotations().get(annotationType);
+   public AnnotationInstance getAnnotation(final DotName annotationType) {
+       // TODO: still needed?
+       List<AnnotationInstance> list = classInfo.annotations().get(annotationType);
        if (list != null) {
            return list.get(0);
        }

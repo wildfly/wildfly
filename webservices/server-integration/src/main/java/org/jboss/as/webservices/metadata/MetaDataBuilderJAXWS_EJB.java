@@ -37,15 +37,9 @@ import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 
 /**
- * Builds container independent meta data from EJB21 container meta data.
- *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class MetaDataBuilderEJB3 extends AbstractMetaDataBuilderEJB {
-
-    MetaDataBuilderEJB3() {
-        super();
-    }
+final class MetaDataBuilderJAXWS_EJB extends AbstractMetaDataBuilderEJB {
 
     @Override
     protected void buildEnterpriseBeansMetaData(final Deployment dep, final EJBArchiveMetaData ejbArchiveMD) {

@@ -24,20 +24,22 @@ package org.jboss.as.webservices.metadata.model;
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
-public interface WSEndpoint {
+abstract class AbstractEndpoint {
 
-   /**
-    * Web service endpoint name.
-    *
-    * @return endpoint name
-    */
-   String getName();
+    private final String name;
+    private final String className;
 
-   /**
-    * Web service endpoint implementation class name.
-    *
-    * @return enpoint class name
-    */
-   String getClassName();
+    protected AbstractEndpoint(final String name, final String className) {
+        this.name = name;
+        this.className = className;
+    }
+
+    public final String getName() {
+        return name;
+    }
+
+    public final String getClassName() {
+        return className;
+    }
 
 }
