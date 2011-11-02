@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
+import org.jboss.logging.Logger;
+
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -38,10 +40,13 @@ import javax.persistence.PersistenceContext;
 @Remote (BatchRetriever.class)
 public class BatchFetchingBean implements BatchRetriever {
 
+    private static final Logger logger = Logger.getLogger(BatchFetchingBean.class);
+
     @PersistenceContext(unitName = "ejb-client-tx-pu")
     private EntityManager entityManager;
 
     public Batch fetchBatch(final String batchName) {
+        logger.info("Fetching batch " + batchName);
         return this.entityManager.find(Batch.class, batchName);
     }
 }

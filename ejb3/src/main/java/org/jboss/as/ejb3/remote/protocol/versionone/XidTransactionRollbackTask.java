@@ -22,11 +22,19 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.remoting3.Channel;
 
+import javax.transaction.HeuristicCommitException;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 
 /**
  * @author Jaikiran Pai
@@ -41,6 +49,64 @@ class XidTransactionRollbackTask extends XidTransactionManagementTask {
     protected void manageTransaction() throws Throwable {
         final Transaction transaction = this.transactionsRepository.removeTransaction(this.xidTransactionID);
         this.resumeTransaction(transaction);
-        this.transactionsRepository.getTransactionManager().rollback();
+        // now rollback
+        final Xid xid = this.xidTransactionID.getXid();
+        // Courtesy: com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple
+        try {
+            SubordinateTransaction subordinateTransaction = SubordinationManager.getTransactionImporter().getImportedTransaction(xid);
+
+            if (subordinateTransaction == null) {
+                throw new XAException(XAException.XAER_INVAL);
+            }
+
+            if (subordinateTransaction.activated()) {
+                subordinateTransaction.doRollback();
+                // remove the imported tx
+                SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+            } else {
+                throw new XAException(XAException.XA_RETRY);
+            }
+        } catch (XAException ex) {
+            // resource hasn't had a chance to recover yet
+            if (ex.errorCode != XAException.XA_RETRY) {
+                // remove the imported tx
+                SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+            }
+            throw ex;
+
+        } catch (final HeuristicRollbackException ex) {
+            XAException xaException = new XAException(XAException.XA_HEURRB);
+            xaException.initCause(ex);
+            throw xaException;
+
+        } catch (HeuristicCommitException ex) {
+            XAException xaException = new XAException(XAException.XA_HEURCOM);
+            xaException.initCause(ex);
+            throw xaException;
+
+        } catch (HeuristicMixedException ex) {
+            XAException xaException = new XAException(XAException.XA_HEURMIX);
+            xaException.initCause(ex);
+            throw xaException;
+
+        } catch (final IllegalStateException ex) {
+            // remove the imported tx
+            SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+
+            XAException xaException = new XAException(XAException.XAER_NOTA);
+            xaException.initCause(ex);
+            throw xaException;
+
+        } catch (SystemException ex) {
+            // remove the imported tx
+            SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+
+            throw new XAException(XAException.XAER_RMERR);
+        } finally {
+            // disassociate the tx that was asssociated (resumed) on this thread.
+            // This needs to be done explicitly because the SubOrdinationManager isn't responsible
+            // for clearing the tx context from the thread
+            this.transactionsRepository.getTransactionManager().suspend();
+        }
     }
 }

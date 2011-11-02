@@ -65,9 +65,12 @@ class XidTransactionForgetTask extends XidTransactionManagementTask {
             throw xaException;
 
         } finally {
-            // remove tx
-            this.transactionsRepository.removeTransaction(this.xidTransactionID);
             SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+            // disassociate the tx that was asssociated (resumed) on this thread.
+            // This needs to be done explicitly because the SubOrdinationManager isn't responsible
+            // for clearing the tx context from the thread
+            this.transactionsRepository.getTransactionManager().suspend();
+
         }
     }
 }

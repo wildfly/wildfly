@@ -91,58 +91,64 @@ class XidTransactionPrepareTask extends XidTransactionManagementTask {
         // first associate the tx on this thread, by resuming the tx
         final Transaction transaction = this.transactionsRepository.removeTransaction(this.xidTransactionID);
         this.resumeTransaction(transaction);
+        try {
+            // now "prepare"
+            final Xid xid = this.xidTransactionID.getXid();
+            // Courtesy: com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple
+            final SubordinateTransaction subordinateTransaction = SubordinationManager.getTransactionImporter().getImportedTransaction(xid);
+            int result = subordinateTransaction.doPrepare();
+            switch (result) {
+                case TwoPhaseOutcome.PREPARE_READONLY:
+                    // TODO: Would it be fine to not remove the xid? (Need to understand how the subsequent
+                    // flow works)
+                    SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+                    return XAResource.XA_RDONLY;
 
-        // now "prepare"
-        final Xid xid = this.xidTransactionID.getXid();
-        // Courtesy: com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple
-        final SubordinateTransaction subordinateTransaction = SubordinationManager.getTransactionImporter().getImportedTransaction(xid);
-        int result = subordinateTransaction.doPrepare();
-        switch (result) {
-            case TwoPhaseOutcome.PREPARE_READONLY:
-                // TODO: Would it be fine to not remove the xid? (Need to understand how the subsequent
-                // flow works)
-                SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
-                return XAResource.XA_RDONLY;
+                case TwoPhaseOutcome.PREPARE_OK:
+                    return XAResource.XA_OK;
 
-            case TwoPhaseOutcome.PREPARE_OK:
-                return XAResource.XA_OK;
+                case TwoPhaseOutcome.PREPARE_NOTOK:
+                    // the JCA API spec limits what we can do in terms of reporting
+                    // problems.
+                    // try to use the exception code and cause to provide info
+                    // whilst
+                    // remaining API compliant. JBTM-427.
+                    Exception initCause = null;
+                    int xaExceptionCode = XAException.XA_RBROLLBACK;
+                    try {
+                        subordinateTransaction.doRollback();
+                    } catch (HeuristicCommitException e) {
+                        initCause = e;
+                        xaExceptionCode = XAException.XAER_RMERR;
+                    } catch (HeuristicMixedException e) {
+                        initCause = e;
+                        xaExceptionCode = XAException.XAER_RMERR;
+                    } catch (SystemException e) {
+                        initCause = e;
+                        xaExceptionCode = XAException.XAER_RMERR;
+                    } catch (final HeuristicRollbackException e) {
+                        initCause = e;
+                        xaExceptionCode = XAException.XAER_RMERR;
+                    }
+                    // remove the transaction
+                    SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
+                    final XAException xaException = new XAException(xaExceptionCode);
+                    if (initCause != null) {
+                        xaException.initCause(initCause);
+                    }
+                    throw xaException;
 
-            case TwoPhaseOutcome.PREPARE_NOTOK:
-                // the JCA API spec limits what we can do in terms of reporting
-                // problems.
-                // try to use the exception code and cause to provide info
-                // whilst
-                // remaining API compliant. JBTM-427.
-                Exception initCause = null;
-                int xaExceptionCode = XAException.XA_RBROLLBACK;
-                try {
-                    subordinateTransaction.doRollback();
-                } catch (HeuristicCommitException e) {
-                    initCause = e;
-                    xaExceptionCode = XAException.XAER_RMERR;
-                } catch (HeuristicMixedException e) {
-                    initCause = e;
-                    xaExceptionCode = XAException.XAER_RMERR;
-                } catch (SystemException e) {
-                    initCause = e;
-                    xaExceptionCode = XAException.XAER_RMERR;
-                } catch (final HeuristicRollbackException e) {
-                    initCause = e;
-                    xaExceptionCode = XAException.XAER_RMERR;
-                }
-                // remove the transaction
-                SubordinationManager.getTransactionImporter().removeImportedTransaction(xid);
-                final XAException xaException = new XAException(xaExceptionCode);
-                if (initCause != null) {
-                    xaException.initCause(initCause);
-                }
-                throw xaException;
+                case TwoPhaseOutcome.INVALID_TRANSACTION:
+                    throw new XAException(XAException.XAER_NOTA);
 
-            case TwoPhaseOutcome.INVALID_TRANSACTION:
-                throw new XAException(XAException.XAER_NOTA);
-
-            default:
-                throw new XAException(XAException.XA_RBOTHER);
+                default:
+                    throw new XAException(XAException.XA_RBOTHER);
+            }
+        } finally {
+            // disassociate the tx that was asssociated (resumed) on this thread.
+            // This needs to be done explicitly because the SubOrdinationManager isn't responsible
+            // for clearing the tx context from the thread
+            this.transactionsRepository.getTransactionManager().suspend();
         }
     }
 }

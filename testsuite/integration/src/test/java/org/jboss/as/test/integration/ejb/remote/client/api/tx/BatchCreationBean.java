@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
+import org.jboss.logging.Logger;
+
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -34,7 +36,10 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 @Remote(RemoteBatch.class)
+@TransactionAttribute (TransactionAttributeType.MANDATORY)
 public class BatchCreationBean implements RemoteBatch {
+
+    private static final Logger logger = Logger.getLogger(BatchCreationBean.class);
 
     @PersistenceContext(unitName = "ejb-client-tx-pu")
     private EntityManager entityManager;
@@ -42,6 +47,7 @@ public class BatchCreationBean implements RemoteBatch {
     public void createBatch(final String batchName) {
         final Batch batch = new Batch();
         batch.setBatchName(batchName);
+        logger.info("Persisting new batch " + batchName);
         this.entityManager.persist(batch);
     }
 

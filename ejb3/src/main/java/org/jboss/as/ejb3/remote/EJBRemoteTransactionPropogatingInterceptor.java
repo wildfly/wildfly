@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
+import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinationManager;
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
 import org.jboss.ejb.client.XidTransactionID;
@@ -123,10 +124,12 @@ class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
             transactionManager.resume(alreadyCreatedTx);
         } else {
             // begin a new tx and add it to the tx repository
-            transactionManager.begin();
+            // TODO: Fix the tx timeout (which currently is passed as 300 seconds)
+            final Transaction newSubOrdinateTx = SubordinationManager.getTransactionImporter().importTransaction(xidTransactionID.getXid(), 300);
+            transactionManager.resume(newSubOrdinateTx);
             // get the tx that just got created and associated with the transaction manager
-            final Transaction newlyCreatedTx = transactionManager.getTransaction();
-            this.ejbRemoteTransactionsRepository.addTransaction(xidTransactionID, newlyCreatedTx);
+//            final Transaction newlyCreatedTx = transactionManager.getTransaction();
+            this.ejbRemoteTransactionsRepository.addTransaction(xidTransactionID, newSubOrdinateTx);
         }
     }
 

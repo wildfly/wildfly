@@ -63,6 +63,7 @@ abstract class XidTransactionManagementTask implements Runnable {
             this.manageTransaction();
         } catch (Throwable t) {
             try {
+                logger.error("Error during transaction management of transaction id " + this.xidTransactionID, t);
                 // write out a failure message to the channel to let the client know that
                 // the transaction operation failed
                 transactionRequestHandler.writeException(this.channel, this.invocationId, t, null);

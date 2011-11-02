@@ -23,7 +23,10 @@
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
 import com.arjuna.ats.arjuna.recovery.RecoveryActivator;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple;
 import com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
 import com.arjuna.ats.jta.utils.JNDIManager;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -126,9 +129,8 @@ public class EJBClientXidTransactionTestCase {
         // setup the tx manager and tx sync registry
         instantiateTxManagement();
 
-        final Endpoint endpoint = Remoting.createEndpoint("endpoint", Executors.newSingleThreadExecutor(), OptionMap.EMPTY);
-        final Xnio xnio = Xnio.getInstance();
-        final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(xnio), OptionMap.create(Options.SSL_ENABLED, false));
+        final Endpoint endpoint = Remoting.createEndpoint("endpoint", OptionMap.EMPTY);
+        final Registration registration = endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.create(Options.SSL_ENABLED, false));
 
 
         // open a connection
@@ -170,10 +172,12 @@ public class EJBClientXidTransactionTestCase {
     }
 
     private static void instantiateTxManagement() {
+        // These system properties are required or else we end up picking up JTS transaction manager,
+        // which is not what we want
+        System.setProperty(JTAEnvironmentBean.class.getSimpleName() + "." + "transactionManagerClassName", TransactionManagerImple.class.getName());
+        System.setProperty(JTAEnvironmentBean.class.getSimpleName() + "." + "transactionSynchronizationRegistryClassName", TransactionSynchronizationRegistryImple.class.getName());
         txManager = jtaPropertyManager.getJTAEnvironmentBean().getTransactionManager();
         txSyncRegistry = jtaPropertyManager.getJTAEnvironmentBean().getTransactionSynchronizationRegistry();
-//        recoveryActivator = new RecoveryEnablement();
-//        recoveryActivator.startRCservice();
     }
 
     /**
@@ -213,6 +217,11 @@ public class EJBClientXidTransactionTestCase {
             throw e;
         }
         txManager.commit();
+
+        // fetch the batch and make sure it contains the right state
+        final Batch batchAfterCreation = batchRetriever.fetchBatch(batchName);
+        Assert.assertNotNull("Batch was null after creation", batchAfterCreation);
+        Assert.assertNull("Unexpected steps in batch, after creation", batchAfterCreation.getStepNames());
 
         // add step1 to the batch
         final String step1 = "Simple step1";

@@ -124,9 +124,13 @@ class XidTransactionCommitTask extends XidTransactionManagementTask {
             final XAException xaException = new XAException(XAException.XAER_RMERR);
             xaException.initCause(ex);
             throw xaException;
+
+
         } finally {
-            // remove tx from repository
-            this.transactionsRepository.removeTransaction(this.xidTransactionID);
+            // disassociate the tx that was asssociated (resumed) on this thread.
+            // This needs to be done explicitly because the SubOrdinationManager isn't responsible
+            // for clearing the tx context from the thread
+            this.transactionsRepository.getTransactionManager().suspend();
         }
     }
 }
