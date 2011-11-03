@@ -23,12 +23,24 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLResolver;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser;
+import org.jboss.as.ejb3.security.parser.SecurityRoleMetaDataParser;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -43,14 +55,6 @@ import org.jboss.metadata.ejb.spec.EjbJar31MetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLResolver;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 
 /**
  * Processes a {@link DeploymentUnit} containing a ejb-jar.xml and creates {@link EjbJarMetaData}
@@ -251,7 +255,10 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         try {
             XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
 
-            final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(new HashMap<String, AbstractMetaDataParser<?>>());
+            Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
+            parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
+            parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
+            final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
             final JBossEjb31MetaData ejbJarMetaData = parser.parse(reader, dtdInfo);
             return ejbJarMetaData;
         } catch (XMLStreamException xmlse) {

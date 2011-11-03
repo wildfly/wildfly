@@ -57,7 +57,7 @@ import java.util.Set;
 /**
  * Handles the {@link javax.annotation.security.RolesAllowed} {@link DenyAll} {@link javax.annotation.security.PermitAll} annotations
  * <p/>
- * Also rocesses the &lt;method-permission&gt; elements of a EJB and sets up appropriate security permissions on the EJB.
+ * Also processes the &lt;method-permission&gt; elements of a EJB and sets up appropriate security permissions on the EJB.
  * <p/>
  * This processor should be run *after* all the views of the EJB have been identified and set in the {@link EJBComponentDescription}
  *

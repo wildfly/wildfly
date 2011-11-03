@@ -67,6 +67,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -104,6 +105,16 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The @RunAs role associated with this bean, if any
      */
     private String runAsRole;
+
+    /**
+     * The @RunAsPrincipal associated with this bean, if any
+     */
+    private String runAsPrincipal;
+
+    /**
+     * Roles mapped with secuirty-role
+     */
+    private SecurityRolesMetaData securityRoles;
 
     /**
      * The @DenyAll/exclude-list map of methods. The key is the view class name and the value is a collection of EJB methods
@@ -528,12 +539,28 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return this.runAsRole;
     }
 
+    public void setRunAsPrincipal(String principal) {
+        this.runAsPrincipal = principal;
+    }
+
+    public String getRunAsPrincipal() {
+        return runAsPrincipal;
+    }
+
     public void setSecurityDomain(String securityDomain) {
         this.securityDomain = securityDomain;
     }
 
     public String getSecurityDomain() {
         return this.securityDomain;
+    }
+
+    public SecurityRolesMetaData getSecurityRoles() {
+        return securityRoles;
+    }
+
+    public void setSecurityRoles(SecurityRolesMetaData securityRoles) {
+        this.securityRoles = securityRoles;
     }
 
     public void applyDenyAllOnAllViewsForClass(final String className) {
@@ -729,6 +756,15 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
 
         return methods.get(method);
+    }
+
+    public Map<EJBMethodIdentifier, Set<String>> getRolesAllowed(final String viewClassName) {
+        final Map<EJBMethodIdentifier, Set<String>> methods = this.methodLevelRolesAllowed.get(viewClassName);
+        if (methods == null) {
+            return Collections.emptyMap();
+        }
+
+        return methods;
     }
 
     public Set<String> getRolesAllowedForClass(final String viewClassName, final String className) {

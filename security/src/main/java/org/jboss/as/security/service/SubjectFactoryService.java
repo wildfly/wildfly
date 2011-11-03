@@ -59,8 +59,7 @@ public class SubjectFactoryService implements Service<SubjectFactory> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        if (log.isDebugEnabled())
-            log.debug("Starting SubjectFactoryService");
+        log.debugf("Starting SubjectFactoryService");
         final ISecurityManagement injectedSecurityManagement = securityManagementValue.getValue();
         int i = subjectFactoryClassName.lastIndexOf(":");
         if (i == -1)

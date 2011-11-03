@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.security;
 
+import java.util.Set;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -28,6 +30,7 @@ import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -53,8 +56,11 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         }
         final String runAs = securityMetaData.getRunAs();
         // TODO - We should do something with DeclaredRoles although it never has much meaning in JBoss AS
-        // TODO: must come from metadata
-        final String runAsPrincipal = "run-as-principal";
-        return new SecurityContextInterceptor(securityManager, securityDomain, runAs, runAsPrincipal);
+        final String runAsPrincipal = securityMetaData.getRunAsPrincipal();
+        final SecurityRolesMetaData securityRoles = securityMetaData.getSecurityRoles();
+        Set<String> extraRoles = null;
+        if (securityRoles != null)
+            extraRoles = securityRoles.getSecurityRoleNamesByPrincipal(runAsPrincipal);
+        return new SecurityContextInterceptor(securityManager, securityDomain, runAs, runAsPrincipal, extraRoles);
     }
 }

@@ -74,8 +74,7 @@ public class SecurityManagementService implements Service<ISecurityManagement> {
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        if (log.isDebugEnabled())
-            log.debug("Starting SecurityManagementService");
+        log.debugf("Starting SecurityManagementService");
         // set properties of JNDIBasedSecurityManagement
         JNDIBasedSecurityManagement securityManagement = new JNDIBasedSecurityManagement();
         securityManagement.setAuthenticationManagerClassName(authenticationManagerClassName);

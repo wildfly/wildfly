@@ -71,8 +71,7 @@ public class SecurityBootstrapService implements Service<Void> {
     /** {@inheritDoc} */
     @Override
     public void start(StartContext context) throws StartException {
-        if (log.isDebugEnabled())
-            log.debug("Starting SecurityBootstrapService");
+        log.debugf("Starting SecurityBootstrapService");
         try {
             // Get the current Policy impl
             oldPolicy = Policy.getPolicy();
@@ -86,7 +85,7 @@ public class SecurityBootstrapService implements Service<Void> {
                 Object[] ctorArgs = { oldPolicy };
                 jaccPolicy = (Policy) ctor.newInstance(ctorArgs);
             } catch (NoSuchMethodException e) {
-                log.debug("Provider does not support ctor(Policy)");
+                log.debugf("Provider does not support ctor(Policy)");
                 try {
                     jaccPolicy = (Policy) providerClass.newInstance();
                 } catch (Exception e1) {
