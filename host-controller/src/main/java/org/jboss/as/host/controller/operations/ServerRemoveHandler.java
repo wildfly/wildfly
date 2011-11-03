@@ -22,8 +22,17 @@ package org.jboss.as.host.controller.operations;
 import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import org.jboss.as.host.controller.descriptions.HostServerDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -31,6 +40,7 @@ import org.jboss.dmr.ModelNode;
  * {@code OperationHandler} removing an existing server configuration.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Emanuel Muckenhuber
  */
 public class ServerRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
@@ -42,6 +52,30 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler implements De
      * Create the InterfaceRemoveHandler
      */
     protected ServerRemoveHandler() {
+    }
+
+    @Override
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.performRemove(context, operation, model);
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String serverName = address.getLastElement().getValue();
+        final ModelNode verifyOp = new ModelNode();
+        verifyOp.get(OP).set("verify-running-server");
+        verifyOp.get(OP_ADDR).add(HOST, address.getElement(0).getValue());
+        context.addStep(context.getResult(), verifyOp, new OperationStepHandler() {
+            @Override
+            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                final PathAddress serverAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SERVER, serverName));
+                final ProxyController controller = context.getResourceRegistration().getProxyController(serverAddress);
+                if(! context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS).contains(SERVER)) {
+                    throw new OperationFailedException(new ModelNode().set(context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS).toString()));
+                }
+                if(controller != null) {
+                    context.getFailureDescription().set("server (" + serverName + ") still running");
+                }
+                context.completeStep();
+            }
+        }, OperationContext.Stage.IMMEDIATE);
     }
 
     protected boolean requiresRuntime(OperationContext context) {
