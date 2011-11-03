@@ -4045,8 +4045,16 @@
                         <artifactId>gwtp-all</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>com.google.code</groupId>
+                        <artifactId>gwt-visualization</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>com.google.code.gwt-log</groupId>
                         <artifactId>gwt-log</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.inject.extensions</groupId>
+                        <artifactId>guice-assistedinject</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.mycila.com.google.inject.extensions</groupId>
