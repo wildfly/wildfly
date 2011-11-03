@@ -93,6 +93,8 @@ final class OperationContextImpl implements OperationContext {
     private final ModelController.OperationTransactionControl transactionControl;
     private final ServiceTarget serviceTarget;
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
+    // protected by "realRemovingControllers"
+    private final Map<ServiceName, Step> removalSteps = new HashMap<ServiceName, Step>();
     private final boolean booting;
     private final OperationAttachments attachments;
     private final ControlledProcessState processState;
@@ -268,8 +270,17 @@ final class OperationContextImpl implements OperationContext {
                     currentStage = currentStage.next();
                     if (affectsRuntime && currentStage == Stage.VERIFY) {
                         // a change was made to the runtime.  Thus, we must wait for stability before resuming in to verify.
+                        ContainerStateMonitor.ContainerStateChangeReport changeReport;
                         try {
-                            modelController.awaitContainerMonitor(true, 1);
+                            // First wait until any removals we've initiated have begun processing, otherwise
+                            // the ContainerStateMonitor may not have gotten the notification causing it to untick
+                            final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
+                            synchronized (map) {
+                                while (!map.isEmpty()) {
+                                    map.wait();
+                                }
+                            }
+                            changeReport = modelController.awaitContainerStateChangeReport(1);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             cancelled = true;
@@ -280,6 +291,11 @@ final class OperationContextImpl implements OperationContext {
                             }
                             resultAction = ResultAction.ROLLBACK;
                             return;
+                        }
+                        // If any services are missing, add a verification handler to see if we caused it
+                        if (changeReport != null && !changeReport.getMissingServices().isEmpty()) {
+                            ServiceRemovalVerificationHandler removalVerificationHandler = new ServiceRemovalVerificationHandler(changeReport);
+                            addStep(new ModelNode(), new ModelNode(), PathAddress.EMPTY_ADDRESS, removalVerificationHandler, Stage.VERIFY);
                         }
                     }
                 }
@@ -639,6 +655,7 @@ final class OperationContextImpl implements OperationContext {
     }
 
     private void doRemove(final ServiceController<?> controller) {
+        final Step removalStep = activeStep;
         controller.addListener(new AbstractServiceListener<Object>() {
             public void listenerAdded(final ServiceController<?> controller) {
                 final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
@@ -654,8 +671,10 @@ final class OperationContextImpl implements OperationContext {
                     case REMOVING_to_DOWN: {
                         final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
                         synchronized (map) {
-                            if (map.get(controller.getName()) == controller) {
+                            ServiceName name = controller.getName();
+                            if (map.get(name) == controller) {
                                 map.remove(controller.getName());
+                                removalSteps.put(name, removalStep);
                                 map.notifyAll();
                             }
                         }
@@ -1273,6 +1292,11 @@ final class OperationContextImpl implements OperationContext {
                 try {
                     while (map.containsKey(name)) try {
                         map.wait();
+
+                        // If a step removed this ServiceName before, it's no longer responsible
+                        // for any ill effect
+                        removalSteps.remove(name);
+
                         return realBuilder.install();
                     } catch (InterruptedException e) {
                         if (respectInterruption) {
@@ -1287,8 +1311,72 @@ final class OperationContextImpl implements OperationContext {
                         Thread.currentThread().interrupt();
                     }
                 }
+
+                // If a step removed this ServiceName before, it's no longer responsible
+                // for any ill effect
+                removalSteps.remove(name);
+
                 return realBuilder.install();
             }
+        }
+    }
+
+    /** Verifies that any service removals performed by this operation did not trigger a missing dependency */
+    private class ServiceRemovalVerificationHandler implements OperationStepHandler {
+
+        private final ContainerStateMonitor.ContainerStateChangeReport containerStateChangeReport;
+
+        private ServiceRemovalVerificationHandler(ContainerStateMonitor.ContainerStateChangeReport containerStateChangeReport) {
+            this.containerStateChangeReport = containerStateChangeReport;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+
+            final Map<Step, Map<ServiceName, Set<ServiceName>>> missingByStep = new HashMap<Step, Map<ServiceName, Set<ServiceName>>>();
+            // The realRemovingControllers map acts as the guard for the removalSteps map
+            Object mutex = realRemovingControllers;
+            synchronized (mutex) {
+                for (Map.Entry<ServiceName, ContainerStateMonitor.MissingDependencyInfo> entry : containerStateChangeReport.getMissingServices().entrySet()) {
+                    ContainerStateMonitor.MissingDependencyInfo missingDependencyInfo = entry.getValue();
+                    Step removalStep = removalSteps.get(entry.getKey());
+                    Map<ServiceName, Set<ServiceName>> stepBadRemovals = missingByStep.get(removalStep);
+                    if (stepBadRemovals == null) {
+                        stepBadRemovals = new HashMap<ServiceName, Set<ServiceName>>();
+                        missingByStep.put(removalStep, stepBadRemovals);
+                    }
+                    stepBadRemovals.put(entry.getKey(), missingDependencyInfo.getDependents());
+                }
+            }
+
+            for (Map.Entry<Step, Map<ServiceName, Set<ServiceName>>> entry : missingByStep.entrySet()) {
+                Step step = entry.getKey();
+                if (!step.response.hasDefined(FAILURE_DESCRIPTION)) {
+                    StringBuilder sb = new StringBuilder("Removing services has lead to unsatisfied dependencies:");
+                    for (Map.Entry<ServiceName, Set<ServiceName>> removed : entry.getValue().entrySet()) {
+                        sb.append("\nService ");
+                        sb.append(removed.getKey().getCanonicalName());
+                        sb.append(" was depended upon by ");
+                        boolean first = true;
+                        for (ServiceName dependent : removed.getValue()) {
+                            if (!first) {
+                                sb.append(", ");
+                            } else {
+                                first = false;
+                            }
+                            sb.append(dependent);
+                        }
+                    }
+                    step.response.get(FAILURE_DESCRIPTION).set(sb.toString());
+                }
+                // else a handler already recorded a failure; don't overwrite
+            }
+
+            if (!missingByStep.isEmpty() && context.isRollbackOnRuntimeFailure()) {
+                context.setRollbackOnly();
+            }
+            context.completeStep();
         }
     }
 }

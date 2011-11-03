@@ -325,6 +325,10 @@ class ModelControllerImpl implements ModelController {
         }
     }
 
+    ContainerStateMonitor.ContainerStateChangeReport awaitContainerStateChangeReport(final int count) throws InterruptedException {
+        return stateMonitor.awaitContainerStateChangeReport(count);
+    }
+
     ServiceRegistry getServiceRegistry() {
         return serviceRegistry;
     }
