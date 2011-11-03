@@ -24,6 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.1" name="org.hornetq">
     <resources>
+        <resource-root path="lib"/>
         <!-- Insert resources here -->
     </resources>
 
