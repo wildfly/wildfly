@@ -281,6 +281,6 @@ public final class Main {
     private static final class ParsedOptions {
         ServerEnvironment environment;
         List<String> clientArguments;
-        String hostUrl = "remote://localhost:9999";
+        String hostUrl = "remote://localhost:4447";
     }
 }
