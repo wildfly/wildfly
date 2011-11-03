@@ -21,9 +21,26 @@
  */
 package org.jboss.as.webservices.invocation;
 
+import javax.xml.rpc.handler.MessageContext;
+
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.wsf.spi.invocation.HandlerCallback;
+import org.jboss.wsf.spi.invocation.Invocation;
+
 /**
  * Handles invocations on EJB21 endpoints.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class InvocationHandlerEJB21 extends AbstractInvocationHandlerEJB {}
+final class InvocationHandlerEJB21 extends AbstractInvocationHandlerEJB {
+
+    @Override
+    protected void prepareForInvocation(final InterceptorContext context, final Invocation wsInvocation) {
+        final MessageContext msgContext = wsInvocation.getInvocationContext().getAttachment(MessageContext.class);
+        final HandlerCallback callback = wsInvocation.getInvocationContext().getAttachment(HandlerCallback.class);
+        context.putPrivateData(MessageContext.class, msgContext);
+        context.putPrivateData(HandlerCallback.class, callback);
+        context.putPrivateData(Invocation.class, wsInvocation);
+    }
+
+}

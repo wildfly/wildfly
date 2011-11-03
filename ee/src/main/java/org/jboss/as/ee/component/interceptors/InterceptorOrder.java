@@ -49,14 +49,19 @@ public class
         public static final int JPA_SESSION_BEAN_INTERCEPTOR                                = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR         = 0x700;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR                                = 0x800;
+        // JSR 109 - Version 1.3 - 6.2.2.4 Security
+        // For EJB based service implementations, Handlers run after method level authorization has occurred.
+        // JSR 109 - Version 1.3 - 6.2.2.5 Transaction
+        // Handlers run under the transaction context of the component they are associated with.
+        public static final int WS_HANDLERS_INTERCEPTOR                                     = 0x900;
 
         /**
          * All user level interceptors are added with the same priority, so they execute
          * in the order that they are added.
          */
-        public static final int USER_INTERCEPTORS                                           = 0x900;
-        public static final int CDI_INTERCEPTORS                                            = 0xA00;
-        public static final int TERMINAL_INTERCEPTOR                                        = 0xB00;
+        public static final int USER_INTERCEPTORS                                           = 0xA00;
+        public static final int CDI_INTERCEPTORS                                            = 0xB00;
+        public static final int TERMINAL_INTERCEPTOR                                        = 0xC00;
 
         private Component() {
         }
