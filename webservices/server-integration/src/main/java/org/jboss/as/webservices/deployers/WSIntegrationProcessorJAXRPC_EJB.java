@@ -22,11 +22,18 @@
 package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import static org.jboss.as.ee.component.interceptors.InterceptorOrder.Component.WS_HANDLERS_INTERCEPTOR;
 import static org.jboss.as.webservices.util.ASHelper.getJaxrpcDeployment;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WEBSERVICES_METADATA_KEY;
 
+import javax.xml.rpc.handler.MessageContext;
+import javax.xml.rpc.handler.soap.SOAPMessageContext;
+
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentConfigurator;
+import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -37,7 +44,13 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.JAXRPCDeployment;
+import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.wsf.spi.invocation.HandlerCallback;
+import org.jboss.wsf.spi.invocation.Invocation;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
@@ -79,9 +92,77 @@ public final class WSIntegrationProcessorJAXRPC_EJB implements DeploymentUnitPro
         final SessionBeanComponentDescription sessionBean = (SessionBeanComponentDescription)moduleDescription.getComponentByName(ejbName);
         final String seiIfaceClassName = portComponentMD.getServiceEndpointInterface();
         final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView(seiIfaceClassName);
+        // JSR 109 - Version 1.3 - 6.2.2.4 Security
+        // For EJB based service implementations, Handlers run after method level authorization has occurred.
+        // JSR 109 - Version 1.3 - 6.2.2.5 Transaction
+        // Handlers run under the transaction context of the component they are associated with.
+        sessionBean.getConfigurators().addLast(new JAXRPCHandlersConfigurator());
         final String ejbViewName = ejbViewDescription.getServiceName().getCanonicalName();
 
         return new EJBEndpoint(sessionBean, null, ejbViewName);
+    }
+
+    private static final class JAXRPCHandlersConfigurator implements ComponentConfigurator {
+        @Override
+        public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+            configuration.addComponentInterceptor(new ImmediateInterceptorFactory(JAXRPCHandlersInterceptor.SINGLETON), WS_HANDLERS_INTERCEPTOR, true);
+        }
+    }
+
+    private static final class JAXRPCHandlersInterceptor implements Interceptor {
+
+        private static final Interceptor SINGLETON = new JAXRPCHandlersInterceptor();
+
+        private JAXRPCHandlersInterceptor() {}
+
+        @Override
+        public Object processInvocation(final InterceptorContext context) throws Exception {
+            final SOAPMessageContext msgContext = (SOAPMessageContext) context.getPrivateData(MessageContext.class);
+            final Invocation wsInvocation = (Invocation) context.getPrivateData(Invocation.class);
+            final HandlerCallback callback = (HandlerCallback) context.getPrivateData(HandlerCallback.class);
+            if (msgContext == null || callback == null || wsInvocation == null) {
+                // not for us
+                return context.proceed();
+            }
+
+            // Handlers need to be Tx. Therefore we must invoke the handler chain after the TransactionInterceptor.
+            try {
+                // call the request handlers
+                boolean handlersPass = callback.callRequestHandlerChain(wsInvocation, HandlerType.ENDPOINT);
+                handlersPass = handlersPass && callback.callRequestHandlerChain(wsInvocation, HandlerType.POST);
+
+                // Call the next interceptor in the chain
+                if (handlersPass) {
+                    // The SOAPContentElements stored in the EndpointInvocation might have changed after
+                    // handler processing. Get the updated request payload. This should be a noop if request
+                    // handlers did not modify the incomming SOAP message.
+                    final Object[] reqParams = wsInvocation.getArgs();
+                    context.setParameters(reqParams);
+                    final Object resObj = context.proceed();
+
+                    // Setting the message to null should trigger binding of the response message
+                    msgContext.setMessage(null);
+                    wsInvocation.setReturnValue(resObj);
+                }
+
+                // call the response handlers
+                handlersPass = callback.callResponseHandlerChain(wsInvocation, HandlerType.POST);
+                handlersPass = handlersPass && callback.callResponseHandlerChain(wsInvocation, HandlerType.ENDPOINT);
+
+                // update the return value after response handler processing
+                return wsInvocation.getReturnValue();
+            }
+            catch (final Exception ex) {
+                try {
+                    // call the fault handlers
+                    boolean handlersPass = callback.callFaultHandlerChain(wsInvocation, HandlerType.POST, ex);
+                    handlersPass = handlersPass && callback.callFaultHandlerChain(wsInvocation, HandlerType.ENDPOINT, ex);
+                }
+                catch (Exception ignore) {}
+                throw ex;
+            }
+        }
+
     }
 
 }
