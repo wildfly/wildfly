@@ -47,6 +47,7 @@ import java.util.Iterator;
  * Tests FindAssociation using JAXR API
  *
  * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
+ * @author Thomas.Diesler@jboss.com
  * @since Mar 9, 2005
  */
 @RunWith(Arquillian.class)

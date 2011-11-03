@@ -56,20 +56,6 @@ public class JaxrBusinessQueryTestCase extends JaxrTestBase {
     private String querystr = "JBOSS";
     private Key orgKey = null;
 
-    @Deployment
-    public static JavaArchive deployment() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jaxr-business-query-test");
-        archive.addClasses(JaxrTestBase.class);
-        archive.setManifest(new Asset() {
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.apache.scout,org.jboss.as.jaxr");
-                return builder.openStream();
-            }
-        });
-        return archive;
-    }
-
     @Before
     public void setUp() throws Exception {
         super.setUp();

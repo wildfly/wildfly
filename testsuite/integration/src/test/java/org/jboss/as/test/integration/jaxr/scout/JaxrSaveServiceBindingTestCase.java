@@ -45,6 +45,7 @@ import java.util.Iterator;
  * Tests Saving ServiceBindings
  *
  * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
+ * @author Thomas.Diesler@jboss.com
  * @since Mar 8, 2005
  */
 @RunWith(Arquillian.class)

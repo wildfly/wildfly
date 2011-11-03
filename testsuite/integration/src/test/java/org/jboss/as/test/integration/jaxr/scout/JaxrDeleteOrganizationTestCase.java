@@ -40,6 +40,7 @@ import java.util.Iterator;
  * Checks Deletion of Organization
  *
  * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
+ * @author Thomas.Diesler@jboss.com
  * @since Jan 3, 2005
  */
 @RunWith(Arquillian.class)
