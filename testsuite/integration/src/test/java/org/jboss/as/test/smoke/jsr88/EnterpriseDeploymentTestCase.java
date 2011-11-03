@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment;
+package org.jboss.as.test.smoke.jsr88;
 
 import static org.jboss.as.arquillian.container.Authentication.PASSWORD;
 import static org.jboss.as.arquillian.container.Authentication.USERNAME;
@@ -59,6 +59,10 @@ import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
 import org.jboss.as.ee.deployment.spi.JarUtils;
 import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
+import org.jboss.as.test.smoke.embedded.deployment.Echo;
+import org.jboss.as.test.smoke.embedded.deployment.EchoBean;
+import org.jboss.as.test.smoke.embedded.deployment.EchoHome;
+import org.jboss.as.test.smoke.embedded.deployment.SampleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -66,7 +70,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.UnreachableStatementException;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -95,7 +98,6 @@ public class EnterpriseDeploymentTestCase {
         assertEquals("ServerDeploymentManager target", target.getDescription());
     }
 
-    @Ignore("AS7-2439")
     @Test
     public void testDistributeWebApp() throws Exception {
         ProgressObject progress = jsr88Deploy(getWebArchive());
