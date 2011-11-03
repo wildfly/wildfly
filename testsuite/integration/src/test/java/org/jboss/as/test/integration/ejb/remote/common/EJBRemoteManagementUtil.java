@@ -22,6 +22,22 @@
 
 package org.jboss.as.test.integration.ejb.remote.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -33,20 +49,6 @@ import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 /**
  * @author Jaikiran Pai
  */
@@ -56,9 +58,9 @@ public class EJBRemoteManagementUtil {
 
     /**
      * Returns the EJB remoting connector port that can be used for EJB remote invocations
-     * 
+     *
      * @param managementServerHostName The hostname of the server
-     * @param managementPort The management port
+     * @param managementPort           The management port
      * @return
      */
     public static int getEJBRemoteConnectorPort(final String managementServerHostName, final int managementPort) {
@@ -118,6 +120,18 @@ public class EJBRemoteManagementUtil {
         }
     }
 
+    public static String getNodeName(final String managementServerHostName, final int managementPort) {
+        // TODO: FIXME: Right now, we just return the "hostname" of the client as the node name of the server.
+        // This works only when both the client (test) and server are on the same system.
+        // We need to fix this once I know if there's any management operation exposed for retrieving the
+        // jboss.node.name system property http://lists.jboss.org/pipermail/jboss-as7-dev/2011-November/004434.html
+        final String nodeName = getNodeName();
+        if (nodeName == null) {
+            throw new IllegalStateException("jboss.node.name could not be determined");
+        }
+        return nodeName;
+    }
+
     private static ModelControllerClient getModelControllerClient(final String managementServerHostName, final int managementPort) {
         try {
             return ModelControllerClient.Factory.create(InetAddress.getByName(managementServerHostName), managementPort);
@@ -128,7 +142,7 @@ public class EJBRemoteManagementUtil {
 
     /**
      * Executes the operation and returns the result if successful. Else throws an exception
-     * 
+     *
      * @param modelControllerClient
      * @param operation
      * @return
@@ -146,5 +160,61 @@ public class EJBRemoteManagementUtil {
             throw new RuntimeException("Operation not successful; outcome = " + result.get(ClientConstants.OUTCOME));
         }
 
+    }
+
+    // TODO: This method is temporary hack till we figure out the management operation to get the
+    // jboss.node.name system property from the server http://lists.jboss.org/pipermail/jboss-as7-dev/2011-November/004434.html
+    private static String getNodeName() {
+        // Logic copied from org.jboss.as.server.ServerEnvironment constructor
+        final Properties props = System.getProperties();
+        final Map<String, String> env = System.getenv();
+        // Calculate host and default server name
+        String hostName = props.getProperty("jboss.host.name");
+        String qualifiedHostName = props.getProperty("jboss.qualified.host.name");
+        if (qualifiedHostName == null) {
+            // if host name is specified, don't pick a qualified host name that isn't related to it
+            qualifiedHostName = hostName;
+            if (qualifiedHostName == null) {
+                // POSIX-like OSes including Mac should have this set
+                qualifiedHostName = env.get("HOSTNAME");
+            }
+            if (qualifiedHostName == null) {
+                // Certain versions of Windows
+                qualifiedHostName = env.get("COMPUTERNAME");
+            }
+            if (qualifiedHostName == null) {
+                try {
+                    qualifiedHostName = InetAddress.getLocalHost().getHostName();
+                } catch (UnknownHostException e) {
+                    qualifiedHostName = null;
+                }
+            }
+            if (qualifiedHostName != null && qualifiedHostName.matches("^\\d+\\.\\d+\\.\\d+\\.\\d+$|:")) {
+                // IP address is not acceptable
+                qualifiedHostName = null;
+            }
+            if (qualifiedHostName == null) {
+                // Give up
+                qualifiedHostName = "unknown-host.unknown-domain";
+            }
+            qualifiedHostName = qualifiedHostName.trim().toLowerCase();
+        }
+        if (hostName == null) {
+            // Use the host part of the qualified host name
+            final int idx = qualifiedHostName.indexOf('.');
+            hostName = idx == -1 ? qualifiedHostName : qualifiedHostName.substring(0, idx);
+        }
+
+        // Set up the server name for management purposes
+        String serverName = props.getProperty("jboss.server.name");
+        if (serverName == null) {
+            serverName = hostName;
+        }
+        // Set up the clustering node name
+        String nodeName = props.getProperty("jboss.node.name");
+        if (nodeName == null) {
+            nodeName = serverName;
+        }
+        return nodeName;
     }
 }
