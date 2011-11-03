@@ -166,7 +166,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Phase.POST_MODULE, Phase.POST_MODULE_EJB_ORB_BIND, new ORBJndiBindingProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_RESOLVE_EJB_INJECTIONS, new EjbInjectionResolutionProcessor());
-                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EE_COMPONENT, new JaccEjbDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(Phase.INSTALL, Phase.INSTALL_EJB_JACC_PROCESSING, new JaccEjbDeploymentProcessor());
 
                 processorTarget.addDeploymentProcessor(Phase.CLEANUP, Phase.CLEANUP_EJB, new EjbCleanUpProcessor());
 
