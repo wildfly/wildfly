@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
-import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
@@ -134,6 +133,11 @@ public class EJBClientUserTransactionTestCase {
     public void beforeTest() throws Exception {
         this.ejbClientContext = EJBClientContext.create();
         this.ejbClientContext.registerConnection(connection);
+
+        final EJBClientTransactionContext localUserTxContext = EJBClientTransactionContext.createLocal();
+        // set the tx context
+        EJBClientTransactionContext.setGlobalContext(localUserTxContext);
+
     }
 
     @After
@@ -154,7 +158,6 @@ public class EJBClientUserTransactionTestCase {
         final StatelessEJBLocator<CMTRemote> cmtRemoteBeanLocator = new StatelessEJBLocator<CMTRemote>(CMTRemote.class, APP_NAME, MODULE_NAME, CMTBean.class.getSimpleName(), "");
         final CMTRemote cmtRemoteBean = EJBClient.createProxy(cmtRemoteBeanLocator);
 
-        final EJBClientTransactionContext ejbClientTransactionContext = EJBClientTransactionContext.createLocal();
         final UserTransaction userTransaction = EJBClient.getUserTransaction(nodeName);
         userTransaction.begin();
         cmtRemoteBean.mandatoryTxOp();
@@ -174,7 +177,6 @@ public class EJBClientUserTransactionTestCase {
         final StatelessEJBLocator<BatchRetriever> batchRetrieverLocator = new StatelessEJBLocator<BatchRetriever>(BatchRetriever.class, APP_NAME, MODULE_NAME, BatchFetchingBean.class.getSimpleName(), "");
         final BatchRetriever batchRetriever = EJBClient.createProxy(batchRetrieverLocator);
 
-        final EJBClientTransactionContext ejbClientTransactionContext = EJBClientTransactionContext.createLocal();
         final UserTransaction userTransaction = EJBClient.getUserTransaction(nodeName);
         final String batchName = "Simple Batch";
         // create a batch
