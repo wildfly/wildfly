@@ -22,9 +22,10 @@
 
 package org.jboss.as.jpa.transaction;
 
-import org.jboss.as.jpa.container.EntityManagerMetadata;
-import org.jboss.as.jpa.container.EntityManagerUtil;
-import org.jboss.tm.TxUtils;
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -35,10 +36,10 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
-import java.util.Map;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import org.jboss.as.jpa.container.EntityManagerMetadata;
+import org.jboss.as.jpa.container.EntityManagerUtil;
+import org.jboss.tm.TxUtils;
 
 /**
  * Transaction utilities for JPA
@@ -122,7 +123,6 @@ public class TransactionUtil {
                     getTransaction().toString());
             registerSynchronization(entityManager, scopedPuName, true);
             putEntityManagerInTransactionRegistry(scopedPuName, entityManager);
-            entityManager.joinTransaction(); // force registration with TX
         } else {
             if (JPA_LOGGER.isDebugEnabled()) {
                 JPA_LOGGER.debugf("%s: reuse entity manager session already in tx %s", getEntityManagerDetails(entityManager),
