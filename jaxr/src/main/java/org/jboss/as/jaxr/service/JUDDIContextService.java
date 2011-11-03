@@ -29,6 +29,8 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.juddi.registry.RegistryServlet;
+import org.apache.naming.resources.ProxyDirContext;
+import org.apache.naming.resources.Resource;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
@@ -47,10 +49,22 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
+import javax.naming.Binding;
+import javax.naming.Name;
+import javax.naming.NameClassPair;
+import javax.naming.NameParser;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.servlet.http.HttpServlet;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Hashtable;
 
 /**
  * A service starting a welcome web context driven by simple static content.
@@ -79,7 +93,19 @@ public final class JUDDIContextService implements Service<Context> {
     }
 
     private JUDDIContextService(final JAXRConfiguration config) {
-        this.context = new StandardContext();
+        context = new StandardContext() {
+            private DirContext resources;
+            // [TODO] AS7-2499 Remove DirContext hack to load juddi.properties
+            public DirContext getResources() {
+                if (resources == null) {
+                    DirContext orgdirctx = super.getResources();
+                    if (orgdirctx != null) {
+                        resources = new JAXRDirContext(new Hashtable<String, Object>(), orgdirctx);
+                    }
+                }
+                return resources;
+            }
+        };
     }
 
     @Override
@@ -111,12 +137,13 @@ public final class JUDDIContextService implements Service<Context> {
             context.addServletMapping("/publish", "JUDDIServlet");
             context.addServletMapping("/inquiry", "JUDDIServlet");
 
-            // Add the JUDDIServlet
+            // Add the RegistryServlet
             servlet = new RegistryServlet();
             wrapper = context.createWrapper();
             wrapper.setName("JUDDIRegistryServlet");
             wrapper.setServlet(servlet);
             wrapper.setServletClass(servlet.getClass().getName());
+            wrapper.setLoadOnStartup(1);
             context.addChild(wrapper);
 
             host.addChild(context);
@@ -148,10 +175,6 @@ public final class JUDDIContextService implements Service<Context> {
 
     @Override
     public synchronized Context getValue() throws IllegalStateException {
-        final Context context = this.context;
-        if (context == null) {
-            throw new IllegalStateException();
-        }
         return context;
     }
 
@@ -188,6 +211,25 @@ public final class JUDDIContextService implements Service<Context> {
 
         @Override
         public void destroyInstance(Object o) throws IllegalAccessException, InvocationTargetException {
+        }
+    }
+
+    private static class JAXRDirContext extends ProxyDirContext {
+        public JAXRDirContext(Hashtable<String, Object> env, DirContext dircontext) {
+            super(env, dircontext);
+        }
+
+        @Override
+        // [TODO] AS7-2499 Remove DirContext hack to load juddi.properties
+        public Object lookup(String name) throws NamingException {
+            try {
+                return super.lookup(name);
+            } catch (NamingException namingExeption) {
+                InputStream stream = getClass().getClassLoader().getResourceAsStream(name);
+                if (stream == null)
+                    throw namingExeption;
+                return new Resource(stream);
+            }
         }
     }
 }
