@@ -17,4 +17,27 @@
             </xs:documentation>
         </xs:annotation>
     </xs:complexType>
+
+    <!--
+    Whether we want to run the db initialization scripts
+    Should all tables be created on Start
+    <attribute name="CreateOnStart">false</attribute>
+    Should all tables be dropped on Stop
+    <attribute name="DropOnStop">false</attribute>
+    Should all tables be dropped on Start
+    <attribute name="DropOnStart">false</attribute>
+    Datasource to Database
+    <attribute name="DataSourceUrl">java:/DefaultDS</attribute>
+    Alias to the registry
+    <attribute name="RegistryOperator">RegistryOperator</attribute>
+    Should I bind a Context to which JaxrConnectionFactory bound
+    <attribute name="ShouldBindJaxr">true</attribute>
+    Context to which JaxrConnectionFactory to bind to.
+    If you have remote clients, please bind it to the global
+    namespace(default behavior). To just cater to clients running
+    on the same VM as JBoss, change to java:/JAXR
+    <attribute name="BindJaxr">JAXR</attribute>
+    <attribute name="DropDB">false</attribute>
+    -->
+
 </xs:schema>
