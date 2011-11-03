@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project default="reports" name="JBoss/Test Reports" basedir="..">
+
+    <!-- Feel free to set following properties using -D<prop>=<value> . -->
+    <property name="reporting.dir" value="./tools/reporting"/>
+    <property name="reports.dest.dir" value="./target/reports"/>
+    <property name="reports.src.mask" value="**/target/surefire-reports/TEST-*.xml"/>
+
+
+    <mkdir dir="${reports.dest.dir}"/>
+
+    <property name="reporting.xslt.dir" value="${reporting.dir}/stylesheets"/>
+
+    <!-- ======================================================== -->
+    <!-- Initialization                                           -->
+    <!-- ======================================================== -->
+    <tstamp>
+        <format property="TIMENOW" pattern="yyyy-MM-dd.HH-mm" timezone="GMT"/>
+    </tstamp>
+
+
+    <!-- Reporting targets that generate reports from JUnit output. -->
+    <target name="reports" depends="tests-report" description="Generates all reports."/>
+
+    <target name="tests-report-clean">
+        <delete dir="${reports.dest.dir}"/>
+    </target>
+
+    <!-- Creates all reports and zips them into an archive. -->
+    <target name="tests-report" depends="tests-report-html, tests-report-text, tests-report-xml">
+        <!--
+        <tar tarfile="${reports.dest.dir}/${TIMENOW}.tgz" compression="gzip" longfile="gnu">
+            <tarfileset dir="${reports.dest.dir}/html" prefix="${TIMENOW}">
+                <include name="**"/>
+            </tarfileset>
+        </tar>
+        -->
+        <zip destfile="${reports.dest.dir}/${TIMENOW}.zip" basedir="${reports.dest.dir}/html" level="9">
+            
+        </zip>
+    </target>
+
+    <!-- Creates the aggregated HTML report. -->
+    <target name="tests-report-html">
+        <mkdir dir="${reports.dest.dir}/html"/>
+
+        <junitreport todir="${reports.dest.dir}">
+            <fileset dir=".">
+                <include name="${reports.src.mask}"/>
+            </fileset>
+            <report format="frames"
+            todir="${reports.dest.dir}/html"
+            styledir="${reporting.xslt.dir}"
+            />
+        </junitreport>
+    </target>
+
+    <target name="tests-report-text" depends="tests-report-html">
+        <mkdir dir="${reports.dest.dir}/text"/>
+
+        <!-- Merges JUnit reports to a single file. -->
+        <style basedir="${reports.dest.dir}"
+         destdir="${reports.dest.dir}/text"
+         extension=".txt"
+         style="${reporting.xslt.dir}/summary1b.xsl"
+         includes="TESTS-TestSuites.xml">
+            <param name="thedate" expression="${TIMENOW}"/>
+            <param name="java_version" expression="${java.version}"/>
+            <param name="java_vendor" expression="${java.vendor}"/>
+            <param name="java_vm_specification_version" expression="${java.vm.specification.version}"/>
+            <param name="java_vm_version" expression="${java.vm.version}"/>
+            <param name="java_vm_name" expression="${java.vm.name}"/>
+            <param name="java_vm_info" expression="${java.vm.info}"/>
+            <param name="java_specification_version" expression="${java.specification.version}"/>
+            <param name="java_class_version" expression="${java.class.version}"/>
+            <param name="os_name" expression="${os.name}"/>
+            <param name="os_arch" expression="${os.arch}"/>
+            <param name="os_version" expression="${os.version}"/>
+            <param name="builduid" expression="${TIMENOW}"/>
+            <param name="results_web" expression="${results_web}"/>
+        </style>
+    </target>
+
+    <target name="tests-report-xml" depends="tests-report-html">
+        <mkdir dir="${reports.dest.dir}/xml"/>
+
+        <!-- Merges JUnit reports to a single file. -->
+        <style basedir="${reports.dest.dir}"
+         destdir="${reports.dest.dir}/xml"
+         extension=".xml"
+         style="${reporting.xslt.dir}/shortXmlSummary.xsl"
+         includes="TESTS-TestSuites.xml">
+            <param name="thedate" expression="${TIMENOW}"/>
+            <param name="java_version" expression="${java.version}"/>
+            <param name="java_vendor" expression="${java.vendor}"/>
+            <param name="java_vm_specification_version"
+
+            expression="${java.vm.specification.version}"/>
+            <param name="java_vm_version" expression="${java.vm.version}"/>
+            <param name="java_vm_name" expression="${java.vm.name}"/>
+            <param name="java_vm_info" expression="${java.vm.info}"/>
+            <param name="java_specification_version" expression="${java.specification.version}"/>
+            <param name="java_class_version" expression="${java.class.version}"/>
+            <param name="os_name" expression="${os.name}"/>
+            <param name="os_arch" expression="${os.arch}"/>
+            <param name="os_version" expression="${os.version}"/>
+        </style>
+    </target>
+
+</project>
