@@ -22,6 +22,11 @@
 
 package org.jboss.as.jacorb.naming;
 
+import java.applet.Applet;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.util.Properties;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.Context;
 import org.omg.CORBA.ContextList;
@@ -45,11 +50,6 @@ import org.omg.CORBA.UnionMember;
 import org.omg.CORBA.ValueMember;
 import org.omg.CORBA.WrongTransaction;
 import org.omg.CORBA.portable.OutputStream;
-
-import java.applet.Applet;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.util.Properties;
 
 /**
  * <p>
@@ -329,6 +329,6 @@ public class SerializableORB extends ORB implements Serializable {
     }
 
     java.lang.Object readResolve() throws ObjectStreamException {
-        return ORBInitialContextFactory.getORB();
+        return JBossInitialContextFactory.getORB();
     }
 }
