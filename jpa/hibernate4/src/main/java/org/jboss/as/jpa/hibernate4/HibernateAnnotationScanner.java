@@ -82,7 +82,7 @@ public class HibernateAnnotationScanner implements Scanner {
             Index index = getJarFileIndex(jartoScan, pu);
             if (index == null) {
                 JPA_LOGGER.tracef("No classes to scan for annotations in jar '%s' (jars with classes '%s')",
-                    jartoScan.getPath(), pu.getAnnotationIndex().keySet());
+                    jartoScan, pu.getAnnotationIndex().keySet());
                 return new HashSet<Package>();
             }
             Collection<ClassInfo> allClasses = index.getKnownClasses();
@@ -126,7 +126,7 @@ public class HibernateAnnotationScanner implements Scanner {
         Index index = getJarFileIndex(jartoScan, pu);
         if (index == null) {
             JPA_LOGGER.tracef("No classes to scan for annotations in jar '%s' (jars with classes '%s')",
-                jartoScan.getPath(), pu.getAnnotationIndex().keySet());
+                jartoScan, pu.getAnnotationIndex().keySet());
             return new HashSet<Class<?>>();
         }
         if (annotationsToLookFor == null) {
