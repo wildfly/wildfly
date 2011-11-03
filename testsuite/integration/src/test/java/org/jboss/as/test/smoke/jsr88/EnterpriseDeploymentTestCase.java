@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.embedded.deployment;
+package org.jboss.as.test.smoke.jsr88;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -27,6 +27,10 @@ import org.jboss.as.ee.deployment.spi.DeploymentManagerImpl;
 import org.jboss.as.ee.deployment.spi.DeploymentMetaData;
 import org.jboss.as.ee.deployment.spi.JarUtils;
 import org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl;
+import org.jboss.as.test.smoke.embedded.deployment.Echo;
+import org.jboss.as.test.smoke.embedded.deployment.EchoBean;
+import org.jboss.as.test.smoke.embedded.deployment.EchoHome;
+import org.jboss.as.test.smoke.embedded.deployment.SampleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -93,7 +97,6 @@ public class EnterpriseDeploymentTestCase {
         assertEquals("ServerDeploymentManager target", target.getDescription());
     }
 
-    @Ignore("AS7-2439")
     @Test
     public void testDistributeWebApp() throws Exception {
         ProgressObject progress = jsr88Deploy(getWebArchive());
