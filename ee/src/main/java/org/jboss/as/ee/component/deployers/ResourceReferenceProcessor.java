@@ -21,9 +21,6 @@
  */
 package org.jboss.as.ee.component.deployers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
@@ -41,6 +38,9 @@ import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Deployment processor that sets up env-entry, resource-ref and resource-env-ref bindings
@@ -86,13 +86,13 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
 
             classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
-            if (classType == null) {
-                throw new DeploymentUnitProcessingException("Could not determine type for resource-env-ref " + name);
-            }
-            BindingConfiguration bindingConfiguration = null;
+            final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceEnvRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceEnvRef.getLookupName()));
             } else {
+                if (classType == null) {
+                    throw new DeploymentUnitProcessingException("Could not determine type for resource-env-ref " + name);
+                }
                 //check if it is a well known type
                 final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
                 if (lookup != null) {
@@ -138,13 +138,15 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             LookupInjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(moduleDescription, componentDescription, applicationClasses, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
-            if (classType == null) {
-                throw new DeploymentUnitProcessingException("Could not determine type for resource-ref " + name);
-            }
-            BindingConfiguration bindingConfiguration = null;
+            final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceRef.getLookupName())) {
                 bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
+            } else if (!isEmpty(resourceRef.getResUrl())) {
+                bindingConfiguration = new BindingConfiguration(name, new EnvEntryInjectionSource(resourceRef.getResUrl()));
             } else {
+                if (classType == null) {
+                    throw new DeploymentUnitProcessingException("Could not determine type for resource-ref " + name);
+                }
                 //check if it is a well known type
                 final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
                 if (lookup != null) {

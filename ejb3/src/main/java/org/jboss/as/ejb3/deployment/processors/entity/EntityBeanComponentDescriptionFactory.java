@@ -51,6 +51,10 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         this.appclient = appclient;
     }
 
+    protected void mark(final DeploymentUnit deploymentUnit) {
+        // BMP Entities do not need a mark
+    }
+
     @Override
     protected void processAnnotations(DeploymentUnit deploymentUnit, CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
 
@@ -73,6 +77,8 @@ public class EntityBeanComponentDescriptionFactory extends EJBComponentDescripti
         if (!shouldProcess(entity)) {
             return;
         }
+
+        mark(deploymentUnit);
 
         final EntityBeanComponentDescription description = createDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName());
 

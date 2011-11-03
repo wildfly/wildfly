@@ -22,17 +22,12 @@
 
 package org.jboss.as.cmp.processors;
 
-import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.metadata.ejb.spec.EjbJarMetaData;
-import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
-import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -46,22 +41,13 @@ public class CmpDependencyProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit)) {
-            return;
-        }
-        final EjbJarMetaData jarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-        if (jarMetaData == null || jarMetaData.getEnterpriseBeans() == null) {
+        if (!CmpDeploymentMarker.isCmpDeployment(deploymentUnit)) {
             return;
         }
 
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        for (EnterpriseBeanMetaData beanMetaData : jarMetaData.getEnterpriseBeans()) {
-            if (beanMetaData.isEntity() && EntityBeanMetaData.class.cast(beanMetaData).isCMP()) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CMP, false, false, true));
-                return;
-            }
-        }
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CMP, false, false, true));
     }
 
     public void undeploy(DeploymentUnit context) {

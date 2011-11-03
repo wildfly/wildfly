@@ -16,6 +16,10 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.sasl.JBossSaslProvider;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -30,10 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
-
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.sasl.JBossSaslProvider;
 
 /**
  * JBossAsManagedContainer
@@ -51,6 +51,16 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     @Override
     public Class<ManagedContainerConfiguration> getConfigurationClass() {
         return ManagedContainerConfiguration.class;
+    }
+
+    private static boolean processHasDied(final Process process) {
+        try {
+            process.exitValue();
+            return true;
+        } catch (IllegalThreadStateException e) {
+            // good
+            return false;
+        }
     }
 
     @Override
@@ -140,6 +150,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             while (timeout > 0 && serverAvailable == false) {
                 serverAvailable = getManagementClient().isServerInRunningState();
                 if (!serverAvailable) {
+                    if (processHasDied(proc))
+                        break;
                     Thread.sleep(sleep);
                     timeout -= sleep;
                     sleep = Math.max(sleep/2, 100);

@@ -88,7 +88,7 @@ public abstract class EJBComponentDescriptionFactory implements DeploymentUnitPr
         EjbDeploymentMarker.mark(deploymentUnit);
     }
 
-    protected EjbJarDescription getEjbJarDescription(final DeploymentUnit deploymentUnit) {
+    protected static EjbJarDescription getEjbJarDescription(final DeploymentUnit deploymentUnit) {
         EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         if (ejbJarDescription == null) {
@@ -99,14 +99,22 @@ public abstract class EJBComponentDescriptionFactory implements DeploymentUnitPr
         return ejbJarDescription;
     }
 
-    protected EnterpriseBeansMetaData getEnterpriseBeansMetaData(final DeploymentUnit deploymentUnit) {
+    static EnterpriseBeansMetaData getEnterpriseBeansMetaData(final DeploymentUnit deploymentUnit) {
         final EjbJarMetaData jarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (jarMetaData == null)
             return null;
         return jarMetaData.getEnterpriseBeans();
     }
 
-    protected <B extends EnterpriseBeanMetaData> B getEnterpriseBeanMetaData(final DeploymentUnit deploymentUnit, final String name, final Class<B> expectedType) {
+    static EnterpriseBeanMetaData getEnterpriseBeanMetaData(final DeploymentUnit deploymentUnit, final String name) {
+        final EnterpriseBeansMetaData enterpriseBeansMetaData = getEnterpriseBeansMetaData(deploymentUnit);
+        if (enterpriseBeansMetaData == null)
+            return null;
+        return enterpriseBeansMetaData.get(name);
+    }
+
+    @Deprecated
+    static <B extends EnterpriseBeanMetaData> B getEnterpriseBeanMetaData(final DeploymentUnit deploymentUnit, final String name, final Class<B> expectedType) {
         final EnterpriseBeansMetaData enterpriseBeansMetaData = getEnterpriseBeansMetaData(deploymentUnit);
         if (enterpriseBeansMetaData == null)
             return null;
