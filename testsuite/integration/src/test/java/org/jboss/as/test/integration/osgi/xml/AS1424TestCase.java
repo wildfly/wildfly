@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.testsuite.integration.osgi.as1424;
+package org.jboss.as.test.integration.osgi.xml;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -69,7 +69,6 @@ public class AS1424TestCase {
     }
 
     @Test
-    @Ignore("[AS7-1424] Cannot obtain SchemaFactory when TCCL points to ARQ module")
     public void testSchemaFactoryDefaultTCCL() throws Exception {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         assertNotNull("SchemaFactory not null", schemaFactory);
@@ -100,7 +99,6 @@ public class AS1424TestCase {
     }
 
     @Test
-    @Ignore("[AS7-1424] Cannot obtain SchemaFactory when TCCL points to ARQ module")
     public void testSchemaFactoryArqTCCL() throws Exception {
         ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
         try {
