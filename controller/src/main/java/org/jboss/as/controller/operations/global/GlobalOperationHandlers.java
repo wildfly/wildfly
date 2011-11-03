@@ -666,7 +666,7 @@ public class GlobalOperationHandlers {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-            Set<String> childTypes = registry.getChildNames(PathAddress.EMPTY_ADDRESS);
+            Set<String> childTypes = new TreeSet<String>(registry.getChildNames(PathAddress.EMPTY_ADDRESS));
             final ModelNode result = context.getResult();
             result.setEmptyList();
             for (final String key : childTypes) {
