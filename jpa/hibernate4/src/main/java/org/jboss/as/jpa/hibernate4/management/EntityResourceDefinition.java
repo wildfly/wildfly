@@ -39,35 +39,35 @@ import org.jboss.dmr.ModelType;
 public class EntityResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition DELETE_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_ENTITY_DELETE_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition INSERT_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_ENTITY_INSERT_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition LOAD_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_ENTITY_LOAD_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition UPDATE_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_ENTITY_UPDATE_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
 
     public static final SimpleAttributeDefinition FETCH_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_ENTITY_FETCH_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition OPTIMISTIC_FAILURE_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_OPTIMISTIC_FAILURE_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
 
     EntityResourceDefinition(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
         super(PathElement.pathElement(HibernateDescriptionConstants.ENTITY),
-                HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.ENTITY_STATISTICS));
+            HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.ENTITY_STATISTICS));
         this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
 

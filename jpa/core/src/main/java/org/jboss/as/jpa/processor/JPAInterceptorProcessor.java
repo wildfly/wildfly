@@ -66,7 +66,7 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
             componentDescription.getConfigurators().addFirst(new ComponentConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
+                    DeploymentUnitProcessingException {
                     final SFSBXPCMap map = SFSBXPCMap.getXpcMap(deploymentUnit);
                     configuration.addPostConstructInterceptor(SFSBPreCreateInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.JPA_SFSB_PRE_CREATE);
                     configuration.addPostConstructInterceptor(new SFSBCreateInterceptor.Factory(map), InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
@@ -79,7 +79,7 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
                 view.getConfigurators().addFirst(new ViewConfigurator() {
                     @Override
                     public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws
-                            DeploymentUnitProcessingException {
+                        DeploymentUnitProcessingException {
                         configuration.addViewInterceptor(SFSBInvocationInterceptor.FACTORY, InterceptorOrder.View.JPA_SFSB_INTERCEPTOR);
                     }
                 });
@@ -90,9 +90,9 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
             componentDescription.getConfigurators().add(new ComponentConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
-                        DeploymentUnitProcessingException {
+                    DeploymentUnitProcessingException {
                     configuration.addComponentInterceptor(SBInvocationInterceptor.FACTORY, InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR, false);
-                    if(description.isTimerServiceApplicable()) {
+                    if (description.isTimerServiceApplicable()) {
                         configuration.addTimeoutInterceptor(SBInvocationInterceptor.FACTORY, InterceptorOrder.Component.JPA_SESSION_BEAN_INTERCEPTOR);
                     }
                 }

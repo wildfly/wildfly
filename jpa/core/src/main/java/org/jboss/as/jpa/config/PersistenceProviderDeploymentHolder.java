@@ -52,6 +52,7 @@ public class PersistenceProviderDeploymentHolder {
     /**
      * returns the persistence providers that are deployed with an application.
      * returns null if no provider is deployed with the application.
+     *
      * @return the deployed persistence provider list
      */
     public List<PersistenceProvider> getProvider() {

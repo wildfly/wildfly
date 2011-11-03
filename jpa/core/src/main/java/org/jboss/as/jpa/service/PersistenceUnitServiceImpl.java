@@ -22,6 +22,14 @@
 
 package org.jboss.as.jpa.service;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+
+import java.util.Map;
+
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.spi.PersistenceProvider;
+import javax.sql.DataSource;
+
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
@@ -33,13 +41,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.spi.PersistenceProvider;
-import javax.sql.DataSource;
-import java.util.Map;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 /**
  * Persistence Unit service that is created for each deployed persistence unit that will be referenced by the
@@ -139,7 +140,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
     /**
      * Create EE container entity manager factory
-     *
      *
      * @return EntityManagerFactory
      */

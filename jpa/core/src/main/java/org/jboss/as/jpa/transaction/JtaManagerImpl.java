@@ -22,17 +22,17 @@
 
 package org.jboss.as.jpa.transaction;
 
-import org.jboss.as.jpa.spi.JtaManager;
-
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
+
+import org.jboss.as.jpa.spi.JtaManager;
 
 /**
  * passes the TM and TSR into the persistence provider integration classes
  *
  * @author Scott Marlow
  */
-public class JtaManagerImpl implements JtaManager{
+public class JtaManagerImpl implements JtaManager {
 
     private static final JtaManagerImpl impl = new JtaManagerImpl();
 

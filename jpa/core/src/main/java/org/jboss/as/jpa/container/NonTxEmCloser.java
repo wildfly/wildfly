@@ -22,11 +22,12 @@
 
 package org.jboss.as.jpa.container;
 
-import javax.persistence.EntityManager;
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import javax.persistence.EntityManager;
 
 /**
  * Close the non tx invocations on transaction scoped entity manager
@@ -62,8 +63,8 @@ public class NonTxEmCloser {
                 } catch (RuntimeException safeToIgnore) {
                     if (ROOT_LOGGER.isTraceEnabled()) {
                         ROOT_LOGGER.trace("Could not close (non-transactional) container managed entity manager." +
-                                "  This shouldn't impact application functionality (only read " +
-                                "operations occur in non-transactional mode)", safeToIgnore);
+                            "  This shouldn't impact application functionality (only read " +
+                            "operations occur in non-transactional mode)", safeToIgnore);
                     }
                 }
             }
@@ -74,7 +75,6 @@ public class NonTxEmCloser {
      * Return the transactional entity manager for the specified scoped persistence unit name
      *
      * @param puScopedName
-     *
      * @return
      */
     public static EntityManager get(String puScopedName) {

@@ -22,9 +22,9 @@
 
 package org.jboss.as.jpa.ejb3;
 
-import org.jboss.as.jpa.spi.SFSBContextHandle;
-
 import java.io.Serializable;
+
+import org.jboss.as.jpa.spi.SFSBContextHandle;
 
 /**
  * Implementation of SFSBContextHandle that represents an EJB3 SFSB

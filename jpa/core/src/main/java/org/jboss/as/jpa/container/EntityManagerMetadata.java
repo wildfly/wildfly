@@ -22,9 +22,9 @@
 
 package org.jboss.as.jpa.container;
 
-import java.io.Serializable;
-
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.io.Serializable;
 
 /**
  * Identifies a subset of information about an EntityManager

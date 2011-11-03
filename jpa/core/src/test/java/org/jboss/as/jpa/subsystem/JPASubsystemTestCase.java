@@ -26,7 +26,6 @@ import java.io.IOException;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class JPASubsystemTestCase extends AbstractSubsystemBaseTest {
@@ -39,8 +38,8 @@ public class JPASubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return
             "<subsystem xmlns=\"urn:jboss:domain:jpa:1.0\">" +
-            "    <jpa default-datasource=\"\"/>" +
-            "</subsystem>";
+                "    <jpa default-datasource=\"\"/>" +
+                "</subsystem>";
     }
 
 }
