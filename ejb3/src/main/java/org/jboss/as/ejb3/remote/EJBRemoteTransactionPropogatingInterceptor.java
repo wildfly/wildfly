@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.remote;
 
 import org.jboss.ejb.client.TransactionID;
 import org.jboss.ejb.client.UserTransactionID;
+import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -33,16 +34,30 @@ import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 /**
- * User: jpai
+ * An interceptor which is responsible for identifying any remote transaction associated with the invocation
+ * and propagating that transaction during the remaining part of the invocation
+ *
+ * @author Jaikiran Pai
  */
 class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
 
+    /**
+     * Remote transactions repository
+     */
     private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
 
     EJBRemoteTransactionPropogatingInterceptor(final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository) {
         this.ejbRemoteTransactionsRepository = ejbRemoteTransactionsRepository;
     }
 
+    /**
+     * Processes an incoming invocation and checks for the presence of a remote transaction associated with the
+     * invocation context.
+     *
+     * @param context The invocation context
+     * @return
+     * @throws Exception
+     */
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         final RemotingAttachments remotingAttachments = context.getPrivateData(RemotingAttachments.class);
@@ -57,8 +72,11 @@ class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
                 // if it's UserTransaction then create or resume the UserTransaction corresponding to the ID
                 if (transactionID instanceof UserTransactionID) {
                     this.createOrResumeUserTransaction((UserTransactionID) transactionID);
+                } else if (transactionID instanceof XidTransactionID) {
+                    this.createOrResumeXidTransaction((XidTransactionID) transactionID);
                 }
-                // the invocation was associated with a remote tx, so keep track of the originating tx
+                // the invocation was associated with a remote tx, so keep a flag so that we can
+                // suspend (on this thread) the originating tx when returning from the invocation
                 originatingRemoteTx = transactionManager.getTransaction();
             }
         }
@@ -73,6 +91,14 @@ class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
         }
     }
 
+    /**
+     * Creates or resumes a UserTransaction associated with the passed <code>UserTransactionID</code>.
+     * When this method returns successfully, the transaction manager will have the correct user transaction
+     * associated with it
+     *
+     * @param userTransactionID The user transaction id
+     * @throws Exception
+     */
     private void createOrResumeUserTransaction(final UserTransactionID userTransactionID) throws Exception {
         final TransactionManager transactionManager = this.ejbRemoteTransactionsRepository.getTransactionManager();
         final Transaction alreadyCreatedTx = this.ejbRemoteTransactionsRepository.getTransaction(userTransactionID);
@@ -86,6 +112,21 @@ class EJBRemoteTransactionPropogatingInterceptor implements Interceptor {
             // get the tx that just got created and associated with the transaction manager
             final Transaction newlyCreatedTx = transactionManager.getTransaction();
             this.ejbRemoteTransactionsRepository.addTransaction(userTransactionID, newlyCreatedTx);
+        }
+    }
+
+    private void createOrResumeXidTransaction(final XidTransactionID xidTransactionID) throws Exception {
+        final TransactionManager transactionManager = this.ejbRemoteTransactionsRepository.getTransactionManager();
+        final Transaction alreadyCreatedTx = this.ejbRemoteTransactionsRepository.getTransaction(xidTransactionID);
+        if (alreadyCreatedTx != null) {
+            // resume the already created tx
+            transactionManager.resume(alreadyCreatedTx);
+        } else {
+            // begin a new tx and add it to the tx repository
+            transactionManager.begin();
+            // get the tx that just got created and associated with the transaction manager
+            final Transaction newlyCreatedTx = transactionManager.getTransaction();
+            this.ejbRemoteTransactionsRepository.addTransaction(xidTransactionID, newlyCreatedTx);
         }
     }
 

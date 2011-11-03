@@ -29,7 +29,9 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
- * User: jpai
+ * Creates and reutrns a {@link EJBRemoteTransactionPropogatingInterceptor}
+ *
+ * @author Jaikiran Pai
  */
 class EJBRemoteTransactionPropogatingInterceptorFactory extends ComponentInterceptorFactory {
 

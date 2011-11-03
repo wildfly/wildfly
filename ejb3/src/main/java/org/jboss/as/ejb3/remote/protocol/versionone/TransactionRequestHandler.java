@@ -24,32 +24,40 @@ package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.TransactionID;
+import org.jboss.ejb.client.UserTransactionID;
+import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
-import org.xnio.IoUtils;
 
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 /**
+ * Handles a transaction message which complies with the EJB remote protocol specification
+ *
  * @author Jaikiran Pai
  */
 class TransactionRequestHandler extends AbstractMessageHandler {
 
     private static final Logger logger = Logger.getLogger(TransactionRequestHandler.class);
 
+    private static final byte HEADER_TX_INVOCATION_RESPONSE = 0x14;
+
     private final ExecutorService executorService;
     private final EJBRemoteTransactionsRepository transactionsRepository;
     private TransactionRequestType txRequestType;
 
+
     enum TransactionRequestType {
         COMMIT,
-        ROLLBACK
+        ROLLBACK,
+        PREPARE,
+        FORGET,
+        BEFORE_COMPLETION
     }
 
     TransactionRequestHandler(final EJBRemoteTransactionsRepository transactionsRepository, final ExecutorService executorService, final TransactionRequestType txRequestType, final String marshallingStrategy) {
@@ -70,97 +78,89 @@ class TransactionRequestHandler extends AbstractMessageHandler {
         final byte[] transactionIDBytes = new byte[transactionIDBytesLength];
         input.read(transactionIDBytes);
         final TransactionID transactionID = TransactionID.createTransactionID(transactionIDBytes);
-        final TransactionManagementTask transactionManagementTask;
-        switch (this.txRequestType) {
-            case COMMIT:
-                transactionManagementTask = new TransactionCommitTask(this.transactionsRepository, transactionID, channel, invocationId);
-                break;
-            case ROLLBACK:
-                transactionManagementTask = new TransactionRollbackTask(this.transactionsRepository, transactionID, channel, invocationId);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown transaction request type " + this.txRequestType);
-        }
-        // submit to a seperate thread for processing the request
-        this.executorService.submit(transactionManagementTask);
-    }
-
-    private abstract class TransactionManagementTask implements Runnable {
-
-        protected final short invocationId;
-        protected final Channel channel;
-        protected final EJBRemoteTransactionsRepository transactionsRepository;
-        protected final TransactionID transactionID;
-
-        TransactionManagementTask(final EJBRemoteTransactionsRepository transactionsRepository, final TransactionID transactionID,
-                                  final Channel channel, final short invocationId) {
-            this.channel = channel;
-            this.invocationId = invocationId;
-            this.transactionsRepository = transactionsRepository;
-            this.transactionID = transactionID;
+        // if it's a commit request, the read the additional "bit" which indicates whether it's a one-phase
+        // commit request
+        boolean onePhaseCommit = false;
+        if (this.txRequestType == TransactionRequestType.COMMIT) {
+            onePhaseCommit = input.readBoolean();
         }
 
-        @Override
-        public final void run() {
-            try {
-                this.manageTransaction(this.transactionID);
-            } catch (Throwable t) {
-                try {
-                    // write out a failure message to the channel to let the client know that
-                    // the transaction operation failed
-                    TransactionRequestHandler.this.writeException(this.channel, this.invocationId, t, null);
-                } catch (IOException e) {
-                    logger.error("Could not write out message to channel due to", e);
-                    // close the channel
-                    IoUtils.safeClose(this.channel);
-                }
-                return;
+        // start processing
+        if (transactionID instanceof UserTransactionID) {
+            // handle UserTransaction
+            final UserTransactionManagementTask userTransactionManagementTask;
+            switch (this.txRequestType) {
+                case COMMIT:
+                    userTransactionManagementTask = new UserTransactionCommitTask(this, this.transactionsRepository, (UserTransactionID) transactionID, channel, invocationId);
+                    break;
+                case ROLLBACK:
+                    userTransactionManagementTask = new UserTransactionRollbackTask(this, this.transactionsRepository, (UserTransactionID) transactionID, channel, invocationId);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown transaction request type " + this.txRequestType);
             }
+            // submit to a seperate thread for processing the request
+            this.executorService.submit(userTransactionManagementTask);
 
-            try {
-                // write out invocation success message to the channel
-                TransactionRequestHandler.this.writeGenericSuccessMessage(this.channel, this.invocationId);
-            } catch (IOException e) {
-                logger.error("Could not write out invocation success message to channel due to", e);
-                // close the channel
-                IoUtils.safeClose(this.channel);
+        } else if (transactionID instanceof XidTransactionID) {
+            // handle XidTransactionID
+            final XidTransactionID xidTransactionID = (XidTransactionID) transactionID;
+            final XidTransactionManagementTask xidTransactionManagementTask;
+            switch (this.txRequestType) {
+                case COMMIT:
+                    xidTransactionManagementTask = new XidTransactionCommitTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId, onePhaseCommit);
+                    break;
+                case PREPARE:
+                    xidTransactionManagementTask = new XidTransactionPrepareTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId);
+                    break;
+                case ROLLBACK:
+                    xidTransactionManagementTask = new XidTransactionRollbackTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId);
+                    break;
+                case FORGET:
+                    xidTransactionManagementTask = new XidTransactionForgetTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId);
+                    break;
+                case BEFORE_COMPLETION:
+                    xidTransactionManagementTask = new XidTransactionBeforeCompletionTask(this, this.transactionsRepository, xidTransactionID, channel, invocationId);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown transaction request type " + this.txRequestType);
             }
-        }
-
-        protected abstract void manageTransaction(final TransactionID transactionID) throws Throwable;
-
-        protected void resumeTransaction(final Transaction transaction) throws Exception {
-            final TransactionManager transactionManager = this.transactionsRepository.getTransactionManager();
-            transactionManager.resume(transaction);
+            // submit to a separate thread for processing the request
+            this.executorService.submit(xidTransactionManagementTask);
         }
     }
 
-    private class TransactionCommitTask extends TransactionManagementTask {
 
-        TransactionCommitTask(final EJBRemoteTransactionsRepository transactionsRepository, final TransactionID transactionID, final Channel channel, final short invocationId) {
-            super(transactionsRepository, transactionID, channel, invocationId);
+    protected void writeTxPrepareResponseMessage(final Channel channel, final short invocationId, final int xaResourceStatusCode) throws IOException {
+        final DataOutputStream dataOutputStream = new DataOutputStream(channel.writeMessage());
+        try {
+            // write header
+            dataOutputStream.writeByte(HEADER_TX_INVOCATION_RESPONSE);
+            // write invocation id
+            dataOutputStream.writeShort(invocationId);
+            // write a "bit" to indicate that this message contains the XAResource status for a "prepare"
+            // invocation
+            dataOutputStream.writeBoolean(true);
+            // write the XAResource status
+            PackedInteger.writePackedInteger(dataOutputStream, xaResourceStatusCode);
+        } finally {
+            dataOutputStream.close();
         }
+    }
 
-        @Override
-        protected void manageTransaction(final TransactionID transactionID) throws Throwable {
-            final Transaction transaction = this.transactionsRepository.removeTransaction(transactionID);
-            this.resumeTransaction(transaction);
-            logger.info("tx id is " + transactionID + " Tx is " + transaction + " current tx is " + this.transactionsRepository.getTransactionManager().getTransaction());
-            this.transactionsRepository.getTransactionManager().commit();
+    protected void writeTxInvocationResponseMessage(final Channel channel, final short invocationId) throws IOException {
+        final DataOutputStream dataOutputStream = new DataOutputStream(channel.writeMessage());
+        try {
+            // write header
+            dataOutputStream.writeByte(HEADER_TX_INVOCATION_RESPONSE);
+            // write invocation id
+            dataOutputStream.writeShort(invocationId);
+            // write a "bit" to indicate that this message doesn't contain any XAResource status (i.e. not a
+            // "prepare" invocation
+            dataOutputStream.writeBoolean(false);
+        } finally {
+            dataOutputStream.close();
         }
     }
 
-    private class TransactionRollbackTask extends TransactionManagementTask {
-
-        TransactionRollbackTask(final EJBRemoteTransactionsRepository transactionsRepository, final TransactionID transactionID, final Channel channel, final short invocationId) {
-            super(transactionsRepository, transactionID, channel, invocationId);
-        }
-
-        @Override
-        protected void manageTransaction(TransactionID transactionID) throws Throwable {
-            final Transaction transaction = this.transactionsRepository.removeTransaction(transactionID);
-            this.resumeTransaction(transaction);
-            this.transactionsRepository.getTransactionManager().rollback();
-        }
-    }
 }

@@ -43,7 +43,6 @@ abstract class AbstractMessageHandler implements MessageHandler {
     protected static final byte HEADER_NO_SUCH_EJB_METHOD_FAILURE = 0x0B;
     protected static final byte HEADER_SESSION_NOT_ACTIVE_FAILURE = 0x0C;
     private static final byte HEADER_INVOCATION_EXCEPTION = 0x06;
-    private static final byte HEADER_INVOCATION_SUCCESS_MESSAGE = 0x11;
 
 
     AbstractMessageHandler(final String marshallingStrategy) {
@@ -166,15 +165,4 @@ abstract class AbstractMessageHandler implements MessageHandler {
         this.writeInvocationFailure(channel, HEADER_NO_SUCH_EJB_METHOD_FAILURE, invocationId, sb.toString());
     }
 
-    protected void writeGenericSuccessMessage(final Channel channel, final short invocationId) throws IOException {
-        final DataOutputStream dataOutputStream = new DataOutputStream(channel.writeMessage());
-        try {
-            // write header
-            dataOutputStream.writeByte(HEADER_INVOCATION_SUCCESS_MESSAGE);
-            // write invocation id
-            dataOutputStream.writeShort(invocationId);
-        } finally {
-            dataOutputStream.close();
-        }
-    }
 }
