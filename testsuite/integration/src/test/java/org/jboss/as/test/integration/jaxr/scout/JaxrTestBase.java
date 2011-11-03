@@ -116,9 +116,6 @@ public abstract class JaxrTestBase {
         if (connection != null) connection.close();
     }
 
-    /**
-     * Does authentication with the uddi registry
-     */
     protected void login() {
         PasswordAuthentication passwdAuth = new PasswordAuthentication(userid, passwd.toCharArray());
         Set creds = new HashSet();

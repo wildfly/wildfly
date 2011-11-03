@@ -86,15 +86,12 @@ public class JUDDIServlet extends HttpServlet {
 
     private static Logger log = Logger.getLogger(JUDDIServlet.class);
 
-    public void doGet(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException {
+    public void doGet(HttpServletRequest req, HttpServletResponse res)                     throws ServletException, IOException {
         res.setHeader("Allow", "POST");
-        res.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "The request " +
-                "method 'GET' is not allowed by UDDI API.");
+        res.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "The request method 'GET' is not allowed by UDDI API.");
     }
 
-    public void doPost(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException {
+    public void doPost(HttpServletRequest req, HttpServletResponse res)                   throws ServletException, IOException {
         res.setContentType("text/xml; charset=utf-8");
 
         SOAPMessage soapReq = null;
@@ -121,13 +118,11 @@ public class JUDDIServlet extends HttpServlet {
             }
 
             if (uddiReq == null)
-                throw new FatalErrorException("A UDDI request was not " +
-                        "found in the SOAP message.");
+                throw new FatalErrorException("A UDDI request was not found in the SOAP message.");
 
             String function = uddiReq.getLocalName();
             if ((function == null) || (function.trim().length() == 0))
-                throw new FatalErrorException("The name of the UDDI request " +
-                        "could not be identified.");
+                throw new FatalErrorException("The name of the UDDI request could not be identified.");
             IHandler requestHandler = maker.lookup(function);
             if (requestHandler == null)
                 throw new UnsupportedException("The UDDI request " +
@@ -135,13 +130,9 @@ public class JUDDIServlet extends HttpServlet {
 
             String generic = uddiReq.getAttribute("generic");
             if (generic == null)
-                throw new FatalErrorException("A UDDI generic attribute " +
-                        "value was not found for UDDI request: " + function + " (The " +
-                        "'generic' attribute must be present)");
+                throw new FatalErrorException("A UDDI generic attribute value was not found for UDDI request: " + function + " (The 'generic' attribute must be present)");
             else if (!generic.equals(IRegistry.UDDI_V2_GENERIC))
-                throw new UnsupportedException("Currently only UDDI v2 " +
-                        "requests are supported. The generic attribute value " +
-                        "received was: " + generic);
+                throw new UnsupportedException("Currently only UDDI v2 requests are supported. The generic attribute value received was: " + generic);
 
             // Unmarshal the raw xml into the appropriate jUDDI
             // request object.
@@ -167,8 +158,7 @@ public class JUDDIServlet extends HttpServlet {
 
             IHandler responseHandler = maker.lookup(uddiResObj.getClass().getName());
             if (responseHandler == null)
-                throw new FatalErrorException("The response object " +
-                        "type is unknown: " + uddiResObj.getClass().getName());
+                throw new FatalErrorException("The response object type is unknown: " + uddiResObj.getClass().getName());
 
             // Create a new 'temp' XML element to use as a container
             // in which to marshal the UDDI response data into.

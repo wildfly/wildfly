@@ -42,7 +42,7 @@ public class JAXRConfiguration {
     // Should all tables be created on Start
     private boolean createOnStart=true;
     // Should all tables be dropped on Stop
-    private boolean dropOnStop=true;
+    private boolean dropOnStop=false;
     // Should all tables be dropped on Start
     private boolean dropOnStart=true;
     // Datasource to Database

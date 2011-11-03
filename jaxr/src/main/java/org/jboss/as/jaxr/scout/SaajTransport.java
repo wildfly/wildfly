@@ -62,7 +62,7 @@ public class SaajTransport implements Transport {
 
     public Element send(Element request, URI endpointURL) throws RegistryException {
         String requestMessage = DOMWriter.printNode(request, true);
-        log.debug("Request message:" + requestMessage);
+        log.debugf("Request message: %s\n%s", endpointURL, requestMessage);
 
         Element response = null;
         try {
@@ -81,11 +81,11 @@ public class SaajTransport implements Transport {
             }
             response = getFirstChildElement(soapBody);
         } catch (Exception ex) {
-            log.error("Exception::", ex);
+            log.errorf(ex, "Exception::");
             throw new RegistryException(ex);
         }
 
-        log.debug("Response message:" + DOMWriter.printNode(response, true));
+        log.debugf("Response message: %s", DOMWriter.printNode(response, true));
         return response;
     }
 
@@ -164,8 +164,8 @@ public class SaajTransport implements Transport {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             doc = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xmlFrag)));
             reqElement = doc.getDocumentElement();
-        } catch (Exception e) {
-            log.error("Exception:", e);
+        } catch (Exception ex) {
+            log.errorf(ex, "Exception:");
         }
 
         return reqElement;
@@ -187,7 +187,7 @@ public class SaajTransport implements Transport {
             }
         }
         String responseObtained = DOMWriter.printNode(childEl, true);
-        log.debug("Response obtained=" + responseObtained);
+        log.debugf("Response obtained: %s", responseObtained);
         return childEl;
     }
 }
