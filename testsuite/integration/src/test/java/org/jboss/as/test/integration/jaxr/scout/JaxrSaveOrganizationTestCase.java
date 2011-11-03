@@ -42,6 +42,7 @@ import java.util.Iterator;
  * Tests Jaxr Save Organization
  *
  * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
+ * @author Thomas.Diesler@jboss.com
  * @since Dec 29, 2004
  */
 @RunWith(Arquillian.class)

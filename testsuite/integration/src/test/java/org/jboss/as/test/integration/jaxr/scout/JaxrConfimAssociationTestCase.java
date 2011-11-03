@@ -46,6 +46,7 @@ import java.util.List;
  * Tests confirming Association
  *
  * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
+ * @author Thomas.Diesler@jboss.com
  * @since Mar 9, 2005
  */
 @RunWith(Arquillian.class)

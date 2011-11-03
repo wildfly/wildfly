@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:Anil.Saldhana@jboss.org">Anil Saldhana</a>
  * @author <a href="mailto:Noel.Rocher@jboss.org">Noel Rocher</a>
- * @version $Revision: 98115 $
+ * @author Thomas.Diesler@jboss.com
  * @since Apr 11, 2006
  */
 @RunWith(Arquillian.class)
