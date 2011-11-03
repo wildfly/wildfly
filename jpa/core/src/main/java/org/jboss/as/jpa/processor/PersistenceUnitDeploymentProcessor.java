@@ -27,10 +27,13 @@ import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceProvider;
@@ -76,6 +79,7 @@ import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jandex.Index;
 import org.jboss.metadata.web.jboss.ValveMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -132,7 +136,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 puList.add(holder);
                 JPA_LOGGER.tracef("install persistence unit definition for jar %s", deploymentRoot.getRootName());
                 // assemble and install the PU service
-                addPuService(phaseContext, deploymentRoot, puList);
+                addPuService(phaseContext, puList);
             }
         }
     }
@@ -181,7 +185,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             }
 
             JPA_LOGGER.tracef("install persistence unit definitions for war %s", deploymentRoot.getRootName());
-            addPuService(phaseContext, deploymentRoot, puList);
+            addPuService(phaseContext, puList);
         }
     }
 
@@ -203,7 +207,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                     }
 
                     JPA_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
-                    addPuService(phaseContext, root, puList);
+                    addPuService(phaseContext, puList);
                 }
             }
         }
@@ -213,13 +217,11 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
      * Add one PU service per top level deployment that represents
      *
      * @param phaseContext
-     * @param resourceRoot
      * @param puList
      * @throws DeploymentUnitProcessingException
      *
      */
-    private void addPuService(DeploymentPhaseContext phaseContext, ResourceRoot resourceRoot,
-                              ArrayList<PersistenceUnitMetadataHolder> puList
+    private void addPuService(DeploymentPhaseContext phaseContext, ArrayList<PersistenceUnitMetadataHolder> puList
     )
         throws DeploymentUnitProcessingException {
 
@@ -237,7 +239,11 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             if (persistenceProviderDeploymentHolder == null && deploymentUnit.getParent() != null) {
                 persistenceProviderDeploymentHolder = deploymentUnit.getParent().getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
             }
+
+
+
             for (PersistenceUnitMetadataHolder holder : puList) {
+                setAnnotationIndexes(holder, deploymentUnit);
                 for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                     pu.setClassLoader(classLoader);
                     pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
@@ -353,6 +359,39 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
 
                 }
             }
+        }
+    }
+
+    /**
+     * Setup the annotation index map
+     *
+     * @param puHolder
+     * @param deploymentUnit
+     */
+    private void setAnnotationIndexes(
+            final PersistenceUnitMetadataHolder puHolder,
+            DeploymentUnit deploymentUnit ) {
+
+        final Map<URL, Index> annotationIndexes = new HashMap<URL, Index>();
+
+        do {
+            for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+                final Index index = root.getAttachment(Attachments.ANNOTATION_INDEX);
+                if (index != null) {
+                    try {
+                        JPA_LOGGER.tracef("adding '%s' to annotation index map", root.getRoot().toURL());
+                        annotationIndexes.put(root.getRoot().toURL(), index);
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            deploymentUnit = deploymentUnit.getParent(); // get annotation indexes for top level also
+        }
+        while (deploymentUnit != null);
+
+        for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
+            pu.setAnnotationIndex(annotationIndexes);   // hold onto the annotation index for Persistence Provider use during deployment
         }
     }
 

@@ -206,7 +206,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
                 PersistenceUnitMetadataHolder puHolder = PersistenceUnitXmlParser.parse(xmlReader);
 
-                postParseSteps(persistence_xml, puHolder, deploymentUnit, deploymentRoot);
+                postParseSteps(persistence_xml, puHolder, deploymentUnit);
                 listPUHolders.add(puHolder);
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException(MESSAGES.failedToParse(persistence_xml), e);
@@ -231,21 +231,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private void postParseSteps(
         final VirtualFile persistence_xml,
         final PersistenceUnitMetadataHolder puHolder,
-        final DeploymentUnit deploymentUnit,
-        final ResourceRoot resourceRoot) {
-
-        final Map<URL, Index> annotationIndexes = new HashMap<URL, Index>();
-        for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
-            final Index index = root.getAttachment(Attachments.ANNOTATION_INDEX);
-            if (index != null) {
-                try {
-                    annotationIndexes.put(root.getRoot().toURL(), index);
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
+        final DeploymentUnit deploymentUnit ) {
 
         for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
 
@@ -260,7 +246,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             URL url = getPersistenceUnitURL(persistence_xml);
             pu.setPersistenceUnitRootUrl(url);
             pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit, pu.getPersistenceUnitName()));
-            pu.setAnnotationIndex(annotationIndexes);   // hold onto the annotation index for Persistence Provider use during deployment
         }
     }
 
@@ -283,7 +268,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    protected URL getPersistenceUnitURL(VirtualFile persistence_xml) {
+    private URL getPersistenceUnitURL(VirtualFile persistence_xml) {
         try {
             VirtualFile metaData = persistence_xml;// di.getMetaDataFile("persistence.xml");
             return metaData.getParent().getParent().toURL();
