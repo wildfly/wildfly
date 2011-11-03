@@ -22,22 +22,14 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
-import org.jboss.as.ejb3.deployment.DeploymentRepository;
-import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
-import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.ejb.client.Locator;
-import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.StatefulEJBLocator;
-import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.ejb.client.remoting.RemotingAttachments;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.remoting3.Channel;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
+import org.jboss.ejb.client.remoting.PackedInteger;
+import org.jboss.ejb.client.remoting.RemotingAttachments;
+import org.jboss.remoting3.Channel;
 
 
 /**

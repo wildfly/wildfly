@@ -22,20 +22,49 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.ejb.client.EJBHandle;
-import org.jboss.ejb.client.EJBHomeHandle;
-import org.jboss.ejb.client.EJBLocator;
-import org.jboss.ejb.client.EntityEJBLocator;
-import org.jboss.ejb.client.Locator;
-import org.jboss.ejb.client.SerializedEJBInvocationHandler;
-import org.jboss.ejb.client.StatefulEJBLocator;
-import org.jboss.ejb.client.StatelessEJBLocator;
-import org.jboss.marshalling.ClassTable;
-import org.jboss.marshalling.Unmarshaller;
-
+import javax.ejb.CreateException;
+import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBAccessException;
+import javax.ejb.EJBException;
+import javax.ejb.EJBHome;
+import javax.ejb.EJBMetaData;
+import javax.ejb.EJBObject;
+import javax.ejb.EJBTransactionRequiredException;
+import javax.ejb.EJBTransactionRolledbackException;
+import javax.ejb.FinderException;
+import javax.ejb.Handle;
+import javax.ejb.HomeHandle;
+import javax.ejb.NoSuchEJBException;
+import javax.ejb.NoSuchEntityException;
+import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
+import javax.transaction.InvalidTransactionException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionRequiredException;
+import javax.transaction.TransactionRolledbackException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
+
+import org.jboss.ejb.client.EJBHandle;
+import org.jboss.ejb.client.EJBHomeHandle;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.ejb.client.EJBLocator;
+import org.jboss.ejb.client.EntityEJBLocator;
+import org.jboss.ejb.client.NodeAssociatedSessionID;
+import org.jboss.ejb.client.SerializedEJBInvocationHandler;
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.StatefulEJBLocator;
+import org.jboss.ejb.client.StatelessEJBLocator;
+import org.jboss.ejb.client.UnknownSessionID;
+import org.jboss.ejb.client.UserTransactionID;
+import org.jboss.ejb.client.XidTransactionID;
+import org.jboss.marshalling.ClassTable;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -43,14 +72,47 @@ import java.util.Map;
 final class ProtocolV1ClassTable implements ClassTable {
     private static final Map<Class<?>, ByteWriter> writers;
     private static Class<?>[] classes = {
-        Locator.class,
         EJBLocator.class,
+        EJBHomeLocator.class,
         StatelessEJBLocator.class,
         StatefulEJBLocator.class,
         EntityEJBLocator.class,
         EJBHandle.class,
         EJBHomeHandle.class,
         SerializedEJBInvocationHandler.class,
+        SessionID.class,
+        UnknownSessionID.class,
+        NodeAssociatedSessionID.class,
+        UserTransactionID.class,
+        XidTransactionID.class,
+        EJBHome.class,
+        EJBObject.class,
+        Handle.class,
+        HomeHandle.class,
+        EJBMetaData.class,
+        RemoteException.class,
+        NoSuchEJBException.class,
+        NoSuchEntityException.class,
+        CreateException.class,
+        DuplicateKeyException.class,
+        EJBAccessException.class,
+        EJBException.class,
+        EJBTransactionRequiredException.class,
+        EJBTransactionRolledbackException.class,
+        FinderException.class,
+        RemoveException.class,
+        ObjectNotFoundException.class,
+        Future.class,
+        SystemException.class,
+        RollbackException.class,
+        TransactionRequiredException.class,
+        TransactionRolledbackException.class,
+        NotSupportedException.class,
+        InvalidTransactionException.class,
+        Throwable.class,
+        Exception.class,
+        RuntimeException.class,
+        StackTraceElement.class,
     };
 
     static {

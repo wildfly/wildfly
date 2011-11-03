@@ -22,6 +22,14 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
@@ -30,8 +38,8 @@ import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EntityEJBLocator;
-import org.jboss.ejb.client.Locator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.remoting.RemotingAttachments;
@@ -40,14 +48,6 @@ import org.jboss.logging.Logger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.xnio.IoUtils;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -116,13 +116,13 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         // correct CL for the rest of the unmarshalling of the stream
         classLoaderProvider.switchClassLoader(ejbDeploymentInformation.getDeploymentClassLoader());
         // read the Locator
-        final Locator locator;
+        final EJBLocator locator;
         try {
-            locator = (Locator) unMarshaller.readObject();
+            locator = (EJBLocator) unMarshaller.readObject();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        final String viewClassName = locator.getInterfaceType().getName();
+        final String viewClassName = locator.getViewType().getName();
         if (!ejbDeploymentInformation.getViewNames().contains(viewClassName)) {
             this.writeNoSuchEJBFailureMessage(channel, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
             return;
@@ -202,7 +202,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
 
     }
 
-    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final Locator ejbLocator, final RemotingAttachments attachments) throws Throwable {
+    private Object invokeMethod(final ComponentView componentView, final Method method, final Object[] args, final EJBLocator ejbLocator, final RemotingAttachments attachments) throws Throwable {
         final InterceptorContext interceptorContext = new InterceptorContext();
         interceptorContext.setParameters(args);
         interceptorContext.setMethod(method);
