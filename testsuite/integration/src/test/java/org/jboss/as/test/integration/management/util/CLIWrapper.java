@@ -48,16 +48,16 @@ import java.util.concurrent.TimeUnit;
 public class CLIWrapper implements Runnable {
 
     private static String cliCommand = null;
-    
+
     private static final String outThreadHame = "CLI-out";
     private static final String errThreadHame = "CLI-err";
-    
+
     private Process cliProcess;
     private PrintWriter writer;
     private BufferedReader outputReader;
     private BufferedReader errorReader;
     private BlockingQueue<String> outputQueue = new LinkedBlockingQueue<String>();
-    
+
     /**
      * Creates new CLI wrapper.
      * @throws Exception
@@ -65,7 +65,7 @@ public class CLIWrapper implements Runnable {
     public CLIWrapper() throws Exception {
         this(false);
     }
-    
+
     /**
      * Creates new CLI wrapper. If the connect parameter is set to true the CLI
      * will connect to the server using <code>connect</code> command.
@@ -75,22 +75,22 @@ public class CLIWrapper implements Runnable {
     public CLIWrapper(boolean connect) throws Exception {
         init();
         if (!connect) return;
-                        
+
         //connect
-        
+
         // wait for cli welcome message
         String line = readLine(5000);
         assertTrue("Wrong CLI welcome message:" + line, line.indexOf("You are disconnected") >= 0);
-        
+
         sendLine("connect", false);
-        line = readLine(1000);
-        
+        line = readLine(5000);
+
         assertTrue("Check we are disconnected:" + line, line.indexOf("disconnected") >= 0);
-        line = readLine(1000);
-        assertTrue("Connect failed:" + line, line.indexOf("Connected to standalone") >= 0);        
-        
+        line = readLine(5000);
+        assertTrue("Connect failed:" + line, line.indexOf("Connected to standalone") >= 0);
+
     }
-        
+
     /**
      * Sends command line to CLI.
      * @param line specifies the command line.
@@ -101,20 +101,20 @@ public class CLIWrapper implements Runnable {
         System.out.println("[CLI-inp] " + line);
         writer.println(line);
         writer.flush();
-        
+
         if (! waitForEcho) return;
 
         boolean found = false;
         StringBuilder lines = new StringBuilder();
         while (! found) {
-            String eLine = readLine(1000);            
+            String eLine = readLine(5000);
             if (eLine == null) throw new Exception("CLI command failed. Sent:" + line + ", received:" + lines.toString());
             lines.append(eLine);
             lines.append(System.getProperty("line.separator"));
             if (eLine.indexOf(line) >= 0) found = true;
         }
     }
-    
+
     /**
      * Sends command line to CLI.
      * @param line specifies the command line.
@@ -123,7 +123,7 @@ public class CLIWrapper implements Runnable {
     public void sendLine(String line) throws Exception {
         sendLine(line, true);
     }
-    
+
 
     /**
      * Non blocking read from CLI output.
@@ -132,7 +132,7 @@ public class CLIWrapper implements Runnable {
     public String readLine() {
         return outputQueue.poll();
     }
-    
+
     /**
      * Blocking read from CLI output.
      * @param timeout number of milliseconds to wait for line
@@ -147,7 +147,7 @@ public class CLIWrapper implements Runnable {
         if (line == null) throw new Exception("CLI read timeout.");
         return line;
     }
-    
+
     /**
      * Consumes all available output from CLI.
      * @param timeout number of milliseconds to wait for each subsequent line
@@ -161,11 +161,11 @@ public class CLIWrapper implements Runnable {
                 line = outputQueue.poll(timeout, TimeUnit.MILLISECONDS);
                 if (line != null) lines.add(line);
             } catch (InterruptedException ioe) {}
-            
+
         } while (line != null);
         return lines.toArray(new String[]{});
-    }   
-    
+    }
+
     /**
      * Consumes all available output from CLI.
      * @param timeout number of milliseconds to wait for each subsequent line
@@ -177,8 +177,8 @@ public class CLIWrapper implements Runnable {
         for(String line : lines) buf.append(line + " ");
         return buf.toString();
 
-    }       
-    
+    }
+
     public CLIOpResult readAllAsOpResult(long timeout) throws Exception {
         String output = readAllUnformated(timeout);
         StreamTokenizer st = new StreamTokenizer(new StringReader(output));
@@ -188,7 +188,7 @@ public class CLIWrapper implements Runnable {
         st.wordChars('-', 'Z');
         st.wordChars('a', 'z');
         st.quoteChar('"');
-        
+
         int token = st.nextToken();
         assertTrue ("{ expected.", token == '{');
         Map compound = parseCompound(st);
@@ -197,10 +197,10 @@ public class CLIWrapper implements Runnable {
         res.setResult(compound.get("result"));
         return res;
     }
-    
+
     private Map<String, Object> parseCompound(StreamTokenizer st) throws IOException, ParseException {
         Map<String, Object> map = new HashMap<String, Object>();
-        
+
         int token = st.nextToken();
         while (token != '}') {
             String key = st.sval;
@@ -219,13 +219,13 @@ public class CLIWrapper implements Runnable {
             }
             token = st.nextToken();
             if (token == ',') token = st.nextToken();
-        }        
+        }
         return map;
     }
 
     private List parseList(StreamTokenizer st) throws IOException, ParseException {
         List list = new LinkedList();
-        
+
         int token = st.nextToken();
         while (token != ']') {
             if (token == '{') {
@@ -240,17 +240,17 @@ public class CLIWrapper implements Runnable {
             }
             token = st.nextToken();
             if (token == ',') token = st.nextToken();
-        }        
+        }
         return list;
-    }    
-    
+    }
+
     /**
      * Discards all CLI output.
      */
     public void flush() {
         outputQueue.clear();
     }
-    
+
     /**
      * Sends quit command to CLI.
      * @throws Exception
@@ -263,28 +263,28 @@ public class CLIWrapper implements Runnable {
             } catch (InterruptedException ie) {
 
             }
-        
+
     }
-    
-    
+
+
     private void init() throws Exception {
         System.out.println("CLI command:" + getCliCommand());
-        
+
         cliProcess = Runtime.getRuntime().exec(getCliCommand());
-        writer = new PrintWriter(cliProcess.getOutputStream());        
+        writer = new PrintWriter(cliProcess.getOutputStream());
         outputReader = new BufferedReader(new InputStreamReader(cliProcess.getInputStream()));
         errorReader = new BufferedReader(new InputStreamReader(cliProcess.getErrorStream()));
-        
+
         Thread readOutputThread = new Thread(this, outThreadHame);
         readOutputThread.start();
         Thread readErrorThread = new Thread(this, errThreadHame);
         readErrorThread.start();
-                
+
     }
-    
+
     private static String getCliCommand() throws Exception {
         if (cliCommand != null) return cliCommand;
-        
+
         File targetDir = new File("../../build/target");
         if ( (!targetDir.exists()) || (!targetDir.isDirectory())) throw new Exception("Missing AS target directory.");
         String[] children = targetDir.list();
@@ -296,18 +296,18 @@ public class CLIWrapper implements Runnable {
             }
         }
         if (asDir == null) throw new Exception("Missing AS target directory.");
-        
-        cliCommand = "java -Djboss.home.dir=target/jbossas " + 
-            "-Djboss.modules.dir=../../build/target/" + asDir + "/modules " + 
-            "-Djline.WindowsTerminal.directConsole=false " +            
-            "-jar ./target/jbossas/jboss-modules.jar " + 
+
+        cliCommand = "java -Djboss.home.dir=target/jbossas " +
+            "-Djboss.modules.dir=../../build/target/" + asDir + "/modules " +
+            "-Djline.WindowsTerminal.directConsole=false " +
+            "-jar ./target/jbossas/jboss-modules.jar " +
             "-mp ../../build/target/" + asDir + "/modules " +
-            "-logmodule org.jboss.logmanager org.jboss.as.cli";        
+            "-logmodule org.jboss.logmanager org.jboss.as.cli";
         return cliCommand;
     }
 
     /**
-     * 
+     *
      */
     public void run() {
         String threadName = Thread.currentThread().getName();
@@ -320,11 +320,11 @@ public class CLIWrapper implements Runnable {
                 else
                     errorLineReceived(line);
                 line = reader.readLine();
-            }            
-        } catch (Exception e) {            
+            }
+        } catch (Exception e) {
         } finally {
             synchronized (this) {
-                if (threadName.equals(outThreadHame)) 
+                if (threadName.equals(outThreadHame))
                     outputReader = null;
                 else
                     errorReader = null;
@@ -332,16 +332,16 @@ public class CLIWrapper implements Runnable {
             }
         }
     }
-    
+
     private synchronized void outputLineReceived(String line) {
         System.out.println("[" + outThreadHame + "] " + line);
         outputQueue.add(line);
         notifyAll();
-    }    
+    }
 
     private synchronized void errorLineReceived(String line) {
         System.out.println("[" + outThreadHame + "] " + line);
         notifyAll();
-    }    
-    
+    }
+
 }
