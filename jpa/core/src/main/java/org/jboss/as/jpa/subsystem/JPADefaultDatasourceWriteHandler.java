@@ -28,7 +28,8 @@ public class JPADefaultDatasourceWriteHandler extends AbstractWriteAttributeHand
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-            String attributeName, final ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<String> handbackHolder) throws OperationFailedException {
+                                           String attributeName, final ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<String> handbackHolder) throws
+        OperationFailedException {
 
         final String dataSourceName = resolvedValue.asString();
         final ServiceRegistry registry = context.getServiceRegistry(true);
@@ -41,7 +42,8 @@ public class JPADefaultDatasourceWriteHandler extends AbstractWriteAttributeHand
     }
 
     @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, String handback) throws OperationFailedException {
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, String handback) throws
+        OperationFailedException {
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> sc = registry.getRequiredService(JPAService.SERVICE_NAME);

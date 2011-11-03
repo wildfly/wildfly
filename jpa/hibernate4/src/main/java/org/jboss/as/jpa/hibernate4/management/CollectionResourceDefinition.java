@@ -39,30 +39,30 @@ import org.jboss.dmr.ModelType;
 public class CollectionResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition LOAD_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_COLLECTION_LOAD_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition FETCH_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_COLLECTION_FETCH_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition RECREATE_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_COLLECTION_RECREATED_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition REMOVE_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_COLLECTION_REMOVE_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     public static final SimpleAttributeDefinition UPDATE_COUNT = new SimpleAttributeDefinitionBuilder(HibernateManagementAdaptor.OPERATION_COLLECTION_UPDATE_COUNT, ModelType.LONG)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-            .build();
+        .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+        .build();
 
     private final PersistenceUnitServiceRegistry persistenceUnitRegistry;
 
     CollectionResourceDefinition(final PersistenceUnitServiceRegistry persistenceUnitRegistry) {
         super(PathElement.pathElement(HibernateDescriptionConstants.COLLECTION),
-                HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.COLLECTION_STATISTICS));
+            HibernateDescriptions.getResourceDescriptionResolver(HibernateDescriptionConstants.COLLECTION_STATISTICS));
         this.persistenceUnitRegistry = persistenceUnitRegistry;
     }
 

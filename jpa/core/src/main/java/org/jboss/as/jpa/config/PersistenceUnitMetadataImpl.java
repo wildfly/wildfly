@@ -23,20 +23,21 @@
 
 package org.jboss.as.jpa.config;
 
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.as.jpa.spi.TempClassLoaderFactory;
-import org.jboss.jandex.Index;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.ClassTransformer;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.jpa.spi.TempClassLoaderFactory;
+import org.jboss.jandex.Index;
 
 /**
  * Represents the persistence unit definition
@@ -104,7 +105,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     private TempClassLoaderFactory tempClassLoaderFactory;
 
-    private Map<URL,Index> annotationIndex;
+    private Map<URL, Index> annotationIndex;
 
     @Override
     public void setPersistenceUnitName(String name) {
@@ -383,7 +384,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     @Override
     public ClassLoader getNewTempClassLoader() {
         return tempClassLoaderFactory != null ?
-                tempClassLoaderFactory.createNewTempClassLoader() : null;
+            tempClassLoaderFactory.createNewTempClassLoader() : null;
     }
 
     @Override

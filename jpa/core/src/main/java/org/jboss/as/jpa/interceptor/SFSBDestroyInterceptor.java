@@ -22,6 +22,12 @@
 
 package org.jboss.as.jpa.interceptor;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
@@ -31,11 +37,6 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-
-import javax.persistence.EntityManager;
-import java.util.List;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * For SFSB life cycle management.

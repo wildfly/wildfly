@@ -22,13 +22,14 @@
 
 package org.jboss.as.jpa.container;
 
-import org.jboss.as.jpa.spi.SFSBContextHandle;
-
-import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.EntityManager;
+
+import org.jboss.as.jpa.spi.SFSBContextHandle;
 
 /**
  * For tracking of SFSB call stack on a per thread basis.
@@ -107,7 +108,7 @@ public class SFSBCallStack {
             }
         }
         Map<String, EntityManager> map = sfsbCreationMap.get();
-        if(map != null) {
+        if (map != null) {
             return map.get(puScopedName);
         }
         return null;

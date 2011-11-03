@@ -479,7 +479,6 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
     }
 
 
-
     @Override
     public String getIdentificationLabel() {
         return PROVIDER_LABEL;
@@ -490,7 +489,8 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
         abstract void handle(ModelNode response, String name, Statistics stats, OperationContext context);
 
         @Override
-        protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        protected void executeRuntimeStep(final OperationContext context, final ModelNode operation) throws
+            OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
             final String puResourceName = address.getLastElement().getValue();
             Statistics stats = ManagementUtility.getStatistics(persistenceUnitRegistry, puResourceName);

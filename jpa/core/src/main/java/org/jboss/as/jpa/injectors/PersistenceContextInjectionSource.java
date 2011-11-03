@@ -22,6 +22,16 @@
 
 package org.jboss.as.jpa.injectors;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
+import java.util.HashSet;
+import java.util.Map;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContextType;
+
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.NonTxEmCloser;
@@ -41,15 +51,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContextType;
-import java.util.HashSet;
-import java.util.Map;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-
 /**
  * Represents the PersistenceContext injected into a component.
  *
@@ -63,7 +64,8 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
     private final ServiceName puServiceName;
 
-    /** the following list of classes determines which unwrap classes are special, in that the underlying entity
+    /**
+     * the following list of classes determines which unwrap classes are special, in that the underlying entity
      * manager won't be closed, even if no transaction is active on the calling thread.
      * TODO:  move this list to PersistenceProviderAdaptor
      */
@@ -83,7 +85,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
      * @param deploymentUnit    represents the deployment that we are injecting into
      * @param scopedPuName      the fully scoped reference to the persistence.xml
      * @param injectionTypeName is normally "javax.persistence.EntityManager" but could be a different target class
-*                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
+     *                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
      * @param sfsbxpcMap        TODO: refactor to only pass in for type == PersistenceContextType.EXTENDED
      * @param pu
      */

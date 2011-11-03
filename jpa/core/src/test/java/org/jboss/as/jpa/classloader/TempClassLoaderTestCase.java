@@ -26,10 +26,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import javax.persistence.Entity;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import javax.persistence.Entity;
 
 import org.junit.Test;
 
@@ -39,12 +39,12 @@ import org.junit.Test;
 public class TempClassLoaderTestCase {
 
     private TempClassLoaderFactoryImpl factory = new TempClassLoaderFactoryImpl(getClass().getClassLoader());
-    
+
     @Test
     public void testLoadEntityClass() throws Exception {
         ClassLoader tempClassLoader = factory.createNewTempClassLoader();
         String className = TestEntity.class.getName();
-        
+
         Class<?> entityClass = tempClassLoader.loadClass(className);
         Object entity = entityClass.newInstance();
 
@@ -53,21 +53,22 @@ public class TempClassLoaderTestCase {
         assertTrue(entity.getClass().isAnnotationPresent(Entity.class));
         assertTrue(entityClass == tempClassLoader.loadClass(className));
     }
-    
+
     @Test
     public void testLoadResources() throws IOException {
         ClassLoader tempClassLoader = factory.createNewTempClassLoader();
         String resource = TestEntity.class.getName().replace('.', '/') + ".class";
-        
+
         assertNotNull(tempClassLoader.getResource(resource));
         assertTrue(tempClassLoader.getResources(resource).hasMoreElements());
-        
+
         InputStream resourceStream = tempClassLoader.getResourceAsStream(resource);
         assertNotNull(resourceStream);
         resourceStream.close();
     }
 
     @Entity
-    public static class TestEntity { }
+    public static class TestEntity {
+    }
 
 }

@@ -22,10 +22,12 @@
 
 package org.jboss.as.jpa.puparser;
 
-import org.jboss.as.jpa.config.PersistenceUnitMetadataImpl;
-import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.metadata.parser.util.MetaDataElementParser;
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
@@ -33,12 +35,11 @@ import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.config.PersistenceUnitMetadataImpl;
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.metadata.parser.util.MetaDataElementParser;
 
 /**
  * Parse a persistence.xml into a list of persistence unit definitions.
@@ -48,6 +49,7 @@ import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 public class PersistenceUnitXmlParser extends MetaDataElementParser {
     // cache the trace enabled flag
     private static final boolean traceEnabled = JPA_LOGGER.isTraceEnabled();
+
     public static PersistenceUnitMetadataHolder parse(final XMLStreamReader reader) throws XMLStreamException {
 
         reader.require(START_DOCUMENT, null, null);  // check for a bogus document and throw error

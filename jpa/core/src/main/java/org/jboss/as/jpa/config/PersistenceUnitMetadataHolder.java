@@ -22,11 +22,12 @@
 
 package org.jboss.as.jpa.config;
 
-import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
-import org.jboss.as.server.deployment.AttachmentKey;
+import java.util.List;
 
 import javax.persistence.spi.PersistenceUnitInfo;
-import java.util.List;
+
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
  * Holds the defined persistence units

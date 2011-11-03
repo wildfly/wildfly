@@ -22,12 +22,13 @@
 
 package org.jboss.as.jpa.container;
 
-import org.jboss.as.jpa.transaction.TransactionUtil;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
-import javax.persistence.EntityManager;
 import java.io.Serializable;
 
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import javax.persistence.EntityManager;
+
+import org.jboss.as.jpa.transaction.TransactionUtil;
 
 /**
  * Extended lifetime scoped (XPC) entity manager will only be injected into SFSB beans.  At bean invocation time, they

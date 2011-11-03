@@ -44,12 +44,12 @@ public class QueryName {
     private static final String NE_HAT = "^=";
     private static final String LE = "<=";
     private static final String GE = ">=";
-    private static final String CONCAT= "||";
-    private static final String LT ="<";
+    private static final String CONCAT = "||";
+    private static final String LT = "<";
     private static final String EQ = "=";
-    private static final String GT =">";
-    private static final String OPEN= "(";
-    private static final String CLOSE= ")";
+    private static final String GT = ">";
+    private static final String OPEN = "(";
+    private static final String CLOSE = ")";
     private static final String OPEN_BRACKET = "[";
     private static final String CLOSE_BRACKET = "]";
     private static final String PLUS = "+";
@@ -58,10 +58,10 @@ public class QueryName {
     private static final String DIV = "/";
     private static final String MOD = "%";
     private static final String COLON = ":";
-    private static final String PARAM= "?";
-    private static final String COMMA =",";
-    private static final String SPACE=" ";
-    private static final String TAB="\t";
+    private static final String PARAM = "?";
+    private static final String COMMA = ",";
+    private static final String SPACE = " ";
+    private static final String TAB = "\t";
     private static final String NEWLINE = "\n";
     private static final String LINEFEED = "\r";
     private static final String QUOTE = "'";
@@ -112,6 +112,7 @@ public class QueryName {
 
     /**
      * Construct
+     *
      * @param query
      */
     public QueryName(String query) {
@@ -152,6 +153,7 @@ public class QueryName {
 
     /**
      * transform a Hibernate HQL query into something that can be displayed/used for management operations
+     *
      * @param query
      * @return
      */

@@ -22,10 +22,10 @@
 
 package org.jboss.as.jpa.hibernate4;
 
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
-
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 
 /**
  * Mock work of NativeScanner matching.

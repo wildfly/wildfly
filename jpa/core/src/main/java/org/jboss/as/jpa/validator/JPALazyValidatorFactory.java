@@ -21,9 +21,8 @@
  */
 package org.jboss.as.jpa.validator;
 
-import org.hibernate.validator.HibernateValidator;
-import org.hibernate.validator.HibernateValidatorConfiguration;
-import org.hibernate.validator.cfg.ConstraintMapping;
+import java.util.Collections;
+import java.util.List;
 
 import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
@@ -35,8 +34,10 @@ import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
 import javax.validation.spi.ValidationProvider;
-import java.util.Collections;
-import java.util.List;
+
+import org.hibernate.validator.HibernateValidator;
+import org.hibernate.validator.HibernateValidatorConfiguration;
+import org.hibernate.validator.cfg.ConstraintMapping;
 
 /**
  * This class lazily initialize the ValidatorFactory on the first usage

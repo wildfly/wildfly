@@ -12,7 +12,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.jpa.spi.PersistenceUnitServiceRegistry;
-import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.dmr.ModelNode;
 
 
