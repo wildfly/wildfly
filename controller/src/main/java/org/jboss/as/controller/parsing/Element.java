@@ -80,6 +80,7 @@ public enum Element {
     LDAP("ldap"),
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOCAL("local"),
+    LOCAL_DESTINATION("local-destination"),
     LOOPBACK("loopback"),
     LOOPBACK_ADDRESS("loopback-address"),
 
@@ -96,6 +97,8 @@ public enum Element {
 
     OPTION("option"),
     OUTBOUND_CONNECTIONS("outbound-connections"),
+    OUTBOUND_SOCKET_BINDING("outbound-socket-binding"),
+
 
     PASSWORD("password"),
     PATH("path"),
@@ -110,6 +113,7 @@ public enum Element {
     PUBLIC_ADDRESS("public-address"),
 
     REMOTE("remote"),
+    REMOTE_DESTINATION("remote-destination"),
 
     SCANNING("scanning"),
     SECRET("secret"),

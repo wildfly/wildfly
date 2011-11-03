@@ -32,19 +32,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_SOURCE_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.KEYSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_THREADS;
@@ -62,11 +63,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
@@ -78,6 +79,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_REF;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -109,6 +113,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -122,6 +127,8 @@ import java.util.Set;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.JVMHandlers;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -2213,6 +2220,166 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         return name;
     }
 
+    protected String parseOutboundSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
+                                                final String socketBindingGroupName, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        String outboundSocketBindingName = null;
+
+        final ModelNode outboundSocketBindingAddOperation = new ModelNode();
+        outboundSocketBindingAddOperation.get(OP).set(ADD); // address for this ADD operation will be set later, once the local-destination or remote-destination is parsed
+
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case NAME: {
+                        outboundSocketBindingName = value;
+                        break;
+                    }
+                    case SOURCE_INTERFACE: {
+                        if (!interfaces.contains(value)) {
+                            throw new XMLStreamException("Unknown " + Attribute.SOURCE_INTERFACE.getLocalName() + " " + value + " " + Element.INTERFACE.getLocalName()
+                                    + " must be declared in element " + Element.INTERFACES.getLocalName(), reader.getLocation());
+                        }
+                        outboundSocketBindingAddOperation.get(SOURCE_INTERFACE).set(value);
+                        break;
+                    }
+                    case SOURCE_PORT: {
+                        outboundSocketBindingAddOperation.get(SOURCE_PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
+                        break;
+                    }
+                    case FIXED_SOURCE_PORT: {
+                        outboundSocketBindingAddOperation.get(FIXED_SOURCE_PORT).set(parsePossibleExpression(value));
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        // Handle elements
+        boolean mutuallyExclusiveElementAlreadyFound = false;
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (Element.forName(reader.getLocalName())) {
+                case LOCAL_DESTINATION: {
+                    if (mutuallyExclusiveElementAlreadyFound) {
+                        throw new XMLStreamException("A outbound socket binding: " + outboundSocketBindingName + " cannot have both " + Element.LOCAL_DESTINATION.getLocalName()
+                                + " as well as a " + Element.REMOTE_DESTINATION.getLocalName() + " at the same time", reader.getLocation());
+                    } else {
+                        mutuallyExclusiveElementAlreadyFound = true;
+                    }
+                    // parse the local destination outbound socket binding
+                    this.parseLocalDestinationOutboundSocketBinding(reader, outboundSocketBindingName, outboundSocketBindingAddOperation);
+                    // set the address of the add operation
+                    // /socket-binding-group=<groupname>/local-destination-outbound-socket-binding=<outboundSocketBindingName>
+                    final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName), PathElement.pathElement(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName));
+                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
+                    break;
+                }
+                case REMOTE_DESTINATION: {
+                    if (mutuallyExclusiveElementAlreadyFound) {
+                        throw new XMLStreamException("A outbound socket binding: " + outboundSocketBindingName + " cannot have both " + Element.LOCAL_DESTINATION.getLocalName()
+                                + " as well as a " + Element.REMOTE_DESTINATION.getLocalName() + " at the same time", reader.getLocation());
+                    } else {
+                        mutuallyExclusiveElementAlreadyFound = true;
+                    }
+                    // parse the remote destination outbound socket binding
+                    this.parseRemoteDestinationOutboundSocketBinding(reader, outboundSocketBindingName, outboundSocketBindingAddOperation);
+                    // /socket-binding-group=<groupname>/remote-destination-outbound-socket-binding=<outboundSocketBindingName>
+                    final PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName), PathElement.pathElement(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName));
+                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        // add the "add" operations to the updates
+        updates.add(outboundSocketBindingAddOperation);
+        return outboundSocketBindingName;
+    }
+
+    private void parseLocalDestinationOutboundSocketBinding(final XMLExtendedStreamReader reader, final String outboundSocketBindingName,
+                                                            final ModelNode outboundSocketBindingAddOperation) throws XMLStreamException {
+
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.SOCKET_BINDING_REF);
+
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case SOCKET_BINDING_REF: {
+                        outboundSocketBindingAddOperation.get(SOCKET_BINDING_REF).set(value);
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        // Handle elements
+        requireNoContent(reader);
+    }
+
+    private void parseRemoteDestinationOutboundSocketBinding(final XMLExtendedStreamReader reader, final String outboundSocketBindingName,
+                                                             final ModelNode outboundSocketBindingAddOperation) throws XMLStreamException {
+
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.HOST, Attribute.PORT);
+
+        // Handle attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case HOST: {
+                        outboundSocketBindingAddOperation.get(HOST).set(value);
+                        break;
+                    }
+                    case PORT: {
+                        outboundSocketBindingAddOperation.get(PORT).set(parseBoundedIntegerAttribute(reader, i, 0, 65535, true));
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        // Handle elements
+        requireNoContent(reader);
+    }
+
     protected void parseDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
             final boolean allowEnabled) throws XMLStreamException {
         requireNoAttributes(reader);
@@ -2542,7 +2709,81 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writer.writeEndElement();
             }
         }
-
+        // outbound-socket-binding (for local destination)
+        if (bindingGroup.hasDefined(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING)) {
+            final ModelNode localDestinationOutboundSocketBindings = bindingGroup.get(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING);
+            for (final String outboundSocketBindingName : localDestinationOutboundSocketBindings.keys()) {
+                final ModelNode outboundSocketBinding = localDestinationOutboundSocketBindings.get(outboundSocketBindingName);
+                // <outbound-socket-binding>
+                writer.writeStartElement(Element.OUTBOUND_SOCKET_BINDING.getLocalName());
+                // name of the outbound socket binding
+                writeAttribute(writer, Attribute.NAME, outboundSocketBindingName);
+                // (optional) source port
+                if (outboundSocketBinding.hasDefined(SOURCE_PORT)) {
+                    final String sourcePort = outboundSocketBinding.get(SOURCE_PORT).asString();
+                    writeAttribute(writer, Attribute.SOURCE_PORT, sourcePort);
+                }
+                // (optional) source interface
+                if (outboundSocketBinding.hasDefined(SOURCE_INTERFACE)) {
+                    final String sourceInterface = outboundSocketBinding.get(SOURCE_INTERFACE).asString();
+                    writeAttribute(writer, Attribute.SOURCE_INTERFACE, sourceInterface);
+                }
+                // (optional) fixedSourcePort
+                if (outboundSocketBinding.hasDefined(FIXED_SOURCE_PORT)) {
+                    final String fixedSourcePort = outboundSocketBinding.get(FIXED_SOURCE_PORT).asString();
+                    writeAttribute(writer, Attribute.FIXED_SOURCE_PORT, fixedSourcePort);
+                }
+                // write the <local-destination> element
+                writer.writeStartElement(Element.LOCAL_DESTINATION.getLocalName());
+                // socket-binding-ref
+                final ModelNode socketBindingRef = outboundSocketBinding.get(SOCKET_BINDING_REF);
+                // write the socket-binding-ref attribute for the local-destination element
+                writeAttribute(writer, Attribute.SOCKET_BINDING_REF, socketBindingRef.asString());
+                // </local-destination>
+                writer.writeEndElement();
+                // </outbound-socket-binding>
+                writer.writeEndElement();
+            }
+        }
+        // outbound-socket-binding (for remote destination)
+        if (bindingGroup.hasDefined(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING)) {
+            final ModelNode remoteDestinationOutboundSocketBindings = bindingGroup.get(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING);
+            for (final String outboundSocketBindingName : remoteDestinationOutboundSocketBindings.keys()) {
+                final ModelNode outboundSocketBinding = remoteDestinationOutboundSocketBindings.get(outboundSocketBindingName);
+                // <outbound-socket-binding>
+                writer.writeStartElement(Element.OUTBOUND_SOCKET_BINDING.getLocalName());
+                // name of the outbound socket binding
+                writeAttribute(writer, Attribute.NAME, outboundSocketBindingName);
+                // (optional) source port
+                if (outboundSocketBinding.hasDefined(SOURCE_PORT)) {
+                    final String sourcePort = outboundSocketBinding.get(SOURCE_PORT).asString();
+                    writeAttribute(writer, Attribute.SOURCE_PORT, sourcePort);
+                }
+                // (optional) source interface
+                if (outboundSocketBinding.hasDefined(SOURCE_INTERFACE)) {
+                    final String sourceInterface = outboundSocketBinding.get(SOURCE_INTERFACE).asString();
+                    writeAttribute(writer, Attribute.SOURCE_INTERFACE, sourceInterface);
+                }
+                // (optional) fixedSourcePort
+                if (outboundSocketBinding.hasDefined(FIXED_SOURCE_PORT)) {
+                    final String fixedSourcePort = outboundSocketBinding.get(FIXED_SOURCE_PORT).asString();
+                    writeAttribute(writer, Attribute.FIXED_SOURCE_PORT, fixedSourcePort);
+                }
+                // write the <remote-destination> element
+                writer.writeStartElement(Element.REMOTE_DESTINATION.getLocalName());
+                // destination host
+                final ModelNode host = outboundSocketBinding.get(HOST);
+                writeAttribute(writer, Attribute.HOST, host.asString());
+                // destination port
+                final ModelNode destPort = outboundSocketBinding.get(PORT);
+                writeAttribute(writer, Attribute.PORT, destPort.asString());
+                // </remote-destination>
+                writer.writeEndElement();
+                // </outbound-socket-binding>
+                writer.writeEndElement();
+            }
+        }
+        // </socket-binding-group>
         writer.writeEndElement();
     }
 
